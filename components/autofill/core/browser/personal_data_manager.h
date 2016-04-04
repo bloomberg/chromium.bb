@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -100,7 +99,7 @@ class PersonalDataManager : public KeyedService,
   // Returns |true| if sufficient address or credit card data was found.
   bool ImportFormData(const FormStructure& form,
                       bool should_return_local_card,
-                      scoped_ptr<CreditCard>* imported_credit_card);
+                      std::unique_ptr<CreditCard>* imported_credit_card);
 
   // Called to indicate |data_model| was used (to fill in a form). Updates
   // the database accordingly. Can invalidate |data_model|, particularly if
@@ -383,7 +382,7 @@ class PersonalDataManager : public KeyedService,
   // new card to import, or having merged with an existing card.
   bool ImportCreditCard(const FormStructure& form,
                         bool should_return_local_card,
-                        scoped_ptr<CreditCard>* imported_credit_card);
+                        std::unique_ptr<CreditCard>* imported_credit_card);
 
   // Functionally equivalent to GetProfiles(), but also records metrics if
   // |record_metrics| is true. Metrics should be recorded when the returned
@@ -418,10 +417,10 @@ class PersonalDataManager : public KeyedService,
   mutable bool has_logged_credit_card_count_;
 
   // An observer to listen for changes to prefs::kAutofillEnabled.
-  scoped_ptr<BooleanPrefMember> enabled_pref_;
+  std::unique_ptr<BooleanPrefMember> enabled_pref_;
 
   // An observer to listen for changes to prefs::kAutofillWalletImportEnabled.
-  scoped_ptr<BooleanPrefMember> wallet_enabled_pref_;
+  std::unique_ptr<BooleanPrefMember> wallet_enabled_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

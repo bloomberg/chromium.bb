@@ -171,7 +171,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
   // a |password_form|. Note that ASSERT() can only be used in void functions,
   // this is why |password_form| is passed in as a pointer to a scoped_ptr.
   void LoadHTMLAndConvertForm(const std::string& html,
-                              scoped_ptr<PasswordForm>* password_form,
+                              std::unique_ptr<PasswordForm>* password_form,
                               FormsPredictionsMap* predictions) {
     WebFormElement form;
     LoadWebFormFromHTML(html, &form);
@@ -244,7 +244,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, BasicFormAttributes) {
   builder.AddPasswordField("password", "secret", NULL);
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -271,7 +271,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -342,7 +342,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
       builder.AddSubmitButton("submit");
       std::string html = builder.ProduceHTML();
 
-      scoped_ptr<PasswordForm> password_form;
+      std::unique_ptr<PasswordForm> password_form;
       ASSERT_NO_FATAL_FAILURE(
           LoadHTMLAndConvertForm(html, &password_form, nullptr));
       ASSERT_TRUE(password_form);
@@ -402,7 +402,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
-    scoped_ptr<PasswordForm> password_form;
+    std::unique_ptr<PasswordForm> password_form;
     ASSERT_NO_FATAL_FAILURE(
         LoadHTMLAndConvertForm(html, &password_form, nullptr));
     ASSERT_TRUE(password_form);
@@ -464,7 +464,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
-    scoped_ptr<PasswordForm> password_form;
+    std::unique_ptr<PasswordForm> password_form;
     ASSERT_NO_FATAL_FAILURE(
         LoadHTMLAndConvertForm(html, &password_form, nullptr));
     ASSERT_TRUE(password_form);
@@ -605,7 +605,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
-    scoped_ptr<PasswordForm> password_form;
+    std::unique_ptr<PasswordForm> password_form;
     ASSERT_NO_FATAL_FAILURE(
         LoadHTMLAndConvertForm(html, &password_form, nullptr));
     ASSERT_TRUE(password_form);
@@ -648,7 +648,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedTextFields) {
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -672,7 +672,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedLoginPairs) {
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -691,7 +691,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyNonDisplayedLoginPair) {
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -714,7 +714,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -734,7 +734,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -754,7 +754,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   ASSERT_TRUE(password_form);
@@ -771,7 +771,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
   builder.AddPasswordField("password", "secret", NULL);
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   EXPECT_FALSE(password_form);
@@ -785,7 +785,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   EXPECT_FALSE(password_form);
@@ -816,7 +816,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
-    scoped_ptr<PasswordForm> password_form;
+    std::unique_ptr<PasswordForm> password_form;
     ASSERT_NO_FATAL_FAILURE(
         LoadHTMLAndConvertForm(html, &password_form, nullptr));
     EXPECT_FALSE(password_form);
@@ -834,7 +834,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(html, &password_form, nullptr));
   EXPECT_FALSE(password_form);
@@ -848,7 +848,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
   builder.AddSubmitButton("submit");
   std::string login_html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> login_form;
+  std::unique_ptr<PasswordForm> login_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(login_html, &login_form, nullptr));
   ASSERT_TRUE(login_form);
@@ -865,7 +865,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationSignup) {
   builder.AddSubmitButton("submit");
   std::string signup_html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> signup_form;
+  std::unique_ptr<PasswordForm> signup_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(signup_html, &signup_form, nullptr));
   ASSERT_TRUE(signup_form);
@@ -882,7 +882,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationChange) {
   builder.AddSubmitButton("submit");
   std::string change_html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> change_form;
+  std::unique_ptr<PasswordForm> change_form;
   ASSERT_NO_FATAL_FAILURE(
       LoadHTMLAndConvertForm(change_html, &change_form, nullptr));
   ASSERT_TRUE(change_form);
@@ -903,7 +903,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string login_plus_signup_html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> login_plus_signup_form;
+  std::unique_ptr<PasswordForm> login_plus_signup_form;
   ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(
       login_plus_signup_html, &login_plus_signup_form, nullptr));
   ASSERT_TRUE(login_plus_signup_form);
@@ -925,7 +925,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddSubmitButton("submit");
   std::string login_plus_signup_html = builder.ProduceHTML();
 
-  scoped_ptr<PasswordForm> login_plus_signup_form;
+  std::unique_ptr<PasswordForm> login_plus_signup_form;
   ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(
       login_plus_signup_html, &login_plus_signup_form, nullptr));
   ASSERT_TRUE(login_plus_signup_form);
@@ -949,7 +949,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   LoadHTMLAndConvertForm(html, &password_form, &predictions);
   EXPECT_FALSE(password_form);
 }
@@ -969,7 +969,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   LoadHTMLAndConvertForm(html, &password_form, &predictions);
   EXPECT_FALSE(password_form);
 }
@@ -990,7 +990,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   LoadHTMLAndConvertForm(html, &password_form, &predictions);
   EXPECT_TRUE(password_form);
 }
@@ -1010,7 +1010,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
 
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   LoadHTMLAndConvertForm(html, &password_form, &predictions);
   EXPECT_TRUE(password_form);
 }
@@ -1103,7 +1103,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
                  << "/" << test_case.hidden_fields[1].value
                  << ", expected_form_is_reauth="
                  << test_case.expected_form_is_reauth);
-    scoped_ptr<PasswordFormBuilder> builder(new PasswordFormBuilder(""));
+    std::unique_ptr<PasswordFormBuilder> builder(new PasswordFormBuilder(""));
     builder->AddTextField("username", "", nullptr);
     builder->AddPasswordField("password", "", nullptr);
     for (TestCase::KeyValue& hidden_field : test_case.hidden_fields) {
@@ -1175,7 +1175,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     }
     std::string html = builder.ProduceHTML();
 
-    scoped_ptr<PasswordForm> password_form;
+    std::unique_ptr<PasswordForm> password_form;
     LoadHTMLAndConvertForm(html, &password_form, nullptr);
     EXPECT_TRUE(password_form);
 

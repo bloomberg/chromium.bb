@@ -5,9 +5,11 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -134,8 +136,8 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
 
 // Returns a profile with all fields set.  Contains identical data to the data
 // returned from ConstructCompleteSyncData().
-scoped_ptr<AutofillProfile> ConstructCompleteProfile() {
-  scoped_ptr<AutofillProfile> profile(
+std::unique_ptr<AutofillProfile> ConstructCompleteProfile() {
+  std::unique_ptr<AutofillProfile> profile(
       new AutofillProfile(kGuid1, kHttpsOrigin));
 
   profile->set_use_count(7);
@@ -244,14 +246,14 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
     // Takes ownership of sync_processor_.
     autofill_syncable_service_.MergeDataAndStartSyncing(
         syncer::AUTOFILL_PROFILE, data_list, std::move(sync_processor_),
-        scoped_ptr<syncer::SyncErrorFactory>(
+        std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock()));
   }
 
  protected:
   base::MessageLoop message_loop_;
   MockAutofillProfileSyncableService autofill_syncable_service_;
-  scoped_ptr<MockSyncChangeProcessor> sync_processor_;
+  std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
 };
 
 TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
@@ -685,7 +687,8 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncAllFieldsToClient) {
   // Set up expectations: All fields correctly copied to the WebDB, and no
   // changes propagated to Sync.
   syncer::SyncChangeList expected_change_list;
-  scoped_ptr<AutofillProfile> expected_profile = ConstructCompleteProfile();
+  std::unique_ptr<AutofillProfile> expected_profile =
+      ConstructCompleteProfile();
   MockAutofillProfileSyncableService::DataBundle expected_bundle;
   expected_bundle.profiles_to_add.push_back(expected_profile.get());
 
@@ -1217,10 +1220,9 @@ TEST_F(AutofillProfileSyncableServiceTest, ClientOverwritesUsageStats) {
       .Times(1)
       .WillOnce(Return(true));
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncer::AUTOFILL_PROFILE,
-      data_list,
-      make_scoped_ptr(sync_change_processor),
-      scoped_ptr<syncer::SyncErrorFactory>(
+      syncer::AUTOFILL_PROFILE, data_list,
+      base::WrapUnique(sync_change_processor),
+      std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
 
   // Update to the usage stats for that profile.
@@ -1255,8 +1257,9 @@ TEST_F(AutofillProfileSyncableServiceTest, IgnoreServerProfileUpdate) {
       .WillOnce(Return(true));
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncer::AUTOFILL_PROFILE, syncer::SyncDataList(),
-      make_scoped_ptr(new TestSyncChangeProcessor),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new TestSyncChangeProcessor),
+      std::unique_ptr<syncer::SyncErrorFactory>(
+          new syncer::SyncErrorFactoryMock()));
   AutofillProfile server_profile(AutofillProfile::SERVER_PROFILE, "server-id");
 
   // Should not crash:

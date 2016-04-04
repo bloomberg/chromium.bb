@@ -99,9 +99,9 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindString(index++, profile.language_code());
 }
 
-scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
+std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
     const sql::Statement& s) {
-  scoped_ptr<AutofillProfile> profile(new AutofillProfile);
+  std::unique_ptr<AutofillProfile> profile(new AutofillProfile);
   int index = 0;
   profile->set_guid(s.ColumnString(index++));
   DCHECK(base::IsValidGUID(profile->guid()));
@@ -166,8 +166,8 @@ base::string16 UnencryptedCardFromColumn(const sql::Statement& s,
   return credit_card_number;
 }
 
-scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
-  scoped_ptr<CreditCard> credit_card(new CreditCard);
+std::unique_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
+  std::unique_ptr<CreditCard> credit_card(new CreditCard);
 
   int index = 0;
   credit_card->set_guid(s.ColumnString(index++));
@@ -874,7 +874,7 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
   return AddAutofillProfilePieces(profile, db_);
 }
 
-scoped_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
+std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
     const std::string& guid) {
   DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
@@ -885,7 +885,7 @@ scoped_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
       "WHERE guid=?"));
   s.BindString(0, guid);
 
-  scoped_ptr<AutofillProfile> p;
+  std::unique_ptr<AutofillProfile> p;
   if (!s.Step())
     return p;
 
@@ -915,7 +915,7 @@ bool AutofillTable::GetAutofillProfiles(
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
-    scoped_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
     if (!profile)
       return false;
     profiles->push_back(profile.release());
@@ -949,7 +949,7 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
 
   while (s.Step()) {
     int index = 0;
-    scoped_ptr<AutofillProfile> profile(new AutofillProfile(
+    std::unique_ptr<AutofillProfile> profile(new AutofillProfile(
         AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
     profile->set_use_count(s.ColumnInt64(index++));
     profile->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
@@ -1049,7 +1049,8 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
   if (!IsAutofillProfilesTrashEmpty())
     return true;
 
-  scoped_ptr<AutofillProfile> old_profile = GetAutofillProfile(profile.guid());
+  std::unique_ptr<AutofillProfile> old_profile =
+      GetAutofillProfile(profile.guid());
   if (!old_profile)
     return false;
 
@@ -1142,7 +1143,8 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
   return true;
 }
 
-scoped_ptr<CreditCard> AutofillTable::GetCreditCard(const std::string& guid) {
+std::unique_ptr<CreditCard> AutofillTable::GetCreditCard(
+    const std::string& guid) {
   DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
@@ -1153,7 +1155,7 @@ scoped_ptr<CreditCard> AutofillTable::GetCreditCard(const std::string& guid) {
   s.BindString(0, guid);
 
   if (!s.Step())
-    return scoped_ptr<CreditCard>();
+    return std::unique_ptr<CreditCard>();
 
   return CreditCardFromStatement(s);
 }
@@ -1170,7 +1172,7 @@ bool AutofillTable::GetCreditCards(
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
-    scoped_ptr<CreditCard> credit_card = GetCreditCard(guid);
+    std::unique_ptr<CreditCard> credit_card = GetCreditCard(guid);
     if (!credit_card)
       return false;
     credit_cards->push_back(credit_card.release());
@@ -1417,7 +1419,8 @@ bool AutofillTable::ClearAllServerData() {
 bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
 
-  scoped_ptr<CreditCard> old_credit_card = GetCreditCard(credit_card.guid());
+  std::unique_ptr<CreditCard> old_credit_card =
+      GetCreditCard(credit_card.guid());
   if (!old_credit_card)
     return false;
 
@@ -1552,7 +1555,7 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
     if (!s_profile.Run())
       return false;
 
-    scoped_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
     if (!profile)
       return false;
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <set>
 
@@ -321,7 +322,7 @@ void AutofillProfile::SetRawInfo(ServerFieldType type,
 base::string16 AutofillProfile::GetInfo(const AutofillType& type,
                                         const std::string& app_locale) const {
   if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
-    scoped_ptr<AddressData> address_data =
+    std::unique_ptr<AddressData> address_data =
         i18n::CreateAddressDataFromAutofillProfile(*this, app_locale);
     if (!addressinput::HasAllRequiredFields(*address_data))
       return base::string16();
@@ -445,7 +446,7 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     const AutofillProfile& profile,
     const std::string& app_locale,
     const ServerFieldTypeSet& types) const {
-  scoped_ptr<l10n::CaseInsensitiveCompare> compare;
+  std::unique_ptr<l10n::CaseInsensitiveCompare> compare;
 
   for (ServerFieldType type : types) {
     base::string16 value = GetRawInfo(type);
@@ -869,7 +870,7 @@ base::string16 AutofillProfile::ConstructInferredLabel(
     --num_fields_to_use;
   }
 
-  scoped_ptr<AddressData> address_data =
+  std::unique_ptr<AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(trimmed_profile, app_locale);
   std::string address_line;
   ::i18n::addressinput::GetFormattedNationalAddressLine(

@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/autofill_manager.h"
+
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -25,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -88,7 +89,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
         app_locale == "en-US" ? AutofillClient::SUCCESS
                               : AutofillClient::PERMANENT_FAILURE,
         ASCIIToUTF16("this is a context token"),
-        scoped_ptr<base::DictionaryValue>(nullptr));
+        std::unique_ptr<base::DictionaryValue>(nullptr));
   }
 
   void UploadCard(const payments::PaymentsClient::UploadRequestDetails&
@@ -606,7 +607,7 @@ class TestAutofillManager : public AutofillManager {
   bool credit_card_was_uploaded_;
   bool expected_observed_submission_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   std::string submitted_form_signature_;
   std::vector<ServerFieldTypeSet> expected_submitted_field_types_;
@@ -925,9 +926,9 @@ class AutofillManagerTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   MockAutofillClient autofill_client_;
-  scoped_ptr<MockAutofillDriver> autofill_driver_;
-  scoped_ptr<TestAutofillManager> autofill_manager_;
-  scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
+  std::unique_ptr<MockAutofillDriver> autofill_driver_;
+  std::unique_ptr<TestAutofillManager> autofill_manager_;
+  std::unique_ptr<TestAutofillExternalDelegate> external_delegate_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestPaymentsClient* payments_client_;
   TestAutofillDownloadManager* download_manager_;

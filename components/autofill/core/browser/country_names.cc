@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -32,7 +33,7 @@ static base::LazyInstance<std::string> g_application_locale =
 // the |buffer| is resized.
 const std::string GetSortKey(const icu::Collator& collator,
                              const base::string16& str,
-                             scoped_ptr<uint8_t[]>* buffer,
+                             std::unique_ptr<uint8_t[]>* buffer,
                              int32_t* buffer_size) {
   DCHECK(buffer);
   DCHECK(buffer_size);
@@ -80,8 +81,8 @@ std::map<std::string, std::string> GetCommonNames() {
 }
 
 // Creates collator for |locale| and sets its attributes as needed.
-scoped_ptr<icu::Collator> CreateCollator(const icu::Locale& locale) {
-  scoped_ptr<icu::Collator> collator(
+std::unique_ptr<icu::Collator> CreateCollator(const icu::Locale& locale) {
+  std::unique_ptr<icu::Collator> collator(
       autofill::l10n::GetCollatorForLocale(locale));
   if (!collator)
     return nullptr;
@@ -97,7 +98,8 @@ scoped_ptr<icu::Collator> CreateCollator(const icu::Locale& locale) {
 
 // If |locale| is different from "en_US", returns a collator for "en_US" and
 // sets its attributes as appropriate. Otherwise returns null.
-scoped_ptr<icu::Collator> CreateDefaultCollator(const icu::Locale& locale) {
+std::unique_ptr<icu::Collator> CreateDefaultCollator(
+    const icu::Locale& locale) {
   icu::Locale default_locale("en_US");
 
   if (default_locale != locale)
@@ -119,7 +121,7 @@ std::map<std::string, std::string> GetLocalizedNames(
 
   std::map<std::string, std::string> localized_names;
   int32_t buffer_size = 1000;
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
 
   for (const std::string& country_code :
        CountryDataMap::GetInstance()->country_codes()) {
@@ -198,7 +200,7 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   // source string length.
   // [1] http://userguide.icu-project.org/collation/api#TOC-Examples
   int32_t buffer_size = country_name.size() * 4;
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   std::string sort_key =
       GetSortKey(collator, country_name, &buffer, &buffer_size);
 

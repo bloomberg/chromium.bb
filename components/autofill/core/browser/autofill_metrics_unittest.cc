@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -288,7 +288,7 @@ class TestAutofillManager : public AutofillManager {
 
  private:
   bool autofill_enabled_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
@@ -311,13 +311,13 @@ class AutofillMetricsTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
-  scoped_ptr<AccountTrackerService> account_tracker_;
-  scoped_ptr<FakeSigninManagerBase> signin_manager_;
-  scoped_ptr<TestSigninClient> signin_client_;
-  scoped_ptr<TestAutofillDriver> autofill_driver_;
-  scoped_ptr<TestAutofillManager> autofill_manager_;
-  scoped_ptr<TestPersonalDataManager> personal_data_;
-  scoped_ptr<AutofillExternalDelegate> external_delegate_;
+  std::unique_ptr<AccountTrackerService> account_tracker_;
+  std::unique_ptr<FakeSigninManagerBase> signin_manager_;
+  std::unique_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<TestAutofillDriver> autofill_driver_;
+  std::unique_ptr<TestAutofillManager> autofill_manager_;
+  std::unique_ptr<TestPersonalDataManager> personal_data_;
+  std::unique_ptr<AutofillExternalDelegate> external_delegate_;
 };
 
 AutofillMetricsTest::~AutofillMetricsTest() {

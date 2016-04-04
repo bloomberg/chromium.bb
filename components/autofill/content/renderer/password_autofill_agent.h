@@ -6,10 +6,10 @@
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_AUTOFILL_AGENT_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -202,7 +202,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Saves |password_form| in |provisionally_saved_form_|, as long as it
   // satisfies |restriction|.
-  void ProvisionallySavePassword(scoped_ptr<PasswordForm> password_form,
+  void ProvisionallySavePassword(std::unique_ptr<PasswordForm> password_form,
                                  ProvisionallySaveRestriction restriction);
 
   // Returns true if |provisionally_saved_form_| has enough information that
@@ -221,7 +221,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Set if the user might be submitting a password form on the current page,
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).
-  scoped_ptr<PasswordForm> provisionally_saved_form_;
+  std::unique_ptr<PasswordForm> provisionally_saved_form_;
 
   // Contains the most recent text that user typed or PasswordManager autofilled
   // in input elements. Used for storing username/password before JavaScript

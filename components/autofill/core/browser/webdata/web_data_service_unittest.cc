@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -9,8 +10,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -103,7 +104,7 @@ class WebDataServiceTest : public testing::Test {
 
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_thread_.task_runner());
-    wdbs_->AddTable(make_scoped_ptr(new AutofillTable));
+    wdbs_->AddTable(base::WrapUnique(new AutofillTable));
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(

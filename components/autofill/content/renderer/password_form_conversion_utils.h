@@ -6,9 +6,9 @@
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
@@ -47,14 +47,14 @@ typedef std::map<const blink::WebInputElement,
 // the PasswordForm.
 // |form_predictions| is Autofill server response, if present it's used for
 // overwriting default username element selection.
-scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
+std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const blink::WebFormElement& form,
     const ModifiedValues* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions);
 
 // Same as CreatePasswordFormFromWebForm() but for input elements that are not
 // enclosed in <form> element.
-scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
+std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const blink::WebFrame& frame,
     const ModifiedValues* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions);

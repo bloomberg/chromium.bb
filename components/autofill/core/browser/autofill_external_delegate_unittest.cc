@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
@@ -147,9 +148,9 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
   }
 
   testing::NiceMock<MockAutofillClient> autofill_client_;
-  scoped_ptr<testing::NiceMock<MockAutofillDriver>> autofill_driver_;
-  scoped_ptr<MockAutofillManager> autofill_manager_;
-  scoped_ptr<AutofillExternalDelegate> external_delegate_;
+  std::unique_ptr<testing::NiceMock<MockAutofillDriver>> autofill_driver_;
+  std::unique_ptr<MockAutofillManager> autofill_manager_;
+  std::unique_ptr<AutofillExternalDelegate> external_delegate_;
 
   base::MessageLoop message_loop_;
 };

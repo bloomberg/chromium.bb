@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -72,12 +73,12 @@ class FormStructureTest : public testing::Test {
     field_trial_->group();
   }
 
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
 };
 
 TEST_F(FormStructureTest, FieldCount) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -109,7 +110,7 @@ TEST_F(FormStructureTest, FieldCount) {
 }
 
 TEST_F(FormStructureTest, AutofillCount) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -170,7 +171,7 @@ TEST_F(FormStructureTest, SourceURL) {
 }
 
 TEST_F(FormStructureTest, IsAutofillable) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   // We need at least three text fields to be auto-fillable.
@@ -234,7 +235,7 @@ TEST_F(FormStructureTest, IsAutofillable) {
 }
 
 TEST_F(FormStructureTest, ShouldBeParsed) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   // We need at least three text fields to be parseable.
@@ -335,7 +336,7 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
 // Tests that ShouldBeParsed returns true for a form containing less than three
 // fields if at least one has an autocomplete attribute.
 TEST_F(FormStructureTest, ShouldBeParsed_TwoFields_HasAutocomplete) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
   FormFieldData field;
 
@@ -357,7 +358,7 @@ TEST_F(FormStructureTest, ShouldBeParsed_TwoFields_HasAutocomplete) {
 }
 
 TEST_F(FormStructureTest, HeuristicsContactInfo) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -431,7 +432,7 @@ TEST_F(FormStructureTest, HeuristicsContactInfo) {
 
 // Verify that we can correctly process the |autocomplete| attribute.
 TEST_F(FormStructureTest, HeuristicsAutocompleteAttribute) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -470,7 +471,7 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttribute) {
 
 // Verify that the heuristics are not run for non checkout formless forms.
 TEST_F(FormStructureTest, Heuristics_FormlessNonCheckoutForm) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -548,7 +549,7 @@ TEST_F(FormStructureTest, StripCommonNamePrefix) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
   EXPECT_TRUE(form_structure->IsAutofillable());
 
@@ -588,7 +589,7 @@ TEST_F(FormStructureTest, StripCommonNamePrefix_SmallPrefix) {
   field.name = ASCIIToUTF16("address3");
   form.fields.push_back(field);
 
-  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
   EXPECT_TRUE(form_structure->IsAutofillable());
 
@@ -607,7 +608,7 @@ TEST_F(FormStructureTest, StripCommonNamePrefix_SmallPrefix) {
 // Verify that we can correctly process the 'autocomplete' attribute for phone
 // number types (especially phone prefixes and suffixes).
 TEST_F(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -650,7 +651,7 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
 // fillable fields.
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_BigForm_NoAutocompleteAttribute) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -685,7 +686,7 @@ TEST_F(FormStructureTest,
 // attribute is present in the form (if it has more that two fillable fields).
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_ValidAutocompleteAttribute) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -724,7 +725,7 @@ TEST_F(FormStructureTest,
 // fillable fields).
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_UnrecognizedAutocompleteAttribute) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -767,7 +768,7 @@ TEST_F(FormStructureTest,
 // than 3 fields.
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_SmallForm_NoAutocompleteAttribute) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -799,7 +800,7 @@ TEST_F(FormStructureTest,
 // than 3 fields, even if an autocomplete attribute is specified.
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_SmallForm_ValidAutocompleteAttribute) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1038,7 +1039,7 @@ TEST_F(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
 }
 
 TEST_F(FormStructureTest, HeuristicsSample8) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1115,7 +1116,7 @@ TEST_F(FormStructureTest, HeuristicsSample8) {
 }
 
 TEST_F(FormStructureTest, HeuristicsSample6) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1177,7 +1178,7 @@ TEST_F(FormStructureTest, HeuristicsSample6) {
 // for matching.  This works because FormFieldData labels are matched in the
 // case that input element ids (or |name| fields) are missing.
 TEST_F(FormStructureTest, HeuristicsLabelsOnly) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1242,7 +1243,7 @@ TEST_F(FormStructureTest, HeuristicsLabelsOnly) {
 }
 
 TEST_F(FormStructureTest, HeuristicsCreditCardInfo) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1296,7 +1297,7 @@ TEST_F(FormStructureTest, HeuristicsCreditCardInfo) {
 }
 
 TEST_F(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1358,7 +1359,7 @@ TEST_F(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
 }
 
 TEST_F(FormStructureTest, ThreeAddressLines) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1398,7 +1399,7 @@ TEST_F(FormStructureTest, ThreeAddressLines) {
 
 // Numbered address lines after line two are ignored.
 TEST_F(FormStructureTest, SurplusAddressLinesIgnored) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1441,7 +1442,7 @@ TEST_F(FormStructureTest, SurplusAddressLinesIgnored) {
 // "Street address second line" we interpret as address line 3.
 // See http://crbug.com/48197 for details.
 TEST_F(FormStructureTest, ThreeAddressLinesExpedia) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1483,7 +1484,7 @@ TEST_F(FormStructureTest, ThreeAddressLinesExpedia) {
 // and the name "address2" clearly indicates that this is the address line 2.
 // See http://crbug.com/48197 for details.
 TEST_F(FormStructureTest, TwoAddressLinesEbay) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1516,7 +1517,7 @@ TEST_F(FormStructureTest, TwoAddressLinesEbay) {
 }
 
 TEST_F(FormStructureTest, HeuristicsStateWithProvince) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1550,7 +1551,7 @@ TEST_F(FormStructureTest, HeuristicsStateWithProvince) {
 
 // This example comes from lego.com's checkout page.
 TEST_F(FormStructureTest, HeuristicsWithBilling) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1621,7 +1622,7 @@ TEST_F(FormStructureTest, HeuristicsWithBilling) {
 }
 
 TEST_F(FormStructureTest, ThreePartPhoneNumber) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1668,7 +1669,7 @@ TEST_F(FormStructureTest, ThreePartPhoneNumber) {
 }
 
 TEST_F(FormStructureTest, HeuristicsInfernoCC) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1718,7 +1719,7 @@ TEST_F(FormStructureTest, HeuristicsInfernoCC) {
 // Tests that the heuristics detect split credit card names if they appear in
 // the middle of the form.
 TEST_F(FormStructureTest, HeuristicsInferCCNames_NamesNotFirst) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1776,7 +1777,7 @@ TEST_F(FormStructureTest, HeuristicsInferCCNames_NamesNotFirst) {
 // the beginning of the form. The first name has to contains some credit card
 // keyword.
 TEST_F(FormStructureTest, HeuristicsInferCCNames_NamesFirst) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -1982,7 +1983,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2158,7 +2159,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
 TEST_F(FormStructureTest,
        EncodeUploadRequestWithAdditionalPasswordFormSignature) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2257,7 +2258,7 @@ TEST_F(FormStructureTest,
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2328,7 +2329,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2397,7 +2398,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2462,7 +2463,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
 
 // Test that the form name is sent in the upload request.
 TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   // Setting the form name which we expect to see in the upload.
@@ -2526,7 +2527,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2599,7 +2600,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
 TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   DisableAutofillMetadataFieldTrial();
 
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form_structure.reset(new FormStructure(form));
@@ -2932,7 +2933,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   available_field_types.insert(COMPANY_NAME);
 
   // Check that multiple types for the field are processed correctly.
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
 
@@ -3058,7 +3059,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
 TEST_F(FormStructureTest, CheckFormSignature) {
   // Check that form signature is created correctly.
-  scoped_ptr<FormStructure> form_structure;
+  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;

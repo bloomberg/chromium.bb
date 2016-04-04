@@ -4,8 +4,10 @@
 
 #include "components/autofill/core/browser/name_field.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
@@ -20,7 +22,7 @@ namespace {
 // A form field that can parse a full name field.
 class FullNameField : public NameField {
  public:
-  static scoped_ptr<FullNameField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FullNameField> Parse(AutofillScanner* scanner);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -36,11 +38,11 @@ class FullNameField : public NameField {
 // A form field that can parse a first and last name field.
 class FirstLastNameField : public NameField {
  public:
-  static scoped_ptr<FirstLastNameField> ParseSpecificName(
+  static std::unique_ptr<FirstLastNameField> ParseSpecificName(
       AutofillScanner* scanner);
-  static scoped_ptr<FirstLastNameField> ParseComponentNames(
+  static std::unique_ptr<FirstLastNameField> ParseComponentNames(
       AutofillScanner* scanner);
-  static scoped_ptr<FirstLastNameField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FirstLastNameField> Parse(AutofillScanner* scanner);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -59,12 +61,12 @@ class FirstLastNameField : public NameField {
 }  // namespace
 
 // static
-scoped_ptr<FormField> NameField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> NameField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
   // Try FirstLastNameField first since it's more specific.
-  scoped_ptr<FormField> field = FirstLastNameField::Parse(scanner);
+  std::unique_ptr<FormField> field = FirstLastNameField::Parse(scanner);
   if (!field)
     field = FullNameField::Parse(scanner);
   return field;
@@ -75,7 +77,7 @@ void NameField::AddClassifications(FieldCandidatesMap* field_candidates) const {
 }
 
 // static
-scoped_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
   // Exclude e.g. "username" or "nickname" fields.
   scanner->SaveCursor();
   bool should_ignore = ParseField(scanner, UTF8ToUTF16(kNameIgnoredRe), NULL);
@@ -88,7 +90,7 @@ scoped_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
   // "Travel Profile Name".
   AutofillField* field = NULL;
   if (ParseField(scanner, UTF8ToUTF16(kNameRe), &field))
-    return make_scoped_ptr(new FullNameField(field));
+    return base::WrapUnique(new FullNameField(field));
 
   return NULL;
 }
@@ -101,11 +103,11 @@ void FullNameField::AddClassifications(
 FullNameField::FullNameField(AutofillField* field) : field_(field) {
 }
 
-scoped_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
+std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
     AutofillScanner* scanner) {
   // Some pages (e.g. Overstock_comBilling.html, SmithsonianCheckout.html)
   // have the label "Name" followed by two or three text fields.
-  scoped_ptr<FirstLastNameField> v(new FirstLastNameField);
+  std::unique_ptr<FirstLastNameField> v(new FirstLastNameField);
   scanner->SaveCursor();
 
   AutofillField* next = NULL;
@@ -128,9 +130,9 @@ scoped_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
 }
 
 // static
-scoped_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
+std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
     AutofillScanner* scanner) {
-  scoped_ptr<FirstLastNameField> v(new FirstLastNameField);
+  std::unique_ptr<FirstLastNameField> v(new FirstLastNameField);
   scanner->SaveCursor();
 
   // A fair number of pages use the names "fname" and "lname" for naming
@@ -190,9 +192,9 @@ scoped_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
 }
 
 // static
-scoped_ptr<FirstLastNameField> FirstLastNameField::Parse(
+std::unique_ptr<FirstLastNameField> FirstLastNameField::Parse(
     AutofillScanner* scanner) {
-  scoped_ptr<FirstLastNameField> field = ParseSpecificName(scanner);
+  std::unique_ptr<FirstLastNameField> field = ParseSpecificName(scanner);
   if (!field)
     field = ParseComponentNames(scanner);
   return field;

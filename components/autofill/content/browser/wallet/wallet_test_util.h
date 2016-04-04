@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_TEST_UTIL_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_TEST_UTIL_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
@@ -18,13 +18,13 @@ class FullWallet;
 
 std::vector<base::string16> StreetAddress(const std::string& line1,
                                           const std::string& line2);
-scoped_ptr<Address> GetTestAddress();
-scoped_ptr<Address> GetTestMinimalAddress();
-scoped_ptr<FullWallet> GetTestFullWallet();
-scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
-scoped_ptr<Address> GetTestSaveableAddress();
-scoped_ptr<Address> GetTestShippingAddress();
-scoped_ptr<Address> GetTestNonDefaultShippingAddress();
+std::unique_ptr<Address> GetTestAddress();
+std::unique_ptr<Address> GetTestMinimalAddress();
+std::unique_ptr<FullWallet> GetTestFullWallet();
+std::unique_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
+std::unique_ptr<Address> GetTestSaveableAddress();
+std::unique_ptr<Address> GetTestShippingAddress();
+std::unique_ptr<Address> GetTestNonDefaultShippingAddress();
 
 }  // namespace wallet
 }  // namespace autofill

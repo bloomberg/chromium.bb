@@ -136,8 +136,8 @@ class AutofillTableTest : public testing::Test {
 
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<AutofillTable> table_;
-  scoped_ptr<WebDatabase> db_;
+  std::unique_ptr<AutofillTable> table_;
+  std::unique_ptr<WebDatabase> db_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillTableTest);
@@ -729,7 +729,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   Time post_creation_time = Time::Now();
 
   // Get the 'Home' profile.
-  scoped_ptr<AutofillProfile> db_profile =
+  std::unique_ptr<AutofillProfile> db_profile =
       table_->GetAutofillProfile(home_profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(home_profile, *db_profile);
@@ -868,7 +868,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   // adding it.
   EXPECT_TRUE(table_->AddAutofillGUIDToTrash(profile.guid()));
   EXPECT_TRUE(table_->AddAutofillProfile(profile));
-  scoped_ptr<AutofillProfile> added_profile =
+  std::unique_ptr<AutofillProfile> added_profile =
       table_->GetAutofillProfile(profile.guid());
   EXPECT_FALSE(added_profile);
 
@@ -886,7 +886,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   EXPECT_TRUE(table_->AddAutofillGUIDToTrash(profile.guid()));
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
   EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
-  scoped_ptr<AutofillProfile> updated_profile =
+  std::unique_ptr<AutofillProfile> updated_profile =
       table_->GetAutofillProfile(profile.guid());
   EXPECT_TRUE(updated_profile);
   EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetRawInfo(NAME_FIRST));
@@ -898,7 +898,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   // other clients remove it (via Sync say) then it is gone and doesn't need to
   // be processed further by |WebDataService|.
   EXPECT_TRUE(table_->RemoveAutofillProfile(profile.guid()));
-  scoped_ptr<AutofillProfile> removed_profile =
+  std::unique_ptr<AutofillProfile> removed_profile =
       table_->GetAutofillProfile(profile.guid());
   EXPECT_TRUE(removed_profile);
   EXPECT_FALSE(table_->IsAutofillGUIDInTrash(profile.guid()));
@@ -927,7 +927,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   Time post_creation_time = Time::Now();
 
   // Get the 'Work' credit card.
-  scoped_ptr<CreditCard> db_creditcard =
+  std::unique_ptr<CreditCard> db_creditcard =
       table_->GetCreditCard(work_creditcard.guid());
   ASSERT_TRUE(db_creditcard);
   EXPECT_EQ(work_creditcard, *db_creditcard);
@@ -1025,7 +1025,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
-  scoped_ptr<AutofillProfile> db_profile =
+  std::unique_ptr<AutofillProfile> db_profile =
       table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
@@ -1096,7 +1096,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the credit card.
-  scoped_ptr<CreditCard> db_credit_card =
+  std::unique_ptr<CreditCard> db_credit_card =
       table_->GetCreditCard(credit_card.guid());
   ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
@@ -1175,7 +1175,7 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
-  scoped_ptr<AutofillProfile> db_profile =
+  std::unique_ptr<AutofillProfile> db_profile =
       table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
@@ -1222,7 +1222,7 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the credit card.
-  scoped_ptr<CreditCard> db_credit_card =
+  std::unique_ptr<CreditCard> db_credit_card =
       table_->GetCreditCard(credit_card.guid());
   ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);

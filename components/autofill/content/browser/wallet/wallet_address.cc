@@ -169,43 +169,43 @@ Address::Address(const std::string& country_name_code,
 Address::~Address() {}
 
 // static
-scoped_ptr<Address> Address::CreateAddressWithID(
+std::unique_ptr<Address> Address::CreateAddressWithID(
     const base::DictionaryValue& dictionary) {
   std::string object_id;
   if (!dictionary.GetString("id", &object_id)) {
     DLOG(ERROR) << "Response from Google Payments missing object id";
-    return scoped_ptr<Address>();
+    return std::unique_ptr<Address>();
   }
-  return scoped_ptr<Address>(CreateAddressInternal(dictionary, object_id));
+  return std::unique_ptr<Address>(CreateAddressInternal(dictionary, object_id));
 }
 
 // static
-scoped_ptr<Address> Address::CreateAddress(
+std::unique_ptr<Address> Address::CreateAddress(
     const base::DictionaryValue& dictionary) {
   std::string object_id;
   dictionary.GetString("id", &object_id);
-  return scoped_ptr<Address>(CreateAddressInternal(dictionary, object_id));
+  return std::unique_ptr<Address>(CreateAddressInternal(dictionary, object_id));
 }
 
 // static
-scoped_ptr<Address> Address::CreateDisplayAddress(
+std::unique_ptr<Address> Address::CreateDisplayAddress(
     const base::DictionaryValue& dictionary) {
   std::string country_code;
   if (!dictionary.GetString("country_code", &country_code)) {
     DLOG(ERROR) << "Reponse from Google Payments missing country code";
-    return scoped_ptr<Address>();
+    return std::unique_ptr<Address>();
   }
 
   base::string16 name;
   if (!dictionary.GetString("name", &name)) {
     DLOG(ERROR) << "Reponse from Google Payments missing name";
-    return scoped_ptr<Address>();
+    return std::unique_ptr<Address>();
   }
 
   base::string16 postal_code;
   if (!dictionary.GetString("postal_code", &postal_code)) {
     DLOG(ERROR) << "Reponse from Google Payments missing postal code";
-    return scoped_ptr<Address>();
+    return std::unique_ptr<Address>();
   }
 
   base::string16 sorting_code;
@@ -254,25 +254,16 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
   if (!dictionary.GetString("language_code", &language_code))
     DVLOG(1) << "Response from Google Payments missing language code";
 
-  scoped_ptr<Address> address(
-      new Address(country_code,
-                  name,
-                  street_address,
-                  city,
-                  dependent_locality_name,
-                  state,
-                  postal_code,
-                  sorting_code,
-                  phone_number,
-                  std::string(),
-                  language_code));
+  std::unique_ptr<Address> address(new Address(
+      country_code, name, street_address, city, dependent_locality_name, state,
+      postal_code, sorting_code, phone_number, std::string(), language_code));
   address->set_is_complete_address(address_state == kFullAddress);
 
   return address;
 }
 
-scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   if (!object_id_.empty())
     dict->SetString("id", object_id_);
@@ -282,10 +273,10 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
   return dict;
 }
 
-scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  scoped_ptr<base::ListValue> address_lines(new base::ListValue());
+  std::unique_ptr<base::ListValue> address_lines(new base::ListValue());
   address_lines->AppendStrings(street_address_);
   dict->Set("address_line", address_lines.release());
 

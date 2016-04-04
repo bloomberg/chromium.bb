@@ -9,14 +9,15 @@
 
 #include "base/i18n/string_compare.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace autofill {
 namespace l10n {
 
-scoped_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale) {
+std::unique_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale) {
   UErrorCode ignored = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(
+  std::unique_ptr<icu::Collator> collator(
       icu::Collator::createInstance(locale, ignored));
   if (!collator) {
     // On some systems, the default locale is invalid to the eyes of the ICU
@@ -30,7 +31,7 @@ scoped_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale) {
                << locale_name;
 
     // Attempt to load the English locale.
-    collator = make_scoped_ptr(
+    collator = base::WrapUnique(
         icu::Collator::createInstance(icu::Locale::getEnglish(), ignored));
     if (!collator) {
       LOG(ERROR) << "Failed to initialize the ICU Collator with the English "

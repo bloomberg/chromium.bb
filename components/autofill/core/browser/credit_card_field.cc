@@ -5,9 +5,10 @@
 #include "components/autofill/core/browser/credit_card_field.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -75,11 +76,11 @@ bool FieldCanFitDataForFieldType(int max_length, ServerFieldType type) {
 }  // namespace
 
 // static
-scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return nullptr;
 
-  scoped_ptr<CreditCardField> credit_card_field(new CreditCardField);
+  std::unique_ptr<CreditCardField> credit_card_field(new CreditCardField);
   size_t saved_cursor = scanner->SaveCursor();
 
   // Credit card fields can appear in many different orders.

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
@@ -41,7 +43,7 @@ void GetFingerprintInternal(
     const std::string& app_locale,
     const std::string& user_agent,
     const base::TimeDelta& timeout,
-    const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
+    const base::Callback<void(std::unique_ptr<Fingerprint>)>& callback);
 
 }  // namespace internal
 
@@ -71,7 +73,7 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
         available_screen_bounds_(0, 11, 101, 60),
         unavailable_screen_bounds_(0, 0, 101, 11) {}
 
-  void GetFingerprintTestCallback(scoped_ptr<Fingerprint> fingerprint) {
+  void GetFingerprintTestCallback(std::unique_ptr<Fingerprint> fingerprint) {
     // Verify that all fields Chrome can fill have been filled.
     ASSERT_TRUE(fingerprint->has_machine_characteristics());
     const Fingerprint::MachineCharacteristics& machine =

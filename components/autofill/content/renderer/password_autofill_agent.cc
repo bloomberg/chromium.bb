@@ -5,12 +5,13 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -127,7 +128,7 @@ bool IsUnownedPasswordFormVisible(blink::WebFrame* frame,
                                   const GURL& origin,
                                   const FormData& form_data,
                                   const FormsPredictionsMap& form_predictions) {
-  scoped_ptr<PasswordForm> unowned_password_form(
+  std::unique_ptr<PasswordForm> unowned_password_form(
       CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
                                                  &form_predictions));
   if (!unowned_password_form)
@@ -748,7 +749,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   // handlers run, so save away a copy of the password in case it gets lost.
   // To honor the user having explicitly cleared the password, even an empty
   // password will be saved here.
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   if (element.form().isNull()) {
     password_form = CreatePasswordFormFromUnownedInputElements(
         *element_frame, &nonscript_modified_values_, &form_predictions_);
@@ -968,7 +969,7 @@ void PasswordAutofillAgent::FirstUserGestureObserved() {
 }
 
 void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
-  scoped_ptr<RendererSavePasswordProgressLogger> logger;
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
     logger->LogMessage(Logger::STRING_SEND_PASSWORD_FORMS_METHOD);
@@ -1017,7 +1018,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         continue;
     }
 
-    scoped_ptr<PasswordForm> password_form(
+    std::unique_ptr<PasswordForm> password_form(
         CreatePasswordFormFromWebForm(form, nullptr, &form_predictions_));
     if (password_form) {
       if (logger) {
@@ -1043,7 +1044,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     }
   }
   if (add_unowned_inputs) {
-    scoped_ptr<PasswordForm> password_form(
+    std::unique_ptr<PasswordForm> password_form(
         CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
                                                    &form_predictions_));
     if (password_form) {
@@ -1139,23 +1140,22 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
   // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
   // Had the user cleared the password, |provisionally_saved_form_| would
   // already have been updated in TextDidChangeInTextField.
-  scoped_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
+  std::unique_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
       form, &nonscript_modified_values_, &form_predictions_);
   ProvisionallySavePassword(std::move(password_form),
                             RESTRICTION_NON_EMPTY_PASSWORD);
 }
 
 void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
-  scoped_ptr<RendererSavePasswordProgressLogger> logger;
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
     logger->LogMessage(Logger::STRING_WILL_SUBMIT_FORM_METHOD);
     LogHTMLForm(logger.get(), Logger::STRING_HTML_FORM_FOR_SUBMIT, form);
   }
 
-  scoped_ptr<PasswordForm> submitted_form =
-      CreatePasswordFormFromWebForm(form, &nonscript_modified_values_,
-                                    &form_predictions_);
+  std::unique_ptr<PasswordForm> submitted_form = CreatePasswordFormFromWebForm(
+      form, &nonscript_modified_values_, &form_predictions_);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
@@ -1192,7 +1192,7 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
 }
 
 void PasswordAutofillAgent::DidStartProvisionalLoad() {
-  scoped_ptr<RendererSavePasswordProgressLogger> logger;
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
     logger->LogMessage(Logger::STRING_DID_START_PROVISIONAL_LOAD_METHOD);
@@ -1356,7 +1356,7 @@ void PasswordAutofillAgent::OnAutofillUsernameAndPasswordDataReceived(
 }
 
 void PasswordAutofillAgent::OnFindFocusedPasswordForm() {
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
 
   blink::WebElement element = render_frame()->GetFocusedElement();
   if (!element.isNull() && element.hasHTMLTagName("input")) {
@@ -1496,7 +1496,7 @@ void PasswordAutofillAgent::ClearPreview(
 }
 
 void PasswordAutofillAgent::ProvisionallySavePassword(
-    scoped_ptr<PasswordForm> password_form,
+    std::unique_ptr<PasswordForm> password_form,
     ProvisionallySaveRestriction restriction) {
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&

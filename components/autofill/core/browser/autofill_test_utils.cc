@@ -37,7 +37,7 @@ const char kSettingsOrigin[] = "Chrome settings";
 
 }  // namespace
 
-scoped_ptr<PrefService> PrefServiceForTesting() {
+std::unique_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
   AutofillManager::RegisterProfilePrefs(registry.get());

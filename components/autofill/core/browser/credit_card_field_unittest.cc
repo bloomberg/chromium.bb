@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/credit_card_field.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
-#include "components/autofill/core/browser/credit_card_field.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,24 +26,24 @@ class CreditCardFieldTest : public testing::Test {
 
  protected:
   ScopedVector<AutofillField> list_;
-  scoped_ptr<const CreditCardField> field_;
+  std::unique_ptr<const CreditCardField> field_;
   FieldCandidatesMap field_candidates_map_;
 
   // Parses the contents of |list_| as a form, and stores the result into
   // |field_|.
   void Parse() {
     AutofillScanner scanner(list_.get());
-    scoped_ptr<FormField> field = CreditCardField::Parse(&scanner);
-    field_ = make_scoped_ptr(static_cast<CreditCardField*>(field.release()));
+    std::unique_ptr<FormField> field = CreditCardField::Parse(&scanner);
+    field_ = base::WrapUnique(static_cast<CreditCardField*>(field.release()));
   }
 
   void MultipleParses() {
-    scoped_ptr<FormField> field;
+    std::unique_ptr<FormField> field;
 
     AutofillScanner scanner(list_.get());
     while (!scanner.IsEnd()) {
       field = CreditCardField::Parse(&scanner);
-      field_ = make_scoped_ptr(static_cast<CreditCardField*>(field.release()));
+      field_ = base::WrapUnique(static_cast<CreditCardField*>(field.release()));
       if (field_ == nullptr) {
         scanner.Advance();
       } else {

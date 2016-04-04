@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/autofill_profile.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -805,7 +807,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
 }
 
 TEST(AutofillProfileTest, IsSubsetOf) {
-  scoped_ptr<AutofillProfile> a, b;
+  std::unique_ptr<AutofillProfile> a, b;
 
   // |a| is a subset of |b|.
   a.reset(

@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -81,7 +81,7 @@ class ContentAutofillDriver : public AutofillDriver {
  protected:
   // Sets the manager to |manager| and sets |manager|'s external delegate
   // to |autofill_external_delegate_|. Takes ownership of |manager|.
-  void SetAutofillManager(scoped_ptr<AutofillManager> manager);
+  void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
 
  private:
   // Weak ref to the RenderFrameHost the driver is associated with. Should
@@ -93,7 +93,7 @@ class ContentAutofillDriver : public AutofillDriver {
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.
-  scoped_ptr<AutofillManager> autofill_manager_;
+  std::unique_ptr<AutofillManager> autofill_manager_;
 
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the Autofill native UI is enabled.

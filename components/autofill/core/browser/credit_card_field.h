@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_CREDIT_CARD_FIELD_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_CREDIT_CARD_FIELD_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_field.h"
 
@@ -21,7 +21,7 @@ class AutofillScanner;
 class CreditCardField : public FormField {
  public:
   ~CreditCardField() override;
-  static scoped_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;

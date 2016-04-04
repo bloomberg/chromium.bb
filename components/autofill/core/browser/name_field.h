@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_NAME_FIELD_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_NAME_FIELD_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_field.h"
 
@@ -21,7 +21,7 @@ class AutofillScanner;
 // A form field that can parse either a FullNameField or a FirstLastNameField.
 class NameField : public FormField {
  public:
-  static scoped_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
 
  protected:
   NameField() {}

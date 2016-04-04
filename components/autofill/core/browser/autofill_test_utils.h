@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 
@@ -29,7 +29,7 @@ namespace test {
 // manually (e.g., in unit tests within Autofill core code). The returned
 // PrefService has had Autofill preferences registered on its associated
 // registry.
-scoped_ptr<PrefService> PrefServiceForTesting();
+std::unique_ptr<PrefService> PrefServiceForTesting();
 
 // Provides a quick way to populate a FormField with c-strings.
 void CreateTestFormField(const char* label,

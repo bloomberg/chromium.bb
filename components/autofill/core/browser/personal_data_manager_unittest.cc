@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/personal_data_manager.h"
+
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -23,7 +25,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -118,7 +119,7 @@ class PersonalDataManagerTest : public testing::Test {
 
     // Hacky: hold onto a pointer but pass ownership.
     autofill_table_ = new AutofillTable;
-    web_database_->AddTable(scoped_ptr<WebDatabaseTable>(autofill_table_));
+    web_database_->AddTable(std::unique_ptr<WebDatabaseTable>(autofill_table_));
     web_database_->LoadDatabase();
     autofill_database_service_ = new AutofillWebDataService(
         web_database_, base::ThreadTaskRunnerHandle::Get(),
@@ -267,7 +268,7 @@ class PersonalDataManagerTest : public testing::Test {
   }
   bool ImportCreditCard(const FormStructure& form,
                         bool should_return_local_card,
-                        scoped_ptr<CreditCard>* imported_credit_card) {
+                        std::unique_ptr<CreditCard>* imported_credit_card) {
     return personal_data_->ImportCreditCard(form, should_return_local_card,
                                             imported_credit_card);
   }
@@ -297,17 +298,17 @@ class PersonalDataManagerTest : public testing::Test {
   // files are not used anymore and deletion succeeds.
   base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<PrefService> prefs_;
-  scoped_ptr<AccountTrackerService> account_tracker_;
-  scoped_ptr<FakeSigninManagerBase> signin_manager_;
-  scoped_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<PrefService> prefs_;
+  std::unique_ptr<AccountTrackerService> account_tracker_;
+  std::unique_ptr<FakeSigninManagerBase> signin_manager_;
+  std::unique_ptr<TestSigninClient> signin_client_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
   AutofillTable* autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
-  scoped_ptr<PersonalDataManager> personal_data_;
+  std::unique_ptr<PersonalDataManager> personal_data_;
 
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
 };
 
@@ -1958,7 +1959,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_Valid) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -1984,7 +1985,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_Invalid) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
@@ -2018,7 +2019,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MonthSelectInvalidText) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2045,7 +2046,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_TwoValidCards) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2068,7 +2069,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_TwoValidCards) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card2;
+  std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   ASSERT_TRUE(imported_credit_card2);
   personal_data_->SaveImportedCreditCard(*imported_credit_card2);
@@ -2107,7 +2108,7 @@ TEST_F(PersonalDataManagerTest,
   // masked server card.
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2137,7 +2138,7 @@ TEST_F(PersonalDataManagerTest,
   // the full server card.
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 }
@@ -2150,7 +2151,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCreditCardWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2175,7 +2176,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCreditCardWithConflict) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card2;
+  std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   EXPECT_FALSE(imported_credit_card2);
 
@@ -2202,7 +2203,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_ShouldReturnLocalCard) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2227,7 +2228,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_ShouldReturnLocalCard) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card2;
+  std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2,
                                /* should_return_local_card= */ true,
                                &imported_credit_card2));
@@ -2257,7 +2258,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_EmptyCardWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2281,7 +2282,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_EmptyCardWithConflict) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card2;
+  std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_FALSE(
       ImportCreditCard(form_structure2, false, &imported_credit_card2));
   EXPECT_FALSE(imported_credit_card2);
@@ -2307,7 +2308,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -2332,7 +2333,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card2;
+  std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   EXPECT_FALSE(imported_credit_card2);
 
@@ -2356,7 +2357,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
 
   FormStructure form_structure3(form3);
   form_structure3.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card3;
+  std::unique_ptr<CreditCard> imported_credit_card3;
   EXPECT_FALSE(
       ImportCreditCard(form_structure3, false, &imported_credit_card3));
   ASSERT_FALSE(imported_credit_card3);
@@ -2399,7 +2400,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInOld) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
 
@@ -2444,7 +2445,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCardWithSeparators) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
 
@@ -2483,7 +2484,7 @@ TEST_F(PersonalDataManagerTest,
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
@@ -2530,7 +2531,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressOneCreditCard) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure, false,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -2608,7 +2609,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   // Still returns true because the credit card import was successful.
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure, false,
                                              &imported_credit_card));
@@ -3829,7 +3830,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure1, false,
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -3851,7 +3852,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card2;
+  std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure2, false,
                                               &imported_credit_card2));
   EXPECT_FALSE(imported_credit_card2);

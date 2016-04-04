@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/content/browser/wallet/wallet_address.h"
+
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -219,13 +221,13 @@ class WalletAddressTest : public testing::Test {
   WalletAddressTest() {}
  protected:
   void SetUpDictionary(const std::string& json) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
     DCHECK(value.get());
     DCHECK(value->IsType(base::Value::TYPE_DICTIONARY));
     dict_.reset(static_cast<base::DictionaryValue*>(value.release()));
   }
 
-  scoped_ptr<const base::DictionaryValue> dict_;
+  std::unique_ptr<const base::DictionaryValue> dict_;
 };
 
 TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {

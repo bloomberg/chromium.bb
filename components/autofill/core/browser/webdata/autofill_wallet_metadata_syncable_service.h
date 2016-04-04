@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WALLET_METADATA_SYNCABLE_SERVICE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WALLET_METADATA_SYNCABLE_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
@@ -61,8 +61,8 @@ class AutofillWalletMetadataSyncableService
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -97,9 +97,10 @@ class AutofillWalletMetadataSyncableService
   // to server profiles and server cards read from disk. This data contains the
   // usage stats. Returns true on success.
   virtual bool GetLocalData(
-      base::ScopedPtrHashMap<std::string, scoped_ptr<AutofillProfile>>*
+      base::ScopedPtrHashMap<std::string, std::unique_ptr<AutofillProfile>>*
           profiles,
-      base::ScopedPtrHashMap<std::string, scoped_ptr<CreditCard>>* cards) const;
+      base::ScopedPtrHashMap<std::string, std::unique_ptr<CreditCard>>* cards)
+      const;
 
   // Updates the stats for |profile| stored on disk. Does not trigger
   // notifications that this profile was updated.
@@ -137,8 +138,8 @@ class AutofillWalletMetadataSyncableService
   AutofillWebDataBackend* web_data_backend_;  // Weak ref.
   ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncableService>
       scoped_observer_;
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   // Local metadata plus metadata for the data that hasn't synced down yet.
   syncer::SyncDataList cache_;

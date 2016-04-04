@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 
@@ -62,7 +62,7 @@ class Address {
   // Returns an empty scoped_ptr if input is invalid or a valid address that is
   // selectable for Google Wallet use. Does not require "id" in |dictionary|.
   // IDs are not required for billing addresses.
-  static scoped_ptr<Address> CreateAddress(
+  static std::unique_ptr<Address> CreateAddress(
       const base::DictionaryValue& dictionary);
 
   // TODO(ahutter): Make obvious in the function name that this public method
@@ -70,22 +70,22 @@ class Address {
   // Builds an Address from |dictionary|, which must have an "id" field. This
   // function is designed for use with shipping addresses. The function may fail
   // and return an empty pointer if its input is invalid.
-  static scoped_ptr<Address> CreateAddressWithID(
+  static std::unique_ptr<Address> CreateAddressWithID(
       const base::DictionaryValue& dictionary);
 
   // Returns an empty scoped_ptr if input in invalid or a valid address that
   // can only be used for displaying to the user.
-  static scoped_ptr<Address> CreateDisplayAddress(
+  static std::unique_ptr<Address> CreateDisplayAddress(
       const base::DictionaryValue& dictionary);
 
   // If an address is being upgraded, it will be sent to the server in a
   // different format and with a few additional fields set, most importantly
   // |object_id_|.
-  scoped_ptr<base::DictionaryValue> ToDictionaryWithID() const;
+  std::unique_ptr<base::DictionaryValue> ToDictionaryWithID() const;
 
   // Newly created addresses will not have an associated |object_id_| and are
   // sent to the server in a slightly different format.
-  scoped_ptr<base::DictionaryValue> ToDictionaryWithoutID() const;
+  std::unique_ptr<base::DictionaryValue> ToDictionaryWithoutID() const;
 
   // Returns a string that summarizes this address, suitable for display to
   // the user.

@@ -5,13 +5,13 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOCOMPLETE_SYNCABLE_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
@@ -68,8 +68,8 @@ class AutocompleteSyncableService
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -152,11 +152,11 @@ class AutocompleteSyncableService
 
   // We receive ownership of |sync_processor_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // We receive ownership of |error_handler_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
-  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
 
   syncer::SyncableService::StartSyncFlare flare_;
 

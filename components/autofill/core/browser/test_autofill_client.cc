@@ -63,7 +63,7 @@ void TestAutofillClient::ConfirmSaveCreditCardLocally(
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    scoped_ptr<base::DictionaryValue> legal_message,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& callback) {
   callback.Run();
 }

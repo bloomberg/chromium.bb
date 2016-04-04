@@ -30,8 +30,8 @@ FullWallet::FullWallet(int expiration_month,
                        int expiration_year,
                        const std::string& iin,
                        const std::string& encrypted_rest,
-                       scoped_ptr<Address> billing_address,
-                       scoped_ptr<Address> shipping_address)
+                       std::unique_ptr<Address> billing_address,
+                       std::unique_ptr<Address> shipping_address)
     : expiration_month_(expiration_month),
       expiration_year_(expiration_year),
       iin_(iin),
@@ -44,19 +44,18 @@ FullWallet::FullWallet(int expiration_month,
 FullWallet::~FullWallet() {}
 
 // static
-scoped_ptr<FullWallet>
-    FullWallet::CreateFullWalletFromClearText(
-        int expiration_month,
-        int expiration_year,
-        const std::string& pan,
-        const std::string& cvn,
-        scoped_ptr<Address> billing_address,
-        scoped_ptr<Address> shipping_address) {
+std::unique_ptr<FullWallet> FullWallet::CreateFullWalletFromClearText(
+    int expiration_month,
+    int expiration_year,
+    const std::string& pan,
+    const std::string& cvn,
+    std::unique_ptr<Address> billing_address,
+    std::unique_ptr<Address> shipping_address) {
   DCHECK(billing_address);
   DCHECK(!pan.empty());
   DCHECK(!cvn.empty());
 
-  scoped_ptr<FullWallet> wallet(new FullWallet(
+  std::unique_ptr<FullWallet> wallet(new FullWallet(
       expiration_month, expiration_year,
       std::string(),  // no iin -- clear text pan/cvn are set below.
       std::string(),  // no encrypted_rest -- clear text pan/cvn are set below.

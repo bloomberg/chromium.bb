@@ -4,9 +4,10 @@
 
 #include "components/autofill/content/renderer/password_generation_agent.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -203,7 +204,7 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
 
     // If we can't get a valid PasswordForm, we skip this form because the
     // the password won't get saved even if we generate it.
-    scoped_ptr<PasswordForm> password_form(
+    std::unique_ptr<PasswordForm> password_form(
         CreatePasswordFormFromWebForm(forms[i], nullptr, nullptr));
     if (!password_form.get()) {
       VLOG(2) << "Skipping form as it would not be saved";
@@ -471,7 +472,7 @@ void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
     return;
 
   blink::WebFormElement form = last_focused_password_element_.form();
-  scoped_ptr<PasswordForm> password_form;
+  std::unique_ptr<PasswordForm> password_form;
   std::vector<blink::WebFormControlElement> control_elements;
   if (!form.isNull()) {
     password_form = CreatePasswordFormFromWebForm(form, nullptr, nullptr);

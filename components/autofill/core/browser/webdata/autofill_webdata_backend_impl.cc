@@ -107,17 +107,18 @@ WebDatabase::State AutofillWebDataBackendImpl::AddFormElements(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult>
+std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetFormValuesForElementName(
-    const base::string16& name, const base::string16& prefix, int limit,
+    const base::string16& name,
+    const base::string16& prefix,
+    int limit,
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<base::string16> values;
   AutofillTable::FromWebDatabase(db)->GetFormValuesForElementName(
       name, prefix, &values, limit);
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<base::string16> >(AUTOFILL_VALUE_RESULT,
-                                                 values));
+  return std::unique_ptr<WDTypedResult>(
+      new WDResult<std::vector<base::string16>>(AUTOFILL_VALUE_RESULT, values));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
@@ -185,7 +186,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
   // Only perform the update if the profile exists.  It is currently
   // valid to try to update a missing profile.  We simply drop the write and
   // the caller will detect this on the next refresh.
-  scoped_ptr<AutofillProfile> original_profile =
+  std::unique_ptr<AutofillProfile> original_profile =
       AutofillTable::FromWebDatabase(db)->GetAutofillProfile(profile.guid());
   if (!original_profile) {
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -208,7 +209,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
 WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
     const std::string& guid, WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  scoped_ptr<AutofillProfile> profile =
+  std::unique_ptr<AutofillProfile> profile =
       AutofillTable::FromWebDatabase(db)->GetAutofillProfile(guid);
   if (!profile) {
     NOTREACHED();
@@ -229,41 +230,39 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<AutofillProfile*> profiles;
   AutofillTable::FromWebDatabase(db)->GetAutofillProfiles(&profiles);
-  return scoped_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<AutofillProfile*> >(
-          AUTOFILL_PROFILES_RESULT,
-          profiles,
+  return std::unique_ptr<WDTypedResult>(
+      new WDDestroyableResult<std::vector<AutofillProfile*>>(
+          AUTOFILL_PROFILES_RESULT, profiles,
           base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillProfileResult,
-              base::Unretained(this))));
+                     base::Unretained(this))));
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<AutofillProfile*> profiles;
   AutofillTable::FromWebDatabase(db)->GetServerProfiles(&profiles);
-  return scoped_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<AutofillProfile*> >(
-          AUTOFILL_PROFILES_RESULT,
-          profiles,
+  return std::unique_ptr<WDTypedResult>(
+      new WDDestroyableResult<std::vector<AutofillProfile*>>(
+          AUTOFILL_PROFILES_RESULT, profiles,
           base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillProfileResult,
-              base::Unretained(this))));
+                     base::Unretained(this))));
 }
 
-scoped_ptr<WDTypedResult>
-    AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(
-        const base::Time& begin,
-        const base::Time& end,
-        WebDatabase* db) {
+std::unique_ptr<WDTypedResult>
+AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(
+    const base::Time& begin,
+    const base::Time& end,
+    WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   int value = AutofillTable::FromWebDatabase(db)
       ->GetCountOfValuesContainedBetween(begin, end);
-  return scoped_ptr<WDTypedResult>(
+  return std::unique_ptr<WDTypedResult>(
       new WDResult<int>(AUTOFILL_VALUE_RESULT, value));
 }
 
@@ -298,7 +297,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateCreditCard(
   DCHECK(db_thread_->BelongsToCurrentThread());
   // It is currently valid to try to update a missing profile.  We simply drop
   // the write and the caller will detect this on the next refresh.
-  scoped_ptr<CreditCard> original_credit_card =
+  std::unique_ptr<CreditCard> original_credit_card =
       AutofillTable::FromWebDatabase(db)->GetCreditCard(credit_card.guid());
   if (!original_credit_card)
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -329,29 +328,29 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCards(
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCards(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<CreditCard*> credit_cards;
   AutofillTable::FromWebDatabase(db)->GetCreditCards(&credit_cards);
-  return scoped_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<CreditCard*> >(
-          AUTOFILL_CREDITCARDS_RESULT,
-          credit_cards,
-        base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult,
+  return std::unique_ptr<WDTypedResult>(
+      new WDDestroyableResult<std::vector<CreditCard*>>(
+          AUTOFILL_CREDITCARDS_RESULT, credit_cards,
+          base::Bind(
+              &AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult,
               base::Unretained(this))));
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<CreditCard*> credit_cards;
   AutofillTable::FromWebDatabase(db)->GetServerCreditCards(&credit_cards);
-  return scoped_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<CreditCard*> >(
-          AUTOFILL_CREDITCARDS_RESULT,
-          credit_cards,
-        base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult,
+  return std::unique_ptr<WDTypedResult>(
+      new WDDestroyableResult<std::vector<CreditCard*>>(
+          AUTOFILL_CREDITCARDS_RESULT, credit_cards,
+          base::Bind(
+              &AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult,
               base::Unretained(this))));
 }
 

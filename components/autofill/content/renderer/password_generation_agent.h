@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
@@ -121,7 +121,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   std::vector<autofill::PasswordFormGenerationData> generation_enabled_forms_;
 
   // Data for form which generation is allowed on.
-  scoped_ptr<AccountCreationFormData> generation_form_data_;
+  std::unique_ptr<AccountCreationFormData> generation_form_data_;
 
   // Element where we want to trigger password generation UI.
   blink::WebInputElement generation_element_;

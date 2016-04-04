@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
@@ -401,7 +402,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
 
   // Request with id 0.
   EXPECT_TRUE(download_manager_.StartUploadRequest(

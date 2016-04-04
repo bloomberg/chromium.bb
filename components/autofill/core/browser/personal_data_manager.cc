@@ -371,7 +371,7 @@ void PersonalDataManager::RemoveObserver(
 bool PersonalDataManager::ImportFormData(
     const FormStructure& form,
     bool should_return_local_card,
-    scoped_ptr<CreditCard>* imported_credit_card) {
+    std::unique_ptr<CreditCard>* imported_credit_card) {
   // We try the same |form| for both credit card and address import/update.
   // - ImportCreditCard may update an existing card, or fill
   //   |imported_credit_card| with an extracted card. See .h for details of
@@ -1387,7 +1387,7 @@ bool PersonalDataManager::ImportAddressProfileForSection(
 bool PersonalDataManager::ImportCreditCard(
     const FormStructure& form,
     bool should_return_local_card,
-    scoped_ptr<CreditCard>* imported_credit_card) {
+    std::unique_ptr<CreditCard>* imported_credit_card) {
   DCHECK(!imported_credit_card->get());
 
   // The candidate for credit card import. There are many ways for the candidate

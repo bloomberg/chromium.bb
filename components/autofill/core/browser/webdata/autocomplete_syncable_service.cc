@@ -101,8 +101,8 @@ void AutocompleteSyncableService::InjectStartSyncFlare(
 syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_);
   DCHECK(sync_processor);
@@ -203,7 +203,7 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
   // Data is loaded only if we get new ADD/UPDATE change.
   std::vector<AutofillEntry> entries;
-  scoped_ptr<AutocompleteEntryMap> db_entries;
+  std::unique_ptr<AutocompleteEntryMap> db_entries;
   std::vector<AutofillEntry> new_entries;
 
   syncer::SyncError list_processing_error;

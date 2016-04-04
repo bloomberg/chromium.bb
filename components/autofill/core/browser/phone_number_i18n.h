@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_I18N_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_I18N_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace i18n {
@@ -97,7 +97,7 @@ class PhoneObject {
 
   // The parsed number and its components.
   //
-  scoped_ptr< ::i18n::phonenumbers::PhoneNumber> i18n_number_;
+  std::unique_ptr<::i18n::phonenumbers::PhoneNumber> i18n_number_;
   base::string16 city_code_;
   base::string16 country_code_;
   base::string16 number_;

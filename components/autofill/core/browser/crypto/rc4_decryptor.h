@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
 #include <string>
-#include "base/memory/scoped_ptr.h"
 
 namespace autofill {
 
@@ -38,7 +38,7 @@ class RC4Decryptor {
   std::wstring Run(const std::wstring& data) {
     int data_size = data.length() * sizeof(wchar_t);
 
-    scoped_ptr<wchar_t[]> buffer(new wchar_t[data.length() + 1]);
+    std::unique_ptr<wchar_t[]> buffer(new wchar_t[data.length() + 1]);
     memset(buffer.get(), 0, (data.length() + 1) * sizeof(wchar_t));
     memcpy(buffer.get(), data.c_str(), data_size);
 

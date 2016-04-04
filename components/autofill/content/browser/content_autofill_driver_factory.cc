@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -54,7 +55,7 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
       enable_download_manager_(enable_download_manager) {
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
   if (main_frame->IsRenderFrameLive()) {
-    frame_driver_map_[main_frame] = make_scoped_ptr(new ContentAutofillDriver(
+    frame_driver_map_[main_frame] = base::WrapUnique(new ContentAutofillDriver(
         main_frame, client_, app_locale_, enable_download_manager_));
   }
 }
@@ -79,7 +80,7 @@ void ContentAutofillDriverFactory::RenderFrameCreated(
       frame_driver_map_.insert(std::make_pair(render_frame_host, nullptr));
   // This is called twice for the main frame.
   if (insertion_result.second) {  // This was the first time.
-    insertion_result.first->second = make_scoped_ptr(new ContentAutofillDriver(
+    insertion_result.first->second = base::WrapUnique(new ContentAutofillDriver(
         render_frame_host, client_, app_locale_, enable_download_manager_));
   }
 }

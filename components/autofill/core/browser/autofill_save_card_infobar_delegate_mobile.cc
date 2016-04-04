@@ -25,7 +25,7 @@ namespace autofill {
 AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
     const CreditCard& card,
-    scoped_ptr<base::DictionaryValue> legal_message,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& save_card_callback)
     : ConfirmInfoBarDelegate(),
       upload_(upload),

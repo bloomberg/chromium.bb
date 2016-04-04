@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 

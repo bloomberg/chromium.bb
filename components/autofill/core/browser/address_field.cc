@@ -5,10 +5,11 @@
 #include "components/autofill/core/browser/address_field.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,11 +42,11 @@ const int AddressField::kCityMatchType = MATCH_DEFAULT | MATCH_SELECT;
 
 const int AddressField::kStateMatchType = MATCH_DEFAULT | MATCH_SELECT;
 
-scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
-  scoped_ptr<AddressField> address_field(new AddressField);
+  std::unique_ptr<AddressField> address_field(new AddressField);
   const AutofillField* const initial_field = scanner->Cursor();
   size_t saved_cursor = scanner->SaveCursor();
 

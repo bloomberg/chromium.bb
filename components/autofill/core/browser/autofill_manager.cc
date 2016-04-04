@@ -294,7 +294,7 @@ bool AutofillManager::OnWillSubmitForm(const FormData& form,
     return false;
 
   // We will always give Autocomplete a chance to save the data.
-  scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
+  std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
     autocomplete_history_manager_->OnWillSubmitForm(form);
     return false;
@@ -324,7 +324,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
     return false;
 
   // We will always give Autocomplete a chance to save the data.
-  scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
+  std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
     return false;
   }
@@ -340,7 +340,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
 }
 
 void AutofillManager::StartUploadProcess(
-    scoped_ptr<FormStructure> form_structure,
+    std::unique_ptr<FormStructure> form_structure,
     const TimeTicks& timestamp,
     bool observed_submission) {
   // It is possible for |personal_data_| to be null, such as when used in the
@@ -402,7 +402,7 @@ void AutofillManager::ProcessPendingFormForUpload() {
 
   // We get the FormStructure corresponding to |pending_form_data_|, used in the
   // upload process. |pending_form_data_| is reset.
-  scoped_ptr<FormStructure> upload_form =
+  std::unique_ptr<FormStructure> upload_form =
       ValidateSubmittedForm(*pending_form_data_);
   pending_form_data_.reset();
   if (!upload_form)
@@ -914,7 +914,7 @@ void AutofillManager::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
 void AutofillManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
-    scoped_ptr<base::DictionaryValue> legal_message) {
+    std::unique_ptr<base::DictionaryValue> legal_message) {
   // TODO(jdonnelly): Log duration.
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
@@ -1005,7 +1005,7 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
-  scoped_ptr<CreditCard> imported_credit_card;
+  std::unique_ptr<CreditCard> imported_credit_card;
   if (!personal_data_->ImportFormData(
           submitted_form, IsCreditCardUploadEnabled(), &imported_credit_card)) {
     return;
@@ -1495,17 +1495,17 @@ void AutofillManager::FillOrPreviewDataModelForm(
   driver_->SendFormDataToRenderer(query_id, action, result);
 }
 
-scoped_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
+std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     const FormData& form) {
-  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
+  std::unique_ptr<FormStructure> submitted_form(new FormStructure(form));
   if (!ShouldUploadForm(*submitted_form))
-    return scoped_ptr<FormStructure>();
+    return std::unique_ptr<FormStructure>();
 
   // Ignore forms not present in our cache.  These are typically forms with
   // wonky JavaScript that also makes them not auto-fillable.
   FormStructure* cached_submitted_form;
   if (!FindCachedForm(form, &cached_submitted_form))
-    return scoped_ptr<FormStructure>();
+    return std::unique_ptr<FormStructure>();
 
   submitted_form->UpdateFromCache(*cached_submitted_form);
   return submitted_form;
@@ -1693,7 +1693,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   for (const FormData& form : forms) {
     const auto parse_form_start_time = base::TimeTicks::Now();
 
-    scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+    std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
     form_structure->ParseFieldTypesFromAutocompleteAttributes();
     if (!form_structure->ShouldBeParsed())
       continue;

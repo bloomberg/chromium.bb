@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 
@@ -39,13 +39,13 @@ class FullWallet {
 
   // Returns a wallet built from the provided clear-text data.
   // Data is not validated; |pan|, |cvn| and |billing_address| must be set.
-  static scoped_ptr<FullWallet>
-      CreateFullWalletFromClearText(int expiration_month,
-                                    int expiration_year,
-                                    const std::string& pan,
-                                    const std::string& cvn,
-                                    scoped_ptr<Address> billing_address,
-                                    scoped_ptr<Address> shipping_address);
+  static std::unique_ptr<FullWallet> CreateFullWalletFromClearText(
+      int expiration_month,
+      int expiration_year,
+      const std::string& pan,
+      const std::string& cvn,
+      std::unique_ptr<Address> billing_address,
+      std::unique_ptr<Address> shipping_address);
 
   // Returns corresponding data for |type|.
   base::string16 GetInfo(const std::string& app_locale,
@@ -74,8 +74,8 @@ class FullWallet {
 
  private:
   friend class FullWalletTest;
-  friend scoped_ptr<FullWallet> GetTestFullWallet();
-  friend scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
+  friend std::unique_ptr<FullWallet> GetTestFullWallet();
+  friend std::unique_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWallet);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthCorrectDecryptionTest);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthUnderDecryptionTest);
@@ -85,8 +85,8 @@ class FullWallet {
              int expiration_year,
              const std::string& iin,
              const std::string& encrypted_rest,
-             scoped_ptr<Address> billing_address,
-             scoped_ptr<Address> shipping_address);
+             std::unique_ptr<Address> billing_address,
+             std::unique_ptr<Address> shipping_address);
 
   // Decrypts both |pan_| and |cvn_|.
   void DecryptCardInfo();
@@ -114,10 +114,10 @@ class FullWallet {
   std::string encrypted_rest_;
 
   // The billing address of the backing instrument.
-  scoped_ptr<Address> billing_address_;
+  std::unique_ptr<Address> billing_address_;
 
   // The shipping address for the transaction.
-  scoped_ptr<Address> shipping_address_;
+  std::unique_ptr<Address> shipping_address_;
 
   // The one time pad used for FullWallet encryption.
   std::vector<uint8_t> one_time_pad_;

@@ -44,7 +44,7 @@ class PaymentsClientDelegate {
   virtual void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      scoped_ptr<base::DictionaryValue> legal_message) = 0;
+      std::unique_ptr<base::DictionaryValue> legal_message) = 0;
 
   // Returns the result of an upload request.
   virtual void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) = 0;
@@ -119,7 +119,8 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // Initiates a Payments request using the state in |request|. If
   // |authenticate| is true, ensures that an OAuth token is avialble first.
   // Takes ownership of |request|.
-  void IssueRequest(scoped_ptr<PaymentsRequest> request, bool authenticate);
+  void IssueRequest(std::unique_ptr<PaymentsRequest> request,
+                    bool authenticate);
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -148,13 +149,13 @@ class PaymentsClient : public net::URLFetcherDelegate,
   PaymentsClientDelegate* const delegate_;  // must outlive |this|.
 
   // The current request.
-  scoped_ptr<PaymentsRequest> request_;
+  std::unique_ptr<PaymentsRequest> request_;
 
   // The fetcher being used to issue the current request.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // The current OAuth2 token request object.
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
 
   // The OAuth2 token, or empty if not fetched.
   std::string access_token_;

@@ -218,7 +218,7 @@ void ContentAutofillDriver::DidNavigateFrame(
 }
 
 void ContentAutofillDriver::SetAutofillManager(
-    scoped_ptr<AutofillManager> manager) {
+    std::unique_ptr<AutofillManager> manager) {
   autofill_manager_ = std::move(manager);
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }

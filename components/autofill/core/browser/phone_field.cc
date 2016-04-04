@@ -5,11 +5,12 @@
 #include "components/autofill/core/browser/phone_field.h"
 
 #include <string.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -129,7 +130,7 @@ const PhoneField::Parser PhoneField::kPhoneFieldGrammars[] = {
 };
 
 // static
-scoped_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return nullptr;
 
@@ -182,7 +183,7 @@ scoped_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
     return nullptr;
   }
 
-  scoped_ptr<PhoneField> phone_field(new PhoneField);
+  std::unique_ptr<PhoneField> phone_field(new PhoneField);
   for (int i = 0; i < FIELD_MAX; ++i)
     phone_field->parsed_phone_fields_[i] = parsed_fields[i];
 

@@ -6,11 +6,11 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_NAMES_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
@@ -68,11 +68,11 @@ class CountryNames {
   const icu::Locale locale_;
 
   // Collator for the application locale.
-  const scoped_ptr<icu::Collator> collator_;
+  const std::unique_ptr<icu::Collator> collator_;
 
   // Collator for the "en_US" locale, if different from the application
   // locale, null otherwise.
-  const scoped_ptr<icu::Collator> default_collator_;
+  const std::unique_ptr<icu::Collator> default_collator_;
 
   // Maps from common country names, including 2- and 3-letter country codes,
   // to the corresponding 2-letter country codes. The keys are uppercase ASCII

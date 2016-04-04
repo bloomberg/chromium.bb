@@ -12,7 +12,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -633,17 +632,17 @@ bool IsGaiaReauthenticationForm(
   return has_rart_field && has_continue_field;
 }
 
-scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
+std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const WebFormElement& web_form,
     const ModifiedValues* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions) {
   if (web_form.isNull())
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
-  scoped_ptr<PasswordForm> password_form(new PasswordForm());
+  std::unique_ptr<PasswordForm> password_form(new PasswordForm());
   password_form->action = form_util::GetCanonicalActionForForm(web_form);
   if (!password_form->action.is_valid())
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
   SyntheticForm synthetic_form;
   PopulateSyntheticFormFromWebForm(web_form, &synthetic_form);
@@ -654,12 +653,12 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
 
   if (!GetPasswordForm(synthetic_form, password_form.get(),
                        nonscript_modified_values, form_predictions))
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
   return password_form;
 }
 
-scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
+std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const WebFrame& frame,
     const ModifiedValues* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions) {
@@ -669,16 +668,16 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   synthetic_form.document = frame.document();
 
   if (synthetic_form.control_elements.empty())
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
-  scoped_ptr<PasswordForm> password_form(new PasswordForm());
+  std::unique_ptr<PasswordForm> password_form(new PasswordForm());
   UnownedPasswordFormElementsAndFieldSetsToFormData(
       synthetic_form.fieldsets, synthetic_form.control_elements, nullptr,
       frame.document(), form_util::EXTRACT_NONE, &password_form->form_data,
       nullptr /* FormFieldData */);
   if (!GetPasswordForm(synthetic_form, password_form.get(),
                        nonscript_modified_values, form_predictions))
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
   // No actual action on the form, so use the the origin as the action.
   password_form->action = password_form->origin;

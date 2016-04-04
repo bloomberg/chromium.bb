@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_SAVE_CARD_INFOBAR_DELEGATE_MOBILE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_SAVE_CARD_INFOBAR_DELEGATE_MOBILE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/legal_message_line.h"
@@ -28,7 +29,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   AutofillSaveCardInfoBarDelegateMobile(
       bool upload,
       const CreditCard& card,
-      scoped_ptr<base::DictionaryValue> legal_message,
+      std::unique_ptr<base::DictionaryValue> legal_message,
       const base::Closure& save_card_callback);
 
   ~AutofillSaveCardInfoBarDelegateMobile() override;

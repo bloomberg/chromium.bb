@@ -6,10 +6,10 @@
 #define COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_H__
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "url/gurl.h"
@@ -303,7 +303,7 @@ struct LessThanUniqueKey {
 };
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
-using PasswordFormMap = std::map<base::string16, scoped_ptr<PasswordForm>>;
+using PasswordFormMap = std::map<base::string16, std::unique_ptr<PasswordForm>>;
 
 // Like PasswordFormMap, but with weak (not owned) pointers.
 using ConstPasswordFormMap = std::map<base::string16, const PasswordForm*>;

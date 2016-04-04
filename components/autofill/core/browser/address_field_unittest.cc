@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/address_field.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/address_field.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -23,13 +26,13 @@ class AddressFieldTest : public testing::Test {
 
  protected:
   ScopedVector<AutofillField> list_;
-  scoped_ptr<AddressField> field_;
+  std::unique_ptr<AddressField> field_;
   FieldCandidatesMap field_candidates_map_;
 
   // Downcast for tests.
-  static scoped_ptr<AddressField> Parse(AutofillScanner* scanner) {
-    scoped_ptr<FormField> field = AddressField::Parse(scanner);
-    return make_scoped_ptr(static_cast<AddressField*>(field.release()));
+  static std::unique_ptr<AddressField> Parse(AutofillScanner* scanner) {
+    std::unique_ptr<FormField> field = AddressField::Parse(scanner);
+    return base::WrapUnique(static_cast<AddressField*>(field.release()));
   }
 
  private:

@@ -190,12 +190,11 @@ AutofillWalletSyncableService::AutofillWalletSyncableService(
 AutofillWalletSyncableService::~AutofillWalletSyncableService() {
 }
 
-syncer::SyncMergeResult
-AutofillWalletSyncableService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_processor_ = std::move(sync_processor);
   return SetSyncData(initial_sync_data);

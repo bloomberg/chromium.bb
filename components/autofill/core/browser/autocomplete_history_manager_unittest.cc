@@ -57,7 +57,7 @@ class MockAutofillClient : public TestAutofillClient {
 
  private:
   scoped_refptr<MockWebDataService> web_data_service_;
-  scoped_ptr<PrefService> prefs_;
+  std::unique_ptr<PrefService> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
@@ -80,9 +80,9 @@ class AutocompleteHistoryManagerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_refptr<MockWebDataService> web_data_service_;
-  scoped_ptr<AutocompleteHistoryManager> autocomplete_manager_;
-  scoped_ptr<AutofillDriver> autofill_driver_;
-  scoped_ptr<MockAutofillClient> autofill_client_;
+  std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
+  std::unique_ptr<AutofillDriver> autofill_driver_;
+  std::unique_ptr<MockAutofillClient> autofill_client_;
 };
 
 // Tests that credit card numbers are not sent to the WebDatabase to be saved.
@@ -222,11 +222,9 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   TestAutocompleteHistoryManager autocomplete_history_manager(
       autofill_driver_.get(), autofill_client_.get());
 
-  scoped_ptr<AutofillManager> autofill_manager(
-      new AutofillManager(autofill_driver_.get(),
-                          autofill_client_.get(),
-                          "en-US",
-                          AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
+  std::unique_ptr<AutofillManager> autofill_manager(new AutofillManager(
+      autofill_driver_.get(), autofill_client_.get(), "en-US",
+      AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
 
   MockAutofillExternalDelegate external_delegate(autofill_manager.get(),
                                                  autofill_driver_.get());
@@ -242,11 +240,9 @@ TEST_F(AutocompleteHistoryManagerTest, NoAutocompleteSuggestionsForTextarea) {
   TestAutocompleteHistoryManager autocomplete_history_manager(
       autofill_driver_.get(), autofill_client_.get());
 
-  scoped_ptr<AutofillManager> autofill_manager(
-      new AutofillManager(autofill_driver_.get(),
-                          autofill_client_.get(),
-                          "en-US",
-                          AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
+  std::unique_ptr<AutofillManager> autofill_manager(new AutofillManager(
+      autofill_driver_.get(), autofill_client_.get(), "en-US",
+      AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
 
   MockAutofillExternalDelegate external_delegate(autofill_manager.get(),
                                                  autofill_driver_.get());

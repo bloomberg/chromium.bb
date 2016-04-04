@@ -5,13 +5,14 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
@@ -54,7 +55,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
   TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
       : ContentAutofillDriver(rfh, client, kAppLocale, kDownloadState) {
-    scoped_ptr<AutofillManager> autofill_manager(
+    std::unique_ptr<AutofillManager> autofill_manager(
         new MockAutofillManager(this, client));
     SetAutofillManager(std::move(autofill_manager));
   }
@@ -195,8 +196,8 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     return true;
   }
 
-  scoped_ptr<TestAutofillClient> test_autofill_client_;
-  scoped_ptr<TestContentAutofillDriver> driver_;
+  std::unique_ptr<TestAutofillClient> test_autofill_client_;
+  std::unique_ptr<TestContentAutofillDriver> driver_;
 };
 
 TEST_F(ContentAutofillDriverTest, GetURLRequestContext) {

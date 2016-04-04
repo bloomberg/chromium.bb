@@ -4,11 +4,11 @@
 
 #include "components/autofill/core/browser/legal_message_line.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -102,7 +102,7 @@ class LegalMessageLineTest : public ::testing::TestWithParam<TestCase> {
 
 // Verifies that legal message parsing is correct.
 TEST_P(LegalMessageLineTest, Parsing) {
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       base::JSONReader::Read(GetParam().message_json));
   ASSERT_TRUE(value);
   base::DictionaryValue* dictionary = nullptr;

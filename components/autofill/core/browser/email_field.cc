@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/email_field.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
@@ -11,11 +12,11 @@
 namespace autofill {
 
 // static
-scoped_ptr<FormField> EmailField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> EmailField::Parse(AutofillScanner* scanner) {
   AutofillField* field;
   if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kEmailRe),
                           MATCH_DEFAULT | MATCH_EMAIL, &field)) {
-    return make_scoped_ptr(new EmailField(field));
+    return base::WrapUnique(new EmailField(field));
   }
 
   return NULL;

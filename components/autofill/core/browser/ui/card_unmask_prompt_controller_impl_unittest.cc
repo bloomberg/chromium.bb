@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -124,10 +126,10 @@ class CardUnmaskPromptControllerImplTest : public testing::Test {
         prefs::kAutofillWalletImportStorageCheckboxState, value);
   }
 
-  scoped_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<TestCardUnmaskPromptController> controller_;
-  scoped_ptr<TestCardUnmaskDelegate> delegate_;
+  std::unique_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestCardUnmaskPromptController> controller_;
+  std::unique_ptr<TestCardUnmaskDelegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImplTest);

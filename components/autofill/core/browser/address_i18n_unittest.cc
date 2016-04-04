@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -110,7 +110,7 @@ TEST(AddressI18nTest, CreateAddressDataFromAutofillProfile) {
                        "US",
                        "16502111111");
   profile.set_language_code("en");
-  scoped_ptr<AddressData> actual =
+  std::unique_ptr<AddressData> actual =
       CreateAddressDataFromAutofillProfile(profile, "en_US");
 
   AddressData expected;

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -63,13 +65,13 @@ ACTION_P2(GetCopiesOf, profiles, cards) {
   for (const auto& profile : *profiles) {
     std::string utf8_server_id;
     base::Base64Encode(profile.server_id(), &utf8_server_id);
-    arg0->add(utf8_server_id, make_scoped_ptr(new AutofillProfile(profile)));
+    arg0->add(utf8_server_id, base::WrapUnique(new AutofillProfile(profile)));
   }
 
   for (const auto& card : *cards) {
     std::string utf8_server_id;
     base::Base64Encode(card.server_id(), &utf8_server_id);
-    arg1->add(utf8_server_id, make_scoped_ptr(new CreditCard(card)));
+    arg1->add(utf8_server_id, base::WrapUnique(new CreditCard(card)));
   }
 }
 
@@ -119,8 +121,9 @@ class MockService : public AutofillWalletMetadataSyncableService {
  private:
   MOCK_CONST_METHOD2(
       GetLocalData,
-      bool(base::ScopedPtrHashMap<std::string, scoped_ptr<AutofillProfile>>*,
-           base::ScopedPtrHashMap<std::string, scoped_ptr<CreditCard>>*));
+      bool(base::ScopedPtrHashMap<std::string,
+                                  std::unique_ptr<AutofillProfile>>*,
+           base::ScopedPtrHashMap<std::string, std::unique_ptr<CreditCard>>*));
 
   syncer::SyncError SendChangesToSyncServerConcrete(
       const syncer::SyncChangeList& changes) {
@@ -234,16 +237,17 @@ void MergeMetadata(MockService* local, MockService* remote) {
   ON_CALL(*remote, SendChangesToSyncServer(_))
       .WillByDefault(Return(syncer::SyncError()));
 
-  scoped_ptr<syncer::SyncErrorFactoryMock> errors(
+  std::unique_ptr<syncer::SyncErrorFactoryMock> errors(
       new syncer::SyncErrorFactoryMock);
   EXPECT_CALL(*errors, CreateAndUploadError(_, _)).Times(0);
   EXPECT_FALSE(
-      local->MergeDataAndStartSyncing(
-               syncer::AUTOFILL_WALLET_METADATA,
-               remote->GetAllSyncData(syncer::AUTOFILL_WALLET_METADATA),
-               scoped_ptr<syncer::SyncChangeProcessor>(
-                   new syncer::SyncChangeProcessorWrapperForTest(remote)),
-               std::move(errors))
+      local
+          ->MergeDataAndStartSyncing(
+              syncer::AUTOFILL_WALLET_METADATA,
+              remote->GetAllSyncData(syncer::AUTOFILL_WALLET_METADATA),
+              std::unique_ptr<syncer::SyncChangeProcessor>(
+                  new syncer::SyncChangeProcessorWrapperForTest(remote)),
+              std::move(errors))
           .error()
           .IsSet());
 }

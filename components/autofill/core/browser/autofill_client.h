@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -135,7 +136,7 @@ class AutofillClient {
   // contents of |legal_message| to the user.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
-      scoped_ptr<base::DictionaryValue> legal_message,
+      std::unique_ptr<base::DictionaryValue> legal_message,
       const base::Closure& callback) = 0;
 
   // Gathers risk data and provides it to |callback|.

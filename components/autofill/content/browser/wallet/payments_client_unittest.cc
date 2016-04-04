@@ -59,7 +59,7 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      scoped_ptr<base::DictionaryValue> legal_message) override {
+      std::unique_ptr<base::DictionaryValue> legal_message) override {
     result_ = result;
     legal_message_ = std::move(legal_message);
   }
@@ -124,14 +124,14 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
 
   AutofillClient::PaymentsRpcResult result_;
   std::string real_pan_;
-  scoped_ptr<base::DictionaryValue> legal_message_;
+  std::unique_ptr<base::DictionaryValue> legal_message_;
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  scoped_ptr<FakeOAuth2TokenService> token_service_;
-  scoped_ptr<FakeIdentityProvider> identity_provider_;
-  scoped_ptr<PaymentsClient> client_;
+  std::unique_ptr<FakeOAuth2TokenService> token_service_;
+  std::unique_ptr<FakeIdentityProvider> identity_provider_;
+  std::unique_ptr<PaymentsClient> client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentsClientTest);

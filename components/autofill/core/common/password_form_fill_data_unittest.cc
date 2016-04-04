@@ -4,9 +4,9 @@
 
 #include "components/autofill/core/common/password_form_fill_data.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -113,7 +113,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
 
   // Create a match that matches exactly, so |is_public_suffix_match| has a
   // default value false.
-  scoped_ptr<PasswordForm> scoped_exact_match(new PasswordForm);
+  std::unique_ptr<PasswordForm> scoped_exact_match(new PasswordForm);
   PasswordForm& exact_match = *scoped_exact_match;
   exact_match.origin = GURL("https://foo.com/");
   exact_match.action = GURL("https://foo.com/login");
@@ -129,7 +129,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
 
   // Create a match that was matched using public suffix, so
   // |is_public_suffix_match| == true.
-  scoped_ptr<PasswordForm> scoped_public_suffix_match(new PasswordForm);
+  std::unique_ptr<PasswordForm> scoped_public_suffix_match(new PasswordForm);
   PasswordForm& public_suffix_match = *scoped_public_suffix_match;
   public_suffix_match.origin = GURL("https://foo.com/");
   public_suffix_match.action = GURL("https://foo.com/login");
@@ -205,7 +205,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
 
   // Create a match that matches exactly, so |is_affiliation_based_match| has a
   // default value false.
-  scoped_ptr<PasswordForm> scoped_exact_match(new PasswordForm);
+  std::unique_ptr<PasswordForm> scoped_exact_match(new PasswordForm);
   PasswordForm& exact_match = *scoped_exact_match;
   exact_match.origin = GURL("https://foo.com/");
   exact_match.action = GURL("https://foo.com/login");
@@ -221,7 +221,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
 
   // Create a match that was matched using public suffix, so
   // |is_public_suffix_match| == true.
-  scoped_ptr<PasswordForm> scoped_affiliated_match(new PasswordForm);
+  std::unique_ptr<PasswordForm> scoped_affiliated_match(new PasswordForm);
   PasswordForm& affiliated_match = *scoped_affiliated_match;
   affiliated_match.origin = GURL("android://hash@foo1.com/");
   affiliated_match.username_value = ASCIIToUTF16("test2@gmail.com");

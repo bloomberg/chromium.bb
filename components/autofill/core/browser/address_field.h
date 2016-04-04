@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FIELD_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FIELD_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_field.h"
@@ -22,7 +22,7 @@ class AutofillScanner;
 
 class AddressField : public FormField {
  public:
-  static scoped_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;

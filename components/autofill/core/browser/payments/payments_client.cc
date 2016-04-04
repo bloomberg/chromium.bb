@@ -4,12 +4,13 @@
 
 #include "components/autofill/core/browser/payments/payments_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -95,9 +96,9 @@ GURL GetRequestUrl(const std::string& path) {
   return base.Resolve(path);
 }
 
-scoped_ptr<base::DictionaryValue> BuildRiskDictionary(
+std::unique_ptr<base::DictionaryValue> BuildRiskDictionary(
     const std::string& encoded_risk_data) {
-  scoped_ptr<base::DictionaryValue> risk_data(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> risk_data(new base::DictionaryValue());
 #if defined(OS_IOS)
   // Browser fingerprinting is not available on iOS. Instead, we generate
   // RiskAdvisoryData.
@@ -132,15 +133,16 @@ void AppendStringIfNotEmpty(const AutofillProfile& profile,
     list->AppendString(value);
 }
 
-scoped_ptr<base::DictionaryValue> BuildAddressDictionary(
+std::unique_ptr<base::DictionaryValue> BuildAddressDictionary(
     const AutofillProfile& profile,
     const std::string& app_locale) {
-  scoped_ptr<base::DictionaryValue> postal_address(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> postal_address(
+      new base::DictionaryValue());
 
   SetStringIfNotEmpty(profile, NAME_FULL, app_locale, "recipient_name",
                       postal_address.get());
 
-  scoped_ptr<base::ListValue> address_lines(new base::ListValue());
+  std::unique_ptr<base::ListValue> address_lines(new base::ListValue());
   AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE1, app_locale,
                          address_lines.get());
   AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE2, app_locale,
@@ -162,7 +164,7 @@ scoped_ptr<base::DictionaryValue> BuildAddressDictionary(
   if (!country_code.empty())
     postal_address->SetString("country_name_code", country_code);
 
-  scoped_ptr<base::DictionaryValue> address(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> address(new base::DictionaryValue());
   address->Set("postal_address", std::move(postal_address));
   SetStringIfNotEmpty(profile, PHONE_HOME_WHOLE_NUMBER, app_locale,
                       "phone_number", address.get());
@@ -191,7 +193,7 @@ class UnmaskCardRequest : public PaymentsRequest {
     request_dict.SetString("credit_card_id", request_details_.card.server_id());
     request_dict.Set("risk_data_encoded",
                      BuildRiskDictionary(request_details_.risk_data));
-    request_dict.Set("context", make_scoped_ptr(new base::DictionaryValue()));
+    request_dict.Set("context", base::WrapUnique(new base::DictionaryValue()));
 
     int value = 0;
     if (base::StringToInt(request_details_.user_response.exp_month, &value))
@@ -211,7 +213,7 @@ class UnmaskCardRequest : public PaymentsRequest {
     return request_content;
   }
 
-  void ParseResponse(scoped_ptr<base::DictionaryValue> response) override {
+  void ParseResponse(std::unique_ptr<base::DictionaryValue> response) override {
     response->GetString("pan", &real_pan_);
   }
 
@@ -241,7 +243,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
 
   std::string GetRequestContent() override {
     base::DictionaryValue request_dict;
-    scoped_ptr<base::DictionaryValue> context(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetString("language_code", app_locale_);
     request_dict.Set("context", std::move(context));
 
@@ -251,7 +253,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     return request_content;
   }
 
-  void ParseResponse(scoped_ptr<base::DictionaryValue> response) override {
+  void ParseResponse(std::unique_ptr<base::DictionaryValue> response) override {
     response->GetString("context_token", &context_token_);
     base::DictionaryValue* unowned_legal_message;
     if (response->GetDictionary("legal_message", &unowned_legal_message))
@@ -271,7 +273,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
  private:
   std::string app_locale_;
   base::string16 context_token_;
-  scoped_ptr<base::DictionaryValue> legal_message_;
+  std::unique_ptr<base::DictionaryValue> legal_message_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
@@ -294,14 +296,14 @@ class UploadCardRequest : public PaymentsRequest {
                      BuildRiskDictionary(request_details_.risk_data));
 
     const std::string& app_locale = request_details_.app_locale;
-    scoped_ptr<base::DictionaryValue> context(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetString("language_code", app_locale);
     request_dict.Set("context", std::move(context));
 
     SetStringIfNotEmpty(request_details_.card, CREDIT_CARD_NAME_FULL,
                         app_locale, "cardholder_name", &request_dict);
 
-    scoped_ptr<base::ListValue> addresses(new base::ListValue());
+    std::unique_ptr<base::ListValue> addresses(new base::ListValue());
     for (const AutofillProfile& profile : request_details_.profiles) {
       addresses->Append(BuildAddressDictionary(profile, app_locale));
     }
@@ -334,7 +336,8 @@ class UploadCardRequest : public PaymentsRequest {
     return request_content;
   }
 
-  void ParseResponse(scoped_ptr<base::DictionaryValue> response) override {}
+  void ParseResponse(std::unique_ptr<base::DictionaryValue> response) override {
+  }
 
   bool IsResponseComplete() override { return true; }
 
@@ -376,19 +379,20 @@ void PaymentsClient::Prepare() {
 
 void PaymentsClient::UnmaskCard(
     const PaymentsClient::UnmaskRequestDetails& request_details) {
-  IssueRequest(make_scoped_ptr(new UnmaskCardRequest(request_details)), true);
+  IssueRequest(base::WrapUnique(new UnmaskCardRequest(request_details)), true);
 }
 
 void PaymentsClient::GetUploadDetails(const std::string& app_locale) {
-  IssueRequest(make_scoped_ptr(new GetUploadDetailsRequest(app_locale)), false);
+  IssueRequest(base::WrapUnique(new GetUploadDetailsRequest(app_locale)),
+               false);
 }
 
 void PaymentsClient::UploadCard(
     const PaymentsClient::UploadRequestDetails& request_details) {
-  IssueRequest(make_scoped_ptr(new UploadCardRequest(request_details)), true);
+  IssueRequest(base::WrapUnique(new UploadCardRequest(request_details)), true);
 }
 
-void PaymentsClient::IssueRequest(scoped_ptr<PaymentsRequest> request,
+void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,
                                   bool authenticate) {
   request_ = std::move(request);
   has_retried_authorization_ = false;
@@ -431,8 +435,8 @@ void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // |url_fetcher_|, which is aliased to |source|, might continue to be used in
   // this method, but should be freed once control leaves the method.
-  scoped_ptr<net::URLFetcher> scoped_url_fetcher(std::move(url_fetcher_));
-  scoped_ptr<base::DictionaryValue> response_dict;
+  std::unique_ptr<net::URLFetcher> scoped_url_fetcher(std::move(url_fetcher_));
+  std::unique_ptr<base::DictionaryValue> response_dict;
   int response_code = source->GetResponseCode();
   std::string data;
   source->GetResponseAsString(&data);
@@ -444,7 +448,7 @@ void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
     // Valid response.
     case net::HTTP_OK: {
       std::string error_code;
-      scoped_ptr<base::Value> message_value = base::JSONReader::Read(data);
+      std::unique_ptr<base::Value> message_value = base::JSONReader::Read(data);
       if (message_value.get() &&
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_PAYMENTS_REQUEST_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_PAYMENTS_REQUEST_H_
 
+#include <memory>
+
 namespace autofill {
 
 class AutofillClient;
@@ -28,7 +30,8 @@ class PaymentsRequest {
   virtual std::string GetRequestContent() = 0;
 
   // Parses the required elements of the HTTP response.
-  virtual void ParseResponse(scoped_ptr<base::DictionaryValue> response) = 0;
+  virtual void ParseResponse(
+      std::unique_ptr<base::DictionaryValue> response) = 0;
 
   // Returns true if all of the required elements were successfully retrieved by
   // a call to ParseResponse.
