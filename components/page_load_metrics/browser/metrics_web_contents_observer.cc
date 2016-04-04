@@ -79,7 +79,7 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
 
   // If we have a non-empty timing, it should always have a navigation start.
   if (timing.navigation_start.is_null()) {
-    DLOG(FATAL) << "Received null navigation_start.";
+    NOTREACHED() << "Received null navigation_start.";
     return false;
   }
 
@@ -93,50 +93,75 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
   }
 
+  if (!EventsInOrder(timing.response_start, timing.parse_start)) {
+    // We sometimes get a zero response_start with a non-zero parse start. See
+    // crbug.com/590212.
+    DLOG(ERROR) << "Invalid response_start " << timing.response_start
+                << " for parse_start " << timing.parse_start;
+    return false;
+  }
+
+  if (!EventsInOrder(timing.parse_start, timing.parse_stop)) {
+    NOTREACHED() << "Invalid parse_start " << timing.parse_start
+                 << " for parse_stop " << timing.parse_stop;
+    return false;
+  }
+
+  if (!timing.parse_stop.is_zero()) {
+    const base::TimeDelta parse_duration =
+        timing.parse_stop - timing.parse_start;
+    if (timing.parse_blocked_on_script_load_duration > parse_duration) {
+      NOTREACHED() << "Invalid parse_blocked_on_script_load_duration "
+                   << timing.parse_blocked_on_script_load_duration
+                   << " for parse duration " << parse_duration;
+      return false;
+    }
+  }
+
   if (!EventsInOrder(timing.dom_loading,
                      timing.dom_content_loaded_event_start)) {
-    DLOG(FATAL) << "Invalid dom_loading " << timing.dom_loading
-                << " for dom_content_loaded_event_start "
-                << timing.dom_content_loaded_event_start;
+    NOTREACHED() << "Invalid dom_loading " << timing.dom_loading
+                 << " for dom_content_loaded_event_start "
+                 << timing.dom_content_loaded_event_start;
     return false;
   }
 
   if (!EventsInOrder(timing.dom_content_loaded_event_start,
                      timing.load_event_start)) {
-    DLOG(FATAL) << "Invalid dom_content_loaded_event_start "
-                << timing.dom_content_loaded_event_start
-                << " for load_event_start " << timing.load_event_start;
+    NOTREACHED() << "Invalid dom_content_loaded_event_start "
+                 << timing.dom_content_loaded_event_start
+                 << " for load_event_start " << timing.load_event_start;
     return false;
   }
 
   if (!EventsInOrder(timing.dom_loading, timing.first_layout)) {
-    DLOG(FATAL) << "Invalid dom_loading " << timing.dom_loading
-                << " for first_layout " << timing.first_layout;
+    NOTREACHED() << "Invalid dom_loading " << timing.dom_loading
+                 << " for first_layout " << timing.first_layout;
     return false;
   }
 
   if (!EventsInOrder(timing.first_layout, timing.first_paint)) {
-    DLOG(FATAL) << "Invalid first_layout " << timing.first_layout
-                << " for first_paint " << timing.first_paint;
+    NOTREACHED() << "Invalid first_layout " << timing.first_layout
+                 << " for first_paint " << timing.first_paint;
     return false;
   }
 
   if (!EventsInOrder(timing.first_paint, timing.first_text_paint)) {
-    DLOG(FATAL) << "Invalid first_paint " << timing.first_paint
-                << " for first_text_paint " << timing.first_text_paint;
+    NOTREACHED() << "Invalid first_paint " << timing.first_paint
+                 << " for first_text_paint " << timing.first_text_paint;
     return false;
   }
 
   if (!EventsInOrder(timing.first_paint, timing.first_image_paint)) {
-    DLOG(FATAL) << "Invalid first_paint " << timing.first_paint
-                << " for first_image_paint " << timing.first_image_paint;
+    NOTREACHED() << "Invalid first_paint " << timing.first_paint
+                 << " for first_image_paint " << timing.first_image_paint;
     return false;
   }
 
   if (!EventsInOrder(timing.first_paint, timing.first_contentful_paint)) {
-    DLOG(FATAL) << "Invalid first_paint " << timing.first_paint
-                << " for first_contentful_paint "
-                << timing.first_contentful_paint;
+    NOTREACHED() << "Invalid first_paint " << timing.first_paint
+                 << " for first_contentful_paint "
+                 << timing.first_contentful_paint;
     return false;
   }
 
@@ -154,7 +179,7 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
     return ABORT_FORWARD_BACK;
   if (ui::PageTransitionIsNewNavigation(transition))
     return ABORT_NEW_NAVIGATION;
-  DLOG(FATAL)
+  NOTREACHED()
       << "AbortTypeForPageTransition received unexpected ui::PageTransition: "
       << transition;
   return ABORT_OTHER;
@@ -245,7 +270,7 @@ void PageLoadTracker::LogAbortChainHistograms(
                            aborted_chain_size_);
       return;
     default:
-      DLOG(FATAL)
+      NOTREACHED()
           << "LogAbortChainHistograms received unexpected ui::PageTransition: "
           << committed_transition;
       return;

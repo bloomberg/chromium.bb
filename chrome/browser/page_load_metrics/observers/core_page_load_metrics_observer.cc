@@ -58,6 +58,12 @@ const char kHistogramFirstContentfulPaint[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint";
 const char kHistogramDomLoadingToFirstContentfulPaint[] =
     "PageLoad.Timing2.DOMLoadingToFirstContentfulPaint";
+const char kHistogramParseDuration[] = "PageLoad.Timing2.ParseDuration";
+const char kHistogramParseBlockedOnScriptLoad[] =
+    "PageLoad.Timing2.ParseBlockedOnScriptLoad";
+const char kHistogramParseBlockedOnScriptLoadParseComplete[] =
+    "PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete";
+
 const char kBackgroundHistogramCommit[] =
     "PageLoad.Timing2.NavigationToCommit.Background";
 const char kBackgroundHistogramFirstLayout[] =
@@ -74,6 +80,12 @@ const char kBackgroundHistogramFirstImagePaint[] =
     "PageLoad.Timing2.NavigationToFirstImagePaint.Background.";
 const char kBackgroundHistogramFirstContentfulPaint[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint.Background";
+const char kBackgroundHistogramParseDuration[] =
+    "PageLoad.Timing2.ParseDuration.Background";
+const char kBackgroundHistogramParseBlockedOnScriptLoad[] =
+    "PageLoad.Timing2.ParseBlockedOnScriptLoad.Background";
+const char kBackgroundHistogramParseBlockedOnScriptLoadParseComplete[] =
+    "PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete.Background";
 
 const char kHistogramFirstContentfulPaintHigh[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint.HighResolutionClock";
@@ -89,6 +101,8 @@ const char kHistogramBackgroundBeforePaint[] =
     "PageLoad.Timing2.NavigationToFirstBackground.AfterCommit.BeforePaint";
 const char kHistogramBackgroundBeforeCommit[] =
     "PageLoad.Timing2.NavigationToFirstBackground.BeforeCommit";
+const char kHistogramBackgroundDuringParse[] =
+    "PageLoad.Timing2.NavigationToFirstBackground.DuringParse";
 const char kHistogramFailedProvisionalLoad[] =
     "PageLoad.Timing2.NavigationToFailedProvisionalLoad";
 
@@ -132,16 +146,22 @@ void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  // Record metrics for pages which starts in the foreground and is backgrounded
-  // prior to the first paint.
-  if (info.started_in_foreground && !info.first_background_time.is_zero() &&
-      (timing.first_paint.is_zero() ||
-       timing.first_paint > info.first_background_time)) {
-    if (!info.time_to_commit.is_zero()) {
+  // Record metrics for pages which start in the foreground and are
+  // backgrounded.
+  if (info.started_in_foreground && !info.first_background_time.is_zero()) {
+    if (info.time_to_commit.is_zero()) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
+                          info.first_background_time);
+    } else if (timing.first_paint.is_zero() ||
+               timing.first_paint > info.first_background_time) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforePaint,
                           info.first_background_time);
-    } else {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
+    }
+    if (!timing.parse_start.is_zero() &&
+        info.first_background_time >= timing.parse_start &&
+        (timing.parse_stop.is_zero() ||
+         timing.parse_stop > info.first_background_time)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundDuringParse,
                           info.first_background_time);
     }
   }
@@ -257,6 +277,38 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstContentfulPaint,
                           timing.first_contentful_paint);
+    }
+  }
+  if (!timing.parse_start.is_zero()) {
+    const bool incomplete_parse_in_foreground =
+        timing.parse_stop.is_zero() && info.started_in_foreground &&
+        info.first_background_time.is_zero();
+    // If the parse did not complete but the entire page load duration happened
+    // in the foreground, or if the parse completed and happened entirely in the
+    // foreground, record a foreground histogram.
+    if (incomplete_parse_in_foreground ||
+        WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramParseBlockedOnScriptLoad,
+                          timing.parse_blocked_on_script_load_duration);
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kBackgroundHistogramParseBlockedOnScriptLoad,
+          timing.parse_blocked_on_script_load_duration);
+    }
+  }
+  if (!timing.parse_stop.is_zero()) {
+    base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
+    if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramParseDuration, parse_duration);
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramParseBlockedOnScriptLoadParseComplete,
+          timing.parse_blocked_on_script_load_duration);
+    } else {
+      PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramParseDuration,
+                          parse_duration);
+      PAGE_LOAD_HISTOGRAM(
+          internal::kBackgroundHistogramParseBlockedOnScriptLoadParseComplete,
+          timing.parse_blocked_on_script_load_duration);
     }
   }
 

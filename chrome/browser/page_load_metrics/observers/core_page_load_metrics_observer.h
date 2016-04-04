@@ -21,6 +21,9 @@ extern const char kHistogramDomLoadingToDomContentLoaded[];
 extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramDomLoadingToFirstContentfulPaint[];
+extern const char kHistogramParseDuration[];
+extern const char kHistogramParseBlockedOnScriptLoad[];
+
 extern const char kBackgroundHistogramCommit[];
 extern const char kBackgroundHistogramFirstLayout[];
 extern const char kBackgroundHistogramFirstTextPaint[];

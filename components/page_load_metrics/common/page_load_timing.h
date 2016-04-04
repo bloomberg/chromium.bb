@@ -52,6 +52,16 @@ struct PageLoadTiming {
   // Time when the first contentful thing (image, text, etc.) is painted.
   base::TimeDelta first_contentful_paint;
 
+  // Time that the document's parser started and stopped parsing main resource
+  // content.
+  base::TimeDelta parse_start;
+  base::TimeDelta parse_stop;
+
+  // Sum of times when the parser is blocked waiting on the load of a script.
+  // This duration takes place between parser_start and parser_stop, and thus
+  // must be less than or equal to parser_stop - parser_start.
+  base::TimeDelta parse_blocked_on_script_load_duration;
+
   // If you add additional members, also be sure to update operator==,
   // page_load_metrics_messages.h, and IsEmpty().
 };

@@ -34434,6 +34434,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the load of scripts,
+    for main frame documents that started parsing.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the load of scripts,
+    for main frame documents that finished parsing.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.ParseDuration" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser was active, for main frame documents
+    that finished parsing.
+  </summary>
+</histogram>
+
 <histogram name="PartitionAlloc.CommittedSize" units="MB">
   <owner>haraken@chromium.org</owner>
   <summary>
@@ -89975,11 +90003,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
+  <affected-histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
+  <affected-histogram name="PageLoad.Timing2.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadEventConditions" separator=".">
   <suffix name="BeforeCommit"/>
   <suffix name="AfterCommit.BeforePaint"/>
+  <suffix name="DuringParse"/>
   <affected-histogram name="PageLoad.AbortTiming.Close"/>
   <affected-histogram name="PageLoad.AbortTiming.ForwardBackNavigation"/>
   <affected-histogram name="PageLoad.AbortTiming.NewNavigation"/>

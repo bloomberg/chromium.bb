@@ -120,6 +120,10 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
   timing.first_image_paint = ClampDelta(perf.firstImagePaint(), start);
   timing.first_contentful_paint =
       ClampDelta(perf.firstContentfulPaint(), start);
+  timing.parse_start = ClampDelta(perf.parseStart(), start);
+  timing.parse_stop = ClampDelta(perf.parseStop(), start);
+  timing.parse_blocked_on_script_load_duration =
+      base::TimeDelta::FromSecondsD(perf.parseBlockedOnScriptLoadDuration());
   return timing;
 }
 
