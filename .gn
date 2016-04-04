@@ -37,7 +37,6 @@ check_targets = [
 
   #"//content/*",  # A whole lot of errors.
   "//content/gpu/*",
-  "//content/plugin/*",
   "//content/public/*",
   "//content/renderer/*",
 

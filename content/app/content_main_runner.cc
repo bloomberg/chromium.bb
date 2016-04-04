@@ -357,9 +357,6 @@ int RunNamedProcessTypeMain(
 #endif
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #if defined(ENABLE_PLUGINS)
-#if !defined(OS_LINUX)
-    { switches::kPluginProcess,      PluginMain },
-#endif
     { switches::kPpapiPluginProcess, PpapiPluginMain },
     { switches::kPpapiBrokerProcess, PpapiBrokerMain },
 #endif  // ENABLE_PLUGINS

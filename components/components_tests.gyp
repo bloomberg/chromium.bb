@@ -1777,7 +1777,6 @@
           'dependencies': [
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_gpu',
-            '../content/content.gyp:content_plugin',
             '../content/content.gyp:content_renderer',
             '../content/content_shell_and_tests.gyp:content_browser_test_base',
             '../content/content_shell_and_tests.gyp:content_browser_test_support',

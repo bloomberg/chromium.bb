@@ -25,7 +25,6 @@
         'content.gyp:content_browser',
         'content.gyp:content_common',
         'content.gyp:content_gpu',
-        'content.gyp:content_plugin',
         'content.gyp:content_ppapi_plugin',
         'content.gyp:content_renderer',
         'content.gyp:content_resources',

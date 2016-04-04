@@ -13,7 +13,6 @@ source_set("child") {
   # content component (i.e. not content/test or content/shell).
   visibility = [
     "//content/gpu/*",
-    "//content/plugin/*",
     "//content/ppapi_plugin/*",
     "//content/public/child:child_sources",
     "//content/renderer/*",
