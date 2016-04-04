@@ -931,23 +931,6 @@ clear_surface_order_list(struct ivi_layout_layer *ivilayer)
 }
 
 static void
-layer_created(struct wl_listener *listener, void *data)
-{
-	struct ivi_layout_layer *ivilayer = data;
-
-	struct listener_layout_notification *notification =
-		container_of(listener,
-			     struct listener_layout_notification,
-			     listener);
-
-	struct ivi_layout_notification_callback *created_callback =
-		notification->userdata;
-
-	((layer_create_notification_func)created_callback->callback)
-		(ivilayer, created_callback->data);
-}
-
-static void
 layer_removed(struct wl_listener *listener, void *data)
 {
 	struct ivi_layout_layer *ivilayer = data;
@@ -1053,37 +1036,18 @@ remove_notification(struct wl_list *listener_list, void *callback, void *userdat
  * Brief of APIs is described in ivi-layout-export.h.
  */
 static int32_t
-ivi_layout_add_notification_create_layer(layer_create_notification_func callback,
-					 void *userdata)
+ivi_layout_add_listener_create_layer(struct wl_listener *listener)
 {
 	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_notification_callback *created_callback = NULL;
 
-	if (callback == NULL) {
-		weston_log("ivi_layout_add_notification_create_layer: invalid argument\n");
+	if (listener == NULL) {
+		weston_log("ivi_layout_add_listener_create_layer: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	created_callback = malloc(sizeof *created_callback);
-	if (created_callback == NULL) {
-		weston_log("fails to allocate memory\n");
-		return IVI_FAILED;
-	}
+	wl_signal_add(&layout->layer_notification.created, listener);
 
-	created_callback->callback = callback;
-	created_callback->data = userdata;
-
-	return add_notification(&layout->layer_notification.created,
-				layer_created,
-				created_callback);
-}
-
-static void
-ivi_layout_remove_notification_create_layer(layer_create_notification_func callback,
-					    void *userdata)
-{
-	struct ivi_layout *layout = get_instance();
-	remove_notification(&layout->layer_notification.created.listener_list, callback, userdata);
+	return IVI_SUCCEEDED;
 }
 
 static int32_t
@@ -2216,8 +2180,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	/**
 	 * layer controller interfaces
 	 */
-	.add_notification_create_layer		= ivi_layout_add_notification_create_layer,
-	.remove_notification_create_layer	= ivi_layout_remove_notification_create_layer,
+	.add_listener_create_layer			= ivi_layout_add_listener_create_layer,
 	.add_notification_remove_layer		= ivi_layout_add_notification_remove_layer,
 	.remove_notification_remove_layer	= ivi_layout_remove_notification_remove_layer,
 	.layer_create_with_dimension		= ivi_layout_layer_create_with_dimension,

@@ -43,6 +43,7 @@ struct test_context {
 	uint32_t user_flags;
 
 	struct wl_listener layer_property_changed;
+	struct wl_listener layer_created;
 };
 
 static void
@@ -718,11 +719,13 @@ test_layer_properties_changed_notification(struct test_context *ctx)
 }
 
 static void
-test_layer_create_notification_callback(struct ivi_layout_layer *ivilayer,
-					void *userdata)
+test_layer_create_notification_callback(struct wl_listener *listener, void *data)
 {
-	struct test_context *ctx = userdata;
+	struct test_context *ctx =
+			container_of(listener, struct test_context,
+					layer_created);
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_layer *ivilayer = data;
 	const struct ivi_layout_layer_properties *prop = lyt->get_properties_of_layer(ivilayer);
 
 	iassert(lyt->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0));
@@ -743,15 +746,16 @@ test_layer_create_notification(struct test_context *ctx)
 	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
 
 	ctx->user_flags = 0;
+	ctx->layer_created.notify = test_layer_create_notification_callback;
 
-	iassert(lyt->add_notification_create_layer(
-		    test_layer_create_notification_callback, ctx) == IVI_SUCCEEDED);
+	iassert(lyt->add_listener_create_layer(&ctx->layer_created) == IVI_SUCCEEDED);
 	ivilayers[0] = lyt->layer_create_with_dimension(layers[0], 200, 300);
 
 	iassert(ctx->user_flags == 1);
 
 	ctx->user_flags = 0;
-	lyt->remove_notification_create_layer(test_layer_create_notification_callback, ctx);
+	// remove layer created listener.
+	wl_list_remove(&ctx->layer_created.link);
 
 	ivilayers[1] = lyt->layer_create_with_dimension(layers[1], 400, 500);
 
@@ -840,7 +844,7 @@ test_layer_bad_create_notification(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
-	iassert(lyt->add_notification_create_layer(NULL, NULL) == IVI_FAILED);
+	iassert(lyt->add_listener_create_layer(NULL) == IVI_FAILED);
 }
 
 static void

@@ -138,10 +138,6 @@ enum ivi_layout_transition_type{
 	IVI_LAYOUT_TRANSITION_MAX,
 };
 
-typedef void (*layer_create_notification_func)(
-			struct ivi_layout_layer *ivilayer,
-			void *userdata);
-
 typedef void (*layer_remove_notification_func)(
 			struct ivi_layout_layer *ivilayer,
 			void *userdata);
@@ -339,15 +335,14 @@ struct ivi_layout_interface {
 	 */
 
 	/**
-	 * \brief register/unregister for notification when ivi_layer is created
+	 * \brief add a listener for notification when ivi_layer is created
+	 *
+	 * When an ivi_layer is created, a signal is emitted
+	 * to the listening controller plugins.
+	 * The pointer of the created ivi_layer is sent as the void *data argument
+	 * to the wl_listener::notify callback function of the listener.
 	 */
-	int32_t (*add_notification_create_layer)(
-				layer_create_notification_func callback,
-				void *userdata);
-
-	void (*remove_notification_create_layer)(
-				layer_create_notification_func callback,
-				void *userdata);
+	int32_t (*add_listener_create_layer)(struct wl_listener *listener);
 
 	/**
 	 * \brief register/unregister for notification when ivi_layer is removed
