@@ -171,9 +171,9 @@ public:
 
     bool is8Bit() { return false; }
 
-    void writeTo(LChar*)
+    NO_RETURN_DUE_TO_CRASH void writeTo(LChar*)
     {
-        CHECK(false);
+        RELEASE_ASSERT(false);
     }
 
     void writeTo(UChar* destination);

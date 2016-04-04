@@ -54,7 +54,7 @@ public:
     template <typename... Args>
     void emplace(Args&&... args)
     {
-        CHECK(!m_ptr);
+        RELEASE_ASSERT(!m_ptr);
         m_ptr = reinterpret_cast_ptr<T*>(&m_storage.buffer);
         new (m_ptr) T(std::forward<Args>(args)...);
     }

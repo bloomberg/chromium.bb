@@ -114,7 +114,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBuffer* other)
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source, unsigned byteLength)
 {
     ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::NotShared, ArrayBufferContents::ZeroInitialize);
-    CHECK(contents.data());
+    RELEASE_ASSERT(contents.data());
     RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
     memcpy(buffer->data(), source, byteLength);
     return buffer.release();
@@ -122,7 +122,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source, unsigned byteLen
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBufferContents& contents)
 {
-    CHECK(contents.data());
+    RELEASE_ASSERT(contents.data());
     return adoptRef(new ArrayBuffer(contents));
 }
 
@@ -139,7 +139,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createUninitialized(unsigned numElements, u
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
 {
     ArrayBufferContents contents(numElements, elementByteSize, ArrayBufferContents::NotShared, policy);
-    CHECK(contents.data());
+    RELEASE_ASSERT(contents.data());
     return adoptRef(new ArrayBuffer(contents));
 }
 
@@ -159,7 +159,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(unsigned numElements, unsigned
 PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(const void* source, unsigned byteLength)
 {
     ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::Shared, ArrayBufferContents::ZeroInitialize);
-    CHECK(contents.data());
+    RELEASE_ASSERT(contents.data());
     RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
     memcpy(buffer->data(), source, byteLength);
     return buffer.release();
@@ -168,7 +168,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(const void* source, unsigned b
 PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
 {
     ArrayBufferContents contents(numElements, elementByteSize, ArrayBufferContents::Shared, policy);
-    CHECK(contents.data());
+    RELEASE_ASSERT(contents.data());
     return adoptRef(new ArrayBuffer(contents));
 }
 
