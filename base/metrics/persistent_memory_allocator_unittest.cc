@@ -565,7 +565,8 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     mmfile->Initialize(file_path);
     EXPECT_EQ(filesize, mmfile->length());
     if (FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile)) {
-      // Make sure construction doesn't crash.
+      // Make sure construction doesn't crash. It will, however, cause
+      // error messages warning about about a corrupted memory segment.
       FilePersistentMemoryAllocator allocator(std::move(mmfile), 0, "");
       // Also make sure that iteration doesn't crash.
       PersistentMemoryAllocator::Iterator iter;
@@ -605,7 +606,8 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     mmfile->Initialize(file_path);
     EXPECT_EQ(filesize, mmfile->length());
     if (FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile)) {
-      // Just need to make sure it doesn't crash.
+      // Make sure construction doesn't crash. It will, however, cause
+      // error messages warning about about a corrupted memory segment.
       FilePersistentMemoryAllocator allocator(std::move(mmfile), 0, "");
       EXPECT_TRUE(allocator.IsCorrupt());  // Garbage data so it should be.
     } else {
