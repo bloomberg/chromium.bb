@@ -18,8 +18,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process/memory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/current_module.h"
 #include "base/win/wrapped_window_proc.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 
@@ -144,10 +144,8 @@ BreakpadWin* BreakpadWin::GetInstance() {
 
 // Returns the Custom information to be used for crash reporting.
 google_breakpad::CustomClientInfo* BreakpadWin::GetCustomInfo() {
-  HMODULE binary = base::GetModuleFromAddress(
-      reinterpret_cast<void*>(&remoting::InitializeCrashReporting));
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForModule(binary));
+      FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE()));
 
   static wchar_t version[64];
   if (version_info.get()) {

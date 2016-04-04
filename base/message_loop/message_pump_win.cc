@@ -11,9 +11,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/process/memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "base/win/current_module.h"
 #include "base/win/wrapped_window_proc.h"
 
 namespace base {
@@ -89,8 +89,7 @@ MessagePumpForUI::MessagePumpForUI()
 
 MessagePumpForUI::~MessagePumpForUI() {
   DestroyWindow(message_hwnd_);
-  UnregisterClass(MAKEINTATOM(atom_),
-                  GetModuleFromAddress(&WndProcThunk));
+  UnregisterClass(MAKEINTATOM(atom_), CURRENT_MODULE());
 }
 
 void MessagePumpForUI::ScheduleWork() {
@@ -198,7 +197,7 @@ void MessagePumpForUI::InitMessageWnd() {
   // Generate a unique window class name.
   string16 class_name = StringPrintf(kWndClassFormat, this);
 
-  HINSTANCE instance = GetModuleFromAddress(&WndProcThunk);
+  HINSTANCE instance = CURRENT_MODULE();
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
   wc.lpfnWndProc = base::win::WrappedWindowProc<WndProcThunk>;

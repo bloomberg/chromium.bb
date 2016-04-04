@@ -16,14 +16,12 @@
 #include "base/macros.h"
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/thread_local.h"
+#include "base/win/current_module.h"
 
 extern "C" {
 __declspec(dllexport) void* GetHandleVerifier();
 typedef void* (*GetHandleVerifierFn)();
 }
-
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace {
 
@@ -247,7 +245,7 @@ void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
 }
 
 HMODULE ActiveVerifier::GetModule() const {
-  return reinterpret_cast<HMODULE>(&__ImageBase);
+  return CURRENT_MODULE();
 }
 
 }  // namespace

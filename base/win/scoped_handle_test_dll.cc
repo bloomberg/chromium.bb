@@ -6,10 +6,8 @@
 
 #include <vector>
 
+#include "base/win/current_module.h"
 #include "base/win/scoped_handle.h"
-
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace base {
 namespace win {
@@ -95,7 +93,7 @@ bool InternalRunLocationTest() {
     return false;
 
   // Get my module
-  HMODULE my_module = reinterpret_cast<HMODULE>(&__ImageBase);
+  HMODULE my_module = CURRENT_MODULE();
   if (!my_module)
     return false;
 

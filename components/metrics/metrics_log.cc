@@ -40,8 +40,7 @@
 #endif
 
 #if defined(OS_WIN)
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include "base/win/current_module.h"
 #endif
 
 using base::SampleCountIterator;
@@ -349,7 +348,7 @@ void MetricsLog::RecordEnvironment(
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
 #if defined(OS_WIN)
-  hardware->set_dll_base(reinterpret_cast<uint64_t>(&__ImageBase));
+  hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
 #endif
 
 #if defined(OVERRIDE_OS_NAME_TO_BLIMP)

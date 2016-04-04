@@ -12,6 +12,7 @@
 #include "content/public/child/child_thread.h"
 
 #if defined(OS_WIN)
+#include "base/win/current_module.h"
 #include "base/win/iat_patch_function.h"
 #endif
 
@@ -64,16 +65,11 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 
 }  // namespace
 
-#if defined(OS_WIN)
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-#endif  // OS_WIN
-
 void InitializePDF() {
 #if defined(OS_WIN)
   // Need to patch a few functions for font loading to work correctly. This can
   // be removed once we switch PDF to use Skia.
-  HMODULE current_module = reinterpret_cast<HMODULE>(&__ImageBase);
+  HMODULE current_module = CURRENT_MODULE();
   g_iat_patch_createdca.PatchFromModule(current_module, "gdi32.dll",
                                         "CreateDCA", CreateDCAPatch);
   g_iat_patch_get_font_data.PatchFromModule(current_module, "gdi32.dll",

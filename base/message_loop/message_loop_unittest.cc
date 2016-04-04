@@ -30,6 +30,7 @@
 #include "base/message_loop/message_pump_win.h"
 #include "base/process/memory.h"
 #include "base/strings/string16.h"
+#include "base/win/current_module.h"
 #include "base/win/scoped_handle.h"
 #endif
 
@@ -923,7 +924,7 @@ LRESULT CALLBACK TestWndProcThunk(HWND hwnd, UINT message,
 
 TEST(MessageLoopTest, AlwaysHaveUserMessageWhenNesting) {
   MessageLoop loop(MessageLoop::TYPE_UI);
-  HINSTANCE instance = GetModuleFromAddress(&TestWndProcThunk);
+  HINSTANCE instance = CURRENT_MODULE();
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
   wc.lpfnWndProc = TestWndProcThunk;
