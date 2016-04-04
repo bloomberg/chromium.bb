@@ -164,7 +164,7 @@ class FrameAndStyleLock {
 - (void)changePrimaryWindowToFinalFrame;
 
 // Override of CAAnimation delegate method.
-- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)flag;
+- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished;
 
 // Returns the layer of the root view of |window|.
 - (CALayer*)rootLayerOfWindow:(NSWindow*)window;
@@ -252,6 +252,14 @@ class FrameAndStyleLock {
 - (NSSize)desiredWindowLayoutSize {
   return isEnteringFullscreen_ ? [primaryWindow_ frame].size
                                : [[primaryWindow_ contentView] bounds].size;
+}
+
+- (void)browserWillBeDestroyed {
+  CALayer* root = [self rootLayerOfWindow:primaryWindow_];
+  [root removeAllAnimations];
+  [snapshotLayer_ removeAllAnimations];
+
+  controller_ = nil;
 }
 
 // -------------------------Private Methods----------------------------
@@ -473,7 +481,7 @@ class FrameAndStyleLock {
   changingPrimaryWindowSize_ = NO;
 }
 
-- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)flag {
+- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
   NSString* animationID = [theAnimation valueForKey:kAnimationIDKey];
 
   // Remove the snapshot window.
@@ -524,11 +532,11 @@ class FrameAndStyleLock {
     [root removeAnimationForKey:kPrimaryWindowAnimationID];
     root.opacity = 1;
 
+    completedTransition_ = YES;
+
     if (!isEnteringFullscreen_)
       [controller_ exitFullscreenAnimationFinished];
   }
-
-  completedTransition_ = YES;
 }
 
 - (CALayer*)rootLayerOfWindow:(NSWindow*)window {

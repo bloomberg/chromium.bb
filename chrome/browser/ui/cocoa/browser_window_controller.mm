@@ -450,6 +450,13 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   [presentationModeController_ exitPresentationMode];
   presentationModeController_.reset();
 
+  // Explicitly release |fullscreenTransition_| here since it may call back to
+  // this BWC in |-dealloc|. Reset the fullscreen variables.
+  if (fullscreenTransition_) {
+    [fullscreenTransition_ browserWillBeDestroyed];
+    [self resetCustomAppKitFullscreenVariables];
+  }
+
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
     ignore_result(browser_.release());

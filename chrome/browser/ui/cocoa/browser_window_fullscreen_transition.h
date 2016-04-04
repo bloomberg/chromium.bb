@@ -133,6 +133,9 @@
 // actual window's size.
 - (NSSize)desiredWindowLayoutSize;
 
+// Called when the browser is destroyed.
+- (void)browserWillBeDestroyed;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_FULLSCREEN_TRANSITION_H_
