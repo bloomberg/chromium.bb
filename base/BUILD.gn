@@ -28,7 +28,8 @@ import("//testing/test.gni")
 
 declare_args() {
   # Override this value to give a specific build date.
-  # See //base/build_time.cc for more details.
+  # See //base/build_time.cc and //build/write_build_date_header.py for more
+  # details and the expected format.
   override_build_date = "N/A"
 }
 

@@ -11,20 +11,27 @@
 TEST(BuildTime, DateLooksValid) {
   char build_date[] = BUILD_DATE;
 
-  EXPECT_EQ(11u, strlen(build_date));
+  EXPECT_EQ(20u, strlen(build_date));
   EXPECT_EQ(' ', build_date[3]);
   EXPECT_EQ(' ', build_date[6]);
-}
-
-TEST(BuildTime, TimeLooksValid) {
-  char build_time[] = "00:00:00";
-
-  EXPECT_EQ(8u, strlen(build_time));
-  EXPECT_EQ(':', build_time[2]);
-  EXPECT_EQ(':', build_time[5]);
+  EXPECT_EQ(' ', build_date[11]);
+  EXPECT_EQ('0', build_date[12]);
+  EXPECT_EQ('5', build_date[13]);
+  EXPECT_EQ(':', build_date[14]);
+  EXPECT_EQ('0', build_date[15]);
+  EXPECT_EQ('0', build_date[16]);
+  EXPECT_EQ(':', build_date[17]);
+  EXPECT_EQ('0', build_date[18]);
+  EXPECT_EQ('0', build_date[19]);
 }
 
 TEST(BuildTime, InThePast) {
-  EXPECT_TRUE(base::GetBuildTime() < base::Time::Now());
-  EXPECT_TRUE(base::GetBuildTime() < base::Time::NowFromSystemTime());
+  EXPECT_LT(base::GetBuildTime(), base::Time::Now());
+  EXPECT_LT(base::GetBuildTime(), base::Time::NowFromSystemTime());
+}
+
+TEST(BuildTime, NotTooFar) {
+  // BuildTime must be less than 45 days old.
+  base::Time cutoff(base::Time::Now() - base::TimeDelta::FromDays(45));
+  EXPECT_GT(base::GetBuildTime(), cutoff);
 }
