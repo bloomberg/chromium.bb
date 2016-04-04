@@ -134,14 +134,14 @@ DEFINE_TRACE(FilterEffectBuilder)
 bool FilterEffectBuilder::build(Element* element, const FilterOperations& operations, float zoom, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
-    RawPtr<Filter> parentFilter = Filter::create(1.0f);
-    RawPtr<FilterEffect> previousEffect = parentFilter->getSourceGraphic();
+    Filter* parentFilter = Filter::create(1.0f);
+    FilterEffect* previousEffect = parentFilter->getSourceGraphic();
     for (size_t i = 0; i < operations.operations().size(); ++i) {
-        RawPtr<FilterEffect> effect = nullptr;
+        FilterEffect* effect = nullptr;
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            RawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(zoom, element, previousEffect.get(), toReferenceFilterOperation(*filterOperation), referenceBoxSize, fillPaint, strokePaint);
+            Filter* referenceFilter = ReferenceFilterBuilder::build(zoom, element, previousEffect, toReferenceFilterOperation(*filterOperation), referenceBoxSize, fillPaint, strokePaint);
             if (referenceFilter) {
                 effect = referenceFilter->lastEffect();
                 m_referenceFilters.append(referenceFilter);
@@ -150,24 +150,24 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         }
         case FilterOperation::GRAYSCALE: {
             Vector<float> inputParameters = grayscaleMatrix(toBasicColorMatrixFilterOperation(filterOperation)->amount());
-            effect = FEColorMatrix::create(parentFilter.get(), FECOLORMATRIX_TYPE_MATRIX, inputParameters);
+            effect = FEColorMatrix::create(parentFilter, FECOLORMATRIX_TYPE_MATRIX, inputParameters);
             break;
         }
         case FilterOperation::SEPIA: {
             Vector<float> inputParameters = sepiaMatrix(toBasicColorMatrixFilterOperation(filterOperation)->amount());
-            effect = FEColorMatrix::create(parentFilter.get(), FECOLORMATRIX_TYPE_MATRIX, inputParameters);
+            effect = FEColorMatrix::create(parentFilter, FECOLORMATRIX_TYPE_MATRIX, inputParameters);
             break;
         }
         case FilterOperation::SATURATE: {
             Vector<float> inputParameters;
             inputParameters.append(narrowPrecisionToFloat(toBasicColorMatrixFilterOperation(filterOperation)->amount()));
-            effect = FEColorMatrix::create(parentFilter.get(), FECOLORMATRIX_TYPE_SATURATE, inputParameters);
+            effect = FEColorMatrix::create(parentFilter, FECOLORMATRIX_TYPE_SATURATE, inputParameters);
             break;
         }
         case FilterOperation::HUE_ROTATE: {
             Vector<float> inputParameters;
             inputParameters.append(narrowPrecisionToFloat(toBasicColorMatrixFilterOperation(filterOperation)->amount()));
-            effect = FEColorMatrix::create(parentFilter.get(), FECOLORMATRIX_TYPE_HUEROTATE, inputParameters);
+            effect = FEColorMatrix::create(parentFilter, FECOLORMATRIX_TYPE_HUEROTATE, inputParameters);
             break;
         }
         case FilterOperation::INVERT: {
@@ -180,7 +180,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             transferFunction.tableValues = transferParameters;
 
             ComponentTransferFunction nullFunction;
-            effect = FEComponentTransfer::create(parentFilter.get(), transferFunction, transferFunction, transferFunction, nullFunction);
+            effect = FEComponentTransfer::create(parentFilter, transferFunction, transferFunction, transferFunction, nullFunction);
             break;
         }
         case FilterOperation::OPACITY: {
@@ -192,7 +192,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             transferFunction.tableValues = transferParameters;
 
             ComponentTransferFunction nullFunction;
-            effect = FEComponentTransfer::create(parentFilter.get(), nullFunction, nullFunction, nullFunction, transferFunction);
+            effect = FEComponentTransfer::create(parentFilter, nullFunction, nullFunction, nullFunction, transferFunction);
             break;
         }
         case FilterOperation::BRIGHTNESS: {
@@ -202,7 +202,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             transferFunction.intercept = 0;
 
             ComponentTransferFunction nullFunction;
-            effect = FEComponentTransfer::create(parentFilter.get(), transferFunction, transferFunction, transferFunction, nullFunction);
+            effect = FEComponentTransfer::create(parentFilter, transferFunction, transferFunction, transferFunction, nullFunction);
             break;
         }
         case FilterOperation::CONTRAST: {
@@ -213,12 +213,12 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             transferFunction.intercept = -0.5 * amount + 0.5;
 
             ComponentTransferFunction nullFunction;
-            effect = FEComponentTransfer::create(parentFilter.get(), transferFunction, transferFunction, transferFunction, nullFunction);
+            effect = FEComponentTransfer::create(parentFilter, transferFunction, transferFunction, transferFunction, nullFunction);
             break;
         }
         case FilterOperation::BLUR: {
             float stdDeviation = floatValueForLength(toBlurFilterOperation(filterOperation)->stdDeviation(), 0);
-            effect = FEGaussianBlur::create(parentFilter.get(), stdDeviation, stdDeviation);
+            effect = FEGaussianBlur::create(parentFilter, stdDeviation, stdDeviation);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
@@ -226,12 +226,12 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             float stdDeviation = dropShadowOperation->stdDeviation();
             float x = dropShadowOperation->x();
             float y = dropShadowOperation->y();
-            effect = FEDropShadow::create(parentFilter.get(), stdDeviation, stdDeviation, x, y, dropShadowOperation->getColor(), 1);
+            effect = FEDropShadow::create(parentFilter, stdDeviation, stdDeviation, x, y, dropShadowOperation->getColor(), 1);
             break;
         }
         case FilterOperation::BOX_REFLECT: {
             BoxReflectFilterOperation* boxReflectOperation = toBoxReflectFilterOperation(filterOperation);
-            effect = FEBoxReflect::create(parentFilter.get(), boxReflectOperation->direction(), boxReflectOperation->offset());
+            effect = FEBoxReflect::create(parentFilter, boxReflectOperation->direction(), boxReflectOperation->offset());
             break;
         }
         default:
@@ -247,7 +247,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             }
             if (previousEffect->originTainted())
                 effect->setOriginTainted();
-            previousEffect = effect.release();
+            previousEffect = effect;
         }
     }
 

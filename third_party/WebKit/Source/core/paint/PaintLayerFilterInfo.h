@@ -59,7 +59,7 @@ public:
     ~PaintLayerFilterInfo() override;
 
     FilterEffectBuilder* builder() const { return m_builder.get(); }
-    void setBuilder(RawPtr<FilterEffectBuilder>);
+    void setBuilder(FilterEffectBuilder*);
 
     void updateReferenceFilterClients(const FilterOperations&);
 

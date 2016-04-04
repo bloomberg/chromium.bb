@@ -30,7 +30,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     if (!layer.paintsWithFilters())
         return;
 
-    RawPtr<FilterEffect> lastEffect = layer.lastFilterEffect();
+    FilterEffect* lastEffect = layer.lastFilterEffect();
     if (!lastEffect)
         return;
 
@@ -38,7 +38,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
 
     SkiaImageFilterBuilder builder;
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
-    RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);
+    RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
     if (!imageFilter)
         return;
 

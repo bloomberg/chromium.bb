@@ -139,7 +139,7 @@ private:
         DECLARE_TRACE();
 
     private:
-        RawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+        Scrollbar* createScrollbar(ScrollbarOrientation);
         void destroyScrollbar(ScrollbarOrientation);
 
     private:
@@ -157,7 +157,7 @@ private:
 public:
     // FIXME: We should pass in the LayoutBox but this opens a window
     // for crashers during PaintLayer setup (see crbug.com/368062).
-    static RawPtr<PaintLayerScrollableArea> create(PaintLayer& layer)
+    static PaintLayerScrollableArea* create(PaintLayer& layer)
     {
         return new PaintLayerScrollableArea(layer);
     }

@@ -2600,8 +2600,8 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the Filter if it didn't change.
-            RawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingNode), nullptr, referenceOperation);
-            referenceOperation.setFilter(referenceFilter.release());
+            Filter* referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingNode), nullptr, referenceOperation);
+            referenceOperation.setFilter(referenceFilter);
         }
     }
 
@@ -2705,7 +2705,7 @@ FilterEffect* PaintLayer::lastFilterEffect() const
     FilterEffectBuilder* builder = updateFilterEffectBuilder();
     if (!builder)
         return nullptr;
-    return builder->lastEffect().get();
+    return builder->lastEffect();
 }
 
 bool PaintLayer::hasFilterOutsets() const

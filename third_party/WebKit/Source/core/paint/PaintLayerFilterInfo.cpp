@@ -45,7 +45,7 @@ PaintLayerFilterInfo::~PaintLayerFilterInfo()
     clearFilterReferences();
 }
 
-void PaintLayerFilterInfo::setBuilder(RawPtr<FilterEffectBuilder> builder)
+void PaintLayerFilterInfo::setBuilder(FilterEffectBuilder* builder)
 {
     m_builder = builder;
 }

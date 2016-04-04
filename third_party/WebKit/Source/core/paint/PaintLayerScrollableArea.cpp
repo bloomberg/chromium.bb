@@ -344,7 +344,7 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
     LocalFrame* frame = box().frame();
     ASSERT(frame);
 
-    RawPtr<FrameView> frameView = box().frameView();
+    FrameView* frameView = box().frameView();
 
     TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data", InspectorScrollLayerEvent::data(&box()));
 
@@ -1545,10 +1545,10 @@ void PaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(bool ha
     }
 }
 
-RawPtr<Scrollbar> PaintLayerScrollableArea::ScrollbarManager::createScrollbar(ScrollbarOrientation orientation)
+Scrollbar* PaintLayerScrollableArea::ScrollbarManager::createScrollbar(ScrollbarOrientation orientation)
 {
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached : !m_vBarIsAttached);
-    RawPtr<Scrollbar> scrollbar = nullptr;
+    Scrollbar* scrollbar = nullptr;
     const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea->box());
     bool hasCustomScrollbarStyle = actualLayoutObject.isBox() && actualLayoutObject.styleRef().hasPseudoStyle(PseudoIdScrollbar);
     if (hasCustomScrollbarStyle) {
@@ -1559,8 +1559,8 @@ RawPtr<Scrollbar> PaintLayerScrollableArea::ScrollbarManager::createScrollbar(Sc
             scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject.styleRef().appearance());
         scrollbar = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize, &m_scrollableArea->box().frame()->page()->chromeClient());
     }
-    m_scrollableArea->box().document().view()->addChild(scrollbar.get());
-    return scrollbar.release();
+    m_scrollableArea->box().document().view()->addChild(scrollbar);
+    return scrollbar;
 }
 
 void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation)

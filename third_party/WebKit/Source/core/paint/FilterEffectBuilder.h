@@ -44,7 +44,7 @@ class Element;
 
 class CORE_EXPORT FilterEffectBuilder final : public GarbageCollectedFinalized<FilterEffectBuilder> {
 public:
-    static RawPtr<FilterEffectBuilder> create()
+    static FilterEffectBuilder* create()
     {
         return new FilterEffectBuilder();
     }
@@ -54,7 +54,7 @@ public:
 
     bool build(Element*, const FilterOperations&, float zoom, const FloatSize* referenceBoxSize = nullptr, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
 
-    RawPtr<FilterEffect> lastEffect() const
+    FilterEffect* lastEffect() const
     {
         return m_lastEffect;
     }

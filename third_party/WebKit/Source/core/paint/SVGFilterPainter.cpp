@@ -118,7 +118,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
         return nullptr;
     }
 
-    RawPtr<FilterData> filterData = FilterData::create();
+    FilterData* filterData = FilterData::create();
     FloatRect referenceBox = object.objectBoundingBox();
 
     SVGFilterElement* filterElement = toSVGFilterElement(m_filter.element());
@@ -146,10 +146,9 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
     filterData->filter->setLastEffect(lastEffect);
 
-    FilterData* data = filterData.get();
     // TODO(pdr): Can this be moved out of painter?
-    m_filter.setFilterDataForLayoutObject(const_cast<LayoutObject*>(&object), filterData.release());
-    return recordingContext.beginContent(data);
+    m_filter.setFilterDataForLayoutObject(const_cast<LayoutObject*>(&object), filterData);
+    return recordingContext.beginContent(filterData);
 }
 
 void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordingContext& recordingContext)
