@@ -341,6 +341,7 @@ void ArcBridgeBootstrapImpl::SetState(State state) {
 }  // namespace
 
 ArcBridgeBootstrap::ArcBridgeBootstrap() {}
+
 ArcBridgeBootstrap::~ArcBridgeBootstrap() {}
 
 // static

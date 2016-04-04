@@ -2263,6 +2263,7 @@
       'conditions': [
         ['chromeos==1', {
           'dependencies': [
+            '../components/components.gyp:arc_test_support',
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ]
         }, {

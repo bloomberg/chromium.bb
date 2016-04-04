@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
@@ -224,6 +226,11 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   // In case UI is disabled we assume that ARC is opted-in.
   if (!IsOptInVerificationDisabled()) {
+    pref_change_registrar_.Init(profile_->GetPrefs());
+    pref_change_registrar_.Add(
+        prefs::kArcEnabled,
+        base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
+                   base::Unretained(this)));
     if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
       OnOptInPreferenceChanged();
     } else {
@@ -262,6 +269,7 @@ void ArcAuthService::Shutdown() {
     pref_service_syncable->RemoveObserver(this);
     pref_service_syncable->RemoveSyncedPrefObserver(prefs::kArcEnabled, this);
   }
+  pref_change_registrar_.RemoveAll();
   profile_ = nullptr;
 }
 
@@ -325,8 +333,6 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
                              ? OptInActionType::OPTED_IN
                              : OptInActionType::OPTED_OUT);
   }
-
-  OnOptInPreferenceChanged();
 }
 
 void ArcAuthService::OnOptInPreferenceChanged() {

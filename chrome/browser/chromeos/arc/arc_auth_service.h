@@ -14,6 +14,7 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/auth/arc_auth_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -169,6 +170,9 @@ class ArcAuthService : public ArcService,
   // Owned by content::BrowserContent. Used to isolate cookies for auth server
   // communication and shared with Arc OptIn UI platform app.
   content::StoragePartition* storage_partition_ = nullptr;
+
+  // Registrar used to monitor ARC enabled state.
+  PrefChangeRegistrar pref_change_registrar_;
 
   mojo::Binding<AuthHost> binding_;
   base::ThreadChecker thread_checker_;
