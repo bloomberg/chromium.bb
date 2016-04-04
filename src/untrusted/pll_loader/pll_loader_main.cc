@@ -15,17 +15,17 @@ typedef void (*start_func_t)(int argc, char **argv, char **envp,
                              Elf32_auxv_t *auxv);
 
 int main(int argc, char **argv, char **envp) {
-  // The PLL format does not include module dependencies yet, so all the
-  // modules must be specified on the command line.
-  if (argc <= 2) {
-    fprintf(stderr, "Usage: pll_loader <ELF file>...\n");
+  if (argc != 3) {
+    fprintf(stderr, "Usage: pll_loader <Directory path> <ELF file>\n");
     return 1;
   }
 
   ModuleSet modset;
-  for (int i = 1; i < argc; i++) {
-    modset.AddByFilename(argv[i]);
-  }
+  std::vector<std::string> search_path;
+  search_path.push_back(argv[1]);
+  modset.SetSonameSearchPath(search_path);
+
+  modset.AddByFilename(argv[2]);
   modset.ResolveRefs();
 
   Elf32_auxv_t auxv[2];

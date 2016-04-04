@@ -47,13 +47,15 @@ class ModuleSet {
  public:
   // Load a PLL by filename. Does not add the filename to a known set of loaded
   // modules, and will not de-duplicate loading modules.
-  void AddByFilename(const char *filename);
+  // Returns a pointer to the PLL's pso_root.
+  PLLRoot *AddByFilename(const char *filename);
 
   // Change the search path used by the linker when looking for PLLs by soname.
   void SetSonameSearchPath(const std::vector<std::string> &dir_list);
 
   // Load a PLL by soname and add the soname to the set of loaded modules.
-  void AddBySoname(const char *soname);
+  // Returns a pointer to the PLL's pso_root if it is loaded, NULL otherwise.
+  PLLRoot *AddBySoname(const char *soname);
 
   // Looks up a symbol in the set of modules.  This does a linear search of
   // the modules, in the order that they were added using AddByFilename().

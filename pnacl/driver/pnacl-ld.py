@@ -10,6 +10,7 @@ from driver_env import env
 from driver_log import Log
 import filetype
 import ldtools
+import os
 import pathtools
 
 EXTRA_ENV = {
@@ -345,6 +346,11 @@ def main(argv):
                                 # pnacl_generate_pexe=0 with glibc,
                                 # for user libraries.
                                 ldtools.LibraryTypes.ANY)
+  plls, inputs = FilterPlls(inputs)
+  plls = [os.path.basename(pll) for pll in plls]
+
+  if not env.getbool('SHARED') and plls != []:
+    Log.Fatal('Passing a PLL to the linker requires the "-shared" option.')
 
   # Make sure the inputs have matching arch.
   CheckInputsArch(inputs)
@@ -404,6 +410,10 @@ def main(argv):
         '-rewrite-llvm-intrinsic-calls',
         '-convert-to-pso',
       ]
+      # ConvertToPso takes a list of comma-separated PLL dependencies as an
+      # argument.
+      if plls != []:
+        pre_simplify_shared += ['-convert-to-pso-deps=' + ','.join(plls)]
       opt_args.append(pre_simplify_shared)
       # Post-opt is required, since '-convert-to-pso' adds metadata which must
       # be simplified before finalization. Additionally, all functions must be
@@ -510,6 +520,19 @@ def FixPrivateLibs(user_libs):
     else:
       result_libs.append(user_lib)
   return result_libs
+
+def FilterPlls(inputs):
+  """ Split the input list into PLLs and other objects.
+  """
+  plls = []
+  other = []
+
+  for f in inputs:
+    if ldtools.IsFlag(f) or not filetype.IsPll(f):
+      other.append(f)
+    else:
+      plls.append(f)
+  return (plls, other)
 
 def SplitLinkLine(inputs):
   """ Split the input list into bitcode and native objects (.o, .a)

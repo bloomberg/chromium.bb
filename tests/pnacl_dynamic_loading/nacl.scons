@@ -22,13 +22,15 @@ if env.Bit('use_sandboxed_translator'):
   Return()
 
 
-def FinalizeAndTranslatePso(dest, opt_result):
+def FinalizePso(dest, opt_result):
   # Finalize to strip debugging info and to emit PNaCl bitcode.
-  finalized_result = env.Command(
-      dest + '.final.pso', [opt_result],
-      '${PNACLFINALIZE} ${SOURCES} -o ${TARGET}')
+  return env.Command(dest + '.so', [opt_result],
+                     '${PNACLFINALIZE} ${SOURCES} -o ${TARGET}')
+
+
+def TranslatePso(dest, finalized_result):
   # Translate to an ELF loadable object.
-  return env.Command(dest + '.so', [finalized_result],
+  return env.Command(dest + '.so.translated', [finalized_result],
                      '${TRANSLATE} -pso ${SOURCES} -o ${TARGET}')
 
 
@@ -43,7 +45,8 @@ def MakeAndTranslatePso(dest, bitcode_file, llvm_passes):
       '-verify-pnaclabi-module -verify-pnaclabi-functions '
       '-pnaclabi-allow-debug-metadata '
       '${SOURCES} -o ${TARGET}')
-  return FinalizeAndTranslatePso(dest, opt_result)
+  finalized_result = FinalizePso(dest, opt_result)
+  return TranslatePso(dest, finalized_result)
 
 def PsoFromLLVMAssembly(base_name):
   bitcode_file = env.Command(
@@ -54,11 +57,24 @@ def PsoFromLLVMAssembly(base_name):
                              llvm_passes='')
 
 
-def MakeAndTranslatePll(dest, source_file):
+def MakePll(dest, source_file, dependencies):
+  deps = ''
+  if len(dependencies) != 0:
+    deps += ' -L' + Dir('.').abspath
+  for d in dependencies:
+    deps += ' -l:' + d[0].name
+  pll_object = env.ComponentObject(dest + '.po', [source_file])
   nonfinal_pll = env.Command(
-      dest + '.nonfinal.pll', [source_file],
-      '${CC} -shared ${SOURCES} -o ${TARGET}')
-  return FinalizeAndTranslatePso(dest, nonfinal_pll)
+      dest + '.nonfinal.pll', [pll_object],
+      '${LD} -shared ${SOURCES} -o ${TARGET}' + deps)
+  # Linking the nonfinal_pll depends on the untranslated, finalized PLL (.so)
+  # dependencies existing.
+  Depends(nonfinal_pll, dependencies)
+  return FinalizePso(dest, nonfinal_pll)
+
+def MakeAndTranslatePll(dest, source_file, dependencies):
+  finalized_pll = MakePll(dest, source_file, dependencies)
+  return TranslatePso(dest, finalized_pll)
 
 # Under SFI NaCl, the loader currently depends on the allocate_code_data()
 # interface provided by the IRT.
@@ -84,20 +100,19 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 24:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 25:
   Return()
 
-# TODO(smklein): These LLVM passes should be automatically applied by the
-# drivers. Once support for dependencies has been plumbed through the drivers,
-# use the "-l" linker flags and don't explicitly declare any LLVM passes.
-test_pll = MakeAndTranslatePso(
-    'test_pll', [env.ComponentObject('test_pll.c')],
-    llvm_passes='-nacl-global-cleanup -expand-varargs '
-    '-rewrite-pnacl-library-calls -rewrite-llvm-intrinsic-calls '
-    '-convert-to-pso -convert-to-pso-deps=libfoo.so,libbar.so '
-    '-pnacl-abi-simplify-postopt')
+test_pll_a_finalized = MakePll('test_pll_a', 'test_pll_a.c', [])
+test_pll_a = TranslatePso('test_pll_a', test_pll_a_finalized)
+test_pll_b_finalized = MakePll('test_pll_b', 'test_pll_b.c',
+                               [test_pll_a_finalized])
+test_pll_b = TranslatePso('test_pll_b', test_pll_b_finalized)
 
-test_pll_tls = MakeAndTranslatePll('test_pll_tls', 'test_pll_tls.c')
+test_pll = MakeAndTranslatePll(
+    'test_pll', 'test_pll.c',
+    [test_pll_a_finalized, test_pll_b_finalized])
+test_pll_tls = MakeAndTranslatePll('test_pll_tls', 'test_pll_tls.c', [])
 
 pll_symbols_test = env.ComponentProgram(
     'pll_symbols_test', ['pll_symbols_test.cc'],
@@ -111,9 +126,6 @@ env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
     'run_pll_symbols_test', is_broken=is_broken)
 
-
-test_pll_a = MakeAndTranslatePll('test_pll_a', 'test_pll_a.c')
-test_pll_b = MakeAndTranslatePll('test_pll_b', 'test_pll_b.c')
 
 pll_loader_test = env.ComponentProgram(
     'pll_loader_test', ['pll_loader_test.cc'],
@@ -130,7 +142,7 @@ env.AddNodeToTestSuite(
     'run_pll_loader_test', is_broken=is_broken)
 
 
-pll_libc = env.Command(
+pll_libc_nonfinal = env.Command(
     'libc${OBJSUFFIX}',
     # libnacl should come first so that it can override definitions in libc.
     [env.File('${LIB_DIR}/libnacl.a'),
@@ -138,10 +150,13 @@ pll_libc = env.Command(
      env.ComponentObject('libc_entry.c')],
     '${CC} -shared -Wl,--whole-archive ${SOURCES} -o ${TARGET}')
 
-translated_pll_libc = FinalizeAndTranslatePso('translated_pll_libc', pll_libc)
-translated_pll_hello_world = MakeAndTranslatePll(
-    'translated_pll_hello_world',
-    '../hello_world/hello_world.c')
+pll_libc_finalized = FinalizePso('pll_libc', pll_libc_nonfinal)
+pll_libc = TranslatePso('pll_libc', pll_libc_finalized)
+
+pll_hello_world = MakeAndTranslatePll(
+    'pll_hello_world',
+    '../hello_world/hello_world.c',
+    [pll_libc_finalized])
 
 # Ideally we would have this ComponentProgram() definition in
 # src/untrusted/pll_loader/nacl.scons instead; see the comment there for
@@ -152,10 +167,31 @@ pll_loader = env.ComponentProgram(
 
 node = env.CommandSelLdrTestNacl(
     'pll_hello_world_test.out', pll_loader,
-    [translated_pll_libc, translated_pll_hello_world],
+    [Dir('.').abspath, pll_hello_world],
     # Add '-a' to enable filesystem access for opening DSOs.
     sel_ldr_flags=['-a'],
-    stdout_golden=env.File('../hello_world/hello_world.stdout'))
+    stdout_golden=env.File('../hello_world/hello_world.stdout'),
+    extra_deps=[pll_libc, pll_hello_world])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
     'run_pll_hello_world_test', is_broken=is_broken)
+
+
+test_pll_c_finalized = MakePll(
+    'test_pll_c', 'test_pll_c.c', [test_pll_a_finalized, test_pll_b_finalized])
+test_pll_c = TranslatePso('test_pll_c', test_pll_c_finalized)
+
+pll_dependencies_test = MakeAndTranslatePll(
+    'pll_dependencies_test', 'dependencies_test.c',
+    [pll_libc_finalized, test_pll_c_finalized])
+
+node = env.CommandSelLdrTestNacl(
+    'pll_dependencies_test.out', pll_loader,
+    [Dir('.').abspath, pll_dependencies_test],
+    # Add '-a' to enable filesystem access for opening DSOs.
+    sel_ldr_flags=['-a'], stdout_golden=env.File('dependencies_test.stdout'),
+    extra_deps=[pll_libc, test_pll_a, test_pll_b, test_pll_c,
+                pll_dependencies_test])
+env.AddNodeToTestSuite(
+    node, ['small_tests', 'toolchain_tests'], 'run_pll_dependencies_test',
+    is_broken=is_broken)

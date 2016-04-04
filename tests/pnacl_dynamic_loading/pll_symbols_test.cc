@@ -173,9 +173,9 @@ void TestCoreFunctionality(const char *test_dso_file) {
 
   // Test dependencies.
   ASSERT_EQ(pll_root->dependencies_count, 2);
-  ASSERT_EQ(strcmp(pll_root->dependencies_list, "libfoo.so"), 0);
-  ASSERT_EQ(strcmp(pll_root->dependencies_list + strlen("libfoo.so") + 1,
-                   "libbar.so"), 0);
+  ASSERT_EQ(strcmp(pll_root->dependencies_list, "test_pll_a.so"), 0);
+  ASSERT_EQ(strcmp(pll_root->dependencies_list + strlen("test_pll_a.so") + 1,
+                   "test_pll_b.so"), 0);
 
   // Test exports.
 

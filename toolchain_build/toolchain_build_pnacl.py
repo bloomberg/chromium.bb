@@ -50,7 +50,7 @@ NACL_TOOLS_DIR = os.path.join(NACL_DIR, 'tools')
 # (i.e. before the tests would pass on the main NaCl buildbots/trybots).
 # If you are adding a test that depends on a toolchain change, you can
 # increment this version number manually.
-FEATURE_VERSION = 24
+FEATURE_VERSION = 25
 
 # For backward compatibility, these key names match the directory names
 # previously used with gclient

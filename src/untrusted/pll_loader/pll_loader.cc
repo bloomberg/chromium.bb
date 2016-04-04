@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -156,10 +157,10 @@ void ModuleSet::SetSonameSearchPath(const std::vector<std::string> &dir_list) {
   search_path_ = dir_list;
 }
 
-void ModuleSet::AddBySoname(const char *soname) {
-  // TODO(smklein): Deduplicate rather than failing once dependencies are added.
+PLLRoot *ModuleSet::AddBySoname(const char *soname) {
   if (sonames_.count(soname) != 0) {
-    NaClLog(LOG_FATAL, "PLL Loader found duplicate soname: %s\n", soname);
+    // This module has already been added to the ModuleSet.
+    return NULL;
   }
   sonames_.insert(soname);
 
@@ -169,23 +170,35 @@ void ModuleSet::AddBySoname(const char *soname) {
     // point to the same file.
     path.append("/");
     path.append(soname);
+    path.append(".translated");
     struct stat buf;
     if (stat(path.c_str(), &buf) == 0) {
-      AddByFilename(path.c_str());
-      return;
+      return AddByFilename(path.c_str());
     }
   }
 
-  NaClLog(LOG_FATAL, "PLL Loader cannot find shared object file: %s\n", soname);
+  NaClLog(LOG_FATAL, "PLL Loader cannot find shared object: %s\n", soname);
+  return NULL;
 }
 
-void ModuleSet::AddByFilename(const char *filename) {
+PLLRoot *ModuleSet::AddByFilename(const char *filename) {
   void *pso_root;
   int err = pnacl_load_elf_file(filename, &pso_root);
   if (err != 0) {
-    NaClLog(LOG_FATAL, "pnacl_load_elf_file() failed: errno=%d\n", err);
+    NaClLog(LOG_FATAL,
+            "pll_loader could not open %s: errno=%d\n", filename, err);
   }
-  modules_.push_back(PLLModule((const PLLRoot *) pso_root));
+  PLLModule module((const PLLRoot *) pso_root);
+  modules_.push_back(module);
+  const char *dependencies_list = module.root()->dependencies_list;
+  size_t dependencies_count = module.root()->dependencies_count;
+  size_t string_offset = 0;
+  for (size_t i = 0; i < dependencies_count; i++) {
+    std::string dependency_filename(dependencies_list + string_offset);
+    string_offset += dependency_filename.length() + 1;
+    AddBySoname(dependency_filename.c_str());
+  }
+  return (PLLRoot *) pso_root;
 }
 
 void *ModuleSet::GetSym(const char *name) {

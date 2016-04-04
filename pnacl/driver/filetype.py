@@ -67,6 +67,10 @@ def IsNativeDSO(filename):
   return FileType(filename) == 'so'
 
 @SimpleCache
+def IsPll(filename):
+  return FileType(filename) == 'pll'
+
+@SimpleCache
 def GetBitcodeMagic(filename):
   fp = driver_log.DriverOpen(filename, 'rb')
   header = fp.read(4)
@@ -349,6 +353,10 @@ def FileType(filename):
     return 'po'
 
   if IsPNaClBitcode(filename):
+    # Although this file has the same extension as a native ".so", it actually
+    # is in a portable format and should be handled slightly differently.
+    if ext == 'so':
+      return 'pll'
     return 'pexe'
 
   if IsLinkerScript(filename):

@@ -57,17 +57,20 @@ int main(int argc, char **argv) {
   int *module_a_var = (int *) modset.GetSym("module_a_var");
   ASSERT_EQ(module_a_var, NULL);
 
-  modset.AddBySoname(module_a_soname);
+  ASSERT_NE(modset.AddBySoname(module_a_soname), NULL);
   module_a_var = (int *) modset.GetSym("module_a_var");
   ASSERT_NE(module_a_var, NULL);
   ASSERT_EQ(*module_a_var, 2345);
 
-  modset.AddBySoname(module_b_soname);
+  // Demonstrate that the same soname cannot be loaded multiple times.
+  ASSERT_EQ(modset.AddBySoname(module_a_soname), NULL);
+
+  ASSERT_NE(modset.AddBySoname(module_b_soname), NULL);
   int *module_b_var = (int *) modset.GetSym("module_b_var");
   ASSERT_NE(module_b_var, NULL);
   ASSERT_EQ(*module_b_var, 1234);
 
-  modset.AddBySoname(module_tls_soname);
+  ASSERT_NE(modset.AddBySoname(module_tls_soname), NULL);
 
   modset.ResolveRefs();
 
