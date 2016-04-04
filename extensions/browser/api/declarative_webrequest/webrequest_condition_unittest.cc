@@ -254,15 +254,15 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   URLMatcher matcher;
 
   WebRequestConditionSet::Values conditions;
-  conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
+  conditions.push_back(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
       "    \"hostSuffix\": \"example.com\", \n"
       "    \"schemes\": [\"http\"], \n"
       "  }, \n"
-      "}").release()));
-  conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
+      "}"));
+  conditions.push_back(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
@@ -270,7 +270,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
       "    \"hostPrefix\": \"www\", \n"
       "    \"schemes\": [\"https\"], \n"
       "  }, \n"
-      "}").release()));
+      "}"));
 
   // Test insertion
   std::string error;
@@ -323,14 +323,14 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   URLMatcher matcher;
 
   WebRequestConditionSet::Values conditions;
-  conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
+  conditions.push_back(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
       "    \"ports\": [80, [1000, 1010]], \n"  // Allow 80;1000-1010.
       "    \"hostSuffix\": \"example.com\", \n"
       "  }, \n"
-      "}").release()));
+      "}"));
 
   // Test insertion
   std::string error;

@@ -54,7 +54,7 @@ scoped_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
        ++it) {
     const base::DictionaryValue* dict;
     CHECK((*it)->GetAsDictionary(&dict));
-    actions.push_back(linked_ptr<base::Value>(dict->DeepCopy()));
+    actions.push_back(dict->CreateDeepCopy());
   }
 
   std::string error;
@@ -242,7 +242,7 @@ TEST(WebRequestActionTest, CreateActionSet) {
   incorrect_action.SetString(keys::kInstanceTypeKey, kUnknownActionType);
 
   // Test success.
-  input.push_back(linked_ptr<base::Value>(correct_action.DeepCopy()));
+  input.push_back(correct_action.CreateDeepCopy());
   error.clear();
   result = WebRequestActionSet::Create(NULL, NULL, input, &error, &bad_message);
   EXPECT_TRUE(error.empty()) << error;
@@ -254,7 +254,7 @@ TEST(WebRequestActionTest, CreateActionSet) {
   EXPECT_EQ(10, result->GetMinimumPriority());
 
   // Test failure.
-  input.push_back(linked_ptr<base::Value>(incorrect_action.DeepCopy()));
+  input.push_back(incorrect_action.CreateDeepCopy());
   error.clear();
   result = WebRequestActionSet::Create(NULL, NULL, input, &error, &bad_message);
   EXPECT_NE("", error);

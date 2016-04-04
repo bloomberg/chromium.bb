@@ -83,7 +83,7 @@ api::developer_private::ItemInfo MangleExtensionInfo(
     scoped_ptr<base::DictionaryValue> value = error.ToValue();
     value->SetInteger("type", static_cast<int>(ExtensionError::MANIFEST_ERROR));
     value->SetInteger("level", static_cast<int>(logging::LOG_WARNING));
-    result.manifest_errors.push_back(make_linked_ptr(value.release()));
+    result.manifest_errors.push_back(std::move(value));
   }
   for (const api::developer_private::RuntimeError& error :
        info.runtime_errors) {
@@ -95,7 +95,7 @@ api::developer_private::ItemInfo MangleExtensionInfo(
     else if (error.severity == api::developer_private::ERROR_LEVEL_ERROR)
       severity = logging::LOG_ERROR;
     value->SetInteger("level", static_cast<int>(severity));
-    result.runtime_errors.push_back(make_linked_ptr(value.release()));
+    result.runtime_errors.push_back(std::move(value));
   }
   result.offline_enabled = info.offline_enabled;
   for (const api::developer_private::ExtensionView& view : info.views) {

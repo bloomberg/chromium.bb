@@ -57,7 +57,6 @@ class _Generator(object):
       .Append('#include <vector>')
       .Append()
       .Append('#include "base/logging.h"')
-      .Append('#include "base/memory/linked_ptr.h"')
       .Append('#include "base/memory/scoped_ptr.h"')
       .Append('#include "base/values.h"')
       .Cblock(self._type_helper.GenerateIncludes(include_soft=include_soft))

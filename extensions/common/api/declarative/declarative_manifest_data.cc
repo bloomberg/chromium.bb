@@ -61,8 +61,8 @@ class ErrorBuilder {
 bool ConvertManifestRule(const linked_ptr<DeclarativeManifestData::Rule>& rule,
                          ErrorBuilder* error_builder) {
   auto convert_list =
-      [error_builder](std::vector<linked_ptr<base::Value>>& list) {
-        for (const linked_ptr<base::Value>& value : list) {
+      [error_builder](std::vector<scoped_ptr<base::Value>>& list) {
+        for (const scoped_ptr<base::Value>& value : list) {
           base::DictionaryValue* dictionary = nullptr;
           if (!value->GetAsDictionary(&dictionary)) {
             error_builder->Append("expected dictionary, got %s",

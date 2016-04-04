@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"

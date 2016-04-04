@@ -164,7 +164,7 @@ ChromeContentRulesRegistry::CreateRule(
     const api::events::Rule& api_rule,
     std::string* error) {
   std::vector<scoped_ptr<const ContentCondition>> conditions;
-  for (const linked_ptr<base::Value>& value : api_rule.conditions) {
+  for (const scoped_ptr<base::Value>& value : api_rule.conditions) {
     conditions.push_back(
         CreateContentCondition(extension, predicate_factories, *value, error));
     if (!error->empty())
@@ -172,7 +172,7 @@ ChromeContentRulesRegistry::CreateRule(
   }
 
   std::vector<scoped_ptr<const ContentAction>> actions;
-  for (const linked_ptr<base::Value>& value : api_rule.actions) {
+  for (const scoped_ptr<base::Value>& value : api_rule.actions) {
     actions.push_back(ContentAction::Create(browser_context(), extension,
                                             *value, error));
     if (!error->empty())

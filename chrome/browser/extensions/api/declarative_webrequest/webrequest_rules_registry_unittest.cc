@@ -126,11 +126,9 @@ class WebRequestRulesRegistryTest : public testing::Test {
     linked_ptr<api::events::Rule> rule(new api::events::Rule);
     rule->id.reset(new std::string(kRuleId1));
     rule->priority.reset(new int(100));
-    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
-    rule->conditions.push_back(
-        linked_ptr<base::Value>(http_condition_url_filter.DeepCopy()));
-    rule->conditions.push_back(
-        linked_ptr<base::Value>(https_condition_url_filter.DeepCopy()));
+    rule->actions.push_back(action_dict.CreateDeepCopy());
+    rule->conditions.push_back(http_condition_url_filter.CreateDeepCopy());
+    rule->conditions.push_back(https_condition_url_filter.CreateDeepCopy());
     return rule;
   }
 
@@ -145,9 +143,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     linked_ptr<api::events::Rule> rule(new api::events::Rule);
     rule->id.reset(new std::string(kRuleId2));
     rule->priority.reset(new int(100));
-    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
-    rule->conditions.push_back(
-        linked_ptr<base::Value>(condition_dict.DeepCopy()));
+    rule->actions.push_back(action_dict.CreateDeepCopy());
+    rule->conditions.push_back(condition_dict.CreateDeepCopy());
     return rule;
   }
 
@@ -163,9 +160,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     linked_ptr<api::events::Rule> rule(new api::events::Rule);
     rule->id.reset(new std::string(kRuleId3));
     rule->priority.reset(new int(100));
-    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
-    rule->conditions.push_back(
-        linked_ptr<base::Value>(condition_dict.DeepCopy()));
+    rule->actions.push_back(action_dict.CreateDeepCopy());
+    rule->conditions.push_back(condition_dict.CreateDeepCopy());
     return rule;
   }
 
@@ -185,23 +181,21 @@ class WebRequestRulesRegistryTest : public testing::Test {
     linked_ptr<api::events::Rule> rule(new api::events::Rule);
     rule->id.reset(new std::string(kRuleId4));
     rule->priority.reset(new int(200));
-    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
-    rule->conditions.push_back(
-        linked_ptr<base::Value>(condition_dict.DeepCopy()));
+    rule->actions.push_back(action_dict.CreateDeepCopy());
+    rule->conditions.push_back(condition_dict.CreateDeepCopy());
     return rule;
   }
 
   // Create a condition with the attributes specified. An example value of
   // |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
-  linked_ptr<base::Value> CreateCondition(const std::string& attributes) {
+  scoped_ptr<base::Value> CreateCondition(const std::string& attributes) {
     std::string json_description =
         "{ \n"
         "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n";
     json_description += attributes;
     json_description += "}";
 
-    return linked_ptr<base::Value>(
-        base::test::ParseJson(json_description).release());
+    return base::test::ParseJson(json_description);
   }
 
   // Create a rule with the ID |rule_id| and with conditions created from the
@@ -216,7 +210,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
     linked_ptr<api::events::Rule> rule(new api::events::Rule);
     rule->id.reset(new std::string(rule_id));
     rule->priority.reset(new int(1));
-    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->actions.push_back(action_dict.CreateDeepCopy());
     for (std::vector<const std::string*>::const_iterator it =
              attributes.begin();
          it != attributes.end(); ++it)
@@ -736,7 +730,7 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
   ASSERT_TRUE(action_value);
 
   WebRequestActionSet::Values actions;
-  actions.push_back(linked_ptr<base::Value>(action_value.release()));
+  actions.push_back(std::move(action_value));
   ASSERT_TRUE(actions.back().get());
 
   std::string error;
