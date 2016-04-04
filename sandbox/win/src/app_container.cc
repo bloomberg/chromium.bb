@@ -27,7 +27,7 @@ PSID ConvertSid(const base::string16& sid) {
 template <typename T>
 T BindFunction(const char* name) {
   HMODULE module = GetModuleHandle(sandbox::kKerneldllName);
-  void* function = GetProcAddress(module, name);
+  FARPROC function = GetProcAddress(module, name);
   if (!function) {
     module = GetModuleHandle(sandbox::kKernelBasedllName);
     function = GetProcAddress(module, name);
