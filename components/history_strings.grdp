@@ -53,7 +53,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
     Group domains
   </message>
   <message name="IDS_HISTORY_HAS_SYNCED_RESULTS" desc="The notification at the top of the history page indicating that it is showing visits synced from other devices.">
-    Showing history from your signed-in devices. <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Showing history from your signed-in devices. <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+  </message>
+  <message name="IDS_HISTORY_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
+    Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>history.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_HISTORY_IN_CONTENT_PACK" desc="Text that shows that an entry is in a content pack.">
     In content pack
@@ -80,7 +83,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
     No search results found.
   </message>
   <message name="IDS_HISTORY_NO_SYNCED_RESULTS" desc="The notification at the top of the history page indicating that it does not include visits from other devices.">
-    Showing history from this device. <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Showing history from this device. <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
   </message>
   <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
     (<ph name="NUMBER_VISITS">$1<ex>3</ex></ph>)

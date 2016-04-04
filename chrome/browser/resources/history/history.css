@@ -38,13 +38,21 @@ html[dir='rtl'] #notification-bar {
   float: left;
 }
 
-#notification-bar.alone {
+#top-container.overflow #notification-bar {
   float: left;
   margin-top: 12px;
 }
 
-html[dir='rtl'] #notification-bar.alone {
+html[dir='rtl'] #top-container.overflow #notification-bar {
   float: right;
+}
+
+#notification-bar span {
+  display: block;
+}
+
+#notification-bar span + span {
+  margin: 1em 0;
 }
 
 #filter-controls,
@@ -71,6 +79,10 @@ html[dir='rtl'] #notification-bar.alone {
 
 html[dir='rtl'] #editing-controls {
   float: right;
+}
+
+#top-container.overflow #editing-controls {
+  float: none;
 }
 
 #editing-controls button:first-of-type {

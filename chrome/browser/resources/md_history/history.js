@@ -100,6 +100,19 @@ function historyResult(info, results) {
 }
 
 /**
+ * Called by the history backend after receiving results and after discovering
+ * the existence of other forms of browsing history.
+ * @param {boolean} hasSyncedResults Whether there are synced results.
+ * @param {boolean} includeOtherFormsOfBrowsingHistory Whether to include
+ *     a sentence about the existence of other forms of browsing history.
+ */
+function showNotification(
+    hasSyncedResults, includeOtherFormsOfBrowsingHistory) {
+  // TODO(msramek): Implement the joint notification about web history and other
+  // forms of browsing history for the MD history page.
+}
+
+/**
  * Receives the synced history data. An empty list means that either there are
  * no foreign sessions, or tab sync is disabled for this profile.
  * |isTabSyncEnabled| makes it possible to distinguish between the cases.

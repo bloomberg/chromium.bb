@@ -162,6 +162,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                                history::WebHistoryService::Request* request,
                                const base::DictionaryValue* results_value);
 
+  // Callback telling us whether other forms of browsing history were found
+  // on the history server.
+  void OtherFormsOfBrowsingHistoryQueryComplete(
+      bool found_other_forms_of_browsing_history);
+
   // Callback from the history system when visits were deleted.
   void RemoveComplete();
 
@@ -217,6 +222,12 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
+
+  // Whether the last call to Web History returned synced results.
+  bool has_synced_results_;
+
+  // Whether there are other forms of browsing history on the history server.
+  bool has_other_forms_of_browsing_history_;
 
   base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_;
 

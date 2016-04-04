@@ -42,6 +42,9 @@ static const char kOtherDevicesJsFile[] = "other_devices.js";
 
 namespace {
 
+static const char kMyActivityUrl[] =
+    "https://history.google.com/history/?utm_source=chrome_h";
+
 #if defined(OS_MACOSX)
 const char kIncognitoModeShortcut[] = "("
     "\xE2\x87\xA7"  // Shift symbol (U+21E7 'UPWARDS WHITE ARROW').
@@ -128,6 +131,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("hasSyncedResults",
                              IDS_HISTORY_HAS_SYNCED_RESULTS);
   source->AddLocalizedString("noSyncedResults", IDS_HISTORY_NO_SYNCED_RESULTS);
+  source->AddString("otherFormsOfBrowsingHistory",
+                    l10n_util::GetStringFUTF16(
+                        IDS_HISTORY_OTHER_FORMS_OF_HISTORY,
+                        base::ASCIIToUTF16(kMyActivityUrl)));
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("deleteConfirm",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);

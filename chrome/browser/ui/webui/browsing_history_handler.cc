@@ -37,6 +37,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -310,6 +311,8 @@ bool BrowsingHistoryHandler::HistoryEntry::SortByTimeDescending(
 BrowsingHistoryHandler::BrowsingHistoryHandler()
     : has_pending_delete_request_(false),
       history_service_observer_(this),
+      has_synced_results_(false),
+      has_other_forms_of_browsing_history_(false),
       weak_factory_(this) {
 }
 
@@ -388,6 +391,8 @@ void BrowsingHistoryHandler::QueryHistory(
 
   query_results_.clear();
   results_info_value_.Clear();
+  has_synced_results_ = false;
+  has_other_forms_of_browsing_history_ = false;
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
@@ -418,6 +423,14 @@ void BrowsingHistoryHandler::QueryHistory(
     web_history_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
         this, &BrowsingHistoryHandler::WebHistoryTimeout);
+
+    // Test the existence of other forms of browsing history.
+    browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
+        web_history,
+        base::Bind(
+            &BrowsingHistoryHandler::OtherFormsOfBrowsingHistoryQueryComplete,
+            weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -690,6 +703,10 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
 
   web_ui()->CallJavascriptFunction(
       "historyResult", results_info_value_, results_value);
+  web_ui()->CallJavascriptFunction(
+      "showNotification",
+      base::FundamentalValue(has_synced_results_),
+      base::FundamentalValue(has_other_forms_of_browsing_history_));
   results_info_value_.Clear();
   query_results_.clear();
   web_history_query_results_.clear();
@@ -829,9 +846,19 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       }
     }
   }
-  results_info_value_.SetBoolean("hasSyncedResults", results_value != NULL);
+  has_synced_results_ = results_value != nullptr;
+  results_info_value_.SetBoolean("hasSyncedResults", has_synced_results_);
   if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToFrontEnd();
+}
+
+void BrowsingHistoryHandler::OtherFormsOfBrowsingHistoryQueryComplete(
+    bool found_other_forms_of_browsing_history) {
+  has_other_forms_of_browsing_history_ = found_other_forms_of_browsing_history;
+  web_ui()->CallJavascriptFunction(
+      "showNotification",
+      base::FundamentalValue(has_synced_results_),
+      base::FundamentalValue(has_other_forms_of_browsing_history_));
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {

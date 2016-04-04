@@ -784,7 +784,7 @@ HistoryWebUIRealBackendTest.prototype = {
     // AX_TEXT_04: http://crbug.com/560914
     this.accessibilityAuditConfig.ignoreSelectors(
         'linkWithUnclearPurpose',
-        '#notification-bar > A');
+        '#notification-bar > SPAN > A');
   },
 };
 
