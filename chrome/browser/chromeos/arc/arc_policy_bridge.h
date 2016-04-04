@@ -5,10 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_POLICY_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_POLICY_BRIDGE_H_
 
+#include <string>
+
+#include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/policy/core/common/policy_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace policy {
+class PolicyMap;
+}  // namespace policy
 
 namespace arc {
 
@@ -18,6 +25,8 @@ class ArcPolicyBridge : public ArcService,
                         public policy::PolicyService::Observer {
  public:
   explicit ArcPolicyBridge(ArcBridgeService* bridge_service);
+  ArcPolicyBridge(ArcBridgeService* bridge_service,
+                  policy::PolicyService* policy_service);
   ~ArcPolicyBridge() override;
 
   // ArcBridgeService::Observer overrides.
@@ -33,6 +42,9 @@ class ArcPolicyBridge : public ArcService,
                        const policy::PolicyMap& current) override;
 
  private:
+  void InitializePolicyService();
+  std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map);
+
   mojo::Binding<PolicyHost> binding_;
   policy::PolicyService* policy_service_ = nullptr;
 

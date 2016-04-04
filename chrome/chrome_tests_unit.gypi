@@ -1631,6 +1631,7 @@
     ],
     'chrome_unit_tests_arc_sources': [
       'browser/chromeos/arc/arc_auth_service_unittest.cc',
+      'browser/chromeos/arc/arc_policy_bridge_unittest.cc',
     ],
     # Sources for Offline pages. For now only for Android.
     'chrome_unit_tests_offline_pages_sources': [

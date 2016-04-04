@@ -174,7 +174,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = rebase_path(
-          chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_sources,
+          chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_sources +
+              chrome_tests_unit_gypi_values.chrome_unit_tests_arc_sources,
           ".",
           "//chrome")
 
@@ -197,6 +198,7 @@ source_set("unit_tests") {
     "//sync",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/icu",
     "//third_party/leveldatabase",
     "//ui/chromeos/resources",
   ]
