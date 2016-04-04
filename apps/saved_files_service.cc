@@ -11,6 +11,7 @@
 
 #include "apps/saved_files_service_factory.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/memory/ptr_util.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -178,7 +179,7 @@ class SavedFilesService::SavedFiles {
 
   // Contains all file entries that have been registered, keyed by ID. Owns
   // values.
-  base::ScopedPtrHashMap<std::string, scoped_ptr<SavedFileEntry>>
+  base::ScopedPtrHashMap<std::string, std::unique_ptr<SavedFileEntry>>
       registered_file_entries_;
 
   // The queue of file entries that have been retained, keyed by
@@ -287,7 +288,7 @@ SavedFilesService::SavedFiles* SavedFilesService::GetOrInsert(
   if (saved_files)
     return saved_files;
 
-  scoped_ptr<SavedFiles> scoped_saved_files(
+  std::unique_ptr<SavedFiles> scoped_saved_files(
       new SavedFiles(profile_, extension_id));
   saved_files = scoped_saved_files.get();
   extension_id_to_saved_files_.insert(
@@ -315,7 +316,7 @@ void SavedFilesService::SavedFiles::RegisterFileEntry(
     return;
 
   registered_file_entries_.add(
-      id, make_scoped_ptr(new SavedFileEntry(id, file_path, is_directory, 0)));
+      id, base::WrapUnique(new SavedFileEntry(id, file_path, is_directory, 0)));
 }
 
 void SavedFilesService::SavedFiles::EnqueueFileEntry(const std::string& id) {
@@ -419,7 +420,7 @@ void SavedFilesService::SavedFiles::LoadSavedFileEntriesFromPreferences() {
   for (std::vector<SavedFileEntry>::iterator it = saved_entries.begin();
        it != saved_entries.end();
        ++it) {
-    scoped_ptr<SavedFileEntry> file_entry(new SavedFileEntry(*it));
+    std::unique_ptr<SavedFileEntry> file_entry(new SavedFileEntry(*it));
     const std::string& id = file_entry->id;
     saved_file_lru_.insert(
         std::make_pair(file_entry->sequence_number, file_entry.get()));

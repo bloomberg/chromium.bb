@@ -5,7 +5,8 @@
 #ifndef APPS_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
 #define APPS_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/public/browser/web_contents_delegate.h"
 
 class GURL;
@@ -27,8 +28,9 @@ namespace apps {
 // extension system.
 class CustomLauncherPageContents : public content::WebContentsDelegate {
  public:
-  CustomLauncherPageContents(scoped_ptr<extensions::AppDelegate> app_delegate,
-                             const std::string& extension_id);
+  CustomLauncherPageContents(
+      std::unique_ptr<extensions::AppDelegate> app_delegate,
+      const std::string& extension_id);
   ~CustomLauncherPageContents() override;
 
   // Called to initialize and load the WebContents.
@@ -68,9 +70,9 @@ class CustomLauncherPageContents : public content::WebContentsDelegate {
                                   content::MediaStreamType type) override;
 
  private:
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<extensions::AppDelegate> app_delegate_;
-  scoped_ptr<extensions::AppWebContentsHelper> helper_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<extensions::AppDelegate> app_delegate_;
+  std::unique_ptr<extensions::AppWebContentsHelper> helper_;
 
   std::string extension_id_;
 

@@ -21,7 +21,7 @@
 namespace apps {
 
 CustomLauncherPageContents::CustomLauncherPageContents(
-    scoped_ptr<extensions::AppDelegate> app_delegate,
+    std::unique_ptr<extensions::AppDelegate> app_delegate,
     const std::string& extension_id)
     : app_delegate_(std::move(app_delegate)), extension_id_(extension_id) {}
 

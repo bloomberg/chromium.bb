@@ -6,13 +6,13 @@
 #define APPS_SAVED_FILES_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -127,7 +127,8 @@ class SavedFilesService : public KeyedService,
   static void SetLruSizeForTest(int size);
   static void ClearLruSizeForTest();
 
-  std::map<std::string, scoped_ptr<SavedFiles>> extension_id_to_saved_files_;
+  std::map<std::string, std::unique_ptr<SavedFiles>>
+      extension_id_to_saved_files_;
   content::NotificationRegistrar registrar_;
   Profile* profile_;
 

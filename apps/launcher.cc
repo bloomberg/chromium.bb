@@ -4,6 +4,7 @@
 
 #include "apps/launcher.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -12,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -175,7 +175,7 @@ class PlatformAppPathLauncher
                             base::Bind(&PlatformAppPathLauncher::Launch, this));
   }
 
-  void OnFilesValid(scoped_ptr<std::set<base::FilePath>> directory_paths) {
+  void OnFilesValid(std::unique_ptr<std::set<base::FilePath>> directory_paths) {
     mime_type_collector_.CollectForLocalPaths(
         entry_paths_,
         base::Bind(
@@ -201,7 +201,7 @@ class PlatformAppPathLauncher
 
   void OnAreDirectoriesCollected(
       bool has_file_system_write_permission,
-      scoped_ptr<std::set<base::FilePath>> directory_paths) {
+      std::unique_ptr<std::set<base::FilePath>> directory_paths) {
     if (has_file_system_write_permission) {
       std::set<base::FilePath>* const directory_paths_ptr =
           directory_paths.get();
@@ -217,8 +217,8 @@ class PlatformAppPathLauncher
   }
 
   void OnAreDirectoriesAndMimeTypesCollected(
-      scoped_ptr<std::set<base::FilePath>> directory_paths,
-      scoped_ptr<std::vector<std::string>> mime_types) {
+      std::unique_ptr<std::set<base::FilePath>> directory_paths,
+      std::unique_ptr<std::vector<std::string>> mime_types) {
     DCHECK(entry_paths_.size() == mime_types->size());
     // If fetching a mime type failed, then use a fallback one.
     for (size_t i = 0; i < entry_paths_.size(); ++i) {
