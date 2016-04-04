@@ -142,7 +142,7 @@ private:
 
         // All executed on the main thread.
         void mainThreadCreateLoader(ThreadableLoaderOptions, ResourceLoaderOptions, ExecutionContext*);
-        void mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData>, const ReferrerPolicy, const String& outgoingReferrer);
+        void mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData>);
         void mainThreadDestroy(ExecutionContext*);
         void mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext*);
         void mainThreadCancel(ExecutionContext*);

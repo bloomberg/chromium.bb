@@ -153,6 +153,7 @@ public:
     virtual bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const = 0;
     virtual bool isSecureContext(const SecureContextCheck = StandardSecureContextCheck) const;
 
+    virtual String outgoingReferrer() const;
     void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
 

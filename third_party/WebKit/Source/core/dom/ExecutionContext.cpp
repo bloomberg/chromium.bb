@@ -254,6 +254,11 @@ bool ExecutionContext::isSecureContext(const SecureContextCheck privilegeContext
     return isSecureContext(unusedErrorMessage, privilegeContextCheck);
 }
 
+String ExecutionContext::outgoingReferrer() const
+{
+    return url().strippedForUseAsReferrer();
+}
+
 void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)
 {
     // When a referrer policy has already been set, the latest value takes precedence.

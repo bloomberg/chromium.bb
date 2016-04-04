@@ -265,7 +265,7 @@ public:
     const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
     Length viewportDefaultMinWidth() const { return m_viewportDefaultMinWidth; }
 
-    String outgoingReferrer() const;
+    String outgoingReferrer() const override;
 
     void setDoctype(RawPtr<DocumentType>);
     DocumentType* doctype() const { return m_docType.get(); }

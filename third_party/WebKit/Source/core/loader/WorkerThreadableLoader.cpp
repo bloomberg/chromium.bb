@@ -85,7 +85,10 @@ WorkerThreadableLoader::~WorkerThreadableLoader()
 
 void WorkerThreadableLoader::start(const ResourceRequest& request)
 {
-    m_bridge->start(request, *m_workerGlobalScope);
+    ResourceRequest requestToPass(request);
+    if (!requestToPass.didSetHTTPReferrer())
+        requestToPass.setHTTPReferrer(SecurityPolicy::generateReferrer(m_workerGlobalScope->getReferrerPolicy(), request.url(), m_workerGlobalScope->outgoingReferrer()));
+    m_bridge->start(requestToPass, *m_workerGlobalScope);
     m_workerClientWrapper->setResourceTimingClient(this);
 }
 
@@ -130,15 +133,11 @@ void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadCreateLoader(Thread
     ASSERT(m_mainThreadLoader);
 }
 
-void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData> requestData, const ReferrerPolicy referrerPolicy, const String& outgoingReferrer)
+void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData> requestData)
 {
     ASSERT(isMainThread());
     ASSERT(m_mainThreadLoader);
-
-    ResourceRequest request(requestData.get());
-    if (!request.didSetHTTPReferrer())
-        request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request.url(), outgoingReferrer));
-    m_mainThreadLoader->start(request);
+    m_mainThreadLoader->start(ResourceRequest(requestData.get()));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::createLoaderInMainThread(const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
@@ -148,7 +147,7 @@ void WorkerThreadableLoader::MainThreadBridgeBase::createLoaderInMainThread(cons
 
 void WorkerThreadableLoader::MainThreadBridgeBase::startInMainThread(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
 {
-    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, this, request, workerGlobalScope.getReferrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer()));
+    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, this, request));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadDestroy(ExecutionContext* context)

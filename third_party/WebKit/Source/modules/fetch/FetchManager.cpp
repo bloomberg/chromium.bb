@@ -579,24 +579,11 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     //
     // The following code also invokes "determine request's referrer" which is
     // written in "Main fetch" operation.
-    ASSERT(m_request->getReferrerPolicy() == ReferrerPolicyDefault);
-    // Request's referrer policy is always default, so use the client's one.
-    // TODO(yhirano): Fix here when we introduce requet's referrer policy.
-    ReferrerPolicy policy = m_executionContext->getReferrerPolicy();
-    if (m_request->referrerString() == FetchRequestData::clientReferrerString()) {
-        String referrerURL;
-        if (m_executionContext->isDocument()) {
-            Document* document = toDocument(m_executionContext);
-            referrerURL = document->outgoingReferrer();
-        } else if (m_executionContext->isWorkerGlobalScope()) {
-            referrerURL = m_executionContext->url().strippedForUseAsReferrer();
-        }
-        request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, m_request->url(), referrerURL));
-    } else {
-        // Note that generateReferrer generates |no-referrer| from |no-referrer|
-        // referrer string (i.e. String()).
-        request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, m_request->url(), m_request->referrerString()));
-    }
+    const ReferrerPolicy referrerPolicy = m_request->getReferrerPolicy() == ReferrerPolicyDefault ? m_executionContext->getReferrerPolicy() : m_request->getReferrerPolicy();
+    const String referrerString = m_request->referrerString() == FetchRequestData::clientReferrerString() ? m_executionContext->outgoingReferrer() : m_request->referrerString();
+    // Note that generateReferrer generates |no-referrer| from |no-referrer|
+    // referrer string (i.e. String()).
+    request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, m_request->url(), referrerString));
     request.setSkipServiceWorker(m_isIsolatedWorld);
 
     // "3. Append `Host`, ..."
