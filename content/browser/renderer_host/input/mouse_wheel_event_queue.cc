@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 
+using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebMouseWheelEvent;
 using ui::LatencyInfo;
@@ -85,50 +86,49 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       event_sent_for_gesture_ack_->event.canScroll &&
       (scrolling_device_ == blink::WebGestureDeviceUninitialized ||
        scrolling_device_ == blink::WebGestureDeviceTouchpad)) {
-    GestureEventWithLatencyInfo scroll_update;
-    scroll_update.event.timeStampSeconds =
+    WebGestureEvent scroll_update;
+    scroll_update.timeStampSeconds =
         event_sent_for_gesture_ack_->event.timeStampSeconds;
 
-    scroll_update.event.x = event_sent_for_gesture_ack_->event.x;
-    scroll_update.event.y = event_sent_for_gesture_ack_->event.y;
-    scroll_update.event.globalX = event_sent_for_gesture_ack_->event.globalX;
-    scroll_update.event.globalY = event_sent_for_gesture_ack_->event.globalY;
-    scroll_update.event.type = WebInputEvent::GestureScrollUpdate;
-    scroll_update.event.sourceDevice = blink::WebGestureDeviceTouchpad;
-    scroll_update.event.resendingPluginId = -1;
-    scroll_update.event.data.scrollUpdate.deltaX =
+    scroll_update.x = event_sent_for_gesture_ack_->event.x;
+    scroll_update.y = event_sent_for_gesture_ack_->event.y;
+    scroll_update.globalX = event_sent_for_gesture_ack_->event.globalX;
+    scroll_update.globalY = event_sent_for_gesture_ack_->event.globalY;
+    scroll_update.type = WebInputEvent::GestureScrollUpdate;
+    scroll_update.sourceDevice = blink::WebGestureDeviceTouchpad;
+    scroll_update.resendingPluginId = -1;
+    scroll_update.data.scrollUpdate.deltaX =
         event_sent_for_gesture_ack_->event.deltaX;
-    scroll_update.event.data.scrollUpdate.deltaY =
+    scroll_update.data.scrollUpdate.deltaY =
         event_sent_for_gesture_ack_->event.deltaY;
     // Only OSX populates the momentumPhase; so expect this to
     // always be PhaseNone on all other platforms.
-    scroll_update.event.data.scrollUpdate.inertial =
+    scroll_update.data.scrollUpdate.inertial =
         event_sent_for_gesture_ack_->event.momentumPhase !=
         blink::WebMouseWheelEvent::PhaseNone;
     if (event_sent_for_gesture_ack_->event.scrollByPage) {
-      scroll_update.event.data.scrollUpdate.deltaUnits =
-          blink::WebGestureEvent::Page;
+      scroll_update.data.scrollUpdate.deltaUnits = WebGestureEvent::Page;
 
       // Turn page scrolls into a *single* page scroll because
       // the magnitude the number of ticks is lost when coalescing.
-      if (scroll_update.event.data.scrollUpdate.deltaX)
-        scroll_update.event.data.scrollUpdate.deltaX =
-            scroll_update.event.data.scrollUpdate.deltaX > 0 ? 1 : -1;
-      if (scroll_update.event.data.scrollUpdate.deltaY)
-        scroll_update.event.data.scrollUpdate.deltaY =
-            scroll_update.event.data.scrollUpdate.deltaY > 0 ? 1 : -1;
+      if (scroll_update.data.scrollUpdate.deltaX)
+        scroll_update.data.scrollUpdate.deltaX =
+            scroll_update.data.scrollUpdate.deltaX > 0 ? 1 : -1;
+      if (scroll_update.data.scrollUpdate.deltaY)
+        scroll_update.data.scrollUpdate.deltaY =
+            scroll_update.data.scrollUpdate.deltaY > 0 ? 1 : -1;
     } else {
-      scroll_update.event.data.scrollUpdate.deltaUnits =
+      scroll_update.data.scrollUpdate.deltaUnits =
           event_sent_for_gesture_ack_->event.hasPreciseScrollingDeltas
-              ? blink::WebGestureEvent::PrecisePixels
-              : blink::WebGestureEvent::Pixels;
+              ? WebGestureEvent::PrecisePixels
+              : WebGestureEvent::Pixels;
 
       if (event_sent_for_gesture_ack_->event.railsMode ==
           WebInputEvent::RailsModeVertical)
-        scroll_update.event.data.scrollUpdate.deltaX = 0;
+        scroll_update.data.scrollUpdate.deltaX = 0;
       if (event_sent_for_gesture_ack_->event.railsMode ==
           WebInputEvent::RailsModeHorizontal)
-        scroll_update.event.data.scrollUpdate.deltaY = 0;
+        scroll_update.data.scrollUpdate.deltaY = 0;
     }
 
     bool current_phase_ended = false;
@@ -149,8 +149,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
                                 blink::WebMouseWheelEvent::PhaseCancelled;
     }
 
-    bool needs_update = scroll_update.event.data.scrollUpdate.deltaX != 0 ||
-                        scroll_update.event.data.scrollUpdate.deltaY != 0;
+    bool needs_update = scroll_update.data.scrollUpdate.deltaX != 0 ||
+                        scroll_update.data.scrollUpdate.deltaY != 0;
 
     // If there is no update to send and the current phase is ended yet a GSB
     // needs to be sent, this event sequence doesn't need to be generated
@@ -172,23 +172,23 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       }
 
       if (needs_update)
-        client_->SendGestureEvent(scroll_update);
+        client_->ForwardGestureEvent(scroll_update);
 
       if (current_phase_ended) {
         // Non-synthetic GSEs are sent when the current phase is canceled or
         // ended.
-        SendScrollEnd(scroll_update.event, false);
+        SendScrollEnd(scroll_update, false);
       } else if (has_phase_info) {
         // Generate a synthetic GSE for every update to force hit testing so
         // that the non-latching behavior is preserved. Remove once
         // crbug.com/526463 is fully implemented.
-        SendScrollEnd(scroll_update.event, true);
+        SendScrollEnd(scroll_update, true);
       } else {
         scroll_end_timer_.Start(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
             base::Bind(&MouseWheelEventQueue::SendScrollEnd,
-                       base::Unretained(this), scroll_update.event, false));
+                       base::Unretained(this), scroll_update, false));
       }
     }
   }
@@ -215,6 +215,8 @@ void MouseWheelEventQueue::OnGestureScrollEvent(
               gesture_event.event.type ==
                   blink::WebInputEvent::GestureFlingStart)) {
     scrolling_device_ = blink::WebGestureDeviceUninitialized;
+    if (scroll_end_timer_.IsRunning())
+      scroll_end_timer_.Reset();
   }
 }
 
@@ -230,19 +232,18 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
   client_->SendMouseWheelEventImmediately(*event_sent_for_gesture_ack_);
 }
 
-void MouseWheelEventQueue::SendScrollEnd(blink::WebGestureEvent update_event,
+void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
                                          bool synthetic) {
   DCHECK((synthetic && !needs_scroll_end_) || needs_scroll_end_);
 
-  GestureEventWithLatencyInfo scroll_end(update_event);
-  scroll_end.event.timeStampSeconds =
+  WebGestureEvent scroll_end(update_event);
+  scroll_end.timeStampSeconds =
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  scroll_end.event.type = WebInputEvent::GestureScrollEnd;
-  scroll_end.event.resendingPluginId = -1;
-  scroll_end.event.data.scrollEnd.synthetic = synthetic;
-  scroll_end.event.data.scrollEnd.inertial =
-      update_event.data.scrollUpdate.inertial;
-  scroll_end.event.data.scrollEnd.deltaUnits =
+  scroll_end.type = WebInputEvent::GestureScrollEnd;
+  scroll_end.resendingPluginId = -1;
+  scroll_end.data.scrollEnd.synthetic = synthetic;
+  scroll_end.data.scrollEnd.inertial = update_event.data.scrollUpdate.inertial;
+  scroll_end.data.scrollEnd.deltaUnits =
       update_event.data.scrollUpdate.deltaUnits;
 
   if (!synthetic) {
@@ -252,30 +253,30 @@ void MouseWheelEventQueue::SendScrollEnd(blink::WebGestureEvent update_event,
     if (scroll_end_timer_.IsRunning())
       scroll_end_timer_.Reset();
   }
-  client_->SendGestureEvent(scroll_end);
+  client_->ForwardGestureEvent(scroll_end);
 }
 
 void MouseWheelEventQueue::SendScrollBegin(
-    const GestureEventWithLatencyInfo& gesture_update,
+    const WebGestureEvent& gesture_update,
     bool synthetic) {
   DCHECK((synthetic && !needs_scroll_begin_) || needs_scroll_begin_);
 
-  GestureEventWithLatencyInfo scroll_begin(gesture_update);
-  scroll_begin.event.type = WebInputEvent::GestureScrollBegin;
-  scroll_begin.event.data.scrollBegin.synthetic = synthetic;
-  scroll_begin.event.data.scrollBegin.inertial =
-      gesture_update.event.data.scrollUpdate.inertial;
-  scroll_begin.event.data.scrollBegin.deltaXHint =
-      gesture_update.event.data.scrollUpdate.deltaX;
-  scroll_begin.event.data.scrollBegin.deltaYHint =
-      gesture_update.event.data.scrollUpdate.deltaY;
-  scroll_begin.event.data.scrollBegin.targetViewport = false;
-  scroll_begin.event.data.scrollBegin.deltaHintUnits =
-      gesture_update.event.data.scrollUpdate.deltaUnits;
+  WebGestureEvent scroll_begin(gesture_update);
+  scroll_begin.type = WebInputEvent::GestureScrollBegin;
+  scroll_begin.data.scrollBegin.synthetic = synthetic;
+  scroll_begin.data.scrollBegin.inertial =
+      gesture_update.data.scrollUpdate.inertial;
+  scroll_begin.data.scrollBegin.deltaXHint =
+      gesture_update.data.scrollUpdate.deltaX;
+  scroll_begin.data.scrollBegin.deltaYHint =
+      gesture_update.data.scrollUpdate.deltaY;
+  scroll_begin.data.scrollBegin.targetViewport = false;
+  scroll_begin.data.scrollBegin.deltaHintUnits =
+      gesture_update.data.scrollUpdate.deltaUnits;
 
   needs_scroll_begin_ = false;
   needs_scroll_end_ = true;
-  client_->SendGestureEvent(scroll_begin);
+  client_->ForwardGestureEvent(scroll_begin);
 }
 
 }  // namespace content

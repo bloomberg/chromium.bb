@@ -135,10 +135,10 @@ class MouseWheelEventQueueTest : public testing::Test,
     sent_events_.push_back(std::move(cloned_event_holder));
   }
 
-  void SendGestureEvent(const GestureEventWithLatencyInfo& event) override {
+  void ForwardGestureEvent(const blink::WebGestureEvent& event) override {
     WebGestureEvent* cloned_event = new WebGestureEvent();
     scoped_ptr<WebInputEvent> cloned_event_holder(cloned_event);
-    *cloned_event = event.event;
+    *cloned_event = event;
     sent_events_.push_back(std::move(cloned_event_holder));
   }
 

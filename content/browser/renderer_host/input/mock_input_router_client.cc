@@ -61,6 +61,13 @@ void MockInputRouterClient::DidOverscroll(const DidOverscrollParams& params) {
 void MockInputRouterClient::DidStopFlinging() {
 }
 
+void MockInputRouterClient::ForwardGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  if (input_router_)
+    input_router_->SendGestureEvent(
+        GestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo()));
+}
+
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {
   bool filter_input_event_called = filter_input_event_called_;
   filter_input_event_called_ = false;

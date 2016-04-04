@@ -289,6 +289,10 @@ void InputRouterImpl::OnGestureEventAck(
   ack_handler_->OnGestureEventAck(event, ack_result);
 }
 
+void InputRouterImpl::ForwardGestureEvent(const blink::WebGestureEvent& event) {
+  client_->ForwardGestureEvent(event);
+}
+
 void InputRouterImpl::SendMouseWheelEventImmediately(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency);

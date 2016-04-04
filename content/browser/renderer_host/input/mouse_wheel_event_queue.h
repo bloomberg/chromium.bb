@@ -31,7 +31,7 @@ class CONTENT_EXPORT MouseWheelEventQueueClient {
 
   virtual void SendMouseWheelEventImmediately(
       const MouseWheelEventWithLatencyInfo& event) = 0;
-  virtual void SendGestureEvent(const GestureEventWithLatencyInfo& event) = 0;
+  virtual void ForwardGestureEvent(const blink::WebGestureEvent& event) = 0;
   virtual void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                     InputEventAckState ack_result) = 0;
 };
@@ -79,7 +79,7 @@ class CONTENT_EXPORT MouseWheelEventQueue {
  private:
   void TryForwardNextEventToRenderer();
   void SendScrollEnd(blink::WebGestureEvent update_event, bool synthetic);
-  void SendScrollBegin(const GestureEventWithLatencyInfo& gesture_update,
+  void SendScrollBegin(const blink::WebGestureEvent& gesture_update,
                        bool synthetic);
 
   MouseWheelEventQueueClient* client_;

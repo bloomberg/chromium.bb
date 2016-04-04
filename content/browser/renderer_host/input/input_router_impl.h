@@ -100,6 +100,8 @@ class CONTENT_EXPORT InputRouterImpl
       const GestureEventWithLatencyInfo& gesture_event) override;
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                          InputEventAckState ack_result) override;
+  void ForwardGestureEvent(
+      const blink::WebGestureEvent& gesture_event) override;
 
   // MouseWheelEventQueueClient
   void SendMouseWheelEventImmediately(

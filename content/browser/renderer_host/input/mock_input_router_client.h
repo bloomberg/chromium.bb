@@ -31,6 +31,8 @@ class MockInputRouterClient : public InputRouterClient {
   void DidFlush() override;
   void DidOverscroll(const DidOverscrollParams& params) override;
   void DidStopFlinging() override;
+  void ForwardGestureEvent(
+      const blink::WebGestureEvent& gesture_event) override;
 
   bool GetAndResetFilterEventCalled();
   size_t GetAndResetDidFlushCount();

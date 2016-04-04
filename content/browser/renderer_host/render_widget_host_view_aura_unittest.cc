@@ -3943,11 +3943,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   // consumed and have triggered a fling animation (as tracked by the router).
   EXPECT_FALSE(parent_host_->input_router()->HasPendingEvents());
 
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       blink::WebGestureDeviceTouchscreen);
+
   SimulateWheelEvent(-5, 0, 0, true);    // sent directly
   SimulateWheelEvent(-60, 0, 0, true);   // enqueued
   SimulateWheelEvent(-100, 0, 0, true);  // coalesced into previous event
   EXPECT_TRUE(ScrollStateIsUnknown());
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
 
   // The first wheel scroll did not scroll content. Overscroll should not start
   // yet, since enough hasn't been scrolled.
