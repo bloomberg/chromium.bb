@@ -57,6 +57,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -825,7 +826,7 @@ bool EditingStyle::conflictsWithInlineStyleOfElement(HTMLElement* element, Editi
 
 static const HeapVector<Member<HTMLElementEquivalent>>& htmlElementEquivalents()
 {
-    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<HTMLElementEquivalent>>, HTMLElementEquivalents, ());
+    DEFINE_STATIC_LOCAL(HeapVector<Member<HTMLElementEquivalent>>, HTMLElementEquivalents, (new HeapVector<Member<HTMLElementEquivalent>>));
     if (!HTMLElementEquivalents.size()) {
         HTMLElementEquivalents.append(HTMLElementEquivalent::create(CSSPropertyFontWeight, CSSValueBold, HTMLNames::bTag));
         HTMLElementEquivalents.append(HTMLElementEquivalent::create(CSSPropertyFontWeight, CSSValueBold, HTMLNames::strongTag));
@@ -863,7 +864,7 @@ bool EditingStyle::conflictsWithImplicitStyleOfElement(HTMLElement* element, Edi
 
 static const HeapVector<Member<HTMLAttributeEquivalent>>& htmlAttributeEquivalents()
 {
-    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<HTMLAttributeEquivalent>>, HTMLAttributeEquivalents, ());
+    DEFINE_STATIC_LOCAL(HeapVector<Member<HTMLAttributeEquivalent>>, HTMLAttributeEquivalents, (new HeapVector<Member<HTMLAttributeEquivalent>>));
     if (!HTMLAttributeEquivalents.size()) {
         // elementIsStyledSpanOrHTMLEquivalent depends on the fact each HTMLAttriuteEquivalent matches exactly one attribute
         // of exactly one element except dirAttr.
@@ -1130,13 +1131,13 @@ RawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(ContainerNode* 
 
 static void mergeTextDecorationValues(CSSValueList* mergedValue, const CSSValueList* valueToMerge)
 {
-    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-    if (valueToMerge->hasValue(underline) && !mergedValue->hasValue(underline))
-        mergedValue->append(underline);
+    DEFINE_STATIC_LOCAL(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
+    DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
+    if (valueToMerge->hasValue(&underline) && !mergedValue->hasValue(&underline))
+        mergedValue->append(&underline);
 
-    if (valueToMerge->hasValue(lineThrough) && !mergedValue->hasValue(lineThrough))
-        mergedValue->append(lineThrough);
+    if (valueToMerge->hasValue(&lineThrough) && !mergedValue->hasValue(&lineThrough))
+        mergedValue->append(&lineThrough);
 }
 
 void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverrideMode mode)
@@ -1524,12 +1525,12 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
     // Furthermore, text-decoration: none has been trimmed so that text-decoration property is always a CSSValueList.
     RawPtr<CSSValue> textDecoration = style->getPropertyCSSValue(textDecorationPropertyForEditing());
     if (textDecoration && textDecoration->isValueList()) {
-        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
+        DEFINE_STATIC_LOCAL(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
+        DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
         RawPtr<CSSValueList> newTextDecoration = toCSSValueList(textDecoration.get())->copy();
-        if (newTextDecoration->removeAll(underline))
+        if (newTextDecoration->removeAll(&underline))
             m_applyUnderline = true;
-        if (newTextDecoration->removeAll(lineThrough))
+        if (newTextDecoration->removeAll(&lineThrough))
             m_applyLineThrough = true;
 
         // If trimTextDecorations, delete underline and line-through

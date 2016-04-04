@@ -31,8 +31,8 @@ namespace blink {
 
 static SVGStyleEventSender& styleErrorEventSender()
 {
-    DEFINE_STATIC_LOCAL(Persistent<SVGStyleEventSender>, sharedErrorEventSender, (SVGStyleEventSender::create(EventTypeNames::error)));
-    return *sharedErrorEventSender;
+    DEFINE_STATIC_LOCAL(SVGStyleEventSender, sharedErrorEventSender, (SVGStyleEventSender::create(EventTypeNames::error)));
+    return sharedErrorEventSender;
 }
 
 inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser)

@@ -12,8 +12,8 @@ namespace blink {
 
 GamepadDispatcher& GamepadDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(Persistent<GamepadDispatcher>, gamepadDispatcher, (new GamepadDispatcher()));
-    return *gamepadDispatcher;
+    DEFINE_STATIC_LOCAL(GamepadDispatcher, gamepadDispatcher, (new GamepadDispatcher));
+    return gamepadDispatcher;
 }
 
 void GamepadDispatcher::sampleGamepads(WebGamepads& gamepads)

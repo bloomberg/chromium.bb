@@ -39,11 +39,11 @@ namespace blink {
 DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance(bool absolute)
 {
     if (absolute) {
-        DEFINE_STATIC_LOCAL(Persistent<DeviceOrientationDispatcher>, deviceOrientationAbsoluteDispatcher, (new DeviceOrientationDispatcher(absolute)));
-        return *deviceOrientationAbsoluteDispatcher;
+        DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher, deviceOrientationAbsoluteDispatcher, (new DeviceOrientationDispatcher(absolute)));
+        return deviceOrientationAbsoluteDispatcher;
     }
-    DEFINE_STATIC_LOCAL(Persistent<DeviceOrientationDispatcher>, deviceOrientationDispatcher, (new DeviceOrientationDispatcher(absolute)));
-    return *deviceOrientationDispatcher;
+    DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher, deviceOrientationDispatcher, (new DeviceOrientationDispatcher(absolute)));
+    return deviceOrientationDispatcher;
 }
 
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(bool absolute) : m_absolute(absolute)

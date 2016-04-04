@@ -38,8 +38,8 @@ namespace blink {
 
 DeviceMotionDispatcher& DeviceMotionDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(Persistent<DeviceMotionDispatcher>, deviceMotionDispatcher, (new DeviceMotionDispatcher()));
-    return *deviceMotionDispatcher;
+    DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher, (new DeviceMotionDispatcher));
+    return deviceMotionDispatcher;
 }
 
 DeviceMotionDispatcher::DeviceMotionDispatcher()

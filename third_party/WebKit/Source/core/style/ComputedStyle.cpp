@@ -818,13 +818,8 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
 
 void ComputedStyle::addCursor(RawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
 {
-    if (!rareInheritedData.access()->cursorData) {
-#if ENABLE(OILPAN)
+    if (!rareInheritedData.access()->cursorData)
         rareInheritedData.access()->cursorData = new CursorList;
-#else
-        rareInheritedData.access()->cursorData = CursorList::create();
-#endif
-    }
     rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
 }
 
@@ -1744,19 +1739,17 @@ Color ComputedStyle::initialTapHighlightColor()
     return LayoutTheme::tapHighlightColor();
 }
 
-#if ENABLE(OILPAN)
 const FilterOperations& ComputedStyle::initialFilter()
 {
-    DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops, (FilterOperationsWrapper::create()));
-    return ops->operations();
+    DEFINE_STATIC_LOCAL(FilterOperationsWrapper, ops, (FilterOperationsWrapper::create()));
+    return ops.operations();
 }
 
 const FilterOperations& ComputedStyle::initialBackdropFilter()
 {
-    DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops, (FilterOperationsWrapper::create()));
-    return ops->operations();
+    DEFINE_STATIC_LOCAL(FilterOperationsWrapper, ops, (FilterOperationsWrapper::create()));
+    return ops.operations();
 }
-#endif
 
 LayoutRectOutsets ComputedStyle::imageOutsets(const NinePieceImage& image) const
 {

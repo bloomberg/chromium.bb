@@ -45,20 +45,20 @@ using namespace HTMLNames;
 
 CSSDefaultStyleSheets& CSSDefaultStyleSheets::instance()
 {
-    DEFINE_STATIC_LOCAL(Persistent<CSSDefaultStyleSheets>, cssDefaultStyleSheets, (new CSSDefaultStyleSheets()));
-    return *cssDefaultStyleSheets;
+    DEFINE_STATIC_LOCAL(CSSDefaultStyleSheets, cssDefaultStyleSheets, (new CSSDefaultStyleSheets));
+    return cssDefaultStyleSheets;
 }
 
 static const MediaQueryEvaluator& screenEval()
 {
-    DEFINE_STATIC_LOCAL(Persistent<MediaQueryEvaluator>, staticScreenEval, (new MediaQueryEvaluator("screen")));
-    return *staticScreenEval;
+    DEFINE_STATIC_LOCAL(MediaQueryEvaluator, staticScreenEval, (new MediaQueryEvaluator("screen")));
+    return staticScreenEval;
 }
 
 static const MediaQueryEvaluator& printEval()
 {
-    DEFINE_STATIC_LOCAL(Persistent<MediaQueryEvaluator>, staticPrintEval, (new MediaQueryEvaluator("print")));
-    return *staticPrintEval;
+    DEFINE_STATIC_LOCAL(MediaQueryEvaluator, staticPrintEval, (new MediaQueryEvaluator("print")));
+    return staticPrintEval;
 }
 
 static RawPtr<StyleSheetContents> parseUASheet(const String& str)

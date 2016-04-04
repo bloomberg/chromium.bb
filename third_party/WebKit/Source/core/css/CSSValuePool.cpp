@@ -34,8 +34,8 @@ namespace blink {
 
 CSSValuePool& cssValuePool()
 {
-    DEFINE_STATIC_LOCAL(Persistent<CSSValuePool>, pool, (new CSSValuePool()));
-    return *pool;
+    DEFINE_STATIC_LOCAL(CSSValuePool, pool, (new CSSValuePool));
+    return pool;
 }
 
 CSSValuePool::CSSValuePool()

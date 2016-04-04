@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -42,9 +43,9 @@ const char* ContextFeatures::supplementName()
     return "ContextFeatures";
 }
 
-ContextFeatures* ContextFeatures::defaultSwitch()
+ContextFeatures& ContextFeatures::defaultSwitch()
 {
-    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(ContextFeatures, instance, (ContextFeatures::create(ContextFeaturesClient::empty())));
+    DEFINE_STATIC_LOCAL(ContextFeatures, instance, (ContextFeatures::create(ContextFeaturesClient::empty())));
     return instance;
 }
 

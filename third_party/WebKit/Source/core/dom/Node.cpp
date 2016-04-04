@@ -128,8 +128,8 @@ void Node::operator delete(void* ptr)
 using WeakNodeSet = HeapHashSet<WeakMember<Node>>;
 static WeakNodeSet& liveNodeSet()
 {
-    DEFINE_STATIC_LOCAL(Persistent<WeakNodeSet>, set, (new WeakNodeSet()));
-    return *set;
+    DEFINE_STATIC_LOCAL(WeakNodeSet, set, (new WeakNodeSet));
+    return set;
 }
 #endif
 
@@ -1886,8 +1886,8 @@ void Node::removeAllEventListenersRecursively()
 using EventTargetDataMap = HeapHashMap<WeakMember<Node>, Member<EventTargetData>>;
 static EventTargetDataMap& eventTargetDataMap()
 {
-    DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map, (new EventTargetDataMap()));
-    return *map;
+    DEFINE_STATIC_LOCAL(EventTargetDataMap, map, (new EventTargetDataMap));
+    return map;
 }
 
 EventTargetData* Node::eventTargetData()

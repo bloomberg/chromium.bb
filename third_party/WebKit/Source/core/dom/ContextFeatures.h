@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/page/Page.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -46,7 +47,7 @@ public:
     };
 
     static const char* supplementName();
-    static ContextFeatures* defaultSwitch();
+    static ContextFeatures& defaultSwitch();
     static RawPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
 
     static bool pagePopupEnabled(Document*);

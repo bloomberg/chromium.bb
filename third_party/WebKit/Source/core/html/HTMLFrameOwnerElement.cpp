@@ -41,8 +41,8 @@ namespace blink {
 typedef HeapHashMap<Member<Widget>, Member<FrameView>> WidgetToParentMap;
 static WidgetToParentMap& widgetNewParentMap()
 {
-    DEFINE_STATIC_LOCAL(Persistent<WidgetToParentMap>, map, (new WidgetToParentMap()));
-    return *map;
+    DEFINE_STATIC_LOCAL(WidgetToParentMap, map, (new WidgetToParentMap));
+    return map;
 }
 
 typedef HeapHashSet<Member<Widget>> WidgetSet;
@@ -50,14 +50,14 @@ static WidgetSet& widgetsPendingTemporaryRemovalFromParent()
 {
     // Widgets in this set will not leak because it will be cleared in
     // HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperations.
-    DEFINE_STATIC_LOCAL(Persistent<WidgetSet>, set, (new WidgetSet()));
-    return *set;
+    DEFINE_STATIC_LOCAL(WidgetSet, set, (new WidgetSet));
+    return set;
 }
 
 HeapHashCountedSet<Member<Node>>& SubframeLoadingDisabler::disabledSubtreeRoots()
 {
-    DEFINE_STATIC_LOCAL(Persistent<HeapHashCountedSet<Member<Node>>>, nodes, (new HeapHashCountedSet<Member<Node>>()));
-    return *nodes;
+    DEFINE_STATIC_LOCAL(HeapHashCountedSet<Member<Node>>, nodes, (new HeapHashCountedSet<Member<Node>>));
+    return nodes;
 }
 
 static unsigned s_updateSuspendCount = 0;

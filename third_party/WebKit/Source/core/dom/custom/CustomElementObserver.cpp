@@ -40,8 +40,8 @@ typedef HeapHashMap<WeakMember<Element>, Member<CustomElementObserver>> ElementO
 
 static ElementObserverMap& elementObservers()
 {
-    DEFINE_STATIC_LOCAL(Persistent<ElementObserverMap>, map, (new ElementObserverMap()));
-    return *map;
+    DEFINE_STATIC_LOCAL(ElementObserverMap, map, (new ElementObserverMap));
+    return map;
 }
 
 void CustomElementObserver::notifyElementWasDestroyed(Element* element)

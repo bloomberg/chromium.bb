@@ -164,11 +164,11 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::getAllElementsById(const 
 {
     ASSERT(key);
     ASSERT(scope);
-    DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, emptyVector, (new HeapVector<Member<Element>>()));
+    DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, emptyVector, (new HeapVector<Member<Element>>));
 
     Map::iterator it = m_map.find(key);
     if (it == m_map.end())
-        return *emptyVector;
+        return emptyVector;
 
     Member<MapEntry>& entry = it->value;
     ASSERT(entry->count);

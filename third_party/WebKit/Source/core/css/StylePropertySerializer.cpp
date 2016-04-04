@@ -27,6 +27,7 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
+#include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include <bitset>
 
@@ -856,9 +857,9 @@ String StylePropertySerializer::borderPropertyValue(CommonValueMode valueMode) c
 static void appendBackgroundRepeatValue(StringBuilder& builder, const CSSValue& repeatXCSSValue, const CSSValue& repeatYCSSValue)
 {
     // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
-    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, initialRepeatValue, (CSSPrimitiveValue::createIdentifier(CSSValueRepeat)));
-    const CSSPrimitiveValue& repeatX = repeatXCSSValue.isInitialValue() ? *initialRepeatValue : toCSSPrimitiveValue(repeatXCSSValue);
-    const CSSPrimitiveValue& repeatY = repeatYCSSValue.isInitialValue() ? *initialRepeatValue : toCSSPrimitiveValue(repeatYCSSValue);
+    DEFINE_STATIC_LOCAL(CSSPrimitiveValue, initialRepeatValue, (CSSPrimitiveValue::createIdentifier(CSSValueRepeat)));
+    const CSSPrimitiveValue& repeatX = repeatXCSSValue.isInitialValue() ? initialRepeatValue : toCSSPrimitiveValue(repeatXCSSValue);
+    const CSSPrimitiveValue& repeatY = repeatYCSSValue.isInitialValue() ? initialRepeatValue : toCSSPrimitiveValue(repeatYCSSValue);
     CSSValueID repeatXValueId = repeatX.getValueID();
     CSSValueID repeatYValueId = repeatY.getValueID();
     if (repeatXValueId == repeatYValueId) {
