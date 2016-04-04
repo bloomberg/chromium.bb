@@ -37,17 +37,18 @@ scoped_ptr<UserImage::Bytes> UserImage::Encode(const SkBitmap& bitmap) {
 }
 
 // static
-UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
+scoped_ptr<UserImage> UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
   if (image.isNull())
-    return UserImage();
+    return make_scoped_ptr(new UserImage);
 
   scoped_ptr<Bytes> image_bytes = Encode(*image.bitmap());
   if (image_bytes) {
-    UserImage result(image, *image_bytes);
-    result.MarkAsSafe();
+    // TODO(crbug.com/593251): Remove the data copy via |image_bytes|.
+    scoped_ptr<UserImage> result(new UserImage(image, *image_bytes));
+    result->MarkAsSafe();
     return result;
   }
-  return UserImage(image);
+  return make_scoped_ptr(new UserImage(image));
 }
 
 UserImage::UserImage()

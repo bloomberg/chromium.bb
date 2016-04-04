@@ -476,7 +476,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
       WallpaperLayout layout,
       bool update_wallpaper,
       MovableOnDestroyCallbackHolder on_finish,
-      const user_manager::UserImage& user_image) = 0;
+      scoped_ptr<user_manager::UserImage> user_image) = 0;
 
   // Creates new PendingWallpaper request (or updates currently pending).
   virtual void ScheduleSetUserWallpaper(const AccountId& account_id,
@@ -518,7 +518,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   virtual void OnCustomizedDefaultWallpaperDecoded(
       const GURL& wallpaper_url,
       scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-      const user_manager::UserImage& user_image);
+      scoped_ptr<user_manager::UserImage> user_image);
 
   // Check the result of ResizeCustomizedDefaultWallpaper and finally
   // apply Customized Default Wallpaper.
@@ -540,7 +540,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
       const WallpaperLayout layout,
       scoped_ptr<user_manager::UserImage>* result,
       MovableOnDestroyCallbackHolder on_finish,
-      const user_manager::UserImage& user_image) = 0;
+      scoped_ptr<user_manager::UserImage> user_image) = 0;
 
   // Start decoding given default wallpaper.
   virtual void StartLoadAndSetDefaultWallpaper(

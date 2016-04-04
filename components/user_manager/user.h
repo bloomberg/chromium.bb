@@ -127,19 +127,19 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   bool HasDefaultImage() const;
 
   int image_index() const { return image_index_; }
-  bool has_image_bytes() const { return user_image_.has_image_bytes(); }
+  bool has_image_bytes() const { return user_image_->has_image_bytes(); }
   // Returns bytes representation of static user image for WebUI.
   const UserImage::Bytes& image_bytes() const {
-    return user_image_.image_bytes();
+    return user_image_->image_bytes();
   }
 
   // Whether |user_image_| contains data in format that is considered safe to
   // decode in sensitive environment (on Login screen).
-  bool image_is_safe_format() const { return user_image_.is_safe_format(); }
+  bool image_is_safe_format() const { return user_image_->is_safe_format(); }
 
   // Returns the URL of user image, if there is any. Currently only the profile
   // image has a URL, for other images empty URL is returned.
-  GURL image_url() const { return user_image_.url(); }
+  GURL image_url() const { return user_image_->url(); }
 
   // True if user image is a stub (while real image is being loaded from file).
   bool image_is_stub() const { return image_is_stub_; }
@@ -199,14 +199,14 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Setters are private so only UserManager can call them.
   void SetAccountLocale(const std::string& resolved_account_locale);
 
-  void SetImage(const UserImage& user_image, int image_index);
+  void SetImage(scoped_ptr<UserImage> user_image, int image_index);
 
   void SetImageURL(const GURL& image_url);
 
   // Sets a stub image until the next |SetImage| call. |image_index| may be
   // one of |USER_IMAGE_EXTERNAL| or |USER_IMAGE_PROFILE|.
   // If |is_loading| is |true|, that means user image is being loaded from file.
-  void SetStubImage(const UserImage& stub_user_image,
+  void SetStubImage(scoped_ptr<UserImage> stub_user_image,
                     int image_index,
                     bool is_loading);
 
@@ -224,7 +224,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   void set_using_saml(const bool using_saml) { using_saml_ = using_saml; }
 
-  const UserImage& user_image() const { return user_image_; }
+  const UserImage& user_image() const { return *user_image_; }
 
   void set_oauth_token_status(OAuthTokenStatus status) {
     oauth_token_status_ = status;
@@ -258,7 +258,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
   bool using_saml_ = false;
-  UserImage user_image_;
+  scoped_ptr<UserImage> user_image_;
   OAuthTokenStatus oauth_token_status_ = OAUTH_TOKEN_STATUS_UNKNOWN;
   bool force_online_signin_ = false;
 

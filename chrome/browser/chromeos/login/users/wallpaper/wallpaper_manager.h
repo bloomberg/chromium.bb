@@ -153,8 +153,9 @@ class WallpaperManager
 
   // Set wallpaper to |user_image| controlled by policy.  (Takes a UserImage
   // because that's the callback interface provided by UserImageLoader.)
-  void SetPolicyControlledWallpaper(const AccountId& account_id,
-                                    const user_manager::UserImage& user_image);
+  void SetPolicyControlledWallpaper(
+      const AccountId& account_id,
+      scoped_ptr<user_manager::UserImage> user_image);
 
   // Calls SetCustomWallpaper() with |wallpaper_files_id_str| received from
   // cryptohome.
@@ -169,11 +170,12 @@ class WallpaperManager
   void InitializeRegisteredDeviceWallpaper() override;
   bool GetUserWallpaperInfo(const AccountId& account_id,
                             wallpaper::WallpaperInfo* info) const override;
-  void OnWallpaperDecoded(const AccountId& account_id,
-                          wallpaper::WallpaperLayout layout,
-                          bool update_wallpaper,
-                          wallpaper::MovableOnDestroyCallbackHolder on_finish,
-                          const user_manager::UserImage& user_image) override;
+  void OnWallpaperDecoded(
+      const AccountId& account_id,
+      wallpaper::WallpaperLayout layout,
+      bool update_wallpaper,
+      wallpaper::MovableOnDestroyCallbackHolder on_finish,
+      scoped_ptr<user_manager::UserImage> user_image) override;
   void StartLoad(const AccountId& account_id,
                  const wallpaper::WallpaperInfo& info,
                  bool update_wallpaper,
@@ -196,7 +198,7 @@ class WallpaperManager
       const wallpaper::WallpaperLayout layout,
       scoped_ptr<user_manager::UserImage>* result,
       wallpaper::MovableOnDestroyCallbackHolder on_finish,
-      const user_manager::UserImage& user_image) override;
+      scoped_ptr<user_manager::UserImage> user_image) override;
   void StartLoadAndSetDefaultWallpaper(
       const base::FilePath& path,
       const wallpaper::WallpaperLayout layout,

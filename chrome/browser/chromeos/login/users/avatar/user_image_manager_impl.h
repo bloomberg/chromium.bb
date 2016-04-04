@@ -51,7 +51,7 @@ class UserImageManagerImpl
   void UserLoggedIn(bool user_is_new, bool user_is_local) override;
   void UserProfileCreated() override;
   void SaveUserDefaultImageIndex(int default_image_index) override;
-  void SaveUserImage(const user_manager::UserImage& user_image) override;
+  void SaveUserImage(scoped_ptr<user_manager::UserImage> user_image) override;
   void SaveUserImageFromFile(const base::FilePath& path) override;
   void SaveUserImageFromProfileImage() override;
   void DeleteUserImage() override;

@@ -29,9 +29,9 @@ class USER_MANAGER_EXPORT UserImage {
   static scoped_ptr<Bytes> Encode(const SkBitmap& bitmap);
 
   // Creates a new instance from a given still frame and tries to encode it
-  // to bytes representation for WebUI.
+  // to bytes representation for WebUI. Always returns a non-null result.
   // TODO(ivankr): remove eventually.
-  static UserImage CreateAndEncode(const gfx::ImageSkia& image);
+  static scoped_ptr<UserImage> CreateAndEncode(const gfx::ImageSkia& image);
 
   // Create instance with an empty still frame and no bytes
   // representation for WebUI.
@@ -43,6 +43,7 @@ class USER_MANAGER_EXPORT UserImage {
 
   // Creates a new instance from a given still frame and bytes
   // representation for WebUI.
+  // TODO(crbug.com/593251): Remove the data copy via |image_bytes|.
   UserImage(const gfx::ImageSkia& image, const Bytes& image_bytes);
 
   virtual ~UserImage();
@@ -76,6 +77,8 @@ class USER_MANAGER_EXPORT UserImage {
   // If image was loaded from the local file, file path is stored here.
   base::FilePath file_path_;
   bool is_safe_format_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserImage);
 };
 
 }  // namespace user_manager

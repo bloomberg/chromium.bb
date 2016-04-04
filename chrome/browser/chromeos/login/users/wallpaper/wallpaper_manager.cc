@@ -827,7 +827,7 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 
 void WallpaperManager::SetPolicyControlledWallpaper(
     const AccountId& account_id,
-    const user_manager::UserImage& user_image) {
+    scoped_ptr<user_manager::UserImage> user_image) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   if (!user) {
@@ -841,12 +841,12 @@ void WallpaperManager::SetPolicyControlledWallpaper(
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
         GetUnhashedSourceForWallpaperFilesId(*user),
         base::Bind(&WallpaperManager::SetCustomWallpaperOnSanitizedUsername,
-                   weak_factory_.GetWeakPtr(), account_id, user_image.image(),
+                   weak_factory_.GetWeakPtr(), account_id, user_image->image(),
                    true /* update wallpaper */));
   } else {
     SetCustomWallpaper(account_id, wallpaper_files_id, "policy-controlled.jpeg",
                        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                       user_manager::User::POLICY, user_image.image(),
+                       user_manager::User::POLICY, user_image->image(),
                        true /* update wallpaper */);
   }
 }
@@ -947,13 +947,13 @@ void WallpaperManager::OnWallpaperDecoded(
     wallpaper::WallpaperLayout layout,
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
-    const user_manager::UserImage& user_image) {
+    scoped_ptr<user_manager::UserImage> user_image) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT_ASYNC_END0("ui", "LoadAndDecodeWallpaper", this);
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
   // Use default wallpaper in this case.
-  if (user_image.image().isNull()) {
+  if (user_image->image().isNull()) {
     // Updates user pref to default wallpaper.
     WallpaperInfo info = {"",
                           wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
@@ -967,12 +967,12 @@ void WallpaperManager::OnWallpaperDecoded(
   }
 
   // Update the image, but keep the path which was set earlier.
-  wallpaper_cache_[account_id].second = user_image.image();
+  wallpaper_cache_[account_id].second = user_image->image();
 
   if (update_wallpaper) {
     ash::Shell::GetInstance()
         ->desktop_background_controller()
-        ->SetWallpaperImage(user_image.image(), layout);
+        ->SetWallpaperImage(user_image->image(), layout);
   }
 }
 
@@ -1075,10 +1075,10 @@ void WallpaperManager::OnDefaultWallpaperDecoded(
     const wallpaper::WallpaperLayout layout,
     scoped_ptr<user_manager::UserImage>* result_out,
     MovableOnDestroyCallbackHolder on_finish,
-    const user_manager::UserImage& user_image) {
-  result_out->reset(new user_manager::UserImage(user_image));
+    scoped_ptr<user_manager::UserImage> user_image) {
+  *result_out = std::move(user_image);
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
-      user_image.image(), layout);
+      (*result_out)->image(), layout);
 }
 
 void WallpaperManager::StartLoadAndSetDefaultWallpaper(

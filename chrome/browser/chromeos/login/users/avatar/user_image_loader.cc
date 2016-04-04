@@ -160,17 +160,18 @@ void UserImageRequest::OnImageFinalized(
   gfx::ImageSkia final_image_skia =
       gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
-  user_manager::UserImage user_image(final_image_skia, image_bytes);
-  user_image.set_file_path(image_info_.file_path);
+  scoped_ptr<user_manager::UserImage> user_image(
+      new user_manager::UserImage(final_image_skia, image_bytes));
+  user_image->set_file_path(image_info_.file_path);
   if (image_info_.image_codec == ImageDecoder::ROBUST_JPEG_CODEC ||
       image_bytes_regenerated)
-    user_image.MarkAsSafe();
-  image_info_.loaded_cb.Run(user_image);
+    user_image->MarkAsSafe();
+  image_info_.loaded_cb.Run(std::move(user_image));
   delete this;
 }
 
 void UserImageRequest::OnDecodeImageFailed() {
-  image_info_.loaded_cb.Run(user_manager::UserImage());
+  image_info_.loaded_cb.Run(make_scoped_ptr(new user_manager::UserImage));
   delete this;
 }
 
@@ -183,7 +184,9 @@ void DecodeImage(
     bool data_is_ready) {
   if (!data_is_ready) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(image_info.loaded_cb, user_manager::UserImage()));
+        FROM_HERE,
+        base::Bind(image_info.loaded_cb,
+                   base::Passed(make_scoped_ptr(new user_manager::UserImage))));
     return;
   }
 

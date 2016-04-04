@@ -25,7 +25,7 @@ class UserImage;
 namespace chromeos {
 namespace user_image_loader {
 
-typedef base::Callback<void(const user_manager::UserImage& user_image)>
+typedef base::Callback<void(scoped_ptr<user_manager::UserImage>)>
     LoadedCallback;
 
 // Loads an image with |image_codec| in the background and calls |loaded_cb|

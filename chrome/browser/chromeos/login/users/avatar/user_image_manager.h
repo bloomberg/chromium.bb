@@ -52,7 +52,8 @@ class UserImageManager {
 
   // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
   // updates Local State.
-  virtual void SaveUserImage(const user_manager::UserImage& user_image) = 0;
+  virtual void SaveUserImage(
+      scoped_ptr<user_manager::UserImage> user_image) = 0;
 
   // Tries to load user image from disk; if successful, sets it for the user,
   // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.

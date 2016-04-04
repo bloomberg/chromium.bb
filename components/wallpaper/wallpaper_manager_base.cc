@@ -910,17 +910,19 @@ base::TimeDelta WallpaperManagerBase::GetWallpaperLoadDelay() const {
 void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
     const GURL& wallpaper_url,
     scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-    const user_manager::UserImage& wallpaper) {
+    scoped_ptr<user_manager::UserImage> wallpaper) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
-  if (wallpaper.image().isNull()) {
+  if (wallpaper->image().isNull()) {
     LOG(WARNING) << "Failed to decode customized wallpaper.";
     return;
   }
 
-  wallpaper.image().EnsureRepsForSupportedScales();
-  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
+  wallpaper->image().EnsureRepsForSupportedScales();
+  // TODO(crbug.com/593251): DeepCopy() may be unnecessary as this function
+  // owns |wallpaper| as scoped_ptr whereas it used to be a const reference.
+  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper->image().DeepCopy());
 
   scoped_ptr<bool> success(new bool(false));
   scoped_ptr<gfx::ImageSkia> small_wallpaper_image(new gfx::ImageSkia);
@@ -929,7 +931,8 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
   // TODO(bshe): This may break if Bytes becomes RefCountedMemory.
   base::Closure resize_closure = base::Bind(
       &WallpaperManagerBase::ResizeCustomizedDefaultWallpaper,
-      base::Passed(&deep_copy), wallpaper.image_bytes(),
+      // TODO(crbug.com/593251): Remove the data copy via image_bytes().
+      base::Passed(&deep_copy), wallpaper->image_bytes(),
       base::Unretained(rescaled_files.get()), base::Unretained(success.get()),
       base::Unretained(small_wallpaper_image.get()),
       base::Unretained(large_wallpaper_image.get()));

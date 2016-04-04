@@ -136,7 +136,7 @@ base::string16 User::GetGivenName() const {
 }
 
 const gfx::ImageSkia& User::GetImage() const {
-  return user_image_.image();
+  return user_image_->image();
 }
 
 const AccountId& User::GetAccountId() const {
@@ -224,7 +224,8 @@ User* User::CreatePublicAccountUser(const AccountId& account_id) {
   return new PublicAccountUser(account_id);
 }
 
-User::User(const AccountId& account_id) : account_id_(account_id) {}
+User::User(const AccountId& account_id) : account_id_(account_id),
+                                          user_image_(new UserImage) {}
 
 User::~User() {
 }
@@ -233,22 +234,22 @@ void User::SetAccountLocale(const std::string& resolved_account_locale) {
   account_locale_.reset(new std::string(resolved_account_locale));
 }
 
-void User::SetImage(const UserImage& user_image, int image_index) {
-  user_image_ = user_image;
+void User::SetImage(scoped_ptr<UserImage> user_image, int image_index) {
+  user_image_ = std::move(user_image);
   image_index_ = image_index;
   image_is_stub_ = false;
   image_is_loading_ = false;
-  DCHECK(HasDefaultImage() || user_image.has_image_bytes());
+  DCHECK(HasDefaultImage() || user_image_->has_image_bytes());
 }
 
 void User::SetImageURL(const GURL& image_url) {
-  user_image_.set_url(image_url);
+  user_image_->set_url(image_url);
 }
 
-void User::SetStubImage(const UserImage& stub_user_image,
+void User::SetStubImage(scoped_ptr<UserImage> stub_user_image,
                         int image_index,
                         bool is_loading) {
-  user_image_ = stub_user_image;
+  user_image_ = std::move(stub_user_image);
   image_index_ = image_index;
   image_is_stub_ = true;
   image_is_loading_ = is_loading;
