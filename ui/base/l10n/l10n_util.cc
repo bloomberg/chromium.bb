@@ -50,7 +50,9 @@ namespace {
 static const char* const kAcceptLanguageList[] = {
   "af",     // Afrikaans
   "am",     // Amharic
+  "an",     // Aragonese
   "ar",     // Arabic
+  "ast",    // Asturian
   "az",     // Azerbaijani
   "be",     // Belarusian
   "bg",     // Bulgarian
@@ -74,6 +76,7 @@ static const char* const kAcceptLanguageList[] = {
   "en-AU",  // English (Australia)
   "en-CA",  // English (Canada)
   "en-GB",  // English (UK)
+  "en-IN",  // English (India)
   "en-NZ",  // English (New Zealand)
   "en-US",  // English (US)
   "en-ZA",  // English (South Africa)
@@ -82,6 +85,10 @@ static const char* const kAcceptLanguageList[] = {
   // Spanish speaking countries?
   "es",     // Spanish
   "es-419", // Spanish (Latin America)
+  "es-AR",  // Spanish (Argentina)
+  "es-ES",  // Spanish (Spain)
+  "es-MX",  // Spanish (Mexico)
+  "es-US",  // Spanish (US)
   "et",     // Estonian
   "eu",     // Basque
   "fa",     // Persian
@@ -178,12 +185,14 @@ static const char* const kAcceptLanguageList[] = {
   "ur",     // Urdu
   "uz",     // Uzbek
   "vi",     // Vietnamese
+  "wa",     // Walloon
   "xh",     // Xhosa
   "yi",     // Yiddish
   "yo",     // Yoruba
   "zh",     // Chinese
-  "zh-CN",  // Chinese (Simplified)
-  "zh-TW",  // Chinese (Traditional)
+  "zh-CN",  // Chinese (China)
+  "zh-HK",  // Chinese (Hong Kong)
+  "zh-TW",  // Chinese (Taiwan)
   "zu",     // Zulu
 };
 
@@ -314,6 +323,8 @@ std::string GetLanguage(const std::string& locale) {
   return std::string(locale, 0, hyphen_pos);
 }
 
+// TOOD(jshin): revamp this function completely to use a more sytematic
+// and generic locale fallback based on ICU/CLDR.
 bool CheckAndResolveLocale(const std::string& locale,
                            std::string* resolved_locale) {
 #if defined(OS_MACOSX)
@@ -355,12 +366,13 @@ bool CheckAndResolveLocale(const std::string& locale,
         tmp_locale.append("-CN");
       }
     } else if (base::LowerCaseEqualsASCII(lang, "en")) {
-      // Map Australian, Canadian, New Zealand and South African English
-      // to British English for now.
+      // Map Australian, Canadian, Indian, New Zealand and South African
+      // English to British English for now.
       // TODO(jungshik): en-CA may have to change sides once
       // we have OS locale separate from app locale (Chrome's UI language).
       if (base::LowerCaseEqualsASCII(region, "au") ||
           base::LowerCaseEqualsASCII(region, "ca") ||
+          base::LowerCaseEqualsASCII(region, "in") ||
           base::LowerCaseEqualsASCII(region, "nz") ||
           base::LowerCaseEqualsASCII(region, "za")) {
         tmp_locale.append("-GB");
