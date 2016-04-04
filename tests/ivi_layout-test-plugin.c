@@ -87,6 +87,7 @@ struct test_context {
 	struct wl_listener surface_property_changed;
 	struct wl_listener surface_created;
 	struct wl_listener surface_removed;
+	struct wl_listener surface_configured;
 };
 
 static struct test_context static_context;
@@ -874,11 +875,13 @@ RUNNER_TEST(surface_properties_changed_notification)
 }
 
 static void
-test_surface_configure_notification_callback(struct ivi_layout_surface *ivisurf,
-					     void *userdata)
+test_surface_configure_notification_callback(struct wl_listener *listener, void *data)
 {
-	struct test_context *ctx = userdata;
+	struct test_context *ctx =
+			container_of(listener, struct test_context,
+					surface_configured);
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_surface *ivisurf = data;
 
 	runner_assert_or_return(lyt->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
 
@@ -889,7 +892,8 @@ RUNNER_TEST(surface_configure_notification_p1)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
-	runner_assert(IVI_SUCCEEDED == lyt->add_notification_configure_surface(test_surface_configure_notification_callback, ctx));
+	ctx->surface_configured.notify = test_surface_configure_notification_callback;
+	runner_assert(IVI_SUCCEEDED == lyt->add_listener_configure_surface(&ctx->surface_configured));
 	lyt->commit_changes();
 
 	ctx->user_flags = 0;
@@ -897,11 +901,10 @@ RUNNER_TEST(surface_configure_notification_p1)
 
 RUNNER_TEST(surface_configure_notification_p2)
 {
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-
 	runner_assert(ctx->user_flags == 1);
 
-	lyt->remove_notification_configure_surface(test_surface_configure_notification_callback, ctx);
+	// remove surface configured listener.
+	wl_list_remove(&ctx->surface_configured.link);
 	ctx->user_flags = 0;
 }
 

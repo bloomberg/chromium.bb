@@ -71,11 +71,6 @@
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-struct listener_layout_notification {
-	void *userdata;
-	struct wl_listener listener;
-};
-
 struct ivi_layout;
 
 struct ivi_layout_screen {
@@ -96,11 +91,6 @@ struct ivi_layout_screen {
 	} order;
 };
 
-struct ivi_layout_notification_callback {
-	void *callback;
-	void *data;
-};
-
 struct ivi_rectangle
 {
 	int32_t x;
@@ -108,9 +98,6 @@ struct ivi_rectangle
 	int32_t width;
 	int32_t height;
 };
-
-static void
-remove_notification(struct wl_list *listener_list, void *callback, void *userdata);
 
 static struct ivi_layout ivilayout = {0};
 
@@ -930,73 +917,6 @@ clear_surface_order_list(struct ivi_layout_layer *ivilayer)
 	}
 }
 
-static void
-surface_configure_changed(struct wl_listener *listener,
-			  void *data)
-{
-	struct ivi_layout_surface *ivisurface = data;
-
-	struct listener_layout_notification *notification =
-		container_of(listener,
-			     struct listener_layout_notification,
-			     listener);
-
-	struct ivi_layout_notification_callback *configure_changed_callback =
-		notification->userdata;
-
-	((surface_configure_notification_func)configure_changed_callback->callback)
-		(ivisurface, configure_changed_callback->data);
-}
-
-static int32_t
-add_notification(struct wl_signal *signal,
-		 wl_notify_func_t callback,
-		 void *userdata)
-{
-	struct listener_layout_notification *notification = NULL;
-
-	notification = malloc(sizeof *notification);
-	if (notification == NULL) {
-		weston_log("fails to allocate memory\n");
-		free(userdata);
-		return IVI_FAILED;
-	}
-
-	notification->listener.notify = callback;
-	notification->userdata = userdata;
-
-	wl_signal_add(signal, &notification->listener);
-
-	return IVI_SUCCEEDED;
-}
-
-static void
-remove_notification(struct wl_list *listener_list, void *callback, void *userdata)
-{
-	struct wl_listener *listener = NULL;
-	struct wl_listener *next = NULL;
-
-	wl_list_for_each_safe(listener, next, listener_list, link) {
-		struct listener_layout_notification *notification =
-			container_of(listener,
-				     struct listener_layout_notification,
-				     listener);
-
-		struct ivi_layout_notification_callback *notification_callback =
-			notification->userdata;
-
-		if ((notification_callback->callback != callback) ||
-		    (notification_callback->data != userdata)) {
-			continue;
-		}
-
-		wl_list_remove(&listener->link);
-
-		free(notification->userdata);
-		free(notification);
-	}
-}
-
 /**
  * Exported APIs of ivi-layout library are implemented from here.
  * Brief of APIs is described in ivi-layout-export.h.
@@ -1062,36 +982,18 @@ ivi_layout_add_listener_remove_surface(struct wl_listener *listener)
 }
 
 static int32_t
-ivi_layout_add_notification_configure_surface(surface_configure_notification_func callback,
-					      void *userdata)
+ivi_layout_add_listener_configure_surface(struct wl_listener *listener)
 {
 	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_notification_callback *configure_changed_callback = NULL;
-	if (callback == NULL) {
-		weston_log("ivi_layout_add_notification_configure_surface: invalid argument\n");
+
+	if (listener == NULL) {
+		weston_log("ivi_layout_add_listener_configure_surface: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	configure_changed_callback = malloc(sizeof *configure_changed_callback);
-	if (configure_changed_callback == NULL) {
-		weston_log("fails to allocate memory\n");
-		return IVI_FAILED;
-	}
+	wl_signal_add(&layout->surface_notification.configure_changed, listener);
 
-	configure_changed_callback->callback = callback;
-	configure_changed_callback->data = userdata;
-
-	return add_notification(&layout->surface_notification.configure_changed,
-				surface_configure_changed,
-				configure_changed_callback);
-}
-
-static void
-ivi_layout_remove_notification_configure_surface(surface_configure_notification_func callback,
-						 void *userdata)
-{
-	struct ivi_layout *layout = get_instance();
-	remove_notification(&layout->surface_notification.configure_changed.listener_list, callback, userdata);
+	return IVI_SUCCEEDED;
 }
 
 uint32_t
@@ -2088,8 +1990,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	 */
 	.add_listener_create_surface	= ivi_layout_add_listener_create_surface,
 	.add_listener_remove_surface	= ivi_layout_add_listener_remove_surface,
-	.add_notification_configure_surface	= ivi_layout_add_notification_configure_surface,
-	.remove_notification_configure_surface	= ivi_layout_remove_notification_configure_surface,
+	.add_listener_configure_surface	= ivi_layout_add_listener_configure_surface,
 	.get_surfaces				= ivi_layout_get_surfaces,
 	.get_id_of_surface			= ivi_layout_get_id_of_surface,
 	.get_surface_from_id			= ivi_layout_get_surface_from_id,
