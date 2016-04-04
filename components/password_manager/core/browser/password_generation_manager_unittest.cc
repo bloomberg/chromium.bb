@@ -77,7 +77,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
-  explicit MockPasswordManagerClient(scoped_ptr<PrefService> prefs)
+  explicit MockPasswordManagerClient(std::unique_ptr<PrefService> prefs)
       : prefs_(std::move(prefs)),
         store_(new TestPasswordStore),
         driver_(this) {}
@@ -90,7 +90,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   TestPasswordManagerDriver* test_driver() { return &driver_; }
 
  private:
-  scoped_ptr<PrefService> prefs_;
+  std::unique_ptr<PrefService> prefs_;
   scoped_refptr<TestPasswordStore> store_;
   TestPasswordManagerDriver driver_;
 };
@@ -103,7 +103,8 @@ class PasswordGenerationManagerTest : public testing::Test {
     // Construct a PrefService and register all necessary prefs before handing
     // it off to |client_|, as the initialization flow of |client_| will
     // indirectly cause those prefs to be immediately accessed.
-    scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
+    std::unique_ptr<TestingPrefServiceSimple> prefs(
+        new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
     client_.reset(new MockPasswordManagerClient(std::move(prefs)));
@@ -127,7 +128,7 @@ class PasswordGenerationManagerTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<MockPasswordManagerClient> client_;
+  std::unique_ptr<MockPasswordManagerClient> client_;
 };
 
 TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {

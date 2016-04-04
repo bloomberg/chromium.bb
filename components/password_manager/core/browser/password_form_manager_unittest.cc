@@ -5,10 +5,11 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -57,10 +58,10 @@ namespace {
 // Invokes the password store consumer with a copy of all forms.
 ACTION_P4(InvokeConsumer, form1, form2, form3, form4) {
   ScopedVector<PasswordForm> result;
-  result.push_back(make_scoped_ptr(new PasswordForm(form1)));
-  result.push_back(make_scoped_ptr(new PasswordForm(form2)));
-  result.push_back(make_scoped_ptr(new PasswordForm(form3)));
-  result.push_back(make_scoped_ptr(new PasswordForm(form4)));
+  result.push_back(base::WrapUnique(new PasswordForm(form1)));
+  result.push_back(base::WrapUnique(new PasswordForm(form2)));
+  result.push_back(base::WrapUnique(new PasswordForm(form3)));
+  result.push_back(base::WrapUnique(new PasswordForm(form4)));
   arg0->OnGetPasswordStoreResults(std::move(result));
 }
 
@@ -161,7 +162,8 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
       : mock_autofill_manager_(&test_autofill_driver_,
                                &test_autofill_client_,
                                &test_personal_data_manager_) {
-    scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
+    std::unique_ptr<TestingPrefServiceSimple> prefs(
+        new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(autofill::prefs::kAutofillEnabled,
                                            true);
     test_autofill_client_.SetPrefs(std::move(prefs));
@@ -260,7 +262,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
  private:
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
-  scoped_ptr<MockPasswordManagerDriver> driver_;
+  std::unique_ptr<MockPasswordManagerDriver> driver_;
   bool is_update_password_ui_enabled_;
 
   // Filters to remove all and no results, respectively, in FilterResults.
@@ -643,9 +645,9 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordForm saved_match_;
   PasswordForm psl_saved_match_;
   scoped_refptr<NiceMock<MockPasswordStore>> mock_store_;
-  scoped_ptr<TestPasswordManagerClient> client_;
-  scoped_ptr<PasswordManager> password_manager_;
-  scoped_ptr<PasswordFormManager> form_manager_;
+  std::unique_ptr<TestPasswordManagerClient> client_;
+  std::unique_ptr<PasswordManager> password_manager_;
+  std::unique_ptr<PasswordFormManager> form_manager_;
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
@@ -1393,7 +1395,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   form_manager.FetchDataFromPasswordStore();
 
   // Password store only has these incomplete credentials.
-  scoped_ptr<PasswordForm> incomplete_form(new PasswordForm());
+  std::unique_ptr<PasswordForm> incomplete_form(new PasswordForm());
   incomplete_form->origin = GURL("http://accounts.google.com/LoginAuth");
   incomplete_form->signon_realm = "http://accounts.google.com/";
   incomplete_form->password_value = ASCIIToUTF16("my_password");
@@ -1835,7 +1837,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   // This test checks implicitly that after step 4 the PFM does not attempt
   // use-after-free of the deleted driver.
   std::string example_url("http://example.com");
-  scoped_ptr<PasswordForm> form(new PasswordForm);
+  std::unique_ptr<PasswordForm> form(new PasswordForm);
   form->origin = GURL(example_url);
   form->signon_realm = example_url;
   form->action = GURL(example_url);
@@ -1863,12 +1865,12 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   form_manager()->FetchDataFromPasswordStore();
 
   ScopedVector<PasswordForm> simulated_results;
-  scoped_ptr<PasswordForm> form(new PasswordForm(*observed_form()));
+  std::unique_ptr<PasswordForm> form(new PasswordForm(*observed_form()));
   form->username_value = ASCIIToUTF16("username");
   form->password_value = ASCIIToUTF16("password1");
   form->preferred = false;
 
-  scoped_ptr<PasswordForm> generated_form(new PasswordForm(*form));
+  std::unique_ptr<PasswordForm> generated_form(new PasswordForm(*form));
   generated_form->type = PasswordForm::TYPE_GENERATED;
   generated_form->password_value = ASCIIToUTF16("password2");
   generated_form->preferred = true;
@@ -2361,7 +2363,8 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
   EXPECT_CALL(*mock_store(), GetLogins(*observed_form(), form_manager()));
   form_manager()->FetchDataFromPasswordStore();
 
-  scoped_ptr<PasswordForm> generated_form(new PasswordForm(*observed_form()));
+  std::unique_ptr<PasswordForm> generated_form(
+      new PasswordForm(*observed_form()));
   generated_form->type = PasswordForm::TYPE_GENERATED;
   generated_form->username_value = ASCIIToUTF16("username");
   generated_form->password_value = ASCIIToUTF16("password2");
@@ -2391,7 +2394,8 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
   EXPECT_CALL(*mock_store(), GetLogins(*observed_form(), form_manager()));
   form_manager()->FetchDataFromPasswordStore();
 
-  scoped_ptr<PasswordForm> generated_form(new PasswordForm(*observed_form()));
+  std::unique_ptr<PasswordForm> generated_form(
+      new PasswordForm(*observed_form()));
   generated_form->type = PasswordForm::TYPE_GENERATED;
   generated_form->username_value = ASCIIToUTF16("username");
   generated_form->password_value = ASCIIToUTF16("password2");
@@ -2425,7 +2429,7 @@ TEST_F(PasswordFormManagerTest,
   form_manager()->FetchDataFromPasswordStore();
 
   // First response from the store, should be ignored.
-  scoped_ptr<PasswordForm> saved_form(new PasswordForm(*saved_match()));
+  std::unique_ptr<PasswordForm> saved_form(new PasswordForm(*saved_match()));
   saved_form->username_value = ASCIIToUTF16("a@gmail.com");
   ScopedVector<PasswordForm> results;
   results.push_back(std::move(saved_form));
@@ -2477,7 +2481,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
   form_manager()->ProcessFrame(extra_driver.AsWeakPtr());
 
   // Password store responds.
-  scoped_ptr<PasswordForm> match(new PasswordForm(*saved_match()));
+  std::unique_ptr<PasswordForm> match(new PasswordForm(*saved_match()));
   ScopedVector<PasswordForm> result_form;
   result_form.push_back(std::move(match));
   form_manager()->OnGetPasswordStoreResults(std::move(result_form));

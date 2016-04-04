@@ -28,7 +28,7 @@ class CredentialManagerTypesTest : public testing::Test {
 
 TEST_F(CredentialManagerTypesTest, CreatePasswordFormEmpty) {
   CredentialInfo info;
-  scoped_ptr<autofill::PasswordForm> form;
+  std::unique_ptr<autofill::PasswordForm> form;
 
   // Empty CredentialInfo -> nullptr.
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
@@ -37,7 +37,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormEmpty) {
 
 TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
   CredentialInfo info;
-  scoped_ptr<autofill::PasswordForm> form;
+  std::unique_ptr<autofill::PasswordForm> form;
 
   info.id = base::ASCIIToUTF16("id");
   info.name = base::ASCIIToUTF16("name");
@@ -63,7 +63,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
 
 TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
   CredentialInfo info;
-  scoped_ptr<autofill::PasswordForm> form;
+  std::unique_ptr<autofill::PasswordForm> form;
 
   info.id = base::ASCIIToUTF16("id");
   info.name = base::ASCIIToUTF16("name");

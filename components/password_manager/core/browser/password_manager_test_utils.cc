@@ -33,9 +33,9 @@ const char kTestingFederationUrlSpec[] = "https://accounts.google.com/login";
 const int kTestingDaysAfterPasswordsAreSynced = 1;
 const wchar_t kTestingFederatedLoginMarker[] = L"__federated__";
 
-scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
+std::unique_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
     const PasswordFormData& form_data) {
-  scoped_ptr<PasswordForm> form(new PasswordForm());
+  std::unique_ptr<PasswordForm> form(new PasswordForm());
   form->scheme = form_data.scheme;
   form->preferred = form_data.preferred;
   form->ssl_valid = form_data.ssl_valid;
@@ -110,7 +110,7 @@ bool ContainsEqualPasswordFormsUnordered(
 
 void SetFeatures(const std::vector<const base::Feature*>& enable_features,
                  const std::vector<const base::Feature*>& disable_features,
-                 scoped_ptr<base::FeatureList> feature_list) {
+                 std::unique_ptr<base::FeatureList> feature_list) {
   std::string enable_overrides;
   std::string disable_overrides;
 

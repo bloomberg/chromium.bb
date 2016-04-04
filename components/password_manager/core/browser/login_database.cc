@@ -1318,7 +1318,7 @@ bool LoginDatabase::StatementToForms(
 
   forms->clear();
   while (statement->Step()) {
-    scoped_ptr<PasswordForm> new_form(new PasswordForm());
+    std::unique_ptr<PasswordForm> new_form(new PasswordForm());
     EncryptionResult result =
         InitPasswordFormFromStatement(new_form.get(), *statement);
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)

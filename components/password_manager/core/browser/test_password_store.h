@@ -69,7 +69,7 @@ class TestPasswordStore : public PasswordStore {
       ScopedVector<autofill::PasswordForm>* forms) override;
   void AddSiteStatsImpl(const InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
-  std::vector<scoped_ptr<InteractionsStats>> GetSiteStatsImpl(
+  std::vector<std::unique_ptr<InteractionsStats>> GetSiteStatsImpl(
       const GURL& origin_domain) override;
 
  private:

@@ -11,6 +11,7 @@
 #include <set>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -93,7 +94,7 @@ bool IsProbablyNotUsername(const base::string16& s) {
 
 // Splits federated matches from |store_results| into a separate vector and
 // returns that.
-std::vector<scoped_ptr<autofill::PasswordForm>> SplitFederatedMatches(
+std::vector<std::unique_ptr<autofill::PasswordForm>> SplitFederatedMatches(
     ScopedVector<PasswordForm>* store_results) {
   auto first_federated =
       std::partition(store_results->begin(), store_results->end(),
@@ -101,11 +102,11 @@ std::vector<scoped_ptr<autofill::PasswordForm>> SplitFederatedMatches(
                        return form->federation_origin.unique();
                      });
 
-  std::vector<scoped_ptr<autofill::PasswordForm>> federated_matches;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches;
   federated_matches.reserve(store_results->end() - first_federated);
   for (auto federated = first_federated; federated != store_results->end();
        ++federated) {
-    federated_matches.push_back(make_scoped_ptr(*federated));
+    federated_matches.push_back(base::WrapUnique(*federated));
     *federated = nullptr;
   }
   store_results->weak_erase(first_federated, store_results->end());
@@ -279,7 +280,7 @@ void PasswordFormManager::ProvisionallySave(
   DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
 
-  scoped_ptr<autofill::PasswordForm> mutable_provisionally_saved_form(
+  std::unique_ptr<autofill::PasswordForm> mutable_provisionally_saved_form(
       new PasswordForm(credentials));
   if (credentials.IsPossibleChangePasswordForm() &&
       !credentials.username_value.empty() &&
@@ -339,7 +340,7 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
     return;
   }
 
-  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
@@ -411,7 +412,7 @@ void PasswordFormManager::OnRequestDone(
   blacklisted_matches_.clear();
   const size_t logins_result_size = logins_result.size();
 
-  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
@@ -458,7 +459,7 @@ void PasswordFormManager::OnRequestDone(
   // Fill |best_matches_| with the best-scoring credentials for each username.
   for (size_t i = 0; i < logins_result.size(); ++i) {
     // Take ownership of the PasswordForm from the ScopedVector.
-    scoped_ptr<PasswordForm> login(logins_result[i]);
+    std::unique_ptr<PasswordForm> login(logins_result[i]);
     logins_result[i] = nullptr;
     DCHECK(!login->blacklisted_by_user);
     const base::string16& username = login->username_value;
@@ -558,7 +559,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     return;
   }
 
-  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
@@ -585,7 +586,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
 }
 
 void PasswordFormManager::OnGetSiteStatistics(
-    scoped_ptr<std::vector<scoped_ptr<InteractionsStats>>> stats) {
+    std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
   DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;

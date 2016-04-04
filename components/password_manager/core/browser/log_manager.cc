@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/log_manager.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/log_router.h"
 
 namespace password_manager {
@@ -86,9 +87,11 @@ bool LogManagerImpl::IsLoggingActive() const {
 }  // namespace
 
 // static
-scoped_ptr<LogManager> LogManager::Create(LogRouter* log_router,
-                                          base::Closure notification_callback) {
-  return make_scoped_ptr(new LogManagerImpl(log_router, notification_callback));
+std::unique_ptr<LogManager> LogManager::Create(
+    LogRouter* log_router,
+    base::Closure notification_callback) {
+  return base::WrapUnique(
+      new LogManagerImpl(log_router, notification_callback));
 }
 
 }  // namespace password_manager

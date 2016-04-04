@@ -32,7 +32,7 @@ class MockAffiliationFetcherDelegate
   MOCK_METHOD0(OnFetchFailed, void());
   MOCK_METHOD0(OnMalformedResponse, void());
 
-  void OnFetchSucceeded(scoped_ptr<Result> result) override {
+  void OnFetchSucceeded(std::unique_ptr<Result> result) override {
     OnFetchSucceededProxy();
     result_ = std::move(result);
   }
@@ -40,7 +40,7 @@ class MockAffiliationFetcherDelegate
   const Result& result() const { return *result_.get(); }
 
  private:
-  scoped_ptr<Result> result_;
+  std::unique_ptr<Result> result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAffiliationFetcherDelegate);
 };
@@ -132,7 +132,7 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
       FacetURI::FromCanonicalSpec(kNotExampleAndroidFacetURI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), requested_uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -164,7 +164,7 @@ TEST_F(AffiliationFetcherTest, MissingEquivalenceClassesAreCreated) {
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), requested_uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -195,7 +195,7 @@ TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), requested_uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -222,7 +222,7 @@ TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), requested_uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -253,7 +253,7 @@ TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), requested_uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -276,7 +276,7 @@ TEST_F(AffiliationFetcherTest, FailureBecauseResponseIsNotAProtobuf) {
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -300,7 +300,7 @@ TEST_F(AffiliationFetcherTest,
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -313,7 +313,7 @@ TEST_F(AffiliationFetcherTest, FailOnServerError) {
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), uris, &mock_delegate));
   fetcher->StartRequest();
 
@@ -326,7 +326,7 @@ TEST_F(AffiliationFetcherTest, FailOnNetworkError) {
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
   MockAffiliationFetcherDelegate mock_delegate;
-  scoped_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
       request_context_getter(), uris, &mock_delegate));
   fetcher->StartRequest();
 

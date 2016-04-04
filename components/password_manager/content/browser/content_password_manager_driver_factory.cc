@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -56,7 +57,7 @@ ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
   if (main_frame->IsRenderFrameLive()) {
     frame_driver_map_[main_frame] =
-        make_scoped_ptr(new ContentPasswordManagerDriver(
+        base::WrapUnique(new ContentPasswordManagerDriver(
             main_frame, password_client_, autofill_client_));
   }
 }
@@ -86,7 +87,7 @@ void ContentPasswordManagerDriverFactory::RenderFrameCreated(
   // This is called twice for the main frame.
   if (insertion_result.second) {  // This was the first time.
     insertion_result.first->second =
-        make_scoped_ptr(new ContentPasswordManagerDriver(
+        base::WrapUnique(new ContentPasswordManagerDriver(
             render_frame_host, password_client_, autofill_client_));
     insertion_result.first->second->SendLoggingAvailability();
   }
@@ -114,7 +115,7 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
 
 void ContentPasswordManagerDriverFactory::TestingSetDriverForFrame(
     content::RenderFrameHost* render_frame_host,
-    scoped_ptr<ContentPasswordManagerDriver> driver) {
+    std::unique_ptr<ContentPasswordManagerDriver> driver) {
   frame_driver_map_[render_frame_host] = std::move(driver);
 }
 

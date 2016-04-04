@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/memory/ptr_util.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 
@@ -35,13 +36,13 @@ bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs) {
 }
 
 InteractionsStats* FindStatsByUsername(
-    const std::vector<scoped_ptr<InteractionsStats>>& stats,
+    const std::vector<std::unique_ptr<InteractionsStats>>& stats,
     const base::string16& username) {
-  auto it =
-      std::find_if(stats.begin(), stats.end(),
-                   [&username](const scoped_ptr<InteractionsStats>& element) {
-                     return username == element->username_value;
-                   });
+  auto it = std::find_if(
+      stats.begin(), stats.end(),
+      [&username](const std::unique_ptr<InteractionsStats>& element) {
+        return username == element->username_value;
+      });
   return it == stats.end() ? nullptr : it->get();
 }
 
@@ -105,18 +106,18 @@ bool StatisticsTable::RemoveRow(const GURL& domain) {
   return s.Run();
 }
 
-std::vector<scoped_ptr<InteractionsStats>> StatisticsTable::GetRows(
+std::vector<std::unique_ptr<InteractionsStats>> StatisticsTable::GetRows(
     const GURL& domain) {
   if (!domain.is_valid())
-    return std::vector<scoped_ptr<InteractionsStats>>();
+    return std::vector<std::unique_ptr<InteractionsStats>>();
   const char query[] =
       "SELECT origin_domain, username_value, "
       "dismissal_count, update_time FROM stats WHERE origin_domain == ?";
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
   s.BindString(0, domain.spec());
-  std::vector<scoped_ptr<InteractionsStats>> result;
+  std::vector<std::unique_ptr<InteractionsStats>> result;
   while (s.Step()) {
-    result.push_back(make_scoped_ptr(new InteractionsStats));
+    result.push_back(base::WrapUnique(new InteractionsStats));
     result.back()->origin_domain = GURL(s.ColumnString(COLUMN_ORIGIN_DOMAIN));
     result.back()->username_value = s.ColumnString16(COLUMN_USERNAME);
     result.back()->dismissal_count = s.ColumnInt(COLUMN_DISMISSALS);

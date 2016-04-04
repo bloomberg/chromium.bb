@@ -19,7 +19,7 @@ password_manager::FakeAffiliationFetcher::~FakeAffiliationFetcher() {
 }
 
 void password_manager::FakeAffiliationFetcher::SimulateSuccess(
-    scoped_ptr<AffiliationFetcherDelegate::Result> fake_result) {
+    std::unique_ptr<AffiliationFetcherDelegate::Result> fake_result) {
   delegate()->OnFetchSucceeded(std::move(fake_result));
 }
 

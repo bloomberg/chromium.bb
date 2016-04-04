@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -59,8 +59,9 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
 
   // The |password_store| must outlive |this|. Both arguments must be non-NULL,
   // except in tests which do not Initialize() the object.
-  AffiliatedMatchHelper(PasswordStore* password_store,
-                        scoped_ptr<AffiliationService> affiliation_service);
+  AffiliatedMatchHelper(
+      PasswordStore* password_store,
+      std::unique_ptr<AffiliationService> affiliation_service);
   ~AffiliatedMatchHelper() override;
 
   // Schedules deferred initialization.
@@ -156,7 +157,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_waiting_;
 
   // Being the sole consumer of AffiliationService, |this| owns the service.
-  scoped_ptr<AffiliationService> affiliation_service_;
+  std::unique_ptr<AffiliationService> affiliation_service_;
 
   base::WeakPtrFactory<AffiliatedMatchHelper> weak_ptr_factory_;
 

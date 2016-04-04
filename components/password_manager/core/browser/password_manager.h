@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -63,13 +63,13 @@ class PasswordManager : public LoginModel {
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
-  void Autofill(
-      password_manager::PasswordManagerDriver* driver,
-      const autofill::PasswordForm& form_for_autofill,
-      const autofill::PasswordFormMap& best_matches,
-      const std::vector<scoped_ptr<autofill::PasswordForm>>& federated_matches,
-      const autofill::PasswordForm& preferred_match,
-      bool wait_for_username) const;
+  void Autofill(password_manager::PasswordManagerDriver* driver,
+                const autofill::PasswordForm& form_for_autofill,
+                const autofill::PasswordFormMap& best_matches,
+                const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+                    federated_matches,
+                const autofill::PasswordForm& preferred_match,
+                bool wait_for_username) const;
 
   // Called by a PasswordFormManager when it decides a HTTP auth dialog can be
   // autofilled.
@@ -218,7 +218,7 @@ class PasswordManager : public LoginModel {
   // send the PasswordFormManager back to the pending_login_managers_ set.
   // Scoped in case PasswordManager gets deleted (e.g tab closes) between the
   // time a user submits a login form and gets to the next page.
-  scoped_ptr<PasswordFormManager> provisional_save_manager_;
+  std::unique_ptr<PasswordFormManager> provisional_save_manager_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;

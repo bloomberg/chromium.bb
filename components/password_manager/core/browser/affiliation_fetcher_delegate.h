@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_FETCHER_DELEGATE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_FETCHER_DELEGATE_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 
 namespace password_manager {
@@ -23,7 +23,7 @@ class AffiliationFetcherDelegate {
   // |result| will contain at most as many equivalence class as facet URIs in
   // the request, and each requested facet URI will appear in exactly one
   // equivalence class.
-  virtual void OnFetchSucceeded(scoped_ptr<Result> result) = 0;
+  virtual void OnFetchSucceeded(std::unique_ptr<Result> result) = 0;
 
   // Called when affiliation information could not be fetched due to a network
   // error or a presumably transient server error. The implementor may and will

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_ORIGIN_UNITTEST_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_ORIGIN_UNITTEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -63,7 +64,7 @@ TYPED_TEST_CASE_P(PasswordStoreOriginTest);
 TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByURLAndTimeImpl_AllFittingOriginAndTime) {
   const char origin_url[] = "http://foo.example.com/";
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
+  std::unique_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
       CreateTestPasswordFormDataByOrigin(origin_url));
   this->delegate_.store()->AddLogin(*form);
   this->delegate_.FinishAsyncProcessing();
@@ -86,7 +87,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByURLAndTimeImpl_SomeFittingOriginAndTime) {
   const char fitting_url[] = "http://foo.example.com/";
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
+  std::unique_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
       CreateTestPasswordFormDataByOrigin(fitting_url));
   this->delegate_.store()->AddLogin(*form);
 
@@ -115,7 +116,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByURLAndTimeImpl_NonMatchingOrigin) {
   const char origin_url[] = "http://foo.example.com/";
-  scoped_ptr<autofill::PasswordForm> form =
+  std::unique_ptr<autofill::PasswordForm> form =
       CreatePasswordFormFromDataForTesting(
           CreateTestPasswordFormDataByOrigin(origin_url));
   this->delegate_.store()->AddLogin(*form);
@@ -139,7 +140,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByURLAndTimeImpl_NotWithinTimeInterval) {
   const char origin_url[] = "http://foo.example.com/";
-  scoped_ptr<autofill::PasswordForm> form =
+  std::unique_ptr<autofill::PasswordForm> form =
       CreatePasswordFormFromDataForTesting(
           CreateTestPasswordFormDataByOrigin(origin_url));
   this->delegate_.store()->AddLogin(*form);

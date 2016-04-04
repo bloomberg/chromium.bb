@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
@@ -122,7 +123,7 @@ class AffiliationFetchThrottler
   State state_;
   bool has_network_connectivity_;
   bool is_fetch_scheduled_;
-  scoped_ptr<net::BackoffEntry> exponential_backoff_;
+  std::unique_ptr<net::BackoffEntry> exponential_backoff_;
 
   base::WeakPtrFactory<AffiliationFetchThrottler> weak_ptr_factory_;
 

@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/clock.h"
@@ -283,12 +285,12 @@ class AffiliationBackendTest : public testing::Test {
   }
 
   bool IsCachedDataFreshForFacet(const FacetURI& facet_uri) {
-    scoped_ptr<base::Clock> clock(backend_task_runner_->GetMockClock());
+    std::unique_ptr<base::Clock> clock(backend_task_runner_->GetMockClock());
     return FacetManager(facet_uri, backend(), clock.get()).IsCachedDataFresh();
   }
 
   bool IsCachedDataNearStaleForFacet(const FacetURI& facet_uri) {
-    scoped_ptr<base::Clock> clock(backend_task_runner_->GetMockClock());
+    std::unique_ptr<base::Clock> clock(backend_task_runner_->GetMockClock());
     return FacetManager(facet_uri, backend(), clock.get())
         .IsCachedDataNearStale();
   }
@@ -325,7 +327,7 @@ class AffiliationBackendTest : public testing::Test {
     backend_->Initialize(db_path());
     mock_fetch_throttler_ = new MockAffiliationFetchThrottler(backend_.get());
     backend_->SetThrottlerForTesting(
-        make_scoped_ptr<AffiliationFetchThrottler>(mock_fetch_throttler_));
+        base::WrapUnique<AffiliationFetchThrottler>(mock_fetch_throttler_));
 
     fake_affiliation_api_.AddTestEquivalenceClass(
         GetTestEquivalenceClassAlpha());
@@ -341,7 +343,7 @@ class AffiliationBackendTest : public testing::Test {
   base::FilePath db_path_;
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;
-  scoped_ptr<AffiliationBackend> backend_;
+  std::unique_ptr<AffiliationBackend> backend_;
   MockAffiliationFetchThrottler* mock_fetch_throttler_;  // Owned by |backend_|.
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationBackendTest);

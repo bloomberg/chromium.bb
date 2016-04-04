@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_DATABASE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_DATABASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 
@@ -82,7 +83,7 @@ class AffiliationDatabase {
   void SQLErrorCallback(int error_number, sql::Statement* statement);
 
   // The SQL connection to the database.
-  scoped_ptr<sql::Connection> sql_connection_;
+  std::unique_ptr<sql::Connection> sql_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationDatabase);
 };

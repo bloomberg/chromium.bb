@@ -74,7 +74,7 @@ class ContentPasswordManagerDriverTest
 TEST_P(ContentPasswordManagerDriverTest,
        AnswerToNotificationsAboutLoggingState) {
   const bool should_allow_logging = GetParam();
-  scoped_ptr<ContentPasswordManagerDriver> driver(
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
       new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
                                        &autofill_client_));
   process()->sink().ClearMessages();
@@ -95,7 +95,7 @@ TEST_P(ContentPasswordManagerDriverTest,
 
 TEST_P(ContentPasswordManagerDriverTest, AnswerToIPCPingsAboutLoggingState) {
   const bool should_allow_logging = GetParam();
-  scoped_ptr<ContentPasswordManagerDriver> driver(
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
       new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
                                        &autofill_client_));
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
@@ -33,10 +34,10 @@ void ActivateAffiliationBasedMatching(
   // The PasswordStore is so far the only consumer of the AffiliationService,
   // therefore the service is owned by the AffiliatedMatchHelper, which in
   // turn is owned by the PasswordStore.
-  scoped_ptr<AffiliationService> affiliation_service(
+  std::unique_ptr<AffiliationService> affiliation_service(
       new AffiliationService(db_thread_runner));
   affiliation_service->Initialize(request_context_getter, db_path);
-  scoped_ptr<AffiliatedMatchHelper> affiliated_match_helper(
+  std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper(
       new AffiliatedMatchHelper(password_store,
                                 std::move(affiliation_service)));
   affiliated_match_helper->Initialize();
@@ -71,7 +72,7 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
                                      db_thread_runner);
   } else if (!matching_should_be_active && matching_is_active) {
     password_store->SetAffiliatedMatchHelper(
-        make_scoped_ptr<AffiliatedMatchHelper>(nullptr));
+        base::WrapUnique<AffiliatedMatchHelper>(nullptr));
   }
 }
 
@@ -87,10 +88,10 @@ void TrimOrDeleteAffiliationCacheForStoreAndPath(
   }
 }
 
-scoped_ptr<LoginDatabase> CreateLoginDatabase(
+std::unique_ptr<LoginDatabase> CreateLoginDatabase(
     const base::FilePath& profile_path) {
   base::FilePath login_db_file_path = profile_path.Append(kLoginDataFileName);
-  return make_scoped_ptr(new LoginDatabase(login_db_file_path));
+  return base::WrapUnique(new LoginDatabase(login_db_file_path));
 }
 
 }  // namespace password_manager

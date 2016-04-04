@@ -4,7 +4,8 @@
 
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -27,7 +28,7 @@ StubPasswordManagerClient::StubPasswordManagerClient() {}
 StubPasswordManagerClient::~StubPasswordManagerClient() {}
 
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    scoped_ptr<PasswordFormManager> form_to_save,
+    std::unique_ptr<PasswordFormManager> form_to_save,
     password_manager::CredentialSourceType type,
     bool update_password) {
   return false;
@@ -46,14 +47,13 @@ void StubPasswordManagerClient::NotifyUserAutoSignin(
     const GURL& origin) {}
 
 void StubPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
-    scoped_ptr<autofill::PasswordForm> form) {}
+    std::unique_ptr<autofill::PasswordForm> form) {}
 
 void StubPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     const autofill::PasswordForm& form) {}
 
 void StubPasswordManagerClient::AutomaticPasswordSave(
-    scoped_ptr<PasswordFormManager> saved_manager) {
-}
+    std::unique_ptr<PasswordFormManager> saved_manager) {}
 
 PrefService* StubPasswordManagerClient::GetPrefs() {
   return nullptr;

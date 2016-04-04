@@ -67,8 +67,8 @@ class PasswordWebDataService : public WebDataServiceBase {
                                      WebDatabase* db);
   WebDatabase::State RemoveIE7LoginImpl(const IE7PasswordInfo& info,
                                         WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetIE7LoginImpl(const IE7PasswordInfo& info,
-                                            WebDatabase* db);
+  std::unique_ptr<WDTypedResult> GetIE7LoginImpl(const IE7PasswordInfo& info,
+                                                 WebDatabase* db);
 
   DISALLOW_COPY_AND_ASSIGN(PasswordWebDataService);
 };

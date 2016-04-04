@@ -27,8 +27,8 @@ void PasswordManagerClient::GeneratePassword() {}
 void PasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches,
     const GURL& origin,
-    const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
-    const {}
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+        federated_matches) const {}
 
 PasswordSyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING_PASSWORDS;

@@ -44,7 +44,7 @@ class LoginDatabaseIOSTest : public PlatformTest {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<LoginDatabase> login_db_;
+  std::unique_ptr<LoginDatabase> login_db_;
 };
 
 void LoginDatabaseIOSTest::ClearKeychain() {

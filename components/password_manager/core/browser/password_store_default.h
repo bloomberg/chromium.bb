@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_DEFAULT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_DEFAULT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -24,7 +24,7 @@ class PasswordStoreDefault : public PasswordStore {
   PasswordStoreDefault(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      scoped_ptr<LoginDatabase> login_db);
+      std::unique_ptr<LoginDatabase> login_db);
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
 
@@ -69,14 +69,14 @@ class PasswordStoreDefault : public PasswordStore {
       ScopedVector<autofill::PasswordForm>* forms) override;
   void AddSiteStatsImpl(const InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
-  std::vector<scoped_ptr<InteractionsStats>> GetSiteStatsImpl(
+  std::vector<std::unique_ptr<InteractionsStats>> GetSiteStatsImpl(
       const GURL& origin_domain) override;
 
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();
   }
 
-  void set_login_db(scoped_ptr<password_manager::LoginDatabase> login_db) {
+  void set_login_db(std::unique_ptr<password_manager::LoginDatabase> login_db) {
     login_db_.swap(login_db);
   }
 
@@ -88,7 +88,7 @@ class PasswordStoreDefault : public PasswordStore {
   // in an uninitialized state, so as to allow injecting mocks, then Init() is
   // called on the DB thread in a deferred manner. If opening the DB fails,
   // |login_db_| will be reset and stay NULL for the lifetime of |this|.
-  scoped_ptr<LoginDatabase> login_db_;
+  std::unique_ptr<LoginDatabase> login_db_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);
 };

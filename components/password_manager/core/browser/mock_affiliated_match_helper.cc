@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -13,7 +14,7 @@ namespace password_manager {
 
 MockAffiliatedMatchHelper::MockAffiliatedMatchHelper()
     : AffiliatedMatchHelper(nullptr,
-                            make_scoped_ptr<AffiliationService>(nullptr)) {}
+                            base::WrapUnique<AffiliationService>(nullptr)) {}
 
 MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() {}
 

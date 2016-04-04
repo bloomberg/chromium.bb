@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_syncable_service.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -203,13 +203,13 @@ class PasswordSyncableServiceWrapper {
   MockPasswordSyncableService* service() { return service_.get(); }
 
   // Returnes the scoped_ptr to |service_| thus NULLing out it.
-  scoped_ptr<syncer::SyncChangeProcessor> ReleaseSyncableService() {
+  std::unique_ptr<syncer::SyncChangeProcessor> ReleaseSyncableService() {
     return std::move(service_);
   }
 
  private:
   scoped_refptr<MockPasswordStore> password_store_;
-  scoped_ptr<MockPasswordSyncableService> service_;
+  std::unique_ptr<MockPasswordSyncableService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncableServiceWrapper);
 };
@@ -226,7 +226,7 @@ class PasswordSyncableServiceTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<MockSyncChangeProcessor> processor_;
+  std::unique_ptr<MockSyncChangeProcessor> processor_;
 
  private:
   PasswordSyncableServiceWrapper wrapper_;
@@ -251,9 +251,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
       SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, list,
-                                      std::move(processor_),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, list, std::move(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Sync has data that is not present in the password db.
@@ -269,9 +269,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, list,
-                                      std::move(processor_),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, list, std::move(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Passwords db has data that is not present in sync.
@@ -292,9 +292,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
       SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, SyncDataList(),
-                                      std::move(processor_),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, SyncDataList(), std::move(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Both passwords db and sync contain the same data.
@@ -313,7 +313,7 @@ TEST_F(PasswordSyncableServiceTest, BothInSync) {
 
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, SyncDataList(1, SyncDataFromPassword(form)),
-      std::move(processor_), scoped_ptr<syncer::SyncErrorFactory>());
+      std::move(processor_), std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Both passwords db and sync have the same data but they need to be merged
@@ -337,7 +337,7 @@ TEST_F(PasswordSyncableServiceTest, Merge) {
 
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, SyncDataList(1, SyncDataFromPassword(form2)),
-      std::move(processor_), scoped_ptr<syncer::SyncErrorFactory>());
+      std::move(processor_), std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Initiate sync due to local DB changes.
@@ -350,9 +350,9 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
       .WillOnce(Return(true));
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, SyncDataList(),
-                                      std::move(processor_),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, SyncDataList(), std::move(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>());
 
   autofill::PasswordForm form1;
   form1.signon_realm = kSignonRealm;
@@ -469,10 +469,9 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
   syncer::SyncDataList other_service_data =
       other_service_wrapper.service()->GetAllSyncData(syncer::PASSWORDS);
   service()->MergeDataAndStartSyncing(
-      syncer::PASSWORDS,
-      other_service_data,
+      syncer::PASSWORDS, other_service_data,
       other_service_wrapper.ReleaseSyncableService(),
-      scoped_ptr<syncer::SyncErrorFactory>());
+      std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Calls ActOnPasswordStoreChanges without SyncChangeProcessor. StartSyncFlare
@@ -499,7 +498,7 @@ TEST_F(PasswordSyncableServiceTest, StartSyncFlare) {
 // Start syncing with an error. Subsequent password store updates shouldn't be
 // propagated to Sync.
 TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
-  scoped_ptr<syncer::SyncErrorFactoryMock> error_factory(
+  std::unique_ptr<syncer::SyncErrorFactoryMock> error_factory(
       new syncer::SyncErrorFactoryMock);
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "Failed to get passwords from store.",
@@ -530,7 +529,7 @@ TEST_F(PasswordSyncableServiceTest, FailedProcessSyncChanges) {
   form.signon_realm = kSignonRealm;
   form.username_value = base::ASCIIToUTF16(kUsername);
   form.password_value = base::ASCIIToUTF16(kPassword);
-  scoped_ptr<syncer::SyncErrorFactoryMock> error_factory(
+  std::unique_ptr<syncer::SyncErrorFactoryMock> error_factory(
       new syncer::SyncErrorFactoryMock);
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "There is a problem", syncer::PASSWORDS);
@@ -581,9 +580,9 @@ TEST_F(PasswordSyncableServiceTest, MergeEmptyPasswords) {
       SyncChangeIs(SyncChange::ACTION_DELETE, old_empty_form),
       SyncChangeIs(SyncChange::ACTION_DELETE, sync_empty_form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, sync_data,
-                                      std::move(processor_),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, sync_data, std::move(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>());
 }
 
 // Serialize and deserialize empty federation_origin and make sure it's an empty

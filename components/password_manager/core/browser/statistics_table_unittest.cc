@@ -50,8 +50,8 @@ class StatisticsTableTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<sql::Connection> connection_;
-  scoped_ptr<StatisticsTable> db_;
+  std::unique_ptr<sql::Connection> connection_;
+  std::unique_ptr<StatisticsTable> db_;
   InteractionsStats test_data_;
 };
 

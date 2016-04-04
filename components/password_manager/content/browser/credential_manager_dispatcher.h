@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
@@ -105,7 +106,7 @@ class CredentialManagerDispatcher
   bool IsUpdatingCredentialAllowed() const;
 
   PasswordManagerClient* client_;
-  scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
+  std::unique_ptr<CredentialManagerPasswordFormManager> form_manager_;
 
   // Set to false to disable automatic signing in.
   BooleanPrefMember auto_signin_enabled_;
@@ -114,8 +115,8 @@ class CredentialManagerDispatcher
   // PasswordStore; we push enough data into Pending*Task objects so that
   // they can properly respond to the request once the PasswordStore gives
   // us data.
-  scoped_ptr<CredentialManagerPendingRequestTask> pending_request_;
-  scoped_ptr<CredentialManagerPendingRequireUserMediationTask>
+  std::unique_ptr<CredentialManagerPendingRequestTask> pending_request_;
+  std::unique_ptr<CredentialManagerPendingRequireUserMediationTask>
       pending_require_user_mediation_;
 
   base::WeakPtrFactory<CredentialManagerDispatcher> weak_factory_;

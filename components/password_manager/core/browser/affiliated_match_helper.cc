@@ -37,7 +37,7 @@ const int64_t AffiliatedMatchHelper::kInitializationDelayOnStartupInSeconds;
 
 AffiliatedMatchHelper::AffiliatedMatchHelper(
     PasswordStore* password_store,
-    scoped_ptr<AffiliationService> affiliation_service)
+    std::unique_ptr<AffiliationService> affiliation_service)
     : password_store_(password_store),
       task_runner_for_waiting_(base::ThreadTaskRunnerHandle::Get()),
       affiliation_service_(std::move(affiliation_service)),

@@ -89,7 +89,7 @@ class AffiliationFetcher : net::URLFetcherDelegate {
   const std::vector<FacetURI> requested_facet_uris_;
   AffiliationFetcherDelegate* const delegate_;
 
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationFetcher);
 };

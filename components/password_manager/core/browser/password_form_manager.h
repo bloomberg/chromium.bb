@@ -6,15 +6,15 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
-
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -121,7 +121,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) override;
   void OnGetSiteStatistics(
-      scoped_ptr<std::vector<scoped_ptr<InteractionsStats>>> stats) override;
+      std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats)
+      override;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -221,7 +222,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 #endif
 
-  const std::vector<scoped_ptr<InteractionsStats>>& interactions_stats() const {
+  const std::vector<std::unique_ptr<InteractionsStats>>& interactions_stats()
+      const {
     return interactions_stats_;
   }
 
@@ -231,7 +233,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return is_possible_change_password_form_without_username_;
   }
 
-  const std::vector<scoped_ptr<autofill::PasswordForm>>& federated_matches() {
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  federated_matches() {
     return federated_matches_;
   }
 
@@ -461,7 +464,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // filled not saved by this PasswordFormManager, so they are kept separately
   // from |best_matches_|. The PasswordFormManager passes them further to
   // PasswordManager to show them in the UI.
-  std::vector<scoped_ptr<autofill::PasswordForm>> federated_matches_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches_;
 
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form.
@@ -471,10 +474,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   const autofill::PasswordForm observed_form_;
 
   // Statistics for the current domain.
-  std::vector<scoped_ptr<InteractionsStats>> interactions_stats_;
+  std::vector<std::unique_ptr<InteractionsStats>> interactions_stats_;
 
   // Stores a submitted form.
-  scoped_ptr<const autofill::PasswordForm> provisionally_saved_form_;
+  std::unique_ptr<const autofill::PasswordForm> provisionally_saved_form_;
 
   // Stores if for creating |pending_credentials_| other possible usernames
   // option should apply.

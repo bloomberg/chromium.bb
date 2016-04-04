@@ -84,7 +84,7 @@ class PasswordManagerClient {
   // TODO(crbug.com/576747): Analyze usefulness of the |type| parameter, make a
   // decision if it should be kept or removed.
   virtual bool PromptUserToSaveOrUpdatePassword(
-      scoped_ptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManager> form_to_save,
       CredentialSourceType type,
       bool update_password) = 0;
 
@@ -118,7 +118,7 @@ class PasswordManagerClient {
   // had been through the first-run experience to ensure their opt-in. |form|
   // contains the PasswordForm that would have been delivered.
   virtual void NotifyUserCouldBeAutoSignedIn(
-      scoped_ptr<autofill::PasswordForm> form) = 0;
+      std::unique_ptr<autofill::PasswordForm> form) = 0;
 
   // Inform the embedder that the user signed in with a saved credential.
   // |form| contains the form used.
@@ -128,7 +128,7 @@ class PasswordManagerClient {
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.
   virtual void AutomaticPasswordSave(
-      scoped_ptr<PasswordFormManager> saved_form_manager) = 0;
+      std::unique_ptr<PasswordFormManager> saved_form_manager) = 0;
 
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to
@@ -140,8 +140,8 @@ class PasswordManagerClient {
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches,
       const GURL& origin,
-      const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
-      const;
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+          federated_matches) const;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() = 0;

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -39,10 +40,10 @@ void AffiliationService::Initialize(
   DCHECK(!backend_);
   backend_ =
       new AffiliationBackend(request_context_getter, backend_task_runner_,
-                             make_scoped_ptr(new base::DefaultClock),
-                             make_scoped_ptr(new base::DefaultTickClock));
+                             base::WrapUnique(new base::DefaultClock),
+                             base::WrapUnique(new base::DefaultTickClock));
 
-  scoped_ptr<base::TickClock> tick_clock(new base::DefaultTickClock);
+  std::unique_ptr<base::TickClock> tick_clock(new base::DefaultTickClock);
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AffiliationBackend::Initialize,
                             base::Unretained(backend_), db_path));

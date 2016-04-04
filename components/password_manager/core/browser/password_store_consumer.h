@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CONSUMER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CONSUMER_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/task/cancelable_task_tracker.h"
 
@@ -34,10 +34,10 @@ class PasswordStoreConsumer {
       ScopedVector<autofill::PasswordForm> results) = 0;
 
   // TODO(crbug.com/561749): The argument's type would ideally be just
-  // std::vector<scoped_ptr<InteractionsStats>>, but currently it is not
+  // std::vector<std::unique_ptr<InteractionsStats>>, but currently it is not
   // possible to pass that into a callback.
   virtual void OnGetSiteStatistics(
-      scoped_ptr<std::vector<scoped_ptr<InteractionsStats>>> stats);
+      std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats);
 
   // The base::CancelableTaskTracker can be used for cancelling the
   // tasks associated with the consumer.

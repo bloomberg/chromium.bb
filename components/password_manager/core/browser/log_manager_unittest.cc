@@ -56,7 +56,7 @@ class LogManagerTest : public testing::Test {
   testing::StrictMock<MockLogReceiver> receiver_;
   LogRouter router_;
   testing::StrictMock<MockNotifiedObject> notified_object_;
-  scoped_ptr<LogManager> manager_;
+  std::unique_ptr<LogManager> manager_;
 };
 
 TEST_F(LogManagerTest, LogSavePasswordProgressNoReceiver) {

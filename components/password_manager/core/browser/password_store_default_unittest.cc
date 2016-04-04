@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -80,7 +81,8 @@ PasswordFormData CreateTestPasswordFormData() {
 class PasswordStoreDefaultTestDelegate {
  public:
   PasswordStoreDefaultTestDelegate();
-  explicit PasswordStoreDefaultTestDelegate(scoped_ptr<LoginDatabase> database);
+  explicit PasswordStoreDefaultTestDelegate(
+      std::unique_ptr<LoginDatabase> database);
   ~PasswordStoreDefaultTestDelegate();
 
   PasswordStoreDefault* store() { return store_.get(); }
@@ -93,7 +95,7 @@ class PasswordStoreDefaultTestDelegate {
   void ClosePasswordStore();
 
   scoped_refptr<PasswordStoreDefault> CreateInitializedStore(
-      scoped_ptr<LoginDatabase> database);
+      std::unique_ptr<LoginDatabase> database);
 
   base::FilePath test_login_db_file_path() const;
 
@@ -107,11 +109,11 @@ class PasswordStoreDefaultTestDelegate {
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate() {
   SetupTempDir();
   store_ = CreateInitializedStore(
-      make_scoped_ptr(new LoginDatabase(test_login_db_file_path())));
+      base::WrapUnique(new LoginDatabase(test_login_db_file_path())));
 }
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
-    scoped_ptr<LoginDatabase> database) {
+    std::unique_ptr<LoginDatabase> database) {
   SetupTempDir();
   store_ = CreateInitializedStore(std::move(database));
 }
@@ -136,7 +138,7 @@ void PasswordStoreDefaultTestDelegate::ClosePasswordStore() {
 
 scoped_refptr<PasswordStoreDefault>
 PasswordStoreDefaultTestDelegate::CreateInitializedStore(
-    scoped_ptr<LoginDatabase> database) {
+    std::unique_ptr<LoginDatabase> database) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       std::move(database)));
@@ -203,7 +205,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
   PasswordStoreDefaultTestDelegate delegate;
   PasswordStoreDefault* store = delegate.store();
 
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
 
   MockPasswordStoreObserver observer;
@@ -253,7 +255,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 // notifications.
 TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   PasswordStoreDefaultTestDelegate delegate(
-      make_scoped_ptr(new BadLoginDatabase));
+      base::WrapUnique(new BadLoginDatabase));
   PasswordStoreDefault* bad_store = delegate.store();
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(nullptr, bad_store->login_db());
@@ -262,9 +264,9 @@ TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   bad_store->AddObserver(&mock_observer);
 
   // Add a new autofillable login + a blacklisted login.
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
-  scoped_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
+  std::unique_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
   blacklisted_form->origin = GURL("http://foo.example.com/origin");
   blacklisted_form->action = GURL("http://foo.example.com/action");

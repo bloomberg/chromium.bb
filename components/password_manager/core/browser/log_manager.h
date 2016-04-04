@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace password_manager {
 
@@ -42,8 +42,9 @@ class LogManager {
   // Returns the production code implementation of LogManager. If |log_router|
   // is null, the manager will do nothing. |notification_callback| will be
   // called every time the activity status of logging changes.
-  static scoped_ptr<LogManager> Create(LogRouter* log_router,
-                                       base::Closure notification_callback);
+  static std::unique_ptr<LogManager> Create(
+      LogRouter* log_router,
+      base::Closure notification_callback);
 };
 
 }  // namespace password_manager

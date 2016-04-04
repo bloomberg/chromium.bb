@@ -56,7 +56,7 @@ class MockPasswordStore : public PasswordStore {
                bool(ScopedVector<autofill::PasswordForm>*));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   // GMock doesn't allow to return noncopyable types.
-  std::vector<scoped_ptr<InteractionsStats>> GetSiteStatsImpl(
+  std::vector<std::unique_ptr<InteractionsStats>> GetSiteStatsImpl(
       const GURL& origin_domain) override;
   MOCK_METHOD1(GetSiteStatsMock, std::vector<InteractionsStats*>(const GURL&));
   MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));

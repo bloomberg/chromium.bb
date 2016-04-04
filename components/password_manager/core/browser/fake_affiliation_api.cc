@@ -5,9 +5,9 @@
 #include "components/password_manager/core/browser/fake_affiliation_api.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
@@ -43,7 +43,7 @@ void ScopedFakeAffiliationAPI::ServeNextRequest() {
     return;
 
   FakeAffiliationFetcher* fetcher = fake_fetcher_factory_.PopNextFetcher();
-  scoped_ptr<AffiliationFetcherDelegate::Result> fake_response(
+  std::unique_ptr<AffiliationFetcherDelegate::Result> fake_response(
       new AffiliationFetcherDelegate::Result);
   for (const auto& preset_equivalence_class : preset_equivalence_relation_) {
     bool had_intersection_with_request = false;

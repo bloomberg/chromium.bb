@@ -43,10 +43,10 @@ CredentialInfo::CredentialInfo(const CredentialInfo& other) = default;
 CredentialInfo::~CredentialInfo() {
 }
 
-scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
+std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     const CredentialInfo& info,
     const GURL& origin) {
-  scoped_ptr<autofill::PasswordForm> form;
+  std::unique_ptr<autofill::PasswordForm> form;
   if (info.type == CredentialType::CREDENTIAL_TYPE_EMPTY)
     return form;
 

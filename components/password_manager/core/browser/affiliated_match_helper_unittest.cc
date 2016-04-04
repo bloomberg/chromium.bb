@@ -5,11 +5,12 @@
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -319,7 +320,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    scoped_ptr<MockAffiliationService> service(new MockAffiliationService());
+    std::unique_ptr<MockAffiliationService> service(
+        new MockAffiliationService());
     mock_affiliation_service_ = service.get();
 
     password_store_ = new TestPasswordStore;
@@ -342,7 +344,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
   bool expecting_result_callback_;
 
   scoped_refptr<TestPasswordStore> password_store_;
-  scoped_ptr<AffiliatedMatchHelper> match_helper_;
+  std::unique_ptr<AffiliatedMatchHelper> match_helper_;
 
   // Owned by |match_helper_|.
   MockAffiliationService* mock_affiliation_service_;

@@ -99,7 +99,7 @@ class AffiliationDatabaseTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_directory_;
-  scoped_ptr<AffiliationDatabase> db_;
+  std::unique_ptr<AffiliationDatabase> db_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationDatabaseTest);
 };

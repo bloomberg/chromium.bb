@@ -7,11 +7,12 @@
 #import <Security/Security.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,7 +102,7 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
   }
 
   const size_t size = CFDataGetLength(data);
-  scoped_ptr<UInt8[]> buffer(new UInt8[size]);
+  std::unique_ptr<UInt8[]> buffer(new UInt8[size]);
   CFDataGetBytes(data, CFRangeMake(0, size), buffer.get());
   CFRelease(data);
 

@@ -8,11 +8,12 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
@@ -71,8 +72,8 @@ class AffiliationFetchThrottlerTest : public testing::Test {
         mock_delegate_(mock_tick_clock_.get()) {}
   ~AffiliationFetchThrottlerTest() override {}
 
-  scoped_ptr<AffiliationFetchThrottler> CreateThrottler() {
-    return make_scoped_ptr(new AffiliationFetchThrottler(
+  std::unique_ptr<AffiliationFetchThrottler> CreateThrottler() {
+    return base::WrapUnique(new AffiliationFetchThrottler(
         &mock_delegate_, task_runner_, mock_tick_clock_.get()));
   }
 
@@ -128,16 +129,16 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   // observers on the MessageLoop that belongs to the thread from which they
   // have registered.
   base::MessageLoop message_loop_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  scoped_ptr<base::TickClock> mock_tick_clock_;
+  std::unique_ptr<base::TickClock> mock_tick_clock_;
   MockAffiliationFetchThrottlerDelegate mock_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationFetchThrottlerTest);
 };
 
 TEST_F(AffiliationFetchThrottlerTest, SuccessfulRequests) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -156,7 +157,7 @@ TEST_F(AffiliationFetchThrottlerTest, SuccessfulRequests) {
 }
 
 TEST_F(AffiliationFetchThrottlerTest, FailedRequests) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -197,7 +198,7 @@ TEST_F(AffiliationFetchThrottlerTest, FailedRequests) {
 }
 
 TEST_F(AffiliationFetchThrottlerTest, OnCanSendNetworkRequestReturnsFalse) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   // A need for a network request is signaled, but as OnCanSendNetworkRequest()
   // is called, the implementation returns false to indicate that the request
@@ -213,7 +214,7 @@ TEST_F(AffiliationFetchThrottlerTest, OnCanSendNetworkRequestReturnsFalse) {
 }
 
 TEST_F(AffiliationFetchThrottlerTest, GracePeriodAfterConnectivityIsRestored) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
   SimulateHasNetworkConnectivity(false);
 
   // After connectivity is restored, the first request should be delayed by the
@@ -237,7 +238,7 @@ TEST_F(AffiliationFetchThrottlerTest, GracePeriodAfterConnectivityIsRestored) {
 // Same as GracePeriodAfterConnectivityIsRestored, but the network comes back
 // just before SignalNetworkRequestNeeded() is called.
 TEST_F(AffiliationFetchThrottlerTest, GracePeriodAfterConnectivityIsRestored2) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
   SimulateHasNetworkConnectivity(false);
 
   SimulateHasNetworkConnectivity(true);
@@ -254,7 +255,7 @@ TEST_F(AffiliationFetchThrottlerTest, GracePeriodAfterConnectivityIsRestored2) {
 }
 
 TEST_F(AffiliationFetchThrottlerTest, ConnectivityLostDuringBackoff) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -279,7 +280,7 @@ TEST_F(AffiliationFetchThrottlerTest, ConnectivityLostDuringBackoff) {
 
 TEST_F(AffiliationFetchThrottlerTest,
        ConnectivityLostAndRestoredDuringBackoff) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -312,7 +313,7 @@ TEST_F(AffiliationFetchThrottlerTest,
 }
 
 TEST_F(AffiliationFetchThrottlerTest, FlakyConnectivity) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -339,7 +340,7 @@ TEST_F(AffiliationFetchThrottlerTest, FlakyConnectivity) {
 }
 
 TEST_F(AffiliationFetchThrottlerTest, ConnectivityLostDuringRequest) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -364,7 +365,7 @@ TEST_F(AffiliationFetchThrottlerTest, ConnectivityLostDuringRequest) {
 
 TEST_F(AffiliationFetchThrottlerTest,
        ConnectivityLostAndRestoredDuringRequest) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -388,7 +389,7 @@ TEST_F(AffiliationFetchThrottlerTest,
 
 TEST_F(AffiliationFetchThrottlerTest,
        ConnectivityLostAndRestoredDuringRequest2) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));
@@ -408,7 +409,7 @@ TEST_F(AffiliationFetchThrottlerTest,
 }
 
 TEST_F(AffiliationFetchThrottlerTest, InstanceDestroyedWhileInBackoff) {
-  scoped_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
+  std::unique_ptr<AffiliationFetchThrottler> throttler(CreateThrottler());
 
   throttler->SignalNetworkRequestNeeded();
   ASSERT_NO_FATAL_FAILURE(AssertReleaseInBetween(true, 0, 0));

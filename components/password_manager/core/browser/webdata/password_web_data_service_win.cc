@@ -51,12 +51,12 @@ WebDatabase::State PasswordWebDataService::RemoveIE7LoginImpl(
       WebDatabase::COMMIT_NEEDED : WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult> PasswordWebDataService::GetIE7LoginImpl(
+std::unique_ptr<WDTypedResult> PasswordWebDataService::GetIE7LoginImpl(
     const IE7PasswordInfo& info,
     WebDatabase* db) {
   IE7PasswordInfo result;
   LoginsTable::FromWebDatabase(db)->GetIE7Login(info, &result);
-  return scoped_ptr<WDTypedResult>(
+  return std::unique_ptr<WDTypedResult>(
       new WDResult<IE7PasswordInfo>(PASSWORD_IE7_RESULT, result));
 }
 

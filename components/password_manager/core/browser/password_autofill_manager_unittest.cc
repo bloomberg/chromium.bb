@@ -107,7 +107,7 @@ class PasswordAutofillManagerTest : public testing::Test {
   int fill_data_id() { return fill_data_id_; }
   autofill::PasswordFormFillData& fill_data() { return fill_data_; }
 
-  scoped_ptr<PasswordAutofillManager> password_autofill_manager_;
+  std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
 
   base::string16 test_username_;
   base::string16 test_password_;
@@ -122,7 +122,8 @@ class PasswordAutofillManagerTest : public testing::Test {
 };
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
   InitializePasswordAutofillManager(client.get(), nullptr);
 
   EXPECT_CALL(*client->mock_driver(),
@@ -146,7 +147,8 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
 }
 
 TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
   InitializePasswordAutofillManager(client.get(), nullptr);
 
   EXPECT_CALL(*client->mock_driver(),
@@ -172,8 +174,9 @@ TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
 // Test that the popup is marked as visible after recieving password
 // suggestions.
 TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -208,8 +211,9 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
 // Test that OnShowPasswordSuggestions correctly matches the given FormFieldData
 // to the known PasswordFormFillData, and extracts the right suggestions.
 TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -279,8 +283,9 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
 // applications are displayed as the labels of suggestions on the UI (for
 // matches of all levels of preferredness).
 TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   autofill::PasswordFormFillData data;
@@ -316,8 +321,9 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
 }
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -364,8 +370,9 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableSuggestionsWithSubstringMatch);
 
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -408,8 +415,9 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableSuggestionsWithSubstringMatch);
 
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -450,8 +458,9 @@ TEST_F(PasswordAutofillManagerTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableSuggestionsWithSubstringMatch);
 
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -496,8 +505,9 @@ TEST_F(PasswordAutofillManagerTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableSuggestionsWithSubstringMatch);
 
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
@@ -535,8 +545,9 @@ TEST_F(PasswordAutofillManagerTest,
 
 TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
   // Initialize PasswordAutofillManager with credentials without username.
-  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
   fill_data().username_field.value.clear();
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
 

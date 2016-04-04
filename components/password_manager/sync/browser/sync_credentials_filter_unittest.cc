@@ -138,7 +138,7 @@ TEST_F(CredentialsFilterTest, FilterResults_AllowAll) {
 TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
   // Only 'protect-sync-credential-on-reauth' feature is kept enabled, fill the
   // sync credential everywhere but on reauth.
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::vector<const base::Feature*> enabled_features;
   std::vector<const base::Feature*> disabled_features;
   disabled_features.push_back(&features::kProtectSyncCredential);
@@ -184,7 +184,7 @@ TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
 TEST_F(CredentialsFilterTest, FilterResults_DisallowSync) {
   // Both features are kept enabled, should cause sync credential to be
   // filtered.
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::vector<const base::Feature*> enabled_features;
   std::vector<const base::Feature*> disabled_features;
   enabled_features.push_back(&features::kProtectSyncCredential);
@@ -262,7 +262,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
 TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
   // Both features are kept enabled, should cause sync credential to be
   // filtered.
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::vector<const base::Feature*> enabled_features;
   std::vector<const base::Feature*> disabled_features;
   enabled_features.push_back(&features::kProtectSyncCredential);

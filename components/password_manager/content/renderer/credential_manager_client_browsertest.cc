@@ -91,7 +91,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
   void set_callback_succeeded(bool state) { callback_succeeded_ = state; }
 
  protected:
-  scoped_ptr<CredentialManagerClient> client_;
+  std::unique_ptr<CredentialManagerClient> client_;
 
   // True if a message's callback's 'onSuccess'/'onError' methods were called,
   // false otherwise. We put these on the test object rather than on the
@@ -101,7 +101,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
   bool callback_errored_;
   bool callback_succeeded_;
 
-  scoped_ptr<blink::WebPasswordCredential> credential_;
+  std::unique_ptr<blink::WebPasswordCredential> credential_;
 };
 
 class TestNotificationCallbacks
@@ -149,7 +149,7 @@ TEST_F(CredentialManagerClientTest, SendStore) {
   EXPECT_FALSE(
       ExtractRequestId(CredentialManagerHostMsg_Store::ID, request_id));
 
-  scoped_ptr<TestNotificationCallbacks> callbacks(
+  std::unique_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
   client_->dispatchStore(*credential(), callbacks.release());
 
@@ -165,7 +165,7 @@ TEST_F(CredentialManagerClientTest, SendRequestUserMediation) {
   EXPECT_FALSE(ExtractRequestId(
       CredentialManagerHostMsg_RequireUserMediation::ID, request_id));
 
-  scoped_ptr<TestNotificationCallbacks> callbacks(
+  std::unique_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
   client_->dispatchRequireUserMediation(callbacks.release());
 
@@ -182,7 +182,8 @@ TEST_F(CredentialManagerClientTest, SendRequestCredential) {
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                 request_id));
 
-  scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
+  std::unique_ptr<TestRequestCallbacks> callbacks(
+      new TestRequestCallbacks(this));
   std::vector<GURL> federations;
   client_->dispatchGet(false, true, federations, callbacks.release());
 
@@ -201,7 +202,8 @@ TEST_F(CredentialManagerClientTest, SendRequestCredentialEmpty) {
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                 request_id));
 
-  scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
+  std::unique_ptr<TestRequestCallbacks> callbacks(
+      new TestRequestCallbacks(this));
   std::vector<GURL> federations;
   client_->dispatchGet(false, true, federations, callbacks.release());
 

@@ -64,8 +64,9 @@ void CredentialManagerDispatcher::OnStore(
   if (!client_->IsSavingAndFillingEnabledForCurrentPage())
     return;
 
-  scoped_ptr<autofill::PasswordForm> form(CreatePasswordFormFromCredentialInfo(
-      credential, web_contents()->GetLastCommittedURL().GetOrigin()));
+  std::unique_ptr<autofill::PasswordForm> form(
+      CreatePasswordFormFromCredentialInfo(
+          credential, web_contents()->GetLastCommittedURL().GetOrigin()));
   form->skip_zero_click = !IsZeroClickAllowed();
 
   form_manager_.reset(new CredentialManagerPasswordFormManager(

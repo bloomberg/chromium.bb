@@ -76,7 +76,7 @@ void CredentialManagerClient::OnSendCredential(int request_id,
                                                const CredentialInfo& info) {
   RequestCallbacks* callbacks = get_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
-  scoped_ptr<blink::WebCredential> credential = nullptr;
+  std::unique_ptr<blink::WebCredential> credential = nullptr;
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
       credential.reset(new blink::WebFederatedCredential(

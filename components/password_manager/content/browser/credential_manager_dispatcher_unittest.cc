@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -75,16 +76,17 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   }
   ~MockPasswordManagerClient() override {}
 
-  bool PromptUserToSaveOrUpdatePassword(scoped_ptr<PasswordFormManager> manager,
-                                        CredentialSourceType type,
-                                        bool update_password) override {
+  bool PromptUserToSaveOrUpdatePassword(
+      std::unique_ptr<PasswordFormManager> manager,
+      CredentialSourceType type,
+      bool update_password) override {
     manager_.swap(manager);
     PromptUserToSavePasswordPtr(manager_.get(), type);
     return true;
   }
 
   void NotifyUserCouldBeAutoSignedIn(
-      scoped_ptr<autofill::PasswordForm> form) override {
+      std::unique_ptr<autofill::PasswordForm> form) override {
     NotifyUserCouldBeAutoSignedInPtr(form.get());
   }
 
@@ -128,7 +130,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  private:
   TestingPrefServiceSimple prefs_;
   PasswordStore* store_;
-  scoped_ptr<PasswordFormManager> manager_;
+  std::unique_ptr<PasswordFormManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
 };
@@ -299,9 +301,9 @@ class CredentialManagerDispatcherTest
   autofill::PasswordForm origin_path_form_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
-  scoped_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
-  scoped_ptr<SlightlyLessStubbyPasswordManagerDriver> stub_driver_;
-  scoped_ptr<CredentialManagerDispatcher> dispatcher_;
+  std::unique_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
+  std::unique_ptr<SlightlyLessStubbyPasswordManagerDriver> stub_driver_;
+  std::unique_ptr<CredentialManagerDispatcher> dispatcher_;
 };
 
 TEST_F(CredentialManagerDispatcherTest, IsZeroClickAllowed) {
@@ -530,7 +532,7 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(affiliated_form1_);
   store_->AddLogin(affiliated_form2_);
 
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -712,7 +714,7 @@ TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialAffiliatedPasswordMatch) {
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -733,7 +735,7 @@ TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialAffiliatedPasswordNoMatch) {
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -756,7 +758,7 @@ TEST_F(CredentialManagerDispatcherTest,
       url::Origin(GURL("https://example.com/"));
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -779,7 +781,7 @@ TEST_F(CredentialManagerDispatcherTest,
       url::Origin(GURL("https://example.com/"));
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -1069,7 +1071,7 @@ TEST_F(CredentialManagerDispatcherTest,
   // ought to be returned automagically.
   store_->AddLogin(affiliated_form1_);
 
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -1091,7 +1093,7 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(affiliated_form1_);
   store_->AddLogin(affiliated_form2_);
 
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -1114,7 +1116,7 @@ TEST_F(CredentialManagerDispatcherTest,
   // in.
   store_->AddLogin(affiliated_form1_);
 
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
@@ -1136,7 +1138,7 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(form_);
   store_->AddLogin(affiliated_form1_);
 
-  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
   store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;

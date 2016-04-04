@@ -57,7 +57,7 @@ struct PasswordFormData {
 };
 
 // Creates and returns a new PasswordForm built from form_data.
-scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromDataForTesting(
+std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromDataForTesting(
     const PasswordFormData& form_data);
 
 // Checks whether the PasswordForms pointed to in |actual_values| are in some
@@ -79,7 +79,7 @@ MATCHER_P(UnorderedPasswordFormElementsAre, expectations, "") {
 // |feature_list|.
 void SetFeatures(const std::vector<const base::Feature*>& enable_features,
                  const std::vector<const base::Feature*>& disable_features,
-                 scoped_ptr<base::FeatureList> feature_list);
+                 std::unique_ptr<base::FeatureList> feature_list);
 
 class MockPasswordStoreObserver : public PasswordStore::Observer {
  public:

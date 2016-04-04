@@ -199,7 +199,7 @@ void AffiliationFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Note that invoking the |delegate_| may destroy |this| synchronously, so the
   // invocation must happen last.
-  scoped_ptr<AffiliationFetcherDelegate::Result> result_data(
+  std::unique_ptr<AffiliationFetcherDelegate::Result> result_data(
       new AffiliationFetcherDelegate::Result);
   if (fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
       fetcher_->GetResponseCode() == net::HTTP_OK) {

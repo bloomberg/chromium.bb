@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FAKE_AFFILIATION_FETCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FAKE_AFFILIATION_FETCHER_H_
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
 #include "components/password_manager/core/browser/affiliation_fetcher_delegate.h"
 #include "components/password_manager/core/browser/test_affiliation_fetcher_factory.h"
@@ -27,7 +27,7 @@ class FakeAffiliationFetcher : public AffiliationFetcher {
   // Simulates successful completion of the request with |fake_result|. Note
   // that the consumer may choose to destroy |this| from within this call.
   void SimulateSuccess(
-      scoped_ptr<AffiliationFetcherDelegate::Result> fake_result);
+      std::unique_ptr<AffiliationFetcherDelegate::Result> fake_result);
 
   // Simulates completion of the request with failure. Note that the consumer
   // may choose to destroy |this| from within this call.

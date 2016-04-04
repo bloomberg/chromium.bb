@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "ui/gfx/native_widget_types.h"
@@ -46,7 +46,7 @@ void TrimUsernameOnlyCredentials(
 
 // TODO(crbug.com/555132): Remove this when the migration from ScopedVector is
 // finished for PasswordForm.
-std::vector<scoped_ptr<autofill::PasswordForm>> ConvertScopedVector(
+std::vector<std::unique_ptr<autofill::PasswordForm>> ConvertScopedVector(
     ScopedVector<autofill::PasswordForm> old_vector);
 
 // A convenience function for testing that |client| has a non-null LogManager

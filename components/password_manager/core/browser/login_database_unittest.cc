@@ -7,9 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -206,7 +207,7 @@ class LoginDatabaseTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath file_;
-  scoped_ptr<LoginDatabase> db_;
+  std::unique_ptr<LoginDatabase> db_;
 };
 
 TEST_F(LoginDatabaseTest, Logins) {

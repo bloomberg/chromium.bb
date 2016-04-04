@@ -62,8 +62,8 @@ class AffiliationBackend : public FacetManagerHost,
   AffiliationBackend(
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      scoped_ptr<base::Clock> time_source,
-      scoped_ptr<base::TickClock> time_tick_source);
+      std::unique_ptr<base::Clock> time_source,
+      std::unique_ptr<base::TickClock> time_tick_source);
   ~AffiliationBackend() override;
 
   // Performs the I/O-heavy part of initialization. The database used to cache
@@ -116,7 +116,7 @@ class AffiliationBackend : public FacetManagerHost,
 
   // AffiliationFetcherDelegate:
   void OnFetchSucceeded(
-      scoped_ptr<AffiliationFetcherDelegate::Result> result) override;
+      std::unique_ptr<AffiliationFetcherDelegate::Result> result) override;
   void OnFetchFailed() override;
   void OnMalformedResponse() override;
 
@@ -132,27 +132,29 @@ class AffiliationBackend : public FacetManagerHost,
 
   // To be called after Initialize() to use |throttler| instead of the default
   // one. Used only for testing.
-  void SetThrottlerForTesting(scoped_ptr<AffiliationFetchThrottler> throttler);
+  void SetThrottlerForTesting(
+      std::unique_ptr<AffiliationFetchThrottler> throttler);
 
   // Created in Initialize(), and ensures that all subsequent methods are called
   // on the same thread.
-  scoped_ptr<base::ThreadChecker> thread_checker_;
+  std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<base::Clock> clock_;
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
-  scoped_ptr<AffiliationDatabase> cache_;
-  scoped_ptr<AffiliationFetcher> fetcher_;
-  scoped_ptr<AffiliationFetchThrottler> throttler_;
+  std::unique_ptr<AffiliationDatabase> cache_;
+  std::unique_ptr<AffiliationFetcher> fetcher_;
+  std::unique_ptr<AffiliationFetchThrottler> throttler_;
 
   base::Time construction_time_;
   base::Time last_request_time_;
 
   // Contains a FacetManager for each facet URI that need ongoing attention. To
   // save memory, managers are discarded as soon as they become redundant.
-  base::ScopedPtrHashMap<FacetURI, scoped_ptr<FacetManager>> facet_managers_;
+  base::ScopedPtrHashMap<FacetURI, std::unique_ptr<FacetManager>>
+      facet_managers_;
 
   base::WeakPtrFactory<AffiliationBackend> weak_ptr_factory_;
 
