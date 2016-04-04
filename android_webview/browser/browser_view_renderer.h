@@ -135,6 +135,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   void ReturnUnusedResource(std::unique_ptr<ChildFrame> frame);
   void ReturnResourceFromParent();
+  void ReleaseHardware();
 
   gfx::Vector2d max_scroll_offset() const;
 

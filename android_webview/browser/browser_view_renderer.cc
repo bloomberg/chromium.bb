@@ -125,19 +125,14 @@ void BrowserViewRenderer::RegisterWithWebContents(
 
 void BrowserViewRenderer::TrimMemory() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  // Nothing to drop.
-  if (!compositor_ || !hardware_enabled_)
-    return;
-
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
-
   // Just set the memory limit to 0 and drop all tiles. This will be reset to
   // normal levels in the next DrawGL call.
   // TODO(hush): need to setMemoryPolicy to 0 for non-current compositors too.
   // But WebView only has non-current compositors temporarily. So don't have to
   // do it now.
   if (!offscreen_pre_raster_)
-    compositor_->SetMemoryPolicy(0u);
+    ReleaseHardware();
 }
 
 void BrowserViewRenderer::UpdateMemoryPolicy() {
@@ -404,11 +399,8 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
-  hardware_enabled_ = false;
   attached_to_window_ = false;
-  ReturnUnusedResource(shared_renderer_state_->PassUncommittedFrameOnUI());
-  ReturnResourceFromParent();
-  UpdateMemoryPolicy();
+  ReleaseHardware();
   UpdateCompositorIsActive();
 }
 
@@ -423,6 +415,14 @@ void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
     return;
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnComputeScroll");
   compositor_->OnComputeScroll(animation_time);
+}
+
+void BrowserViewRenderer::ReleaseHardware() {
+  ReturnUnusedResource(shared_renderer_state_->PassUncommittedFrameOnUI());
+  ReturnResourceFromParent();
+  DCHECK(shared_renderer_state_->ReturnedResourcesEmptyOnUI());
+  hardware_enabled_ = false;
+  UpdateMemoryPolicy();
 }
 
 bool BrowserViewRenderer::IsVisible() const {
