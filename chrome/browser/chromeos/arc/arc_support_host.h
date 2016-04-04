@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_ARC_SUPPORT_HOST_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_ARC_SUPPORT_HOST_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_SUPPORT_HOST_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_ARC_SUPPORT_HOST_H_
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
@@ -41,4 +41,4 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   DISALLOW_COPY_AND_ASSIGN(ArcSupportHost);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MESSAGING_ARC_SUPPORT_HOST_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_SUPPORT_HOST_H_

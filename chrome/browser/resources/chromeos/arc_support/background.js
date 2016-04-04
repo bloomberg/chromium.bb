@@ -52,9 +52,10 @@ function closeWindowInternally() {
 /**
  * Sends a native message to ArcSupportHost.
  * @param {string} code The action code in message.
+ * @param {Object=} opt_Props Extra properties for the message.
  */
-function sendNativeMessage(code) {
-  message = {'action': code};
+function sendNativeMessage(code, opt_Props) {
+  var message = Object.assign({'action': code}, opt_Props);
   port.postMessage(message);
 }
 
@@ -124,12 +125,25 @@ function showPage(pageDivId) {
   }
 
   if (pageDivId == 'lso-loading') {
-    webview.src = 'https://accounts.google.com/o/oauth2/programmatic_auth?' +
-                  'scope=https://www.google.com/accounts/OAuthLogin&client_id' +
-                  '=1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
-                  'googleusercontent.com';
+    webview.src = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' +
+                  '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
+                  'googleusercontent.com&response_type=code&redirect_uri=oob&' +
+                  'scope=https://www.google.com/accounts/OAuthLogin';
   }
   appWindow.show();
+}
+
+/**
+ * Sets error message.
+ * @param {string} error message.
+ */
+function setErrorMessage(error) {
+  if (!appWindow) {
+    return;
+  }
+  var doc = appWindow.contentWindow.document;
+  var messageElement = doc.getElementById('error-message');
+  messageElement.innerText = error;
 }
 
 /**
@@ -145,9 +159,7 @@ function showPageWithStatus(pageId, status) {
   }
 
   if (UI_PAGES[pageId] == 'error') {
-    var doc = appWindow.contentWindow.document;
-    var messageElement = doc.getElementById('error-message');
-    messageElement.innerText = status;
+    setErrorMessage(status);
   }
   showPage(UI_PAGES[pageId]);
 }
@@ -157,14 +169,36 @@ chrome.app.runtime.onLaunched.addListener(function() {
     var doc = appWindow.contentWindow.document;
     webview = doc.getElementById('arc-support');
 
-    var onWebviewRequestCompleted = function(details) {
-      showPage('lso');
-      var resultUrlPrefix =
-          'https://accounts.google.com/o/oauth2/programmatic_auth?';
-      if (details.statusCode == 200 &&
-          details.url.substring(0, resultUrlPrefix.length) == resultUrlPrefix) {
-        sendNativeMessage('checkAuthCode');
+    var isApprovalResponse = function(url) {
+      var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
+      return url.substring(0, resultUrlPrefix.length) == resultUrlPrefix;
+    };
+
+    var onWebviewRequestResponseStarted = function(details) {
+      if (isApprovalResponse(details.url)) {
+        showPage('arc-loading');
       }
+    };
+
+    var onWebviewContentLoad = function() {
+      if (!isApprovalResponse(webview.src)) {
+        // Show LSO page when its content is ready.
+        showPage('lso');
+        return;
+      }
+
+      webview.executeScript({code: 'document.title;'}, function(results) {
+        var authCodePrefix = 'Success code=';
+        if (results[0].substring(0, authCodePrefix.length) ==
+            authCodePrefix) {
+          var authCode = results[0].substring(authCodePrefix.length);
+          sendNativeMessage('setAuthCode', {code: authCode});
+        } else {
+          setErrorMessage(appWindow.contentWindow.loadTimeData.getString(
+              'authorizationFailed'));
+          showPage('error');
+        }
+      });
     };
 
     var requestFilter = {
@@ -172,15 +206,16 @@ chrome.app.runtime.onLaunched.addListener(function() {
       types: ['main_frame']
     };
 
-    webview.request.onCompleted.addListener(onWebviewRequestCompleted,
-        requestFilter);
+    webview.request.onResponseStarted.addListener(
+        onWebviewRequestResponseStarted, requestFilter);
+    webview.addEventListener('contentload', onWebviewContentLoad);
 
     var onGetStarted = function() {
-      sendNativeMessage('checkAuthCode');
+      sendNativeMessage('startLso');
     };
 
     var onRetry = function() {
-      sendNativeMessage('checkAuthCode');
+      sendNativeMessage('startLso');
     };
 
     doc.getElementById('get-started').addEventListener('click', onGetStarted);

@@ -132,8 +132,7 @@ void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
 
   initial_opt_in_ = false;
   auth_callback_ = callback;
-  SetState(State::FETCHING_CODE);
-  FetchAuthCode();
+  StartUI();
 }
 
 void ArcAuthService::OnSignInComplete() {
@@ -306,7 +305,7 @@ void ArcAuthService::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "Failed to merge gaia session " << error.ToString() << ".";
-  OnAuthCodeFailed();
+  OnPrepareContextFailed();
 }
 
 void ArcAuthService::OnUbertokenSuccess(const std::string& token) {
@@ -320,7 +319,7 @@ void ArcAuthService::OnUbertokenSuccess(const std::string& token) {
 void ArcAuthService::OnUbertokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
-  OnAuthCodeFailed();
+  OnPrepareContextFailed();
 }
 
 void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
@@ -347,8 +346,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
       if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
         // Need pre-fetch auth code and show OptIn UI if needed.
         initial_opt_in_ = true;
-        SetState(State::FETCHING_CODE);
-        FetchAuthCode();
+        StartUI();
       } else {
         // Ready to start Arc.
         StartArc();
@@ -365,7 +363,6 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
 void ArcAuthService::ShutdownBridge() {
   auth_callback_.reset();
-  auth_fetcher_.reset();
   ubertoken_fethcher_.reset();
   merger_fetcher_.reset();
   ArcBridgeService::Get()->Shutdown();
@@ -434,7 +431,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   StartArc();
 }
 
-void ArcAuthService::CheckAuthCode() {
+void ArcAuthService::StartLso() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Update UMA only if error is currently shown.
@@ -442,18 +439,7 @@ void ArcAuthService::CheckAuthCode() {
     UpdateOptInActionUMA(OptInActionType::RETRY);
 
   initial_opt_in_ = false;
-  SetState(State::FETCHING_CODE);
-  FetchAuthCode();
-}
-
-void ArcAuthService::FetchAuthCode() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (state_ != State::FETCHING_CODE)
-    return;
-
-  auth_fetcher_.reset(
-      new ArcAuthFetcher(storage_partition_->GetURLRequestContext(), this));
+  StartUI();
 }
 
 void ArcAuthService::CancelAuthCode() {
@@ -479,11 +465,6 @@ void ArcAuthService::DisableArc() {
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
 }
 
-void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
-  DCHECK_EQ(state_, State::FETCHING_CODE);
-  SetAuthCodeAndStartArc(auth_code);
-}
-
 void ArcAuthService::PrepareContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -500,8 +481,10 @@ void ArcAuthService::PrepareContext() {
   ubertoken_fethcher_->StartFetchingToken(account_id);
 }
 
-void ArcAuthService::OnAuthCodeNeedUI() {
+void ArcAuthService::StartUI() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  SetState(State::FETCHING_CODE);
 
   if (initial_opt_in_) {
     initial_opt_in_ = false;
@@ -513,19 +496,13 @@ void ArcAuthService::OnAuthCodeNeedUI() {
   }
 }
 
-void ArcAuthService::OnAuthCodeFailed() {
+void ArcAuthService::OnPrepareContextFailed() {
   DCHECK_EQ(state_, State::FETCHING_CODE);
 
-  if (initial_opt_in_) {
-    // Don't show error as first page.
-    initial_opt_in_ = false;
-    ShutdownBridgeAndShowUI(UIPage::START, base::string16());
-  } else {
-    ShutdownBridgeAndShowUI(
-        UIPage::ERROR,
-        l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
-    UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
-  }
+  ShutdownBridgeAndShowUI(
+      UIPage::ERROR,
+      l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
+  UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {

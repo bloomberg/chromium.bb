@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/messaging/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 
 #include "ash/system/chromeos/devicetype_utils.h"
 #include "base/json/json_reader.h"
@@ -16,12 +16,14 @@
 
 namespace {
 const char kAction[] = "action";
+const char kCode[] = "code";
 const char kStatus[] = "status";
 const char kData[] = "data";
 const char kPage[] = "page";
 const char kActionSetLocalization[] = "setLocalization";
-const char kActionCheckAuthCode[] = "checkAuthCode";
+const char kActionStartLso[] = "startLso";
 const char kActionCancelAuthCode[] = "cancelAuthCode";
+const char kActionSetAuthCode[] = "setAuthCode";
 const char kActionCloseUI[] = "closeUI";
 const char kActionShowPage[] = "showPage";
 }  // namespace
@@ -31,8 +33,7 @@ const char ArcSupportHost::kHostName[] = "com.google.arc_support";
 
 // static
 const char* const ArcSupportHost::kHostOrigin[] = {
-    "chrome-extension://cnbgggchhmkkdmeppjobngjoejnihlei/"
-};
+    "chrome-extension://cnbgggchhmkkdmeppjobngjoejnihlei/"};
 
 // static
 scoped_ptr<extensions::NativeMessageHost> ArcSupportHost::Create() {
@@ -80,11 +81,14 @@ void ArcSupportHost::SendLocalization() {
       "buttonRetry",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY));
   localized_strings->SetString(
-      "progressLSOLoading",
+      "progressLsoLoading",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_LSO));
   localized_strings->SetString(
       "progressAndroidLoading",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_ANDROID));
+  localized_strings->SetString(
+      "authorizationFailed",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_AUTHORIZATION_FAILED));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
@@ -125,9 +129,8 @@ void ArcSupportHost::OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
 void ArcSupportHost::OnMessage(const std::string& request_string) {
   scoped_ptr<base::Value> request_value =
       base::JSONReader::Read(request_string);
-  scoped_ptr<base::DictionaryValue> request(
-      static_cast<base::DictionaryValue*>(request_value.release()));
-  if (!request.get()) {
+  base::DictionaryValue* request;
+  if (!request_value || !request_value->GetAsDictionary(&request)) {
     NOTREACHED();
     return;
   }
@@ -138,8 +141,15 @@ void ArcSupportHost::OnMessage(const std::string& request_string) {
     return;
   }
 
-  if (action == kActionCheckAuthCode) {
-    arc::ArcAuthService::Get()->CheckAuthCode();
+  if (action == kActionStartLso) {
+    arc::ArcAuthService::Get()->StartLso();
+  } else if (action == kActionSetAuthCode) {
+    std::string code;
+    if (!request->GetString(kCode, &code)) {
+      NOTREACHED();
+      return;
+    }
+    arc::ArcAuthService::Get()->SetAuthCodeAndStartArc(code);
   } else if (action == kActionCancelAuthCode) {
     arc::ArcAuthService::Get()->CancelAuthCode();
   } else {

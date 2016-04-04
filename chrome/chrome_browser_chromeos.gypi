@@ -60,6 +60,8 @@
         'browser/chromeos/arc/arc_auth_service.h',
         'browser/chromeos/arc/arc_service_launcher.cc',
         'browser/chromeos/arc/arc_service_launcher.h',
+        'browser/chromeos/arc/arc_support_host.cc',
+        'browser/chromeos/arc/arc_support_host.h',
         'browser/chromeos/arc/arc_policy_bridge.cc',
         'browser/chromeos/arc/arc_policy_bridge.h',
         'browser/chromeos/arc/arc_process.h',

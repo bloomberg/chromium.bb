@@ -19,8 +19,6 @@ static_library("arc") {
     "arc_service_manager.h",
     "audio/arc_audio_bridge.cc",
     "audio/arc_audio_bridge.h",
-    "auth/arc_auth_fetcher.cc",
-    "auth/arc_auth_fetcher.h",
     "clipboard/arc_clipboard_bridge.cc",
     "clipboard/arc_clipboard_bridge.h",
     "crash_collector/arc_crash_collector_bridge.cc",

@@ -33,8 +33,6 @@
       'browser/extensions/api/log_private/log_private_api_chromeos.cc',
       'browser/extensions/api/log_private/syslog_parser.cc',
       'browser/extensions/api/log_private/syslog_parser.h',
-      'browser/extensions/api/messaging/arc_support_host.cc',
-      'browser/extensions/api/messaging/arc_support_host.h',
       'browser/extensions/api/messaging/native_message_host_chromeos.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.h',

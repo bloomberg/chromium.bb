@@ -12,7 +12,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
-#include "components/arc/auth/arc_auth_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
@@ -43,7 +42,6 @@ namespace arc {
 class ArcAuthService : public ArcService,
                        public AuthHost,
                        public ArcBridgeService::Observer,
-                       public ArcAuthFetcher::Delegate,
                        public UbertokenConsumer,
                        public GaiaAuthConsumer,
                        public syncable_prefs::PrefServiceSyncableObserver,
@@ -118,19 +116,17 @@ class ArcAuthService : public ArcService,
   void GetIsAccountManaged(
       const GetIsAccountManagedCallback& callback) override;
 
-  // Called from Arc support platform app to check auth code.
-  void CheckAuthCode();
+  // Called from Arc support platform app to start LSO.
+  void StartLso();
+
+  // Called from Arc support platform app to set auth code and start arc.
+  void SetAuthCodeAndStartArc(const std::string& auth_code);
 
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
   void EnableArc();
   void DisableArc();
-
-  // ArcAuthFetcher::Delegate:
-  void OnAuthCodeFetched(const std::string& auth_code) override;
-  void OnAuthCodeNeedUI() override;
-  void OnAuthCodeFailed() override;
 
   // UbertokenConsumer:
   void OnUbertokenSuccess(const std::string& token) override;
@@ -153,7 +149,6 @@ class ArcAuthService : public ArcService,
 
  private:
   void StartArc();
-  void SetAuthCodeAndStartArc(const std::string& auth_code);
   void PrepareContext();
   void ShowUI(UIPage page, const base::string16& status);
   void CloseUI();
@@ -163,7 +158,8 @@ class ArcAuthService : public ArcService,
   void ShutdownBridgeAndCloseUI();
   void ShutdownBridgeAndShowUI(UIPage page, const base::string16& status);
   void OnOptInPreferenceChanged();
-  void FetchAuthCode();
+  void StartUI();
+  void OnPrepareContextFailed();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
@@ -178,7 +174,6 @@ class ArcAuthService : public ArcService,
   base::ThreadChecker thread_checker_;
   State state_ = State::STOPPED;
   base::ObserverList<Observer> observer_list_;
-  scoped_ptr<ArcAuthFetcher> auth_fetcher_;
   scoped_ptr<GaiaAuthFetcher> merger_fetcher_;
   scoped_ptr<UbertokenFetcher> ubertoken_fethcher_;
   std::string auth_code_;

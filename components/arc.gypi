@@ -41,8 +41,6 @@
         'arc/arc_service_manager.h',
         'arc/audio/arc_audio_bridge.cc',
         'arc/audio/arc_audio_bridge.h',
-        'arc/auth/arc_auth_fetcher.cc',
-        'arc/auth/arc_auth_fetcher.h',
         'arc/clipboard/arc_clipboard_bridge.cc',
         'arc/clipboard/arc_clipboard_bridge.h',
         'arc/crash_collector/arc_crash_collector_bridge.cc',

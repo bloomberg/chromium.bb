@@ -18,7 +18,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/messaging/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
