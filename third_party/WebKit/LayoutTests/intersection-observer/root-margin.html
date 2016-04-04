@@ -10,83 +10,84 @@
 <div style="width:100%; height:700px;"></div>
 
 <script>
-  description("Intersection observer test with root margin and implicit root.");
-  var target = document.getElementById("target");
-  var entries = [];
+description("Intersection observer test with root margin and implicit root.");
+var target = document.getElementById("target");
+var entries = [];
+var observer = new IntersectionObserver(
+    changes => { entries = entries.concat(changes) },
+    { rootMargin: "10px 20% 40% 30px" }
+);
 
-  function observer_callback(changes) {
-    for (var i in changes)
-      entries.push(changes[i]);
-  }
+shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px' })");
+shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px' })");
+shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px 3%' })");
+shouldNotThrow("new IntersectionObserver(c => {}, { rootMargin: '1.4px 2px 3% 40px junk junk junk' })");
 
-  var observer = new IntersectionObserver(observer_callback, {
-    rootMargin: "10px 20% 40% 30px"
-  });
+onload = function() {
   observer.observe(target);
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  // See README for explanation of double RAF.
+  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+}
 
-  function step0() {
-    setTimeout(function() {
-      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px' })");
-      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px' })");
-      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3%' })");
-      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3% 40px junk junk junk' })");
-      shouldBeEqualToNumber("entries.length", 0);
-      document.scrollingElement.scrollLeft = 100;
-      requestAnimationFrame(step1);
-    });
+function step0() {
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  document.scrollingElement.scrollLeft = 100;
+  requestAnimationFrame(step1);
+}
+
+function step1() {
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 1);
+  if (entries.length > 0) {
+    shouldBeEqualToNumber("entries.length", 1);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 912);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 1012);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 708);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 808);
+    shouldBeEqualToNumber("entries[0].intersectionRect.left", 912);
+    shouldBeEqualToNumber("entries[0].intersectionRect.right", 942);
+    shouldBeEqualToNumber("entries[0].intersectionRect.top", 708);
+    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 808);
+    shouldBeEqualToNumber("entries[0].rootBounds.left", -30);
+    shouldBeEqualToNumber("entries[0].rootBounds.right", 942);
+    shouldBeEqualToNumber("entries[0].rootBounds.top", -10);
+    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 819);
+    shouldEvaluateToSameObject("entries[0].target", target);
   }
+  document.scrollingElement.scrollTop = 800;
+  requestAnimationFrame(step2);
+}
 
-  function step1() {
-    setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 1);
-      shouldBeEqualToNumber("entries[0].boundingClientRect.left", 912);
-      shouldBeEqualToNumber("entries[0].boundingClientRect.right", 1012);
-      shouldBeEqualToNumber("entries[0].boundingClientRect.top", 708);
-      shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 808);
-      shouldBeEqualToNumber("entries[0].intersectionRect.left", 912);
-      shouldBeEqualToNumber("entries[0].intersectionRect.right", 942);
-      shouldBeEqualToNumber("entries[0].intersectionRect.top", 708);
-      shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 808);
-      shouldBeEqualToNumber("entries[0].rootBounds.left", -30);
-      shouldBeEqualToNumber("entries[0].rootBounds.right", 942);
-      shouldBeEqualToNumber("entries[0].rootBounds.top", -10);
-      shouldBeEqualToNumber("entries[0].rootBounds.bottom", 819);
-      shouldEvaluateToSameObject("entries[0].target", target);
-      document.scrollingElement.scrollTop = 800;
-      requestAnimationFrame(step2);
-    });
+function step2() {
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 1);
+  document.scrollingElement.scrollTop = 900;
+  requestAnimationFrame(step3);
+}
+
+function step3() {
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 2);
+  if (entries.length > 1) {
+    shouldBeEqualToNumber("entries[1].boundingClientRect.left", 912);
+    shouldBeEqualToNumber("entries[1].boundingClientRect.right", 1012);
+    shouldBeEqualToNumber("entries[1].boundingClientRect.top", -192);
+    shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", -92);
+    shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
+    shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
+    shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
+    shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
+    shouldBeEqualToNumber("entries[1].rootBounds.left", -30);
+    shouldBeEqualToNumber("entries[1].rootBounds.right", 942);
+    shouldBeEqualToNumber("entries[1].rootBounds.top", -10);
+    shouldBeEqualToNumber("entries[1].rootBounds.bottom", 819);
+    shouldEvaluateToSameObject("entries[1].target", target);
   }
-
-  function step2() {
-    setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 1);
-      document.scrollingElement.scrollTop = 900;
-      requestAnimationFrame(step3);
-    });
-  }
-
-  function step3() {
-    setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 2);
-      shouldBeEqualToNumber("entries[1].boundingClientRect.left", 912);
-      shouldBeEqualToNumber("entries[1].boundingClientRect.right", 1012);
-      shouldBeEqualToNumber("entries[1].boundingClientRect.top", -192);
-      shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", -92);
-      shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
-      shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
-      shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
-      shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
-      shouldBeEqualToNumber("entries[1].rootBounds.left", -30);
-      shouldBeEqualToNumber("entries[1].rootBounds.right", 942);
-      shouldBeEqualToNumber("entries[1].rootBounds.top", -10);
-      shouldBeEqualToNumber("entries[1].rootBounds.bottom", 819);
-      shouldEvaluateToSameObject("entries[1].target", target);
-
-      finishJSTest();
-      document.scrollingElement.scrollLeft = 0;
-      document.scrollingElement.scrollTop = 0;
-    });
-  }
-
-  step0();
+  finishJSTest();
+  document.scrollingElement.scrollLeft = 0;
+  document.scrollingElement.scrollTop = 0;
+}
 </script>
