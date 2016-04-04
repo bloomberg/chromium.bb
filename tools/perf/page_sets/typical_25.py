@@ -5,7 +5,6 @@
 import shutil
 
 from profile_creators import profile_generator
-from profile_creators import small_profile_extender
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
@@ -20,6 +19,7 @@ class Typical25ProfileSharedState(shared_page_state.SharedDesktopPageState):
   def __init__(self, test, finder_options, story_set):
     super(Typical25ProfileSharedState, self).__init__(
         test, finder_options, story_set)
+    from profile_creators import small_profile_extender
     generator = profile_generator.ProfileGenerator(
         small_profile_extender.SmallProfileExtender,
         'small_profile')
