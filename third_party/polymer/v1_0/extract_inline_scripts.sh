@@ -21,15 +21,10 @@ fi
 src="${1%/}"
 dst="${2%/}"
 
-rsync -c --delete -r -v --exclude="compiled_resources*.gyp" "$src/" "$dst/"
+rsync -c --delete -r -v --exclude-from="rsync_exclude.txt" \
+    --prune-empty-dirs "$src/" "$dst/"
 
-find "$dst" -name "*.html" \
-            -not -path "*/demos/*" \
-            -not -path "*/test/*" \
-            -not -path "*/tests/*" \
-            -not -name "demo*.html" \
-            -not -name "index.html" \
-            -not -name "metadata.html" | \
+find "$dst" -name "*.html" | \
 xargs grep -l "<script>" | \
 while read original_html_name
 do

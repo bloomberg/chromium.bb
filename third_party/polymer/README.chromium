@@ -34,6 +34,7 @@ the Crisper tool (https://github.com/PolymerLabs/crisper).
 - Removed executable bit from some files.
 - Resolved encoding issues.
 - Replaced CRLF line endings with LF line endings in text files.
+- Removed files that are not needed by Chromium, see v1_0/rsync_exclude.txt.
 
 To restore a content of the 'components-chromium' directory from scratch, run
 ./v1_0/reproduce.sh on a Linux machine.

@@ -1,0 +1,15 @@
+.bower.json
+build.log
+compiled_resources*.gyp
+*/demo/
+demo*.html
+*/demos/
+.github
+.gitignore
+hero.svg
+index.html
+*.md
+metadata.html
+*/test/
+*/tests/
+.travis.yml

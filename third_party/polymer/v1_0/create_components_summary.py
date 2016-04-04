@@ -5,7 +5,7 @@
 import os
 import json
 
-COMPONENTS_DIR = 'components-chromium'
+COMPONENTS_DIR = 'components'
 COMPONENT_SUMMARY =\
 """Name: %(name)s
 Version: %(version)s
