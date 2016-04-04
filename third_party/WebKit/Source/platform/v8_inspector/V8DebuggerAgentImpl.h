@@ -113,7 +113,6 @@ public:
     void stepOver(ErrorString*) override;
     void stepInto(ErrorString*) override;
     void stepOut(ErrorString*) override;
-    void stepIntoAsync(ErrorString*) override;
     void setPauseOnExceptions(ErrorString*, const String16& pauseState) override;
     void evaluateOnCallFrame(ErrorString*,
         const String16& callFrameId,
@@ -132,9 +131,6 @@ public:
         PassOwnPtr<protocol::Runtime::CallArgument> newValue,
         const String16& callFrame) override;
     void setAsyncCallStackDepth(ErrorString*, int depth) override;
-    void flushAsyncOperationEvents(ErrorString*) override;
-    void setAsyncOperationBreakpoint(ErrorString*, int operationId) override;
-    void removeAsyncOperationBreakpoint(ErrorString*, int operationId) override;
     void setBlackboxedRanges(ErrorString*,
         const String16& scriptId,
         PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
@@ -194,7 +190,6 @@ private:
 
     PassOwnPtr<protocol::Debugger::Location> resolveBreakpoint(const String16& breakpointId, const String16& scriptId, const ScriptBreakpoint&, BreakpointSource);
     void removeBreakpoint(const String16& breakpointId);
-    void clearStepIntoAsync();
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
 
@@ -237,7 +232,6 @@ private:
     bool m_javaScriptPauseScheduled;
     bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;
-    bool m_pausingOnAsyncOperation;
 
     int m_skippedStepFrameCount;
     int m_recursionLevelForStepOut;
@@ -250,15 +244,11 @@ private:
     using AsyncOperationIdToStackTrace = protocol::HashMap<int, OwnPtr<V8StackTraceImpl>>;
     AsyncOperationIdToStackTrace m_asyncOperations;
     int m_lastAsyncOperationId;
-    protocol::HashSet<int> m_asyncOperationNotifications;
-    protocol::HashSet<int> m_asyncOperationBreakpoints;
-    protocol::HashSet<int> m_pausingAsyncOperations;
     int m_maxAsyncCallStackDepth;
     OwnPtr<V8StackTraceImpl> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;
-    bool m_startingStepIntoAsync;
     protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 

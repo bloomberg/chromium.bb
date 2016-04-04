@@ -59,7 +59,6 @@ public:
     void stepOut(ErrorString*) override;
     void pause(ErrorString*) override;
     void resume(ErrorString*) override;
-    void stepIntoAsync(ErrorString*) override;
     void searchInContent(ErrorString*, const String16& scriptId, const String16& query, const Maybe<bool>& caseSensitive, const Maybe<bool>& isRegex, OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>>* result) override;
     void canSetScriptSource(ErrorString*, bool* result) override;
     void setScriptSource(ErrorString*, const String16& scriptId, const String16& scriptSource, const Maybe<bool>& preview, Maybe<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<bool>* stackChanged, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace, Maybe<protocol::Debugger::SetScriptSourceError>* compileError) override;
@@ -73,9 +72,6 @@ public:
     void setVariableValue(ErrorString*, int scopeNumber, const String16& variableName, PassOwnPtr<protocol::Runtime::CallArgument> newValue, const String16& callFrameId) override;
     void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void setAsyncCallStackDepth(ErrorString*, int maxDepth) override;
-    void flushAsyncOperationEvents(ErrorString*) override;
-    void setAsyncOperationBreakpoint(ErrorString*, int operationId) override;
-    void removeAsyncOperationBreakpoint(ErrorString*, int operationId) override;
     void setBlackboxedRanges(ErrorString*, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
     // Called by InspectorInstrumentation.

@@ -146,11 +146,6 @@ void InspectorDebuggerAgent::resume(ErrorString* errorString)
     m_v8DebuggerAgent->resume(errorString);
 }
 
-void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
-{
-    m_v8DebuggerAgent->stepIntoAsync(errorString);
-}
-
 void InspectorDebuggerAgent::searchInContent(ErrorString* errorString,
     const String16& inScriptId,
     const String16& inQuery,
@@ -257,21 +252,6 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, in
 {
     m_v8DebuggerAgent->setAsyncCallStackDepth(errorString, inMaxDepth);
     setTrackingAsyncCalls(m_v8DebuggerAgent->trackingAsyncCalls());
-}
-
-void InspectorDebuggerAgent::flushAsyncOperationEvents(ErrorString* errorString)
-{
-    m_v8DebuggerAgent->flushAsyncOperationEvents(errorString);
-}
-
-void InspectorDebuggerAgent::setAsyncOperationBreakpoint(ErrorString* errorString, int inOperationId)
-{
-    m_v8DebuggerAgent->setAsyncOperationBreakpoint(errorString, inOperationId);
-}
-
-void InspectorDebuggerAgent::removeAsyncOperationBreakpoint(ErrorString* errorString, int inOperationId)
-{
-    m_v8DebuggerAgent->removeAsyncOperationBreakpoint(errorString, inOperationId);
 }
 
 void InspectorDebuggerAgent::setBlackboxedRanges(

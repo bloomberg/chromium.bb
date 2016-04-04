@@ -250,9 +250,6 @@ InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callb
         case "Resume":
             InspectorTest.togglePause();
             break;
-        case "StepIntoAsync":
-            InspectorTest.DebuggerAgent.stepIntoAsync();
-            break;
         default:
             InspectorTest.addResult("FAIL: Unknown action: " + action);
             callback();

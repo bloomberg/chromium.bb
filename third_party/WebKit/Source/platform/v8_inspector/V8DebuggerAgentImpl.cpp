@@ -25,7 +25,6 @@
 
 using blink::protocol::Array;
 using blink::protocol::Maybe;
-using blink::protocol::Debugger::AsyncOperation;
 using blink::protocol::Debugger::BreakpointId;
 using blink::protocol::Debugger::CallFrame;
 using blink::protocol::Debugger::CollectionEntry;
@@ -174,7 +173,6 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_javaScriptPauseScheduled(false)
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
-    , m_pausingOnAsyncOperation(false)
     , m_skippedStepFrameCount(0)
     , m_recursionLevelForStepOut(0)
     , m_recursionLevelForStepFrame(0)
@@ -185,7 +183,6 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_nestedAsyncCallCount(0)
     , m_currentAsyncOperationId(unknownAsyncOperationId)
     , m_pendingTraceAsyncOperationCompleted(false)
-    , m_startingStepIntoAsync(false)
 {
     ASSERT(contextGroupId);
     m_injectedScriptManager->injectedScriptHost()->setDebuggerAgent(this);
@@ -258,8 +255,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_pausingOnNativeEvent = false;
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
-    m_asyncOperationNotifications.clear();
-    clearStepIntoAsync();
     m_skipAllPauses = false;
     m_enabled = false;
 }
@@ -866,7 +861,6 @@ void V8DebuggerAgentImpl::pause(ErrorString* errorString)
     if (m_javaScriptPauseScheduled || isPaused())
         return;
     clearBreakDetails();
-    clearStepIntoAsync();
     m_javaScriptPauseScheduled = true;
     m_scheduledDebuggerStep = NoStep;
     m_skippedStepFrameCount = 0;
@@ -920,19 +914,6 @@ void V8DebuggerAgentImpl::stepOut(ErrorString* errorString)
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
     m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepOutOfFunction();
-}
-
-void V8DebuggerAgentImpl::stepIntoAsync(ErrorString* errorString)
-{
-    if (!assertPaused(errorString))
-        return;
-    if (!trackingAsyncCalls()) {
-        *errorString = "Can only perform operation if async call stacks are enabled.";
-        return;
-    }
-    clearStepIntoAsync();
-    m_startingStepIntoAsync = true;
-    stepInto(errorString);
 }
 
 void V8DebuggerAgentImpl::setPauseOnExceptions(ErrorString* errorString, const String16& stringPauseState)
@@ -1077,25 +1058,9 @@ int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String16& description
             m_lastAsyncOperationId = 1;
     } while (m_asyncOperations.contains(m_lastAsyncOperationId));
 
-    if (chain) {
-        m_asyncOperationNotifications.add(m_lastAsyncOperationId);
+    if (chain)
         m_asyncOperations.set(m_lastAsyncOperationId, chain.release());
-    }
 
-    if (m_startingStepIntoAsync) {
-        // We have successfully started a StepIntoAsync, so revoke the debugger's StepInto
-        // and wait for the corresponding async operation breakpoint.
-        ASSERT(m_pausingAsyncOperations.isEmpty());
-        m_pausingAsyncOperations.add(m_lastAsyncOperationId);
-        m_startingStepIntoAsync = false;
-        m_scheduledDebuggerStep = NoStep;
-        debugger().clearStepping();
-    } else if (m_pausingOnAsyncOperation) {
-        m_pausingAsyncOperations.add(m_lastAsyncOperationId);
-    }
-
-    if (!m_pausedContext.IsEmpty())
-        flushAsyncOperationEvents(nullptr);
     return m_lastAsyncOperationId;
 }
 
@@ -1125,14 +1090,6 @@ void V8DebuggerAgentImpl::traceAsyncCallbackStarting(int operationId)
         m_currentAsyncOperationId = operationId;
         m_pendingTraceAsyncOperationCompleted = false;
         m_nestedAsyncCallCount = 1;
-
-        if (m_pausingAsyncOperations.contains(operationId) || m_asyncOperationBreakpoints.contains(operationId)) {
-            m_pausingOnAsyncOperation = true;
-            m_scheduledDebuggerStep = StepInto;
-            m_skippedStepFrameCount = 0;
-            m_recursionLevelForStepFrame = 0;
-            debugger().setPauseOnNextStatement(true);
-        }
     } else {
         if (m_currentAsyncCallChain)
             ++m_nestedAsyncCallCount;
@@ -1143,24 +1100,15 @@ void V8DebuggerAgentImpl::traceAsyncCallbackCompleted()
 {
     if (!m_nestedAsyncCallCount)
         return;
-//    ASSERT(m_currentAsyncCallChain);
+    ASSERT(m_currentAsyncCallChain);
     --m_nestedAsyncCallCount;
-    if (!m_nestedAsyncCallCount) {
+    if (!m_nestedAsyncCallCount)
         clearCurrentAsyncOperation();
-        if (!m_pausingOnAsyncOperation)
-            return;
-        m_pausingOnAsyncOperation = false;
-        m_scheduledDebuggerStep = NoStep;
-        debugger().setPauseOnNextStatement(false);
-        if (m_startingStepIntoAsync && m_pausingAsyncOperations.isEmpty())
-            clearStepIntoAsync();
-    }
 }
 
 void V8DebuggerAgentImpl::traceAsyncOperationCompleted(int operationId)
 {
     ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
-    bool shouldNotify = false;
     if (operationId > 0) {
         if (m_currentAsyncOperationId == operationId) {
             if (m_pendingTraceAsyncOperationCompleted) {
@@ -1172,35 +1120,7 @@ void V8DebuggerAgentImpl::traceAsyncOperationCompleted(int operationId)
             }
         }
         m_asyncOperations.remove(operationId);
-        m_asyncOperationBreakpoints.remove(operationId);
-        m_pausingAsyncOperations.remove(operationId);
-        shouldNotify = !m_asyncOperationNotifications.take(operationId);
     }
-    if (m_startingStepIntoAsync) {
-        if (!m_pausingOnAsyncOperation && m_pausingAsyncOperations.isEmpty())
-            clearStepIntoAsync();
-    }
-    if (m_frontend && shouldNotify)
-        m_frontend->asyncOperationCompleted(operationId);
-}
-
-void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
-{
-    if (!m_frontend)
-        return;
-
-    for (auto& operationId : m_asyncOperationNotifications) {
-        V8StackTraceImpl* chain = m_asyncOperations.get(operationId.first);
-        ASSERT(chain);
-        if (!chain->isEmpty()) {
-            OwnPtr<AsyncOperation> operation = AsyncOperation::create()
-                .setId(operationId.first)
-                .setStack(chain->buildInspectorObject()).build();
-            m_frontend->asyncOperationStarted(operation.release());
-        }
-    }
-
-    m_asyncOperationNotifications.clear();
 }
 
 void V8DebuggerAgentImpl::clearCurrentAsyncOperation()
@@ -1217,41 +1137,8 @@ void V8DebuggerAgentImpl::clearCurrentAsyncOperation()
 void V8DebuggerAgentImpl::resetAsyncCallTracker()
 {
     clearCurrentAsyncOperation();
-    clearStepIntoAsync();
     m_v8AsyncCallTracker->resetAsyncOperations();
     m_asyncOperations.clear();
-    m_asyncOperationNotifications.clear();
-    m_asyncOperationBreakpoints.clear();
-}
-
-void V8DebuggerAgentImpl::setAsyncOperationBreakpoint(ErrorString* errorString, int operationId)
-{
-    if (!trackingAsyncCalls()) {
-        *errorString = "Can only perform operation while tracking async call stacks.";
-        return;
-    }
-    if (operationId <= 0) {
-        *errorString = "Wrong async operation id.";
-        return;
-    }
-    if (!m_asyncOperations.contains(operationId)) {
-        *errorString = "Unknown async operation id.";
-        return;
-    }
-    m_asyncOperationBreakpoints.add(operationId);
-}
-
-void V8DebuggerAgentImpl::removeAsyncOperationBreakpoint(ErrorString* errorString, int operationId)
-{
-    if (!trackingAsyncCalls()) {
-        *errorString = "Can only perform operation while tracking async call stacks.";
-        return;
-    }
-    if (operationId <= 0) {
-        *errorString = "Wrong async operation id.";
-        return;
-    }
-    m_asyncOperationBreakpoints.remove(operationId);
 }
 
 void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
@@ -1520,10 +1407,6 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
             m_breakAuxData = obj ? obj->serialize() : nullptr;
             // m_breakAuxData might be null after this.
         }
-    } else if (m_pausingOnAsyncOperation) {
-        m_breakReason = protocol::Debugger::Paused::ReasonEnum::AsyncOperation;
-        m_breakAuxData = protocol::DictionaryValue::create();
-        m_breakAuxData->setNumber("operationId", m_currentAsyncOperationId);
     }
 
     OwnPtr<Array<String16>> hitBreakpointIds = Array<String16>::create();
@@ -1540,9 +1423,6 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         }
     }
 
-    if (!m_asyncOperationNotifications.isEmpty())
-        flushAsyncOperationEvents(nullptr);
-
     ErrorString errorString;
     m_frontend->paused(currentCallFrames(&errorString), m_breakReason, m_breakAuxData.release(), hitBreakpointIds.release(), currentAsyncStackTrace());
     m_scheduledDebuggerStep = NoStep;
@@ -1551,7 +1431,6 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     m_pausingOnNativeEvent = false;
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
-    clearStepIntoAsync();
 
     if (!m_continueToLocationBreakpointId.isEmpty()) {
         debugger().removeBreakpoint(m_continueToLocationBreakpointId);
@@ -1584,7 +1463,6 @@ void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<p
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
-    clearStepIntoAsync();
     debugger().breakProgram();
 }
 
@@ -1593,13 +1471,6 @@ void V8DebuggerAgentImpl::breakProgramOnException(const String16& breakReason, P
     if (m_debugger->getPauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;
     breakProgram(breakReason, data);
-}
-
-void V8DebuggerAgentImpl::clearStepIntoAsync()
-{
-    m_startingStepIntoAsync = false;
-    m_pausingOnAsyncOperation = false;
-    m_pausingAsyncOperations.clear();
 }
 
 bool V8DebuggerAgentImpl::assertPaused(ErrorString* errorString)
