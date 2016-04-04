@@ -515,9 +515,7 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 }
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
-  GURL URL = [web_controller_ currentURLWithTrustLevel:trust_level];
-  DCHECK(URL == GetLastCommittedURL());
-  return URL;
+  return [web_controller_ currentURLWithTrustLevel:trust_level];
 }
 
 void WebStateImpl::AddScriptCommandCallback(
