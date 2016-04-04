@@ -84,7 +84,7 @@ class CLStatsEngine(object):
     # alphanum wildcard).
     general_regex = r'^.*(%s).*?([0-9]+)/?,?(#\S*)?$'
 
-    crbug = general_regex % r'crbug.com|code.google.com'
+    crbug = general_regex % r'crbug.com|bugs.chromium.org'
     internal_review = general_regex % (
         r'chrome-internal-review.googlesource.com|crosreview.com/i')
     external_review = general_regex % (
