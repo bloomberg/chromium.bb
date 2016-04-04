@@ -121,6 +121,12 @@ class FakeGaia {
   // to the associated redirect endpoint.
   void RegisterSamlUser(const std::string& account_id, const GURL& saml_idp);
 
+  // Associates an SAML |domain| with a SAML IdP redirect endpoint. When a
+  // /samlredirect request comes in for this domain, it will be redirected to
+  // this endpoint.
+  void RegisterSamlDomainRedirectUrl(const std::string& domain,
+                                     const GURL& saml_redirect_url);
+
   void set_issue_oauth_code_cookie(bool value) {
     issue_oauth_code_cookie_ = value;
   }
@@ -151,9 +157,10 @@ class FakeGaia {
       net::test_server::BasicHttpResponse* http_response);
 
  private:
-  typedef std::multimap<std::string, AccessTokenInfo> AccessTokenInfoMap;
-  typedef std::map<std::string, std::string> EmailToGaiaIdMap;
-  typedef std::map<std::string, GURL> SamlAccountIdpMap;
+  using AccessTokenInfoMap = std::multimap<std::string, AccessTokenInfo>;
+  using EmailToGaiaIdMap = std::map<std::string, std::string>;
+  using SamlAccountIdpMap = std::map<std::string, GURL>;
+  using SamlDomainRedirectUrlMap = std::map<std::string, GURL>;
 
   std::string GetGaiaIdOfEmail(const std::string& email) const;
 
@@ -213,6 +220,8 @@ class FakeGaia {
                          net::test_server::BasicHttpResponse* http_response);
   void HandleOAuthUserInfo(const net::test_server::HttpRequest& request,
                            net::test_server::BasicHttpResponse* http_response);
+  void HandleSAMLRedirect(const net::test_server::HttpRequest& request,
+                          net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first
@@ -234,6 +243,7 @@ class FakeGaia {
   std::string service_login_response_;
   std::string embedded_setup_chromeos_response_;
   SamlAccountIdpMap saml_account_idp_map_;
+  SamlDomainRedirectUrlMap saml_domain_url_map_;
   bool issue_oauth_code_cookie_;
   RefreshTokenToDeviceIdMap refresh_token_to_device_id_map_;
   std::string prefilled_email_;

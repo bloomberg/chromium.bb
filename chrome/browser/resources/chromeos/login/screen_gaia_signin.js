@@ -576,6 +576,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           $('saml-interstitial').domain = data.enterpriseDomain;
           if (this.loading)
             this.loading = false;
+          // This event is for the browser tests.
+          $('saml-interstitial').fire('samlInterstitialPageReady');
           break;
       }
       this.updateControlsState();

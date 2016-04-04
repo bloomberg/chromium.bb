@@ -6,6 +6,10 @@ Polymer({
   is: 'saml-interstitial',
 
   properties: {
+    changeAccountLink: {
+      type: HTMLElement,
+    },
+
     domain: {
       type: String,
       observer: 'onDomainChanged_'
@@ -14,7 +18,13 @@ Polymer({
     showDomainMessages_: {
       type: Boolean,
       value: false
-    },
+    }
+  },
+  ready: function() {
+    this.changeAccountLink = this.$.changeAccountLink;
+  },
+  submit: function() {
+    this.$.samlInterstitialForm.submit();
   },
   onDomainChanged_: function() {
     this.$.message.content =
@@ -26,5 +36,5 @@ Polymer({
   },
   onSamlPageChangeAccountClicked_: function() {
     this.fire('samlPageChangeAccountClicked');
-  },
+  }
 });

@@ -11,6 +11,12 @@ Attributes:
                          will be shown. Its value is set automatically when
                          'domain' is set, and is true as long as 'domain' is
                          not empty.
+  'changeAccountLink' - A reference to the change account link so that it can be
+                        used in testing.
+
+Functions:
+  'submit' - Submits the saml interstitial form for tests. Equivalent to the
+             user clicking next.
 
 Events:
   'samlPageNextClicked' - Fired when the "Next" button is clicked indicating
@@ -45,9 +51,11 @@ Events:
       <!-- This message contains a <strong> tag inside. -->
       <html-echo id="message" hidden$="[[!showDomainMessages_]]"></html-echo>
 
-      <gaia-input-form on-submit="onSamlPageNextClicked_"
+      <gaia-input-form id="samlInterstitialForm"
+                       on-submit="onSamlPageNextClicked_"
                        i18n-values="button-text:samlInterstitialNextBtn">
-        <gaia-button type="link" on-tap="onSamlPageChangeAccountClicked_"
+        <gaia-button id="changeAccountLink" type="link"
+                     on-tap="onSamlPageChangeAccountClicked_"
                      i18n-content="samlInterstitialChangeAccountLink">
         </gaia-button>
       </gaia-input-form>

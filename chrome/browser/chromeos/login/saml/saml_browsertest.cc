@@ -329,6 +329,7 @@ class SamlTest : public OobeBaseTest {
         kHTTPSAMLUserEmail,
         embedded_test_server()->base_url().Resolve("/SAML"));
     fake_gaia_->RegisterSamlUser(kDifferentDomainSAMLUserEmail, saml_idp_url);
+    fake_gaia_->RegisterSamlDomainRedirectUrl("example.com", saml_idp_url);
 
     OobeBaseTest::SetUpCommandLine(command_line);
   }
@@ -911,8 +912,12 @@ class SAMLPolicyTest : public SamlTest {
 
   void SetSAMLOfflineSigninTimeLimitPolicy(int limit);
   void EnableTransferSAMLCookiesPolicy();
+  void SetLoginBehaviorPolicyToSAMLInterstitial();
 
   void ShowGAIALoginForm();
+  void ShowSAMLInterstitial();
+  void ClickNextOnSAMLInterstitialPage();
+  void ClickChangeAccountOnSAMLInterstitialPage();
   void LogInWithSAML(const std::string& user_id,
                      const std::string& auth_sid_cookie,
                      const std::string& auth_lsid_cookie);
@@ -1029,6 +1034,23 @@ void SAMLPolicyTest::EnableTransferSAMLCookiesPolicy() {
   run_loop.Run();
 }
 
+void SAMLPolicyTest::SetLoginBehaviorPolicyToSAMLInterstitial() {
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
+  proto.mutable_login_authentication_behavior()
+      ->set_login_authentication_behavior(
+          em::LoginAuthenticationBehaviorProto_LoginBehavior_SAML_INTERSTITIAL);
+
+  base::RunLoop run_loop;
+  scoped_ptr<CrosSettings::ObserverSubscription> observer =
+      CrosSettings::Get()->AddSettingsObserver(kLoginAuthenticationBehavior,
+                                               run_loop.QuitClosure());
+  device_policy_->SetDefaultSigningKey();
+  device_policy_->Build();
+  fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
+  run_loop.Run();
+}
+
 void SAMLPolicyTest::ShowGAIALoginForm() {
   login_screen_load_observer_->Wait();
   ASSERT_TRUE(content::ExecuteScript(
@@ -1038,6 +1060,57 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
       "  window.domAutomationController.send('ready');"
       "});"
       "$('add-user-button').click();"));
+  content::DOMMessageQueue message_queue;
+  std::string message;
+  ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"ready\"", message);
+}
+
+void SAMLPolicyTest::ShowSAMLInterstitial() {
+  login_screen_load_observer_->Wait();
+  ASSERT_TRUE(content::ExecuteScript(
+      GetLoginUI()->GetWebContents(),
+      "$('saml-interstitial').addEventListener("
+      "    'samlInterstitialPageReady',"
+      "    function() {"
+      "        window.domAutomationController.setAutomationId(0);"
+      "        window.domAutomationController.send("
+      "            'samlInterstitialPageReady');"
+      "    });"
+      "$('add-user-button').click();"));
+
+  content::DOMMessageQueue message_queue;
+  std::string message;
+  ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"samlInterstitialPageReady\"", message);
+}
+
+void SAMLPolicyTest::ClickNextOnSAMLInterstitialPage() {
+  login_screen_load_observer_->Wait();
+
+  content::DOMMessageQueue message_queue;
+  SetupAuthFlowChangeListener();
+
+  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(),
+                                     "$('saml-interstitial').submit();"));
+
+  std::string message;
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"SamlLoaded\"");
+  EXPECT_EQ("\"SamlLoaded\"", message);
+}
+
+void SAMLPolicyTest::ClickChangeAccountOnSAMLInterstitialPage() {
+  login_screen_load_observer_->Wait();
+  ASSERT_TRUE(content::ExecuteScript(
+      GetLoginUI()->GetWebContents(),
+      "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
+      "  window.domAutomationController.setAutomationId(0);"
+      "  window.domAutomationController.send('ready');"
+      "});"
+      "$('saml-interstitial').changeAccountLink.click();"));
+
   content::DOMMessageQueue message_queue;
   std::string message;
   ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -1241,5 +1314,54 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TransferCookiesUnaffiliated) {
   EXPECT_EQ(kSAMLIdPCookieValue1, GetCookieValue(kSAMLIdPCookieName));
 }
 
+// Tests that the SAML interstitial page is loaded when the authentication
+// behavior device policy is set to SAML_INTERSTITIAL, and when the user clicks
+// the "change account" link, we go back to the default GAIA signin screen.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  SetLoginBehaviorPolicyToSAMLInterstitial();
+  WaitForSigninScreen();
+
+  ShowSAMLInterstitial();
+  JsExpect("$('signin-frame').hidden == true");
+  JsExpect("$('offline-gaia').hidden == true");
+  JsExpect("$('saml-interstitial').hidden == false");
+
+  // Click the "change account" link on the SAML interstitial page.
+  ClickChangeAccountOnSAMLInterstitialPage();
+
+  // Expects that only the gaia signin frame is visible and shown.
+  JsExpect("$('signin-frame').classList.contains('show')");
+  JsExpect("$('signin-frame').hidden == false");
+  JsExpect("$('offline-gaia').hidden == true");
+  JsExpect("$('saml-interstitial').hidden == true");
+}
+
+// Tests that clicking "Next" in the SAML interstitial page successfully
+// triggers a SAML redirect request, and the SAML IdP authentication page is
+// loaded and authenticaing there is successful.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  fake_gaia_->SetFakeMergeSessionParams(
+      kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  SetLoginBehaviorPolicyToSAMLInterstitial();
+  WaitForSigninScreen();
+
+  ShowSAMLInterstitial();
+  ClickNextOnSAMLInterstitialPage();
+
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  SendConfirmPassword("fake_password");
+  // Login should finish login and a session should start.
+  session_start_waiter.Wait();
+}
 
 }  // namespace chromeos
