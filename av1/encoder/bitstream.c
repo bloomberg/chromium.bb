@@ -109,6 +109,28 @@ static void write_inter_mode(AV1_COMMON *cm,
 #endif
 }
 
+#if CONFIG_REF_MV
+static void write_drl_idx(const AV1_COMMON *cm,
+                          const MB_MODE_INFO *mbmi,
+                          const MB_MODE_INFO_EXT *mbmi_ext,
+                          aom_writer *w) {
+  uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
+    uint8_t drl0_ctx =
+        av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 0);
+    aom_prob drl0_prob = cm->fc->drl_prob0[drl0_ctx];
+    aom_write(w, mbmi->ref_mv_idx != 0, drl0_prob);
+    if (mbmi_ext->ref_mv_count[ref_frame_type] > 3 &&
+        mbmi->ref_mv_idx > 0) {
+      uint8_t drl1_ctx =
+          av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
+      aom_prob drl1_prob = cm->fc->drl_prob1[drl1_ctx];
+      aom_write(w, mbmi->ref_mv_idx != 1, drl1_prob);
+    }
+  }
+}
+#endif
+
 static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
                                 int max) {
   aom_wb_write_literal(wb, data, get_unsigned_bits(max));
@@ -174,6 +196,12 @@ static void update_inter_mode_probs(AV1_COMMON *cm, aom_writer *w,
   for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
     av1_cond_prob_diff_update(w, &cm->fc->refmv_prob[i],
                               counts->refmv_mode[i]);
+  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
+    av1_cond_prob_diff_update(w, &cm->fc->drl_prob0[i],
+                              counts->drl_mode0[i]);
+  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
+    av1_cond_prob_diff_update(w, &cm->fc->drl_prob1[i],
+                              counts->drl_mode1[i]);
 }
 #endif
 
@@ -444,15 +472,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       if (bsize >= BLOCK_8X8) {
         write_inter_mode(cm, w, mode, mode_ctx);
 #if CONFIG_REF_MV
-        if (mode == NEARMV) {
-          const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-          if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
-            aom_write_bit(w, mbmi->ref_mv_idx != 0);
-            if (mbmi_ext->ref_mv_count[ref_frame_type] > 3 &&
-                mbmi->ref_mv_idx > 0)
-              aom_write_bit(w, mbmi->ref_mv_idx != 1);
-          }
-        }
+        if (mode == NEARMV)
+          write_drl_idx(cm, mbmi, mbmi_ext, w);
 #endif
       }
     }

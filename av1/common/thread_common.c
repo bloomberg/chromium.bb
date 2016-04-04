@@ -371,6 +371,14 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
   for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
     for (j = 0; j < 2; ++j)
       cm->counts.refmv_mode[i][j] += counts->refmv_mode[i][j];
+
+  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
+    for (j = 0; j < 2; ++j)
+      cm->counts.drl_mode0[i][j] += counts->drl_mode0[i][j];
+
+  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
+    for (j = 0; j < 2; ++j)
+      cm->counts.drl_mode1[i][j] += counts->drl_mode1[i][j];
 #endif
 
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)

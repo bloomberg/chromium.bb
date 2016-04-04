@@ -3265,7 +3265,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         int64_t tmp_ref_rd = this_rd;
         int ref_idx;
         int ref_set = AOMMIN(2, mbmi_ext->ref_mv_count[ref_frame_type] - 2);
-        rate2 += av1_cost_bit(128, 0);
+        uint8_t drl0_ctx =
+            av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 0);
+
+        rate2 += cpi->drl_mode_cost0[drl0_ctx][0];
 
         if (this_rd < INT64_MAX) {
           if (RDCOST(x->rdmult, x->rddiv,
@@ -3313,9 +3316,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                            dummy_filter_cache);
           }
 
-          tmp_rate += av1_cost_bit(128, 1);
-          if (mbmi_ext->ref_mv_count[ref_frame_type] > 3)
-            tmp_rate += av1_cost_bit(128, ref_idx);
+          tmp_rate += cpi->drl_mode_cost0[drl0_ctx][1];
+
+          if (mbmi_ext->ref_mv_count[ref_frame_type] > 3) {
+            uint8_t drl1_ctx =
+                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
+            tmp_rate += cpi->drl_mode_cost1[drl1_ctx][ref_idx];
+          }
 
           if (tmp_alt_rd < INT64_MAX) {
             if (RDCOST(x->rdmult, x->rddiv,
