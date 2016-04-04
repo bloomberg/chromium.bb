@@ -61,6 +61,8 @@
                         android:layout_marginBottom="@dimen/fre_vertical_spacing"
                         android:layout_gravity="center_horizontal"
                         android:popupBackground="#ffffff"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
                         android:textColor="@color/fre_text_color" />
 
                     <TextView

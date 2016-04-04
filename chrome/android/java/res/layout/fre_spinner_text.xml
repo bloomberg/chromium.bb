@@ -13,7 +13,7 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
     android:paddingEnd="16dp"
-    android:paddingStart="0dp"
+    android:paddingStart="4dp"
     android:textAlignment="viewStart"
     android:ellipsize="end"
     android:singleLine="true"

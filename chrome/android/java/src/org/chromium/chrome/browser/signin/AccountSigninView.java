@@ -204,6 +204,7 @@ public class AccountSigninView extends FirstRunView
 
         mConfirmAccountEmail = (TextView) findViewById(R.id.confirm_account_email);
         mSpinner = (Spinner) findViewById(R.id.google_accounts_spinner);
+
         mSpinnerBackground = mSpinner.getBackground();
         mArrayAdapter = new ArrayAdapter<CharSequence>(getContext().getApplicationContext(),
                 R.layout.fre_spinner_text);
@@ -230,6 +231,14 @@ public class AccountSigninView extends FirstRunView
         });
 
         showSigninPage();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        // Ensure that the spinner's dropdown is the same width and vertically aligned with the
+        // spinner. The spinner's start and end padding must be 0 for this to work.
+        mSpinner.setDropDownWidth(mSpinner.getWidth());
     }
 
     @Override
