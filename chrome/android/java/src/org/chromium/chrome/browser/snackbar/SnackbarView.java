@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.snackbar;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -171,13 +172,12 @@ class SnackbarView {
         if (mIsTablet) {
             // On tablet, snackbars have rounded corners.
             mView.setBackgroundResource(R.drawable.snackbar_background_tablet);
+            GradientDrawable backgroundDrawable = (GradientDrawable) mView.getBackground().mutate();
+            backgroundDrawable.setColor(backgroundColor);
         } else {
             mView.setBackgroundColor(backgroundColor);
         }
 
-        if (snackbar.getBackgroundColor() != 0) {
-            mView.setBackgroundColor(snackbar.getBackgroundColor());
-        }
         if (actionText != null) {
             mActionButtonView.setVisibility(View.VISIBLE);
             setViewText(mActionButtonView, snackbar.getActionText(), animate);
