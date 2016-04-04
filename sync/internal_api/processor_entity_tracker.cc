@@ -64,6 +64,7 @@ ProcessorEntityTracker::~ProcessorEntityTracker() {}
 
 void ProcessorEntityTracker::CacheCommitData(EntityData* data) {
   DCHECK(RequiresCommitRequest());
+  DCHECK(data);
   if (data->client_tag_hash.empty()) {
     data->client_tag_hash = metadata_.client_tag_hash();
   }
@@ -81,6 +82,11 @@ bool ProcessorEntityTracker::MatchesSpecificsHash(
   std::string hash;
   HashSpecifics(specifics, &hash);
   return hash == metadata_.specifics_hash();
+}
+
+bool ProcessorEntityTracker::MatchesData(const EntityData& data) const {
+  return (data.is_deleted() && metadata_.is_deleted()) ||
+         MatchesSpecificsHash(data.specifics);
 }
 
 bool ProcessorEntityTracker::IsUnsynced() const {
@@ -103,37 +109,43 @@ bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
-bool ProcessorEntityTracker::UpdateIsInConflict(int64_t update_version) const {
-  return IsUnsynced() && !UpdateIsReflection(update_version);
+void ProcessorEntityTracker::RecordIgnoredUpdate(
+    const UpdateResponseData& update) {
+  metadata_.set_server_version(update.response_version);
+  // TODO(maxbogue): Understand and fix encryption (crbug.com/561814).
+  encryption_key_name_ = update.encryption_key_name;
+  // Either these already matched, acked was just bumped to squash a pending
+  // commit and this should follow, or the pending commit needs to be requeued.
+  commit_requested_sequence_number_ = metadata_.acked_sequence_number();
 }
 
-void ProcessorEntityTracker::ApplyUpdateFromServer(
-    const UpdateResponseData& response_data) {
-  DCHECK(metadata_.has_client_tag_hash());
-  DCHECK(!metadata_.client_tag_hash().empty());
-  DCHECK(metadata_.has_sequence_number());
-
-  // TODO(stanisc): crbug/521867: Understand and verify the conflict resolution
-  // logic here.
-  // There was a conflict and the server just won it.
-  // This implicitly acks all outstanding commits because a received update
-  // will clobber any pending commits on the sync thread.
-  metadata_.set_acked_sequence_number(metadata_.sequence_number());
-  commit_requested_sequence_number_ = metadata_.sequence_number();
-
-  metadata_.set_is_deleted(response_data.entity->is_deleted());
-  metadata_.set_server_version(response_data.response_version);
+void ProcessorEntityTracker::RecordAcceptedUpdate(
+    const UpdateResponseData& update) {
+  DCHECK(!IsUnsynced());
+  RecordIgnoredUpdate(update);
+  metadata_.set_is_deleted(update.entity->is_deleted());
   metadata_.set_modification_time(
-      syncer::TimeToProtoTime(response_data.entity->modification_time));
-  UpdateSpecificsHash(response_data.entity->specifics);
+      syncer::TimeToProtoTime(update.entity->modification_time));
+  UpdateSpecificsHash(update.entity->specifics);
+}
 
-  encryption_key_name_ = response_data.encryption_key_name;
+void ProcessorEntityTracker::RecordForcedUpdate(
+    const UpdateResponseData& update) {
+  DCHECK(IsUnsynced());
+  // There was a conflict and the server just won it. Explicitly ack all
+  // pending commits so they are never enqueued again.
+  metadata_.set_acked_sequence_number(metadata_.sequence_number());
+  commit_data_.reset();
+  RecordAcceptedUpdate(update);
 }
 
 void ProcessorEntityTracker::MakeLocalChange(scoped_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
   DCHECK_EQ(metadata_.client_tag_hash(), data->client_tag_hash);
-  DCHECK(!data->modification_time.is_null());
+
+  if (data->modification_time.is_null()) {
+    data->modification_time = base::Time::Now();
+  }
 
   metadata_.set_modification_time(
       syncer::TimeToProtoTime(data->modification_time));
@@ -200,6 +212,11 @@ void ProcessorEntityTracker::ReceiveCommitResponse(
   metadata_.set_acked_sequence_number(sequence_number);
   metadata_.set_server_version(response_version);
   encryption_key_name_ = encryption_key_name;
+  if (!IsUnsynced()) {
+    // Clear pending commit data if there hasn't been another commit request
+    // since the one that is currently getting acked.
+    commit_data_.reset();
+  }
 }
 
 void ProcessorEntityTracker::ClearTransientSyncState() {

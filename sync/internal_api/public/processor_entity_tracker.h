@@ -40,11 +40,9 @@ class SYNC_EXPORT ProcessorEntityTracker {
 
   ~ProcessorEntityTracker();
 
-  // Returns entity's client tag.
   const std::string& client_tag() const { return client_tag_; }
-
-  // Returns entity's metadata.
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
+  const EntityDataPtr& commit_data() const { return commit_data_; }
 
   // Returns true if this data is out of sync with the server.
   // A commit may or may not be in progress at this time.
@@ -69,14 +67,15 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // Returns true if the specified update version does not contain new data.
   bool UpdateIsReflection(int64_t update_version) const;
 
-  // Returns true if the specified update version conflicts with local changes.
-  bool UpdateIsInConflict(int64_t update_version) const;
+  // Records that an update from the server was received but ignores its data.
+  void RecordIgnoredUpdate(const UpdateResponseData& response_data);
 
-  // Applies an update from the sync server.
-  //
-  // Overrides any local changes.  Check UpdateIsInConflict() before calling
-  // this function if you want to handle conflicts differently.
-  void ApplyUpdateFromServer(const UpdateResponseData& response_data);
+  // Records an update from the server assuming its data is the new data for
+  // this entity.
+  void RecordAcceptedUpdate(const UpdateResponseData& response_data);
+
+  // Squashes a pending commit with an update from the server.
+  void RecordForcedUpdate(const UpdateResponseData& response_data);
 
   // Applies a local change to this item.
   void MakeLocalChange(scoped_ptr<EntityData> data);
@@ -118,6 +117,9 @@ class SYNC_EXPORT ProcessorEntityTracker {
 
   // Check whether |specifics| matches the stored specifics_hash.
   bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
+
+  // Check whether |data| matches the stored metadata.
+  bool MatchesData(const EntityData& data) const;
 
  private:
   friend class ProcessorEntityTrackerTest;

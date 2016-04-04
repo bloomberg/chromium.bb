@@ -76,20 +76,20 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
       int64_t version,
       const sync_pb::EntitySpecifics& specifics) {
     scoped_ptr<ProcessorEntityTracker> entity(NewServerItem());
-    ApplyUpdateFromServer(entity.get(), version, specifics);
+    RecordAcceptedUpdate(entity.get(), version, specifics);
     return entity;
   }
 
-  void ApplyUpdateFromServer(ProcessorEntityTracker* entity,
-                             int64_t version,
-                             const sync_pb::EntitySpecifics& specifics) {
-    ApplyUpdateFromServer(entity, version, specifics, kMtime);
+  void RecordAcceptedUpdate(ProcessorEntityTracker* entity,
+                            int64_t version,
+                            const sync_pb::EntitySpecifics& specifics) {
+    RecordAcceptedUpdate(entity, version, specifics, kMtime);
   }
 
-  void ApplyUpdateFromServer(ProcessorEntityTracker* entity,
-                             int64_t version,
-                             const sync_pb::EntitySpecifics& specifics,
-                             base::Time mtime) {
+  void RecordAcceptedUpdate(ProcessorEntityTracker* entity,
+                            int64_t version,
+                            const sync_pb::EntitySpecifics& specifics,
+                            base::Time mtime) {
     EntityData data;
     data.id = entity->metadata().server_id();
     data.client_tag_hash = entity->metadata().client_tag_hash();
@@ -100,7 +100,7 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
     response_data.response_version = version;
     response_data.entity = data.PassToPtr();
 
-    entity->ApplyUpdateFromServer(response_data);
+    entity->RecordAcceptedUpdate(response_data);
   }
 
   bool HasSpecificsHash(
@@ -127,17 +127,23 @@ TEST_F(ProcessorEntityTrackerTest, NewItem) {
 
   EXPECT_FALSE(entity->IsUnsynced());
   EXPECT_FALSE(entity->UpdateIsReflection(1));
-  EXPECT_FALSE(entity->UpdateIsInConflict(1));
 }
 
 TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
   scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf", specifics));
 
+  EXPECT_EQ(1, entity->metadata().sequence_number());
   EXPECT_TRUE(entity->HasCommitData());
   EXPECT_TRUE(HasSpecificsHash(entity));
   EXPECT_TRUE(entity->IsUnsynced());
   EXPECT_FALSE(entity->UpdateIsReflection(1));
-  EXPECT_TRUE(entity->UpdateIsInConflict(1));
+
+  entity->ReceiveCommitResponse("id", 1, 1, "");
+
+  EXPECT_FALSE(entity->HasCommitData());
+  EXPECT_TRUE(HasSpecificsHash(entity));
+  EXPECT_FALSE(entity->IsUnsynced());
+  EXPECT_TRUE(entity->UpdateIsReflection(1));
 }
 
 TEST_F(ProcessorEntityTrackerTest, FromServerUpdate) {
@@ -147,17 +153,15 @@ TEST_F(ProcessorEntityTrackerTest, FromServerUpdate) {
   EXPECT_EQ(entity->metadata().client_tag_hash(), kClientTagHash);
   EXPECT_FALSE(HasSpecificsHash(entity));
 
-  ApplyUpdateFromServer(entity.get(), 10, specifics);
+  RecordAcceptedUpdate(entity.get(), 10, specifics);
 
   // No data cached but the specifics hash should be updated.
   EXPECT_FALSE(entity->HasCommitData());
   EXPECT_TRUE(HasSpecificsHash(entity));
-
   EXPECT_FALSE(entity->IsUnsynced());
   EXPECT_TRUE(entity->UpdateIsReflection(9));
   EXPECT_TRUE(entity->UpdateIsReflection(10));
   EXPECT_FALSE(entity->UpdateIsReflection(11));
-  EXPECT_FALSE(entity->UpdateIsInConflict(11));
 }
 
 // Tombstones should behave just like regular updates.  Mostly.  The strangest
@@ -172,12 +176,10 @@ TEST_F(ProcessorEntityTrackerTest, TombstoneUpdate) {
   EXPECT_EQ(kClientTagHash, entity->metadata().client_tag_hash());
   EXPECT_FALSE(entity->HasCommitData());
   EXPECT_FALSE(HasSpecificsHash(entity));
-
   EXPECT_FALSE(entity->IsUnsynced());
   EXPECT_TRUE(entity->UpdateIsReflection(9));
   EXPECT_TRUE(entity->UpdateIsReflection(10));
   EXPECT_FALSE(entity->UpdateIsReflection(11));
-  EXPECT_FALSE(entity->UpdateIsInConflict(11));
 }
 
 // Apply a deletion update.
@@ -188,11 +190,10 @@ TEST_F(ProcessorEntityTrackerTest, ApplyUpdate) {
   EXPECT_TRUE(HasSpecificsHash(entity));
 
   // A deletion update one version later.
-  ApplyUpdateFromServer(entity.get(), 11, sync_pb::EntitySpecifics(),
-                        kMtime + base::TimeDelta::FromSeconds(10));
+  RecordAcceptedUpdate(entity.get(), 11, sync_pb::EntitySpecifics(),
+                       kMtime + base::TimeDelta::FromSeconds(10));
 
   EXPECT_FALSE(HasSpecificsHash(entity));
-
   EXPECT_FALSE(entity->IsUnsynced());
   EXPECT_TRUE(entity->UpdateIsReflection(11));
   EXPECT_FALSE(entity->UpdateIsReflection(12));
@@ -208,18 +209,13 @@ TEST_F(ProcessorEntityTrackerTest, LocalChange) {
   sync_pb::EntitySpecifics specifics2;
   specifics2.CopyFrom(specifics);
   specifics2.mutable_preference()->set_value("new.pref.value");
-
   MakeLocalChange(entity.get(), specifics2);
-  EXPECT_NE(entity->metadata().specifics_hash(), specifics_hash);
 
+  EXPECT_NE(entity->metadata().specifics_hash(), specifics_hash);
   EXPECT_TRUE(entity->HasCommitData());
   EXPECT_TRUE(entity->IsUnsynced());
-
   EXPECT_TRUE(entity->UpdateIsReflection(10));
-  EXPECT_FALSE(entity->UpdateIsInConflict(10));
-
   EXPECT_FALSE(entity->UpdateIsReflection(11));
-  EXPECT_TRUE(entity->UpdateIsInConflict(11));
 }
 
 TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
@@ -229,17 +225,13 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
 
   // Make a local delete.
   entity->Delete();
-  EXPECT_FALSE(HasSpecificsHash(entity));
 
+  EXPECT_FALSE(HasSpecificsHash(entity));
   EXPECT_FALSE(entity->HasCommitData());
   EXPECT_FALSE(entity->RequiresCommitData());
   EXPECT_TRUE(entity->IsUnsynced());
-
   EXPECT_TRUE(entity->UpdateIsReflection(10));
-  EXPECT_FALSE(entity->UpdateIsInConflict(10));
-
   EXPECT_FALSE(entity->UpdateIsReflection(11));
-  EXPECT_TRUE(entity->UpdateIsInConflict(11));
 }
 
 // Verify generation of CommitRequestData from ProcessorEntityTracker.

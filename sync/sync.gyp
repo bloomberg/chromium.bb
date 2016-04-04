@@ -78,6 +78,8 @@
         'api/attachments/attachment_store.h',
         'api/attachments/attachment_store_backend.cc',
         'api/attachments/attachment_store_backend.h',
+        'api/conflict_resolution.cc',
+        'api/conflict_resolution.h',
         'api/data_batch.h',
         'api/entity_change.cc',
         'api/entity_change.h',

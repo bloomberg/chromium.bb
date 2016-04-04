@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "sync/api/conflict_resolution.h"
 #include "sync/api/entity_change.h"
 #include "sync/api/entity_data.h"
 #include "sync/api/model_type_change_processor.h"
@@ -83,6 +84,13 @@ class SYNC_EXPORT ModelTypeService {
   // when the service should start loading metadata and then subsequently giving
   // it to the processor.
   virtual void OnChangeProcessorSet() = 0;
+
+  // Resolve a conflict between the client and server versions of data. They are
+  // guaranteed not to match (both be deleted or have identical specifics). A
+  // default implementation chooses the server data unless it is a deletion.
+  virtual ConflictResolution ResolveConflict(
+      const EntityData& local_data,
+      const EntityData& remote_data) const;
 
   void clear_change_processor();
 

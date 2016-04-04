@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
@@ -382,19 +383,32 @@ void SharedModelTypeProcessor::OnUpdateReceived(
       entity = CreateEntity(data);
       entity_changes.push_back(
           EntityChange::CreateAdd(entity->client_tag(), update.entity));
+      entity->RecordAcceptedUpdate(update);
     } else if (entity->UpdateIsReflection(update.response_version)) {
       // Seen this update before; just ignore it.
       continue;
+    } else if (entity->IsUnsynced()) {
+      ConflictResolution::Type resolution_type =
+          ResolveConflict(update, entity, &entity_changes);
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
+                                ConflictResolution::TYPE_SIZE);
     } else if (data.is_deleted()) {
+      // The entity was deleted; inform the service. Note that the local data
+      // can never be deleted at this point because it would have either been
+      // acked (the add case) or pending (the conflict case).
+      DCHECK(!entity->metadata().is_deleted());
       entity_changes.push_back(
           EntityChange::CreateDelete(entity->client_tag()));
+      entity->RecordAcceptedUpdate(update);
     } else if (!entity->MatchesSpecificsHash(data.specifics)) {
       // Specifics have changed, so update the service.
       entity_changes.push_back(
           EntityChange::CreateUpdate(entity->client_tag(), update.entity));
+      entity->RecordAcceptedUpdate(update);
+    } else {
+      // No data change; still record that the update was received.
+      entity->RecordAcceptedUpdate(update);
     }
-
-    entity->ApplyUpdateFromServer(update);
 
     // If the received entity has out of date encryption, we schedule another
     // commit to fix it.
@@ -432,6 +446,55 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   FlushPendingCommitRequests();
 }
 
+ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
+    const UpdateResponseData& update,
+    ProcessorEntityTracker* entity,
+    EntityChangeList* changes) {
+  // There is a pending commit in conflict with the update.
+  // For now we require that pending commit data be loaded in this
+  // situation. This may be relaxed in the future if necessary.
+  DCHECK(!entity->RequiresCommitData());
+  const EntityData& data = update.entity.value();
+
+  if (entity->MatchesData(data)) {
+    // Record the update and squash the pending commit.
+    entity->RecordForcedUpdate(update);
+    return ConflictResolution::CHANGES_MATCH;
+  }
+
+  // There's a real data conflict here; let the service resolve it.
+  ConflictResolution resolution =
+      service_->ResolveConflict(entity->commit_data().value(), data);
+  switch (resolution.type()) {
+    case ConflictResolution::USE_LOCAL:
+      // Record that we received the update from the server but leave the
+      // pending commit intact.
+      entity->RecordIgnoredUpdate(update);
+      break;
+    case ConflictResolution::USE_REMOTE:
+      // Squash the pending commit.
+      entity->RecordForcedUpdate(update);
+      // Update client data to match server.
+      changes->push_back(
+          EntityChange::CreateUpdate(entity->client_tag(), update.entity));
+      break;
+    case ConflictResolution::USE_NEW:
+      // Record that we received the update.
+      entity->RecordIgnoredUpdate(update);
+      // Make a new pending commit to update the server.
+      entity->MakeLocalChange(resolution.ExtractData());
+      // Update the client with the new entity.
+      changes->push_back(EntityChange::CreateUpdate(entity->client_tag(),
+                                                    entity->commit_data()));
+      break;
+    case ConflictResolution::CHANGES_MATCH:
+    case ConflictResolution::TYPE_SIZE:
+      NOTREACHED();
+      break;
+  }
+  return resolution.type();
+}
+
 void SharedModelTypeProcessor::OnInitialUpdateReceived(
     const sync_pb::DataTypeState& data_type_state,
     const UpdateResponseDataList& updates) {
@@ -451,7 +514,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   for (const UpdateResponseData& update : updates) {
     ProcessorEntityTracker* entity = CreateEntity(update.entity.value());
     const std::string& tag = entity->client_tag();
-    entity->ApplyUpdateFromServer(update);
+    entity->RecordAcceptedUpdate(update);
     metadata_changes->UpdateMetadata(tag, entity->metadata());
     data_map[tag] = update.entity;
   }

@@ -15,6 +15,17 @@ ModelTypeService::ModelTypeService(
 
 ModelTypeService::~ModelTypeService() {}
 
+ConflictResolution ModelTypeService::ResolveConflict(
+    const EntityData& local_data,
+    const EntityData& remote_data) const {
+  // TODO(maxbogue): Add tests once a file exists for them (crbug.com/543407).
+  if (remote_data.is_deleted()) {
+    DCHECK(!local_data.is_deleted());
+    return ConflictResolution::UseLocal();
+  }
+  return ConflictResolution::UseRemote();
+}
+
 ModelTypeChangeProcessor* ModelTypeService::change_processor() const {
   return change_processor_.get();
 }

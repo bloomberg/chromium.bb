@@ -86,6 +86,11 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Check conditions, and if met inform sync that we are ready to connect.
   void ConnectIfReady();
 
+  // Resolve a conflict between |update| and the pending commit in |entity|.
+  ConflictResolution::Type ResolveConflict(const UpdateResponseData& update,
+                                           ProcessorEntityTracker* entity,
+                                           EntityChangeList* changes);
+
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
                                const UpdateResponseDataList& updates);
