@@ -182,9 +182,10 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   if (index >= password_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer, don't let
-    // it crash the browser. http://crbug.com/362054
-    NOTREACHED();
+    // |index| out of bounds might come from a compromised renderer
+    // (http://crbug.com/362054), or the user removed a password while a request
+    // to the store is in progress (i.e. |password_list_| is empty).
+    // Don't let it crash the browser.
     return;
   }
   PasswordStore* store = GetPasswordStore();
@@ -200,9 +201,10 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
 
 void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   if (index >= password_exception_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer, don't let
-    // it crash the browser. http://crbug.com/362054
-    NOTREACHED();
+    // |index| out of bounds might come from a compromised renderer
+    // (http://crbug.com/362054), or the user removed a password exception while
+    // a request to the store is in progress (i.e. |password_exception_list_|
+    // is empty). Don't let it crash the browser.
     return;
   }
   PasswordStore* store = GetPasswordStore();
@@ -218,9 +220,10 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 #if !defined(OS_ANDROID)  // This is never called on Android.
   if (index >= password_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer, don't let
-    // it crash the browser. http://crbug.com/362054
-    NOTREACHED();
+    // |index| out of bounds might come from a compromised renderer
+    // (http://crbug.com/362054), or the user requested to show a password while
+    // a request to the store is in progress (i.e. |password_list_|
+    // is empty). Don't let it crash the browser.
     return;
   }
   if ((base::TimeTicks::Now() - last_authentication_time_) >
@@ -265,9 +268,10 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
     size_t index) {
   if (index >= password_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer, don't let
-    // it crash the browser. http://crbug.com/362054
-    NOTREACHED();
+    // |index| out of bounds might come from a compromised renderer
+    // (http://crbug.com/362054), or the user requested to get a password while
+    // a request to the store is in progress (i.e. |password_list_|
+    // is empty). Don't let it crash the browser.
     return NULL;
   }
   return password_list_[index].get();
@@ -276,9 +280,10 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
 const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
     size_t index) {
   if (index >= password_exception_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer, don't let
-    // it crash the browser. http://crbug.com/362054
-    NOTREACHED();
+    // |index| out of bounds might come from a compromised renderer
+    // (http://crbug.com/362054), or the user requested to get a password
+    // exception while a request to the store is in progress (i.e.
+    // |password_exception_list_| is empty). Don't let it crash the browser.
     return NULL;
   }
   return password_exception_list_[index].get();
