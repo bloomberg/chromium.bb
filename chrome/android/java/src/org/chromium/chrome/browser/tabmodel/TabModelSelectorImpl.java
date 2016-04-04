@@ -312,6 +312,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mTabSaver.clearState();
     }
 
+    public void clearEncryptedState() {
+        mTabSaver.clearEncryptedState();
+    }
+
     @Override
     public void destroy() {
         mTabSaver.destroy();
