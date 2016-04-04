@@ -231,10 +231,10 @@ class PersonalDataManager : public KeyedService,
   // will only update when Chrome is restarted.
   virtual const std::string& GetDefaultCountryCodeForNewAddress() const;
 
-  // De-dupe credit card suggestions. Full server cards are prefered over their
+  // De-dupe credit card to suggest. Full server cards are prefered over their
   // local duplicates, and local cards are preferred over their masked server
   // card duplicate.
-  static void DedupeCreditCardSuggestions(
+  static void DedupeCreditCardToSuggest(
       std::list<const CreditCard*>* cards_to_suggest);
 
  protected:
@@ -389,6 +389,20 @@ class PersonalDataManager : public KeyedService,
   // profiles will be used to populate the fields shown in an Autofill popup.
   const std::vector<AutofillProfile*>& GetProfiles(
       bool record_metrics) const;
+
+  // Fills |cards_to_suggest| with valid credit cards to suggest based on the
+  // |type| and |field_contents| of the credit card field. The cards are ordered
+  // by frecency.
+  void GetOrderedCardsToSuggest(
+      const AutofillType& type,
+      const base::string16& field_contents,
+      std::list<const CreditCard*>* cards_to_suggest) const;
+
+  // Returns the suggestions to display for the |cards_to_suggest| based on the
+  // |type| of the credit card field.
+  std::vector<Suggestion> GetSuggestionsForCards(
+      const std::list<const CreditCard*>& cards_to_suggest,
+      const AutofillType& type) const;
 
   const std::string app_locale_;
 

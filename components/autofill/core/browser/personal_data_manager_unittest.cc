@@ -3246,6 +3246,33 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(2U, suggestions.size());
 }
 
+// Test that a masked server card is not suggested if more that six numbers have
+// been typed in the field.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_MaskedCardWithMoreThan6Numbers) {
+  EnableWalletCardImport();
+
+  // Add a masked server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
+                          "2012");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(AutofillType(CREDIT_CARD_NUMBER),
+                                               ASCIIToUTF16("12345678"));
+
+  // There should be no suggestions.
+  ASSERT_EQ(0U, suggestions.size());
+}
+
 // Test that local credit cards are ordered as expected.
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_LocalCardsRanking) {
   SetupReferenceLocalCreditCards();
@@ -3471,7 +3498,7 @@ TEST_F(PersonalDataManagerTest,
 // Tests that only the full server card is kept when deduping with a local
 // duplicate of it.
 TEST_F(PersonalDataManagerTest,
-       DedupeCreditCardSuggestions_FullServerShadowsLocal) {
+       DedupeCreditCardToSuggest_FullServerShadowsLocal) {
   std::list<const CreditCard*> credit_cards;
 
   // Create 3 different local credit cards.
@@ -3492,7 +3519,7 @@ TEST_F(PersonalDataManagerTest,
                                 base::TimeDelta::FromDays(15));
   credit_cards.push_back(&full_server_card);
 
-  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   ASSERT_EQ(1U, credit_cards.size());
 
   const CreditCard* deduped_card(credit_cards.front());
@@ -3501,8 +3528,7 @@ TEST_F(PersonalDataManagerTest,
 
 // Tests that only the local card is kept when deduping with a masked server
 // duplicate of it.
-TEST_F(PersonalDataManagerTest,
-       DedupeCreditCardSuggestions_LocalShadowsMasked) {
+TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
   std::list<const CreditCard*> credit_cards;
 
   CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
@@ -3522,7 +3548,7 @@ TEST_F(PersonalDataManagerTest,
   masked_card.SetTypeForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
-  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   ASSERT_EQ(1U, credit_cards.size());
 
   const CreditCard* deduped_card(credit_cards.front());
@@ -3530,8 +3556,7 @@ TEST_F(PersonalDataManagerTest,
 }
 
 // Tests that identical full server and masked credit cards are not deduped.
-TEST_F(PersonalDataManagerTest,
-       DedupeCreditCardSuggestions_FullServerAndMasked) {
+TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   std::list<const CreditCard*> credit_cards;
 
   // Create a full server card that is a duplicate of one of the local cards.
@@ -3552,13 +3577,13 @@ TEST_F(PersonalDataManagerTest,
   masked_card.SetTypeForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
-  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   EXPECT_EQ(2U, credit_cards.size());
 }
 
 // Tests that slightly different local, full server, and masked credit cards are
 // not deduped.
-TEST_F(PersonalDataManagerTest, DedupeCreditCardSuggestions_DifferentCards) {
+TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   std::list<const CreditCard*> credit_cards;
 
   CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
@@ -3586,7 +3611,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardSuggestions_DifferentCards) {
   credit_card5.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   credit_cards.push_back(&credit_card5);
 
-  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   EXPECT_EQ(3U, credit_cards.size());
 }
 
