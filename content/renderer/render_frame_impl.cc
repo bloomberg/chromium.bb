@@ -108,7 +108,6 @@
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/notification_permission_dispatcher.h"
-#include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
 #include "content/renderer/push_messaging/push_messaging_dispatcher.h"
@@ -187,7 +186,6 @@
 #include "url/url_util.h"
 
 #if defined(ENABLE_PLUGINS)
-#include "content/renderer/npapi/webplugin_impl.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
@@ -2263,11 +2261,6 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   }
 #if defined(OS_CHROMEOS)
   LOG(WARNING) << "Pepper module/plugin creation failed.";
-#else
-  if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
-    // TODO(jam): change to take RenderFrame.
-    return new WebPluginImpl(frame, params, info.path, render_view_, this);
-  }
 #endif
 #endif
   return NULL;

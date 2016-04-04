@@ -198,7 +198,6 @@
 #endif
 
 #if defined(ENABLE_PLUGINS)
-#include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #endif
@@ -1189,32 +1188,7 @@ void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   UpdateSelectionBounds();
 }
 
-void RenderViewImpl::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
-  plugin_delegates_.insert(delegate);
-  // If the renderer is visible, set initial visibility and focus state.
-  if (!is_hidden()) {
 #if defined(OS_MACOSX)
-    delegate->SetContainerVisibility(true);
-    if (webview() && webview()->isActive())
-      delegate->SetWindowFocus(true);
-#endif
-  }
-  // Plugins start assuming the content has focus (so that they work in
-  // environments where RenderView isn't hosting them), so we always have to
-  // set the initial state. See webplugin_delegate_impl.h for details.
-  delegate->SetContentAreaFocus(has_focus());
-}
-
-void RenderViewImpl::UnregisterPluginDelegate(
-    WebPluginDelegateProxy* delegate) {
-  plugin_delegates_.erase(delegate);
-}
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
-  Send(new ViewHostMsg_PluginFocusChanged(GetRoutingID(), focused, plugin_id));
-}
-
 void RenderViewImpl::OnGetRenderedText() {
   if (!webview())
     return;
@@ -1237,14 +1211,6 @@ void RenderViewImpl::OnGetRenderedText() {
           .utf8();
 
   Send(new ViewMsg_GetRenderedTextCompleted(GetRoutingID(), text));
-}
-
-void RenderViewImpl::StartPluginIme() {
-  IPC::Message* msg = new ViewHostMsg_StartPluginIme(GetRoutingID());
-  // This message can be sent during event-handling, and needs to be delivered
-  // within that context.
-  msg->set_unblock(true);
-  Send(msg);
 }
 #endif  // defined(OS_MACOSX)
 
@@ -1390,11 +1356,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedText,
                         OnGetRenderedText)
-    IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
-                        OnPluginImeCompositionCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
-    IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
 #endif
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
@@ -2738,51 +2700,7 @@ void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
 void RenderViewImpl::OnSetActive(bool active) {
   if (webview())
     webview()->setIsActive(active);
-
-#if defined(ENABLE_PLUGINS) && defined(OS_MACOSX)
-  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-  for (plugin_it = plugin_delegates_.begin();
-       plugin_it != plugin_delegates_.end(); ++plugin_it) {
-    (*plugin_it)->SetWindowFocus(active);
-  }
-#endif
 }
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::OnSetWindowVisibility(bool visible) {
-#if defined(ENABLE_PLUGINS)
-  // Inform plugins that their container has changed visibility.
-  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-  for (plugin_it = plugin_delegates_.begin();
-       plugin_it != plugin_delegates_.end(); ++plugin_it) {
-    (*plugin_it)->SetContainerVisibility(visible);
-  }
-#endif
-}
-
-void RenderViewImpl::OnWindowFrameChanged(const gfx::Rect& window_frame,
-                                          const gfx::Rect& view_frame) {
-#if defined(ENABLE_PLUGINS)
-  // Inform plugins that their window's frame has changed.
-  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-  for (plugin_it = plugin_delegates_.begin();
-       plugin_it != plugin_delegates_.end(); ++plugin_it) {
-    (*plugin_it)->WindowFrameChanged(window_frame, view_frame);
-  }
-#endif
-}
-
-void RenderViewImpl::OnPluginImeCompositionCompleted(const base::string16& text,
-                                                     int plugin_id) {
-  // WebPluginDelegateProxy is responsible for figuring out if this event
-  // applies to it or not, so inform all the delegates.
-  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-  for (plugin_it = plugin_delegates_.begin();
-       plugin_it != plugin_delegates_.end(); ++plugin_it) {
-    (*plugin_it)->ImeCompositionCompleted(text, plugin_id);
-  }
-}
-#endif  // OS_MACOSX
 
 void RenderViewImpl::CloseForFrame() {
   DCHECK(frame_widget_);
@@ -2816,15 +2734,6 @@ void RenderViewImpl::OnWasHidden() {
   for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
        i != active_pepper_instances_.end(); ++i)
     (*i)->PageVisibilityChanged(false);
-
-#if defined(OS_MACOSX)
-  // Inform NPAPI plugins that their container is no longer visible.
-  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-  for (plugin_it = plugin_delegates_.begin();
-       plugin_it != plugin_delegates_.end(); ++plugin_it) {
-    (*plugin_it)->SetContainerVisibility(false);
-  }
-#endif  // OS_MACOSX
 #endif  // ENABLE_PLUGINS
 }
 
@@ -2844,15 +2753,6 @@ void RenderViewImpl::OnWasShown(bool needs_repainting,
   for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
        i != active_pepper_instances_.end(); ++i)
     (*i)->PageVisibilityChanged(true);
-
-#if defined(OS_MACOSX)
-  // Inform NPAPI plugins that their container is now visible.
-  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-  for (plugin_it = plugin_delegates_.begin();
-       plugin_it != plugin_delegates_.end(); ++plugin_it) {
-    (*plugin_it)->SetContainerVisibility(true);
-  }
-#endif  // OS_MACOSX
 #endif  // ENABLE_PLUGINS
 }
 
@@ -2876,20 +2776,6 @@ void RenderViewImpl::SetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
 
 #if defined(ENABLE_PLUGINS)
-  if (webview() && webview()->isActive()) {
-    // Notify all NPAPI plugins.
-    std::set<WebPluginDelegateProxy*>::iterator plugin_it;
-    for (plugin_it = plugin_delegates_.begin();
-         plugin_it != plugin_delegates_.end(); ++plugin_it) {
-#if defined(OS_MACOSX)
-      // RenderWidget's call to setFocus can cause the underlying webview's
-      // activation state to change just like a call to setIsActive.
-      if (enable)
-        (*plugin_it)->SetWindowFocus(true);
-#endif
-      (*plugin_it)->SetContentAreaFocus(enable);
-    }
-  }
   // Notify all Pepper plugins.
   for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
        i != active_pepper_instances_.end(); ++i)

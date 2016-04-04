@@ -190,10 +190,6 @@
 #include "content/child/npapi/np_channel_base.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
-#include "content/renderer/npapi/plugin_channel_host.h"
-#endif
-
 #if defined(ENABLE_WEBRTC)
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
@@ -948,12 +944,6 @@ void RenderThreadImpl::Shutdown() {
   if (gpu_channel_.get())
     gpu_channel_->DestroyChannel();
 
-  // TODO(port)
-#if defined(OS_WIN)
-  // Clean up plugin channels before this thread goes away.
-  NPChannelBase::CleanupChannels();
-#endif
-
   ChildThreadImpl::Shutdown();
 
   // Shut down the message loop and the renderer scheduler before shutting down
@@ -1004,36 +994,16 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
   bool notify_webkit_of_modal_loop = true;  // default value
   std::swap(notify_webkit_of_modal_loop, notify_webkit_of_modal_loop_);
 
-#if defined(ENABLE_PLUGINS)
-  int render_view_id = MSG_ROUTING_NONE;
-#endif
-
   if (pumping_events) {
     renderer_scheduler_->SuspendTimerQueue();
 
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
-#if defined(ENABLE_PLUGINS)
-    RenderViewImpl* render_view =
-        RenderViewImpl::FromRoutingID(msg->routing_id());
-    if (render_view) {
-      render_view_id = msg->routing_id();
-      PluginChannelHost::Broadcast(
-          new PluginMsg_SignalModalDialogEvent(render_view_id));
-    }
-#endif
   }
 
   bool rv = ChildThreadImpl::Send(msg);
 
   if (pumping_events) {
-#if defined(ENABLE_PLUGINS)
-    if (render_view_id != MSG_ROUTING_NONE) {
-      PluginChannelHost::Broadcast(
-          new PluginMsg_ResetModalDialogEvent(render_view_id));
-    }
-#endif
-
     if (notify_webkit_of_modal_loop)
       WebView::didExitModalLoop();
 

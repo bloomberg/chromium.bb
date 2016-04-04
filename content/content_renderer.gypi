@@ -496,12 +496,6 @@
     ],
     # Put WebRTC-related sources in the plugin+WebRTC section below.
     'private_renderer_plugin_sources': [
-      'renderer/npapi/plugin_channel_host.cc',
-      'renderer/npapi/plugin_channel_host.h',
-      'renderer/npapi/webplugin_delegate_proxy.cc',
-      'renderer/npapi/webplugin_delegate_proxy.h',
-      'renderer/npapi/webplugin_impl.cc',
-      'renderer/npapi/webplugin_impl.h',
       'renderer/pepper/audio_helper.cc',
       'renderer/pepper/audio_helper.h',
       'renderer/pepper/content_decryptor_delegate.cc',

@@ -258,14 +258,6 @@ class CONTENT_EXPORT RenderViewImpl
     pepper_last_mouse_event_target_ = plugin;
   }
 
-#if defined(OS_MACOSX)
-  // Informs the render view that the given plugin has gained or lost focus.
-  void PluginFocusChanged(bool focused, int plugin_id);
-
-  // Starts plugin IME.
-  void StartPluginIme();
-#endif
-
   // Indicates that the given instance has been created.
   void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
 
@@ -276,9 +268,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Notification that the given plugin is focused or unfocused.
   void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
-
-  void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
-  void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
 #endif  // ENABLE_PLUGINS
 
   void TransferActiveWheelFlingAnimation(
@@ -684,11 +673,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnExtractSmartClipData(const gfx::Rect& rect);
 #elif defined(OS_MACOSX)
   void OnGetRenderedText();
-  void OnPluginImeCompositionCompleted(const base::string16& text,
-                                       int plugin_id);
-  void OnSetWindowVisibility(bool visible);
-  void OnWindowFrameChanged(const gfx::Rect& window_frame,
-                            const gfx::Rect& view_frame);
 #endif
 
   // Page message handlers -----------------------------------------------------
@@ -933,12 +917,6 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
 
   // Plugins -------------------------------------------------------------------
-
-  // All the currently active plugin delegates for this RenderView; kept so
-  // that we can enumerate them to send updates about things like window
-  // location or tab focus and visibily. These are non-owning references.
-  std::set<WebPluginDelegateProxy*> plugin_delegates_;
-
 #if defined(ENABLE_PLUGINS)
   typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
   PepperPluginSet active_pepper_instances_;
