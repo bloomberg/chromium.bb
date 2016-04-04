@@ -56,7 +56,7 @@ void SVGCursorElement::addClient(SVGElement* element)
 #if !ENABLE(OILPAN)
 void SVGCursorElement::removeClient(SVGElement* element)
 {
-    HashSet<RawPtr<SVGElement>>::iterator it = m_clients.find(element);
+    HashSet<SVGElement*>::iterator it = m_clients.find(element);
     if (it != m_clients.end()) {
         m_clients.remove(it);
         element->cursorElementRemoved();

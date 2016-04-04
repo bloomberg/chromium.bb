@@ -33,24 +33,24 @@ class SVGRect : public SVGPropertyHelper<SVGRect> {
 public:
     typedef SVGRectTearOff TearOffType;
 
-    static RawPtr<SVGRect> create()
+    static SVGRect* create()
     {
         return new SVGRect();
     }
 
-    static RawPtr<SVGRect> createInvalid()
+    static SVGRect* createInvalid()
     {
-        RawPtr<SVGRect> rect = new SVGRect();
+        SVGRect* rect = new SVGRect();
         rect->setInvalid();
-        return rect.release();
+        return rect;
     }
 
-    static RawPtr<SVGRect> create(const FloatRect& rect)
+    static SVGRect* create(const FloatRect& rect)
     {
         return new SVGRect(rect);
     }
 
-    RawPtr<SVGRect> clone() const;
+    SVGRect* clone() const;
 
     const FloatRect& value() const { return m_value; }
     void setValue(const FloatRect& v) { m_value = v; }
@@ -67,9 +67,9 @@ public:
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     bool isValid() const { return m_isValid; }
     void setInvalid();

@@ -39,7 +39,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& doc
 {
 }
 
-RawPtr<SVGAnimateElement> SVGAnimateElement::create(Document& document)
+SVGAnimateElement* SVGAnimateElement::create(Document& document)
 {
     return new SVGAnimateElement(SVGNames::animateTag, document);
 }

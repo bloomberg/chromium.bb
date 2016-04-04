@@ -38,7 +38,7 @@ class SVGAnimatedTypeAnimator;
 class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGAnimateElement> create(Document&);
+    static SVGAnimateElement* create(Document&);
     ~SVGAnimateElement() override;
 
     DECLARE_VIRTUAL_TRACE();

@@ -271,10 +271,10 @@ TEST(
 // SVG animation attributes.
 TEST(UnsafeSVGAttributeSanitizationTest, stringsShouldNotSupportAddition)
 {
-    RawPtr<Document> document = Document::create();
-    RawPtr<SVGElement> target = SVGAElement::create(*document);
-    RawPtr<SVGAnimateElement> element = SVGAnimateElement::create(*document);
-    element->setTargetElement(target.get());
+    Document* document = Document::create();
+    SVGElement* target = SVGAElement::create(*document);
+    SVGAnimateElement* element = SVGAnimateElement::create(*document);
+    element->setTargetElement(target);
     element->setAttributeName(XLinkNames::hrefAttr);
 
     // Sanity check that xlink:href was identified as a "string" attribute
@@ -300,8 +300,8 @@ TEST(
     attributes.append(Attribute(SVGNames::fromAttr, "/home"));
     attributes.append(Attribute(SVGNames::toAttr, "javascript:own3d()"));
 
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGAnimateElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGAnimateElement::create(*document);
     element->stripScriptingAttributes(attributes);
 
     EXPECT_EQ(3ul, attributes.size()) <<
@@ -322,8 +322,8 @@ TEST(
     isJavaScriptURLAttribute_hrefContainingJavascriptURL)
 {
     Attribute attribute(SVGNames::hrefAttr, "javascript:alert()");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGAElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGAElement::create(*document);
     EXPECT_TRUE(
         element->isJavaScriptURLAttribute(attribute)) <<
         "The 'a' element should identify an 'href' attribute with a "
@@ -335,8 +335,8 @@ TEST(
     isJavaScriptURLAttribute_xlinkHrefContainingJavascriptURL)
 {
     Attribute attribute(XLinkNames::hrefAttr, "javascript:alert()");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGAElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGAElement::create(*document);
     EXPECT_TRUE(
         element->isJavaScriptURLAttribute(attribute)) <<
         "The 'a' element should identify an 'xlink:href' attribute with a "
@@ -350,8 +350,8 @@ TEST(
     QualifiedName hrefAlternatePrefix(
         "foo", "href", XLinkNames::xlinkNamespaceURI);
     Attribute evilAttribute(hrefAlternatePrefix, "javascript:alert()");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGAElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGAElement::create(*document);
     EXPECT_TRUE(element->isJavaScriptURLAttribute(evilAttribute)) <<
         "The XLink 'href' attribute with a JavaScript URL value should be "
         "identified as a JavaScript URL attribute, even if the attribute "
@@ -363,8 +363,8 @@ TEST(
     isSVGAnimationAttributeSettingJavaScriptURL_fromContainingJavaScriptURL)
 {
     Attribute evilAttribute(SVGNames::fromAttr, "javascript:alert()");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGAnimateElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGAnimateElement::create(*document);
     EXPECT_TRUE(
         element->isSVGAnimationAttributeSettingJavaScriptURL(evilAttribute)) <<
         "The animate element should identify a 'from' attribute with a "
@@ -376,8 +376,8 @@ TEST(
     isSVGAnimationAttributeSettingJavaScriptURL_toContainingJavaScripURL)
 {
     Attribute evilAttribute(SVGNames::toAttr, "javascript:window.close()");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGSetElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGSetElement::create(*document);
     EXPECT_TRUE(
         element->isSVGAnimationAttributeSettingJavaScriptURL(evilAttribute)) <<
         "The set element should identify a 'to' attribute with a JavaScript "
@@ -389,8 +389,8 @@ TEST(
     isSVGAnimationAttributeSettingJavaScriptURL_valuesContainingJavaScriptURL)
 {
     Attribute evilAttribute(SVGNames::valuesAttr, "hi!; javascript:confirm()");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGAnimateElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGAnimateElement::create(*document);
     element = SVGAnimateElement::create(*document);
     EXPECT_TRUE(
         element->isSVGAnimationAttributeSettingJavaScriptURL(evilAttribute)) <<
@@ -403,8 +403,8 @@ TEST(
     isSVGAnimationAttributeSettingJavaScriptURL_innocuousAnimationAttribute)
 {
     Attribute fineAttribute(SVGNames::fromAttr, "hello, world!");
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> element = SVGSetElement::create(*document);
+    Document* document = Document::create();
+    Element* element = SVGSetElement::create(*document);
     EXPECT_FALSE(
         element->isSVGAnimationAttributeSettingJavaScriptURL(fineAttribute)) <<
         "The animate element should not identify a 'from' attribute with an "

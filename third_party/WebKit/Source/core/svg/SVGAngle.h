@@ -43,16 +43,16 @@ template<> unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>();
 
 class SVGMarkerOrientEnumeration : public SVGEnumeration<SVGMarkerOrientType> {
 public:
-    static RawPtr<SVGMarkerOrientEnumeration> create(SVGAngle* angle)
+    static SVGMarkerOrientEnumeration* create(SVGAngle* angle)
     {
         return new SVGMarkerOrientEnumeration(angle);
     }
 
     ~SVGMarkerOrientEnumeration() override;
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, RawPtr<SVGPropertyBase>, RawPtr<SVGPropertyBase>, RawPtr<SVGPropertyBase>, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase*, SVGElement*) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -77,7 +77,7 @@ public:
         SVG_ANGLETYPE_TURN = 5
     };
 
-    static RawPtr<SVGAngle> create()
+    static SVGAngle* create()
     {
         return new SVGAngle();
     }
@@ -101,14 +101,14 @@ public:
 
     // SVGPropertyBase:
 
-    RawPtr<SVGAngle> clone() const;
+    SVGAngle* clone() const;
 
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedAngle; }
 

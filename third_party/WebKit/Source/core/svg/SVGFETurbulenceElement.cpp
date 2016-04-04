@@ -108,7 +108,7 @@ void SVGFETurbulenceElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
+FilterEffect* SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
 {
     return FETurbulence::create(filter,
         m_type->currentValue()->enumValue(),

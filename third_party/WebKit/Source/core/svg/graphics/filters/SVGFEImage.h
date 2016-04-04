@@ -35,8 +35,8 @@ class LayoutObject;
 
 class FEImage final : public FilterEffect {
 public:
-    static RawPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, RawPtr<SVGPreserveAspectRatio>);
-    static RawPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, RawPtr<SVGPreserveAspectRatio>);
+    static FEImage* createWithImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
+    static FEImage* createWithIRIReference(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
 
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
@@ -53,8 +53,8 @@ public:
 
 private:
     ~FEImage() override {}
-    FEImage(Filter*, PassRefPtr<Image>, RawPtr<SVGPreserveAspectRatio>);
-    FEImage(Filter*, TreeScope&, const String&, RawPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
+    FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
     LayoutObject* referencedLayoutObject() const;
 
     PassRefPtr<SkImageFilter> createImageFilterForLayoutObject(const LayoutObject&);

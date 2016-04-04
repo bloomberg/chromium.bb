@@ -41,7 +41,7 @@ public:
         PropertyMapPolicySkip,
     };
 
-    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, RawPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
+    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, SVGPreserveAspectRatio*, float viewWidth, float viewHeight);
 
     static bool isKnownAttribute(const QualifiedName&);
 

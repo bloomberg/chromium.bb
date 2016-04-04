@@ -61,7 +61,7 @@ public:
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
     void setOrientToAuto();
-    void setOrientToAngle(RawPtr<SVGAngleTearOff>);
+    void setOrientToAngle(SVGAngleTearOff*);
 
     SVGAnimatedLength* refX() const { return m_refX.get(); }
     SVGAnimatedLength* refY() const { return m_refY.get(); }

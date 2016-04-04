@@ -68,13 +68,13 @@ bool SVGStaticStringList::isAnimating() const
     return false;
 }
 
-RawPtr<SVGPropertyBase> SVGStaticStringList::createAnimatedValue()
+SVGPropertyBase* SVGStaticStringList::createAnimatedValue()
 {
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-void SVGStaticStringList::setAnimatedValue(RawPtr<SVGPropertyBase>)
+void SVGStaticStringList::setAnimatedValue(SVGPropertyBase*)
 {
     ASSERT_NOT_REACHED();
 }

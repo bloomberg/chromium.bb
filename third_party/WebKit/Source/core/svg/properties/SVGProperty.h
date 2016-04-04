@@ -61,14 +61,14 @@ public:
 
     // FIXME: remove this in WebAnimations transition.
     // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
-    virtual RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const = 0;
+    virtual SVGPropertyBase* cloneForAnimation(const String&) const = 0;
 
     virtual String valueAsString() const = 0;
 
     // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
-    virtual void add(RawPtr<SVGPropertyBase>, SVGElement*) = 0;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
-    virtual float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) = 0;
+    virtual void add(SVGPropertyBase*, SVGElement*) = 0;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) = 0;
+    virtual float calculateDistance(SVGPropertyBase* to, SVGElement*) = 0;
 
     AnimatedPropertyType type() const
     {
@@ -108,13 +108,7 @@ private:
 };
 
 #define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)\
-    DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value, value->type() == thisType::classType(), value.type() == thisType::classType());\
-    inline RawPtr<thisType> to##thisType(RawPtr<SVGPropertyBase> passBase)\
-    {\
-        RawPtr<SVGPropertyBase> base = passBase;\
-        ASSERT(base->type() == thisType::classType());\
-        return static_pointer_cast<thisType>(base.release());\
-    }
+    DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value, value->type() == thisType::classType(), value.type() == thisType::classType());
 
 } // namespace blink
 

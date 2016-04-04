@@ -36,7 +36,7 @@ class SVGStyleElement final : public SVGElement
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 public:
-    static RawPtr<SVGStyleElement> create(Document&, bool createdByParser);
+    static SVGStyleElement* create(Document&, bool createdByParser);
     ~SVGStyleElement() override;
 
     using StyleElement::sheet;

@@ -52,7 +52,7 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     Member<SVGAnimatedNumber> m_specularConstant;
     Member<SVGAnimatedNumber> m_specularExponent;

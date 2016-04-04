@@ -87,7 +87,7 @@ public:
 
     void ensureAttributeAnimValUpdated();
 
-    void setWebAnimatedAttribute(const QualifiedName& attribute, RawPtr<SVGPropertyBase>);
+    void setWebAnimatedAttribute(const QualifiedName& attribute, SVGPropertyBase*);
     void clearWebAnimatedAttributes();
 
     SVGSVGElement* ownerSVGElement() const;
@@ -151,7 +151,7 @@ public:
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
-    void addToPropertyMap(RawPtr<SVGAnimatedPropertyBase>);
+    void addToPropertyMap(SVGAnimatedPropertyBase*);
 
     SVGAnimatedString* className() { return m_className.get(); }
 
@@ -283,7 +283,7 @@ inline bool Node::hasTagName(const SVGQualifiedName& name) const
     inline bool is##thisType(const SVGElement* element) { return element && is##thisType(*element); } \
     inline bool is##thisType(const Node& node) { return node.isSVGElement() ? is##thisType(toSVGElement(node)) : false; } \
     inline bool is##thisType(const Node* node) { return node && is##thisType(*node); } \
-    template<typename T> inline bool is##thisType(const RawPtr<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const T* node) { return is##thisType(node); } \
     template<typename T> inline bool is##thisType(const Member<T>& node) { return is##thisType(node.get()); } \
     template <> inline bool isElementOfType<const thisType>(const SVGElement& element) { return is##thisType(element); } \
     DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)

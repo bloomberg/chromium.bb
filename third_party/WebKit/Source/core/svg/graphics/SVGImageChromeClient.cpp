@@ -44,7 +44,7 @@ SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
 {
 }
 
-RawPtr<SVGImageChromeClient> SVGImageChromeClient::create(SVGImage* image)
+SVGImageChromeClient* SVGImageChromeClient::create(SVGImage* image)
 {
     return new SVGImageChromeClient(image);
 }

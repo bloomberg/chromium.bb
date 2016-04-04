@@ -131,7 +131,7 @@ public:
         return m_target.get();
     }
 
-    void setTarget(RawPtr<Property> target)
+    void setTarget(Property* target)
     {
         m_target = target;
     }
@@ -148,7 +148,7 @@ public:
     }
 
 protected:
-    SVGPropertyTearOff(RawPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    SVGPropertyTearOff(Property* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGPropertyTearOffBase(contextElement, propertyIsAnimVal, attributeName)
         , m_target(target)
     {

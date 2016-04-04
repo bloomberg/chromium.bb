@@ -47,7 +47,7 @@ class SVGSVGElement;
 
 class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer>  {
 public:
-    static RawPtr<SMILTimeContainer> create(SVGSVGElement& owner) { return new SMILTimeContainer(owner); }
+    static SMILTimeContainer* create(SVGSVGElement& owner) { return new SMILTimeContainer(owner); }
     ~SMILTimeContainer();
 
     void schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);

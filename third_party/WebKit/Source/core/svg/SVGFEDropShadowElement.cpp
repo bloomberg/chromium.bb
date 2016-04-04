@@ -73,7 +73,7 @@ void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     LayoutObject* layoutObject = this->layoutObject();
     if (!layoutObject)
@@ -91,9 +91,9 @@ RawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuild
     // Clamp std.dev. to non-negative. (See SVGFEGaussianBlurElement::build)
     float stdDevX = std::max(0.0f, stdDeviationX()->currentValue()->value());
     float stdDevY = std::max(0.0f, stdDeviationY()->currentValue()->value());
-    RawPtr<FilterEffect> effect = FEDropShadow::create(filter, stdDevX, stdDevY, m_dx->currentValue()->value(), m_dy->currentValue()->value(), color, opacity);
+    FilterEffect* effect = FEDropShadow::create(filter, stdDevX, stdDevY, m_dx->currentValue()->value(), m_dy->currentValue()->value(), color, opacity);
     effect->inputEffects().append(input1);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

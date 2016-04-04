@@ -52,12 +52,12 @@ SVGParsingError SVGBoolean::setValueAsString(const String& value)
     return SVGParseStatus::ExpectedBoolean;
 }
 
-void SVGBoolean::add(RawPtr<SVGPropertyBase>, SVGElement*)
+void SVGBoolean::add(SVGPropertyBase*, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase>, SVGElement*)
+void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase*, SVGElement*)
 {
     ASSERT(animationElement);
     bool fromBoolean = animationElement->getAnimationMode() == ToAnimation ? m_value : toSVGBoolean(from)->value();
@@ -66,7 +66,7 @@ void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, f
     animationElement->animateDiscreteType<bool>(percentage, fromBoolean, toBoolean, m_value);
 }
 
-float SVGBoolean::calculateDistance(RawPtr<SVGPropertyBase>, SVGElement*)
+float SVGBoolean::calculateDistance(SVGPropertyBase*, SVGElement*)
 {
     // No paced animations for boolean.
     return -1;

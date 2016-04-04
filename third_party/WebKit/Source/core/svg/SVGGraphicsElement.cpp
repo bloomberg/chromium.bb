@@ -100,12 +100,12 @@ AffineTransform SVGGraphicsElement::getScreenCTM(StyleUpdateStrategy styleUpdate
     return computeCTM(ScreenScope, styleUpdateStrategy);
 }
 
-RawPtr<SVGMatrixTearOff> SVGGraphicsElement::getCTMFromJavascript()
+SVGMatrixTearOff* SVGGraphicsElement::getCTMFromJavascript()
 {
     return SVGMatrixTearOff::create(getCTM());
 }
 
-RawPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJavascript()
+SVGMatrixTearOff* SVGGraphicsElement::getScreenCTMFromJavascript()
 {
     return SVGMatrixTearOff::create(getScreenCTM());
 }
@@ -222,7 +222,7 @@ FloatRect SVGGraphicsElement::getBBox()
     return layoutObject()->objectBoundingBox();
 }
 
-RawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()
+SVGRectTearOff* SVGGraphicsElement::getBBoxFromJavascript()
 {
     return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
 }

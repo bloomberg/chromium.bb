@@ -41,7 +41,7 @@ class SVGFilterElement;
 // Used during invalidations from changes to the primitives (graph nodes).
 class SVGFilterGraphNodeMap final : public GarbageCollectedFinalized<SVGFilterGraphNodeMap> {
 public:
-    static RawPtr<SVGFilterGraphNodeMap> create()
+    static SVGFilterGraphNodeMap* create()
     {
         return new SVGFilterGraphNodeMap;
     }
@@ -49,7 +49,7 @@ public:
     typedef HeapHashSet<Member<FilterEffect>> FilterEffectSet;
 
     void addBuiltinEffect(FilterEffect*);
-    void addPrimitive(LayoutObject*, RawPtr<FilterEffect>);
+    void addPrimitive(LayoutObject*, FilterEffect*);
 
     inline FilterEffectSet& effectReferences(FilterEffect* effect)
     {
@@ -78,8 +78,8 @@ class SVGFilterBuilder {
     STACK_ALLOCATED();
 public:
     SVGFilterBuilder(
-        RawPtr<FilterEffect> sourceGraphic,
-        RawPtr<SVGFilterGraphNodeMap> = nullptr,
+        FilterEffect* sourceGraphic,
+        SVGFilterGraphNodeMap* = nullptr,
         const SkPaint* fillPaint = nullptr,
         const SkPaint* strokePaint = nullptr);
 
@@ -89,7 +89,7 @@ public:
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }
 
 private:
-    void add(const AtomicString& id, RawPtr<FilterEffect>);
+    void add(const AtomicString& id, FilterEffect*);
     void addBuiltinEffects();
 
     typedef HeapHashMap<AtomicString, Member<FilterEffect>> NamedFilterEffectMap;

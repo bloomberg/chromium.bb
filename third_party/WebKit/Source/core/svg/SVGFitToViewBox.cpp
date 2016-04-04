@@ -33,7 +33,7 @@ namespace blink {
 
 class SVGAnimatedViewBoxRect : public SVGAnimatedRect {
 public:
-    static RawPtr<SVGAnimatedRect> create(SVGElement* contextElement)
+    static SVGAnimatedRect* create(SVGElement* contextElement)
     {
         return new SVGAnimatedViewBoxRect(contextElement);
     }
@@ -75,7 +75,7 @@ DEFINE_TRACE(SVGFitToViewBox)
     visitor->trace(m_preserveAspectRatio);
 }
 
-AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, RawPtr<SVGPreserveAspectRatio> preserveAspectRatio, float viewWidth, float viewHeight)
+AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, SVGPreserveAspectRatio* preserveAspectRatio, float viewWidth, float viewHeight)
 {
     if (!viewBoxRect.width() || !viewBoxRect.height() || !viewWidth || !viewHeight)
         return AffineTransform();

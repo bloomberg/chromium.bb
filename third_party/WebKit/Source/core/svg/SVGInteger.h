@@ -41,12 +41,12 @@ public:
     typedef void TearOffType;
     typedef int PrimitiveType;
 
-    static RawPtr<SVGInteger> create(int value = 0)
+    static SVGInteger* create(int value = 0)
     {
         return new SVGInteger(value);
     }
 
-    virtual RawPtr<SVGInteger> clone() const;
+    virtual SVGInteger* clone() const;
 
     int value() const { return m_value; }
     void setValue(int value) { m_value = value; }
@@ -54,9 +54,9 @@ public:
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedInteger; }
 

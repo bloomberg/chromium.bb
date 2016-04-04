@@ -32,7 +32,7 @@ namespace blink {
 
 class SVGAnimatedPathLength final : public SVGAnimatedNumber {
 public:
-    static RawPtr<SVGAnimatedPathLength> create(SVGPathElement* contextElement)
+    static SVGAnimatedPathLength* create(SVGPathElement* contextElement)
     {
         return new SVGAnimatedPathLength(contextElement);
     }
@@ -107,7 +107,7 @@ float SVGPathElement::getTotalLength()
     return SVGPathQuery(pathByteStream()).getTotalLength();
 }
 
-RawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
+SVGPointTearOff* SVGPathElement::getPointAtLength(float length)
 {
     document().updateLayoutIgnorePendingStylesheets();
     FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);

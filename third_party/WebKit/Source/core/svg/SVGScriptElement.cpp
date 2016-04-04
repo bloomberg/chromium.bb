@@ -36,7 +36,7 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
 {
 }
 
-RawPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)
+SVGScriptElement* SVGScriptElement::create(Document& document, bool insertedByParser)
 {
     return new SVGScriptElement(document, insertedByParser, false);
 }

@@ -42,17 +42,17 @@ class SVGAnimationElement;
 // FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
 public:
-    static RawPtr<SVGColorProperty> create(const String& colorString)
+    static SVGColorProperty* create(const String& colorString)
     {
         return new SVGColorProperty(colorString);
     }
 
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
     String valueAsString() const override;
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedColor; }
 

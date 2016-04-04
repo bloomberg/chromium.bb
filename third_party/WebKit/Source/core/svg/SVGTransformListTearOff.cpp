@@ -36,7 +36,7 @@
 
 namespace blink {
 
-SVGTransformListTearOff::SVGTransformListTearOff(RawPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+SVGTransformListTearOff::SVGTransformListTearOff(SVGTransformList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     : SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }
@@ -45,12 +45,12 @@ SVGTransformListTearOff::~SVGTransformListTearOff()
 {
 }
 
-RawPtr<SVGTransformTearOff> SVGTransformListTearOff::createSVGTransformFromMatrix(RawPtr<SVGMatrixTearOff> matrix) const
+SVGTransformTearOff* SVGTransformListTearOff::createSVGTransformFromMatrix(SVGMatrixTearOff* matrix) const
 {
     return SVGSVGElement::createSVGTransformFromMatrix(matrix);
 }
 
-RawPtr<SVGTransformTearOff> SVGTransformListTearOff::consolidate(ExceptionState& exceptionState)
+SVGTransformTearOff* SVGTransformListTearOff::consolidate(ExceptionState& exceptionState)
 {
     if (isImmutable()) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");

@@ -90,7 +90,7 @@ void SVGFEMorphologyElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
@@ -104,9 +104,9 @@ RawPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuild
     // (This is handled by FEMorphology)
     float xRadius = radiusX()->currentValue()->value();
     float yRadius = radiusY()->currentValue()->value();
-    RawPtr<FilterEffect> effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
+    FilterEffect* effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
     effect->inputEffects().append(input1);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

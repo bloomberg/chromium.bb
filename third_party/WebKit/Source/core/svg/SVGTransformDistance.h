@@ -31,12 +31,12 @@ class SVGTransformDistance {
     STACK_ALLOCATED();
 public:
     SVGTransformDistance();
-    SVGTransformDistance(RawPtr<SVGTransform> fromTransform, RawPtr<SVGTransform> toTransform);
+    SVGTransformDistance(SVGTransform* fromTransform, SVGTransform* toTransform);
 
     SVGTransformDistance scaledDistance(float scaleFactor) const;
-    RawPtr<SVGTransform> addToSVGTransform(RawPtr<SVGTransform>) const;
+    SVGTransform* addToSVGTransform(SVGTransform*) const;
 
-    static RawPtr<SVGTransform> addSVGTransforms(RawPtr<SVGTransform>, RawPtr<SVGTransform>, unsigned repeatCount = 1);
+    static SVGTransform* addSVGTransforms(SVGTransform*, SVGTransform*, unsigned repeatCount = 1);
 
     float distance() const;
 

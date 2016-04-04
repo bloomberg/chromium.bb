@@ -35,16 +35,16 @@ inline SVGFEMergeElement::SVGFEMergeElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEMergeElement)
 
-RawPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    RawPtr<FilterEffect> effect = FEMerge::create(filter);
+    FilterEffect* effect = FEMerge::create(filter);
     FilterEffectVector& mergeInputs = effect->inputEffects();
     for (SVGFEMergeNodeElement* element = Traversal<SVGFEMergeNodeElement>::firstChild(*this); element; element = Traversal<SVGFEMergeNodeElement>::nextSibling(*element)) {
         FilterEffect* mergeEffect = filterBuilder->getEffectById(AtomicString(element->in1()->currentValue()->value()));
         ASSERT(mergeEffect);
         mergeInputs.append(mergeEffect);
     }
-    return effect.release();
+    return effect;
 }
 
 bool SVGFEMergeElement::taintsOrigin(bool inputsTaintOrigin) const

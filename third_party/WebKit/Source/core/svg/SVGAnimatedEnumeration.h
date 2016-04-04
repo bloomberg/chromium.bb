@@ -38,12 +38,12 @@ namespace blink {
 template<typename Enum>
 class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
 public:
-    static RawPtr<SVGAnimatedEnumeration<Enum>> create(SVGElement* contextElement, const QualifiedName& attributeName, Enum initialValue)
+    static SVGAnimatedEnumeration<Enum>* create(SVGElement* contextElement, const QualifiedName& attributeName, Enum initialValue)
     {
         return new SVGAnimatedEnumeration(contextElement, attributeName, SVGEnumeration<Enum>::create(initialValue));
     }
 
-    static RawPtr<SVGAnimatedEnumeration<Enum>> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGEnumeration<Enum>> initialValue)
+    static SVGAnimatedEnumeration<Enum>* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGEnumeration<Enum>* initialValue)
     {
         return new SVGAnimatedEnumeration(contextElement, attributeName, initialValue);
     }

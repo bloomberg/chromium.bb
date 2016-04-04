@@ -50,7 +50,7 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     Member<SVGAnimatedNumber> m_scale;
     Member<SVGAnimatedString> m_in1;

@@ -42,18 +42,18 @@ class SVGTransformListTearOff final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGTransformListTearOff> create(RawPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static SVGTransformListTearOff* create(SVGTransformList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     ~SVGTransformListTearOff() override;
 
-    RawPtr<SVGTransformTearOff> createSVGTransformFromMatrix(RawPtr<SVGMatrixTearOff>) const;
-    RawPtr<SVGTransformTearOff> consolidate(ExceptionState&);
+    SVGTransformTearOff* createSVGTransformFromMatrix(SVGMatrixTearOff*) const;
+    SVGTransformTearOff* consolidate(ExceptionState&);
 
 private:
-    SVGTransformListTearOff(RawPtr<SVGTransformList>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+    SVGTransformListTearOff(SVGTransformList*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };
 
 } // namespace blink

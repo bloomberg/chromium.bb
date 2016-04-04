@@ -40,7 +40,7 @@ class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
 public:
     ~SVGAnimatedPath() override;
 
-    static RawPtr<SVGAnimatedPath> create(SVGElement* contextElement, const QualifiedName& attributeName)
+    static SVGAnimatedPath* create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
         return new SVGAnimatedPath(contextElement, attributeName);
     }

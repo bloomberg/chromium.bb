@@ -134,18 +134,18 @@ void SVGFEBlendElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
     ASSERT(input1 && input2);
 
-    RawPtr<FilterEffect> effect = FEBlend::create(filter, toWebBlendMode(m_mode->currentValue()->enumValue()));
+    FilterEffect* effect = FEBlend::create(filter, toWebBlendMode(m_mode->currentValue()->enumValue()));
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);
     inputEffects.append(input2);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

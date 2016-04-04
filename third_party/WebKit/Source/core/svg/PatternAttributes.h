@@ -66,25 +66,25 @@ public:
     AffineTransform patternTransform() const { return m_patternTransform; }
     const SVGPatternElement* patternContentElement() const { return m_patternContentElement; }
 
-    void setX(RawPtr<SVGLength> value)
+    void setX(SVGLength* value)
     {
         m_x = value;
         m_xSet = true;
     }
 
-    void setY(RawPtr<SVGLength> value)
+    void setY(SVGLength* value)
     {
         m_y = value;
         m_ySet = true;
     }
 
-    void setWidth(RawPtr<SVGLength> value)
+    void setWidth(SVGLength* value)
     {
         m_width = value;
         m_widthSet = true;
     }
 
-    void setHeight(RawPtr<SVGLength> value)
+    void setHeight(SVGLength* value)
     {
         m_height = value;
         m_heightSet = true;
@@ -96,7 +96,7 @@ public:
         m_viewBoxSet = true;
     }
 
-    void setPreserveAspectRatio(RawPtr<SVGPreserveAspectRatio> value)
+    void setPreserveAspectRatio(SVGPreserveAspectRatio* value)
     {
         m_preserveAspectRatio = value;
         m_preserveAspectRatioSet = true;

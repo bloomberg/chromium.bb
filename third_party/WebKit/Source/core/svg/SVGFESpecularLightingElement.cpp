@@ -124,7 +124,7 @@ void SVGFESpecularLightingElement::lightElementAttributeChanged(const SVGFELight
     primitiveAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFESpecularLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -146,7 +146,7 @@ RawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* filte
         m_specularExponent->currentValue()->value(),
         lightSource.release());
     effect->inputEffects().append(input1);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

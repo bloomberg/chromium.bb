@@ -66,19 +66,19 @@ void SVGMarkerOrientEnumeration::notifyChange()
     m_angle->orientTypeChanged();
 }
 
-void SVGMarkerOrientEnumeration::add(RawPtr<SVGPropertyBase>, SVGElement*)
+void SVGMarkerOrientEnumeration::add(SVGPropertyBase*, SVGElement*)
 {
     // SVGMarkerOrientEnumeration is only animated via SVGAngle
     ASSERT_NOT_REACHED();
 }
 
-void SVGMarkerOrientEnumeration::calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGMarkerOrientEnumeration::calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement)
 {
     // SVGMarkerOrientEnumeration is only animated via SVGAngle
     ASSERT_NOT_REACHED();
 }
 
-float SVGMarkerOrientEnumeration::calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement)
+float SVGMarkerOrientEnumeration::calculateDistance(SVGPropertyBase* to, SVGElement* contextElement)
 {
     // SVGMarkerOrientEnumeration is only animated via SVGAngle
     ASSERT_NOT_REACHED();
@@ -110,7 +110,7 @@ DEFINE_TRACE(SVGAngle)
     SVGPropertyHelper<SVGAngle>::trace(visitor);
 }
 
-RawPtr<SVGAngle> SVGAngle::clone() const
+SVGAngle* SVGAngle::clone() const
 {
     return new SVGAngle(m_unitType, m_valueInSpecifiedUnits, m_orientType->enumValue());
 }
@@ -366,9 +366,9 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType)
     m_orientType->setEnumValue(SVGMarkerOrientAngle);
 }
 
-void SVGAngle::add(RawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGAngle::add(SVGPropertyBase* other, SVGElement*)
 {
-    RawPtr<SVGAngle> otherAngle = toSVGAngle(other);
+    SVGAngle* otherAngle = toSVGAngle(other);
 
     // Only respect by animations, if from and by are both specified in angles (and not eg. 'auto').
     if (orientType()->enumValue() != SVGMarkerOrientAngle || otherAngle->orientType()->enumValue() != SVGMarkerOrientAngle)
@@ -386,13 +386,13 @@ void SVGAngle::assign(const SVGAngle& other)
         m_orientType->setEnumValue(otherOrientType);
 }
 
-void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
     bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
-    RawPtr<SVGAngle> fromAngle = isToAnimation ? RawPtr<SVGAngle>(this) : toSVGAngle(from);
-    RawPtr<SVGAngle> toAngle = toSVGAngle(to);
+    SVGAngle* fromAngle = isToAnimation ? this : toSVGAngle(from);
+    SVGAngle* toAngle = toSVGAngle(to);
     SVGMarkerOrientType fromOrientType = fromAngle->orientType()->enumValue();
     SVGMarkerOrientType toOrientType = toAngle->orientType()->enumValue();
 
@@ -413,7 +413,7 @@ void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, flo
     case SVGMarkerOrientAngle:
         {
             float animatedValue = value();
-            RawPtr<SVGAngle> toAtEndOfDurationAngle = toSVGAngle(toAtEndOfDuration);
+            SVGAngle* toAtEndOfDurationAngle = toSVGAngle(toAtEndOfDuration);
 
             animationElement->animateAdditiveNumber(percentage, repeatCount, fromAngle->value(), toAngle->value(), toAtEndOfDurationAngle->value(), animatedValue);
             orientType()->setEnumValue(SVGMarkerOrientAngle);
@@ -429,7 +429,7 @@ void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, flo
     }
 }
 
-float SVGAngle::calculateDistance(RawPtr<SVGPropertyBase> other, SVGElement*)
+float SVGAngle::calculateDistance(SVGPropertyBase* other, SVGElement*)
 {
     return fabsf(value() - toSVGAngle(other)->value());
 }

@@ -61,7 +61,6 @@ void SVGTitleElement::childrenChanged(const ChildrenChange& change)
 
 void SVGTitleElement::setText(const String& value)
 {
-    RawPtr<Node> protectFromMutationEvents(this);
     ChildListMutationScope mutation(*this);
 
     {

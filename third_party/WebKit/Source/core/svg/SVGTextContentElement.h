@@ -53,11 +53,11 @@ public:
     unsigned getNumberOfChars();
     float getComputedTextLength();
     float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState&);
-    RawPtr<SVGPointTearOff> getStartPositionOfChar(unsigned charnum, ExceptionState&);
-    RawPtr<SVGPointTearOff> getEndPositionOfChar(unsigned charnum, ExceptionState&);
-    RawPtr<SVGRectTearOff> getExtentOfChar(unsigned charnum, ExceptionState&);
+    SVGPointTearOff* getStartPositionOfChar(unsigned charnum, ExceptionState&);
+    SVGPointTearOff* getEndPositionOfChar(unsigned charnum, ExceptionState&);
+    SVGRectTearOff* getExtentOfChar(unsigned charnum, ExceptionState&);
     float getRotationOfChar(unsigned charnum, ExceptionState&);
-    int getCharNumAtPosition(RawPtr<SVGPointTearOff>, ExceptionState&);
+    int getCharNumAtPosition(SVGPointTearOff*, ExceptionState&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
     static SVGTextContentElement* elementFromLineLayoutItem(const LineLayoutItem);

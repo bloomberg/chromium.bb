@@ -43,7 +43,7 @@ class SVGLengthList final : public SVGListPropertyHelper<SVGLengthList, SVGLengt
 public:
     typedef SVGLengthListTearOff TearOffType;
 
-    static RawPtr<SVGLengthList> create(SVGLengthMode mode = SVGLengthMode::Other)
+    static SVGLengthList* create(SVGLengthMode mode = SVGLengthMode::Other)
     {
         return new SVGLengthList(mode);
     }
@@ -53,14 +53,14 @@ public:
     SVGParsingError setValueAsString(const String&);
 
     // SVGPropertyBase:
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
-    RawPtr<SVGLengthList> clone() override;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
+    SVGLengthList* clone() override;
     String valueAsString() const override;
     SVGLengthMode unitMode() const { return m_mode; }
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedLengthList; }
 
@@ -69,7 +69,7 @@ private:
 
     // Create SVGLength items used to adjust the list length
     // when animation from/to lists are longer than this list.
-    RawPtr<SVGLength> createPaddingItem() const override;
+    SVGLength* createPaddingItem() const override;
 
     template <typename CharType>
     SVGParsingError parseInternal(const CharType*& ptr, const CharType* end);

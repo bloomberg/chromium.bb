@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGFEMergeElement(Document&);
 
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
     bool taintsOrigin(bool inputsTaintOrigin) const override;
 };
 

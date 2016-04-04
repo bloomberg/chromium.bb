@@ -40,7 +40,7 @@ DEFINE_TRACE(SVGAnimatedNumberOptionalNumber)
     SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::trace(visitor);
 }
 
-void SVGAnimatedNumberOptionalNumber::setAnimatedValue(RawPtr<SVGPropertyBase> value)
+void SVGAnimatedNumberOptionalNumber::setAnimatedValue(SVGPropertyBase* value)
 {
     SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::setAnimatedValue(value);
     m_firstNumber->setAnimatedValue(currentValue()->firstNumber());

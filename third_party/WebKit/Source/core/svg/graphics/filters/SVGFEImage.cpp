@@ -41,7 +41,7 @@
 
 namespace blink {
 
-FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, RawPtr<SVGPreserveAspectRatio> preserveAspectRatio)
+FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, SVGPreserveAspectRatio* preserveAspectRatio)
     : FilterEffect(filter)
     , m_image(image)
     , m_treeScope(nullptr)
@@ -50,7 +50,7 @@ FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, RawPtr<SVGPreserveAspe
     FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
 }
 
-FEImage::FEImage(Filter* filter, TreeScope& treeScope, const String& href, RawPtr<SVGPreserveAspectRatio> preserveAspectRatio)
+FEImage::FEImage(Filter* filter, TreeScope& treeScope, const String& href, SVGPreserveAspectRatio* preserveAspectRatio)
     : FilterEffect(filter)
     , m_treeScope(&treeScope)
     , m_href(href)
@@ -66,12 +66,12 @@ DEFINE_TRACE(FEImage)
     FilterEffect::trace(visitor);
 }
 
-RawPtr<FEImage> FEImage::createWithImage(Filter* filter, PassRefPtr<Image> image, RawPtr<SVGPreserveAspectRatio> preserveAspectRatio)
+FEImage* FEImage::createWithImage(Filter* filter, PassRefPtr<Image> image, SVGPreserveAspectRatio* preserveAspectRatio)
 {
     return new FEImage(filter, image, preserveAspectRatio);
 }
 
-RawPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, TreeScope& treeScope, const String& href, RawPtr<SVGPreserveAspectRatio> preserveAspectRatio)
+FEImage* FEImage::createWithIRIReference(Filter* filter, TreeScope& treeScope, const String& href, SVGPreserveAspectRatio* preserveAspectRatio)
 {
     return new FEImage(filter, treeScope, href, preserveAspectRatio);
 }

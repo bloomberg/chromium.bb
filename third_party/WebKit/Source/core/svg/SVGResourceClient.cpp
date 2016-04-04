@@ -17,10 +17,10 @@ SVGResourceClient::~SVGResourceClient()
 void SVGResourceClient::addFilterReferences(const FilterOperations& operations, const Document& document)
 {
     for (size_t i = 0; i < operations.size(); ++i) {
-        RawPtr<FilterOperation> filterOperation = operations.operations().at(i);
+        FilterOperation* filterOperation = operations.operations().at(i);
         if (filterOperation->type() != FilterOperation::REFERENCE)
             continue;
-        ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
+        ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation);
         DocumentResourceReference* documentReference = ReferenceFilterBuilder::documentResourceReference(referenceFilterOperation);
         DocumentResource* cachedSVGDocument = documentReference ? documentReference->document() : 0;
 
@@ -51,7 +51,7 @@ void SVGResourceClient::clearFilterReferences()
     }
     m_internalFilterReferences.clear();
 
-    for (RawPtr<DocumentResource> documentResource : m_externalFilterReferences)
+    for (DocumentResource* documentResource : m_externalFilterReferences)
         documentResource->removeClient(this);
     m_externalFilterReferences.clear();
 }

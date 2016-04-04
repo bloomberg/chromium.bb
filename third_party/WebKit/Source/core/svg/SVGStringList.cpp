@@ -151,19 +151,19 @@ bool SVGStringList::checkIndexBound(size_t index, ExceptionState& exceptionState
     return true;
 }
 
-void SVGStringList::add(RawPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGStringList::add(SVGPropertyBase* other, SVGElement* contextElement)
 {
     // SVGStringList is never animated.
     ASSERT_NOT_REACHED();
 }
 
-void SVGStringList::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, RawPtr<SVGPropertyBase>, RawPtr<SVGPropertyBase>, RawPtr<SVGPropertyBase>, SVGElement*)
+void SVGStringList::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGElement*)
 {
     // SVGStringList is never animated.
     ASSERT_NOT_REACHED();
 }
 
-float SVGStringList::calculateDistance(RawPtr<SVGPropertyBase>, SVGElement*)
+float SVGStringList::calculateDistance(SVGPropertyBase*, SVGElement*)
 {
     // SVGStringList is never animated.
     ASSERT_NOT_REACHED();

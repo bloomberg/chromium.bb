@@ -41,14 +41,14 @@ void SVGPreserveAspectRatio::setDefault()
     m_meetOrSlice = SVG_MEETORSLICE_MEET;
 }
 
-RawPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
+SVGPreserveAspectRatio* SVGPreserveAspectRatio::clone() const
 {
-    RawPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
+    SVGPreserveAspectRatio* preserveAspectRatio = create();
 
     preserveAspectRatio->m_align = m_align;
     preserveAspectRatio->m_meetOrSlice = m_meetOrSlice;
 
-    return preserveAspectRatio.release();
+    return preserveAspectRatio;
 }
 
 template<typename CharType>
@@ -379,25 +379,25 @@ String SVGPreserveAspectRatio::valueAsString() const
     return builder.toString();
 }
 
-void SVGPreserveAspectRatio::add(RawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGPreserveAspectRatio::add(SVGPropertyBase* other, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase>, SVGElement*)
+void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase*, SVGElement*)
 {
     ASSERT(animationElement);
 
     bool useToValue;
     animationElement->animateDiscreteType(percentage, false, true, useToValue);
 
-    RawPtr<SVGPreserveAspectRatio> preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
+    SVGPreserveAspectRatio* preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
 
     m_align = preserveAspectRatioToUse->m_align;
     m_meetOrSlice = preserveAspectRatioToUse->m_meetOrSlice;
 }
 
-float SVGPreserveAspectRatio::calculateDistance(RawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGPreserveAspectRatio::calculateDistance(SVGPropertyBase* toValue, SVGElement* contextElement)
 {
     // No paced animations for SVGPreserveAspectRatio.
     return -1;

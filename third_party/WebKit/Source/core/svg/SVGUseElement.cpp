@@ -74,12 +74,12 @@ inline SVGUseElement::SVGUseElement(Document& document)
 #endif
 }
 
-RawPtr<SVGUseElement> SVGUseElement::create(Document& document)
+SVGUseElement* SVGUseElement::create(Document& document)
 {
     // Always build a user agent #shadow-root for SVGUseElement.
-    RawPtr<SVGUseElement> use = new SVGUseElement(document);
+    SVGUseElement* use = new SVGUseElement(document);
     use->ensureUserAgentShadowRoot();
-    return use.release();
+    return use;
 }
 
 SVGUseElement::~SVGUseElement()
@@ -385,16 +385,16 @@ static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
 
 static void moveChildrenToReplacementElement(ContainerNode& sourceRoot, ContainerNode& destinationRoot)
 {
-    for (RawPtr<Node> child = sourceRoot.firstChild(); child; ) {
-        RawPtr<Node> nextChild = child->nextSibling();
+    for (Node* child = sourceRoot.firstChild(); child; ) {
+        Node* nextChild = child->nextSibling();
         destinationRoot.appendChild(child);
-        child = nextChild.release();
+        child = nextChild;
     }
 }
 
-RawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
+Element* SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
 {
-    RawPtr<Element> instanceRoot = targetRoot.cloneElementWithChildren();
+    Element* instanceRoot = targetRoot.cloneElementWithChildren();
     ASSERT(instanceRoot->isSVGElement());
     if (isSVGSymbolElement(targetRoot)) {
         // Spec: The referenced 'symbol' and its contents are deep-cloned into
@@ -405,18 +405,18 @@ RawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
         // transferred to the generated 'svg'. If attributes width and/or
         // height are not specified, the generated 'svg' element will use
         // values of 100% for these attributes.
-        RawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(targetRoot.document());
+        SVGSVGElement* svgElement = SVGSVGElement::create(targetRoot.document());
         // Transfer all data (attributes, etc.) from the <symbol> to the new
         // <svg> element.
         svgElement->cloneDataFromElement(*instanceRoot);
         // Move already cloned elements to the new <svg> element.
         moveChildrenToReplacementElement(*instanceRoot, *svgElement);
-        instanceRoot = svgElement.release();
+        instanceRoot = svgElement;
     }
     transferUseWidthAndHeightIfNeeded(*this, toSVGElement(*instanceRoot), targetRoot);
     associateCorrespondingElements(targetRoot, toSVGElement(*instanceRoot));
     removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
-    return instanceRoot.release();
+    return instanceRoot;
 }
 
 void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
@@ -436,10 +436,10 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 
     // Set up root SVG element in shadow tree.
     // Clone the target subtree into the shadow tree, not handling <use> and <symbol> yet.
-    RawPtr<Element> instanceRoot = createInstanceTree(target);
-    m_targetElementInstance = toSVGElement(instanceRoot.get());
+    Element* instanceRoot = createInstanceTree(target);
+    m_targetElementInstance = toSVGElement(instanceRoot);
     ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
-    shadowTreeRootElement->appendChild(instanceRoot.release());
+    shadowTreeRootElement->appendChild(instanceRoot);
 
     addReferencesToFirstDegreeNestedUseElements(target);
 
@@ -600,7 +600,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
     // actual shadow tree (after the special case modification for svg/symbol) we have
     // to walk it completely and expand all <use> elements.
     ShadowRoot* shadowRoot = userAgentShadowRoot();
-    for (RawPtr<SVGUseElement> use = Traversal<SVGUseElement>::firstWithin(*shadowRoot); use; ) {
+    for (SVGUseElement* use = Traversal<SVGUseElement>::firstWithin(*shadowRoot); use; ) {
         ASSERT(!use->resourceIsStillLoading());
 
         SVGUseElement& originalUse = toSVGUseElement(*use->correspondingElement());
@@ -612,7 +612,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
             return false;
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
-        RawPtr<SVGGElement> cloneParent = SVGGElement::create(originalUse.document());
+        SVGGElement* cloneParent = SVGGElement::create(originalUse.document());
         // Transfer all data (attributes, etc.) from <use> to the new <g> element.
         cloneParent->cloneDataFromElement(*use);
         cloneParent->setCorrespondingElement(&originalUse);
@@ -625,10 +625,10 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         if (target)
             cloneParent->appendChild(use->createInstanceTree(*target));
 
-        RawPtr<SVGElement> replacingElement(cloneParent.get());
+        SVGElement* replacingElement(cloneParent);
 
         // Replace <use> with referenced content.
-        use->parentNode()->replaceChild(cloneParent.release(), use);
+        use->parentNode()->replaceChild(cloneParent, use);
 
         use = Traversal<SVGUseElement>::next(*replacingElement, shadowRoot);
     }
@@ -651,7 +651,7 @@ void SVGUseElement::invalidateDependentShadowTrees()
     HeapVector<Member<SVGElement>> instances;
     instances.appendRange(rawInstances.begin(), rawInstances.end());
     for (auto& instance : instances) {
-        if (RawPtr<SVGUseElement> element = instance->correspondingUseElement()) {
+        if (SVGUseElement* element = instance->correspondingUseElement()) {
             ASSERT(element->inDocument());
             element->invalidateShadowTree();
         }
@@ -744,7 +744,7 @@ bool SVGUseElement::instanceTreeIsLoading() const
     return false;
 }
 
-void SVGUseElement::setDocumentResource(RawPtr<DocumentResource> resource)
+void SVGUseElement::setDocumentResource(DocumentResource* resource)
 {
     if (m_resource == resource)
         return;

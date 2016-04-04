@@ -184,7 +184,7 @@ private:
         };
 
         Condition(Type, BeginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1);
-        static RawPtr<Condition> create(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1)
+        static Condition* create(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1)
         {
             return new Condition(type, beginOrEnd, baseID, name, offset, repeat);
         }
@@ -200,7 +200,7 @@ private:
         SVGSMILElement* syncBase() const { return m_syncBase.get(); }
         void setSyncBase(SVGSMILElement* element) { m_syncBase = element; }
         ConditionEventListener* eventListener() const { return m_eventListener.get(); }
-        void setEventListener(RawPtr<ConditionEventListener>);
+        void setEventListener(ConditionEventListener*);
 
     private:
         Type m_type;

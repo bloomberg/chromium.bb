@@ -40,7 +40,7 @@ String SVGColorProperty::valueAsString() const
     return m_styleColor.isCurrentColor() ? "currentColor" : m_styleColor.getColor().serializedAsCSSComponentValue();
 }
 
-RawPtr<SVGPropertyBase> SVGColorProperty::cloneForAnimation(const String&) const
+SVGPropertyBase* SVGColorProperty::cloneForAnimation(const String&) const
 {
     // SVGAnimatedColor is deprecated. So No SVG DOM animation.
     ASSERT_NOT_REACHED();
@@ -55,7 +55,7 @@ static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)
     return Color::transparent;
 }
 
-void SVGColorProperty::add(RawPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGColorProperty::add(SVGPropertyBase* other, SVGElement* contextElement)
 {
     ASSERT(contextElement);
 
@@ -65,7 +65,7 @@ void SVGColorProperty::add(RawPtr<SVGPropertyBase> other, SVGElement* contextEle
     m_styleColor = StyleColor(ColorDistance::addColors(fromColor, toColor));
 }
 
-void SVGColorProperty::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGColorProperty::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement)
 {
     StyleColor fromStyleColor = toSVGColorProperty(fromValue)->m_styleColor;
     StyleColor toStyleColor = toSVGColorProperty(toValue)->m_styleColor;
@@ -95,7 +95,7 @@ void SVGColorProperty::calculateAnimatedValue(SVGAnimationElement* animationElem
     m_styleColor = StyleColor(makeRGBA(roundf(animatedRed), roundf(animatedGreen), roundf(animatedBlue), roundf(animatedAlpha)));
 }
 
-float SVGColorProperty::calculateDistance(RawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGColorProperty::calculateDistance(SVGPropertyBase* toValue, SVGElement* contextElement)
 {
     ASSERT(contextElement);
     Color fallbackColor = fallbackColorForCurrentColor(contextElement);

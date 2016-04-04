@@ -51,7 +51,7 @@ DEFINE_TRACE(SVGAnimatedIntegerOptionalInteger)
     SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::trace(visitor);
 }
 
-void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(RawPtr<SVGPropertyBase> value)
+void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(SVGPropertyBase* value)
 {
     SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);
     m_firstInteger->setAnimatedValue(currentValue()->firstInteger());

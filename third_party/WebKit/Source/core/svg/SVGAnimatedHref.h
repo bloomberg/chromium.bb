@@ -19,7 +19,7 @@ namespace blink {
 // or the wrapped object and forwards the operation to it.)
 class SVGAnimatedHref final : public SVGAnimatedString {
 public:
-    static RawPtr<SVGAnimatedHref> create(SVGElement* contextElement);
+    static SVGAnimatedHref* create(SVGElement* contextElement);
 
     SVGString* currentValue();
     const SVGString* currentValue() const;

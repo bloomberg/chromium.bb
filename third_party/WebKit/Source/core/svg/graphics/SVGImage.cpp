@@ -70,7 +70,7 @@ SVGImage::~SVGImage()
 {
     if (m_page) {
         // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
-        RawPtr<Page> currentPage = m_page.release();
+        Page* currentPage = m_page.release();
         // Break both the loader and view references to the frame
         currentPage->willBeDestroyed();
     }
@@ -488,7 +488,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // This will become an issue when SVGImage will be able to load other
         // SVGImage objects, but we're safe now, because SVGImage can only be
         // loaded by a top-level document.
-        RawPtr<Page> page;
+        Page* page;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
             page = Page::create(pageClients);
@@ -509,11 +509,11 @@ bool SVGImage::dataChanged(bool allDataReceived)
             }
         }
 
-        RawPtr<LocalFrame> frame = nullptr;
+        LocalFrame* frame = nullptr;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
             frame = LocalFrame::create(dummyFrameLoaderClient.get(), &page->frameHost(), 0);
-            frame->setView(FrameView::create(frame.get()));
+            frame->setView(FrameView::create(frame));
             frame->init();
         }
 
@@ -524,7 +524,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         frame->view()->setCanHaveScrollbars(false); // SVG Images will always synthesize a viewBox, if it's not available, and thus never see scrollbars.
         frame->view()->setTransparent(true); // SVG Images are transparent.
 
-        m_page = page.release();
+        m_page = page;
 
         TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
         loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml"),

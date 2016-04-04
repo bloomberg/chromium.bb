@@ -90,8 +90,8 @@ public:
         bool operator==(const ConstIterator& o) const { return m_it == o.m_it; }
         bool operator!=(const ConstIterator& o) const { return m_it != o.m_it; }
 
-        RawPtr<ItemPropertyType> operator*() { return *m_it; }
-        RawPtr<ItemPropertyType> operator->() { return *m_it; }
+        ItemPropertyType* operator*() { return *m_it; }
+        ItemPropertyType* operator->() { return *m_it; }
 
     private:
         WrappedType m_it;
@@ -112,10 +112,8 @@ public:
         return ConstIterator(m_values.end());
     }
 
-    void append(RawPtr<ItemPropertyType> passNewItem)
+    void append(ItemPropertyType* newItem)
     {
-        RawPtr<ItemPropertyType> newItem = passNewItem;
-
         ASSERT(newItem);
         m_values.append(newItem);
         newItem->setOwnerList(this);
@@ -132,11 +130,11 @@ public:
         return !length();
     }
 
-    virtual RawPtr<Derived> clone()
+    virtual Derived* clone()
     {
-        RawPtr<Derived> svgList = Derived::create();
+        Derived* svgList = Derived::create();
         svgList->deepCopy(static_cast<Derived*>(this));
-        return svgList.release();
+        return svgList;
     }
 
     // SVGList*Property DOM spec:
@@ -148,12 +146,12 @@ public:
 
     void clear();
 
-    RawPtr<ItemPropertyType> initialize(RawPtr<ItemPropertyType>);
-    RawPtr<ItemPropertyType> getItem(size_t, ExceptionState&);
-    RawPtr<ItemPropertyType> insertItemBefore(RawPtr<ItemPropertyType>, size_t);
-    RawPtr<ItemPropertyType> removeItem(size_t, ExceptionState&);
-    RawPtr<ItemPropertyType> appendItem(RawPtr<ItemPropertyType>);
-    RawPtr<ItemPropertyType> replaceItem(RawPtr<ItemPropertyType>, size_t, ExceptionState&);
+    ItemPropertyType* initialize(ItemPropertyType*);
+    ItemPropertyType* getItem(size_t, ExceptionState&);
+    ItemPropertyType* insertItemBefore(ItemPropertyType*, size_t);
+    ItemPropertyType* removeItem(size_t, ExceptionState&);
+    ItemPropertyType* appendItem(ItemPropertyType*);
+    ItemPropertyType* replaceItem(ItemPropertyType*, size_t, ExceptionState&);
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -162,27 +160,25 @@ public:
     }
 
 protected:
-    void deepCopy(RawPtr<Derived>);
+    void deepCopy(Derived*);
 
-    bool adjustFromToListValues(RawPtr<Derived> fromList, RawPtr<Derived> toList, float percentage, AnimationMode);
+    bool adjustFromToListValues(Derived* fromList, Derived* toList, float percentage, AnimationMode);
 
-    virtual RawPtr<ItemPropertyType> createPaddingItem() const
+    virtual ItemPropertyType* createPaddingItem() const
     {
         return ItemPropertyType::create();
     }
 
 private:
     inline bool checkIndexBound(size_t, ExceptionState&);
-    size_t findItem(RawPtr<ItemPropertyType>);
+    size_t findItem(ItemPropertyType*);
 
     HeapVector<Member<ItemPropertyType>> m_values;
 
-    static RawPtr<Derived> toDerived(RawPtr<SVGPropertyBase> passBase)
+    static Derived* toDerived(SVGPropertyBase* base)
     {
-        if (!passBase)
+        if (!base)
             return nullptr;
-
-        RawPtr<SVGPropertyBase> base = passBase;
         ASSERT(base->type() == Derived::classType());
         return static_pointer_cast<Derived>(base);
     }
@@ -218,18 +214,16 @@ void SVGListPropertyHelper<Derived, ItemProperty>::clear()
 }
 
 template<typename Derived, typename ItemProperty>
-RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::initialize(RawPtr<ItemProperty> passNewItem)
+ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::initialize(ItemProperty* newItem)
 {
-    RawPtr<ItemPropertyType> newItem = passNewItem;
-
     // Spec: Clears all existing current items from the list and re-initializes the list to hold the single item specified by the parameter.
     clear();
     append(newItem);
-    return newItem.release();
+    return newItem;
 }
 
 template<typename Derived, typename ItemProperty>
-RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::getItem(size_t index, ExceptionState& exceptionState)
+ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::getItem(size_t index, ExceptionState& exceptionState)
 {
     if (!checkIndexBound(index, exceptionState))
         return nullptr;
@@ -240,54 +234,48 @@ RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::getItem(size_
 }
 
 template<typename Derived, typename ItemProperty>
-RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::insertItemBefore(RawPtr<ItemProperty> passNewItem, size_t index)
+ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::insertItemBefore(ItemProperty* newItem, size_t index)
 {
     // Spec: If the index is greater than or equal to length, then the new item is appended to the end of the list.
     if (index > m_values.size())
         index = m_values.size();
-
-    RawPtr<ItemPropertyType> newItem = passNewItem;
 
     // Spec: Inserts a new item into the list at the specified position. The index of the item before which the new item is to be
     // inserted. The first item is number 0. If the index is equal to 0, then the new item is inserted at the front of the list.
     m_values.insert(index, newItem);
     newItem->setOwnerList(this);
 
-    return newItem.release();
+    return newItem;
 }
 
 template<typename Derived, typename ItemProperty>
-RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::removeItem(size_t index, ExceptionState& exceptionState)
+ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::removeItem(size_t index, ExceptionState& exceptionState)
 {
     if (index >= m_values.size()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
         return nullptr;
     }
     ASSERT(m_values.at(index)->ownerList() == this);
-    RawPtr<ItemPropertyType> oldItem = m_values.at(index);
+    ItemPropertyType* oldItem = m_values.at(index);
     m_values.remove(index);
     oldItem->setOwnerList(0);
-    return oldItem.release();
+    return oldItem;
 }
 
 template<typename Derived, typename ItemProperty>
-RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::appendItem(RawPtr<ItemProperty> passNewItem)
+ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::appendItem(ItemProperty* newItem)
 {
-    RawPtr<ItemPropertyType> newItem = passNewItem;
-
     // Append the value and wrapper at the end of the list.
     append(newItem);
 
-    return newItem.release();
+    return newItem;
 }
 
 template<typename Derived, typename ItemProperty>
-RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::replaceItem(RawPtr<ItemProperty> passNewItem, size_t index, ExceptionState& exceptionState)
+ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::replaceItem(ItemProperty* newItem, size_t index, ExceptionState& exceptionState)
 {
     if (!checkIndexBound(index, exceptionState))
         return nullptr;
-
-    RawPtr<ItemPropertyType> newItem = passNewItem;
 
     if (m_values.isEmpty()) {
         // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
@@ -302,7 +290,7 @@ RawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::replaceItem(R
     position = newItem;
     newItem->setOwnerList(this);
 
-    return newItem.release();
+    return newItem;
 }
 
 template<typename Derived, typename ItemProperty>
@@ -317,16 +305,14 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::checkIndexBound(size_t index,
 }
 
 template<typename Derived, typename ItemProperty>
-size_t SVGListPropertyHelper<Derived, ItemProperty>::findItem(RawPtr<ItemPropertyType> item)
+size_t SVGListPropertyHelper<Derived, ItemProperty>::findItem(ItemPropertyType* item)
 {
     return m_values.find(item);
 }
 
 template<typename Derived, typename ItemProperty>
-void SVGListPropertyHelper<Derived, ItemProperty>::deepCopy(RawPtr<Derived> passFrom)
+void SVGListPropertyHelper<Derived, ItemProperty>::deepCopy(Derived* from)
 {
-    RawPtr<Derived> from = passFrom;
-
     clear();
     typename HeapVector<Member<ItemPropertyType>>::const_iterator it = from->m_values.begin();
     typename HeapVector<Member<ItemPropertyType>>::const_iterator itEnd = from->m_values.end();
@@ -336,11 +322,8 @@ void SVGListPropertyHelper<Derived, ItemProperty>::deepCopy(RawPtr<Derived> pass
 }
 
 template<typename Derived, typename ItemProperty>
-bool SVGListPropertyHelper<Derived, ItemProperty>::adjustFromToListValues(RawPtr<Derived> passFromList, RawPtr<Derived> passToList, float percentage, AnimationMode mode)
+bool SVGListPropertyHelper<Derived, ItemProperty>::adjustFromToListValues(Derived* fromList, Derived* toList, float percentage, AnimationMode mode)
 {
-    RawPtr<Derived> fromList = passFromList;
-    RawPtr<Derived> toList = passToList;
-
     // If no 'to' value is given, nothing to animate.
     size_t toListSize = toList->length();
     if (!toListSize)

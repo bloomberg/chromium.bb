@@ -42,7 +42,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
 
 class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
 public:
-    static RawPtr<SVGAnimatedOrder> create(SVGElement* contextElement)
+    static SVGAnimatedOrder* create(SVGElement* contextElement)
     {
         return new SVGAnimatedOrder(contextElement);
     }
@@ -162,7 +162,7 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -186,7 +186,7 @@ RawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterB
 
     float divisorValue = m_divisor->currentValue()->value();
     if (!m_divisor->isSpecified()) {
-        RawPtr<SVGNumberList> kernelMatrix = m_kernelMatrix->currentValue();
+        SVGNumberList* kernelMatrix = m_kernelMatrix->currentValue();
         size_t kernelMatrixSize = kernelMatrix->length();
         for (size_t i = 0; i < kernelMatrixSize; ++i)
             divisorValue += kernelMatrix->at(i)->value();
@@ -194,12 +194,12 @@ RawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterB
             divisorValue = 1;
     }
 
-    RawPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
+    FilterEffect* effect = FEConvolveMatrix::create(filter,
         IntSize(orderXValue, orderYValue), divisorValue,
         m_bias->currentValue()->value(), IntPoint(targetXValue, targetYValue), m_edgeMode->currentValue()->enumValue(),
         m_preserveAlpha->currentValue()->value(), m_kernelMatrix->currentValue()->toFloatVector());
     effect->inputEffects().append(input1);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

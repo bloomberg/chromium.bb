@@ -40,7 +40,7 @@ SVGInteger::SVGInteger(int value)
 {
 }
 
-RawPtr<SVGInteger> SVGInteger::clone() const
+SVGInteger* SVGInteger::clone() const
 {
     return create(m_value);
 }
@@ -63,25 +63,25 @@ SVGParsingError SVGInteger::setValueAsString(const String& string)
     return valid ? SVGParseStatus::NoError : SVGParseStatus::ExpectedInteger;
 }
 
-void SVGInteger::add(RawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGInteger::add(SVGPropertyBase* other, SVGElement*)
 {
     setValue(m_value + toSVGInteger(other)->value());
 }
 
-void SVGInteger::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGInteger::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
 
-    RawPtr<SVGInteger> fromInteger = toSVGInteger(from);
-    RawPtr<SVGInteger> toInteger = toSVGInteger(to);
-    RawPtr<SVGInteger> toAtEndOfDurationInteger = toSVGInteger(toAtEndOfDuration);
+    SVGInteger* fromInteger = toSVGInteger(from);
+    SVGInteger* toInteger = toSVGInteger(to);
+    SVGInteger* toAtEndOfDurationInteger = toSVGInteger(toAtEndOfDuration);
 
     float animatedFloat = m_value;
     animationElement->animateAdditiveNumber(percentage, repeatCount, fromInteger->value(), toInteger->value(), toAtEndOfDurationInteger->value(), animatedFloat);
     m_value = static_cast<int>(roundf(animatedFloat));
 }
 
-float SVGInteger::calculateDistance(RawPtr<SVGPropertyBase> other, SVGElement*)
+float SVGInteger::calculateDistance(SVGPropertyBase* other, SVGElement*)
 {
     return abs(m_value - toSVGInteger(other)->value());
 }

@@ -100,7 +100,7 @@ SVGSVGElement::~SVGSVGElement()
 #endif
 }
 
-RawPtr<SVGRectTearOff> SVGSVGElement::viewport() const
+SVGRectTearOff* SVGSVGElement::viewport() const
 {
     // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
     // As we have no test coverage for this, we're going to disable it completly for now.
@@ -134,7 +134,7 @@ void SVGSVGElement::setCurrentScale(float scale)
 
 class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 public:
-    static RawPtr<SVGCurrentTranslateTearOff> create(SVGSVGElement* contextElement)
+    static SVGCurrentTranslateTearOff* create(SVGSVGElement* contextElement)
     {
         return new SVGCurrentTranslateTearOff(contextElement);
     }
@@ -152,7 +152,7 @@ private:
     }
 };
 
-RawPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavascript()
+SVGPointTearOff* SVGSVGElement::currentTranslateFromJavascript()
 {
     return SVGCurrentTranslateTearOff::create(this);
 }
@@ -339,7 +339,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, cons
     return result;
 }
 
-RawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
+StaticNodeList* SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
     SVGElement* referenceElement, CheckIntersectionOrEnclosure mode) const
 {
     HeapVector<Member<Node>> nodes;
@@ -363,21 +363,21 @@ RawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const F
     return StaticNodeList::adopt(nodes);
 }
 
-RawPtr<StaticNodeList> SVGSVGElement::getIntersectionList(RawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+StaticNodeList* SVGSVGElement::getIntersectionList(SVGRectTearOff* rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckIntersection);
 }
 
-RawPtr<StaticNodeList> SVGSVGElement::getEnclosureList(RawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+StaticNodeList* SVGSVGElement::getEnclosureList(SVGRectTearOff* rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckEnclosure);
 }
 
-bool SVGSVGElement::checkIntersection(SVGElement* element, RawPtr<SVGRectTearOff> rect) const
+bool SVGSVGElement::checkIntersection(SVGElement* element, SVGRectTearOff* rect) const
 {
     ASSERT(element);
     document().updateLayoutIgnorePendingStylesheets();
@@ -385,7 +385,7 @@ bool SVGSVGElement::checkIntersection(SVGElement* element, RawPtr<SVGRectTearOff
     return checkIntersectionOrEnclosure(*element, rect->target()->value(), CheckIntersection);
 }
 
-bool SVGSVGElement::checkEnclosure(SVGElement* element, RawPtr<SVGRectTearOff> rect) const
+bool SVGSVGElement::checkEnclosure(SVGElement* element, SVGRectTearOff* rect) const
 {
     ASSERT(element);
     document().updateLayoutIgnorePendingStylesheets();
@@ -399,42 +399,42 @@ void SVGSVGElement::deselectAll()
         frame->selection().clear();
 }
 
-RawPtr<SVGNumberTearOff> SVGSVGElement::createSVGNumber()
+SVGNumberTearOff* SVGSVGElement::createSVGNumber()
 {
     return SVGNumberTearOff::create(SVGNumber::create(0.0f), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
+SVGLengthTearOff* SVGSVGElement::createSVGLength()
 {
     return SVGLengthTearOff::create(SVGLength::create(), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGAngleTearOff> SVGSVGElement::createSVGAngle()
+SVGAngleTearOff* SVGSVGElement::createSVGAngle()
 {
     return SVGAngleTearOff::create(SVGAngle::create(), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
+SVGPointTearOff* SVGSVGElement::createSVGPoint()
 {
     return SVGPointTearOff::create(SVGPoint::create(), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGMatrixTearOff> SVGSVGElement::createSVGMatrix()
+SVGMatrixTearOff* SVGSVGElement::createSVGMatrix()
 {
     return SVGMatrixTearOff::create(AffineTransform());
 }
 
-RawPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
+SVGRectTearOff* SVGSVGElement::createSVGRect()
 {
     return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransform()
+SVGTransformTearOff* SVGSVGElement::createSVGTransform()
 {
     return SVGTransformTearOff::create(SVGTransform::create(SVG_TRANSFORM_MATRIX), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransformFromMatrix(RawPtr<SVGMatrixTearOff> matrix)
+SVGTransformTearOff* SVGSVGElement::createSVGTransformFromMatrix(SVGMatrixTearOff* matrix)
 {
     return SVGTransformTearOff::create(SVGTransform::create(matrix->value()), 0, PropertyIsNotAnimVal);
 }
@@ -644,7 +644,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
         return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 
     AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
-    RawPtr<SVGTransformList> transformList = m_viewSpec->transform();
+    SVGTransformList* transformList = m_viewSpec->transform();
     if (transformList->isEmpty())
         return ctm;
 

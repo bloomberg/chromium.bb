@@ -67,7 +67,7 @@ void SVGAnimatedTypeAnimator::reset(SVGElement* contextElement)
         && m_type != AnimatedTransform);
 }
 
-RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value)
+SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value)
 {
     ASSERT(m_contextElement);
 
@@ -97,24 +97,24 @@ RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(cons
     case AnimatedColor:
         return SVGColorProperty::create(value);
     case AnimatedNumber: {
-        RawPtr<SVGNumber> property = SVGNumber::create();
+        SVGNumber* property = SVGNumber::create();
         property->setValueAsString(value);
-        return property.release();
+        return property;
     }
     case AnimatedLength: {
-        RawPtr<SVGLength> property = SVGLength::create();
+        SVGLength* property = SVGLength::create();
         property->setValueAsString(value);
-        return property.release();
+        return property;
     }
     case AnimatedLengthList: {
-        RawPtr<SVGLengthList> property = SVGLengthList::create();
+        SVGLengthList* property = SVGLengthList::create();
         property->setValueAsString(value);
-        return property.release();
+        return property;
     }
     case AnimatedString: {
-        RawPtr<SVGString> property = SVGString::create();
+        SVGString* property = SVGString::create();
         property->setValueAsString(value);
-        return property.release();
+        return property;
     }
 
     // These types don't appear in the table in SVGElement::animatedPropertyTypeForCSSAttribute() and thus don't need support.
@@ -143,7 +143,7 @@ RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(cons
     return nullptr;
 }
 
-RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::constructFromString(const String& value)
+SVGPropertyBase* SVGAnimatedTypeAnimator::constructFromString(const String& value)
 {
     return createPropertyForAnimation(value);
 }
@@ -164,10 +164,8 @@ void SVGAnimatedTypeAnimator::calculateFromAndByValues(Member<SVGPropertyBase>& 
 
 namespace {
 
-void setAnimatedValueOnAllTargetProperties(const SVGElementInstances& list, const QualifiedName& attributeName, RawPtr<SVGPropertyBase> passValue)
+void setAnimatedValueOnAllTargetProperties(const SVGElementInstances& list, const QualifiedName& attributeName, SVGPropertyBase* value)
 {
-    RawPtr<SVGPropertyBase> value = passValue;
-
     for (SVGElement* elementInstance : list) {
         if (SVGAnimatedPropertyBase* animatedProperty = elementInstance->propertyFromAttribute(attributeName))
             animatedProperty->setAnimatedValue(value);
@@ -176,17 +174,17 @@ void setAnimatedValueOnAllTargetProperties(const SVGElementInstances& list, cons
 
 } // namespace
 
-RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const SVGElementInstances& list)
+SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimation(const SVGElementInstances& list)
 {
     ASSERT(isAnimatingSVGDom());
-    RawPtr<SVGPropertyBase> animatedValue = m_animatedProperty->createAnimatedValue();
+    SVGPropertyBase* animatedValue = m_animatedProperty->createAnimatedValue();
     ASSERT(animatedValue->type() == m_type);
     setAnimatedValueOnAllTargetProperties(list, m_animatedProperty->attributeName(), animatedValue);
 
-    return animatedValue.release();
+    return animatedValue;
 }
 
-RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const SVGElementInstances& list)
+SVGPropertyBase* SVGAnimatedTypeAnimator::startAnimValAnimation(const SVGElementInstances& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
@@ -208,7 +206,7 @@ void SVGAnimatedTypeAnimator::stopAnimValAnimation(const SVGElementInstances& li
     }
 }
 
-RawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const SVGElementInstances& list)
+SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const SVGElementInstances& list)
 {
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
 
@@ -223,7 +221,7 @@ public:
     {
     }
 
-    RawPtr<SVGPropertyBase> operator()(SVGAnimationElement*, const String& value)
+    SVGPropertyBase* operator()(SVGAnimationElement*, const String& value)
     {
         return m_animator->createPropertyForAnimation(value);
     }
@@ -237,15 +235,15 @@ void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned 
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
 
-    RawPtr<SVGPropertyBase> fromValue = m_animationElement->getAnimationMode() == ToAnimation ? animated : from;
-    RawPtr<SVGPropertyBase> toValue = to;
-    RawPtr<SVGPropertyBase> toAtEndOfDurationValue = toAtEndOfDuration;
-    RawPtr<SVGPropertyBase> animatedValue = animated;
+    SVGPropertyBase* fromValue = m_animationElement->getAnimationMode() == ToAnimation ? animated : from;
+    SVGPropertyBase* toValue = to;
+    SVGPropertyBase* toAtEndOfDurationValue = toAtEndOfDuration;
+    SVGPropertyBase* animatedValue = animated;
 
     // Apply CSS inheritance rules.
     ParsePropertyFromString parsePropertyFromString(this);
-    m_animationElement->adjustForInheritance<RawPtr<SVGPropertyBase>, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->fromPropertyValueType(), fromValue, m_contextElement);
-    m_animationElement->adjustForInheritance<RawPtr<SVGPropertyBase>, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->toPropertyValueType(), toValue, m_contextElement);
+    m_animationElement->adjustForInheritance<SVGPropertyBase*, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->fromPropertyValueType(), fromValue, m_contextElement);
+    m_animationElement->adjustForInheritance<SVGPropertyBase*, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->toPropertyValueType(), toValue, m_contextElement);
 
     animatedValue->calculateAnimatedValue(m_animationElement, percentage, repeatCount, fromValue, toValue, toAtEndOfDurationValue, m_contextElement);
 }
@@ -253,8 +251,8 @@ void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned 
 float SVGAnimatedTypeAnimator::calculateDistance(const String& fromString, const String& toString)
 {
     ASSERT(m_contextElement);
-    RawPtr<SVGPropertyBase> fromValue = createPropertyForAnimation(fromString);
-    RawPtr<SVGPropertyBase> toValue = createPropertyForAnimation(toString);
+    SVGPropertyBase* fromValue = createPropertyForAnimation(fromString);
+    SVGPropertyBase* toValue = createPropertyForAnimation(toString);
     return fromValue->calculateDistance(toValue, m_contextElement);
 }
 

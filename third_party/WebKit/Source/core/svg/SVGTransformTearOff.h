@@ -52,7 +52,7 @@ public:
         SVG_TRANSFORM_SKEWY = blink::SVG_TRANSFORM_SKEWY,
     };
 
-    static RawPtr<SVGTransformTearOff> create(RawPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static SVGTransformTearOff* create(SVGTransform* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
@@ -63,7 +63,7 @@ public:
     SVGMatrixTearOff* matrix();
     float angle() { return target()->angle(); }
 
-    void setMatrix(RawPtr<SVGMatrixTearOff>, ExceptionState&);
+    void setMatrix(SVGMatrixTearOff*, ExceptionState&);
     void setTranslate(float tx, float ty, ExceptionState&);
     void setScale(float sx, float sy, ExceptionState&);
     void setRotate(float angle, float cx, float cy, ExceptionState&);
@@ -73,7 +73,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SVGTransformTearOff(RawPtr<SVGTransform>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);
+    SVGTransformTearOff(SVGTransform*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);
 
     Member<SVGMatrixTearOff> m_matrixTearoff;
 };

@@ -43,7 +43,7 @@ class SVGNumberList final : public SVGListPropertyHelper<SVGNumberList, SVGNumbe
 public:
     typedef SVGNumberListTearOff TearOffType;
 
-    static RawPtr<SVGNumberList> create()
+    static SVGNumberList* create()
     {
         return new SVGNumberList();
     }
@@ -55,9 +55,9 @@ public:
     // SVGPropertyBase:
     String valueAsString() const override;
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumberList; }
 

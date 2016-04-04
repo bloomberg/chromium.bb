@@ -11,7 +11,7 @@
 
 namespace blink {
 
-RawPtr<SVGAnimatedHref> SVGAnimatedHref::create(SVGElement* contextElement)
+SVGAnimatedHref* SVGAnimatedHref::create(SVGElement* contextElement)
 {
     return new SVGAnimatedHref(contextElement);
 }

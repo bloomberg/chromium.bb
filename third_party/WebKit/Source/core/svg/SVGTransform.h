@@ -50,25 +50,25 @@ public:
         ConstructZeroTransform
     };
 
-    static RawPtr<SVGTransform> create()
+    static SVGTransform* create()
     {
         return new SVGTransform();
     }
 
-    static RawPtr<SVGTransform> create(SVGTransformType type, ConstructionMode mode = ConstructIdentityTransform)
+    static SVGTransform* create(SVGTransformType type, ConstructionMode mode = ConstructIdentityTransform)
     {
         return new SVGTransform(type, mode);
     }
 
-    static RawPtr<SVGTransform> create(const AffineTransform& affineTransform)
+    static SVGTransform* create(const AffineTransform& affineTransform)
     {
         return new SVGTransform(affineTransform);
     }
 
     ~SVGTransform() override;
 
-    RawPtr<SVGTransform> clone() const;
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    SVGTransform* clone() const;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
 
     SVGTransformType transformType() const { return m_transformType; }
 
@@ -94,9 +94,9 @@ public:
 
     String valueAsString() const override;
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransform; }
 

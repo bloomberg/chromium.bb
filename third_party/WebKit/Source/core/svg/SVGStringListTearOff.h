@@ -40,7 +40,7 @@ namespace blink {
 class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGStringListTearOff> create(RawPtr<SVGStringList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static SVGStringListTearOff* create(SVGStringList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return new SVGStringListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
@@ -141,7 +141,7 @@ public:
     }
 
 protected:
-    SVGStringListTearOff(RawPtr<SVGStringList>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+    SVGStringListTearOff(SVGStringList*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };
 
 } // namespace blink

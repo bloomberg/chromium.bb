@@ -47,10 +47,10 @@ public:
     SVGLength* x2() const { return m_x2.get(); }
     SVGLength* y2() const { return m_y2.get(); }
 
-    void setX1(RawPtr<SVGLength> value) { m_x1 = value; m_x1Set = true; }
-    void setY1(RawPtr<SVGLength> value) { m_y1 = value; m_y1Set = true; }
-    void setX2(RawPtr<SVGLength> value) { m_x2 = value; m_x2Set = true; }
-    void setY2(RawPtr<SVGLength> value) { m_y2 = value; m_y2Set = true; }
+    void setX1(SVGLength* value) { m_x1 = value; m_x1Set = true; }
+    void setY1(SVGLength* value) { m_y1 = value; m_y1Set = true; }
+    void setX2(SVGLength* value) { m_x2 = value; m_x2Set = true; }
+    void setY2(SVGLength* value) { m_y2 = value; m_y2Set = true; }
 
     bool hasX1() const { return m_x1Set; }
     bool hasY1() const { return m_y1Set; }

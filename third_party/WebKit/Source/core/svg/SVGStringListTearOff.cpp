@@ -34,7 +34,7 @@
 
 namespace blink {
 
-SVGStringListTearOff::SVGStringListTearOff(RawPtr<SVGStringList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGStringListTearOff::SVGStringListTearOff(SVGStringList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGStringList>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }

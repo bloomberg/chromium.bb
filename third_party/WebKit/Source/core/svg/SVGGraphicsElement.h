@@ -45,8 +45,8 @@ public:
 
     AffineTransform getCTM(StyleUpdateStrategy = AllowStyleUpdate);
     AffineTransform getScreenCTM(StyleUpdateStrategy = AllowStyleUpdate);
-    RawPtr<SVGMatrixTearOff> getCTMFromJavascript();
-    RawPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
+    SVGMatrixTearOff* getCTMFromJavascript();
+    SVGMatrixTearOff* getScreenCTMFromJavascript();
 
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
@@ -57,7 +57,7 @@ public:
     AffineTransform* animateMotionTransform() override;
 
     virtual FloatRect getBBox();
-    RawPtr<SVGRectTearOff> getBBoxFromJavascript();
+    SVGRectTearOff* getBBoxFromJavascript();
 
     bool isValid() const final { return SVGTests::isValid(); }
 

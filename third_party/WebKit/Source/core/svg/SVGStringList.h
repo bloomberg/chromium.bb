@@ -55,7 +55,7 @@ class SVGStringList final : public SVGPropertyHelper<SVGStringList> {
 public:
     typedef SVGStringListTearOff TearOffType;
 
-    static RawPtr<SVGStringList> create()
+    static SVGStringList* create()
     {
         return new SVGStringList();
     }
@@ -78,9 +78,9 @@ public:
     SVGParsingError setValueAsString(const String&);
     String valueAsString() const override;
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedStringList; }
 

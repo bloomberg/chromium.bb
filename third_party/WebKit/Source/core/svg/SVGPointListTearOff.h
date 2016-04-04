@@ -41,13 +41,13 @@ class SVGPointListTearOff final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGPointListTearOff> create(RawPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static SVGPointListTearOff* create(SVGPointList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return new SVGPointListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
 private:
-    SVGPointListTearOff(RawPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    SVGPointListTearOff(SVGPointList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>(target, contextElement, propertyIsAnimVal, attributeName) { }
 };
 

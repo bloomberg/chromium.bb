@@ -50,7 +50,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAd
 // It should return getComputedTextLength() when textLength is not specified manually.
 class SVGAnimatedTextLength final : public SVGAnimatedLength {
 public:
-    static RawPtr<SVGAnimatedTextLength> create(SVGTextContentElement* contextElement)
+    static SVGAnimatedTextLength* create(SVGTextContentElement* contextElement)
     {
         return new SVGAnimatedTextLength(contextElement);
     }
@@ -117,7 +117,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
     return SVGTextQuery(layoutObject()).subStringLength(charnum, nchars);
 }
 
-RawPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
+SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -130,7 +130,7 @@ RawPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsigned c
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
+SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -143,7 +143,7 @@ RawPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned cha
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
-RawPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
+SVGRectTearOff* SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -168,7 +168,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
     return SVGTextQuery(layoutObject()).rotationOfCharacter(charnum);
 }
 
-int SVGTextContentElement::getCharNumAtPosition(RawPtr<SVGPointTearOff> point, ExceptionState& exceptionState)
+int SVGTextContentElement::getCharNumAtPosition(SVGPointTearOff* point, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
     return SVGTextQuery(layoutObject()).characterNumberAtPosition(point->target()->value());

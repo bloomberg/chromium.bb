@@ -44,12 +44,12 @@ namespace blink {
 // For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
 class SVGAnimatedNumberOptionalNumber : public SVGAnimatedPropertyCommon<SVGNumberOptionalNumber> {
 public:
-    static RawPtr<SVGAnimatedNumberOptionalNumber> create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
+    static SVGAnimatedNumberOptionalNumber* create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
     {
         return new SVGAnimatedNumberOptionalNumber(contextElement, attributeName, initialFirstValue, initialSecondValue);
     }
 
-    void setAnimatedValue(RawPtr<SVGPropertyBase>) override;
+    void setAnimatedValue(SVGPropertyBase*) override;
     bool needsSynchronizeAttribute() override;
     void animationEnded() override;
 

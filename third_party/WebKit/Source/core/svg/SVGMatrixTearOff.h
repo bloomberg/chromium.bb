@@ -48,12 +48,12 @@ class SVGTransformTearOff;
 class CORE_EXPORT SVGMatrixTearOff final : public GarbageCollectedFinalized<SVGMatrixTearOff>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGMatrixTearOff> create(const AffineTransform& value)
+    static SVGMatrixTearOff* create(const AffineTransform& value)
     {
         return new SVGMatrixTearOff(value);
     }
 
-    static RawPtr<SVGMatrixTearOff> create(SVGTransformTearOff* target)
+    static SVGMatrixTearOff* create(SVGTransformTearOff* target)
     {
         return new SVGMatrixTearOff(target);
     }
@@ -74,17 +74,17 @@ public:
     void setE(double, ExceptionState&);
     void setF(double, ExceptionState&);
 
-    RawPtr<SVGMatrixTearOff> translate(double tx, double ty);
-    RawPtr<SVGMatrixTearOff> scale(double);
-    RawPtr<SVGMatrixTearOff> scaleNonUniform(double sx, double sy);
-    RawPtr<SVGMatrixTearOff> rotate(double);
-    RawPtr<SVGMatrixTearOff> flipX();
-    RawPtr<SVGMatrixTearOff> flipY();
-    RawPtr<SVGMatrixTearOff> skewX(double);
-    RawPtr<SVGMatrixTearOff> skewY(double);
-    RawPtr<SVGMatrixTearOff> multiply(RawPtr<SVGMatrixTearOff>);
-    RawPtr<SVGMatrixTearOff> inverse(ExceptionState&);
-    RawPtr<SVGMatrixTearOff> rotateFromVector(double x, double y, ExceptionState&);
+    SVGMatrixTearOff* translate(double tx, double ty);
+    SVGMatrixTearOff* scale(double);
+    SVGMatrixTearOff* scaleNonUniform(double sx, double sy);
+    SVGMatrixTearOff* rotate(double);
+    SVGMatrixTearOff* flipX();
+    SVGMatrixTearOff* flipY();
+    SVGMatrixTearOff* skewX(double);
+    SVGMatrixTearOff* skewY(double);
+    SVGMatrixTearOff* multiply(SVGMatrixTearOff*);
+    SVGMatrixTearOff* inverse(ExceptionState&);
+    SVGMatrixTearOff* rotateFromVector(double x, double y, ExceptionState&);
 
     SVGTransformTearOff* contextTransform() { return m_contextTransform; }
 

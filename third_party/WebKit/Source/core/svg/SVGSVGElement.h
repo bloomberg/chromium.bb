@@ -55,7 +55,7 @@ public:
 #endif
 
     // 'SVGSVGElement' functions
-    RawPtr<SVGRectTearOff> viewport() const;
+    SVGRectTearOff* viewport() const;
 
     bool useCurrentView() const { return m_useCurrentView; }
     SVGViewSpec* currentView();
@@ -70,7 +70,7 @@ public:
 
     FloatPoint currentTranslate() { return m_translation->value(); }
     void setCurrentTranslate(const FloatPoint&);
-    RawPtr<SVGPointTearOff> currentTranslateFromJavascript();
+    SVGPointTearOff* currentTranslateFromJavascript();
 
     SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }
 
@@ -87,20 +87,20 @@ public:
     void unsuspendRedrawAll() { }
     void forceRedraw() { }
 
-    RawPtr<StaticNodeList> getIntersectionList(RawPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
-    RawPtr<StaticNodeList> getEnclosureList(RawPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
-    bool checkIntersection(SVGElement*, RawPtr<SVGRectTearOff>) const;
-    bool checkEnclosure(SVGElement*, RawPtr<SVGRectTearOff>) const;
+    StaticNodeList* getIntersectionList(SVGRectTearOff*, SVGElement* referenceElement) const;
+    StaticNodeList* getEnclosureList(SVGRectTearOff*, SVGElement* referenceElement) const;
+    bool checkIntersection(SVGElement*, SVGRectTearOff*) const;
+    bool checkEnclosure(SVGElement*, SVGRectTearOff*) const;
     void deselectAll();
 
-    static RawPtr<SVGNumberTearOff> createSVGNumber();
-    static RawPtr<SVGLengthTearOff> createSVGLength();
-    static RawPtr<SVGAngleTearOff> createSVGAngle();
-    static RawPtr<SVGPointTearOff> createSVGPoint();
-    static RawPtr<SVGMatrixTearOff> createSVGMatrix();
-    static RawPtr<SVGRectTearOff> createSVGRect();
-    static RawPtr<SVGTransformTearOff> createSVGTransform();
-    static RawPtr<SVGTransformTearOff> createSVGTransformFromMatrix(RawPtr<SVGMatrixTearOff>);
+    static SVGNumberTearOff* createSVGNumber();
+    static SVGLengthTearOff* createSVGLength();
+    static SVGAngleTearOff* createSVGAngle();
+    static SVGPointTearOff* createSVGPoint();
+    static SVGMatrixTearOff* createSVGMatrix();
+    static SVGRectTearOff* createSVGRect();
+    static SVGTransformTearOff* createSVGTransform();
+    static SVGTransformTearOff* createSVGTransformFromMatrix(SVGMatrixTearOff*);
 
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
@@ -148,7 +148,7 @@ private:
     };
 
     bool checkIntersectionOrEnclosure(const SVGElement&, const FloatRect&, CheckIntersectionOrEnclosure) const;
-    RawPtr<StaticNodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CheckIntersectionOrEnclosure) const;
+    StaticNodeList* collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CheckIntersectionOrEnclosure) const;
 
     Member<SVGAnimatedLength> m_x;
     Member<SVGAnimatedLength> m_y;

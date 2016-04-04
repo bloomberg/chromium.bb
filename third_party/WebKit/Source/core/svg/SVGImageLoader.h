@@ -28,7 +28,7 @@ class SVGImageElement;
 
 class SVGImageLoader final : public ImageLoader {
 public:
-    static RawPtr<SVGImageLoader> create(SVGImageElement* element)
+    static SVGImageLoader* create(SVGImageElement* element)
     {
         return new SVGImageLoader(element);
     }

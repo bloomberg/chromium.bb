@@ -40,7 +40,7 @@ namespace blink {
 class SVGAnimatedString : public SVGAnimatedProperty<SVGString>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGString> initialValue)
+    static SVGAnimatedString* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGString* initialValue)
     {
         return new SVGAnimatedString(contextElement, attributeName, initialValue);
     }
@@ -50,7 +50,7 @@ public:
     virtual String animVal();
 
 protected:
-    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGString> initialValue)
+    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, SVGString* initialValue)
         : SVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
     {
     }

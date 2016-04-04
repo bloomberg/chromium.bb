@@ -50,7 +50,7 @@ SVGStyleElement::~SVGStyleElement()
 #endif
 }
 
-RawPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)
+SVGStyleElement* SVGStyleElement::create(Document& document, bool createdByParser)
 {
     return new SVGStyleElement(document, createdByParser);
 }

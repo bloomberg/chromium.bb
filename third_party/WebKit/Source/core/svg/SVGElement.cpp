@@ -265,10 +265,10 @@ static void updateInstancesAnimatedAttribute(SVGElement* element, const Qualifie
     }
 }
 
-void SVGElement::setWebAnimatedAttribute(const QualifiedName& attribute, RawPtr<SVGPropertyBase> value)
+void SVGElement::setWebAnimatedAttribute(const QualifiedName& attribute, SVGPropertyBase* value)
 {
     updateInstancesAnimatedAttribute(this, attribute, [&value](SVGAnimatedPropertyBase& animatedProperty) {
-        animatedProperty.setAnimatedValue(value.get());
+        animatedProperty.setAnimatedValue(value);
     });
     ensureSVGRareData()->webAnimatedAttributes().add(&attribute);
 }
@@ -715,11 +715,10 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
     return AnimatedUnknown;
 }
 
-void SVGElement::addToPropertyMap(RawPtr<SVGAnimatedPropertyBase> passProperty)
+void SVGElement::addToPropertyMap(SVGAnimatedPropertyBase* property)
 {
-    RawPtr<SVGAnimatedPropertyBase> property(passProperty);
     QualifiedName attributeName = property->attributeName();
-    m_attributeToPropertyMap.set(attributeName, property.release());
+    m_attributeToPropertyMap.set(attributeName, property);
 }
 
 SVGAnimatedPropertyBase* SVGElement::propertyFromAttribute(const QualifiedName& attributeName) const
@@ -770,7 +769,7 @@ static inline void collectInstancesForSVGElement(SVGElement* element, HeapHashSe
 
 bool SVGElement::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
-    RawPtr<EventListener> listener = prpListener;
+    EventListener* listener = prpListener;
 
     // Add event listener to regular DOM element
     if (!Node::addEventListenerInternal(eventType, listener, options))
@@ -789,7 +788,7 @@ bool SVGElement::addEventListenerInternal(const AtomicString& eventType, RawPtr<
 
 bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
-    RawPtr<EventListener> listener = prpListener;
+    EventListener* listener = prpListener;
 
     // Remove event listener from regular DOM element
     if (!Node::removeEventListenerInternal(eventType, listener, options))
@@ -841,7 +840,7 @@ void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible()
         return;
 
     // Save the next parent to dispatch to in case dispatching the event mutates the tree.
-    RawPtr<Element> parent = parentOrShadowHostElement();
+    Element* parent = parentOrShadowHostElement();
     if (!sendSVGLoadEventIfPossible())
         return;
 
@@ -939,7 +938,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
 
         elementData()->m_animatedSVGAttributesAreDirty = false;
     } else {
-        RawPtr<SVGAnimatedPropertyBase> property = m_attributeToPropertyMap.get(name);
+        SVGAnimatedPropertyBase* property = m_attributeToPropertyMap.get(name);
         if (property && property->needsSynchronizeAttribute())
             property->synchronizeAttribute();
     }

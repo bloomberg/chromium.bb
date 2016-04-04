@@ -95,18 +95,18 @@ void SVGFEDisplacementMapElement::svgAttributeChanged(const QualifiedName& attrN
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEDisplacementMapElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEDisplacementMapElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
     ASSERT(input1 && input2);
 
-    RawPtr<FilterEffect> effect = FEDisplacementMap::create(filter, m_xChannelSelector->currentValue()->enumValue(), m_yChannelSelector->currentValue()->enumValue(), m_scale->currentValue()->value());
+    FilterEffect* effect = FEDisplacementMap::create(filter, m_xChannelSelector->currentValue()->enumValue(), m_yChannelSelector->currentValue()->enumValue(), m_scale->currentValue()->value());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);
     inputEffects.append(input2);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

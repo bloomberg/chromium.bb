@@ -37,7 +37,7 @@ public:
     using RefCounted<SVGViewSpec>::deref;
 #endif
 
-    static RawPtr<SVGViewSpec> create(SVGSVGElement* contextElement)
+    static SVGViewSpec* create(SVGSVGElement* contextElement)
     {
         return new SVGViewSpec(contextElement);
     }
@@ -49,7 +49,7 @@ public:
 
     // JS API
     SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
-    RawPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
+    SVGTransformListTearOff* transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
     SVGElement* viewTarget() const;
     String viewBoxString() const;
     String preserveAspectRatioString() const;

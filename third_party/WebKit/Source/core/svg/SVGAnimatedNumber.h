@@ -44,7 +44,7 @@ class SVGAnimatedNumberOptionalNumber;
 class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGAnimatedNumber> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGNumber> initialValue)
+    static SVGAnimatedNumber* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGNumber* initialValue)
     {
         return new SVGAnimatedNumber(contextElement, attributeName, initialValue);
     }
@@ -59,7 +59,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGNumber> initialValue)
+    SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, SVGNumber* initialValue)
         : SVGAnimatedProperty<SVGNumber>(contextElement, attributeName, initialValue)
         , m_parentNumberOptionalNumber(nullptr)
     {

@@ -47,7 +47,7 @@ private:
     explicit SVGFEDropShadowElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     static const AtomicString& stdDeviationXIdentifier();
     static const AtomicString& stdDeviationYIdentifier();

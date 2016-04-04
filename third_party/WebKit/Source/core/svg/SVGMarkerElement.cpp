@@ -119,10 +119,10 @@ void SVGMarkerElement::setOrientToAuto()
     setAttribute(SVGNames::orientAttr, "auto");
 }
 
-void SVGMarkerElement::setOrientToAngle(RawPtr<SVGAngleTearOff> angle)
+void SVGMarkerElement::setOrientToAngle(SVGAngleTearOff* angle)
 {
     ASSERT(angle);
-    RawPtr<SVGAngle> target = angle->target();
+    SVGAngle* target = angle->target();
     setAttribute(SVGNames::orientAttr, AtomicString(target->valueAsString()));
 }
 

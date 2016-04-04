@@ -42,7 +42,7 @@ class SVGMatrixTearOff;
 class SVGPointTearOff : public SVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGPointTearOff> create(RawPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static SVGPointTearOff* create(SVGPoint* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return new SVGPointTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
@@ -52,10 +52,10 @@ public:
     float x() { return target()->x(); }
     float y() { return target()->y(); }
 
-    RawPtr<SVGPointTearOff> matrixTransform(RawPtr<SVGMatrixTearOff>);
+    SVGPointTearOff* matrixTransform(SVGMatrixTearOff*);
 
 protected:
-    SVGPointTearOff(RawPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+    SVGPointTearOff(SVGPoint*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace blink

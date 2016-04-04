@@ -105,7 +105,7 @@ public:
     bool isElementPendingResource(Element*, const AtomicString& id) const;
     void clearHasPendingResourcesIfPossible(Element*);
     void removeElementFromPendingResources(Element*);
-    RawPtr<SVGPendingElements> removePendingResource(const AtomicString& id);
+    SVGPendingElements* removePendingResource(const AtomicString& id);
 
     void serviceAnimations(double monotonicAnimationStartTime);
 
@@ -114,7 +114,7 @@ public:
     Element* removeElementFromPendingResourcesForRemoval(const AtomicString&);
 
 private:
-    RawPtr<SVGPendingElements> removePendingResourceForRemoval(const AtomicString&);
+    SVGPendingElements* removePendingResourceForRemoval(const AtomicString&);
 };
 
 } // namespace blink

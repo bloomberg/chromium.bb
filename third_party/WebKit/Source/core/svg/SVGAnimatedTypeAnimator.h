@@ -46,11 +46,11 @@ public:
     void clear();
     void reset(SVGElement* contextElement);
 
-    RawPtr<SVGPropertyBase> constructFromString(const String&);
+    SVGPropertyBase* constructFromString(const String&);
 
-    RawPtr<SVGPropertyBase> startAnimValAnimation(const SVGElementInstances&);
+    SVGPropertyBase* startAnimValAnimation(const SVGElementInstances&);
     void stopAnimValAnimation(const SVGElementInstances&);
-    RawPtr<SVGPropertyBase> resetAnimValToBaseVal(const SVGElementInstances&);
+    SVGPropertyBase* resetAnimValToBaseVal(const SVGElementInstances&);
 
     void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*);
     float calculateDistance(const String& fromString, const String& toString);
@@ -68,8 +68,8 @@ public:
 
 private:
     friend class ParsePropertyFromString;
-    RawPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
-    RawPtr<SVGPropertyBase> resetAnimation(const SVGElementInstances&);
+    SVGPropertyBase* createPropertyForAnimation(const String&);
+    SVGPropertyBase* resetAnimation(const SVGElementInstances&);
 
     Member<SVGAnimationElement> m_animationElement;
     Member<SVGElement> m_contextElement;

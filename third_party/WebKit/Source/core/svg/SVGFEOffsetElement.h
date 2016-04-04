@@ -43,7 +43,7 @@ private:
     explicit SVGFEOffsetElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     Member<SVGAnimatedNumber> m_dx;
     Member<SVGAnimatedNumber> m_dy;

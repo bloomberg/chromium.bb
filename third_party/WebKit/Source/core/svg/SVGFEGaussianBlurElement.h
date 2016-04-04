@@ -45,7 +45,7 @@ private:
     explicit SVGFEGaussianBlurElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
     Member<SVGAnimatedString> m_in1;

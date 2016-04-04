@@ -224,7 +224,7 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertSVGValue(const
             // TODO(ericwilligers): Support matrix interpolation.
             return nullptr;
         }
-        result->set(i, toInterpolableValue(transform->clone().get(), transformType));
+        result->set(i, toInterpolableValue(transform->clone(), transformType));
         transformTypes.append(transformType);
     }
     return InterpolationValue(result.release(), SVGTransformNonInterpolableValue::create(transformTypes));

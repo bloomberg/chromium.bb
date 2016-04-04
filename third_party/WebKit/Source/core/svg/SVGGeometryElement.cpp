@@ -44,7 +44,7 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName, Document& d
 {
 }
 
-bool SVGGeometryElement::isPointInFill(RawPtr<SVGPointTearOff> point) const
+bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -58,7 +58,7 @@ bool SVGGeometryElement::isPointInFill(RawPtr<SVGPointTearOff> point) const
     return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
-bool SVGGeometryElement::isPointInStroke(RawPtr<SVGPointTearOff> point) const
+bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 

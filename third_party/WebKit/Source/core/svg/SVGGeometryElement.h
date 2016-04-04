@@ -41,8 +41,8 @@ class SVGGeometryElement : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual Path asPath() const = 0;
-    bool isPointInFill(RawPtr<SVGPointTearOff>) const;
-    bool isPointInStroke(RawPtr<SVGPointTearOff>) const;
+    bool isPointInFill(SVGPointTearOff*) const;
+    bool isPointInStroke(SVGPointTearOff*) const;
 
     void toClipPath(Path&) const;
 

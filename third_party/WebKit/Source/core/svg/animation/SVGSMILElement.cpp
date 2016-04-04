@@ -48,7 +48,7 @@ namespace blink {
 
 class RepeatEvent final : public Event {
 public:
-    static RawPtr<RepeatEvent> create(const AtomicString& type, int repeat)
+    static RepeatEvent* create(const AtomicString& type, int repeat)
     {
         return new RepeatEvent(type, false, false, repeat);
     }
@@ -108,7 +108,7 @@ static const double invalidCachedTime = -1.;
 
 class ConditionEventListener final : public EventListener {
 public:
-    static RawPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
+    static ConditionEventListener* create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
     {
         return new ConditionEventListener(animation, condition);
     }
@@ -162,7 +162,7 @@ void ConditionEventListener::handleEvent(ExecutionContext*, Event* event)
     m_animation->handleConditionEvent(event, m_condition);
 }
 
-void SVGSMILElement::Condition::setEventListener(RawPtr<ConditionEventListener> eventListener)
+void SVGSMILElement::Condition::setEventListener(ConditionEventListener* eventListener)
 {
     m_eventListener = eventListener;
 }

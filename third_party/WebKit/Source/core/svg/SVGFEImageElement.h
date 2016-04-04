@@ -55,7 +55,7 @@ private:
     void notifyFinished(Resource*) override;
     String debugName() const override { return "SVGFEImageElement"; }
 
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     void clearResourceReferences();
     void fetchImageResource();

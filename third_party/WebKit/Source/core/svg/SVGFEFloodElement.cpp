@@ -50,7 +50,7 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
     return false;
 }
 
-RawPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)
+FilterEffect* SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)
 {
     LayoutObject* layoutObject = this->layoutObject();
     if (!layoutObject)

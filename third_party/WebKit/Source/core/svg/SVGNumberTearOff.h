@@ -40,7 +40,7 @@ namespace blink {
 class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGNumberTearOff> create(RawPtr<SVGNumber> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static SVGNumberTearOff* create(SVGNumber* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return new SVGNumberTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
@@ -49,7 +49,7 @@ public:
     float value() { return target()->value(); }
 
 protected:
-    SVGNumberTearOff(RawPtr<SVGNumber>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+    SVGNumberTearOff(SVGNumber*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace blink

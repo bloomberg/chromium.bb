@@ -118,7 +118,7 @@ void SVGFEDiffuseLightingElement::lightElementAttributeChanged(const SVGFELightE
     primitiveAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEDiffuseLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -133,13 +133,13 @@ RawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* filter
     const SVGFELightElement* lightNode = SVGFELightElement::findLightElement(*this);
     RefPtr<LightSource> lightSource = lightNode ? lightNode->lightSource(filter) : nullptr;
 
-    RawPtr<FilterEffect> effect = FEDiffuseLighting::create(filter,
+    FilterEffect* effect = FEDiffuseLighting::create(filter,
         color,
         m_surfaceScale->currentValue()->value(),
         m_diffuseConstant->currentValue()->value(),
         lightSource.release());
     effect->inputEffects().append(input1);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

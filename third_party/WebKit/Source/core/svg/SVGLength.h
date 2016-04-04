@@ -37,15 +37,15 @@ class SVGLength final : public SVGPropertyBase {
 public:
     typedef SVGLengthTearOff TearOffType;
 
-    static RawPtr<SVGLength> create(SVGLengthMode mode = SVGLengthMode::Other)
+    static SVGLength* create(SVGLengthMode mode = SVGLengthMode::Other)
     {
         return new SVGLength(mode);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
-    RawPtr<SVGLength> clone() const;
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    SVGLength* clone() const;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
 
     CSSPrimitiveValue::UnitType typeWithCalcResolved() const { return m_value->typeWithCalcResolved(); }
     void setUnitType(CSSPrimitiveValue::UnitType);
@@ -91,9 +91,9 @@ public:
     static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
     static bool negativeValuesForbiddenForAnimatedLengthAttribute(const QualifiedName&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedLength; }
 

@@ -41,7 +41,7 @@ class SVGUseElement final : public SVGGraphicsElement,
     USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
     USING_PRE_FINALIZER(SVGUseElement, dispose);
 public:
-    static RawPtr<SVGUseElement> create(Document&);
+    static SVGUseElement* create(Document&);
     ~SVGUseElement() override;
 
     void invalidateShadowTree();
@@ -91,7 +91,7 @@ private:
     // Instance tree handling
     void buildShadowAndInstanceTree(SVGElement& target);
     void clearInstanceRoot();
-    RawPtr<Element> createInstanceTree(SVGElement& targetRoot) const;
+    Element* createInstanceTree(SVGElement& targetRoot) const;
     void clearShadowTree();
     bool hasCycleUseReferencing(const SVGUseElement&, const ContainerNode& targetInstance, SVGElement*& newTarget) const;
     bool expandUseElementsInShadowTree();
@@ -106,7 +106,7 @@ private:
     bool instanceTreeIsLoading() const;
     void notifyFinished(Resource*) override;
     String debugName() const override { return "SVGUseElement"; }
-    void setDocumentResource(RawPtr<DocumentResource>);
+    void setDocumentResource(DocumentResource*);
 
     Member<SVGAnimatedLength> m_x;
     Member<SVGAnimatedLength> m_y;

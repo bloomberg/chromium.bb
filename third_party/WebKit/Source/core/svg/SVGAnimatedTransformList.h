@@ -41,13 +41,13 @@ namespace blink {
 class SVGAnimatedTransformList final : public SVGAnimatedProperty<SVGTransformList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGAnimatedTransformList> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGTransformList> initialValue)
+    static SVGAnimatedTransformList* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGTransformList* initialValue)
     {
         return new SVGAnimatedTransformList(contextElement, attributeName, initialValue);
     }
 
 protected:
-    SVGAnimatedTransformList(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGTransformList> initialValue)
+    SVGAnimatedTransformList(SVGElement* contextElement, const QualifiedName& attributeName, SVGTransformList* initialValue)
         : SVGAnimatedProperty<SVGTransformList>(contextElement, attributeName, initialValue) { }
 };
 

@@ -51,15 +51,15 @@ public:
     void setValue(unsigned short);
 
     // SVGPropertyBase:
-    virtual RawPtr<SVGEnumerationBase> clone() const = 0;
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual SVGEnumerationBase* clone() const = 0;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
 
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedEnumeration; }
 
@@ -99,14 +99,14 @@ template<typename Enum> unsigned short getMaxExposedEnumValue()
 template<typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
 public:
-    static RawPtr<SVGEnumeration<Enum>> create(Enum newValue)
+    static SVGEnumeration<Enum>* create(Enum newValue)
     {
         return new SVGEnumeration<Enum>(newValue);
     }
 
     ~SVGEnumeration() override {}
 
-    RawPtr<SVGEnumerationBase> clone() const override
+    SVGEnumerationBase* clone() const override
     {
         return create(enumValue());
     }

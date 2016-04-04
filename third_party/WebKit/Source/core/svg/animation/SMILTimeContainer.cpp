@@ -533,8 +533,8 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
     for (unsigned i = 0; i < animationsToApplySize; ++i) {
         if (animationsToApply[i]->inDocument() && animationsToApply[i]->isSVGDiscardElement()) {
-            RawPtr<SVGSMILElement> animDiscard = animationsToApply[i];
-            RawPtr<SVGElement> targetElement = animDiscard->targetElement();
+            SVGSMILElement* animDiscard = animationsToApply[i];
+            SVGElement* targetElement = animDiscard->targetElement();
             if (targetElement && targetElement->inDocument()) {
                 targetElement->remove(IGNORE_EXCEPTION);
                 ASSERT(!targetElement->inDocument());

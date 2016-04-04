@@ -41,7 +41,7 @@ namespace blink {
 class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SVGAnimatedAngle> create(SVGElement* contextElement)
+    static SVGAnimatedAngle* create(SVGElement* contextElement)
     {
         return new SVGAnimatedAngle(contextElement);
     }
@@ -54,7 +54,7 @@ public:
     bool needsSynchronizeAttribute() override;
     void synchronizeAttribute() override;
 
-    void setAnimatedValue(RawPtr<SVGPropertyBase>) override;
+    void setAnimatedValue(SVGPropertyBase*) override;
     void animationEnded() override;
 
     DECLARE_VIRTUAL_TRACE();

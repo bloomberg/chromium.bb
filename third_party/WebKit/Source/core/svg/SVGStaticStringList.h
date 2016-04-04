@@ -43,7 +43,7 @@ class SVGElement;
 // Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but this is never animated.
 class SVGStaticStringList final : public SVGAnimatedPropertyBase {
 public:
-    static RawPtr<SVGStaticStringList> create(SVGElement* contextElement, const QualifiedName& attributeName)
+    static SVGStaticStringList* create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
         return new SVGStaticStringList(contextElement, attributeName);
     }
@@ -54,8 +54,8 @@ public:
     SVGPropertyBase* currentValueBase() override;
     const SVGPropertyBase& baseValueBase() const override;
     bool isAnimating() const override;
-    RawPtr<SVGPropertyBase> createAnimatedValue() override;
-    void setAnimatedValue(RawPtr<SVGPropertyBase>) override;
+    SVGPropertyBase* createAnimatedValue() override;
+    void setAnimatedValue(SVGPropertyBase*) override;
     void animationEnded() override;
     bool needsSynchronizeAttribute() override;
 

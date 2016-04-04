@@ -39,7 +39,7 @@ private:
     explicit SVGFETileElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     Member<SVGAnimatedString> m_in1;
 };

@@ -57,7 +57,7 @@ void SVGFEComponentTransferElement::svgAttributeChanged(const QualifiedName& att
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-RawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+FilterEffect* SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -78,9 +78,9 @@ RawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filt
             alpha = toSVGFEFuncAElement(*element).transferFunction();
     }
 
-    RawPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
+    FilterEffect* effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
     effect->inputEffects().append(input1);
-    return effect.release();
+    return effect;
 }
 
 } // namespace blink

@@ -33,8 +33,8 @@ class SVGPolyElement : public SVGGeometryElement {
 public:
     SVGAnimatedPointList* points() const { return m_points.get(); }
 
-    RawPtr<SVGPointListTearOff> pointsFromJavascript() { return m_points->baseVal(); }
-    RawPtr<SVGPointListTearOff> animatedPoints() { return m_points->animVal(); }
+    SVGPointListTearOff* pointsFromJavascript() { return m_points->baseVal(); }
+    SVGPointListTearOff* animatedPoints() { return m_points->animVal(); }
 
     DECLARE_VIRTUAL_TRACE();
 

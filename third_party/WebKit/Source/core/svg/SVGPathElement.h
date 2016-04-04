@@ -39,7 +39,7 @@ public:
     Path asPath() const override;
 
     float getTotalLength();
-    RawPtr<SVGPointTearOff> getPointAtLength(float distance);
+    SVGPointTearOff* getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
     SVGAnimatedPath* path() const { return m_path.get(); }

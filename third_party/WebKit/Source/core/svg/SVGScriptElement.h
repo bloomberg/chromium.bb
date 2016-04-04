@@ -40,7 +40,7 @@ class SVGScriptElement final
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 public:
-    static RawPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
+    static SVGScriptElement* create(Document&, bool wasInsertedByParser);
 
     ScriptLoader* loader() const { return m_loader.get(); }
 

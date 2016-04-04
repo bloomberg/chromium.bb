@@ -42,11 +42,11 @@ class SVGPath : public SVGPropertyBase {
 public:
     typedef void TearOffType;
 
-    static RawPtr<SVGPath> create()
+    static SVGPath* create()
     {
         return new SVGPath();
     }
-    static RawPtr<SVGPath> create(RawPtr<CSSPathValue> pathValue)
+    static SVGPath* create(CSSPathValue* pathValue)
     {
         return new SVGPath(pathValue);
     }
@@ -58,14 +58,14 @@ public:
     CSSPathValue* pathValue() const { return m_pathValue.get(); }
 
     // SVGPropertyBase:
-    RawPtr<SVGPath> clone() const;
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    SVGPath* clone() const;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
@@ -73,7 +73,7 @@ public:
 
 private:
     SVGPath();
-    explicit SVGPath(RawPtr<CSSPathValue>);
+    explicit SVGPath(CSSPathValue*);
 
     Member<CSSPathValue> m_pathValue;
 };

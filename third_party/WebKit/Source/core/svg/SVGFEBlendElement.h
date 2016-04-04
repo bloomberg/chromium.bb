@@ -65,7 +65,7 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
     Member<SVGAnimatedString> m_in1;
     Member<SVGAnimatedString> m_in2;

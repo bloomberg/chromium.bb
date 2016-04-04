@@ -54,8 +54,8 @@ public:
     virtual const SVGPropertyBase& baseValueBase() const = 0;
     virtual bool isAnimating() const = 0;
 
-    virtual RawPtr<SVGPropertyBase> createAnimatedValue() = 0;
-    virtual void setAnimatedValue(RawPtr<SVGPropertyBase>) = 0;
+    virtual SVGPropertyBase* createAnimatedValue() = 0;
+    virtual void setAnimatedValue(SVGPropertyBase*) = 0;
     virtual void animationEnded();
 
     virtual SVGParsingError setBaseValueAsString(const String&) = 0;
@@ -146,16 +146,15 @@ public:
         return m_baseValue->setValueAsString(value);
     }
 
-    RawPtr<SVGPropertyBase> createAnimatedValue() override
+    SVGPropertyBase* createAnimatedValue() override
     {
         return m_baseValue->clone();
     }
 
-    void setAnimatedValue(RawPtr<SVGPropertyBase> passValue) override
+    void setAnimatedValue(SVGPropertyBase* value) override
     {
-        RawPtr<SVGPropertyBase> value = passValue;
         ASSERT(value->type() == Property::classType());
-        m_currentValue = static_pointer_cast<Property>(value.release());
+        m_currentValue = static_cast<Property*>(value);
     }
 
     void animationEnded() override
@@ -173,7 +172,7 @@ public:
     }
 
 protected:
-    SVGAnimatedPropertyCommon(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
+    SVGAnimatedPropertyCommon(SVGElement* contextElement, const QualifiedName& attributeName, Property* initialValue)
         : SVGAnimatedPropertyBase(Property::classType(), contextElement, attributeName)
         , m_baseValue(initialValue)
     {
@@ -234,7 +233,7 @@ public:
     }
 
 protected:
-    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, Property* initialValue)
         : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
         , m_baseValueUpdated(false)
     {
@@ -250,12 +249,12 @@ protected:
 template <typename Property, typename TearOffType>
 class SVGAnimatedProperty<Property, TearOffType, void> : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static RawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
+    static SVGAnimatedProperty<Property>* create(SVGElement* contextElement, const QualifiedName& attributeName, Property* initialValue)
     {
         return new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue);
     }
 
-    void setAnimatedValue(RawPtr<SVGPropertyBase> value) override
+    void setAnimatedValue(SVGPropertyBase* value) override
     {
         SVGAnimatedPropertyCommon<Property>::setAnimatedValue(value);
         updateAnimValTearOffIfNeeded();
@@ -305,7 +304,7 @@ public:
     }
 
 protected:
-    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, Property* initialValue)
         : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
     {
     }
@@ -332,7 +331,7 @@ private:
 template <typename Property>
 class SVGAnimatedProperty<Property, void, void> : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static RawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
+    static SVGAnimatedProperty<Property>* create(SVGElement* contextElement, const QualifiedName& attributeName, Property* initialValue)
     {
         return new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue);
     }
@@ -344,7 +343,7 @@ public:
     }
 
 protected:
-    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, Property* initialValue)
         : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
     {
     }

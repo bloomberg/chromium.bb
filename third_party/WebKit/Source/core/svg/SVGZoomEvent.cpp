@@ -33,11 +33,11 @@ SVGZoomEvent::SVGZoomEvent()
 {
 }
 
-RawPtr<SVGRectTearOff> SVGZoomEvent::zoomRectScreen() const
+SVGRectTearOff* SVGZoomEvent::zoomRectScreen() const
 {
-    RawPtr<SVGRectTearOff> rectTearOff = SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
+    SVGRectTearOff* rectTearOff = SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
     rectTearOff->setIsReadOnlyProperty();
-    return rectTearOff.release();
+    return rectTearOff;
 }
 
 float SVGZoomEvent::previousScale() const
@@ -45,11 +45,11 @@ float SVGZoomEvent::previousScale() const
     return m_previousScale;
 }
 
-RawPtr<SVGPointTearOff> SVGZoomEvent::previousTranslate() const
+SVGPointTearOff* SVGZoomEvent::previousTranslate() const
 {
-    RawPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_previousTranslate), 0, PropertyIsNotAnimVal);
+    SVGPointTearOff* pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_previousTranslate), 0, PropertyIsNotAnimVal);
     pointTearOff->setIsReadOnlyProperty();
-    return pointTearOff.release();
+    return pointTearOff;
 }
 
 float SVGZoomEvent::newScale() const
@@ -57,11 +57,11 @@ float SVGZoomEvent::newScale() const
     return m_newScale;
 }
 
-RawPtr<SVGPointTearOff> SVGZoomEvent::newTranslate() const
+SVGPointTearOff* SVGZoomEvent::newTranslate() const
 {
-    RawPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_newTranslate), 0, PropertyIsNotAnimVal);
+    SVGPointTearOff* pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_newTranslate), 0, PropertyIsNotAnimVal);
     pointTearOff->setIsReadOnlyProperty();
-    return pointTearOff.release();
+    return pointTearOff;
 }
 
 const AtomicString& SVGZoomEvent::interfaceName() const

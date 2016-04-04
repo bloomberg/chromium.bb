@@ -43,30 +43,30 @@ public:
     typedef void TearOffType;
     typedef void PrimitiveType;
 
-    static RawPtr<SVGNumberOptionalNumber> create(RawPtr<SVGNumber> firstNumber, RawPtr<SVGNumber> secondNumber)
+    static SVGNumberOptionalNumber* create(SVGNumber* firstNumber, SVGNumber* secondNumber)
     {
         return new SVGNumberOptionalNumber(firstNumber, secondNumber);
     }
 
-    RawPtr<SVGNumberOptionalNumber> clone() const;
-    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    SVGNumberOptionalNumber* clone() const;
+    SVGPropertyBase* cloneForAnimation(const String&) const override;
 
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(SVGPropertyBase*, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumberOptionalNumber; }
 
-    RawPtr<SVGNumber> firstNumber() const { return m_firstNumber; }
-    RawPtr<SVGNumber> secondNumber() const { return m_secondNumber; }
+    SVGNumber* firstNumber() const { return m_firstNumber; }
+    SVGNumber* secondNumber() const { return m_secondNumber; }
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    SVGNumberOptionalNumber(RawPtr<SVGNumber> firstNumber, RawPtr<SVGNumber> secondNumber);
+    SVGNumberOptionalNumber(SVGNumber* firstNumber, SVGNumber* secondNumber);
 
     Member<SVGNumber> m_firstNumber;
     Member<SVGNumber> m_secondNumber;
