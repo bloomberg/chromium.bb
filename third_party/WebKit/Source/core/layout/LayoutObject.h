@@ -800,7 +800,6 @@ public:
     // If |ancestor| and |ancestorSkipped| are not null, on return *ancestorSkipped
     // is true if the layoutObject returned is an ancestor of |ancestor|.
     LayoutObject* container(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr) const;
-    LayoutObject* containerCrossingFrameBoundaries() const;
     // Finds the container as if this object is fixed-position.
     LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr) const;
     // Finds the containing block as if this object is absolute-position.
@@ -1612,7 +1611,7 @@ private:
     // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
     inline void markContainingBlocksForOverflowRecalc();
 
-    inline void markContainerChainForPaintInvalidation();
+    inline void markAncestorsForPaintInvalidation();
 
     inline void invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState&, PaintInvalidationReason);
 
@@ -1650,6 +1649,8 @@ private:
 
     // The passed rect is mutated into the coordinate space of the paint invalidation container.
     const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
+
+    LayoutObject* parentCrossingFrameBoundaries() const;
 
     static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
 

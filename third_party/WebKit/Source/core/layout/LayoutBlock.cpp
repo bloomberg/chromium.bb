@@ -379,49 +379,6 @@ bool LayoutBlock::allowsOverflowClip() const
     return node() != document().viewportDefiningElement();
 }
 
-void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
-{
-    LayoutBox::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
-
-    // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
-    if (TrackedLayoutBoxListHashSet* positionedObjects = this->positionedObjects()) {
-        for (auto* box : *positionedObjects) {
-
-            // One of the layoutObjects we're skipping over here may be the child's paint invalidation container,
-            // so we can't pass our own paint invalidation container along.
-            const LayoutBoxModelObject& paintInvalidationContainerForChild = box->containerForPaintInvalidation();
-
-            // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
-            // PaintInvalidationState.
-            // FIXME: Teach PaintInvalidationState to handle this case. crbug.com/371485
-            if (paintInvalidationContainerForChild != childPaintInvalidationState.paintInvalidationContainer()) {
-                ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
-                PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, paintInvalidationContainerForChild);
-                box->invalidateTreeIfNeeded(disabledPaintInvalidationState);
-                continue;
-            }
-
-            // If the positioned layoutObject is absolutely positioned and it is inside
-            // a relatively positioned inline element, we need to account for
-            // the inline elements position in PaintInvalidationState.
-            if (box->style()->position() == AbsolutePosition) {
-                LayoutObject* container = box->container(&paintInvalidationContainerForChild, 0);
-                if (container->isInFlowPositioned() && container->isLayoutInline()) {
-                    // FIXME: We should be able to use PaintInvalidationState for this.
-                    // Currently, we will place absolutely positioned elements inside
-                    // relatively positioned inline blocks in the wrong location. crbug.com/371485
-                    ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
-                    PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, paintInvalidationContainerForChild);
-                    box->invalidateTreeIfNeeded(disabledPaintInvalidationState);
-                    continue;
-                }
-            }
-
-            box->invalidateTreeIfNeeded(childPaintInvalidationState);
-        }
-    }
-}
-
 inline static void invalidateDisplayItemClientForStartOfContinuationsIfNeeded(const LayoutBlock& block)
 {
     // If the block is a continuation or containing block of an inline continuation, invalidate the

@@ -365,10 +365,6 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
         return;
 
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
-
-    // TODO(wangxianzhu): Enable this assert after we fix all paintInvalidationContainer mismatch issues. crbug.com/360286
-    // ASSERT(&newPaintInvalidationState.paintInvalidationContainer() == &containerForPaintInvalidation());
-
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 

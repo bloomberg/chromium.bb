@@ -32,15 +32,14 @@ enum VisualRectFlags {
 // The main difference with LayoutState is that it was customized for the
 // needs of the paint invalidation systems (keeping visual rectangles
 // instead of layout specific information).
+//
+// See Source/core/paint/README.md ### PaintInvalidationState for more details.
+
 class PaintInvalidationState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
     PaintInvalidationState(const PaintInvalidationState& parentState, const LayoutObject&);
-
-    // TODO(wangxianzhu): This is temporary for positioned object whose paintInvalidationContainer is different from
-    // the one we find during tree walk. Remove this after we fix the issue with tree walk in DOM-order.
-    PaintInvalidationState(const PaintInvalidationState& parentState, const LayoutBoxModelObject&, const LayoutBoxModelObject& paintInvalidationContainer);
 
     // For root LayoutView, or when sub-frame LayoutView's invalidateTreeIfNeeded() is called directly from
     // FrameView::invalidateTreeIfNeededRecursive() instead of the owner LayoutPart.
@@ -59,7 +58,7 @@ public:
     bool forcedSubtreeInvalidationRectUpdateWithinContainer() const { return m_forcedSubtreeInvalidationRectUpdateWithinContainer; }
     void setForceSubtreeInvalidationRectUpdateWithinContainer() { m_forcedSubtreeInvalidationRectUpdateWithinContainer = true; }
 
-    const LayoutBoxModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
+    const LayoutBoxModelObject& paintInvalidationContainer() const { return *m_paintInvalidationContainer; }
 
     // Computes the position of the current object ((0,0) in the space of the object)
     // in the space of paint invalidation backing.
@@ -82,6 +81,8 @@ public:
 #endif
 
 private:
+    void updateForNormalChildren();
+
     LayoutRect computePaintInvalidationRectInBackingForSVG() const;
 
     void addClipRectRelativeToPaintOffset(const LayoutRect& localClipRect);
@@ -90,20 +91,40 @@ private:
 
     const LayoutObject& m_currentObject;
 
-    bool m_clipped;
-    mutable bool m_cachedOffsetsEnabled;
     bool m_forcedSubtreeInvalidationWithinContainer;
     bool m_forcedSubtreeInvalidationRectUpdateWithinContainer;
 
+    bool m_clipped;
+    bool m_clippedForAbsolutePosition;
+
+    // Clip rect from paintInvalidationContainer if m_cachedOffsetsEnabled is true.
     LayoutRect m_clipRect;
+    LayoutRect m_clipRectForAbsolutePosition;
 
-    // x/y offset from paint invalidation container. Includes relative positioning and scroll offsets.
+    // x/y offset from the paintInvalidationContainer if m_cachedOffsetsEnabled is true.
+    // It includes relative positioning and scroll offsets.
     LayoutSize m_paintOffset;
+    LayoutSize m_paintOffsetForAbsolutePosition;
 
-    // The current paint invalidation container.
-    //
+    // Whether m_paintOffset[XXX] and m_clipRect[XXX] are valid and can be used
+    // to map a rect from space of the current object to space of paintInvalidationContainer.
+    mutable bool m_cachedOffsetsEnabled;
+    bool m_cachedOffsetsForAbsolutePositionEnabled;
+
+    // The following two fields are never null. Declare them as pointers because we need some
+    // logic to initialize them in the body of the constructor.
+
+    // The current paint invalidation container for normal flow objects.
     // It is the enclosing composited object.
-    const LayoutBoxModelObject& m_paintInvalidationContainer;
+    const LayoutBoxModelObject* m_paintInvalidationContainer;
+
+    // The current paint invalidation container for stacked contents (stacking contexts or positioned objects).
+    // It is the nearest ancestor composited object which establishes a stacking context.
+    // See Source/core/paint/README.md ### PaintInvalidationState for details on how stacked contents'
+    // paint invalidation containers differ.
+    const LayoutBoxModelObject* m_paintInvalidationContainerForStackedContents;
+
+    const LayoutObject& m_containerForAbsolutePosition;
 
     // Transform from the initial viewport coordinate system of an outermost
     // SVG root to the userspace _before_ the relevant element. Combining this
@@ -117,32 +138,6 @@ private:
 #if ENABLE(ASSERT)
     bool m_didUpdateForChildren;
 #endif
-};
-
-// Suspends the PaintInvalidationState cached offset and clipRect optimization. Used under transforms
-// that cannot be represented by PaintInvalidationState (common in SVG) and when paint invalidation
-// containers don't follow the common tree-walk algorithm (e.g. when an absolute positioned descendant
-// is nested under a relatively positioned inline-block child).
-class ForceHorriblySlowRectMapping {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ForceHorriblySlowRectMapping);
-public:
-    ForceHorriblySlowRectMapping(const PaintInvalidationState* paintInvalidationState)
-        : m_paintInvalidationState(paintInvalidationState)
-        , m_didDisable(m_paintInvalidationState && m_paintInvalidationState->m_cachedOffsetsEnabled)
-    {
-        if (m_paintInvalidationState)
-            m_paintInvalidationState->m_cachedOffsetsEnabled = false;
-    }
-
-    ~ForceHorriblySlowRectMapping()
-    {
-        if (m_didDisable)
-            m_paintInvalidationState->m_cachedOffsetsEnabled = true;
-    }
-private:
-    const PaintInvalidationState* m_paintInvalidationState;
-    bool m_didDisable;
 };
 
 } // namespace blink

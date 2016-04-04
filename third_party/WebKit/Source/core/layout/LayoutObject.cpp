@@ -1337,10 +1337,8 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
 
 void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
-    for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isOutOfFlowPositioned())
-            child->invalidateTreeIfNeeded(childPaintInvalidationState);
-    }
+    for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling())
+        child->invalidateTreeIfNeeded(childPaintInvalidationState);
 }
 
 static PassOwnPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
@@ -1431,8 +1429,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
 
     const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
-    // TODO(wangxianzhu): Enable this assert after we fix all paintInvalidationContainer mismatch issues. crbug.com/360286
-    // ASSERT(paintInvalidationContainer == containerForPaintInvalidation());
+    ASSERT(paintInvalidationContainer == containerForPaintInvalidation());
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
     const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
@@ -2616,9 +2613,9 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool
     return o;
 }
 
-LayoutObject* LayoutObject::containerCrossingFrameBoundaries() const
+LayoutObject* LayoutObject::parentCrossingFrameBoundaries() const
 {
-    return isLayoutView() ? frame()->ownerLayoutObject() : container();
+    return isLayoutView() ? frame()->ownerLayoutObject() : parent();
 }
 
 bool LayoutObject::isSelectionBorder() const
@@ -3417,9 +3414,9 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
     }
 }
 
-inline void LayoutObject::markContainerChainForPaintInvalidation()
+inline void LayoutObject::markAncestorsForPaintInvalidation()
 {
-    for (LayoutObject* container = this->containerCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->containerCrossingFrameBoundaries())
+    for (LayoutObject* container = this->parentCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->parentCrossingFrameBoundaries())
         container->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
 
@@ -3428,7 +3425,7 @@ void LayoutObject::setShouldInvalidateSelection()
     if (!canUpdateSelectionOnRootLineBoxes())
         return;
     m_bitfields.setShouldInvalidateSelection(true);
-    markContainerChainForPaintInvalidation();
+    markAncestorsForPaintInvalidation();
     frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
@@ -3444,7 +3441,7 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
             reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
         m_bitfields.setFullPaintInvalidationReason(reason);
         if (!isUpgradingDelayedFullToFull)
-            markContainerChainForPaintInvalidation();
+            markAncestorsForPaintInvalidation();
     }
 
     frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
@@ -3455,7 +3452,7 @@ void LayoutObject::setMayNeedPaintInvalidation()
     if (mayNeedPaintInvalidation())
         return;
     m_bitfields.setMayNeedPaintInvalidation(true);
-    markContainerChainForPaintInvalidation();
+    markAncestorsForPaintInvalidation();
     frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 

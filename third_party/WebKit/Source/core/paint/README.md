@@ -2,15 +2,20 @@
 
 This directory contains implementation of painters of layout objects.
 
-## Stacked contents and stacking contexts
+## Glossaries
+
+### Stacked elements and stacking contexts
 
 This chapter is basically a clarification of [CSS 2.1 appendix E. Elaborate description
 of Stacking Contexts](http://www.w3.org/TR/CSS21/zindex.html).
 
+Note: we use 'element' instead of 'object' in this chapter to keep consistency with
+the spec. We use 'object' in other places in this document.
+
 According to the documentation, we can have the following types of elements that are
 treated in different ways during painting:
 
-*   Stacked elements: elements that are z-ordered in stacking contexts.
+*   Stacked objects: objects that are z-ordered in stacking contexts, including:
 
     *   Stacking contexts: elements with non-auto z-indices.
 
@@ -55,7 +60,26 @@ treated in different ways during painting:
 
 *   Other normal elements.
 
-## Painters
+### Other glossaries
+
+*   Paint container: the parent of an object for painting, as defined by [CSS2.1 spec
+    for painting]((http://www.w3.org/TR/CSS21/zindex.html)). For regular objects,
+    this is the parent in the DOM. For stacked objects, it's the containing stacking
+    context-inducing object.
+
+*   Paint container chain: the chain of paint ancestors between an element and the
+    root of the page.
+
+*   Compositing container: an implementation detail of Blink, which uses
+    `PaintLayer`s to represent some layout objects. It is the ancestor along the paint
+    ancestor chain which has a PaintLayer. Implemented in
+    `PaintLayer::compositingContainer()`. Think of it as skipping intermediate normal
+    objects and going directly to the containing stacked object.
+
+*   Compositing container chain: same as paint chain, but for compositing container.
+
+*   Paint invalidation container: the nearest object on the compositing container
+    chain which is composited.
 
 ## Paint invalidation
 
@@ -70,12 +94,61 @@ Though described in this document, most of the actual paint invalidation code is
 Paint invalidation is a document cycle stage after compositing update and before paint.
 During the previous stages, objects are marked for needing paint invalidation checking
 if needed by style change, layout change, compositing change, etc. In paint invalidation stage,
-we traverse the layout tree for marked subtrees and objects and send the following information
-to `GraphicsLayer`s and `PaintController`s:
+we traverse the layout tree in pre-order, crossing frame boundaries, for marked subtrees
+and objects and send the following information to `GraphicsLayer`s and `PaintController`s:
 
 *   paint invalidation rects: must cover all areas that will generete different pixels.
 *   invalidated display item clients: must invalidate all display item clients that will
     generate different display items.
+
+#### `PaintInvalidationState`
+
+`PaintInvalidationState` is an optimization used during the paint invalidation phase. Before
+the paint invalidation tree walk, a root `PaintInvalidationState` is created for the root
+`LayoutView`. During the tree walk, one `PaintInvalidationState` is created for each visited
+object based on the `PaintInvalidationState` passed from the parent object.
+It tracks the following information to provide O(1) complexity access to them if possible:
+
+*   Paint invalidation container: Since as indicated by the definitions in [Glossaries](#Other glossaries),
+    the paint invalidation container for stacked objects can differ from normal objects, we
+    have to track both separately. Here is an example:
+
+        <div style="overflow: scroll">
+            <div id=A style="position: absolute"></div>
+            <div id=B></div>
+        </div>
+
+    If the scroller is composited (for high-DPI screens for example), it is the paint invalidation
+    container for div B, but not A.
+
+*   Paint offset and clip rect: if possible, `PaintInvalidationState` accumulates paint offsets
+    and overflow clipping rects from the paint invalidation container to provide O(1) complexity to
+    map a point or a rect in current object's local space to paint invalidation container's space.
+    Because locations of objects are determined by their containing blocks, and the containing block
+    for absolute-position objects differs from non-absolute, we track paint offsets and overflow
+    clipping rects for absolute-position objects separately.
+
+In cases that accurate accumulation of paint offsets and clipping rects is impossible,
+we will fall back to slow-path using `LayoutObject::localToAncestorPoint()` or
+`LayoutObject::mapToVisualRectInAncestorSpace()`. This includes the following cases:
+
+*   An object has transform related property, is multi-column or has flipped blocks writing-mode,
+    causing we can't simply accumulate paint offset for mapping a local rect to paint invalidation
+    container;
+
+*   An object has has filter or reflection, which needs to expand paint invalidation rect
+    for descendants, because currently we don't include and reflection extents into visual overflow;
+
+*   For a fixed-position object we calculate its offset using `LayoutObject::localToAncestorPoint()`,
+    but map for its descendants in fast-path if no other things prevent us from doing this;
+
+*   Because we track paint offset from the normal paint invalidation container only, if we are going
+    to use `m_paintInvalidationContainerForStackedContents` and it's different from the normal paint
+    invalidation container, we have to force slow-path because the accumulated paint offset is not
+    usable;
+
+*   We also stop to track paint offset and clipping rect for absolute-position objects when
+    `m_paintInvalidationContainerForStackedContents` becomes different from `m_paintInvalidationContainer`.
 
 ### Paint invalidation of texts
 

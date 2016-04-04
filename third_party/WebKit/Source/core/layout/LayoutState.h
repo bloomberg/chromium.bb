@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class ForceHorriblySlowRectMapping;
 class LayoutBox;
 class LayoutFlowThread;
 class LayoutObject;
@@ -94,8 +93,6 @@ public:
     LayoutObject& layoutObject() const { return m_layoutObject; }
 
 private:
-    friend class ForceHorriblySlowRectMapping;
-
     // Do not add anything apart from bitfields until after m_flowThread. See https://bugs.webkit.org/show_bug.cgi?id=100173
     bool m_isPaginated : 1;
     // If our page height has changed, this will force all blocks to relayout.

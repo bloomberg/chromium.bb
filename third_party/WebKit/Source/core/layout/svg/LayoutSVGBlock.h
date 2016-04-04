@@ -38,8 +38,6 @@ public:
 
     PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
 
-    void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
-
 protected:
     void willBeDestroyed() override;
     bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const final;

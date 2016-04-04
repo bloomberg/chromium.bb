@@ -115,14 +115,4 @@ bool LayoutSVGBlock::nodeAtPoint(HitTestResult&, const HitTestLocation&, const L
     return false;
 }
 
-void LayoutSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
-        return;
-
-    // TODO(wangxianzhu): Move this to fast path if possible. crbug.com/391054.
-    ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
-    LayoutBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
-}
-
 } // namespace blink

@@ -223,8 +223,6 @@ private:
     void updateFromStyle() override;
     bool allowsOverflowClip() const override;
 
-    friend class ForceHorriblySlowRectMapping;
-
     bool shouldUsePrintingLayout() const;
 
     int viewLogicalWidthForBoxSizing() const;
