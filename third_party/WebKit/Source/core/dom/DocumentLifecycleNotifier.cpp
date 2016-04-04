@@ -33,40 +33,8 @@ namespace blink {
 void DocumentLifecycleNotifier::notifyDocumentWasDetached()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-#if !ENABLE(OILPAN)
-    // Notifications perform unknown amounts of heap allocations,
-    // which might trigger (conservative) GCs. This will flush out
-    // dead observers, causing the _non-heap_ set be updated. Snapshot
-    // the observers and explicitly check if they're still alive before
-    // notifying.
-    Vector<RawPtr<DocumentLifecycleObserver>> snapshotOfObservers;
-    copyToVector(m_observers, snapshotOfObservers);
-    for (DocumentLifecycleObserver* observer : snapshotOfObservers) {
-        if (m_observers.contains(observer))
-            observer->documentWasDetached();
-    }
-#else
     for (DocumentLifecycleObserver* observer : m_observers)
         observer->documentWasDetached();
-#endif
 }
-
-#if !ENABLE(OILPAN)
-void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
-{
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    // Notifications perform unknown amounts of heap allocations,
-    // which might trigger (conservative) GCs. This will flush out
-    // dead observers, causing the _non-heap_ set be updated. Snapshot
-    // the observers and explicitly check if they're still alive before
-    // notifying.
-    Vector<RawPtr<DocumentLifecycleObserver>> snapshotOfObservers;
-    copyToVector(m_observers, snapshotOfObservers);
-    for (DocumentLifecycleObserver* observer : snapshotOfObservers) {
-        if (m_observers.contains(observer))
-            observer->documentWasDisposed();
-    }
-}
-#endif
 
 } // namespace blink

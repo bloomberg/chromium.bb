@@ -37,9 +37,6 @@ class DocumentLifecycleNotifier;
 class CORE_EXPORT DocumentLifecycleObserver : public LifecycleObserver<Document, DocumentLifecycleObserver, DocumentLifecycleNotifier> {
 public:
     virtual void documentWasDetached() { }
-#if !ENABLE(OILPAN)
-    virtual void documentWasDisposed() { }
-#endif
 
 protected:
     explicit DocumentLifecycleObserver(Document* document)

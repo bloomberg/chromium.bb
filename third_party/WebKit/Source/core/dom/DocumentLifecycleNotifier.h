@@ -37,9 +37,6 @@ class DocumentLifecycleObserver;
 class CORE_EXPORT DocumentLifecycleNotifier : public LifecycleNotifier<Document, DocumentLifecycleObserver> {
 public:
     void notifyDocumentWasDetached();
-#if !ENABLE(OILPAN)
-    void notifyDocumentWasDisposed();
-#endif
 };
 
 } // namespace blink

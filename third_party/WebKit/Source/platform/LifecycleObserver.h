@@ -28,7 +28,6 @@
 #define LifecycleObserver_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -36,13 +35,6 @@ template<typename T, typename Observer, typename Notifier>
 class LifecycleObserver : public GarbageCollectedMixin {
 public:
     using Context = T;
-
-#if !ENABLE(OILPAN)
-    virtual ~LifecycleObserver()
-    {
-        clearContext();
-    }
-#endif
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -52,7 +44,6 @@ public:
     virtual void contextDestroyed() { }
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
-    void clearLifecycleContext() { m_lifecycleContext = nullptr; }
 
 protected:
     explicit LifecycleObserver(Context* context)

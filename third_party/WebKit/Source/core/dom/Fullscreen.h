@@ -87,9 +87,6 @@ public:
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
 
     void documentWasDetached() override;
-#if !ENABLE(OILPAN)
-    void documentWasDisposed() override;
-#endif
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -193,22 +193,10 @@ void Fullscreen::documentWasDetached()
     if (m_fullScreenLayoutObject)
         m_fullScreenLayoutObject->destroy();
 
-#if ENABLE(OILPAN)
     m_fullScreenElement = nullptr;
     m_fullScreenElementStack.clear();
-#endif
 
 }
-
-#if !ENABLE(OILPAN)
-void Fullscreen::documentWasDisposed()
-{
-    // NOTE: the context dispose phase is not supported in oilpan. Please
-    // consider using the detach phase instead.
-    m_fullScreenElement = nullptr;
-    m_fullScreenElementStack.clear();
-}
-#endif
 
 void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 {

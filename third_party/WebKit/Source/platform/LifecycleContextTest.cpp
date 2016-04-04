@@ -36,9 +36,9 @@ class TestingObserver;
 class DummyContext final : public GarbageCollectedFinalized<DummyContext>, public LifecycleNotifier<DummyContext, TestingObserver> {
     USING_GARBAGE_COLLECTED_MIXIN(DummyContext);
 public:
-    static RawPtr<DummyContext> create()
+    static DummyContext* create()
     {
-        return new DummyContext();
+        return new DummyContext;
     }
 
     DEFINE_INLINE_TRACE()
@@ -50,7 +50,7 @@ public:
 class TestingObserver final : public GarbageCollectedFinalized<TestingObserver>, public LifecycleObserver<DummyContext, TestingObserver, DummyContext> {
     USING_GARBAGE_COLLECTED_MIXIN(TestingObserver);
 public:
-    static RawPtr<TestingObserver> create(DummyContext* context)
+    static TestingObserver* create(DummyContext* context)
     {
         return new TestingObserver(context);
     }
@@ -59,7 +59,7 @@ public:
     {
         LifecycleObserver::contextDestroyed();
         if (m_observerToRemoveOnDestruct) {
-            lifecycleContext()->removeObserver(m_observerToRemoveOnDestruct.get());
+            lifecycleContext()->removeObserver(m_observerToRemoveOnDestruct);
             m_observerToRemoveOnDestruct.clear();
         }
         m_contextDestroyedCalled = true;
@@ -73,13 +73,13 @@ public:
 
     void unobserve() { setContext(nullptr); }
 
-    void setObserverToRemoveAndDestroy(RawPtr<TestingObserver> observerToRemoveOnDestruct)
+    void setObserverToRemoveAndDestroy(TestingObserver* observerToRemoveOnDestruct)
     {
         ASSERT(!m_observerToRemoveOnDestruct);
         m_observerToRemoveOnDestruct = observerToRemoveOnDestruct;
     }
 
-    TestingObserver* innerObserver() const { return m_observerToRemoveOnDestruct.get(); }
+    TestingObserver* innerObserver() const { return m_observerToRemoveOnDestruct; }
     bool contextDestroyedCalled() const { return m_contextDestroyedCalled; }
 
 private:
@@ -95,10 +95,10 @@ private:
 
 TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 {
-    RawPtr<DummyContext> context = DummyContext::create();
-    Persistent<TestingObserver> observer = TestingObserver::create(context.get());
+    DummyContext* context = DummyContext::create();
+    Persistent<TestingObserver> observer = TestingObserver::create(context);
 
-    EXPECT_EQ(observer->lifecycleContext(), context.get());
+    EXPECT_EQ(observer->lifecycleContext(), context);
     EXPECT_FALSE(observer->contextDestroyedCalled());
     context->notifyContextDestroyed();
     context = nullptr;
@@ -109,8 +109,8 @@ TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 
 TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
 {
-    RawPtr<DummyContext> context = DummyContext::create();
-    Persistent<TestingObserver> observer = TestingObserver::create(context.get());
+    DummyContext* context = DummyContext::create();
+    Persistent<TestingObserver> observer = TestingObserver::create(context);
     observer->unobserve();
     context->notifyContextDestroyed();
     context = nullptr;
@@ -121,17 +121,15 @@ TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
 
 TEST(LifecycleContextTest, observerRemovedDuringNotifyDestroyed)
 {
-    // FIXME: Oilpan: this test can be removed when the LifecycleNotifier<T>::m_observers
-    // hash set is on the heap and membership is handled implicitly by the garbage collector.
-    RawPtr<DummyContext> context = DummyContext::create();
-    Persistent<TestingObserver> observer = TestingObserver::create(context.get());
-    RawPtr<TestingObserver> innerObserver = TestingObserver::create(context.get());
+    DummyContext* context = DummyContext::create();
+    Persistent<TestingObserver> observer = TestingObserver::create(context);
+    TestingObserver* innerObserver = TestingObserver::create(context);
     // Attach the observer to the other. When 'observer' is notified
     // of destruction, it will remove & destroy 'innerObserver'.
-    observer->setObserverToRemoveAndDestroy(innerObserver.release());
+    observer->setObserverToRemoveAndDestroy(innerObserver);
 
-    EXPECT_EQ(observer->lifecycleContext(), context.get());
-    EXPECT_EQ(observer->innerObserver()->lifecycleContext(), context.get());
+    EXPECT_EQ(observer->lifecycleContext(), context);
+    EXPECT_EQ(observer->innerObserver()->lifecycleContext(), context);
     EXPECT_FALSE(observer->contextDestroyedCalled());
     EXPECT_FALSE(observer->innerObserver()->contextDestroyedCalled());
 

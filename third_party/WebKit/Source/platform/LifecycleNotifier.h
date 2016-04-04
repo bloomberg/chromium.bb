@@ -50,9 +50,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_observers);
-#endif
     }
 
     bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
@@ -89,13 +87,6 @@ inline LifecycleNotifier<T, Observer>::~LifecycleNotifier()
 {
     // FIXME: Enable the following ASSERT. Also see a FIXME in Document::detach().
     // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
-
-#if !ENABLE(OILPAN)
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    for (Observer* observer : m_observers) {
-        observer->clearLifecycleContext();
-    }
-#endif
 }
 
 template<typename T, typename Observer>
@@ -109,17 +100,11 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
     Vector<UntracedMember<Observer>> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {
-        // FIXME: Oilpan: At the moment, it's possible that the Observer is
-        // destructed during the iteration.
-        // Once we enable Oilpan by default for Observers *and*
-        // Observer::contextDestroyed() does not call removeObserver(),
-        // we can remove the hack by making m_observers
-        // a HeapHashSet<WeakMember<Observers>>. (i.e., we can just iterate
-        // m_observers without taking a snapshot).
-        if (m_observers.contains(observer)) {
-            ASSERT(observer->lifecycleContext() == context());
-            observer->contextDestroyed();
-        }
+        if (!m_observers.contains(observer))
+            continue;
+
+        ASSERT(observer->lifecycleContext() == context());
+        observer->contextDestroyed();
     }
 
     m_didCallContextDestroyed = true;
