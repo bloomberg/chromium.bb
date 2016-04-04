@@ -11,12 +11,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
 #include "printing/metafile.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace gfx {
 class Rect;
@@ -61,8 +56,6 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   // Returns a CGPDFDocumentRef version of pdf_data_.
   CGPDFDocumentRef GetPDFDocument() const;
 
-  base::ThreadChecker thread_checker_;
-
   // Context for rendering to the pdf.
   base::ScopedCFTypeRef<CGContextRef> context_;
 
@@ -74,9 +67,6 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
 
   // Whether or not a page is currently open.
   bool page_is_open_;
-
-  // Whether this instantiation of the PdfMetafileCg owns the thread_pdf_docs.
-  bool thread_pdf_docs_owned_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileCg);
 };
