@@ -90,6 +90,13 @@ public class MediaMetadata {
         mAlbum = album;
     }
 
+    /**
+     * Copy constructor.
+     */
+    public MediaMetadata(MediaMetadata other) {
+        this(other.mTitle, other.mArtist, other.mAlbum);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;

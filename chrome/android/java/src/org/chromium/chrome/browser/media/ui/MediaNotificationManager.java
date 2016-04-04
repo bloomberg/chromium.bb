@@ -353,16 +353,18 @@ public class MediaNotificationManager {
     }
 
     @VisibleForTesting
-    protected static boolean hasManagerForTesting(int notificationId) {
+    static boolean hasManagerForTesting(int notificationId) {
         return getManager(notificationId) != null;
     }
 
     @VisibleForTesting
     @Nullable
-    protected static MediaNotificationInfo getNotificationInfoForTesting(int notificationId) {
+    static NotificationCompat.Builder getNotificationBuilderForTesting(
+            int notificationId) {
         MediaNotificationManager manager = getManager(notificationId);
         if (manager == null) return null;
-        return manager.mMediaNotificationInfo;
+
+        return manager.mNotificationBuilder;
     }
 
     private final Context mContext;

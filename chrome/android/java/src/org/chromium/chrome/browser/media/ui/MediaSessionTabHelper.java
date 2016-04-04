@@ -163,6 +163,7 @@ public class MediaSessionTabHelper {
             assert tab == mTab;
             if (mNotificationInfoBuilder == null || mFallbackMetadata == null) return;
 
+            mFallbackMetadata = new MediaMetadata(mFallbackMetadata);
             mFallbackMetadata.setTitle(sanitizeMediaTitle(mTab.getTitle()));
             mNotificationInfoBuilder.setMetadata(mFallbackMetadata);
 
