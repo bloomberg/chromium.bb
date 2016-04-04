@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_AUTOFILL_VALIDATION_RULES_STORAGE_FACTORY_H_
 #define CHROME_BROWSER_AUTOFILL_VALIDATION_RULES_STORAGE_FACTORY_H_
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace i18n {
 namespace addressinput {
@@ -24,7 +25,7 @@ namespace autofill {
 // Creates Storage objects, all of which are backed by a common pref store.
 class ValidationRulesStorageFactory {
  public:
-  static scoped_ptr< ::i18n::addressinput::Storage> CreateStorage();
+  static std::unique_ptr<::i18n::addressinput::Storage> CreateStorage();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ValidationRulesStorageFactory>;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autofill/risk_util.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/time/time.h"
@@ -34,7 +36,7 @@ namespace autofill {
 namespace {
 
 void PassRiskData(const base::Callback<void(const std::string&)>& callback,
-                  scoped_ptr<risk::Fingerprint> fingerprint) {
+                  std::unique_ptr<risk::Fingerprint> fingerprint) {
   std::string proto_data, risk_data;
   fingerprint->SerializeToString(&proto_data);
   base::Base64Encode(proto_data, &risk_data);

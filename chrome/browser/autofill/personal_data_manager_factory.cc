@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

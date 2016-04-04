@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_AUTOFILL_RISK_UTIL_H_
 
 #include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 class WebContents;

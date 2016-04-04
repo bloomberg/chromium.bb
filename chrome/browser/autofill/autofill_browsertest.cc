@@ -4,12 +4,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -180,7 +180,7 @@ class AutofillTest : public InProcessBrowserTest {
     params.disposition = NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
 
-    scoped_ptr<WindowedPersonalDataManagerObserver> observer;
+    std::unique_ptr<WindowedPersonalDataManagerObserver> observer;
     if (expect_personal_data_change)
       observer.reset(new WindowedPersonalDataManagerObserver(browser()));
 

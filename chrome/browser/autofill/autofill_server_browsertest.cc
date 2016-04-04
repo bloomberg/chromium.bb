@@ -81,7 +81,7 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
 
  private:
   // Mocks out network requests.
-  scoped_ptr<net::TestURLFetcherFactory> factory_;
+  std::unique_ptr<net::TestURLFetcherFactory> factory_;
 
   const std::string expected_upload_data_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;

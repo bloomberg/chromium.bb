@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -53,9 +53,9 @@ class AutofillSaveCardInfoBarDelegateMobileTest
   void TearDown() override;
 
  protected:
-  scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate();
+  std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate();
 
-  scoped_ptr<TestPersonalDataManager> personal_data_;
+  std::unique_ptr<TestPersonalDataManager> personal_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillSaveCardInfoBarDelegateMobileTest);
@@ -86,12 +86,12 @@ void AutofillSaveCardInfoBarDelegateMobileTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
-scoped_ptr<ConfirmInfoBarDelegate>
+std::unique_ptr<ConfirmInfoBarDelegate>
 AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate() {
   base::HistogramTester histogram_tester;
   CreditCard credit_card;
-  scoped_ptr<base::DictionaryValue> legal_message;
-  scoped_ptr<ConfirmInfoBarDelegate> delegate(
+  std::unique_ptr<base::DictionaryValue> legal_message;
+  std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           false, credit_card, std::move(legal_message),
           base::Bind(base::IgnoreResult(
@@ -108,7 +108,7 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics) {
 
   // Accept the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
     EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
 
     base::HistogramTester histogram_tester;
@@ -119,7 +119,7 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics) {
 
   // Cancel the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Cancel());
@@ -129,7 +129,7 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics) {
 
   // Dismiss the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
 
     base::HistogramTester histogram_tester;
     infobar->InfoBarDismissed();
@@ -139,7 +139,7 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics) {
 
   // Ignore the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
 
     base::HistogramTester histogram_tester;
     infobar.reset();
