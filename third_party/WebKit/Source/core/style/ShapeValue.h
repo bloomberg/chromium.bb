@@ -48,17 +48,17 @@ public:
         Image
     };
 
-    static RawPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
+    static ShapeValue* createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
     {
         return new ShapeValue(shape, cssBox);
     }
 
-    static RawPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
+    static ShapeValue* createBoxShapeValue(CSSBoxType cssBox)
     {
         return new ShapeValue(cssBox);
     }
 
-    static RawPtr<ShapeValue> createImageValue(RawPtr<StyleImage> image)
+    static ShapeValue* createImageValue(StyleImage* image)
     {
         return new ShapeValue(image);
     }
@@ -75,7 +75,7 @@ public:
             return image()->cachedImage() && image()->cachedImage()->hasImage();
         return image()->isGeneratedImage();
     }
-    void setImage(RawPtr<StyleImage> image)
+    void setImage(StyleImage* image)
     {
         ASSERT(type() == Image);
         if (m_image != image)
@@ -102,7 +102,7 @@ private:
         , m_cssBox(BoxMissing)
     {
     }
-    ShapeValue(RawPtr<StyleImage> image)
+    ShapeValue(StyleImage* image)
         : m_type(Image)
         , m_image(image)
         , m_cssBox(ContentBox)

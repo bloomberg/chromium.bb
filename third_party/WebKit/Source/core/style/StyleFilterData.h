@@ -38,12 +38,12 @@ namespace blink {
 // relying on RefPtr<>, switch to GarbageCollected<>.
 class StyleFilterData final : public RefCountedGarbageCollected<StyleFilterData> {
 public:
-    static RawPtr<StyleFilterData> create()
+    static StyleFilterData* create()
     {
         return new StyleFilterData;
     }
 
-    RawPtr<StyleFilterData> copy() const
+    StyleFilterData* copy() const
     {
         return new StyleFilterData(*this);
     }

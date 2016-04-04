@@ -51,8 +51,8 @@ public:
         return data() == other.data();
     }
 
-    virtual RawPtr<CSSValue> cssValue() const = 0;
-    virtual RawPtr<CSSValue> computedCSSValue() const = 0;
+    virtual CSSValue* cssValue() const = 0;
+    virtual CSSValue* computedCSSValue() const = 0;
 
     virtual bool canRender() const { return true; }
     virtual bool isLoaded() const { return true; }

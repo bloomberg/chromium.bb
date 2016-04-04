@@ -30,7 +30,7 @@ public:
 
     const SVGPathByteStream& byteStream() const { return *m_byteStream; }
 
-    RawPtr<CSSValue> computedCSSValue() const;
+    CSSValue* computedCSSValue() const;
 
     bool operator==(const StylePath&) const;
 

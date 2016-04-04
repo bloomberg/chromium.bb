@@ -36,12 +36,12 @@ StyleGeneratedImage::StyleGeneratedImage(const CSSImageGeneratorValue& value)
     m_isGeneratedImage = true;
 }
 
-RawPtr<CSSValue> StyleGeneratedImage::cssValue() const
+CSSValue* StyleGeneratedImage::cssValue() const
 {
     return m_imageGeneratorValue.get();
 }
 
-RawPtr<CSSValue> StyleGeneratedImage::computedCSSValue() const
+CSSValue* StyleGeneratedImage::computedCSSValue() const
 {
     return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
 }

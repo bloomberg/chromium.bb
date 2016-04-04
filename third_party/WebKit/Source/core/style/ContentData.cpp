@@ -31,38 +31,38 @@
 
 namespace blink {
 
-RawPtr<ContentData> ContentData::create(RawPtr<StyleImage> image)
+ContentData* ContentData::create(StyleImage* image)
 {
     return new ImageContentData(image);
 }
 
-RawPtr<ContentData> ContentData::create(const String& text)
+ContentData* ContentData::create(const String& text)
 {
     return new TextContentData(text);
 }
 
-RawPtr<ContentData> ContentData::create(PassOwnPtr<CounterContent> counter)
+ContentData* ContentData::create(PassOwnPtr<CounterContent> counter)
 {
     return new CounterContentData(counter);
 }
 
-RawPtr<ContentData> ContentData::create(QuoteType quote)
+ContentData* ContentData::create(QuoteType quote)
 {
     return new QuoteContentData(quote);
 }
 
-RawPtr<ContentData> ContentData::clone() const
+ContentData* ContentData::clone() const
 {
-    RawPtr<ContentData> result = cloneInternal();
+    ContentData* result = cloneInternal();
 
-    ContentData* lastNewData = result.get();
+    ContentData* lastNewData = result;
     for (const ContentData* contentData = next(); contentData; contentData = contentData->next()) {
-        RawPtr<ContentData> newData = contentData->cloneInternal();
-        lastNewData->setNext(newData.release());
+        ContentData* newData = contentData->cloneInternal();
+        lastNewData->setNext(newData);
         lastNewData = lastNewData->next();
     }
 
-    return result.release();
+    return result;
 }
 
 DEFINE_TRACE(ContentData)

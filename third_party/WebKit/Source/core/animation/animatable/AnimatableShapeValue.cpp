@@ -55,7 +55,7 @@ PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const Animatable
     const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
     const BasicShape* fromShape = this->m_shape->shape();
     const BasicShape* toShape = shapeValue->m_shape->shape();
-    return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction), shapeValue->m_shape->cssBox()).get());
+    return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction), shapeValue->m_shape->cssBox()));
 }
 
 bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const

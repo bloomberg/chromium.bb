@@ -816,14 +816,14 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
     }
 }
 
-void ComputedStyle::addCursor(RawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
+void ComputedStyle::addCursor(StyleImage* image, bool hotSpotSpecified, const IntPoint& hotSpot)
 {
     if (!rareInheritedData.access()->cursorData)
         rareInheritedData.access()->cursorData = new CursorList;
     rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
 }
 
-void ComputedStyle::setCursorList(RawPtr<CursorList> other)
+void ComputedStyle::setCursorList(CursorList* other)
 {
     rareInheritedData.access()->cursorData = other;
 }
@@ -851,7 +851,7 @@ void ComputedStyle::clearContent()
         rareNonInheritedData.access()->m_content = nullptr;
 }
 
-void ComputedStyle::appendContent(RawPtr<ContentData> contentData)
+void ComputedStyle::appendContent(ContentData* contentData)
 {
     Persistent<ContentData>& content = rareNonInheritedData.access()->m_content;
     if (!content) {
@@ -864,7 +864,7 @@ void ComputedStyle::appendContent(RawPtr<ContentData> contentData)
     lastContent->setNext(contentData);
 }
 
-void ComputedStyle::setContent(RawPtr<StyleImage> image)
+void ComputedStyle::setContent(StyleImage* image)
 {
     appendContent(ContentData::create(image));
 }
@@ -1060,7 +1060,7 @@ static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize
 }
 
 StyleImage* ComputedStyle::listStyleImage() const { return rareInheritedData->listStyleImage.get(); }
-void ComputedStyle::setListStyleImage(RawPtr<StyleImage> v)
+void ComputedStyle::setListStyleImage(StyleImage* v)
 {
     if (rareInheritedData->listStyleImage != v)
         rareInheritedData.access()->listStyleImage = v;
@@ -1760,9 +1760,9 @@ LayoutRectOutsets ComputedStyle::imageOutsets(const NinePieceImage& image) const
         NinePieceImage::computeOutset(image.outset().left(), borderLeftWidth()));
 }
 
-void ComputedStyle::setBorderImageSource(RawPtr<StyleImage> image)
+void ComputedStyle::setBorderImageSource(StyleImage* image)
 {
-    if (surround->border.m_image.image() == image.get())
+    if (surround->border.m_image.image() == image)
         return;
     surround.access()->border.m_image.setImage(image);
 }

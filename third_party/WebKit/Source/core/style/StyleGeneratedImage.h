@@ -34,15 +34,15 @@ class CSSImageGeneratorValue;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 public:
-    static RawPtr<StyleGeneratedImage> create(const CSSImageGeneratorValue& value)
+    static StyleGeneratedImage* create(const CSSImageGeneratorValue& value)
     {
         return new StyleGeneratedImage(value);
     }
 
     WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
 
-    RawPtr<CSSValue> cssValue() const override;
-    RawPtr<CSSValue> computedCSSValue() const override;
+    CSSValue* cssValue() const override;
+    CSSValue* computedCSSValue() const override;
 
     LayoutSize imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const override;
     bool imageHasRelativeSize() const override { return !m_fixedSize; }

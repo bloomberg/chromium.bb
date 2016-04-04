@@ -41,16 +41,16 @@ namespace blink {
 
 class StylePendingImage final : public StyleImage {
 public:
-    static RawPtr<StylePendingImage> create(const CSSValue& value)
+    static StylePendingImage* create(const CSSValue& value)
     {
         return new StylePendingImage(value);
     }
 
     WrappedImagePtr data() const override { return m_value.get(); }
 
-    RawPtr<CSSValue> cssValue() const override { return m_value; }
+    CSSValue* cssValue() const override { return m_value; }
 
-    RawPtr<CSSValue> computedCSSValue() const override
+    CSSValue* computedCSSValue() const override
     {
         ASSERT_NOT_REACHED();
         return nullptr;

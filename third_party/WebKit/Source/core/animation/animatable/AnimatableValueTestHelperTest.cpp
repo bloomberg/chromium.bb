@@ -66,7 +66,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         testing::StartsWith("AnimatableNeutral@"));
 
     EXPECT_THAT(
-        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox).get())),
+        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox))),
         testing::StartsWith("AnimatableShapeValue@"));
 
     RefPtr<SVGDashArray> l2 = SVGDashArray::create();

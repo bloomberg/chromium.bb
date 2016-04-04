@@ -35,7 +35,7 @@ class ImageResource;
 class StyleFetchedImage final : public StyleImage, private ResourceClient {
     USING_PRE_FINALIZER(StyleFetchedImage, dispose);
 public:
-    static RawPtr<StyleFetchedImage> create(ImageResource* image, Document* document, const KURL& url)
+    static StyleFetchedImage* create(ImageResource* image, Document* document, const KURL& url)
     {
         return new StyleFetchedImage(image, document, url);
     }
@@ -43,8 +43,8 @@ public:
 
     WrappedImagePtr data() const override;
 
-    RawPtr<CSSValue> cssValue() const override;
-    RawPtr<CSSValue> computedCSSValue() const override;
+    CSSValue* cssValue() const override;
+    CSSValue* computedCSSValue() const override;
 
     bool canRender() const override;
     bool isLoaded() const override;

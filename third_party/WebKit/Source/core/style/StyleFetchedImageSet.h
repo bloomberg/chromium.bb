@@ -40,14 +40,14 @@ class CSSImageSetValue;
 class StyleFetchedImageSet final : public StyleImage, private ResourceClient {
     USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
 public:
-    static RawPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
+    static StyleFetchedImageSet* create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
     {
         return new StyleFetchedImageSet(image, imageScaleFactor, value, url);
     }
     ~StyleFetchedImageSet() override;
 
-    RawPtr<CSSValue> cssValue() const override;
-    RawPtr<CSSValue> computedCSSValue() const override;
+    CSSValue* cssValue() const override;
+    CSSValue* computedCSSValue() const override;
 
     // FIXME: This is used by StyleImage for equals comparison, but this implementation
     // only looks at the image from the set that we have loaded. I'm not sure if that is

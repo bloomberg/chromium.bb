@@ -12,8 +12,8 @@ namespace blink {
 
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual)
 {
-    RawPtr<ShapeValue> shape1 = ShapeValue::createBoxShapeValue(ContentBox);
-    RawPtr<ShapeValue> shape2 = ShapeValue::createBoxShapeValue(ContentBox);
+    ShapeValue* shape1 = ShapeValue::createBoxShapeValue(ContentBox);
+    ShapeValue* shape2 = ShapeValue::createBoxShapeValue(ContentBox);
     RefPtr<ComputedStyle> style1 = ComputedStyle::create();
     RefPtr<ComputedStyle> style2 = ComputedStyle::create();
     style1->setShapeOutside(shape1);
@@ -25,8 +25,8 @@ TEST(ComputedStyleTest, ShapeOutsideCircleEqual)
 {
     RefPtr<BasicShapeCircle> circle1 = BasicShapeCircle::create();
     RefPtr<BasicShapeCircle> circle2 = BasicShapeCircle::create();
-    RawPtr<ShapeValue> shape1 = ShapeValue::createShapeValue(circle1, ContentBox);
-    RawPtr<ShapeValue> shape2 = ShapeValue::createShapeValue(circle2, ContentBox);
+    ShapeValue* shape1 = ShapeValue::createShapeValue(circle1, ContentBox);
+    ShapeValue* shape2 = ShapeValue::createShapeValue(circle2, ContentBox);
     RefPtr<ComputedStyle> style1 = ComputedStyle::create();
     RefPtr<ComputedStyle> style2 = ComputedStyle::create();
     style1->setShapeOutside(shape1);
