@@ -102,26 +102,27 @@ static inline void collectLayoutAttributes(LayoutObject* text, Vector<SVGTextLay
     }
 }
 
-inline bool LayoutSVGText::shouldHandleSubtreeMutations() const
+void LayoutSVGText::invalidatePositioningValues(LayoutInvalidationReasonForTracing reason)
+{
+    m_layoutAttributes.clear();
+    m_layoutAttributesBuilder.clearTextPositioningElements();
+    setNeedsPositioningValuesUpdate();
+    setNeedsLayoutAndFullPaintInvalidation(reason);
+}
+
+void LayoutSVGText::subtreeChildWasAdded()
 {
     if (beingDestroyed() || !everHadLayout()) {
         ASSERT(m_layoutAttributes.isEmpty());
         ASSERT(!m_layoutAttributesBuilder.numberOfTextPositioningElements());
-        return false;
+        return;
     }
-    return true;
-}
-
-void LayoutSVGText::subtreeChildWasAdded(LayoutObject*)
-{
-    if (!shouldHandleSubtreeMutations() || documentBeingDestroyed())
+    if (documentBeingDestroyed())
         return;
 
-    // The positioning elements cache doesn't include the new 'child' yet. Clear the
-    // cache, as the next buildLayoutAttributesForText() call rebuilds it.
-    m_layoutAttributesBuilder.clearTextPositioningElements();
-    setNeedsPositioningValuesUpdate();
-    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
+    // The positioning elements cache depends on the size of each text layoutObject in the
+    // subtree. If this changes, clear the cache. It will be rebuilt on the next layout.
+    invalidatePositioningValues(LayoutInvalidationReason::ChildChanged);
 }
 
 void LayoutSVGText::willBeDestroyed()
@@ -132,31 +133,21 @@ void LayoutSVGText::willBeDestroyed()
     LayoutSVGBlock::willBeDestroyed();
 }
 
-void LayoutSVGText::subtreeChildWillBeRemoved(LayoutObject* child)
+void LayoutSVGText::subtreeChildWillBeRemoved()
 {
-    ASSERT(child);
-    if (!shouldHandleSubtreeMutations())
+    if (beingDestroyed() || !everHadLayout()) {
+        ASSERT(m_layoutAttributes.isEmpty());
+        ASSERT(!m_layoutAttributesBuilder.numberOfTextPositioningElements());
         return;
+    }
 
     // The positioning elements cache depends on the size of each text layoutObject in the
-    // subtree. If this changes, clear the cache. It will be rebuilt below on the next layout.
-    m_layoutAttributesBuilder.clearTextPositioningElements();
-    setNeedsPositioningValuesUpdate();
-    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
-
-    if (m_layoutAttributes.isEmpty() || !child->isSVGInlineText())
-        return;
-
-    // Make sure that a text node (layout attribute) reference is not left
-    // dangling in |m_layoutAttributes|.
-    size_t position = m_layoutAttributes.find(toLayoutSVGInlineText(child)->layoutAttributes());
-    ASSERT(position != kNotFound);
-    m_layoutAttributes.remove(position);
+    // subtree. If this changes, clear the cache. It will be rebuilt on the next layout.
+    invalidatePositioningValues(LayoutInvalidationReason::ChildChanged);
 }
 
-void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
+void LayoutSVGText::subtreeTextDidChange()
 {
-    ASSERT(text);
     ASSERT(!beingDestroyed());
     if (!everHadLayout()) {
         ASSERT(m_layoutAttributes.isEmpty());
@@ -167,9 +158,7 @@ void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
     // The positioning elements cache depends on the size of each text object in
     // the subtree. If this changes, clear the cache and mark it for rebuilding
     // in the next layout.
-    m_layoutAttributesBuilder.clearTextPositioningElements();
-    setNeedsPositioningValuesUpdate();
-    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextChanged);
+    invalidatePositioningValues(LayoutInvalidationReason::TextChanged);
 }
 
 static inline void updateFontInAllDescendants(LayoutSVGText& textRoot, SVGTextLayoutAttributesBuilder* builder = nullptr)
@@ -390,13 +379,13 @@ void LayoutSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
     LayoutSVGBlock::addChild(child, beforeChild);
 
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
-    subtreeChildWasAdded(child);
+    subtreeChildWasAdded();
 }
 
 void LayoutSVGText::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
-    subtreeChildWillBeRemoved(child);
+    subtreeChildWillBeRemoved();
 
     LayoutSVGBlock::removeChild(child);
 }

@@ -69,7 +69,7 @@ void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     LayoutText::setTextInternal(text);
     if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this))
-        textLayoutObject->subtreeTextDidChange(this);
+        textLayoutObject->subtreeTextDidChange();
 }
 
 void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)

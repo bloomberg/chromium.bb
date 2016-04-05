@@ -52,9 +52,9 @@ public:
     bool needsReordering() const { return m_needsReordering; }
     Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
 
-    void subtreeChildWasAdded(LayoutObject*);
-    void subtreeChildWillBeRemoved(LayoutObject*);
-    void subtreeTextDidChange(LayoutSVGInlineText*);
+    void subtreeChildWasAdded();
+    void subtreeChildWillBeRemoved();
+    void subtreeTextDidChange();
 
     const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
 
@@ -79,7 +79,7 @@ private:
 
     RootInlineBox* createRootInlineBox() override;
 
-    bool shouldHandleSubtreeMutations() const;
+    void invalidatePositioningValues(LayoutInvalidationReasonForTracing);
 
     bool m_needsReordering : 1;
     bool m_needsPositioningValuesUpdate : 1;
