@@ -34,7 +34,7 @@ namespace blink {
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement, public ScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);
+    static RawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false, bool createdDuringDocumentWrite = false);
 
     String text() { return textFromChildren(); }
     void setText(const String&);
@@ -49,7 +49,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
+    HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted, bool createdDuringDocumentWrite);
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;

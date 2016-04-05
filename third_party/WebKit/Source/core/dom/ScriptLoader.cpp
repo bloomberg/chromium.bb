@@ -57,7 +57,7 @@
 
 namespace blink {
 
-ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted)
+ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted, bool createdDuringDocumentWrite)
     : m_element(element)
     , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
     , m_parserInserted(parserInserted)
@@ -69,6 +69,7 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     , m_willExecuteInOrder(false)
     , m_willExecuteWhenDocumentFinishedParsing(false)
     , m_forceAsync(!parserInserted)
+    , m_createdDuringDocumentWrite(createdDuringDocumentWrite)
 {
     ASSERT(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())

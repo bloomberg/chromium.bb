@@ -34,7 +34,7 @@ public:
     MOCK_METHOD0(execute, void());
     MOCK_CONST_METHOD0(isReady, bool());
 private:
-    explicit MockScriptLoader(Element* element) : ScriptLoader(element, false, false)
+    explicit MockScriptLoader(Element* element) : ScriptLoader(element, false, false, false)
     {
     }
 };

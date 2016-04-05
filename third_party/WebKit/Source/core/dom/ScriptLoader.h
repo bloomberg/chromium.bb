@@ -38,9 +38,9 @@ class LocalFrame;
 
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>, public ScriptResourceClient {
 public:
-    static RawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
+    static RawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite = false)
     {
-        return new ScriptLoader(element, createdByParser, isEvaluated);
+        return new ScriptLoader(element, createdByParser, isEvaluated, createdDuringDocumentWrite);
     }
 
     ~ScriptLoader() override;
@@ -85,8 +85,10 @@ public:
     // Clears the connection to the PendingScript (and Element and Resource).
     void detach();
 
+    bool wasCreatedDuringDocumentWrite() { return m_createdDuringDocumentWrite; }
+
 protected:
-    ScriptLoader(Element*, bool createdByParser, bool isEvaluated);
+    ScriptLoader(Element*, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite);
 
 private:
     bool ignoresLoadRequest() const;
@@ -116,6 +118,7 @@ private:
     bool m_willExecuteInOrder : 1;
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
+    const bool m_createdDuringDocumentWrite : 1;
 
     Member<PendingScript> m_pendingScript;
 };

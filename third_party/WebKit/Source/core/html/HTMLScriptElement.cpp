@@ -37,15 +37,15 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLScriptElement::HTMLScriptElement(Document& document, bool wasInsertedByParser, bool alreadyStarted)
+inline HTMLScriptElement::HTMLScriptElement(Document& document, bool wasInsertedByParser, bool alreadyStarted, bool createdDuringDocumentWrite)
     : HTMLElement(scriptTag, document)
-    , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
+    , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted, createdDuringDocumentWrite))
 {
 }
 
-RawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)
+RawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted, bool createdDuringDocumentWrite)
 {
-    return new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted);
+    return new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted, createdDuringDocumentWrite);
 }
 
 bool HTMLScriptElement::isURLAttribute(const Attribute& attribute) const
@@ -176,7 +176,7 @@ void HTMLScriptElement::dispatchLoadEvent()
 
 RawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return new HTMLScriptElement(document(), false, m_loader->alreadyStarted());
+    return new HTMLScriptElement(document(), false, m_loader->alreadyStarted(), false);
 }
 
 DEFINE_TRACE(HTMLScriptElement)

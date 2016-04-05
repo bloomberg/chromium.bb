@@ -654,7 +654,15 @@ void HTMLConstructionSite::insertScriptElement(AtomicHTMLToken* token)
     // those flags or effects thereof.
     const bool parserInserted = m_parserContentPolicy != AllowScriptingContentAndDoNotMarkAlreadyStarted;
     const bool alreadyStarted = m_isParsingFragment && parserInserted;
-    RawPtr<HTMLScriptElement> element = HTMLScriptElement::create(ownerDocumentForCurrentNode(), parserInserted, alreadyStarted);
+    // TODO(csharrison): This logic only works if the tokenizer/parser was not
+    // blocked waiting for scripts when the element was inserted. This usually
+    // fails for instance, on second document.write if a script writes twice in
+    // a row. To fix this, the parser might have to keep track of raw string
+    // position.
+    // TODO(csharrison): Refactor this so that the bools that are passed in are
+    // packed in a bitfield from an enum class.
+    const bool createdDuringDocumentWrite = ownerDocumentForCurrentNode().isInDocumentWrite();
+    RawPtr<HTMLScriptElement> element = HTMLScriptElement::create(ownerDocumentForCurrentNode(), parserInserted, alreadyStarted, createdDuringDocumentWrite);
     setAttributes(element.get(), token, m_parserContentPolicy);
     if (scriptingContentIsAllowed(m_parserContentPolicy))
         attachLater(currentNode(), element);
