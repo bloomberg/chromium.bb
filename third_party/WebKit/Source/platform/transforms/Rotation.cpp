@@ -108,4 +108,18 @@ Rotation Rotation::slerp(const Rotation& from, const Rotation& to, double progre
     return extractFromMatrix(toMatrix, progress < 0.5 ? from : to);
 }
 
+Rotation Rotation::add(const Rotation& a, const Rotation& b)
+{
+    double angleA;
+    double angleB;
+    FloatPoint3D axis;
+    if (getCommonAxis(a, b, axis, angleA, angleB))
+        return Rotation(axis, angleA + angleB);
+
+    TransformationMatrix matrix;
+    matrix.rotate3d(a);
+    matrix.rotate3d(b);
+    return extractFromMatrix(matrix, b);
+}
+
 } // namespace blink

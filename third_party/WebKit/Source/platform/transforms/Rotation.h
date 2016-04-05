@@ -28,6 +28,9 @@ struct PLATFORM_EXPORT Rotation {
     // A progress of 0 corresponds to "from" and a progress of 1 corresponds to "to".
     static Rotation slerp(const Rotation& from, const Rotation& to, double progress);
 
+    // Returns a rotation whose effect is equivalent to applying a followed by b.
+    static Rotation add(const Rotation& /*a*/, const Rotation& /*b*/);
+
     // No restrictions on the axis vector.
     FloatPoint3D axis;
 

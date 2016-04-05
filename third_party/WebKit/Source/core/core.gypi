@@ -907,6 +907,8 @@
             'animation/CSSPositionAxisListInterpolationType.cpp',
             'animation/CSSPositionAxisListInterpolationType.h',
             'animation/CSSPositionInterpolationType.h',
+            'animation/CSSRotateInterpolationType.cpp',
+            'animation/CSSRotateInterpolationType.h',
             'animation/CSSScaleInterpolationType.cpp',
             'animation/CSSScaleInterpolationType.h',
             'animation/CSSShadowListInterpolationType.cpp',

@@ -286,6 +286,9 @@ crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/521730 [ Win10 ] fast/text/complex-text-opacity.html [ Failure Timeout ]
 crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
+crbug.com/437696 animations/rotate-transform-equivalent.html [ NeedsRebaseline ]
+crbug.com/437696 virtual/threaded/animations/rotate-transform-equivalent.html [ NeedsRebaseline ]
+
 crbug.com/569139 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
 crbug.com/569139 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ NeedsManualRebaseline ]

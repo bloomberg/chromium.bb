@@ -40,6 +40,7 @@
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/TabSize.h"
+#include "platform/transforms/Rotation.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -112,6 +113,7 @@ public:
     static PassRefPtr<StylePath> convertPathOrNone(StyleResolverState&, const CSSValue&);
     static StyleMotionRotation convertMotionRotation(const CSSValue&);
     template <CSSValueID cssValueFor0, CSSValueID cssValueFor100> static Length convertPositionLength(StyleResolverState&, const CSSValue&);
+    static Rotation convertRotation(const CSSValue&);
 };
 
 template <typename T>

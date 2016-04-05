@@ -928,7 +928,7 @@ PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(
     return TranslateTransformOperation::create(tx, ty, tz, TransformOperation::Translate3D);
 }
 
-PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleResolverState& state, const CSSValue& value)
+Rotation StyleBuilderConverter::convertRotation(const CSSValue& value)
 {
     const CSSValueList& list = toCSSValueList(value);
     ASSERT(list.length() == 1 || list.length() == 4);
@@ -941,8 +941,12 @@ PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleR
         y = toCSSPrimitiveValue(list.item(2))->getDoubleValue();
         z = toCSSPrimitiveValue(list.item(3))->getDoubleValue();
     }
+    return Rotation(FloatPoint3D(x, y, z), angle);
+}
 
-    return RotateTransformOperation::create(x, y, z, angle, TransformOperation::Rotate3D);
+PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleResolverState& state, const CSSValue& value)
+{
+    return RotateTransformOperation::create(convertRotation(value), TransformOperation::Rotate3D);
 }
 
 PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(StyleResolverState& state, const CSSValue& value)

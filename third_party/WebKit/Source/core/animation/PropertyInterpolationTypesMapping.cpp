@@ -23,6 +23,7 @@
 #include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/CSSPositionInterpolationType.h"
+#include "core/animation/CSSRotateInterpolationType.h"
 #include "core/animation/CSSScaleInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSSizeListInterpolationType.h"
@@ -234,6 +235,9 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyWebkitClipPath:
         case CSSPropertyShapeOutside:
             applicableTypes->append(adoptPtr(new CSSBasicShapeInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyRotate:
+            applicableTypes->append(adoptPtr(new CSSRotateInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
