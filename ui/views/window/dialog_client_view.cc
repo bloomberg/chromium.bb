@@ -95,7 +95,7 @@ void DialogClientView::UpdateDialogButtons() {
       AddChildView(ok_button_);
     }
 
-    UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
+    GetDialogDelegate()->UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
   } else if (ok_button_) {
     delete ok_button_;
     ok_button_ = NULL;
@@ -107,7 +107,7 @@ void DialogClientView::UpdateDialogButtons() {
       AddChildView(cancel_button_);
     }
 
-    UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
+    GetDialogDelegate()->UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
   } else if (cancel_button_) {
     delete cancel_button_;
     cancel_button_ = NULL;
@@ -318,14 +318,6 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   button->SetMinSize(gfx::Size(kDialogMinButtonWidth, 0));
   button->SetGroup(kButtonGroup);
   return button;
-}
-
-void DialogClientView::UpdateButton(LabelButton* button,
-                                    ui::DialogButton type) {
-  DialogDelegate* dialog = GetDialogDelegate();
-  button->SetText(dialog->GetDialogButtonLabel(type));
-  button->SetEnabled(dialog->IsDialogButtonEnabled(type));
-  button->SetIsDefault(type == dialog->GetDefaultDialogButton());
 }
 
 int DialogClientView::GetButtonsAndExtraViewRowHeight() const {

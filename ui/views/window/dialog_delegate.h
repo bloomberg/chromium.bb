@@ -16,6 +16,7 @@
 namespace views {
 
 class DialogClientView;
+class LabelButton;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -79,6 +80,11 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // is Accept, Cancel() otherwise. This function should return true if the
   // window can be closed after it returns, or false if it must remain open.
   virtual bool Close();
+
+  // Updates the properties and appearance of |button| which has been created
+  // for type |type|. Override to do special initialization above and beyond
+  // the typical.
+  virtual void UpdateButton(LabelButton* button, ui::DialogButton type);
 
   // Overridden from ui::DialogModel:
   base::string16 GetDialogTitle() const override;

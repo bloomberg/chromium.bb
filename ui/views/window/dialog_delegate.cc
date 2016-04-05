@@ -113,6 +113,12 @@ bool DialogDelegate::Close() {
   return Accept();
 }
 
+void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
+  button->SetText(GetDialogButtonLabel(type));
+  button->SetEnabled(IsDialogButtonEnabled(type));
+  button->SetIsDefault(type == GetDefaultDialogButton());
+}
+
 base::string16 DialogDelegate::GetDialogTitle() const {
   return GetWindowTitle();
 }
