@@ -149,7 +149,7 @@
 
         {
           'target_name': 'remoting_ios_credits',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'product_extension': 'bundle',
           'mac_bundle': 1,
           'mac_bundle_resources': [
