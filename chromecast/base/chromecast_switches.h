@@ -45,6 +45,7 @@ extern const char kAlsaOutputStartThreshold[];
 extern const char kAlsaOutputAvailMin[];
 extern const char kAlsaCheckCloseTimeout[];
 extern const char kAlsaNumOutputChannels[];
+extern const char kAlsaFixedOutputSampleRate[];
 
 }  // namespace switches
 

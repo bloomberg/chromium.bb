@@ -172,6 +172,7 @@ class StreamMixerAlsa {
   void ClosePcm();
   void SignalError();
   void CheckChangeOutputRate(int input_samples_per_second);
+  unsigned int DetermineOutputRate(unsigned int requested_rate);
 
   // Deletes an input queue that has finished preparing to delete itself.
   // May be called on any thread.
@@ -194,6 +195,7 @@ class StreamMixerAlsa {
   scoped_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
 
+  unsigned int fixed_output_samples_per_second_;
   int requested_output_samples_per_second_;
   int output_samples_per_second_;
   snd_pcm_t* pcm_;

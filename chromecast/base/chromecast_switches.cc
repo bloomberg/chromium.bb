@@ -68,6 +68,9 @@ const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 // Default is 2 channels.
 const char kAlsaNumOutputChannels[] = "alsa-num-output-channels";
 
+// Optional flag to set a fixed sample rate for the alsa device.
+const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
+
 }  // namespace switches
 
 namespace chromecast {
