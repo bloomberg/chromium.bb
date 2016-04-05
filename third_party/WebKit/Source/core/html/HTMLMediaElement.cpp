@@ -107,7 +107,7 @@ namespace blink {
 using namespace HTMLNames;
 
 using WeakMediaElementSet = HeapHashSet<WeakMember<HTMLMediaElement>>;
-using DocumentElementSetMap = HeapHashMap<WeakMember<Document>, WeakMediaElementSet>;
+using DocumentElementSetMap = HeapHashMap<WeakMember<Document>, Member<WeakMediaElementSet>>;
 
 namespace {
 
@@ -147,18 +147,26 @@ DocumentElementSetMap& documentToElementSetMap()
 void addElementToDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
-    WeakMediaElementSet set = map.take(document);
-    set.add(element);
-    map.add(document, set);
+    WeakMediaElementSet* set = nullptr;
+    auto it = map.find(document);
+    if (it == map.end()) {
+        set = new WeakMediaElementSet;
+        map.add(document, set);
+    } else {
+        set = it->value;
+    }
+    set->add(element);
 }
 
 void removeElementFromDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
-    WeakMediaElementSet set = map.take(document);
-    set.remove(element);
-    if (!set.isEmpty())
-        map.add(document, set);
+    auto it = map.find(document);
+    ASSERT(it != map.end());
+    WeakMediaElementSet* set = it->value;
+    set->remove(element);
+    if (set->isEmpty())
+        map.remove(it);
 }
 
 class AudioSourceProviderClientLockScope {
@@ -3356,7 +3364,11 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 
 void HTMLMediaElement::setTextTrackKindUserPreferenceForAllMediaElements(Document* document)
 {
-    WeakMediaElementSet elements = documentToElementSetMap().get(document);
+    auto it = documentToElementSetMap().find(document);
+    if (it == documentToElementSetMap().end())
+        return;
+    ASSERT(it->value);
+    WeakMediaElementSet& elements = *it->value;
     for (const auto& element : elements)
         element->automaticTrackSelectionForUpdatedUserPreference();
 }
