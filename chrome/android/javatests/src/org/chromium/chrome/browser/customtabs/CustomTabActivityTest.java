@@ -113,6 +113,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
+    private static final String WEBLITE_PREFIX = "http://googleweblight.com/?lite_url=";
 
     private static int sIdToIncrement = 1;
 
@@ -1042,6 +1043,94 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         // The Referrer is correctly set.
         CriteriaHelper.pollInstrumentationThread(
                 new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, referrerUrl), 2000, 200);
+    }
+
+    /**
+     * Tests that a Weblite URL from an external app uses the lite_url param when Data Reduction
+     * Proxy previews are being used.
+     */
+    @SmallTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchWebLiteURL() throws Exception {
+        final String testUrl = WEBLITE_PREFIX + mTestPage;
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(mTestPage, tab.getUrl());
+    }
+
+    /**
+     * Tests that a Weblite URL from an external app does not use the lite_url param when Data
+     * Reduction Proxy previews are not being used.
+     */
+    @SmallTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on"})
+    public void testLaunchWebLiteURLNoPreviews() throws Exception {
+        final String testUrl = WEBLITE_PREFIX + mTestPage;
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(testUrl, tab.getUrl());
+    }
+
+    /**
+     * Tests that a Weblite URL from an external app does not use the lite_url param when Data
+     * Reduction Proxy is not using Lo-Fi.
+     */
+    @SmallTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchWebLiteURLNoLoFi() throws Exception {
+        final String testUrl = WEBLITE_PREFIX + mTestPage;
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(testUrl, tab.getUrl());
+    }
+
+    /**
+     * Tests that a Weblite URL from an external app does not use the lite_url param when Data
+     * Reduction Proxy is not being used.
+     */
+    @SmallTest
+    @CommandLineFlags.Add({"data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchWebLiteURLNoDataReductionProxy() throws Exception {
+        final String testUrl = WEBLITE_PREFIX + mTestPage;
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(testUrl, tab.getUrl());
+    }
+
+    /**
+     * Tests that a Weblite URL from an external app does not use the lite_url param when the param
+     * is an https URL.
+     */
+    @SmallTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchHttpsWebLiteURL() throws Exception {
+        final String testUrl = WEBLITE_PREFIX + mTestPage.replaceFirst("http", "https");
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(testUrl, tab.getUrl());
+    }
+
+    /**
+     * Tests that a URL from an external app does not use the lite_url param when the prefix is not
+     * the WebLite url.
+     */
+    @SmallTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
+    public void testLaunchNonWebLiteURL() throws Exception {
+        final String testUrl = mTestPage2 + "/?lite_url=" + mTestPage;
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(testUrl, tab.getUrl());
     }
 
     /** Maybe prerenders a URL with a referrer, then launch it with another one. */

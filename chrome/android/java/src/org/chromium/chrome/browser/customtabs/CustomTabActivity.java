@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
@@ -208,7 +209,7 @@ public class CustomTabActivity extends ChromeActivity {
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
         if (CustomTabsConnection.hasWarmUpBeenFinished(getApplication())) {
             mMainTab = createMainTab();
-            loadUrlInTab(mMainTab, new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
+            loadUrlInTab(mMainTab, new LoadUrlParams(getUrlToLoad()),
                     IntentHandler.getTimestampFromIntent(getIntent()));
             mHasCreatedTabEarly = true;
         }
@@ -289,8 +290,9 @@ public class CustomTabActivity extends ChromeActivity {
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
-                if (params.getUrl() != null) {
-                    params.setUrl(connection.overrideUrlIfNecessary(params.getUrl(), mSession));
+                if (!TextUtils.isEmpty(params.getUrl())) {
+                    params.setUrl(DataReductionProxySettings.getInstance()
+                            .maybeRewriteWebliteUrl(params.getUrl()));
                 }
                 loadUrlInTab(getActivityTab(), params, timestamp);
             }
@@ -332,8 +334,7 @@ public class CustomTabActivity extends ChromeActivity {
                         pendingIntent);
             }
         };
-        String url = IntentHandler.getUrlFromIntent(getIntent());
-        if (url != null) url = connection.overrideUrlIfNecessary(url, mSession);
+        String url = getUrlToLoad();
         DataUseTabUIManager.onCustomTabInitialNavigation(
                 mMainTab, connection.getClientPackageNameForSession(mSession), url);
         recordClientPackageName();
@@ -350,8 +351,7 @@ public class CustomTabActivity extends ChromeActivity {
     private Tab createMainTab() {
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(getApplication());
-        String url = IntentHandler.getUrlFromIntent(getIntent());
-        if (url != null) url = customTabsConnection.overrideUrlIfNecessary(url, mSession);
+        String url = getUrlToLoad();
         // Get any referrer that has been explicitly set by the app.
         String referrerUrl = IntentHandler.getReferrerUrlIncludingExtraHeaders(getIntent(), this);
         if (referrerUrl == null) {
@@ -439,7 +439,7 @@ public class CustomTabActivity extends ChromeActivity {
      */
     private void loadUrlInTab(final Tab tab, final LoadUrlParams params, long timeStamp) {
         Intent intent = getIntent();
-        String url = IntentHandler.getUrlFromIntent(intent);
+        String url = getUrlToLoad();
         if (mHasPrerendered && UrlUtilities.urlsFragmentsDiffer(mPrerenderedUrl, url)) {
             mHasPrerendered = false;
             LoadUrlParams temporaryParams = new LoadUrlParams(mPrerenderedUrl);
@@ -801,5 +801,17 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         setResult(result, resultIntent);
+    }
+
+    /**
+     * @return The URL that should be used from this intent. If it is a WebLite url, it may be
+     *         overridden if the Data Reduction Proxy is using Lo-Fi previews.
+     */
+    private String getUrlToLoad() {
+        String url = IntentHandler.getUrlFromIntent(getIntent());
+        if (!TextUtils.isEmpty(url)) {
+            url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
+        }
+        return url;
     }
 }
