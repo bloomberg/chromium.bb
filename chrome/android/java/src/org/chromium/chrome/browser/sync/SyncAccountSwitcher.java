@@ -87,7 +87,11 @@ public class SyncAccountSwitcher
                 }
             }
         });
+    }
 
+    @Override
+    public void onCancel() {
+        // The user aborted the 'merge data' dialog, there is nothing to do.
     }
 
     @Override

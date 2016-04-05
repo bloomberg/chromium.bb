@@ -41,6 +41,11 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
          * @param wipeData Whether the user requested that existing data should be wiped.
          */
         public void onConfirm(boolean wipeData);
+
+        /**
+         * The user dismisses the dialog.
+         */
+        public void onCancel();
     }
 
     /**
@@ -169,18 +174,21 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        if (which != AlertDialog.BUTTON_POSITIVE) {
-            RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
-            return;
-        }
         if (mListener == null) return;
 
-        assert mConfirmImportOption.isChecked() ^ mKeepSeparateOption.isChecked();
+        if (which == AlertDialog.BUTTON_POSITIVE) {
+            assert mConfirmImportOption.isChecked() ^ mKeepSeparateOption.isChecked();
 
-        RecordUserAction.record(mKeepSeparateOption.isChecked()
-                ? "Signin_ImportDataPrompt_DontImport"
-                : "Signin_ImportDataPrompt_ImportData");
-        mListener.onConfirm(mKeepSeparateOption.isChecked());
+            RecordUserAction.record(mKeepSeparateOption.isChecked()
+                    ? "Signin_ImportDataPrompt_DontImport"
+                    : "Signin_ImportDataPrompt_ImportData");
+            mListener.onConfirm(mKeepSeparateOption.isChecked());
+        } else {
+            assert which == AlertDialog.BUTTON_NEGATIVE;
+
+            RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
+            mListener.onCancel();
+        }
     }
 }
 
