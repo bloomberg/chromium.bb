@@ -242,16 +242,6 @@ size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
   return private_->GetBlacklistedFeatureCount();
 }
 
-void GpuDataManagerImpl::SetDisplayCount(unsigned int display_count) {
-  base::AutoLock auto_lock(lock_);
-  private_->SetDisplayCount(display_count);
-}
-
-unsigned int GpuDataManagerImpl::GetDisplayCount() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetDisplayCount();
-}
-
 bool GpuDataManagerImpl::UpdateActiveGpu(uint32_t vendor_id,
                                          uint32_t device_id) {
   base::AutoLock auto_lock(lock_);

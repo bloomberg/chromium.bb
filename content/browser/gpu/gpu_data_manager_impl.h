@@ -175,9 +175,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Get number of features being blacklisted.
   size_t GetBlacklistedFeatureCount() const;
 
-  void SetDisplayCount(unsigned int display_count);
-  unsigned int GetDisplayCount() const;
-
   // Set the active gpu.
   // Return true if it's a different GPU from the previous active one.
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);

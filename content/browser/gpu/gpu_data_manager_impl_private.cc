@@ -225,16 +225,6 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
       reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
   DCHECK(manager);
 
-  // Display change.
-  bool display_changed = false;
-  uint32_t displayCount;
-  CGGetActiveDisplayList(0, NULL, &displayCount);
-  if (displayCount != manager->GetDisplayCount()) {
-    manager->SetDisplayCount(displayCount);
-    display_changed = true;
-  }
-
-  // Gpu change.
   bool gpu_changed = false;
   if (flags & kCGDisplayAddFlag) {
     uint32_t vendor_id, device_id;
@@ -243,7 +233,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
     }
   }
 
-  if (display_changed || gpu_changed)
+  if (gpu_changed)
     manager->HandleGpuSwitch();
 }
 #endif  // OS_MACOSX
@@ -302,14 +292,6 @@ size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
   if (use_swiftshader_)
     return 1;
   return blacklisted_features_.size();
-}
-
-void GpuDataManagerImplPrivate::SetDisplayCount(unsigned int display_count) {
-  display_count_ = display_count;
-}
-
-unsigned int GpuDataManagerImplPrivate::GetDisplayCount() const {
-  return display_count_;
 }
 
 gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfo() const {
@@ -1000,7 +982,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       window_count_(0),
       domain_blocking_enabled_(true),
       owner_(owner),
-      display_count_(0),
       gpu_process_accessible_(true),
       is_initialized_(false),
       finalized_(false) {
@@ -1014,7 +995,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
     DisableHardwareAcceleration();
 
 #if defined(OS_MACOSX)
-  CGGetActiveDisplayList (0, NULL, &display_count_);
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif  // OS_MACOSX
 

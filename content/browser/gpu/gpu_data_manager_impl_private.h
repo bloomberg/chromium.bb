@@ -119,9 +119,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   size_t GetBlacklistedFeatureCount() const;
 
-  void SetDisplayCount(unsigned int display_count);
-  unsigned int GetDisplayCount() const;
-
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
 
   void OnGpuProcessInitFailure();
@@ -266,8 +263,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool domain_blocking_enabled_;
 
   GpuDataManagerImpl* owner_;
-
-  unsigned int display_count_;
 
   bool gpu_process_accessible_;
 
