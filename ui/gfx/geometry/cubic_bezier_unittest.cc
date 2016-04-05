@@ -35,6 +35,15 @@ TEST(CubicBezierTest, Basic) {
   EXPECT_NEAR(function.Solve(0.9), 0.96021, epsilon);
   EXPECT_NEAR(function.Solve(0.95), 0.98863, epsilon);
   EXPECT_NEAR(function.Solve(1), 1, epsilon);
+
+  CubicBezier basic_use(0.5, 1.0, 0.5, 1.0);
+  EXPECT_EQ(0.875, basic_use.Solve(0.5));
+
+  CubicBezier overshoot(0.5, 2.0, 0.5, 2.0);
+  EXPECT_EQ(1.625, overshoot.Solve(0.5));
+
+  CubicBezier undershoot(0.5, -1.0, 0.5, -1.0);
+  EXPECT_EQ(-0.625, undershoot.Solve(0.5));
 }
 
 // Tests that solving the bezier works with knots with y not in (0, 1).
@@ -141,6 +150,7 @@ TEST(CubicBezierTest, Slope) {
 
   double epsilon = 0.00015;
 
+  EXPECT_NEAR(function.Slope(-0.1), 0, epsilon);
   EXPECT_NEAR(function.Slope(0), 0, epsilon);
   EXPECT_NEAR(function.Slope(0.05), 0.42170, epsilon);
   EXPECT_NEAR(function.Slope(0.1), 0.69778, epsilon);
@@ -162,6 +172,7 @@ TEST(CubicBezierTest, Slope) {
   EXPECT_NEAR(function.Slope(0.9), 0.69778, epsilon);
   EXPECT_NEAR(function.Slope(0.95), 0.42170, epsilon);
   EXPECT_NEAR(function.Slope(1), 0, epsilon);
+  EXPECT_NEAR(function.Slope(1.1), 0, epsilon);
 }
 
 TEST(CubicBezierTest, InputOutOfRange) {
@@ -169,25 +180,33 @@ TEST(CubicBezierTest, InputOutOfRange) {
   EXPECT_EQ(-2.0, simple.Solve(-1.0));
   EXPECT_EQ(1.0, simple.Solve(2.0));
 
-  CubicBezier coincidentEndpoints(0.0, 0.0, 1.0, 1.0);
-  EXPECT_EQ(-1.0, coincidentEndpoints.Solve(-1.0));
-  EXPECT_EQ(2.0, coincidentEndpoints.Solve(2.0));
+  CubicBezier at_edge_of_range(0.5, 1.0, 0.5, 1.0);
+  EXPECT_EQ(0.0, at_edge_of_range.Solve(0.0));
+  EXPECT_EQ(1.0, at_edge_of_range.Solve(1.0));
 
-  CubicBezier verticalGradient(0.0, 1.0, 1.0, 0.0);
-  EXPECT_EQ(0.0, verticalGradient.Solve(-1.0));
-  EXPECT_EQ(1.0, verticalGradient.Solve(2.0));
+  CubicBezier large_epsilon(0.5, 1.0, 0.5, 1.0);
+  EXPECT_EQ(-2.0, large_epsilon.SolveWithEpsilon(-1.0, 1.0));
+  EXPECT_EQ(1.0, large_epsilon.SolveWithEpsilon(2.0, 1.0));
 
-  CubicBezier distinctEndpoints(0.1, 0.2, 0.8, 0.8);
-  EXPECT_EQ(-2.0, distinctEndpoints.Solve(-1.0));
-  EXPECT_EQ(2.0, distinctEndpoints.Solve(2.0));
+  CubicBezier coincident_endpoints(0.0, 0.0, 1.0, 1.0);
+  EXPECT_EQ(-1.0, coincident_endpoints.Solve(-1.0));
+  EXPECT_EQ(2.0, coincident_endpoints.Solve(2.0));
 
-  CubicBezier coincidentEndpoint(0.0, 0.0, 0.8, 0.8);
-  EXPECT_EQ(-1.0, coincidentEndpoint.Solve(-1.0));
-  EXPECT_EQ(2.0, coincidentEndpoint.Solve(2.0));
+  CubicBezier vertical_gradient(0.0, 1.0, 1.0, 0.0);
+  EXPECT_EQ(0.0, vertical_gradient.Solve(-1.0));
+  EXPECT_EQ(1.0, vertical_gradient.Solve(2.0));
 
-  CubicBezier threeCoincidentPoints(0.0, 0.0, 0.0, 0.0);
-  EXPECT_EQ(0, threeCoincidentPoints.Solve(-1.0));
-  EXPECT_EQ(2.0, threeCoincidentPoints.Solve(2.0));
+  CubicBezier distinct_endpoints(0.1, 0.2, 0.8, 0.8);
+  EXPECT_EQ(-2.0, distinct_endpoints.Solve(-1.0));
+  EXPECT_EQ(2.0, distinct_endpoints.Solve(2.0));
+
+  CubicBezier coincident_endpoint(0.0, 0.0, 0.8, 0.8);
+  EXPECT_EQ(-1.0, coincident_endpoint.Solve(-1.0));
+  EXPECT_EQ(2.0, coincident_endpoint.Solve(2.0));
+
+  CubicBezier three_coincident_points(0.0, 0.0, 0.0, 0.0);
+  EXPECT_EQ(0, three_coincident_points.Solve(-1.0));
+  EXPECT_EQ(2.0, three_coincident_points.Solve(2.0));
 
 }
 
