@@ -54,7 +54,6 @@ if (current_toolchain == default_toolchain) {
   create_native_executable_dist("device_forwarder_prepare_dist") {
     dist_dir = "$root_build_dir/forwarder_dist"
     binary = "$root_build_dir/device_forwarder"
-    include_main_binary = true
     deps = [
       ":device_forwarder",
     ]

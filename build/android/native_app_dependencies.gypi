@@ -27,6 +27,7 @@
 {
   'variables': {
     'include_main_binary%': 1,
+    'extra_files%': [],
   },
   'conditions': [
       ['android_must_copy_system_libraries == 1', {
@@ -53,6 +54,14 @@
             },
             'includes': ['../../build/android/strip_native_libraries.gypi'],
           },
+        ],
+      }],
+      ['extra_files!=[]', {
+        'copies': [
+          {
+            'destination': '<(output_dir)',
+            'files': [ '<@(extra_files)' ],
+          }
         ],
       }],
       ['include_main_binary==1', {

@@ -161,26 +161,18 @@ class _ApkDelegate(object):
 
 
 class _ExeDelegate(object):
-  def __init__(self, tr, exe):
-    self._exe_host_path = exe
-    self._exe_file_name = os.path.split(exe)[-1]
-    self._exe_device_path = '%s/%s' % (
-        constants.TEST_EXECUTABLE_DIR, self._exe_file_name)
-    deps_host_path = self._exe_host_path + '_deps'
-    if os.path.exists(deps_host_path):
-      self._deps_host_path = deps_host_path
-      self._deps_device_path = self._exe_device_path + '_deps'
-    else:
-      self._deps_host_path = None
+  def __init__(self, tr, dist_dir):
+    self._host_dist_dir = dist_dir
+    self._exe_file_name = os.path.basename(dist_dir)[:-len('__dist')]
+    self._device_dist_dir = posixpath.join(
+        constants.TEST_EXECUTABLE_DIR, os.path.basename(dist_dir))
     self._test_run = tr
 
   def Install(self, device):
     # TODO(jbudorick): Look into merging this with normal data deps pushing if
     # executables become supported on nonlocal environments.
-    host_device_tuples = [(self._exe_host_path, self._exe_device_path)]
-    if self._deps_host_path:
-      host_device_tuples.append((self._deps_host_path, self._deps_device_path))
-    device.PushChangedFiles(host_device_tuples)
+    device.PushChangedFiles([(self._host_dist_dir, self._device_dist_dir)],
+                            delete_device_stale=True)
 
   def Run(self, test, device, flags=None, **kwargs):
     tool = self._test_run.GetTool(device).GetTestWrapper()
@@ -188,17 +180,17 @@ class _ExeDelegate(object):
       cmd = [tool]
     else:
       cmd = []
-    cmd.append(self._exe_device_path)
+    cmd.append(posixpath.join(self._device_dist_dir, self._exe_file_name))
 
     if test:
       cmd.append('--gtest_filter=%s' % ':'.join(test))
     if flags:
+      # TODO(agrieve): This won't work if multiple flags are passed.
       cmd.append(flags)
     cwd = constants.TEST_EXECUTABLE_DIR
 
     env = {
-      'LD_LIBRARY_PATH':
-          '%s/%s_deps' % (constants.TEST_EXECUTABLE_DIR, self._exe_file_name),
+      'LD_LIBRARY_PATH': self._device_dist_dir
     }
     try:
       gcov_strip_depth = os.environ['NATIVE_COVERAGE_DEPTH_STRIP']
@@ -228,8 +220,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
     if self._test_instance.apk:
       self._delegate = _ApkDelegate(self._test_instance)
-    elif self._test_instance.exe:
-      self._delegate = _ExeDelegate(self, self._test_instance.exe)
+    elif self._test_instance.exe_dist_dir:
+      self._delegate = _ExeDelegate(self, self._test_instance.exe_dist_dir)
     self._crashes = set()
     self._servers = collections.defaultdict(list)
 

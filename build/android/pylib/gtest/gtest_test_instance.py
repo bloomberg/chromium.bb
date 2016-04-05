@@ -144,9 +144,18 @@ class GtestTestInstance(test_instance.TestInstance):
     self._shard_timeout = args.shard_timeout
     self._skip_clear_data = args.skip_clear_data
     self._suite = args.suite_name[0]
+    self._exe_dist_dir = None
 
-    self._exe_path = os.path.join(constants.GetOutDirectory(),
-                                  self._suite)
+    # GYP:
+    if args.executable_dist_dir:
+      self._exe_dist_dir = os.path.abspath(args.executable_dist_dir)
+    else:
+      # TODO(agrieve): Remove auto-detection once recipes pass flag explicitly.
+      exe_dist_dir = os.path.join(constants.GetOutDirectory(),
+                                  '%s__dist' % self._suite)
+
+      if os.path.exists(exe_dist_dir):
+        self._exe_dist_dir = exe_dist_dir
 
     incremental_part = ''
     if args.test_apk_incremental_install_script:
@@ -171,9 +180,7 @@ class GtestTestInstance(test_instance.TestInstance):
         self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(1e9 * self._shard_timeout)
         self._shard_timeout = 900
 
-    if not os.path.exists(self._exe_path):
-      self._exe_path = None
-    if not self._apk_helper and not self._exe_path:
+    if not self._apk_helper and not self._exe_dist_dir:
       error_func('Could not find apk or executable for %s' % self._suite)
 
     self._data_deps = []
@@ -234,8 +241,8 @@ class GtestTestInstance(test_instance.TestInstance):
     return self._app_data_files
 
   @property
-  def exe(self):
-    return self._exe_path
+  def exe_dist_dir(self):
+    return self._exe_dist_dir
 
   @property
   def extras(self):

@@ -249,6 +249,9 @@ def AddGTestOptions(parser):
   group.add_argument('-s', '--suite', dest='suite_name',
                      nargs='+', metavar='SUITE_NAME', required=True,
                      help='Executable name of the test suite to run.')
+  group.add_argument('--executable-dist-dir',
+                     help="Path to executable's dist directory for native"
+                          " (non-apk) tests.")
   group.add_argument('--test-apk-incremental-install-script',
                      help='Path to install script for the test apk.')
   group.add_argument('--gtest_also_run_disabled_tests',

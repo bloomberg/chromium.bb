@@ -376,29 +376,15 @@
     [ 'OS=="android"', {
       'targets': [
       {
-        'target_name': 'sandbox_linux_unittests_stripped',
-        'type': 'none',
-        'dependencies': [ 'sandbox_linux_unittests' ],
-        'actions': [{
-          'action_name': 'strip sandbox_linux_unittests',
-          'inputs': [ '<(PRODUCT_DIR)/sandbox_linux_unittests' ],
-          'outputs': [ '<(PRODUCT_DIR)/sandbox_linux_unittests_stripped' ],
-          'action': [ '<(android_strip)', '<@(_inputs)', '-o', '<@(_outputs)' ],
-        }],
-      },
-      {
         'target_name': 'sandbox_linux_unittests_deps',
         'type': 'none',
         'dependencies': [
-          'sandbox_linux_unittests_stripped',
+          'sandbox_linux_unittests',
         ],
-        # For the component build, ensure dependent shared libraries are
-        # stripped and put alongside sandbox_linux_unittests to simplify pushing
-        # to the device.
         'variables': {
-           'output_dir': '<(PRODUCT_DIR)/sandbox_linux_unittests_deps/',
-           'native_binary': '<(PRODUCT_DIR)/sandbox_linux_unittests_stripped',
-           'include_main_binary': 0,
+           'output_dir': '<(PRODUCT_DIR)/sandbox_linux_unittests__dist/',
+           'native_binary': '<(PRODUCT_DIR)/sandbox_linux_unittests',
+           'include_main_binary': 1,
         },
         'includes': [
           '../../build/android/native_app_dependencies.gypi'

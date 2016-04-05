@@ -623,10 +623,7 @@ if (is_linux || is_android) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 
-  # "breakpad_unittests" cannot use the test() template because the test is run
-  # as an executable not as an APK on Android.
-  executable("breakpad_unittests") {
-    testonly = true
+  test("breakpad_unittests") {
     set_sources_assignment_filter([])
     sources = [
       "linux/breakpad_googletest_includes.h",
@@ -682,9 +679,11 @@ if (is_linux || is_android) {
     }
 
     if (is_android) {
+      use_raw_android_executable = true
       sources += [ "src/common/android/breakpad_getcontext_unittest.cc" ]
       libs = [ "log" ]
       include_dirs += [ "src/common/android/include" ]
+      extra_dist_files = [ "$root_out_dir/linux_dumper_unittest_helper" ]
     }
 
     # Clang's -mstackrealign doesn't work well with
@@ -884,29 +883,8 @@ if (is_win) {
 }
 
 if (is_android) {
-  create_native_executable_dist("breakpad_unittests_deps") {
-    testonly = true
-    dist_dir = "$root_out_dir/breakpad_unittests_deps"
-    binary = "$root_out_dir/breakpad_unittests"
-    deps = [
-      ":breakpad_unittests",
-    ]
-
-    if (is_component_build) {
-      deps += [ "//build/android:cpplib_stripped" ]
-    }
-  }
-
-  test_runner_script("breakpad_unittests__test_runner_script") {
-    test_name = "breakpad_unittests"
-    test_type = "gtest"
-    test_suite = "breakpad_unittests"
-    isolate_file = "breakpad_unittests.isolate"
-  }
-
   # TODO(GYP) Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("breakpad_unittests_apk_run") {
+  group("breakpad_unittests_deps") {
     testonly = true
     deps = [
       ":breakpad_unittests",

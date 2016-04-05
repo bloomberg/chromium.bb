@@ -2070,22 +2070,32 @@ template("test_runner_script") {
       "//build/android:test_runner_py",
     ]
 
+    test_runner_args = [
+      _test_type,
+      "--output-directory",
+      rebase_path(root_build_dir, root_build_dir),
+    ]
+
     # apk_target is not used for native executable tests
     # (e.g. breakpad_unittests).
     if (defined(invoker.apk_target)) {
+      assert(!defined(invoker.executable_dist_dir))
       deps += [ "${invoker.apk_target}__build_config" ]
       _apk_build_config =
           get_label_info(invoker.apk_target, "target_gen_dir") + "/" +
           get_label_info(invoker.apk_target, "name") + ".build_config"
       _rebased_apk_build_config = rebase_path(_apk_build_config, root_build_dir)
       assert(_rebased_apk_build_config != "")  # Mark as used.
+    } else if (_test_type == "gtest") {
+      assert(
+          defined(invoker.executable_dist_dir),
+          "Must define either apk_target or executable_dist_dir for test_runner_script()")
+      test_runner_args += [
+        "--executable-dist-dir",
+        rebase_path(invoker.executable_dist_dir, root_build_dir),
+      ]
     }
 
-    test_runner_args = [
-      _test_type,
-      "--output-directory",
-      rebase_path(root_build_dir, root_build_dir),
-    ]
     if (_test_type == "gtest") {
       assert(defined(invoker.test_suite))
       test_runner_args += [

@@ -192,33 +192,14 @@ action("bpf_dsl_golden") {
       rebase_path(outputs, root_build_dir) + rebase_path(inputs, root_build_dir)
 }
 
-# TODO(GYP): Delete these after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("sandbox_linux_unittests_run") {
-  testonly = true
-  deps = [
-    ":sandbox_linux_unittests",
-  ]
-}
-
-if (is_android) {
-  group("sandbox_linux_unittests_apk_run") {
-    testonly = true
-    deps = [
-      ":sandbox_linux_unittests",
-    ]
-  }
-}
-
-# The main sandboxing test target. "sandbox_linux_unittests" cannot use the
-# test() template because the test is run as an executable not as an APK on
-# Android.
-executable("sandbox_linux_unittests") {
-  testonly = true
+test("sandbox_linux_unittests") {
   deps = [
     ":sandbox_linux_unittests_sources",
     "//build/config/sanitizers:deps",
   ]
+  if (is_android) {
+    use_raw_android_executable = true
+  }
 }
 
 component("seccomp_bpf") {
@@ -454,23 +435,11 @@ if (compile_suid_client || is_nacl_nonsfi) {
 }
 
 if (is_android) {
-  create_native_executable_dist("sandbox_linux_unittests_deps") {
+  # TODO(GYP) Delete this after we've converted everything to GN.
+  group("sandbox_linux_unittests_deps") {
     testonly = true
-    dist_dir = "$root_out_dir/sandbox_linux_unittests_deps"
-    binary = "$root_out_dir/sandbox_linux_unittests"
     deps = [
       ":sandbox_linux_unittests",
     ]
-
-    if (is_component_build) {
-      deps += [ "//build/android:cpplib_stripped" ]
-    }
-  }
-
-  test_runner_script("sandbox_linux_unittests__test_runner_script") {
-    test_name = "sandbox_linux_unittests"
-    test_type = "gtest"
-    test_suite = "sandbox_linux_unittests"
-    isolate_file = "//sandbox/sandbox_linux_unittests_android.isolate"
   }
 }

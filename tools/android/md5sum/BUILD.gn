@@ -38,7 +38,6 @@ if (current_toolchain == default_toolchain) {
   create_native_executable_dist("md5sum_prepare_dist") {
     dist_dir = "$root_build_dir/md5sum_dist"
     binary = "$root_build_dir/md5sum_bin"
-    include_main_binary = true
     deps = [
       ":md5sum_bin",
     ]
