@@ -168,6 +168,12 @@ chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
     var doc = appWindow.contentWindow.document;
     webview = doc.getElementById('arc-support');
+    // Apply absolute dimension to webview tag in order to avoid UI glitch
+    // when embedded content layout is visible for user, even if 100% width and
+    // height are set in css file.
+    // TODO(khmel): Investigate why relative layout is not enough.
+    webview.style.width = appWindow.innerBounds.width + 'px';
+    webview.style.height = appWindow.innerBounds.height + 'px';
 
     var isApprovalResponse = function(url) {
       var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
