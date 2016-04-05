@@ -292,8 +292,6 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool replac
 
 void LocalFrame::navigate(const FrameLoadRequest& request)
 {
-    if (!isNavigationAllowed())
-        return;
     m_loader.load(request);
 }
 

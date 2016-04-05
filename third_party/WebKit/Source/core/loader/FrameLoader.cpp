@@ -884,6 +884,9 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
 {
     ASSERT(m_frame->document());
 
+    if (!m_frame->isNavigationAllowed())
+        return;
+
     if (m_inStopAllLoaders)
         return;
 

@@ -278,6 +278,23 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const
     return m_redirect && m_redirect->delay() <= interval;
 }
 
+// TODO(dcheng): There are really two different load blocking concepts at work
+// here and they have been incorrectly tangled together.
+//
+// 1. NavigationDisablerForBeforeUnload is for blocking navigation scheduling
+//    during a beforeunload event. Scheduled navigations during beforeunload
+//    would make it possible to get trapped in an endless loop of beforeunload
+//    dialogs.
+//
+//    Checking Frame::isNavigationAllowed() doesn't make sense in this context:
+//    NavigationScheduler is always cleared when a new load commits, so it's
+//    impossible for a scheduled navigation to clobber a navigation that just
+//    committed.
+//
+// 2. FrameNavigationDisabler / LocalFrame::isNavigationAllowed() are intended
+//    to prevent Documents from being reattached during destruction, since it
+//    can cause bugs with security origin confusion. This is primarily intended
+//    to block /synchronous/ navigations during things lke Document::detach().
 inline bool NavigationScheduler::shouldScheduleReload() const
 {
     return m_frame->page() && m_frame->isNavigationAllowed() && NavigationDisablerForBeforeUnload::isNavigationAllowed();
