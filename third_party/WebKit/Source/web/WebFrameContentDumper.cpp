@@ -13,6 +13,7 @@
 #include "core/layout/LayoutView.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
+#include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/text/WTFString.h"
 
@@ -76,13 +77,20 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
     }
 }
 
-WebString WebFrameContentDumper::dumpFrameTreeAsText(WebLocalFrame* frame, size_t maxChars)
+WebString WebFrameContentDumper::deprecatedDumpFrameTreeAsText(WebLocalFrame* frame, size_t maxChars)
 {
     if (!frame)
         return WebString();
     StringBuilder text;
     frameContentAsPlainText(maxChars, toWebLocalFrameImpl(frame)->frame(), text);
     return text.toString();
+}
+
+WebString WebFrameContentDumper::dumpWebViewAsText(WebView* webView, size_t maxChars)
+{
+    ASSERT(webView);
+    webView->updateAllLifecyclePhases();
+    return WebFrameContentDumper::deprecatedDumpFrameTreeAsText(webView->mainFrame()->toWebLocalFrame(), maxChars);
 }
 
 WebString WebFrameContentDumper::dumpAsMarkup(WebLocalFrame* frame)

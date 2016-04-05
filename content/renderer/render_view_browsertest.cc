@@ -1277,8 +1277,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       // Retrieve the content of this page and compare it with the expected
       // result.
       const int kMaxOutputCharacters = 128;
-      base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
-          GetMainFrame(), kMaxOutputCharacters);
+      base::string16 output = WebFrameContentDumper::dumpWebViewAsText(
+          view()->GetWebView(), kMaxOutputCharacters);
       EXPECT_EQ(base::WideToUTF16(ime_message->result), output);
     }
   }
@@ -1326,8 +1326,8 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     // Copy the document content to std::wstring and compare with the
     // expected result.
     const int kMaxOutputCharacters = 16;
-    base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
-        GetMainFrame(), kMaxOutputCharacters);
+    base::string16 output = WebFrameContentDumper::dumpWebViewAsText(
+        view()->GetWebView(), kMaxOutputCharacters);
     EXPECT_EQ(base::WideToUTF16(kTextDirection[i].expected_result), output);
   }
 }
@@ -1669,8 +1669,8 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   // expected result.
   const int kMaxOutputCharacters = 256;
   std::string output = base::UTF16ToUTF8(
-      base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
-          GetMainFrame(), kMaxOutputCharacters)));
+      base::StringPiece16(WebFrameContentDumper::dumpWebViewAsText(
+          view()->GetWebView(), kMaxOutputCharacters)));
   EXPECT_EQ(output, "hello \n\nworld");
 }
 
@@ -1790,8 +1790,8 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
                                      blink::WebStandardCommit);
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("", base::UTF16ToASCII(base::StringPiece16(
-                    WebFrameContentDumper::dumpFrameTreeAsText(
-                        web_frame, kMaxOutputCharacters))));
+                    WebFrameContentDumper::dumpWebViewAsText(
+                        view()->GetWebView(), kMaxOutputCharacters))));
 }
 
 #if defined(OS_ANDROID)
@@ -1826,8 +1826,8 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
             base::UTF16ToASCII(
-                base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
-                    web_frame, kMaxOutputCharacters))));
+                base::StringPiece16(WebFrameContentDumper::dumpWebViewAsText(
+                    view()->GetWebView(), kMaxOutputCharacters))));
 }
 
 #if defined(OS_ANDROID)
@@ -1862,8 +1862,8 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
             base::UTF16ToASCII(
-                base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
-                    web_frame, kMaxOutputCharacters))));
+                base::StringPiece16(WebFrameContentDumper::dumpWebViewAsText(
+                    view()->GetWebView(), kMaxOutputCharacters))));
 }
 
 // Ensure the render view sends favicon url update events correctly.

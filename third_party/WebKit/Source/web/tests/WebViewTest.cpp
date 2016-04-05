@@ -2259,11 +2259,11 @@ TEST_F(WebViewTest, ChangeDisplayMode)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("display_mode.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "display_mode.html", true);
 
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webView->mainFrame()->toWebLocalFrame(), 21).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webView, 21).utf8();
     EXPECT_EQ("regular-ui", content);
 
     webView->setDisplayMode(WebDisplayModeMinimalUi);
-    content = WebFrameContentDumper::dumpFrameTreeAsText(webView->mainFrame()->toWebLocalFrame(), 21).utf8();
+    content = WebFrameContentDumper::dumpWebViewAsText(webView, 21).utf8();
     EXPECT_EQ("minimal-ui", content);
     m_webViewHelper.reset();
 }
@@ -2734,7 +2734,7 @@ TEST_F(WebViewTest, CompareSelectAllToContentAsText)
     std::string actual = frame->selectionAsText().utf8();
 
     const int kMaxOutputCharacters = 1024;
-    std::string expected = WebFrameContentDumper::dumpFrameTreeAsText(frame, kMaxOutputCharacters).utf8();
+    std::string expected = WebFrameContentDumper::dumpWebViewAsText(webView, kMaxOutputCharacters).utf8();
     EXPECT_EQ(expected, actual);
 }
 

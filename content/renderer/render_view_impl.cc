@@ -1202,7 +1202,7 @@ void RenderViewImpl::OnGetRenderedText() {
   // TODO(dglazkov): WebFrameContentDumper should only be used for
   // testing purposes. See http://crbug.com/585164.
   std::string text =
-      WebFrameContentDumper::dumpFrameTreeAsText(
+      WebFrameContentDumper::deprecatedDumpFrameTreeAsText(
           webview()->mainFrame()->toWebLocalFrame(), kMaximumMessageSize)
           .utf8();
 

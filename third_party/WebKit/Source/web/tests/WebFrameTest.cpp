@@ -325,7 +325,7 @@ TEST_P(ParameterizedWebFrameTest, ContentText)
     webViewHelper.initializeAndLoad(m_baseURL + "iframes_test.html");
 
     // Now retrieve the frames text and test it only includes visible elements.
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 1024).utf8();
     EXPECT_NE(std::string::npos, content.find(" visible paragraph"));
     EXPECT_NE(std::string::npos, content.find(" visible iframe"));
     EXPECT_EQ(std::string::npos, content.find(" invisible pararaph"));
@@ -454,11 +454,8 @@ TEST_P(ParameterizedWebFrameTest, ChromePageJavascript)
     // Try to run JS against the chrome-style URL.
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.appendChild(document.createTextNode('Clobbered'))");
 
-    // Required to see any updates in contentAsText.
-    webViewHelper.webView()->updateAllLifecyclePhases();
-
     // Now retrieve the frame's text and ensure it was modified by running javascript.
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 1024).utf8();
     EXPECT_NE(std::string::npos, content.find("Clobbered"));
 }
 
@@ -474,11 +471,8 @@ TEST_P(ParameterizedWebFrameTest, ChromePageNoJavascript)
     WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs("chrome");
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.appendChild(document.createTextNode('Clobbered'))");
 
-    // Required to see any updates in contentAsText.
-    webViewHelper.webView()->updateAllLifecyclePhases();
-
     // Now retrieve the frame's text and ensure it wasn't modified by running javascript.
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 1024).utf8();
     EXPECT_EQ(std::string::npos, content.find("Clobbered"));
 }
 
@@ -498,7 +492,7 @@ TEST_P(ParameterizedWebFrameTest, LocationSetHostWithMissingPort)
 
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.textContent = location.href; void 0;");
 
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 1024).utf8();
     EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
@@ -517,7 +511,7 @@ TEST_P(ParameterizedWebFrameTest, LocationSetEmptyPort)
 
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.textContent = location.href; void 0;");
 
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 1024).utf8();
     EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
@@ -833,11 +827,8 @@ TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck)
     WebSecurityOrigin incorrectOrigin(WebSecurityOrigin::create(toKURL(m_chromeURL)));
     webViewHelper.webView()->mainFrame()->dispatchMessageEventWithOriginCheck(incorrectOrigin, message);
 
-    // Required to see any updates in contentAsText.
-    webViewHelper.webView()->updateAllLifecyclePhases();
-
     // Verify that only the first addition is in the body of the page.
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 1024).utf8();
     EXPECT_NE(std::string::npos, content.find("Message 1."));
     EXPECT_EQ(std::string::npos, content.find("Message 2."));
 }
@@ -1035,7 +1026,7 @@ TEST_P(ParameterizedWebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag
     EXPECT_EQ(1, webViewHelper.webView()->pageScaleFactor());
 
     // Force the layout to happen before leaving the test.
-    WebFrameContentDumper::dumpFrameTreeAsText(webViewHelper.webView()->mainFrame()->toWebLocalFrame(), 1024).utf8();
+    webViewHelper.webView()->updateAllLifecyclePhases();
 }
 
 TEST_P(ParameterizedWebFrameTest, FixedLayoutInitializeAtMinimumScale)
@@ -3609,12 +3600,12 @@ TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText)
 
     // Make sure it comes out OK.
     const std::string expected("Foo bar\nbaz");
-    WebString text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), std::numeric_limits<size_t>::max());
+    WebString text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ(expected, text.utf8());
 
     // Try reading the same one with clipping of the text.
     const int length = 5;
-    text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), length);
+    text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), length);
     EXPECT_EQ(expected.substr(0, length), text.utf8());
 
     // Now do a new test with a subframe.
@@ -3626,12 +3617,12 @@ TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText)
     ASSERT_TRUE(subframe);
     FrameTestHelpers::loadHTMLString(subframe, "sub<p>text", testURL);
 
-    text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), std::numeric_limits<size_t>::max());
+    text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ("Hello world\n\nsub\ntext", text.utf8());
 
     // Get the frame text where the subframe separator falls on the boundary of
     // what we'll take. There used to be a crash in this case.
-    text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), 12);
+    text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), 12);
     EXPECT_EQ("Hello world", text.utf8());
 }
 
@@ -3646,7 +3637,7 @@ TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage)
     KURL testURL = toKURL("about:blank");
     FrameTestHelpers::loadHTMLString(frame, simpleSource, testURL);
 
-    WebString text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), std::numeric_limits<size_t>::max());
+    WebString text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ("Hello\n\nWorld", text.utf8());
 
     const std::string html = WebFrameContentDumper::dumpAsMarkup(frame->toWebLocalFrame()).utf8();
@@ -3656,7 +3647,7 @@ TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage)
 
     EXPECT_EQ(html, WebFrameContentDumper::dumpAsMarkup(frame->toWebLocalFrame()).utf8());
 
-    text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), std::numeric_limits<size_t>::max());
+    text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ("Hello\n\nWorld", text.utf8());
 
     // Test selection check
@@ -5131,8 +5122,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     errorHistoryItem.setURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
     Platform::current()->unitTestSupport()->registerMockedErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
     FrameTestHelpers::loadHistoryItem(frame, errorHistoryItem, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
-
-    WebString text = WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), std::numeric_limits<size_t>::max());
+    WebString text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ("This should appear", text.utf8());
     EXPECT_TRUE(webFrameClient.commitCalled());
 }
@@ -5245,7 +5235,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
     EXPECT_EQ(1U, document->markers().markersInRange(selectionRange, DocumentMarker::Spelling).size());
 
     frame->replaceMisspelledRange("welcome");
-    EXPECT_EQ("_welcome_.", WebFrameContentDumper::dumpFrameTreeAsText(frame, std::numeric_limits<size_t>::max()).utf8());
+    EXPECT_EQ("_welcome_.", WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max()).utf8());
 }
 
 TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)
@@ -7049,6 +7039,7 @@ protected:
 
     void reset() { m_webViewHelper.reset(); }
     WebFrame* mainFrame() const { return m_webViewHelper.webView()->mainFrame(); }
+    WebView* webView() const { return m_webViewHelper.webView(); }
 
 private:
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -7066,7 +7057,8 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(localFrame, 1024).utf8();
+
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webView(), 1024).utf8();
     EXPECT_EQ("hello", content);
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
@@ -7168,8 +7160,8 @@ TEST_F(WebFrameSwapTest, SwapFirstChild)
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(localFrame, 1024).utf8();
-    EXPECT_EQ("hello", content);
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webView(), 1024).utf8();
+    EXPECT_EQ("  \n\nhello\n\nb \n\na\n\nc", content);
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.
@@ -7206,8 +7198,8 @@ TEST_F(WebFrameSwapTest, SwapMiddleChild)
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(localFrame, 1024).utf8();
-    EXPECT_EQ("hello", content);
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webView(), 1024).utf8();
+    EXPECT_EQ("  \n\na\n\nhello\n\nc", content);
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.
@@ -7241,8 +7233,8 @@ TEST_F(WebFrameSwapTest, SwapLastChild)
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(localFrame, 1024).utf8();
-    EXPECT_EQ("hello", content);
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webView(), 1024).utf8();
+    EXPECT_EQ("  \n\na\n\nb \n\na\n\nhello", content);
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.
@@ -7285,8 +7277,8 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
-    std::string content = WebFrameContentDumper::dumpFrameTreeAsText(localFrame, 1024).utf8();
-    EXPECT_EQ("hello", content);
+    std::string content = WebFrameContentDumper::dumpWebViewAsText(webView(), 1024).utf8();
+    EXPECT_EQ("  \n\na\n\nhello\n\nc", content);
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.

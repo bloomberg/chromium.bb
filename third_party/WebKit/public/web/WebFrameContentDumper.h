@@ -10,6 +10,7 @@
 namespace blink {
 
 class WebLocalFrame;
+class WebView;
 class WebString;
 
 // Functions in this class should only be used for
@@ -27,14 +28,20 @@ public:
     typedef unsigned LayoutAsTextControls;
 
     // Returns the contents of this frame as a string.  If the text is
-    // longer than maxChars, it will be clipped to that length.  WARNING:
-    // This function may be slow depending on the number of characters
-    // retrieved and page complexity.  For a typically sized page, expect
-    // it to take on the order of milliseconds.
+    // longer than maxChars, it will be clipped to that length.
     //
     // If there is room, subframe text will be recursively appended. Each
     // frame will be separated by an empty line.
-    BLINK_EXPORT static WebString dumpFrameTreeAsText(WebLocalFrame*, size_t maxChars);
+    // TODO(dglazkov): WebFrameContentDumper should only be used for
+    // testing purposes and this function is being deprecated.
+    // Don't add new callsites, please.
+    // See http://crbug.com/585164 for details.
+    BLINK_EXPORT static WebString deprecatedDumpFrameTreeAsText(WebLocalFrame*, size_t maxChars);
+
+    // Dumps the contents of of a WebView as text, starting from the main
+    // frame and recursively appending every subframe, separated by an
+    // empty line.
+    BLINK_EXPORT static WebString dumpWebViewAsText(WebView*, size_t maxChars);
 
     // Returns HTML text for the contents of this frame, generated
     // from the DOM.

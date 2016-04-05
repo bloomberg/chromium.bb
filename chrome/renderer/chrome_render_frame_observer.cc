@@ -381,7 +381,8 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
   // TODO(dglazkov): WebFrameContentDumper should only be used for
   // testing purposes. See http://crbug.com/585164.
   base::string16 contents =
-      WebFrameContentDumper::dumpFrameTreeAsText(frame, kMaxIndexChars);
+      WebFrameContentDumper::deprecatedDumpFrameTreeAsText(frame,
+                                                           kMaxIndexChars);
 
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
