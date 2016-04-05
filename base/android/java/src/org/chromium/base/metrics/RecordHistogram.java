@@ -7,11 +7,18 @@ package org.chromium.base.metrics;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Java API for recording UMA histograms. Internally, the histogram will be cached by
- * System.identityHashCode(name).
+ * Java API for recording UMA histograms.
+ *
+ * Internally, histograms objects are cached on the Java side by their pointer
+ * values (converted to long). This is safe to do because C++ Histogram objects
+ * are never freed. Caching them on the Java side prevents needing to do costly
+ * Java String to C++ string conversions on the C++ side during lookup.
  *
  * Note: the JNI calls are relatively costly - avoid calling these methods in performance-critical
  * code.
@@ -19,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 @JNINamespace("base::android")
 public class RecordHistogram {
     private static boolean sIsDisabledForTests = false;
+    private static Map<String, Long> sCache =
+            Collections.synchronizedMap(new HashMap<String, Long>());
 
     /**
      * Tests may not have native initialized, so they may need to disable metrics.
@@ -26,6 +35,15 @@ public class RecordHistogram {
     @VisibleForTesting
     public static void disableForTests() {
         sIsDisabledForTests = true;
+    }
+
+    private static long getCachedHistogramKey(String name) {
+        Long key = sCache.get(name);
+        // Note: If key is null, we don't have it cached. In that case, pass 0
+        // to the native code, which gets converted to a null histogram pointer
+        // which will cause the native code to look up the object on the native
+        // side.
+        return (key == null ? 0 : key);
     }
 
     /**
@@ -37,7 +55,9 @@ public class RecordHistogram {
      */
     public static void recordBooleanHistogram(String name, boolean sample) {
         if (sIsDisabledForTests) return;
-        nativeRecordBooleanHistogram(name, System.identityHashCode(name), sample);
+        long key = getCachedHistogramKey(name);
+        long result = nativeRecordBooleanHistogram(name, key, sample);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -51,7 +71,9 @@ public class RecordHistogram {
      */
     public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
         if (sIsDisabledForTests) return;
-        nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, boundary);
+        long key = getCachedHistogramKey(name);
+        long result = nativeRecordEnumeratedHistogram(name, key, sample, boundary);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -96,8 +118,9 @@ public class RecordHistogram {
     public static void recordCustomCountHistogram(
             String name, int sample, int min, int max, int numBuckets) {
         if (sIsDisabledForTests) return;
-        nativeRecordCustomCountHistogram(
-                name, System.identityHashCode(name), sample, min, max, numBuckets);
+        long key = getCachedHistogramKey(name);
+        long result = nativeRecordCustomCountHistogram(name, key, sample, min, max, numBuckets);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -112,8 +135,9 @@ public class RecordHistogram {
     public static void recordLinearCountHistogram(
             String name, int sample, int min, int max, int numBuckets) {
         if (sIsDisabledForTests) return;
-        nativeRecordLinearCountHistogram(
-                name, System.identityHashCode(name), sample, min, max, numBuckets);
+        long key = getCachedHistogramKey(name);
+        long result = nativeRecordLinearCountHistogram(name, key, sample, min, max, numBuckets);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -124,7 +148,9 @@ public class RecordHistogram {
      */
     public static void recordPercentageHistogram(String name, int sample) {
         if (sIsDisabledForTests) return;
-        nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, 101);
+        long key = getCachedHistogramKey(name);
+        long result = nativeRecordEnumeratedHistogram(name, key, sample, 101);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -135,7 +161,9 @@ public class RecordHistogram {
     */
     public static void recordSparseSlowlyHistogram(String name, int sample) {
         if (sIsDisabledForTests) return;
-        nativeRecordSparseHistogram(name, System.identityHashCode(name), sample);
+        long key = getCachedHistogramKey(name);
+        long result = nativeRecordSparseHistogram(name, key, sample);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -201,12 +229,14 @@ public class RecordHistogram {
     private static void recordCustomTimesHistogramMilliseconds(
             String name, long duration, long min, long max, int numBuckets) {
         if (sIsDisabledForTests) return;
+        long key = getCachedHistogramKey(name);
         // Note: Duration, min and max are clamped to int here because that's what's expected by
         // the native histograms API. Callers of these functions still pass longs because that's
         // the types returned by TimeUnit and System.currentTimeMillis() APIs, from which these
         // values come.
-        nativeRecordCustomTimesHistogramMilliseconds(name, System.identityHashCode(name),
-                clampToInt(duration), clampToInt(min), clampToInt(max), numBuckets);
+        long result = nativeRecordCustomTimesHistogramMilliseconds(
+                name, key, clampToInt(duration), clampToInt(min), clampToInt(max), numBuckets);
+        if (result != key) sCache.put(name, result);
     }
 
     /**
@@ -227,17 +257,17 @@ public class RecordHistogram {
         nativeInitialize();
     }
 
-    private static native void nativeRecordCustomTimesHistogramMilliseconds(
-            String name, int key, int duration, int min, int max, int numBuckets);
+    private static native long nativeRecordCustomTimesHistogramMilliseconds(
+            String name, long key, int duration, int min, int max, int numBuckets);
 
-    private static native void nativeRecordBooleanHistogram(String name, int key, boolean sample);
-    private static native void nativeRecordEnumeratedHistogram(
-            String name, int key, int sample, int boundary);
-    private static native void nativeRecordCustomCountHistogram(
-            String name, int key, int sample, int min, int max, int numBuckets);
-    private static native void nativeRecordLinearCountHistogram(
-            String name, int key, int sample, int min, int max, int numBuckets);
-    private static native void nativeRecordSparseHistogram(String name, int key, int sample);
+    private static native long nativeRecordBooleanHistogram(String name, long key, boolean sample);
+    private static native long nativeRecordEnumeratedHistogram(
+            String name, long key, int sample, int boundary);
+    private static native long nativeRecordCustomCountHistogram(
+            String name, long key, int sample, int min, int max, int numBuckets);
+    private static native long nativeRecordLinearCountHistogram(
+            String name, long key, int sample, int min, int max, int numBuckets);
+    private static native long nativeRecordSparseHistogram(String name, long key, int sample);
 
     private static native int nativeGetHistogramValueCountForTesting(String name, int sample);
     private static native void nativeInitialize();
