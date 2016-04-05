@@ -40,6 +40,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
  private:
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
+
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
   void HandleFetchUsageTotal(const base::ListValue* args);
