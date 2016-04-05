@@ -33,8 +33,8 @@ void f()
     owned->useThis();
     T& reference = *owned;
     T* pointer = owned.get();
-    owned.reset();      // Or: owned = std::unique_ptr<T>()
-    owned.reset(new T); // Or: owned = std::unique_ptr<T>(...)
+    owned.reset();      // Or: owned = nullptr
+    owned.reset(new T); // Or: owned = std::unique_ptr<T>(new T)
     T* leakedPointer = owned.release();
 }
 ```
