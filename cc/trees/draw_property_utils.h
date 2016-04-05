@@ -40,24 +40,6 @@ void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 // Computes screen space opacity for every node in the opacity tree.
 void CC_EXPORT ComputeEffects(EffectTree* effect_tree);
 
-// Computes the visible content rect for every layer under |root_layer|. The
-// visible content rect is the clipped content space rect that will be used for
-// recording.
-void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
-    Layer* root_layer,
-    const Layer* page_scale_layer,
-    const Layer* inner_viewport_scroll_layer,
-    const Layer* outer_viewport_scroll_layer,
-    const Layer* overscroll_elasticity_layer,
-    const gfx::Vector2dF& elastic_overscroll,
-    float page_scale_factor,
-    float device_scale_factor,
-    const gfx::Rect& viewport,
-    const gfx::Transform& device_transform,
-    bool can_render_to_separate_surface,
-    PropertyTrees* property_trees,
-    LayerList* update_layer_list);
-
 void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
     LayerImpl* root_layer,
     const LayerImpl* page_scale_layer,
@@ -73,10 +55,21 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
     PropertyTrees* property_trees,
     LayerImplList* visible_layer_list);
 
-void CC_EXPORT ComputeVisibleRects(Layer* root_layer,
-                                   PropertyTrees* property_trees,
-                                   bool can_render_to_separate_surface,
-                                   LayerList* update_layer_list);
+void CC_EXPORT UpdateRenderSurfaces(Layer* root_layer,
+                                    PropertyTrees* property_trees);
+
+void CC_EXPORT UpdatePropertyTrees(PropertyTrees* property_trees,
+                                   bool can_render_to_separate_surface);
+
+void CC_EXPORT FindLayersThatNeedUpdates(Layer* layer,
+                                         const TransformTree& transform_tree,
+                                         const EffectTree& effect_tree,
+                                         LayerList* update_layer_list);
+
+void CC_EXPORT
+ComputeVisibleRectsForTesting(PropertyTrees* property_trees,
+                              bool can_render_to_separate_surface,
+                              LayerList* visible_layer_list);
 
 void CC_EXPORT ComputeVisibleRects(LayerImpl* root_layer,
                                    PropertyTrees* property_trees,

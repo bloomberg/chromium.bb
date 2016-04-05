@@ -73,10 +73,11 @@ static void ValidateRenderSurfacesRecursive(Layer* layer) {
 #endif
 
 template <typename LayerType>
-void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
-                           const ClipTree& clip_tree,
-                           const TransformTree& transform_tree,
-                           bool non_root_surfaces_enabled) {
+void CalculateVisibleRects(
+    const typename LayerType::LayerListType& visible_layer_list,
+    const ClipTree& clip_tree,
+    const TransformTree& transform_tree,
+    bool non_root_surfaces_enabled) {
   for (auto& layer : visible_layer_list) {
     gfx::Size layer_bounds = layer->bounds();
     const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
@@ -441,40 +442,6 @@ static bool LayerNeedsUpdate(LayerType* layer,
   return true;
 }
 
-void FindLayersThatNeedUpdates(Layer* layer,
-                               const TransformTree& transform_tree,
-                               const EffectTree& effect_tree,
-                               LayerList* update_layer_list,
-                               std::vector<Layer*>* visible_layer_list) {
-  DCHECK_GE(layer->effect_tree_index(), 0);
-  bool layer_is_drawn =
-      effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
-
-  if (!IsRootLayer(layer) &&
-      SubtreeShouldBeSkipped(layer, layer_is_drawn, transform_tree))
-    return;
-
-  if (LayerNeedsUpdate(layer, layer_is_drawn, transform_tree)) {
-    visible_layer_list->push_back(layer);
-    update_layer_list->push_back(layer);
-  }
-
-  // Append mask layers to the update layer list.  They don't have valid visible
-  // rects, so need to get added after the above calculation.  Replica layers
-  // don't need to be updated.
-  if (Layer* mask_layer = layer->mask_layer())
-    update_layer_list->push_back(mask_layer);
-  if (Layer* replica_layer = layer->replica_layer()) {
-    if (Layer* mask_layer = replica_layer->mask_layer())
-      update_layer_list->push_back(mask_layer);
-  }
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    FindLayersThatNeedUpdates(layer->child_at(i), transform_tree, effect_tree,
-                              update_layer_list, visible_layer_list);
-  }
-}
-
 void FindLayersThatNeedUpdates(LayerImpl* layer,
                                const TransformTree& transform_tree,
                                const EffectTree& effect_tree,
@@ -690,13 +657,12 @@ void ComputeEffects(EffectTree* effect_tree) {
   effect_tree->set_needs_update(false);
 }
 
-template <typename LayerType>
 static void ComputeVisibleRectsInternal(
-    LayerType* root_layer,
+    LayerImpl* root_layer,
     PropertyTrees* property_trees,
     bool can_render_to_separate_surface,
-    typename LayerType::LayerListType* update_layer_list,
-    std::vector<LayerType*>* visible_layer_list) {
+    LayerImplList* update_layer_list,
+    std::vector<LayerImpl*>* visible_layer_list) {
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
@@ -712,37 +678,67 @@ static void ComputeVisibleRectsInternal(
   FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,
                             property_trees->effect_tree, update_layer_list,
                             visible_layer_list);
-  CalculateVisibleRects<LayerType>(
+  CalculateVisibleRects<LayerImpl>(
       *visible_layer_list, property_trees->clip_tree,
       property_trees->transform_tree, can_render_to_separate_surface);
 }
 
-void BuildPropertyTreesAndComputeVisibleRects(
-    Layer* root_layer,
-    const Layer* page_scale_layer,
-    const Layer* inner_viewport_scroll_layer,
-    const Layer* outer_viewport_scroll_layer,
-    const Layer* overscroll_elasticity_layer,
-    const gfx::Vector2dF& elastic_overscroll,
-    float page_scale_factor,
-    float device_scale_factor,
-    const gfx::Rect& viewport,
-    const gfx::Transform& device_transform,
-    bool can_render_to_separate_surface,
-    PropertyTrees* property_trees,
-    LayerList* update_layer_list) {
-  PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, overscroll_elasticity_layer,
-      elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
-      device_transform, property_trees);
+void UpdateRenderSurfaces(Layer* root_layer, PropertyTrees* property_trees) {
   UpdateRenderSurfacesForLayersRecursive(&property_trees->effect_tree,
                                          root_layer);
 #if DCHECK_IS_ON()
   ValidateRenderSurfacesRecursive(root_layer);
 #endif
-  ComputeVisibleRects(root_layer, property_trees,
-                      can_render_to_separate_surface, update_layer_list);
+}
+
+void UpdatePropertyTrees(PropertyTrees* property_trees,
+                         bool can_render_to_separate_surface) {
+  if (property_trees->non_root_surfaces_enabled !=
+      can_render_to_separate_surface) {
+    property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
+    property_trees->transform_tree.set_needs_update(true);
+  }
+  if (property_trees->transform_tree.needs_update())
+    property_trees->clip_tree.set_needs_update(true);
+  ComputeTransforms(&property_trees->transform_tree);
+  ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
+               can_render_to_separate_surface);
+  ComputeEffects(&property_trees->effect_tree);
+}
+
+void FindLayersThatNeedUpdates(Layer* layer,
+                               const TransformTree& transform_tree,
+                               const EffectTree& effect_tree,
+                               LayerList* update_layer_list) {
+  DCHECK_GE(layer->effect_tree_index(), 0);
+  bool layer_is_drawn =
+      effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
+
+  if (!IsRootLayer(layer) &&
+      SubtreeShouldBeSkipped(layer, layer_is_drawn, transform_tree))
+    return;
+
+  if (LayerNeedsUpdate(layer, layer_is_drawn, transform_tree))
+    update_layer_list->push_back(layer);
+  if (Layer* mask_layer = layer->mask_layer())
+    update_layer_list->push_back(mask_layer);
+  if (Layer* replica_layer = layer->replica_layer()) {
+    if (Layer* mask_layer = replica_layer->mask_layer())
+      update_layer_list->push_back(mask_layer);
+  }
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    FindLayersThatNeedUpdates(layer->child_at(i), transform_tree, effect_tree,
+                              update_layer_list);
+  }
+}
+
+void ComputeVisibleRectsForTesting(PropertyTrees* property_trees,
+                                   bool can_render_to_separate_surface,
+                                   LayerList* update_layer_list) {
+  CalculateVisibleRects<Layer>(*update_layer_list, property_trees->clip_tree,
+                               property_trees->transform_tree,
+                               can_render_to_separate_surface);
 }
 
 void BuildPropertyTreesAndComputeVisibleRects(
@@ -766,16 +762,6 @@ void BuildPropertyTreesAndComputeVisibleRects(
       device_transform, property_trees);
   ComputeVisibleRects(root_layer, property_trees,
                       can_render_to_separate_surface, visible_layer_list);
-}
-
-void ComputeVisibleRects(Layer* root_layer,
-                         PropertyTrees* property_trees,
-                         bool can_render_to_separate_surface,
-                         LayerList* update_layer_list) {
-  std::vector<Layer*> visible_layer_list;
-  ComputeVisibleRectsInternal(root_layer, property_trees,
-                              can_render_to_separate_surface, update_layer_list,
-                              &visible_layer_list);
 }
 
 void ComputeVisibleRects(LayerImpl* root_layer,

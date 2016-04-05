@@ -11,6 +11,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/property_tree_builder.h"
 
 namespace cc {
 LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase(
@@ -115,13 +116,22 @@ void LayerTreeHostCommonTestBase::
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
-  draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
+  PropertyTrees* property_trees =
+      root_layer->layer_tree_host()->property_trees();
+  update_layer_list_.clear();
+  PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor,
-      gfx::Rect(device_viewport_size), identity_transform,
-      can_render_to_separate_surface,
-      root_layer->layer_tree_host()->property_trees(), &update_layer_list_);
+      gfx::Rect(device_viewport_size), identity_transform, property_trees);
+  draw_property_utils::UpdateRenderSurfaces(root_layer, property_trees);
+  draw_property_utils::UpdatePropertyTrees(property_trees,
+                                           can_render_to_separate_surface);
+  draw_property_utils::FindLayersThatNeedUpdates(
+      root_layer, property_trees->transform_tree, property_trees->effect_tree,
+      &update_layer_list_);
+  draw_property_utils::ComputeVisibleRectsForTesting(
+      property_trees, can_render_to_separate_surface, &update_layer_list_);
 }
 
 void LayerTreeHostCommonTestBase::

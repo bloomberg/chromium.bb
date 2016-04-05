@@ -19,6 +19,7 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/property_tree_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
@@ -1039,13 +1040,21 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
       inputs->root_layer->layer_tree_host()->property_trees();
   Layer* overscroll_elasticity_layer = nullptr;
   gfx::Vector2dF elastic_overscroll;
-  draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
+  PropertyTreeBuilder::BuildPropertyTrees(
       inputs->root_layer, inputs->page_scale_layer,
       inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
       overscroll_elasticity_layer, elastic_overscroll,
       inputs->page_scale_factor, inputs->device_scale_factor,
       gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-      can_render_to_separate_surface, property_trees, &update_layer_list);
+      property_trees);
+  draw_property_utils::UpdateRenderSurfaces(inputs->root_layer, property_trees);
+  draw_property_utils::UpdatePropertyTrees(property_trees,
+                                           can_render_to_separate_surface);
+  draw_property_utils::FindLayersThatNeedUpdates(
+      inputs->root_layer, property_trees->transform_tree,
+      property_trees->effect_tree, &update_layer_list);
+  draw_property_utils::ComputeVisibleRectsForTesting(
+      property_trees, can_render_to_separate_surface, &update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

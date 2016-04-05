@@ -780,12 +780,17 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestPropertyTreesChangedSync);
 
+// Test that when mask layers switches layers, this gets pushed onto impl.
+// Also test that mask layer is in the layer update list even if its owning
+// layer isn't.
 class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
     scoped_refptr<Layer> child = Layer::Create();
     mask_layer = Layer::Create();
+    mask_layer->SetBounds(gfx::Size(10, 10));
     child->SetMaskLayer(mask_layer.get());
     root->AddChild(std::move(child));
     layer_tree_host()->SetRootLayer(root);
@@ -800,6 +805,20 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
+        // Root and mask layer should have the same source frame number as they
+        // will be in the layer update list but the child is not as it has empty
+        // bounds.
+        EXPECT_EQ(mask_layer->paint_properties().source_frame_number,
+                  layer_tree_host()
+                      ->root_layer()
+                      ->paint_properties()
+                      .source_frame_number);
+        EXPECT_NE(mask_layer->paint_properties().source_frame_number,
+                  layer_tree_host()
+                      ->root_layer()
+                      ->child_at(0)
+                      ->paint_properties()
+                      .source_frame_number);
         layer_tree_host()->root_layer()->RemoveAllChildren();
         layer_tree_host()->root_layer()->SetMaskLayer(mask_layer.get());
         break;

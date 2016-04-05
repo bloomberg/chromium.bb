@@ -114,10 +114,6 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (!layer->DrawsContent())
     return;
 
-  gfx::Rect visible_layer_rect = layer->visible_layer_rect_for_testing();
-  if (visible_layer_rect.IsEmpty())
-    return;
-
   ContentLayerClient* painter = layer->client();
 
   for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;

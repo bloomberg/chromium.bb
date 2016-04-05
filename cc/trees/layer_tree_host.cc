@@ -932,12 +932,17 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
     LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
     bool can_render_to_separate_surface = true;
-    draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
+    PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer_.get(),
         outer_viewport_scroll_layer_.get(), overscroll_elasticity_layer_.get(),
         elastic_overscroll_, page_scale_factor_, device_scale_factor_,
-        gfx::Rect(device_viewport_size_), identity_transform,
-        can_render_to_separate_surface, &property_trees_, &update_layer_list);
+        gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
+    draw_property_utils::UpdateRenderSurfaces(root_layer, &property_trees_);
+    draw_property_utils::UpdatePropertyTrees(&property_trees_,
+                                             can_render_to_separate_surface);
+    draw_property_utils::FindLayersThatNeedUpdates(
+        root_layer, property_trees_.transform_tree, property_trees_.effect_tree,
+        &update_layer_list);
   }
 
   for (const auto& layer : update_layer_list)
