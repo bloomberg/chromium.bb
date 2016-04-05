@@ -999,6 +999,7 @@
       'test/data/webui/net_internals/sdch_view.js',
       'test/data/webui/net_internals/timeline_view.js',
       'test/data/webui/ntp4.js',
+      'test/data/webui/plugins_browsertest.js',
       'test/data/webui/polymer_browser_test_base.js',
       'test/data/webui/print_preview.js',
       'test/data/webui/sandboxstatus_browsertest.js',

@@ -72,6 +72,15 @@ cr.define('settings', function() {
     resetResolver: function(methodName) {
       this.resolverMap_.set(methodName, new PromiseResolver());
     },
+
+    /**
+     * Resets all PromiseResolvers.
+     */
+    reset: function() {
+      this.resolverMap_.forEach(function(value, methodName) {
+        this.resolverMap_.set(methodName, new PromiseResolver());
+      }.bind(this));
+    },
   };
 
   return {

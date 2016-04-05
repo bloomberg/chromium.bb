@@ -180,12 +180,10 @@ function returnPluginsData(pluginsData) {
  *     rather than a single plugin.
  */
 function handleEnablePlugin(node, enable, isGroup) {
-  whenBrowserProxyReady.then(function(browserProxy) {
-    if (isGroup)
-      browserProxy.setPluginGroupEnabled(node.path, enable);
-    else
-      browserProxy.setPluginEnabled(node.path, enable);
-  });
+  if (isGroup)
+    browserProxy.setPluginGroupEnabled(node.path, enable);
+  else
+    browserProxy.setPluginEnabled(node.path, enable);
 }
 
 /*
@@ -202,15 +200,11 @@ function toggleTmiMode() {
   document.body.className =
       tmiModeExpanded ? 'show-tmi-mode' : 'hide-tmi-mode';
 
-  whenBrowserProxyReady.then(function(browserProxy) {
-    browserProxy.saveShowDetailsToPrefs(tmiModeExpanded);
-  });
+  browserProxy.saveShowDetailsToPrefs(tmiModeExpanded);
 }
 
 function handleSetPluginAlwaysAllowed(el) {
-  whenBrowserProxyReady.then(function(browserProxy) {
-    browserProxy.setPluginAlwaysAllowed(el.identifier, el.checked);
-  });
+  browserProxy.setPluginAlwaysAllowed(el.identifier, el.checked);
 }
 
 /**
@@ -247,79 +241,95 @@ function isPluginEnabled(plugin) {
          plugin.enabled_mode == 'enabledByPolicy';
 }
 
-// Unfortunately, we don't have notifications for plugin (list) status changes
-// (yet), so in the meanwhile just update regularly.
-setInterval(function() {
-  whenBrowserProxyReady.then(function(browserProxy) {
-    return browserProxy.getPluginsData();
-  }).then(returnPluginsData);
-}, 30000);
-
-// Add handlers to static HTML elements.
-$('collapse').onclick = toggleTmiMode;
-$('expand').onclick = toggleTmiMode;
-$('details-link').onclick = toggleTmiMode;
+/**
+ * Helper to convert callback-based define() API to a promise-based API.
+ * @param {!Array<string>} moduleNames
+ * @return {!Promise}
+ */
+function importModules(moduleNames) {
+  return new Promise(function(resolve, reject) {
+    define(moduleNames, function(var_args) {
+      resolve(Array.prototype.slice.call(arguments, 0));
+    });
+  });
+}
 
 // NOTE: Need to keep a reference to the stub here such that it is not garbage
 // collected, which causes the pipe to close and future calls from C++ to JS to
 // get dropped.
 var pluginsPageStub = null;
 
-/**
- * A promise to use for getting a reference to the proxy object allowing
- * communication with the browser side.
- * @type {!Promise}
- */
-var whenBrowserProxyReady = new Promise(function(resolve, reject) {
-  define([
+var browserProxy = null;
+// Exposed globally such that the tests can make direct calls on it.
+var pageProxy = null;
+
+function initializeProxies() {
+  return importModules([
     'mojo/public/js/bindings',
     'mojo/public/js/core',
     'mojo/public/js/connection',
     'chrome/browser/ui/webui/plugins/plugins.mojom',
     'content/public/renderer/frame_service_registry',
-  ], function(bindings, core, connection, pluginsMojom, serviceProvider) {
-    var browserProxy = connection.bindHandleToProxy(
+  ]).then(function(modules) {
+    var bindings = modules[0];
+    var core = modules[1];
+    var connection = modules[2];
+    var pluginsMojom = modules[3];
+    var serviceProvider = modules[4];
+
+    browserProxy = connection.bindHandleToProxy(
         serviceProvider.connectToService(
             pluginsMojom.PluginsHandlerMojo.name),
         pluginsMojom.PluginsHandlerMojo);
-
-    // Perform necessary setup for the C++ side to make calls to JS at will.
 
     // Connect pipe handle to JS code.
     var pipe = core.createMessagePipe();
     pluginsPageStub = connection.bindHandleToStub(
         pipe.handle0, pluginsMojom.PluginsPageMojo);
 
-    bindings.StubBindings(pluginsPageStub).delegate = {
+    pageProxy = {
       __proto__: pluginsMojom.PluginsPageMojo.stubClass.prototype,
       onPluginsUpdated: function(plugins) {
         returnPluginsData({plugins: plugins});
       },
     };
 
+    bindings.StubBindings(pluginsPageStub).delegate = pageProxy;
     // Send pipe handle to C++.
     browserProxy.setClientPage(pipe.handle1);
-
-    resolve(browserProxy);
   });
-});
+}
 
 /**
- * @type {!Promise} A promise firing when DOMContentLoaded event is received.
+ * Overriden by tests to give them a chance to setup a fake Mojo browser proxy
+ * before any other code executes.
+ * @return {!Promise} A promise firing once necessary setup has been completed.
  */
-var whenDomContentLoaded = new Promise(function(resolve, reject) {
-  document.addEventListener('DOMContentLoaded', resolve);
-});
+var setupFn = setupFn || function() { return Promise.resolve(); };
 
-Promise.all([
-  whenDomContentLoaded,
-  whenBrowserProxyReady
-]).then(function(results) {
-  var browserProxy = results[1];
-  browserProxy.getShowDetails().then(function(response) {
+function main() {
+  setupFn().then(function() {
+    // Add handlers to static HTML elements.
+    $('collapse').onclick = toggleTmiMode;
+    $('expand').onclick = toggleTmiMode;
+    $('details-link').onclick = toggleTmiMode;
+    return initializeProxies();
+  }).then(function() {
+    return browserProxy.getShowDetails();
+  }).then(function(response) {
     // Set the |tmiModeExpanded| first otherwise the UI flickers when
     // returnPlignsData executes.
     loadShowDetailsFromPrefs(response.show_details);
     return browserProxy.getPluginsData();
-  }).then(returnPluginsData);
-});
+  }).then(function(pluginsData) {
+    returnPluginsData(pluginsData);
+
+    // Unfortunately, we don't have notifications for plugin (list) status
+    // changes (yet), so in the meanwhile just update regularly.
+    setInterval(function() {
+      browserProxy.getPluginsData().then(returnPluginsData);
+    }, 30000);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', main);
