@@ -14,16 +14,6 @@ import org.chromium.content_public.browser.WebContents;
  */
 public interface ReaderModeManagerDelegate {
     /**
-     * @return Reader mode header background color.
-     */
-    int getReaderModeHeaderBackgroundColor();
-
-    /**
-     * @return One of ReaderModeManager.POSSIBLE, NOT_POSSIBLE, STARTED constants.
-     */
-    int getReaderModeStatus();
-
-    /**
      * @param panel The panel to be managed.
      */
     void setReaderModePanel(ReaderModePanel panel);

@@ -7,11 +7,9 @@ package org.chromium.chrome.browser.dom_distiller;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
@@ -84,7 +82,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     // The primary means of getting the currently active tab.
     private TabModelSelector mTabModelSelector;
 
-    private final int mHeaderBackgroundColor;
     private boolean mIsFullscreenModeEntered;
     private boolean mIsFindToolbarShowing;
     private boolean mIsKeyboardShowing;
@@ -100,10 +97,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         mTabModelSelector = selector;
         mChromeActivity = activity;
         mTabStatusMap = new HashMap<>();
-        mHeaderBackgroundColor = activity != null
-                ? ApiCompatibilityUtils.getColor(
-                        activity.getResources(), R.color.reader_mode_header_bg)
-                : 0;
     }
 
     /**
@@ -297,20 +290,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     }
 
     // ReaderModeManagerDelegate:
-
-    @Override
-    public int getReaderModeHeaderBackgroundColor() {
-        return mHeaderBackgroundColor;
-    }
-
-    @Override
-    public int getReaderModeStatus() {
-        int currentTabId = mTabModelSelector.getCurrentTabId();
-        if (currentTabId == Tab.INVALID_TAB_ID) return NOT_POSSIBLE;
-
-        if (!mTabStatusMap.containsKey(currentTabId)) return NOT_POSSIBLE;
-        return mTabStatusMap.get(currentTabId).getStatus();
-    }
 
     @Override
     public void setReaderModePanel(ReaderModePanel panel) {

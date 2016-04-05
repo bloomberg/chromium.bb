@@ -142,9 +142,6 @@
     <!-- App Launch Colors -->
     <color name="light_background_color">#FFFFFF</color>
 
-    <!-- Reader mode colors -->
-    <color name="reader_mode_header_bg">#ff494949</color>
-
     <!-- WebappActivity colors -->
     <color name="webapp_default_bg">#fafafa</color>
     <color name="webapp_splash_title_light">#ffffff</color>
