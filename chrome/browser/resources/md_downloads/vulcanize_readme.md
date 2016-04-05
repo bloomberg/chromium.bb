@@ -18,11 +18,20 @@ Vulcanization currently requires:
 For instructions on installing node and npm, see
 [here](https://docs.npmjs.com/getting-started/installing-node).
 
-Once you've installed npm, you can get `crisper` and `vulcanize` via:
+We recommend telling npm where to store downloaded modules:
 
 ```bash
-$ sudo npm install -g crisper vulcanize
+$ npm config set -g prefix "$HOME/node_modules"
 ```
+
+Then install `crisper` and `vulcanize` like this:
+
+```bash
+$ npm install -g crisper vulcanize
+```
+
+Ultimately, all that is required to run this script is that `crisper` and
+`vulcanize` are on your `$PATH`.
 
 ## Combining resources with vulcanize
 
