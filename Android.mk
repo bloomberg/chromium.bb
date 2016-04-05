@@ -3,7 +3,9 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE:= libwebm
 LOCAL_CPPFLAGS:=-D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS
-LOCAL_CPPFLAGS+=-D__STDC_LIMIT_MACROS
+LOCAL_CPPFLAGS+=-D__STDC_LIMIT_MACROS -Wno-extern-c-compat
+LOCAL_C_INCLUDES:= $(LOCAL_PATH)
+LOCAL_EXPORT_C_INCLUDES:= $(LOCAL_PATH)
 
 LOCAL_SRC_FILES:= common/file_util.cc \
                   common/hdr_util.cc \
