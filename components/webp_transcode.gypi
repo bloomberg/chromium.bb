@@ -20,10 +20,6 @@
       'sources': [
         'webp_transcode/webp_decoder.h',
         'webp_transcode/webp_decoder.mm',
-        'webp_transcode/webp_network_client.h',
-        'webp_transcode/webp_network_client.mm',
-        'webp_transcode/webp_network_client_factory.h',
-        'webp_transcode/webp_network_client_factory.mm',
        ],
     },
   ],

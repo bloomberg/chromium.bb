@@ -25,7 +25,6 @@
 #include "base/threading/worker_pool.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
-#import "components/webp_transcode/webp_network_client_factory.h"
 #include "crypto/nss_util.h"
 #include "ios/crnet/sdch_owner_pref_storage.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -367,12 +366,6 @@ void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
 
 void CrNetEnvironment::InitializeOnNetworkThread() {
   DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
-
-  // Register network clients.
-  net::RequestTracker::AddGlobalNetworkClientFactory(
-      [[[WebPNetworkClientFactory alloc]
-          initWithTaskRunner:file_user_blocking_thread_
-                                 ->task_runner()] autorelease]);
 
   ConfigureSdchOnNetworkThread();
 

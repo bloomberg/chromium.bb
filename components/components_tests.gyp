@@ -1328,7 +1328,6 @@
         }, { # 'OS == "ios"'
           'sources': [
             'webp_transcode/webp_decoder_unittest.mm',
-            'webp_transcode/webp_network_client_unittest.mm',
           ],
           'sources/': [
             # Exclude all tests that depends on //content (based on layered-
