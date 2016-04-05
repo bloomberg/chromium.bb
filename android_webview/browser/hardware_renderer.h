@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "base/macros.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -32,7 +32,7 @@ class ScopedAppGLStateRestore;
 class HardwareRenderer : public cc::DisplayClient,
                          public cc::SurfaceFactoryClient {
  public:
-  explicit HardwareRenderer(SharedRendererState* state);
+  explicit HardwareRenderer(RenderThreadManager* state);
   ~HardwareRenderer() override;
 
   void DrawGL(AwDrawGLInfo* draw_info, const ScopedAppGLStateRestore& gl_state);
@@ -56,7 +56,7 @@ class HardwareRenderer : public cc::DisplayClient,
                                    uint32_t compositor_routing_id,
                                    uint32_t output_surface_id);
 
-  SharedRendererState* shared_renderer_state_;
+  RenderThreadManager* render_thread_manager_;
 
   typedef void* EGLContext;
   EGLContext last_egl_context_;

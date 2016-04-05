@@ -19,7 +19,7 @@ namespace android_webview {
 class SmokeTest : public RenderingTest {
   void StartTest() override { browser_view_renderer_->PostInvalidate(); }
 
-  void DidDrawOnRT(SharedRendererState* functor) override {
+  void DidDrawOnRT(RenderThreadManager* functor) override {
     EndTest();
   }
 };
@@ -48,7 +48,7 @@ class ClearViewTest : public RenderingTest {
     }
   }
 
-  void DidDrawOnRT(SharedRendererState* functor) override {
+  void DidDrawOnRT(RenderThreadManager* functor) override {
     EndTest();
   }
  private:
@@ -86,7 +86,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     on_draw_count_++;
   }
 
-  bool WillDrawOnRT(SharedRendererState* functor,
+  bool WillDrawOnRT(RenderThreadManager* functor,
                     AwDrawGLInfo* draw_info) override {
     if (draw_gl_count_on_rt_ == 1) {
       draw_gl_count_on_rt_++;
@@ -108,7 +108,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     return true;
   }
 
-  void DidDrawOnRT(SharedRendererState* functor) override {
+  void DidDrawOnRT(RenderThreadManager* functor) override {
     draw_gl_count_on_rt_++;
   }
 
@@ -126,7 +126,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   void OnParentDrawConstraintsUpdated() override {
     RenderingTest::OnParentDrawConstraintsUpdated();
     ParentCompositorDrawConstraints constraints =
-        shared_renderer_state_->GetParentDrawConstraintsOnUI();
+        render_thread_manager_->GetParentDrawConstraintsOnUI();
     switch (on_draw_count_) {
       case 1u:
         EXPECT_TRUE(DrawConstraintsEquals(constraints, new_constraints_));

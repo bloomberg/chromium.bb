@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "android_webview/browser/browser_view_renderer_client.h"
-#include "android_webview/browser/shared_renderer_state_client.h"
+#include "android_webview/browser/render_thread_manager_client.h"
 #include "android_webview/browser/test/fake_window.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -34,7 +34,7 @@ struct ParentCompositorDrawConstraints;
 
 class RenderingTest : public testing::Test,
                       public BrowserViewRendererClient,
-                      public SharedRendererStateClient,
+                      public RenderThreadManagerClient,
                       public WindowHooks {
  public:
   // BrowserViewRendererClient overrides.
@@ -50,7 +50,7 @@ class RenderingTest : public testing::Test,
   void DidOverscroll(const gfx::Vector2d& overscroll_delta,
                      const gfx::Vector2dF& overscroll_velocity) override {}
 
-  // SharedRendererStateClient overrides.
+  // RenderThreadManagerClient overrides.
   void OnParentDrawConstraintsUpdated() override;
   bool RequestDrawGL(bool wait_for_completion) override;
   void DetachFunctorFromView() override;
@@ -58,13 +58,13 @@ class RenderingTest : public testing::Test,
   // WindowHooks overrides.
   void WillOnDraw() override;
   void DidOnDraw(bool success) override {}
-  void WillSyncOnRT(SharedRendererState* functor) override {}
-  void DidSyncOnRT(SharedRendererState* functor) override {}
-  void WillProcessOnRT(SharedRendererState* functor) override {}
-  void DidProcessOnRT(SharedRendererState* functor) override {}
-  bool WillDrawOnRT(SharedRendererState* functor,
+  void WillSyncOnRT(RenderThreadManager* functor) override {}
+  void DidSyncOnRT(RenderThreadManager* functor) override {}
+  void WillProcessOnRT(RenderThreadManager* functor) override {}
+  void DidProcessOnRT(RenderThreadManager* functor) override {}
+  bool WillDrawOnRT(RenderThreadManager* functor,
                     AwDrawGLInfo* draw_info) override;
-  void DidDrawOnRT(SharedRendererState* functor) override {}
+  void DidDrawOnRT(RenderThreadManager* functor) override {}
 
  protected:
 
@@ -81,7 +81,7 @@ class RenderingTest : public testing::Test,
   std::unique_ptr<cc::CompositorFrame> ConstructEmptyFrame();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  std::unique_ptr<SharedRendererState> shared_renderer_state_;
+  std::unique_ptr<RenderThreadManager> render_thread_manager_;
   std::unique_ptr<BrowserViewRenderer> browser_view_renderer_;
   std::unique_ptr<content::TestSynchronousCompositor> compositor_;
   std::unique_ptr<FakeWindow> window_;

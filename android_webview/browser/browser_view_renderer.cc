@@ -91,7 +91,7 @@ BrowserViewRenderer::BrowserViewRenderer(
     bool disable_page_visibility)
     : client_(client),
       ui_task_runner_(ui_task_runner),
-      shared_renderer_state_(nullptr),
+      render_thread_manager_(nullptr),
       disable_page_visibility_(disable_page_visibility),
       compositor_(NULL),
       is_paused_(false),
@@ -112,9 +112,9 @@ BrowserViewRenderer::~BrowserViewRenderer() {
   DCHECK(compositor_map_.empty());
 }
 
-void BrowserViewRenderer::SetSharedRendererState(
-    SharedRendererState* shared_renderer_state) {
-  shared_renderer_state_ = shared_renderer_state;
+void BrowserViewRenderer::SetRenderThreadManager(
+    RenderThreadManager* render_thread_manager) {
+  render_thread_manager_ = render_thread_manager;
 }
 
 void BrowserViewRenderer::RegisterWithWebContents(
@@ -186,20 +186,20 @@ bool BrowserViewRenderer::CanOnDraw() {
 }
 
 bool BrowserViewRenderer::OnDrawHardware() {
-  DCHECK(shared_renderer_state_);
+  DCHECK(render_thread_manager_);
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
 
-  shared_renderer_state_->InitializeHardwareDrawIfNeededOnUI();
+  render_thread_manager_->InitializeHardwareDrawIfNeededOnUI();
 
   if (!CanOnDraw()) {
     return false;
   }
 
-  shared_renderer_state_->SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
+  render_thread_manager_->SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
   hardware_enabled_ = true;
 
   external_draw_constraints_ =
-      shared_renderer_state_->GetParentDrawConstraintsOnUI();
+      render_thread_manager_->GetParentDrawConstraintsOnUI();
 
   ReturnResourceFromParent();
   UpdateMemoryPolicy();
@@ -230,7 +230,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   if (!frame.frame.get()) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
-    hardware_enabled_ = shared_renderer_state_->HasFrameOnUI();
+    hardware_enabled_ = render_thread_manager_->HasFrameOnUI();
     if (!hardware_enabled_)
       UpdateMemoryPolicy();
     return hardware_enabled_;
@@ -242,16 +242,16 @@ bool BrowserViewRenderer::OnDrawHardware() {
       transform_for_tile_priority, offscreen_pre_raster_,
       external_draw_constraints_.is_layer));
 
-  ReturnUnusedResource(shared_renderer_state_->PassUncommittedFrameOnUI());
-  shared_renderer_state_->SetFrameOnUI(std::move(child_frame));
+  ReturnUnusedResource(render_thread_manager_->PassUncommittedFrameOnUI());
+  render_thread_manager_->SetFrameOnUI(std::move(child_frame));
   return true;
 }
 
 void BrowserViewRenderer::OnParentDrawConstraintsUpdated() {
-  DCHECK(shared_renderer_state_);
+  DCHECK(render_thread_manager_);
   PostInvalidate();
   external_draw_constraints_ =
-      shared_renderer_state_->GetParentDrawConstraintsOnUI();
+      render_thread_manager_->GetParentDrawConstraintsOnUI();
   UpdateMemoryPolicy();
 }
 
@@ -271,9 +271,9 @@ void BrowserViewRenderer::ReturnUnusedResource(
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent() {
-  DCHECK(shared_renderer_state_);
-  SharedRendererState::ReturnedResourcesMap returned_resource_map;
-  shared_renderer_state_->SwapReturnedResourcesOnUI(&returned_resource_map);
+  DCHECK(render_thread_manager_);
+  RenderThreadManager::ReturnedResourcesMap returned_resource_map;
+  render_thread_manager_->SwapReturnedResourcesOnUI(&returned_resource_map);
   for (auto iterator = returned_resource_map.begin();
        iterator != returned_resource_map.end(); iterator++) {
     uint32_t compositor_id = iterator->first;
@@ -418,9 +418,9 @@ void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
 }
 
 void BrowserViewRenderer::ReleaseHardware() {
-  ReturnUnusedResource(shared_renderer_state_->PassUncommittedFrameOnUI());
+  ReturnUnusedResource(render_thread_manager_->PassUncommittedFrameOnUI());
   ReturnResourceFromParent();
-  DCHECK(shared_renderer_state_->ReturnedResourcesEmptyOnUI());
+  DCHECK(render_thread_manager_->ReturnedResourcesEmptyOnUI());
   hardware_enabled_ = false;
   UpdateMemoryPolicy();
 }

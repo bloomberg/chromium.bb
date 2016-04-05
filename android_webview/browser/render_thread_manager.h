@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
-#define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_RENDER_THREAD_MANAGER_H_
+#define ANDROID_WEBVIEW_BROWSER_RENDER_THREAD_MANAGER_H_
 
 #include <map>
 
@@ -25,13 +25,13 @@ namespace internal {
 class RequestDrawGLTracker;
 }
 
-class SharedRendererStateClient;
+class RenderThreadManagerClient;
 class ChildFrame;
 class HardwareRenderer;
 class InsideHardwareReleaseReset;
 
 // This class is used to pass data between UI thread and RenderThread.
-class SharedRendererState {
+class RenderThreadManager {
  public:
   struct ReturnedResources {
     ReturnedResources();
@@ -42,10 +42,10 @@ class SharedRendererState {
   };
   using ReturnedResourcesMap = std::map<uint32_t, ReturnedResources>;
 
-  SharedRendererState(
-      SharedRendererStateClient* client,
+  RenderThreadManager(
+      RenderThreadManagerClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop);
-  ~SharedRendererState();
+  ~RenderThreadManager();
 
   // This function can be called from any thread.
   void ClientRequestDrawGL(bool for_idle);
@@ -76,11 +76,11 @@ class SharedRendererState {
   class InsideHardwareReleaseReset {
    public:
     explicit InsideHardwareReleaseReset(
-        SharedRendererState* shared_renderer_state);
+        RenderThreadManager* render_thread_manager);
     ~InsideHardwareReleaseReset();
 
    private:
-    SharedRendererState* shared_renderer_state_;
+    RenderThreadManager* render_thread_manager_;
   };
 
   // RT thread method.
@@ -95,8 +95,8 @@ class SharedRendererState {
 
   // Accessed by UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;
-  SharedRendererStateClient* const client_;
-  base::WeakPtr<SharedRendererState> ui_thread_weak_ptr_;
+  RenderThreadManagerClient* const client_;
+  base::WeakPtr<RenderThreadManager> ui_thread_weak_ptr_;
   base::CancelableClosure request_draw_gl_cancelable_closure_;
 
   // Accessed by RT thread.
@@ -115,11 +115,11 @@ class SharedRendererState {
   ReturnedResourcesMap returned_resources_map_;
   base::Closure request_draw_gl_closure_;
 
-  base::WeakPtrFactory<SharedRendererState> weak_factory_on_ui_thread_;
+  base::WeakPtrFactory<RenderThreadManager> weak_factory_on_ui_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedRendererState);
+  DISALLOW_COPY_AND_ASSIGN(RenderThreadManager);
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_RENDER_THREAD_MANAGER_H_

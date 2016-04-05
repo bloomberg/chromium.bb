@@ -14,11 +14,11 @@
 
 namespace android_webview {
 
-class SharedRendererState;
+class RenderThreadManager;
 
 class GLViewRendererManager {
  public:
-  typedef SharedRendererState* RendererType;
+  typedef RenderThreadManager* RendererType;
 
  private:
   typedef std::list<RendererType> ListType;

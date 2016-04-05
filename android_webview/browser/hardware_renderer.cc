@@ -12,7 +12,7 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/parent_output_surface.h"
-#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,8 +34,8 @@
 
 namespace android_webview {
 
-HardwareRenderer::HardwareRenderer(SharedRendererState* state)
-    : shared_renderer_state_(state),
+HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
+    : render_thread_manager_(state),
       last_egl_context_(eglGetCurrentContext()),
       gl_surface_(new AwGLSurface),
       compositor_id_(0u),  // Valid compositor id starts at 1.
@@ -75,16 +75,16 @@ HardwareRenderer::~HardwareRenderer() {
       surface_id_allocator_->id_namespace());
 
   // Reset draw constraints.
-  shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
+  render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
       ParentCompositorDrawConstraints());
   ReturnResourcesInChildFrame();
 }
 
 void HardwareRenderer::CommitFrame() {
   TRACE_EVENT0("android_webview", "CommitFrame");
-  scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
+  scroll_offset_ = render_thread_manager_->GetScrollOffsetOnRT();
   std::unique_ptr<ChildFrame> child_frame =
-      shared_renderer_state_->PassFrameOnRT();
+      render_thread_manager_->PassFrameOnRT();
   if (!child_frame.get())
     return;
 
@@ -167,7 +167,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   ParentCompositorDrawConstraints draw_constraints(
       draw_info->is_layer, transform, viewport.IsEmpty());
   if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
-    shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
+    render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);
   }
 
@@ -264,7 +264,7 @@ void HardwareRenderer::ReturnResourcesToCompositor(
     uint32_t output_surface_id) {
   if (output_surface_id != last_committed_output_surface_id_)
     return;
-  shared_renderer_state_->InsertReturnedResourcesOnRT(resources, compositor_id,
+  render_thread_manager_->InsertReturnedResourcesOnRT(resources, compositor_id,
                                                       output_surface_id);
 }
 

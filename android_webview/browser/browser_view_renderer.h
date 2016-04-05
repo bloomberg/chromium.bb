@@ -10,7 +10,7 @@
 #include <map>
 
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
-#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -52,8 +52,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   void RegisterWithWebContents(content::WebContents* web_contents);
 
   // The BrowserViewRenderer client is responsible for ensuring that the
-  // SharedRendererState has been set correctly via this method.
-  void SetSharedRendererState(SharedRendererState* shared_renderer_state);
+  // RenderThreadManager has been set correctly via this method.
+  void SetRenderThreadManager(RenderThreadManager* render_thread_manager);
 
   // Called before either OnDrawHardware or OnDrawSoftware to set the view
   // state of this frame. |scroll| is the view's current scroll offset.
@@ -148,7 +148,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  SharedRendererState* shared_renderer_state_;
+  RenderThreadManager* render_thread_manager_;
   bool disable_page_visibility_;
 
   // The current compositor that's owned by the current RVH.

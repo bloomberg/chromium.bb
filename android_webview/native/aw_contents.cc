@@ -14,9 +14,9 @@
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
-#include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
@@ -104,7 +104,7 @@ static void DrawGLFunction(long view_context,
                            void* spare) {
   // |view_context| is the value that was returned from the java
   // AwContents.onPrepareDrawGL; this cast must match the code there.
-  reinterpret_cast<android_webview::SharedRendererState*>(view_context)
+  reinterpret_cast<android_webview::RenderThreadManager*>(view_context)
       ->DrawGL(draw_info);
 }
 }
@@ -181,7 +181,7 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
 }
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
-    : shared_renderer_state_(
+    : render_thread_manager_(
           this,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       browser_view_renderer_(
@@ -192,7 +192,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       web_contents_(std::move(web_contents)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
-  browser_view_renderer_.SetSharedRendererState(&shared_renderer_state_);
+  browser_view_renderer_.SetRenderThreadManager(&render_thread_manager_);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
@@ -366,7 +366,7 @@ jint GetNativeInstanceCount(JNIEnv* env, const JavaParamRef<jclass>&) {
 jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return reinterpret_cast<intptr_t>(&shared_renderer_state_);
+  return reinterpret_cast<intptr_t>(&render_thread_manager_);
 }
 
 namespace {
@@ -895,7 +895,7 @@ void AwContents::OnAttachedToWindow(JNIEnv* env,
 void AwContents::OnDetachedFromWindow(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  shared_renderer_state_.DeleteHardwareRendererOnUI();
+  render_thread_manager_.DeleteHardwareRendererOnUI();
   browser_view_renderer_.OnDetachedFromWindow();
 }
 
@@ -1242,7 +1242,7 @@ void AwContents::TrimMemory(JNIEnv* env,
     return;
 
   if (level >= TRIM_MEMORY_MODERATE)
-    shared_renderer_state_.DeleteHardwareRendererOnUI();
+    render_thread_manager_.DeleteHardwareRendererOnUI();
 
   browser_view_renderer_.TrimMemory();
 }

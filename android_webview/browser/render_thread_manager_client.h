@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_CLIENT_H_
-#define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_CLIENT_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_RENDER_THREAD_MANAGER_CLIENT_H_
+#define ANDROID_WEBVIEW_BROWSER_RENDER_THREAD_MANAGER_CLIENT_H_
 
 namespace android_webview {
 
-class SharedRendererStateClient {
+class RenderThreadManagerClient {
  public:
   virtual void OnParentDrawConstraintsUpdated() = 0;
 
@@ -22,9 +22,9 @@ class SharedRendererStateClient {
   virtual void DetachFunctorFromView() = 0;
 
  protected:
-  virtual ~SharedRendererStateClient() {}
+  virtual ~RenderThreadManagerClient() {}
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_CLIENT_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_RENDER_THREAD_MANAGER_CLIENT_H_

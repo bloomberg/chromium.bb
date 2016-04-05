@@ -19,9 +19,9 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/icon_helper.h"
+#include "android_webview/browser/render_thread_manager.h"
+#include "android_webview/browser/render_thread_manager_client.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
-#include "android_webview/browser/shared_renderer_state.h"
-#include "android_webview/browser/shared_renderer_state_client.h"
 #include "android_webview/native/permission/permission_request_handler_client.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -64,7 +64,7 @@ class AwContents : public FindHelper::Listener,
                    public BrowserViewRendererClient,
                    public PermissionRequestHandlerClient,
                    public AwBrowserPermissionRequestDelegate,
-                   public SharedRendererStateClient {
+                   public RenderThreadManagerClient {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -237,7 +237,7 @@ class AwContents : public FindHelper::Listener,
       const base::Callback<void(bool)>& callback) override;
   void CancelMIDISysexPermissionRequests(const GURL& origin) override;
 
-  // SharedRendererStateClient implementation.
+  // RenderThreadManagerClient implementation.
   void OnParentDrawConstraintsUpdated() override;
   bool RequestDrawGL(bool wait_for_completion) override;
   void DetachFunctorFromView() override;
@@ -347,7 +347,7 @@ class AwContents : public FindHelper::Listener,
   void SetDipScaleInternal(float dip_scale);
 
   JavaObjectWeakGlobalRef java_ref_;
-  SharedRendererState shared_renderer_state_;
+  RenderThreadManager render_thread_manager_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
   std::unique_ptr<AwWebContentsDelegate> web_contents_delegate_;
   std::unique_ptr<AwContentsClientBridge> contents_client_bridge_;

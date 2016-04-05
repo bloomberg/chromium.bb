@@ -5,7 +5,7 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 
 #include "android_webview/browser/gl_view_renderer_manager.h"
-#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
@@ -85,7 +85,7 @@ DeferredGpuCommandService::~DeferredGpuCommandService() {
 // This method can be called on any thread.
 // static
 void DeferredGpuCommandService::RequestProcessGL(bool for_idle) {
-  SharedRendererState* renderer_state =
+  RenderThreadManager* renderer_state =
       GLViewRendererManager::GetInstance()->GetMostRecentlyDrawn();
   if (!renderer_state) {
     LOG(ERROR) << "No hardware renderer. Deadlock likely";

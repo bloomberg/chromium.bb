@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/render_thread_manager.h"
 
 #include <utility>
 
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/hardware_renderer.h"
+#include "android_webview/browser/render_thread_manager_client.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
-#include "android_webview/browser/shared_renderer_state_client.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -25,15 +25,15 @@ namespace internal {
 class RequestDrawGLTracker {
  public:
   RequestDrawGLTracker();
-  bool ShouldRequestOnNonUiThread(SharedRendererState* state);
-  bool ShouldRequestOnUiThread(SharedRendererState* state);
+  bool ShouldRequestOnNonUiThread(RenderThreadManager* state);
+  bool ShouldRequestOnUiThread(RenderThreadManager* state);
   void ResetPending();
-  void SetQueuedFunctorOnUi(SharedRendererState* state);
+  void SetQueuedFunctorOnUi(RenderThreadManager* state);
 
  private:
   base::Lock lock_;
-  SharedRendererState* pending_ui_;
-  SharedRendererState* pending_non_ui_;
+  RenderThreadManager* pending_ui_;
+  RenderThreadManager* pending_non_ui_;
 };
 
 RequestDrawGLTracker::RequestDrawGLTracker()
@@ -41,7 +41,7 @@ RequestDrawGLTracker::RequestDrawGLTracker()
 }
 
 bool RequestDrawGLTracker::ShouldRequestOnNonUiThread(
-    SharedRendererState* state) {
+    RenderThreadManager* state) {
   base::AutoLock lock(lock_);
   if (pending_ui_ || pending_non_ui_)
     return false;
@@ -49,7 +49,7 @@ bool RequestDrawGLTracker::ShouldRequestOnNonUiThread(
   return true;
 }
 
-bool RequestDrawGLTracker::ShouldRequestOnUiThread(SharedRendererState* state) {
+bool RequestDrawGLTracker::ShouldRequestOnUiThread(RenderThreadManager* state) {
   base::AutoLock lock(lock_);
   if (pending_non_ui_) {
     pending_non_ui_->ResetRequestDrawGLCallback();
@@ -70,7 +70,7 @@ void RequestDrawGLTracker::ResetPending() {
   pending_ui_ = NULL;
 }
 
-void RequestDrawGLTracker::SetQueuedFunctorOnUi(SharedRendererState* state) {
+void RequestDrawGLTracker::SetQueuedFunctorOnUi(RenderThreadManager* state) {
   base::AutoLock lock(lock_);
   DCHECK(state);
   pending_ui_ = state;
@@ -86,8 +86,8 @@ base::LazyInstance<internal::RequestDrawGLTracker> g_request_draw_gl_tracker =
 
 }
 
-SharedRendererState::SharedRendererState(
-    SharedRendererStateClient* client,
+RenderThreadManager::RenderThreadManager(
+    RenderThreadManagerClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop)
     : ui_loop_(ui_loop),
       client_(client),
@@ -101,12 +101,12 @@ SharedRendererState::SharedRendererState(
   ResetRequestDrawGLCallback();
 }
 
-SharedRendererState::~SharedRendererState() {
+RenderThreadManager::~RenderThreadManager() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(!hardware_renderer_.get());
 }
 
-void SharedRendererState::ClientRequestDrawGL(bool for_idle) {
+void RenderThreadManager::ClientRequestDrawGL(bool for_idle) {
   if (ui_loop_->BelongsToCurrentThread()) {
     if (!g_request_draw_gl_tracker.Get().ShouldRequestOnUiThread(this))
       return;
@@ -128,19 +128,19 @@ void SharedRendererState::ClientRequestDrawGL(bool for_idle) {
   }
 }
 
-void SharedRendererState::DidDrawGLProcess() {
+void RenderThreadManager::DidDrawGLProcess() {
   g_request_draw_gl_tracker.Get().ResetPending();
 }
 
-void SharedRendererState::ResetRequestDrawGLCallback() {
+void RenderThreadManager::ResetRequestDrawGLCallback() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
   request_draw_gl_cancelable_closure_.Reset(base::Bind(
-      &SharedRendererState::ClientRequestDrawGLOnUI, base::Unretained(this)));
+      &RenderThreadManager::ClientRequestDrawGLOnUI, base::Unretained(this)));
   request_draw_gl_closure_ = request_draw_gl_cancelable_closure_.callback();
 }
 
-void SharedRendererState::ClientRequestDrawGLOnUI() {
+void RenderThreadManager::ClientRequestDrawGLOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ResetRequestDrawGLCallback();
   g_request_draw_gl_tracker.Get().SetQueuedFunctorOnUi(this);
@@ -150,40 +150,40 @@ void SharedRendererState::ClientRequestDrawGLOnUI() {
   }
 }
 
-void SharedRendererState::UpdateParentDrawConstraintsOnUI() {
+void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   client_->OnParentDrawConstraintsUpdated();
 }
 
-void SharedRendererState::SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) {
+void RenderThreadManager::SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) {
   base::AutoLock lock(lock_);
   scroll_offset_ = scroll_offset;
 }
 
-gfx::Vector2d SharedRendererState::GetScrollOffsetOnRT() {
+gfx::Vector2d RenderThreadManager::GetScrollOffsetOnRT() {
   base::AutoLock lock(lock_);
   return scroll_offset_;
 }
 
-void SharedRendererState::SetFrameOnUI(std::unique_ptr<ChildFrame> frame) {
+void RenderThreadManager::SetFrameOnUI(std::unique_ptr<ChildFrame> frame) {
   base::AutoLock lock(lock_);
   DCHECK(!child_frame_.get());
   child_frame_ = std::move(frame);
 }
 
-std::unique_ptr<ChildFrame> SharedRendererState::PassFrameOnRT() {
+std::unique_ptr<ChildFrame> RenderThreadManager::PassFrameOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
       hardware_renderer_has_frame_ || child_frame_.get();
   return std::move(child_frame_);
 }
 
-std::unique_ptr<ChildFrame> SharedRendererState::PassUncommittedFrameOnUI() {
+std::unique_ptr<ChildFrame> RenderThreadManager::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
   return std::move(child_frame_);
 }
 
-void SharedRendererState::PostExternalDrawConstraintsToChildCompositorOnRT(
+void RenderThreadManager::PostExternalDrawConstraintsToChildCompositorOnRT(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
   {
     base::AutoLock lock(lock_);
@@ -193,32 +193,32 @@ void SharedRendererState::PostExternalDrawConstraintsToChildCompositorOnRT(
   // No need to hold the lock_ during the post task.
   ui_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUI,
+      base::Bind(&RenderThreadManager::UpdateParentDrawConstraintsOnUI,
                  ui_thread_weak_ptr_));
 }
 
 ParentCompositorDrawConstraints
-SharedRendererState::GetParentDrawConstraintsOnUI() const {
+RenderThreadManager::GetParentDrawConstraintsOnUI() const {
   base::AutoLock lock(lock_);
   return parent_draw_constraints_;
 }
 
-void SharedRendererState::SetInsideHardwareRelease(bool inside) {
+void RenderThreadManager::SetInsideHardwareRelease(bool inside) {
   base::AutoLock lock(lock_);
   inside_hardware_release_ = inside;
 }
 
-bool SharedRendererState::IsInsideHardwareRelease() const {
+bool RenderThreadManager::IsInsideHardwareRelease() const {
   base::AutoLock lock(lock_);
   return inside_hardware_release_;
 }
 
-SharedRendererState::ReturnedResources::ReturnedResources()
+RenderThreadManager::ReturnedResources::ReturnedResources()
     : output_surface_id(0u) {}
 
-SharedRendererState::ReturnedResources::~ReturnedResources() {}
+RenderThreadManager::ReturnedResources::~ReturnedResources() {}
 
-void SharedRendererState::InsertReturnedResourcesOnRT(
+void RenderThreadManager::InsertReturnedResourcesOnRT(
     const cc::ReturnedResourceArray& resources,
     uint32_t compositor_id,
     uint32_t output_surface_id) {
@@ -233,19 +233,19 @@ void SharedRendererState::InsertReturnedResourcesOnRT(
   returned_resources.output_surface_id = output_surface_id;
 }
 
-void SharedRendererState::SwapReturnedResourcesOnUI(
+void RenderThreadManager::SwapReturnedResourcesOnUI(
     ReturnedResourcesMap* returned_resource_map) {
   DCHECK(returned_resource_map->empty());
   base::AutoLock lock(lock_);
   returned_resource_map->swap(returned_resources_map_);
 }
 
-bool SharedRendererState::ReturnedResourcesEmptyOnUI() const {
+bool RenderThreadManager::ReturnedResourcesEmptyOnUI() const {
   base::AutoLock lock(lock_);
   return returned_resources_map_.empty();
 }
 
-void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
+void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "DrawFunctor");
   if (draw_info->mode == AwDrawGLInfo::kModeSync) {
     TRACE_EVENT_INSTANT0("android_webview", "kModeSync",
@@ -314,7 +314,7 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
   DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 
-void SharedRendererState::DeleteHardwareRendererOnUI() {
+void RenderThreadManager::DeleteHardwareRendererOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
 
   InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
@@ -351,12 +351,12 @@ void SharedRendererState::DeleteHardwareRendererOnUI() {
   }
 }
 
-bool SharedRendererState::HasFrameOnUI() const {
+bool RenderThreadManager::HasFrameOnUI() const {
   base::AutoLock lock(lock_);
   return hardware_renderer_has_frame_ || child_frame_.get();
 }
 
-void SharedRendererState::InitializeHardwareDrawIfNeededOnUI() {
+void RenderThreadManager::InitializeHardwareDrawIfNeededOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
 
@@ -366,15 +366,15 @@ void SharedRendererState::InitializeHardwareDrawIfNeededOnUI() {
   }
 }
 
-SharedRendererState::InsideHardwareReleaseReset::InsideHardwareReleaseReset(
-    SharedRendererState* shared_renderer_state)
-    : shared_renderer_state_(shared_renderer_state) {
-  DCHECK(!shared_renderer_state_->IsInsideHardwareRelease());
-  shared_renderer_state_->SetInsideHardwareRelease(true);
+RenderThreadManager::InsideHardwareReleaseReset::InsideHardwareReleaseReset(
+    RenderThreadManager* render_thread_manager)
+    : render_thread_manager_(render_thread_manager) {
+  DCHECK(!render_thread_manager_->IsInsideHardwareRelease());
+  render_thread_manager_->SetInsideHardwareRelease(true);
 }
 
-SharedRendererState::InsideHardwareReleaseReset::~InsideHardwareReleaseReset() {
-  shared_renderer_state_->SetInsideHardwareRelease(false);
+RenderThreadManager::InsideHardwareReleaseReset::~InsideHardwareReleaseReset() {
+  render_thread_manager_->SetInsideHardwareRelease(false);
 }
 
 }  // namespace android_webview

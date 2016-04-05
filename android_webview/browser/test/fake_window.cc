@@ -6,7 +6,7 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
-#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
@@ -41,7 +41,7 @@ class FakeWindow::ScopedMakeCurrent {
 };
 
 FakeWindow::FakeWindow(BrowserViewRenderer* view,
-                       SharedRendererState* functor,
+                       RenderThreadManager* functor,
                        WindowHooks* hooks,
                        gfx::Rect location)
     : view_(view),
