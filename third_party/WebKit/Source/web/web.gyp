@@ -170,6 +170,8 @@
         {
             # GN version: //third_party/WebKit/Source/web:test_support
             'target_name': 'blink_web_test_support',
+            # Because of transitive dependency on make_platform_generated.
+            'hard_dependency': 1,
             'type': 'static_library',
             'dependencies': [
                 '../config.gyp:config',

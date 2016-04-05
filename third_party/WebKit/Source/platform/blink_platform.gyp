@@ -123,6 +123,8 @@
   {
     'target_name': 'blink_platform',
     'type': '<(component)',
+    # Because of transitive dependency on make_platform_generated.
+    'hard_dependency': 1,
     'dependencies': [
       '../config.gyp:config',
       '../wtf/wtf.gyp:wtf',
