@@ -29,7 +29,7 @@ namespace blink {
 
 class SVGElement;
 
-class LayoutSVGRoot final : public LayoutReplaced {
+class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 public:
     explicit LayoutSVGRoot(SVGElement*);
     ~LayoutSVGRoot() override;
@@ -38,7 +38,6 @@ public:
     bool isEmbeddedThroughFrameContainingSVGDocument() const;
 
     void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
-    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
 
     // If you have a LayoutSVGRoot, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;

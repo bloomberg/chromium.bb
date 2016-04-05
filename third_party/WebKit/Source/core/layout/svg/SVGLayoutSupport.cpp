@@ -124,6 +124,17 @@ bool SVGLayoutSupport::mapToVisualRectInAncestorSpace(const LayoutObject& object
     AffineTransform rootBorderBoxTransform;
     const LayoutSVGRoot& svgRoot = computeTransformToSVGRoot(object, rootBorderBoxTransform);
     resultRect = transformPaintInvalidationRect(object, rootBorderBoxTransform, localPaintInvalidationRect);
+
+    // Apply initial viewport clip.
+    if (svgRoot.shouldApplyViewportClip()) {
+        LayoutRect clipRect(svgRoot.pixelSnappedBorderBoxRect());
+        if (visualRectFlags & EdgeInclusive) {
+            if (!resultRect.inclusiveIntersect(clipRect))
+                return false;
+        } else {
+            resultRect.intersect(clipRect);
+        }
+    }
     return svgRoot.mapToVisualRectInAncestorSpace(ancestor, resultRect, visualRectFlags);
 }
 

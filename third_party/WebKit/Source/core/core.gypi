@@ -4048,6 +4048,7 @@
             'layout/ScrollAnchorTest.cpp',
             'layout/compositing/CompositedLayerMappingTest.cpp',
             'layout/shapes/BoxShapeTest.cpp',
+            'layout/svg/LayoutSVGRootTest.cpp',
             'loader/DocumentLoadTimingTest.cpp',
             'loader/FrameFetchContextTest.cpp',
             'loader/LinkHeaderTest.cpp',

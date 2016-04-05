@@ -394,9 +394,6 @@ static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const
 {
     if (object.isLayoutView()) {
         toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
-    } else if (object.isSVGRoot()) {
-        // TODO(crbug.com/597813): This is to avoid the extra clip applied in LayoutSVGRoot::mapVisibleRectInAncestorSpace().
-        toLayoutSVGRoot(object).LayoutReplaced::mapToVisualRectInAncestorSpace(&ancestor, rect);
     } else {
         object.mapToVisualRectInAncestorSpace(&ancestor, rect);
     }

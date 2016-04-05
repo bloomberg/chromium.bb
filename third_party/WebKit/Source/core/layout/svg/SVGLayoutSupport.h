@@ -46,7 +46,7 @@ class SVGLengthContext;
 class StrokeData;
 class TransformState;
 
-class SVGLayoutSupport {
+class CORE_EXPORT SVGLayoutSupport {
     STATIC_ONLY(SVGLayoutSupport);
 public:
     // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
