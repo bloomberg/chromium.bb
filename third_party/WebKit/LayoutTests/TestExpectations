@@ -1347,13 +1347,6 @@ crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/resize-squas
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/squashing-inside-preserve-3d-element.html [ Failure ]
 
-crbug.com/599933 css3/filters/effect-reference.html [ NeedsRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
-
 crbug.com/591902 [ Linux Mac10.10 Mac10.11 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
 crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
