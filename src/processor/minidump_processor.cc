@@ -34,7 +34,7 @@
 #include <string>
 
 #include "common/scoped_ptr.h"
-#include "common/stdio.h"
+#include "common/stdio_wrapper.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/minidump.h"

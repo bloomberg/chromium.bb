@@ -41,7 +41,7 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "common/stdio.h"
+#include "common/stdio_wrapper.h"
 #include "processor/logging.h"
 
 namespace google_breakpad {

@@ -57,7 +57,7 @@
 #include "processor/range_map-inl.h"
 
 #include "common/scoped_ptr.h"
-#include "common/stdio.h"
+#include "common/stdio_wrapper.h"
 #include "google_breakpad/processor/dump_context.h"
 #include "processor/basic_code_module.h"
 #include "processor/basic_code_modules.h"

@@ -40,7 +40,7 @@
 
 #include <string>
 
-#include "common/stdio.h"
+#include "common/stdio_wrapper.h"
 #include "common/using_std_string.h"
 #include "processor/logging.h"
 #include "processor/pathname_stripper.h"
