@@ -271,6 +271,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
             cancelPrerender(session);
             return;
         }
+        url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
         boolean noPrerendering =
                 extras != null ? extras.getBoolean(NO_PRERENDERING_KEY, false) : false;
         WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
