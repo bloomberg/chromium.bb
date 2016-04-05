@@ -1364,12 +1364,10 @@ DEFINE_TRACE(SVGSMILElement::Condition)
 
 DEFINE_TRACE(SVGSMILElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_targetElement);
     visitor->trace(m_timeContainer);
     visitor->trace(m_conditions);
     visitor->trace(m_syncBaseDependents);
-#endif
     SVGElement::trace(visitor);
     SVGTests::trace(visitor);
 }

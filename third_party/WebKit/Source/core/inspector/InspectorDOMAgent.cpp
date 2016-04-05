@@ -181,9 +181,7 @@ void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
 DEFINE_TRACE(InspectorRevalidateDOMTask)
 {
     visitor->trace(m_domAgent);
-#if ENABLE(OILPAN)
     visitor->trace(m_styleAttrInvalidatedElements);
-#endif
 }
 
 String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
@@ -2079,7 +2077,6 @@ DEFINE_TRACE(InspectorDOMAgent)
 {
     visitor->trace(m_domListener);
     visitor->trace(m_inspectedFrames);
-#if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);
     visitor->trace(m_danglingNodeToIdMaps);
     visitor->trace(m_idToNode);
@@ -2087,7 +2084,6 @@ DEFINE_TRACE(InspectorDOMAgent)
     visitor->trace(m_document);
     visitor->trace(m_revalidateTask);
     visitor->trace(m_searchResults);
-#endif
     visitor->trace(m_history);
     visitor->trace(m_domEditor);
     InspectorBaseAgent::trace(visitor);

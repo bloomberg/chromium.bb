@@ -67,9 +67,7 @@ void PlatformEventDispatcher::notifyControllers()
 
 DEFINE_TRACE(PlatformEventDispatcher)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_controllers);
-#endif
 }
 
 } // namespace blink

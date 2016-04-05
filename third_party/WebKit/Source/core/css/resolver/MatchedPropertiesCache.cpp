@@ -166,9 +166,7 @@ bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const Compu
 
 DEFINE_TRACE(MatchedPropertiesCache)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_cache);
-#endif
 }
 
 } // namespace blink

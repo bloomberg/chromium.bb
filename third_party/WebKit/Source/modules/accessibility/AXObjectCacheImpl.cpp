@@ -1284,10 +1284,8 @@ void AXObjectCacheImpl::setCanvasObjectBounds(Element* element, const LayoutRect
 
 DEFINE_TRACE(AXObjectCacheImpl)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_nodeObjectMapping);
-#endif
 
     visitor->trace(m_objects);
     visitor->trace(m_notificationsToPost);

@@ -76,14 +76,12 @@ CSSPropertySourceData::CSSPropertySourceData(const CSSPropertySourceData& other)
 
 DEFINE_TRACE(CSSRuleSourceData)
 {
-#if ENABLE(OILPAN)
     visitor->trace(ruleHeaderRange);
     visitor->trace(ruleBodyRange);
     visitor->trace(selectorRanges);
     visitor->trace(styleSourceData);
     visitor->trace(childRules);
     visitor->trace(mediaSourceData);
-#endif
 }
 
 } // namespace blink

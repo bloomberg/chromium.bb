@@ -281,13 +281,11 @@ void ScriptRunner::executeTask()
 
 DEFINE_TRACE(ScriptRunner)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_pendingInOrderScripts);
     visitor->trace(m_pendingAsyncScripts);
     visitor->trace(m_asyncScriptsToExecuteSoon);
     visitor->trace(m_inOrderScriptsToExecuteSoon);
-#endif
 }
 
 } // namespace blink

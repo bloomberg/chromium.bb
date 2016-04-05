@@ -164,7 +164,6 @@ RawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& strin
 
 DEFINE_TRACE(CSSValuePool)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_inheritedValue);
     visitor->trace(m_implicitInitialValue);
     visitor->trace(m_explicitInitialValue);
@@ -179,7 +178,6 @@ DEFINE_TRACE(CSSValuePool)
     visitor->trace(m_numberValueCache);
     visitor->trace(m_fontFaceValueCache);
     visitor->trace(m_fontFamilyValueCache);
-#endif
 }
 
 } // namespace blink

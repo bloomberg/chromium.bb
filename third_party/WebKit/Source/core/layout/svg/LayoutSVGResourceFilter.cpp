@@ -29,10 +29,8 @@ namespace blink {
 
 DEFINE_TRACE(FilterData)
 {
-#if ENABLE(OILPAN)
     visitor->trace(filter);
     visitor->trace(nodeMap);
-#endif
 }
 
 void FilterData::dispose()

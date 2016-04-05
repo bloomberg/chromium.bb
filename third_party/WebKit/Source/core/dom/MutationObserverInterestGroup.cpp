@@ -83,9 +83,7 @@ void MutationObserverInterestGroup::enqueueMutationRecord(RawPtr<MutationRecord>
 
 DEFINE_TRACE(MutationObserverInterestGroup)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_observers);
-#endif
 }
 
 } // namespace blink

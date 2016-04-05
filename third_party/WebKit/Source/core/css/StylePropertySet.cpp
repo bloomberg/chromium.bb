@@ -554,10 +554,8 @@ template CORE_EXPORT int MutableStylePropertySet::findPropertyIndex(AtomicString
 
 DEFINE_TRACE_AFTER_DISPATCH(MutableStylePropertySet)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_cssomWrapper);
     visitor->trace(m_propertyVector);
-#endif
     StylePropertySet::traceAfterDispatch(visitor);
 }
 

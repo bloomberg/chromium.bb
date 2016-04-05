@@ -811,14 +811,12 @@ int TextFinder::ordinalOfFirstMatch() const
 
 DEFINE_TRACE(TextFinder)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_ownerFrame);
     visitor->trace(m_currentActiveMatchFrame);
     visitor->trace(m_activeMatch);
     visitor->trace(m_resumeScopingFromRange);
     visitor->trace(m_deferredScopingWork);
     visitor->trace(m_findMatchesCache);
-#endif
 }
 
 } // namespace blink

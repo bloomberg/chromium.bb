@@ -358,14 +358,12 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const
 
 DEFINE_TRACE(SVGDocumentExtensions)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timeContainers);
     visitor->trace(m_webAnimationsPendingSVGElements);
     visitor->trace(m_relativeLengthSVGRoots);
     visitor->trace(m_pendingResources);
     visitor->trace(m_pendingResourcesForRemoval);
-#endif
 }
 
 } // namespace blink

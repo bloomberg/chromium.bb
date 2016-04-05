@@ -1207,12 +1207,10 @@ void SVGElement::removeAllOutgoingReferences()
 
 DEFINE_TRACE(SVGElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_elementsWithRelativeLengths);
     visitor->trace(m_attributeToPropertyMap);
     visitor->trace(m_SVGRareData);
     visitor->trace(m_className);
-#endif
     Element::trace(visitor);
 }
 

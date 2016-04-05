@@ -193,7 +193,6 @@ FrameView::~FrameView()
 
 DEFINE_TRACE(FrameView)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_fragmentAnchor);
     visitor->trace(m_scrollableAreas);
@@ -204,7 +203,6 @@ DEFINE_TRACE(FrameView)
     visitor->trace(m_children);
     visitor->trace(m_viewportScrollableArea);
     visitor->trace(m_scrollAnchor);
-#endif
     Widget::trace(visitor);
     ScrollableArea::trace(visitor);
 }

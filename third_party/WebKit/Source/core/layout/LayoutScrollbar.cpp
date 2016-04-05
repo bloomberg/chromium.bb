@@ -82,10 +82,8 @@ LayoutScrollbar::~LayoutScrollbar()
 
 DEFINE_TRACE(LayoutScrollbar)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_owner);
     visitor->trace(m_owningFrame);
-#endif
     Scrollbar::trace(visitor);
 }
 

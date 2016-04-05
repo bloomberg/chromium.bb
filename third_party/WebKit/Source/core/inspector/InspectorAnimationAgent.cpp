@@ -487,14 +487,12 @@ double InspectorAnimationAgent::normalizedStartTime(blink::Animation& animation)
 
 DEFINE_TRACE(InspectorAnimationAgent)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_inspectedFrames);
     visitor->trace(m_domAgent);
     visitor->trace(m_cssAgent);
     visitor->trace(m_idToAnimation);
     visitor->trace(m_idToAnimationType);
     visitor->trace(m_idToAnimationClone);
-#endif
     InspectorBaseAgent::trace(visitor);
 }
 

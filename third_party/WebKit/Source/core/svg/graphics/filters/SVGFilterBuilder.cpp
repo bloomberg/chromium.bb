@@ -105,10 +105,8 @@ void SVGFilterGraphNodeMap::invalidateDependentEffects(FilterEffect* effect)
 
 DEFINE_TRACE(SVGFilterGraphNodeMap)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_effectRenderer);
     visitor->trace(m_effectReferences);
-#endif
 }
 
 SVGFilterBuilder::SVGFilterBuilder(

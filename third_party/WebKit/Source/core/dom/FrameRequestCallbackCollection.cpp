@@ -75,11 +75,9 @@ void FrameRequestCallbackCollection::executeCallbacks(double highResNowMs, doubl
 
 DEFINE_TRACE(FrameRequestCallbackCollection)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_callbacks);
     visitor->trace(m_callbacksToInvoke);
     visitor->trace(m_context);
-#endif
 }
 
 } // namespace blink

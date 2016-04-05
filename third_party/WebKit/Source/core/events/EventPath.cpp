@@ -376,13 +376,11 @@ void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList)
 
 DEFINE_TRACE(EventPath)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_nodeEventContexts);
     visitor->trace(m_node);
     visitor->trace(m_event);
     visitor->trace(m_treeScopeEventContexts);
     visitor->trace(m_windowEventContext);
-#endif
 }
 
 } // namespace blink

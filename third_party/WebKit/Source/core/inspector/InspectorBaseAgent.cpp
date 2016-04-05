@@ -136,9 +136,7 @@ void InspectorAgentRegistry::flushPendingProtocolNotifications()
 DEFINE_TRACE(InspectorAgentRegistry)
 {
     visitor->trace(m_instrumentingAgents);
-#if ENABLE(OILPAN)
     visitor->trace(m_agents);
-#endif
 }
 
 void InspectorAgentRegistry::didCommitLoadForLocalFrame(LocalFrame* frame)

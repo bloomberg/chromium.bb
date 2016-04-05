@@ -158,9 +158,7 @@ void CSSGroupingRule::reattach(StyleRuleBase* rule)
 DEFINE_TRACE(CSSGroupingRule)
 {
     CSSRule::trace(visitor);
-#if ENABLE(OILPAN)
     visitor->trace(m_childRuleCSSOMWrappers);
-#endif
     visitor->trace(m_groupRule);
     visitor->trace(m_ruleListCSSOMWrapper);
 }

@@ -396,7 +396,6 @@ void ElementShadow::clearDistribution()
 
 DEFINE_TRACE(ElementShadow)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_nodeToInsertionPoints);
     visitor->trace(m_selectFeatures);
     // Shadow roots are linked with previous and next pointers which are traced.
@@ -404,7 +403,6 @@ DEFINE_TRACE(ElementShadow)
     // rest will be traced from there.
     visitor->trace(m_shadowRoots.head());
     visitor->trace(m_slotAssignment);
-#endif
 }
 
 } // namespace blink

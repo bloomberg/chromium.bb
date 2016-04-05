@@ -44,9 +44,7 @@ void DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
 
 DEFINE_TRACE(DOMTimerCoordinator)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_timers);
-#endif
 }
 
 int DOMTimerCoordinator::nextID()

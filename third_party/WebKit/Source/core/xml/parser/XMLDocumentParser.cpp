@@ -883,9 +883,7 @@ XMLDocumentParser::~XMLDocumentParser()
 DEFINE_TRACE(XMLDocumentParser)
 {
     visitor->trace(m_currentNode);
-#if ENABLE(OILPAN)
     visitor->trace(m_currentNodeStack);
-#endif
     visitor->trace(m_leafTextNode);
     visitor->trace(m_xmlErrors);
     visitor->trace(m_pendingScript);

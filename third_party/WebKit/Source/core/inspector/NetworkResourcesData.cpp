@@ -157,9 +157,7 @@ NetworkResourcesData::~NetworkResourcesData()
 
 DEFINE_TRACE(NetworkResourcesData)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_requestIdToResourceDataMap);
-#endif
 }
 
 void NetworkResourcesData::resourceCreated(const String& requestId, const String& loaderId, const KURL& requestedURL)

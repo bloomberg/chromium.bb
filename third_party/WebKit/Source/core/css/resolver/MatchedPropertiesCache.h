@@ -46,9 +46,7 @@ public:
     void clear();
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(matchedProperties);
-#endif
     }
 };
 

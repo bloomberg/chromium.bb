@@ -164,11 +164,9 @@ InspectorResourceContentLoader::~InspectorResourceContentLoader()
 
 DEFINE_TRACE(InspectorResourceContentLoader)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_inspectedFrame);
     visitor->trace(m_pendingResourceClients);
     visitor->trace(m_resources);
-#endif
 }
 
 void InspectorResourceContentLoader::didCommitLoadForLocalFrame(LocalFrame* frame)

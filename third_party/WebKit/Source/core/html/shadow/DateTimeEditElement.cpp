@@ -462,9 +462,7 @@ DateTimeEditElement::~DateTimeEditElement()
 
 DEFINE_TRACE(DateTimeEditElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_fields);
-#endif
     visitor->trace(m_editControlOwner);
     HTMLDivElement::trace(visitor);
 }

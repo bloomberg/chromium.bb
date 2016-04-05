@@ -44,10 +44,8 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(registry);
         visitor->trace(transientRegistry);
-#endif
     }
 
 private:

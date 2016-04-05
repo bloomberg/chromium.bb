@@ -123,10 +123,8 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_pendingReaders);
         visitor->trace(m_runningReaders);
-#endif
         Supplement<ExecutionContext>::trace(visitor);
     }
 

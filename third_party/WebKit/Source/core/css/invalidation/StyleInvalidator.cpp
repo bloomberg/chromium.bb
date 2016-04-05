@@ -330,9 +330,7 @@ void StyleInvalidator::invalidateSlotDistributedElements(HTMLSlotElement& slot, 
 
 DEFINE_TRACE(StyleInvalidator)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_pendingInvalidationMap);
-#endif
 }
 
 } // namespace blink

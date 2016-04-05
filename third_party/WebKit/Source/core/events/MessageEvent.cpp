@@ -207,9 +207,7 @@ DEFINE_TRACE(MessageEvent)
 {
     visitor->trace(m_dataAsBlob);
     visitor->trace(m_source);
-#if ENABLE(OILPAN)
     visitor->trace(m_ports);
-#endif
     Event::trace(visitor);
 }
 

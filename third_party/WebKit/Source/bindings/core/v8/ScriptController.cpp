@@ -98,9 +98,7 @@ ScriptController::~ScriptController()
 
 DEFINE_TRACE(ScriptController)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_windowProxyManager);
-#endif
 }
 
 void ScriptController::clearForClose()

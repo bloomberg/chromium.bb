@@ -205,17 +205,13 @@ Element* DocumentOrderedMap::getElementByLabelForAttribute(const AtomicString& k
 
 DEFINE_TRACE(DocumentOrderedMap)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_map);
-#endif
 }
 
 DEFINE_TRACE(DocumentOrderedMap::MapEntry)
 {
     visitor->trace(element);
-#if ENABLE(OILPAN)
     visitor->trace(orderedList);
-#endif
 }
 
 } // namespace blink

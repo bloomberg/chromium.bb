@@ -21,11 +21,9 @@ WindowProxyManager::~WindowProxyManager()
 
 DEFINE_TRACE(WindowProxyManager)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_windowProxy);
     visitor->trace(m_isolatedWorlds);
-#endif
 }
 
 WindowProxy* WindowProxyManager::windowProxy(DOMWrapperWorld& world)

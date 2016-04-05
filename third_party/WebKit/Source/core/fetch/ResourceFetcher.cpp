@@ -1192,11 +1192,9 @@ DEFINE_TRACE(ResourceFetcher)
     visitor->trace(m_archive);
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);
-#if ENABLE(OILPAN)
     visitor->trace(m_documentResources);
     visitor->trace(m_preloads);
     visitor->trace(m_resourceTimingInfoMap);
-#endif
 }
 
 } // namespace blink

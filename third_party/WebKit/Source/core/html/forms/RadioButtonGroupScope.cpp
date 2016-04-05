@@ -210,10 +210,8 @@ unsigned RadioButtonGroup::size() const
 
 DEFINE_TRACE(RadioButtonGroup)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_members);
     visitor->trace(m_checkedButton);
-#endif
 }
 
 // ----------------------------------------------------------------
@@ -322,9 +320,7 @@ void RadioButtonGroupScope::removeButton(HTMLInputElement* element)
 
 DEFINE_TRACE(RadioButtonGroupScope)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_nameToGroupMap);
-#endif
 }
 
 } // namespace blink

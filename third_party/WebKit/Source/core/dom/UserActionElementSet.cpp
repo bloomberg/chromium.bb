@@ -119,9 +119,7 @@ inline void UserActionElementSet::setFlags(Element* element, unsigned flags)
 
 DEFINE_TRACE(UserActionElementSet)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_elements);
-#endif
 }
 
 } // namespace blink

@@ -53,9 +53,7 @@ DocumentParser::~DocumentParser()
 DEFINE_TRACE(DocumentParser)
 {
     visitor->trace(m_document);
-#if ENABLE(OILPAN)
     visitor->trace(m_clients);
-#endif
 }
 
 void DocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder>)

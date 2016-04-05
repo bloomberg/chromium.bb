@@ -105,10 +105,8 @@ ScrollingCoordinator::~ScrollingCoordinator()
 DEFINE_TRACE(ScrollingCoordinator)
 {
     visitor->trace(m_page);
-#if ENABLE(OILPAN)
     visitor->trace(m_horizontalScrollbars);
     visitor->trace(m_verticalScrollbars);
-#endif
 }
 
 void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const Region& region)

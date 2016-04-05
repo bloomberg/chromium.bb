@@ -62,9 +62,7 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData)
     visitor->trace(m_classList);
     visitor->trace(m_shadow);
     visitor->trace(m_attributeMap);
-#if ENABLE(OILPAN)
     visitor->trace(m_attrNodeList);
-#endif
     visitor->trace(m_elementAnimations);
     visitor->trace(m_cssomWrapper);
     visitor->trace(m_customElementDefinition);

@@ -100,9 +100,7 @@ void SlotAssignment::assign(Node& hostChild, HTMLSlotElement& slot)
 
 DEFINE_TRACE(SlotAssignment)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_assignment);
-#endif
 }
 
 } // namespace blink

@@ -52,13 +52,11 @@ ScriptedAnimationController::ScriptedAnimationController(Document* document)
 
 DEFINE_TRACE(ScriptedAnimationController)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_callbackCollection);
     visitor->trace(m_eventQueue);
     visitor->trace(m_mediaQueryListListeners);
     visitor->trace(m_perFrameEvents);
-#endif
 }
 
 void ScriptedAnimationController::suspend()

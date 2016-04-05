@@ -256,9 +256,7 @@ NthIndexData::NthIndexData(ContainerNode& parent, const QualifiedName& type)
 
 DEFINE_TRACE(NthIndexData)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_elementIndexMap);
-#endif
 }
 
 #if !ENABLE(OILPAN)

@@ -103,9 +103,6 @@ DEFINE_TRACE(ElementAnimations)
     visitor->trace(m_cssAnimations);
     visitor->trace(m_animationStack);
     visitor->trace(m_animations);
-#if !ENABLE(OILPAN)
-    visitor->trace(m_effects);
-#endif
 }
 
 const ComputedStyle* ElementAnimations::baseComputedStyle() const

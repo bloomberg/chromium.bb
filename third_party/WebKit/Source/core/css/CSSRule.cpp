@@ -43,7 +43,6 @@ const CSSParserContext& CSSRule::parserContext() const
 
 DEFINE_TRACE(CSSRule)
 {
-#if ENABLE(OILPAN)
     // This makes the parent link strong, which is different from the
     // pre-oilpan world, where the parent link is mysteriously zeroed under
     // some circumstances.
@@ -51,7 +50,6 @@ DEFINE_TRACE(CSSRule)
         visitor->trace(m_parentRule);
     else
         visitor->trace(m_parentStyleSheet);
-#endif
 }
 
 } // namespace blink

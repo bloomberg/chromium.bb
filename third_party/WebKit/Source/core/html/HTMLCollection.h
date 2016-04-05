@@ -85,10 +85,8 @@ protected:
 
         DEFINE_INLINE_TRACE()
         {
-#if ENABLE(OILPAN)
             visitor->trace(m_idCache);
             visitor->trace(m_nameCache);
-#endif
         }
 
     private:

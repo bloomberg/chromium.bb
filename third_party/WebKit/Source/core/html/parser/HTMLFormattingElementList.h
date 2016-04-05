@@ -128,9 +128,7 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_entries);
-#endif
     }
 
 #ifndef NDEBUG

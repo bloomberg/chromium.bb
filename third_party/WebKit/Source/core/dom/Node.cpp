@@ -2368,7 +2368,6 @@ void Node::setCustomElementState(CustomElementState newState)
 
 DEFINE_TRACE(Node)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_parentOrShadowHostNode);
     visitor->trace(m_previous);
     visitor->trace(m_next);
@@ -2378,7 +2377,6 @@ DEFINE_TRACE(Node)
         visitor->trace(rareData());
 
     visitor->trace(m_treeScope);
-#endif
     EventTarget::trace(visitor);
 }
 

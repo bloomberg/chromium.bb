@@ -556,9 +556,7 @@ void SMILTimeContainer::advanceFrameForTesting()
 
 DEFINE_TRACE(SMILTimeContainer)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_scheduledAnimations);
-#endif
     visitor->trace(m_ownerSVGElement);
 }
 

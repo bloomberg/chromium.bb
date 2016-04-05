@@ -568,11 +568,9 @@ bool PointerEventManager::isActive(const int pointerId)
 
 DEFINE_TRACE(PointerEventManager)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_nodeUnderPointer);
     visitor->trace(m_pointerCaptureTarget);
     visitor->trace(m_pendingPointerCaptureTarget);
-#endif
 }
 
 

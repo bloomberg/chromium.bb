@@ -64,9 +64,7 @@ DEFINE_TRACE(PageConsoleAgent)
 {
     visitor->trace(m_inspectorDOMAgent);
     visitor->trace(m_inspectedFrames);
-#if ENABLE(OILPAN)
     visitor->trace(m_workersWithEnabledConsole);
-#endif
     InspectorConsoleAgent::trace(visitor);
 }
 

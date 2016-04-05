@@ -662,7 +662,6 @@ void StyleSheetContents::findFontFaceRules(HeapVector<Member<const StyleRuleFont
 
 DEFINE_TRACE(StyleSheetContents)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_ownerRule);
     visitor->trace(m_importRules);
     visitor->trace(m_namespaceRules);
@@ -670,7 +669,6 @@ DEFINE_TRACE(StyleSheetContents)
     visitor->trace(m_loadingClients);
     visitor->trace(m_completedClients);
     visitor->trace(m_ruleSet);
-#endif
 }
 
 } // namespace blink

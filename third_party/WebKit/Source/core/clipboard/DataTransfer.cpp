@@ -512,9 +512,7 @@ DEFINE_TRACE(DataTransfer)
 {
     visitor->trace(m_dataObject);
     visitor->trace(m_dragImage);
-#if ENABLE(OILPAN)
     visitor->trace(m_dragImageElement);
-#endif
 }
 
 } // namespace blink

@@ -180,9 +180,7 @@ void GeolocationClientMock::clearError()
 
 DEFINE_TRACE(GeolocationClientMock)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_controllers);
-#endif
     visitor->trace(m_lastPosition);
     visitor->trace(m_pendingPermissions);
     GeolocationClient::trace(visitor);

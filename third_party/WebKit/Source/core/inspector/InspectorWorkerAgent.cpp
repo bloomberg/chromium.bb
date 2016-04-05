@@ -193,10 +193,8 @@ void InspectorWorkerAgent::workerConsoleAgentEnabled(WorkerInspectorProxy* proxy
 
 DEFINE_TRACE(InspectorWorkerAgent)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_connectedProxies);
     visitor->trace(m_consoleAgent);
-#endif
     visitor->trace(m_inspectedFrames);
     InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>::trace(visitor);
 }

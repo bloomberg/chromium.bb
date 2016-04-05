@@ -153,12 +153,10 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
 
 DEFINE_TRACE(FontFaceCache)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_fontFaces);
     visitor->trace(m_fonts);
     visitor->trace(m_styleRuleToFontFace);
     visitor->trace(m_cssConnectedFontFaces);
-#endif
 }
 
 } // namespace blink

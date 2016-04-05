@@ -509,9 +509,7 @@ void DocumentMarkerController::updateRenderedRectsForMarkers()
 
 DEFINE_TRACE(DocumentMarkerController)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_markers);
-#endif
 }
 
 void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerTypes markerTypes)

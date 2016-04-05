@@ -88,7 +88,6 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_tracker);
-#if ENABLE(OILPAN)
         visitor->trace(m_timerCallChains);
         visitor->trace(m_animationFrameCallChains);
         visitor->trace(m_eventCallChains);
@@ -96,7 +95,6 @@ public:
         visitor->trace(m_mutationObserverCallChains);
         visitor->trace(m_executionContextTaskCallChains);
         visitor->trace(m_asyncOperations);
-#endif
         ContextLifecycleObserver::trace(visitor);
     }
 
@@ -423,10 +421,8 @@ AsyncCallTracker::ExecutionContextData* AsyncCallTracker::createContextDataIfNee
 
 DEFINE_TRACE(AsyncCallTracker)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_executionContextDataMap);
     visitor->trace(m_instrumentingAgents);
-#endif
 }
 
 } // namespace blink

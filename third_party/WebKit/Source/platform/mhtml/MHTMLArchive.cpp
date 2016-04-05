@@ -242,9 +242,7 @@ ArchiveResource* MHTMLArchive::subresourceForURL(const KURL& url) const
 DEFINE_TRACE(MHTMLArchive)
 {
     visitor->trace(m_mainResource);
-#if ENABLE(OILPAN)
     visitor->trace(m_subresources);
-#endif
 }
 
 } // namespace blink

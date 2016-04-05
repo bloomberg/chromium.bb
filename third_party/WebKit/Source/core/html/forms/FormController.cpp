@@ -293,9 +293,7 @@ public:
     static FormKeyGenerator* create() { return new FormKeyGenerator; }
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_formToKeyMap);
-#endif
     }
     const AtomicString& formKey(const HTMLFormControlElementWithState&);
     void willDeleteForm(HTMLFormElement*);
@@ -386,9 +384,7 @@ DocumentState* DocumentState::create()
 
 DEFINE_TRACE(DocumentState)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_formControls);
-#endif
 }
 
 void DocumentState::addControl(HTMLFormControlElementWithState* control)

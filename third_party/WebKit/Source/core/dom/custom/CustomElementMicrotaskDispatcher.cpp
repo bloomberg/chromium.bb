@@ -80,9 +80,7 @@ void CustomElementMicrotaskDispatcher::doDispatch()
 
 DEFINE_TRACE(CustomElementMicrotaskDispatcher)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_elements);
-#endif
 }
 
 } // namespace blink

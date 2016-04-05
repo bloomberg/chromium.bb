@@ -144,9 +144,7 @@ DEFINE_TRACE(MutationObserverRegistration)
     visitor->trace(m_observer);
     visitor->trace(m_registrationNode);
     visitor->trace(m_registrationNodeKeepAlive);
-#if ENABLE(OILPAN)
     visitor->trace(m_transientRegistrationNodes);
-#endif
 }
 
 } // namespace blink

@@ -1821,9 +1821,7 @@ void HTMLSelectElement::updateListOnLayoutObject()
 
 DEFINE_TRACE(HTMLSelectElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_listItems);
-#endif
     visitor->trace(m_lastOnChangeOption);
     visitor->trace(m_activeSelectionAnchor);
     visitor->trace(m_activeSelectionEnd);

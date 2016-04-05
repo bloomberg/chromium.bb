@@ -269,12 +269,10 @@ void MutationObserver::deliverMutations()
 
 DEFINE_TRACE(MutationObserver)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_callback);
     visitor->trace(m_records);
     visitor->trace(m_registrations);
     visitor->trace(m_callback);
-#endif
 }
 
 } // namespace blink

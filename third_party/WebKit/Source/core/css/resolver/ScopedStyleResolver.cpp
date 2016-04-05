@@ -191,12 +191,10 @@ void ScopedStyleResolver::collectViewportRulesTo(ViewportStyleResolver* resolver
 
 DEFINE_TRACE(ScopedStyleResolver)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_scope);
     visitor->trace(m_authorStyleSheets);
     visitor->trace(m_keyframesRuleMap);
     visitor->trace(m_treeBoundaryCrossingRuleSet);
-#endif
 }
 
 static void addRules(RuleSet* ruleSet, const HeapVector<MinimalRuleData>& rules)

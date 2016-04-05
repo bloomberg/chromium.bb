@@ -223,9 +223,7 @@ RawPtr<CustomElementSyncMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
 DEFINE_TRACE(HTMLImportLoader)
 {
     visitor->trace(m_controller);
-#if ENABLE(OILPAN)
     visitor->trace(m_imports);
-#endif
     visitor->trace(m_document);
     visitor->trace(m_writer);
     visitor->trace(m_microtaskQueue);

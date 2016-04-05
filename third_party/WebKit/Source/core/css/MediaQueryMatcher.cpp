@@ -145,12 +145,10 @@ void MediaQueryMatcher::viewportChanged()
 
 DEFINE_TRACE(MediaQueryMatcher)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_evaluator);
     visitor->trace(m_mediaLists);
     visitor->trace(m_viewportListeners);
-#endif
 }
 
 } // namespace blink

@@ -276,7 +276,6 @@ EventHandler::~EventHandler()
 
 DEFINE_TRACE(EventHandler)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_mousePressNode);
     visitor->trace(m_resizeScrollableArea);
@@ -296,7 +295,6 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_lastDeferredTapElement);
     visitor->trace(m_selectionController);
     visitor->trace(m_pointerEventManager);
-#endif
 }
 
 DragState& EventHandler::dragState()

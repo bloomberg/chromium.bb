@@ -94,10 +94,8 @@ RawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandida
 
 DEFINE_TRACE(CustomElementUpgradeCandidateMap)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_upgradeCandidates);
     visitor->trace(m_unresolvedDefinitions);
-#endif
     CustomElementObserver::trace(visitor);
 }
 

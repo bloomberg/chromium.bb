@@ -360,17 +360,14 @@ DEFINE_TRACE(RuleData)
 
 DEFINE_TRACE(RuleSet::PendingRuleMaps)
 {
-#if ENABLE(OILPAN)
     visitor->trace(idRules);
     visitor->trace(classRules);
     visitor->trace(tagRules);
     visitor->trace(shadowPseudoElementRules);
-#endif
 }
 
 DEFINE_TRACE(RuleSet)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_idRules);
     visitor->trace(m_classRules);
     visitor->trace(m_tagRules);
@@ -393,7 +390,6 @@ DEFINE_TRACE(RuleSet)
     visitor->trace(m_pendingRules);
 #ifndef NDEBUG
     visitor->trace(m_allRules);
-#endif
 #endif
 }
 

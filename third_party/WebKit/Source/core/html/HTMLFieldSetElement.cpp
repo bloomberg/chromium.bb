@@ -51,9 +51,7 @@ RawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTML
 
 DEFINE_TRACE(HTMLFieldSetElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_associatedElements);
-#endif
     HTMLFormControlElement::trace(visitor);
 }
 

@@ -104,9 +104,7 @@ DEFINE_TRACE(TreeScopeEventContext)
     visitor->trace(m_eventPath);
     visitor->trace(m_touchEventContext);
     visitor->trace(m_containingClosedShadowTree);
-#if ENABLE(OILPAN)
     visitor->trace(m_children);
-#endif
 }
 
 int TreeScopeEventContext::calculateTreeOrderAndSetNearestAncestorClosedTree(int orderNumber, TreeScopeEventContext* nearestAncestorClosedTreeScopeEventContext)

@@ -64,9 +64,7 @@ ElementDataCache::ElementDataCache()
 
 DEFINE_TRACE(ElementDataCache)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_shareableElementDataCache);
-#endif
 }
 
 } // namespace blink

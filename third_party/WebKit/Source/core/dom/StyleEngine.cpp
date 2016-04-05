@@ -794,7 +794,6 @@ void StyleEngine::ensureFullscreenUAStyle()
 
 DEFINE_TRACE(StyleEngine)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_injectedAuthorStyleSheets);
     visitor->trace(m_documentStyleSheetCollection);
@@ -806,7 +805,6 @@ DEFINE_TRACE(StyleEngine)
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);
-#endif
     CSSFontSelectorClient::trace(visitor);
 }
 

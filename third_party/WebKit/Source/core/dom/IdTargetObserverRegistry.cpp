@@ -36,10 +36,8 @@ RawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
 
 DEFINE_TRACE(IdTargetObserverRegistry)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_registry);
     visitor->trace(m_notifyingObserversInSet);
-#endif
 }
 
 void IdTargetObserverRegistry::addObserver(const AtomicString& id, IdTargetObserver* observer)

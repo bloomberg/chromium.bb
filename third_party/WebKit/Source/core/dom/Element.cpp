@@ -3667,11 +3667,9 @@ void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(const char element[
 
 DEFINE_TRACE(Element)
 {
-#if ENABLE(OILPAN)
     if (hasRareData())
         visitor->trace(elementRareData());
     visitor->trace(m_elementData);
-#endif
     ContainerNode::trace(visitor);
 }
 

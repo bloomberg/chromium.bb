@@ -150,10 +150,8 @@ bool HTMLElementStack::ElementRecord::isAbove(ElementRecord* other) const
 
 DEFINE_TRACE(HTMLElementStack::ElementRecord)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_item);
     visitor->trace(m_next);
-#endif
 }
 
 HTMLElementStack::HTMLElementStack()

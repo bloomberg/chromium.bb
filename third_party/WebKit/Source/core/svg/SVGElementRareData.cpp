@@ -34,7 +34,6 @@ ComputedStyle* SVGElementRareData::overrideComputedStyle(Element* element, const
 
 DEFINE_TRACE(SVGElementRareData)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_outgoingReferences);
     visitor->trace(m_incomingReferences);
     visitor->trace(m_animatedSMILStyleProperties);
@@ -42,7 +41,6 @@ DEFINE_TRACE(SVGElementRareData)
     visitor->trace(m_correspondingElement);
     visitor->trace(m_owner);
     visitor->template registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
-#endif
 }
 
 void SVGElementRareData::processWeakMembers(Visitor* visitor)

@@ -146,9 +146,7 @@ InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 DEFINE_TRACE(InspectorDOMDebuggerAgent)
 {
     visitor->trace(m_domAgent);
-#if ENABLE(OILPAN)
     visitor->trace(m_domBreakpoints);
-#endif
     InspectorBaseAgent::trace(visitor);
 }
 

@@ -228,9 +228,7 @@ void V8AbstractEventListener::secondWeakCallback(const v8::WeakCallbackInfo<V8Ab
 
 DEFINE_TRACE(V8AbstractEventListener)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_workerGlobalScope);
-#endif
     EventListener::trace(visitor);
 }
 

@@ -118,9 +118,7 @@ Resource::CacheHandler::CacheHandler(Resource* resource)
 
 DEFINE_TRACE(Resource::CacheHandler)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_resource);
-#endif
     CachedMetadataHandler::trace(visitor);
 }
 
@@ -261,9 +259,7 @@ void Resource::removedFromMemoryCache()
 DEFINE_TRACE(Resource)
 {
     visitor->trace(m_loader);
-#if ENABLE(OILPAN)
     visitor->trace(m_cacheHandler);
-#endif
 }
 
 void Resource::load(ResourceFetcher* fetcher)

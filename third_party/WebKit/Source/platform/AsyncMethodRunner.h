@@ -120,11 +120,7 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_object);
-#else
-        TraceIfNeeded<typename RawPtrOrMemberTrait<TargetClass>::Type>::trace(visitor, m_object);
-#endif
     }
 
 private:

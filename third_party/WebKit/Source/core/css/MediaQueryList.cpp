@@ -133,11 +133,9 @@ bool MediaQueryList::matches()
 
 DEFINE_TRACE(MediaQueryList)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_matcher);
     visitor->trace(m_media);
     visitor->trace(m_listeners);
-#endif
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

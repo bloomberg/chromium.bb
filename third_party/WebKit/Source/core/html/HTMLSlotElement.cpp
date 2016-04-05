@@ -286,12 +286,10 @@ short HTMLSlotElement::tabIndex() const
 
 DEFINE_TRACE(HTMLSlotElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_assignedNodes);
     visitor->trace(m_distributedNodes);
     visitor->trace(m_distributedIndices);
     visitor->trace(m_oldDistributedNodes);
-#endif
     HTMLElement::trace(visitor);
 }
 

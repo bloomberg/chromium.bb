@@ -2104,7 +2104,6 @@ DEFINE_TRACE(InspectorCSSAgent)
     visitor->trace(m_inspectedFrames);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_resourceContentLoader);
-#if ENABLE(OILPAN)
     visitor->trace(m_idToInspectorStyleSheet);
     visitor->trace(m_idToInspectorStyleSheetForInlineStyle);
     visitor->trace(m_cssStyleSheetToInspectorStyleSheet);
@@ -2112,7 +2111,6 @@ DEFINE_TRACE(InspectorCSSAgent)
     visitor->trace(m_invalidatedDocuments);
     visitor->trace(m_nodeToInspectorStyleSheet);
     visitor->trace(m_documentToViaInspectorStyleSheet);
-#endif
     visitor->trace(m_inspectorUserAgentStyleSheet);
     InspectorBaseAgent::trace(visitor);
 }

@@ -182,10 +182,8 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_ruleFeatureSet);
         visitor->trace(m_document);
-#endif
     }
 
 private:

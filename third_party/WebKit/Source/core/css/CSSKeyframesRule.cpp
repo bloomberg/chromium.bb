@@ -217,9 +217,7 @@ void CSSKeyframesRule::reattach(StyleRuleBase* rule)
 DEFINE_TRACE(CSSKeyframesRule)
 {
     CSSRule::trace(visitor);
-#if ENABLE(OILPAN)
     visitor->trace(m_childRuleCSSOMWrappers);
-#endif
     visitor->trace(m_keyframesRule);
     visitor->trace(m_ruleListCSSOMWrapper);
 }

@@ -98,13 +98,11 @@ HTMLFormElement::~HTMLFormElement()
 
 DEFINE_TRACE(HTMLFormElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_pastNamesMap);
     visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_associatedElements);
     visitor->trace(m_imageElements);
     visitor->trace(m_pendingAutocompleteEventsQueue);
-#endif
     HTMLElement::trace(visitor);
 }
 

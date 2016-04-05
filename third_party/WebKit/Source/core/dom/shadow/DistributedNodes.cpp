@@ -72,10 +72,8 @@ Node* DistributedNodes::previousTo(const Node* node) const
 
 DEFINE_TRACE(DistributedNodes)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_nodes);
     visitor->trace(m_indices);
-#endif
 }
 
 } // namespace blink

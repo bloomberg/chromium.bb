@@ -77,9 +77,7 @@ struct CSSStyleSourceData : public GarbageCollected<CSSStyleSourceData> {
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(propertyData);
-#endif
     }
 
     HeapVector<CSSPropertySourceData> propertyData;
@@ -104,9 +102,7 @@ struct CSSMediaQuerySourceData : public GarbageCollected<CSSMediaQuerySourceData
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(expData);
-#endif
     }
 
     HeapVector<CSSMediaQueryExpSourceData> expData;
@@ -120,9 +116,7 @@ struct CSSMediaSourceData : public GarbageCollected<CSSMediaSourceData> {
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(queryData);
-#endif
     }
 
     HeapVector<Member<CSSMediaQuerySourceData>> queryData;

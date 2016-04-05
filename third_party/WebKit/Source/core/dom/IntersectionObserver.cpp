@@ -308,9 +308,7 @@ void IntersectionObserver::deliver()
 
 DEFINE_TRACE(IntersectionObserver)
 {
-#if ENABLE(OILPAN)
     visitor->template registerWeakMembers<IntersectionObserver, &IntersectionObserver::clearWeakMembers>(this);
-#endif
     visitor->trace(m_callback);
     visitor->trace(m_observations);
     visitor->trace(m_entries);

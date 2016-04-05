@@ -1724,7 +1724,6 @@ bool StyleResolver::mediaQueryAffectedByDeviceChange() const
 
 DEFINE_TRACE(StyleResolver)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_matchedPropertiesCache);
     visitor->trace(m_medium);
     visitor->trace(m_viewportDependentMediaQueryResults);
@@ -1739,7 +1738,6 @@ DEFINE_TRACE(StyleResolver)
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
     visitor->trace(m_document);
-#endif
 }
 
 } // namespace blink

@@ -181,10 +181,8 @@ void CSSSegmentedFontFace::match(const String& text, HeapVector<Member<FontFace>
 
 DEFINE_TRACE(CSSSegmentedFontFace)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_fontSelector);
     visitor->trace(m_fontFaces);
-#endif
 }
 
 } // namespace blink

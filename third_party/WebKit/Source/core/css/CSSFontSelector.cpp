@@ -181,12 +181,10 @@ void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
 
 DEFINE_TRACE(CSSFontSelector)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_fontFaceCache);
     visitor->trace(m_clients);
     visitor->trace(m_fontLoader);
-#endif
     FontSelector::trace(visitor);
 }
 

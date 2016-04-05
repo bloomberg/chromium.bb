@@ -134,11 +134,9 @@ unsigned HitRegionManager::getHitRegionsCount() const
 
 DEFINE_TRACE(HitRegionManager)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_hitRegionList);
     visitor->trace(m_hitRegionIdMap);
     visitor->trace(m_hitRegionControlMap);
-#endif
 }
 
 } // namespace blink

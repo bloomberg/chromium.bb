@@ -317,10 +317,8 @@ int PrintContext::numberOfPages(LocalFrame* frame, const FloatSize& pageSizeInPi
 
 DEFINE_TRACE(PrintContext)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_linkedDestinations);
-#endif
 }
 
 } // namespace blink

@@ -64,9 +64,7 @@ void DocumentOrderedList::remove(const Node* node)
 
 DEFINE_TRACE(DocumentOrderedList)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_nodes);
-#endif
 }
 
 } // namespace blink

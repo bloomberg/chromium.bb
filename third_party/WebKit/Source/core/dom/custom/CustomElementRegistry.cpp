@@ -99,9 +99,7 @@ CustomElementDefinition* CustomElementRegistry::find(const CustomElementDescript
 
 DEFINE_TRACE(CustomElementRegistry)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_definitions);
-#endif
 }
 
 } // namespace blink

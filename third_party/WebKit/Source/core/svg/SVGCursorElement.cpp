@@ -88,11 +88,9 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
 
 DEFINE_TRACE(SVGCursorElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_x);
     visitor->trace(m_y);
     visitor->trace(m_clients);
-#endif
     SVGElement::trace(visitor);
     SVGTests::trace(visitor);
     SVGURIReference::trace(visitor);
