@@ -326,7 +326,7 @@ void FrameTreeNode::CreatedNavigationRequest(
     ResetNavigationRequest(true);
 
   navigation_request_ = std::move(navigation_request);
-  render_manager()->DidCreateNavigationRequest(*navigation_request_);
+  render_manager()->DidCreateNavigationRequest(navigation_request_.get());
 
   // Force the throbber to start to keep it in sync with what is happening in
   // the UI. Blink doesn't send throb notifications for JavaScript URLs, so it
@@ -344,6 +344,8 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   if (!navigation_request_)
     return;
   bool was_renderer_initiated = !navigation_request_->browser_initiated();
+  NavigationRequest::AssociatedSiteInstanceType site_instance_type =
+      navigation_request_->associated_site_instance_type();
   navigation_request_.reset();
 
   if (keep_state)
@@ -353,6 +355,13 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   // it created for the navigation. Also register that the load stopped.
   DidStopLoading();
   render_manager_.CleanUpNavigation();
+
+  // When reusing the same SiteInstance, a pending WebUI may have been created
+  // on behalf of the navigation in the current RenderFrameHost. Clear it.
+  if (site_instance_type ==
+      NavigationRequest::AssociatedSiteInstanceType::CURRENT) {
+    current_frame_host()->ClearPendingWebUI();
+  }
 
   // If the navigation is renderer-initiated, the renderer should also be
   // informed that the navigation stopped.

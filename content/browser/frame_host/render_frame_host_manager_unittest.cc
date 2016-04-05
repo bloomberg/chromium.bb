@@ -443,20 +443,19 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                                                      ->frame_tree_node()
                                                      ->navigator()
                                                      ->GetController());
-      // TODO(carlosk): This implementation below will not work with restore
-      // navigations. Method GetNavigationType should be exposed from
-      // navigator_impl.cc and used here to determine FrameMsg_Navigate_Type.
-      CHECK(entry.restore_type() == NavigationEntryImpl::RESTORE_NONE);
+      FrameMsg_Navigate_Type::Value navigate_type =
+          entry.restore_type() == NavigationEntryImpl::RESTORE_NONE
+              ? FrameMsg_Navigate_Type::NORMAL
+              : FrameMsg_Navigate_Type::RESTORE;
       scoped_ptr<NavigationRequest> navigation_request =
           NavigationRequest::CreateBrowserInitiated(
               manager->frame_tree_node_, frame_entry->url(),
-              frame_entry->referrer(), *frame_entry, entry,
-              FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
-              base::TimeTicks::Now(), controller);
+              frame_entry->referrer(), *frame_entry, entry, navigate_type,
+              LOFI_UNSPECIFIED, false, base::TimeTicks::Now(), controller);
 
       // Simulates request creation that triggers the 1st internal call to
       // GetFrameHostForNavigation.
-      manager->DidCreateNavigationRequest(*navigation_request);
+      manager->DidCreateNavigationRequest(navigation_request.get());
 
       // And also simulates the 2nd and final call to GetFrameHostForNavigation
       // that determines the final frame that will commit the navigation.
@@ -2611,6 +2610,7 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithOneWebUI(
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(true);
+  main_test_rfh()->PrepareForCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
   EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
@@ -2872,7 +2872,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
           FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
-  manager->DidCreateNavigationRequest(*navigation_request);
+  manager->DidCreateNavigationRequest(navigation_request.get());
 
   // As the initial RenderFrame was not live, the new RenderFrameHost should be
   // made as active/current immediately along with its WebUI at request time.
@@ -2933,7 +2933,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
           FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
-  manager->DidCreateNavigationRequest(*navigation_request);
+  manager->DidCreateNavigationRequest(navigation_request.get());
 
   // The current WebUI should still be in place and the pending WebUI should be
   // set to reuse it.
@@ -2991,7 +2991,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
           FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
-  manager->DidCreateNavigationRequest(*navigation_request);
+  manager->DidCreateNavigationRequest(navigation_request.get());
 
   // The current WebUI should still be in place and there should be a new
   // active WebUI instance in the speculative RenderFrameHost.

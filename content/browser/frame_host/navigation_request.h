@@ -57,6 +57,16 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     FAILED,
   };
 
+  // The SiteInstance currently associated with the navigation. Note that the
+  // final value will only be known when the response is received, or the
+  // navigation fails, as server redirects can modify the SiteInstance to use
+  // for the navigation.
+  enum class AssociatedSiteInstanceType {
+    NONE = 0,
+    CURRENT,
+    SPECULATIVE,
+  };
+
   // Creates a request for a browser-intiated navigation.
   static scoped_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
@@ -123,6 +133,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void SetWaitingForRendererResponse() {
     DCHECK(state_ == NOT_STARTED);
     state_ = WAITING_FOR_RENDERER_RESPONSE;
+  }
+
+  AssociatedSiteInstanceType associated_site_instance_type() const {
+    return associated_site_instance_type_;
+  }
+  void set_associated_site_instance_type(AssociatedSiteInstanceType type) {
+    associated_site_instance_type_ = type;
   }
 
   NavigationHandleImpl* navigation_handle() const {
@@ -207,6 +224,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationEntryImpl::RestoreType restore_type_;
   bool is_view_source_;
   int bindings_;
+
+  // The type of SiteInstance associated with this navigation.
+  AssociatedSiteInstanceType associated_site_instance_type_;
 
   scoped_ptr<NavigationHandleImpl> navigation_handle_;
 

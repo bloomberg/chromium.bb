@@ -772,10 +772,14 @@ void RenderFrameHostManager::ClearWebUIInstances() {
 
 // PlzNavigate
 void RenderFrameHostManager::DidCreateNavigationRequest(
-    const NavigationRequest& request) {
+    NavigationRequest* request) {
   CHECK(IsBrowserSideNavigationEnabled());
-  RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(request);
+  RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(*request);
   DCHECK(dest_rfh);
+  request->set_associated_site_instance_type(
+      dest_rfh == render_frame_host_.get()
+          ? NavigationRequest::AssociatedSiteInstanceType::CURRENT
+          : NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
 }
 
 // PlzNavigate
@@ -930,7 +934,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 // PlzNavigate
 void RenderFrameHostManager::CleanUpNavigation() {
   CHECK(IsBrowserSideNavigationEnabled());
-  render_frame_host_->ClearPendingWebUI();
   if (speculative_render_frame_host_) {
     bool was_loading = speculative_render_frame_host_->is_loading();
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());

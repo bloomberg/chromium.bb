@@ -164,7 +164,8 @@ NavigationRequest::NavigationRequest(
       state_(NOT_STARTED),
       restore_type_(NavigationEntryImpl::RESTORE_NONE),
       is_view_source_(false),
-      bindings_(NavigationEntryImpl::kInvalidBindings) {
+      bindings_(NavigationEntryImpl::kInvalidBindings),
+      associated_site_instance_type_(AssociatedSiteInstanceType::NONE) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   if (browser_initiated) {
     // TODO(clamy): use the FrameNavigationEntry for the source SiteInstance

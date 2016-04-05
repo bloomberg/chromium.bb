@@ -411,7 +411,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Notifies the RenderFrameHostManager that a new NavigationRequest has been
   // created and set in the FrameTreeNode so that it can speculatively create a
   // new RenderFrameHost (and potentially a new process) if needed.
-  void DidCreateNavigationRequest(const NavigationRequest& request);
+  void DidCreateNavigationRequest(NavigationRequest* request);
 
   // PlzNavigate
   // Called (possibly several times) during a navigation to select or create an
