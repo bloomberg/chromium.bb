@@ -26,8 +26,6 @@
         'active_state_manager_impl_unittest.mm',
         'alloc_with_zone_interceptor_unittest.mm',
         'browser_state_unittest.cc',
-        'browsing_data_partition_impl_unittest.mm',
-        'crw_browsing_data_store_unittest.mm',
         'crw_network_activity_indicator_manager_unittest.mm',
         'history_state_util_unittest.mm',
         'navigation/crw_session_controller_unittest.mm',

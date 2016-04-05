@@ -77,7 +77,6 @@ void VerifyWKWebViewCreationPreConditions(
     WKWebViewConfiguration* configuration) {
   DCHECK(browser_state);
   DCHECK(configuration);
-  DCHECK(web::BrowsingDataPartition::IsSynchronized());
   WKWebViewConfigurationProvider& config_provider =
       WKWebViewConfigurationProvider::FromBrowserState(browser_state);
   DCHECK_EQ([config_provider.GetWebViewConfiguration() processPool],
