@@ -8,9 +8,12 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/Frame.h"
 #include "core/frame/UseCounter.h"
+#include "core/page/FrameTree.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/credentialmanager/CredentialRequestOptions.h"
@@ -51,6 +54,9 @@ public:
 
     void onSuccess() override
     {
+        Frame* frame = toDocument(m_resolver->getScriptState()->getExecutionContext())->frame();
+        SECURITY_CHECK(frame == frame->tree().top());
+
         m_resolver->resolve();
     }
 
@@ -71,6 +77,9 @@ public:
 
     void onSuccess(WebPassOwnPtr<WebCredential> webCredential) override
     {
+        Frame* frame = toDocument(m_resolver->getScriptState()->getExecutionContext())->frame();
+        SECURITY_CHECK(frame == frame->tree().top());
+
         OwnPtr<WebCredential> credential = webCredential.release();
         if (!credential) {
             m_resolver->resolve();
@@ -105,15 +114,21 @@ CredentialsContainer::CredentialsContainer()
 
 static bool checkBoilerplate(ScriptPromiseResolver* resolver)
 {
-    CredentialManagerClient* client = CredentialManagerClient::from(resolver->getScriptState()->getExecutionContext());
-    if (!client) {
-        resolver->reject(DOMException::create(InvalidStateError, "Could not establish connection to the credential manager."));
+    Frame* frame = toDocument(resolver->getScriptState()->getExecutionContext())->frame();
+    if (!frame || frame != frame->tree().top()) {
+        resolver->reject(DOMException::create(SecurityError, "CredentialContainer methods may only be executed in a top-level document."));
         return false;
     }
 
     String errorMessage;
     if (!resolver->getScriptState()->getExecutionContext()->isSecureContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
+        return false;
+    }
+
+    CredentialManagerClient* client = CredentialManagerClient::from(resolver->getScriptState()->getExecutionContext());
+    if (!client) {
+        resolver->reject(DOMException::create(InvalidStateError, "Could not establish connection to the credential manager."));
         return false;
     }
 
