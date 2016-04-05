@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <systemd/sd-daemon.h>
+#include <sys/socket.h>
 #include <wayland-server.h>
 #include "shared/helpers.h"
 #include "shared/zalloc.h"
@@ -38,6 +39,47 @@ struct systemd_notifier {
 	struct wl_event_source *watchdog_source;
 	struct wl_listener compositor_destroy_listener;
 };
+
+static int
+add_systemd_sockets(struct weston_compositor *compositor)
+{
+	int fd;
+	int cnt_systemd_sockets;
+	int current_fd = 0;
+
+	cnt_systemd_sockets = sd_listen_fds(1);
+
+	if (cnt_systemd_sockets < 0) {
+		weston_log("sd_listen_fds failed with: %d\n",
+				cnt_systemd_sockets);
+		return -1;
+	}
+
+	/* socket-based activation not used, return silently */
+	if (cnt_systemd_sockets == 0)
+		return 0;
+
+	while (current_fd < cnt_systemd_sockets) {
+		fd = SD_LISTEN_FDS_START + current_fd;
+
+		if (sd_is_socket(fd, AF_UNIX, SOCK_STREAM,1) <= 0) {
+			weston_log("invalid socket provided from systemd\n");
+			return -1;
+		}
+
+		if (wl_display_add_socket_fd(compositor->wl_display, fd)) {
+			weston_log("wl_display_add_socket_fd failed"
+					"for systemd provided socket\n");
+			return -1;
+		}
+		current_fd++;
+	}
+
+	weston_log("info: add %d socket(s) provided by systemd\n",
+			current_fd);
+
+	return current_fd;
+}
 
 static int
 watchdog_handler(void *data)
@@ -88,6 +130,9 @@ module_init(struct weston_compositor *compositor,
 		weston_compositor_destroy_listener;
 	wl_signal_add(&compositor->destroy_signal,
 		      &notifier->compositor_destroy_listener);
+
+	if (add_systemd_sockets(compositor) < 0)
+		return -1;
 
 	sd_notify(0, "READY=1");
 

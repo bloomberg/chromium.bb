@@ -634,7 +634,10 @@ AC_ARG_ENABLE(systemd_notify,
               AS_HELP_STRING([--enable-systemd-notify],
                              [Enables systemd notifications to
                               notify systemd about weston state
-                              and update watchdog.]),,
+                              and update watchdog.
+                              Also sockets provided by systemd
+                              in case of socket-base activation
+                              are added to wayland display]),,
               enable_systemd_notify=no)
 AM_CONDITIONAL(SYSTEMD_NOTIFY_SUPPORT, test x$enable_systemd_notify = xyes)
 if test "x$enable_systemd_notify" = "xyes"; then
