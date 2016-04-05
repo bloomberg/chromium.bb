@@ -162,60 +162,98 @@ void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(LayoutSVGText& textRo
         data.y = 0;
 }
 
-static inline void updateCharacterData(unsigned i, float& lastRotation, SVGCharacterData& data, const SVGLengthContext& lengthContext, const SVGLengthList* xList, const SVGLengthList* yList, const SVGLengthList* dxList, const SVGLengthList* dyList, const SVGNumberList* rotateList)
+namespace {
+
+class AttributeListsIterator {
+    STACK_ALLOCATED();
+public:
+    AttributeListsIterator(SVGTextPositioningElement*);
+
+    bool hasAttributes() const
+    {
+        return m_xListRemaining || m_yListRemaining
+            || m_dxListRemaining || m_dyListRemaining
+            || m_rotateListRemaining;
+    }
+    void updateCharacterData(unsigned index, SVGCharacterData&);
+
+    bool hasRotation() const { return !SVGTextLayoutAttributes::isEmptyValue(m_lastRotation); }
+    float lastRotation() const { return m_lastRotation; }
+    unsigned rotateEnd() const { return m_rotateList->length(); }
+
+private:
+    SVGLengthContext m_lengthContext;
+    Member<SVGLengthList> m_xList;
+    unsigned m_xListRemaining;
+    Member<SVGLengthList> m_yList;
+    unsigned m_yListRemaining;
+    Member<SVGLengthList> m_dxList;
+    unsigned m_dxListRemaining;
+    Member<SVGLengthList> m_dyList;
+    unsigned m_dyListRemaining;
+    Member<SVGNumberList> m_rotateList;
+    unsigned m_rotateListRemaining;
+    float m_lastRotation;
+};
+
+AttributeListsIterator::AttributeListsIterator(SVGTextPositioningElement* element)
+    : m_lengthContext(element)
+    , m_xList(element->x()->currentValue())
+    , m_xListRemaining(m_xList->length())
+    , m_yList(element->y()->currentValue())
+    , m_yListRemaining(m_yList->length())
+    , m_dxList(element->dx()->currentValue())
+    , m_dxListRemaining(m_dxList->length())
+    , m_dyList(element->dy()->currentValue())
+    , m_dyListRemaining(m_dyList->length())
+    , m_rotateList(element->rotate()->currentValue())
+    , m_rotateListRemaining(m_rotateList->length())
+    , m_lastRotation(SVGTextLayoutAttributes::emptyValue())
 {
-    if (xList)
-        data.x = xList->at(i)->value(lengthContext);
-    if (yList)
-        data.y = yList->at(i)->value(lengthContext);
-    if (dxList)
-        data.dx = dxList->at(i)->value(lengthContext);
-    if (dyList)
-        data.dy = dyList->at(i)->value(lengthContext);
-    if (rotateList) {
-        data.rotate = rotateList->at(i)->value();
-        lastRotation = data.rotate;
+}
+
+inline void AttributeListsIterator::updateCharacterData(unsigned index, SVGCharacterData& data)
+{
+    if (m_xListRemaining) {
+        data.x = m_xList->at(index)->value(m_lengthContext);
+        --m_xListRemaining;
+    }
+    if (m_yListRemaining) {
+        data.y = m_yList->at(index)->value(m_lengthContext);
+        --m_yListRemaining;
+    }
+    if (m_dxListRemaining) {
+        data.dx = m_dxList->at(index)->value(m_lengthContext);
+        --m_dxListRemaining;
+    }
+    if (m_dyListRemaining) {
+        data.dy = m_dyList->at(index)->value(m_lengthContext);
+        --m_dyListRemaining;
+    }
+    if (m_rotateListRemaining) {
+        data.rotate = m_rotateList->at(index)->value();
+        m_lastRotation = data.rotate;
+        --m_rotateListRemaining;
     }
 }
 
+} // namespace
+
 void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& position)
 {
-    RawPtr<SVGLengthList> xList = position.element->x()->currentValue();
-    RawPtr<SVGLengthList> yList = position.element->y()->currentValue();
-    RawPtr<SVGLengthList> dxList = position.element->dx()->currentValue();
-    RawPtr<SVGLengthList> dyList = position.element->dy()->currentValue();
-    RawPtr<SVGNumberList> rotateList = position.element->rotate()->currentValue();
-
-    unsigned xListSize = xList->length();
-    unsigned yListSize = yList->length();
-    unsigned dxListSize = dxList->length();
-    unsigned dyListSize = dyList->length();
-    unsigned rotateListSize = rotateList->length();
-    if (!xListSize && !yListSize && !dxListSize && !dyListSize && !rotateListSize)
-        return;
-
-    float lastRotation = SVGTextLayoutAttributes::emptyValue();
-    SVGLengthContext lengthContext(position.element);
-    for (unsigned i = 0; i < position.length; ++i) {
-        const SVGLengthList* xListPtr = i < xListSize ? xList.get() : 0;
-        const SVGLengthList* yListPtr = i < yListSize ? yList.get() : 0;
-        const SVGLengthList* dxListPtr = i < dxListSize ? dxList.get() : 0;
-        const SVGLengthList* dyListPtr = i < dyListSize ? dyList.get() : 0;
-        const SVGNumberList* rotateListPtr = i < rotateListSize ? rotateList.get() : 0;
-        if (!xListPtr && !yListPtr && !dxListPtr && !dyListPtr && !rotateListPtr)
-            break;
-
+    AttributeListsIterator attrLists(position.element);
+    for (unsigned i = 0; attrLists.hasAttributes() && i < position.length; ++i) {
         SVGCharacterData& data = m_characterDataMap.add(position.start + i + 1, SVGCharacterData()).storedValue->value;
-        updateCharacterData(i, lastRotation, data, lengthContext, xListPtr, yListPtr, dxListPtr, dyListPtr, rotateListPtr);
+        attrLists.updateCharacterData(i, data);
     }
 
-    // The last rotation value always spans the whole scope.
-    if (SVGTextLayoutAttributes::isEmptyValue(lastRotation))
+    if (!attrLists.hasRotation())
         return;
 
-    for (unsigned i = rotateList->length(); i < position.length; ++i) {
+    // The last rotation value always spans the whole scope.
+    for (unsigned i = attrLists.rotateEnd(); i < position.length; ++i) {
         SVGCharacterData& data = m_characterDataMap.add(position.start + i + 1, SVGCharacterData()).storedValue->value;
-        data.rotate = lastRotation;
+        data.rotate = attrLists.lastRotation();
     }
 }
 
