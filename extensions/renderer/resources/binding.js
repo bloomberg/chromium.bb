@@ -138,7 +138,7 @@ function getPlatform() {
   ];
 
   for (var i = 0; i < platforms.length; i++) {
-    if ($RegExp.test(platforms[i][0], navigator.appVersion)) {
+    if ($RegExp.exec(platforms[i][0], navigator.appVersion)) {
       return platforms[i][1];
     }
   }
@@ -302,15 +302,29 @@ Binding.prototype = {
                 enumValue.name : enumValue;
             if (enumValue) {  // Avoid setting any empty enums.
               // Make all properties in ALL_CAPS_STYLE.
-              // Replace myEnum-Foo with my_Enum-Foo:
-              var propertyName =
-                  $String.replace(enumValue, /([a-z])([A-Z])/g, '$1_$2');
-              // Replace my_Enum-Foo with my_Enum_Foo:
-              propertyName = $String.replace(propertyName, /\W/g, '_');
+              //
+              // The built-in versions of $String.replace call other built-ins,
+              // which may be clobbered. Instead, manually build the property
+              // name.
+              //
               // If the first character is a digit (we know it must be one of
               // a digit, a letter, or an underscore), precede it with an
               // underscore.
-              propertyName = $String.replace(propertyName, /^(\d)/g, '_$1');
+              var propertyName = ($RegExp.exec(/\d/, enumValue[0])) ? '_' : '';
+              for (var i = 0; i < enumValue.length; ++i) {
+                var next;
+                if (i > 0 && $RegExp.exec(/[a-z]/, enumValue[i-1]) &&
+                    $RegExp.exec(/[A-Z]/, enumValue[i])) {
+                  // Replace myEnum-Foo with my_Enum-Foo:
+                  next = '_' + enumValue[i];
+                } else if ($RegExp.exec(/\W/, enumValue[i])) {
+                  // Replace my_Enum-Foo with my_Enum_Foo:
+                  next = '_';
+                } else {
+                  next = enumValue[i];
+                }
+                propertyName += next;
+              }
               // Uppercase (replace my_Enum_Foo with MY_ENUM_FOO):
               propertyName = $String.toUpperCase(propertyName);
               mod[id][propertyName] = enumValue;
