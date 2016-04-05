@@ -46,14 +46,14 @@ public class MultiWindowUtils {
      * @param activity The {@link Activity} to check.
      * @return Whether or not {@code activity} is currently in Android N+ multi-window mode.
      */
-    public boolean isMultiWindow(Activity activity) {
+    public boolean isInMultiWindowMode(Activity activity) {
         if (activity == null) return false;
 
         if (Build.VERSION.CODENAME.equals("N")) {
             try {
-                Method inMultiWindowMethod = Activity.class.getMethod("inMultiWindow");
-                boolean isInMultiWindow = (Boolean) inMultiWindowMethod.invoke(activity);
-                return isInMultiWindow;
+                Method isInMultiWindowModeMethod = Activity.class.getMethod("isInMultiWindowMode");
+                boolean isInMultiWindowMode = (boolean) isInMultiWindowModeMethod.invoke(activity);
+                return isInMultiWindowMode;
             } catch (NoSuchMethodException e) {
                 // Ignore.
             } catch (IllegalAccessException e) {
@@ -74,7 +74,7 @@ public class MultiWindowUtils {
      */
     public boolean isOpenInOtherWindowSupported(Activity activity) {
         // Supported only in multi-window mode and if activity supports side-by-side instances.
-        return isMultiWindow(activity) && getOpenInOtherWindowActivity(activity) != null;
+        return isInMultiWindowMode(activity) && getOpenInOtherWindowActivity(activity) != null;
     }
 
     /**
