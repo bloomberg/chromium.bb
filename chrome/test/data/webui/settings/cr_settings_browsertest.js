@@ -36,7 +36,6 @@ CrSettingsBrowserTest.prototype = {
     'pref_util_tests.js',
     'prefs_test_cases.js',
     'prefs_tests.js',
-    'reset_page_test.js',
   ]),
 
   /** @override */
@@ -68,11 +67,6 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   mocha.run();
 });
 
-TEST_F('CrSettingsBrowserTest', 'ResetPage', function() {
-  settings_reset_page.registerTests();
-  mocha.run();
-});
-
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -94,6 +88,33 @@ CrSettingsRtlTest.prototype = {
 TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
   settingsHidePagesByDefaultForTest = true;
   settings_rtl_tests.registerDrawerPanelTests();
+  mocha.run();
+});
+
+
+/**
+ * Test fixture for chrome/browser/resources/settings/reset_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsResetPageTest() {}
+
+CrSettingsResetPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/reset_page/reset_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'reset_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsResetPageTest', 'ResetPage', function() {
+  settings_reset_page.registerTests();
   mocha.run();
 });
 

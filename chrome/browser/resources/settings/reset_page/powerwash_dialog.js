@@ -11,7 +11,7 @@ Polymer({
   is: 'settings-powerwash-dialog',
 
   open: function() {
-    chrome.send('onPowerwashDialogShow');
+    settings.ResetBrowserProxyImpl.getInstance().onPowerwashDialogShow();
     this.$.dialog.open();
   },
 
@@ -22,6 +22,6 @@ Polymer({
 
   /** @private */
   onRestartTap_: function() {
-    chrome.send('requestFactoryResetRestart');
+    settings.ResetBrowserProxyImpl.getInstance().requestFactoryResetRestart();
   },
 });

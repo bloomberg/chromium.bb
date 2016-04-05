@@ -50,27 +50,28 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   virtual ProfileResetter* GetResetter();
 
   // Javascript callback to start clearing data.
-  void HandleResetProfileSettings(const base::ListValue* value);
+  void HandleResetProfileSettings(const base::ListValue* args);
 
  private:
-  // Closes the dialog once all requested settings has been reset.
-  void OnResetProfileSettingsDone(bool send_feedback);
-
   // Called when the reset profile dialog is shown.
-  void OnShowResetProfileDialog(const base::ListValue* value);
+  void OnShowResetProfileDialog(const base::ListValue* args);
 
   // Called when the reset profile dialog is hidden.
-  void OnHideResetProfileDialog(const base::ListValue* value);
+  void OnHideResetProfileDialog(const base::ListValue* args);
 
   // Called when the reset profile banner is shown.
-  void OnHideResetProfileBanner(const base::ListValue* value);
+  void OnHideResetProfileBanner(const base::ListValue* args);
 
   // Called when BrandcodeConfigFetcher completed fetching settings.
   void OnSettingsFetched();
 
   // Resets profile settings to default values. |send_settings| is true if user
   // gave his consent to upload broken settings to Google for analysis.
-  void ResetProfile(bool send_settings);
+  void ResetProfile(std::string callback_id, bool send_settings);
+
+  // Closes the dialog once all requested settings has been reset.
+  void OnResetProfileSettingsDone(std::string callback_id,
+                                  bool send_feedback);
 
   // Sets new values for the feedback area.
   void UpdateFeedbackUI();

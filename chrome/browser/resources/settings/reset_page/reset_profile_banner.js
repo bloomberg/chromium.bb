@@ -19,7 +19,7 @@ Polymer({
 
   /** @private */
   onCloseTap_: function() {
-    chrome.send('onHideResetProfileBanner');
+    settings.ResetBrowserProxyImpl.getInstance().onHideResetProfileBanner();
     this.remove();
   },
 

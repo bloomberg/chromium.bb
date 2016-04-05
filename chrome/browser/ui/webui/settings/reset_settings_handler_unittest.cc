@@ -86,13 +86,18 @@ class ResetSettingsHandlerTest : public testing::Test {
 
 TEST_F(ResetSettingsHandlerTest, HandleResetProfileSettings) {
   base::ListValue list;
+  std::string expected_callback_id("dummyCallbackId");
+  list.AppendString(expected_callback_id);
   list.AppendBoolean(false);
   handler()->HandleResetProfileSettings(&list);
   // Check that the delegate ProfileResetter was called.
   EXPECT_EQ(1u, handler()->resets());
   // Check that Javascript side is notified after resetting is done.
-  EXPECT_EQ("SettingsResetPage.doneResetting",
+  EXPECT_EQ("cr.webUIResponse",
             web_ui()->call_data()[0]->function_name());
+  std::string callback_id;
+  EXPECT_TRUE(web_ui()->call_data()[0]->arg1()->GetAsString(&callback_id));
+  EXPECT_EQ(expected_callback_id, callback_id);
 }
 
 }  // namespace

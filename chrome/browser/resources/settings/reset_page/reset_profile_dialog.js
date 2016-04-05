@@ -10,41 +10,31 @@
 Polymer({
   is: 'settings-reset-profile-dialog',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     feedbackInfo_: String,
   },
 
-  /** @override */
-  attached: function() {
-    cr.define('SettingsResetPage', function() {
-      return {
-        doneResetting: function() {
-          this.$.resetSpinner.active = false;
-          this.$.dialog.close();
-          this.dispatchResetDoneEvent();
-        }.bind(this),
-
-        setFeedbackInfo: function(data) {
-          this.set('feedbackInfo_', data.feedbackInfo);
-        }.bind(this),
-      };
-    }.bind(this));
-  },
+  /** @private {!settings.ResetBrowserProxy} */
+  browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.addEventListener('iron-overlay-canceled', function() {
-      chrome.send('onHideResetProfileDialog');
-    });
-  },
+    this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
 
-  dispatchResetDoneEvent: function() {
-    this.dispatchEvent(new CustomEvent('reset-done'));
+    this.addEventListener('iron-overlay-canceled', function() {
+      this.browserProxy_.onHideResetProfileDialog();
+    }.bind(this));
+
+    this.addWebUIListener('feedback-info-changed', function(feedbackInfo) {
+      this.feedbackInfo_ = feedbackInfo;
+    }.bind(this));
   },
 
   open: function() {
     this.$.dialog.open();
-    chrome.send('onShowResetProfileDialog');
+    this.browserProxy_.onShowResetProfileDialog();
   },
 
   /** @private */
@@ -55,7 +45,12 @@ Polymer({
   /** @private */
   onResetTap_: function() {
     this.$.resetSpinner.active = true;
-    chrome.send('performResetProfileSettings', [this.$.sendSettings.checked]);
+    this.browserProxy_.performResetProfileSettings(
+        this.$.sendSettings.checked).then(function() {
+      this.$.resetSpinner.active = false;
+      this.$.dialog.close();
+      this.dispatchEvent(new CustomEvent('reset-done'));
+    }.bind(this));
   },
 
   /** @private */
