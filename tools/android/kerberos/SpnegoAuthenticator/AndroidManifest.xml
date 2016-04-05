@@ -9,6 +9,10 @@
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="23" />
 
+    <!--
+      Deprecated permissions. Normal protection level, autogranted. Needed
+      for API level 22 and before.
+    -->
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
 
@@ -27,6 +31,14 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/spnego_authenticator" />
         </service>
+
+        <!-- exported=true needed so that chrome can start the activity -->
+        <activity
+           android:exported="true"
+           android:label="@string/title_activity_account_authenticator"
+           android:name=".SpnegoAuthenticatorActivity"
+           android:noHistory="true">
+       </activity>
     </application>
 
 </manifest>

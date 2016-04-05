@@ -62,14 +62,22 @@ $CHROMIUM_SRC/tools/android/kerberos/negotiate_test_server.py
 
 ### SpnegoAuthenticator
 
-This app declares and sets up an account type to be used for Negotiate auth.
-When Chrome makes a request for the `org.chromium.tools.SpnegoAuthenticator`
-account type, it returns the dummy account, allowing Chrome to continue the
-request.
+This app declares and sets up an accounts to be used for Negotiate auth, as
+described in the chromium.org wiki
+([Writing a SPNEGO Authenticator for Chrome on Android][crwiki]).
+Those accounts use the type `org.chromium.tools.SpnegoAuthenticator`.
 
-See [Writing a SPNEGO Authenticator for Chrome on Android][crwiki] on
-chromium.org for more information.
+![Account administration activity preview][screenshot]
+
+Features:
+
+ -  Set up up to 2 accounts.
+ -  Account 1 will start authenticated.
+ -  Account 2 will start unauthenticated. The first token request will require
+    an additional confirmation step.
+ -  Accounts can be added and removed from the Android account settings screen
 
 [testdpc-play]: https://play.google.com/store/apps/details?id=com.sample.android.testdpc
 [testdpc-gh]: https://github.com/googlesamples/android-testdpc
 [crwiki]:https://sites.google.com/a/chromium.org/dev/developers/design-documents/http-authentication/writing-a-spnego-authenticator-for-chrome-on-android
+[screenshot]:SpnegoAuthenticator/preview.png
