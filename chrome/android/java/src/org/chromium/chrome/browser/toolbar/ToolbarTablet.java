@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -25,12 +28,17 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * The Toolbar object for Tablet screens.
  */
 @SuppressLint("Instantiatable")
 
 public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
+    // The number of toolbar buttons that can be hidden at small widths (reload, back, forward).
+    public static final int HIDEABLE_BUTTON_COUNT = 3;
 
     private TintedImageButton mHomeButton;
     private TintedImageButton mBackButton;
@@ -58,6 +66,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
 
     private final int mStartPaddingWithButtons;
     private final int mStartPaddingWithoutButtons;
+    private boolean mShouldAnimateButtonVisibilityChange;
+    private AnimatorSet mButtonVisibilityAnimators;
 
     /**
      * Constructs a ToolbarTablet object.
@@ -107,6 +117,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
 
         // Initialize values needed for showing/hiding toolbar buttons when the activity size
         // changes.
+        mShouldAnimateButtonVisibilityChange = false;
         mToolbarButtonsVisible = true;
         mToolbarButtons = new TintedImageButton[] {mBackButton, mForwardButton, mReloadButton};
     }
@@ -444,10 +455,21 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     }
 
     @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        // After the first layout, button visibility changes should be animated. On the first
+        // layout, the button visibility shouldn't be animated because the visibility may be
+        // changing solely because Chrome was launched into multi-window.
+        mShouldAnimateButtonVisibilityChange = true;
+
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Hide or show toolbar buttons if needed. With the introduction of multi-window on
         // Android N, the Activity can be < 600dp, in which case the toolbar buttons need to be
-        // moved into the menu so that the location bar is usable.
+        // moved into the menu so that the location bar is usable. The buttons must be shown
+        // in onMeasure() so that the location bar gets measured and laid out correctly.
         setToolbarButtonsVisible(MeasureSpec.getSize(widthMeasureSpec)
                 >= DeviceFormFactor.getMinimumTabletWidthPx(getContext()));
 
@@ -459,19 +481,90 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
 
         mToolbarButtonsVisible = visible;
 
-        for (TintedImageButton button : mToolbarButtons) {
-            button.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (mShouldAnimateButtonVisibilityChange) {
+            runToolbarButtonsVisibilityAnimation(visible);
+        } else {
+            for (TintedImageButton button : mToolbarButtons) {
+                button.setVisibility(visible ? View.VISIBLE : View.GONE);
+            }
+            mLocationBar.setShouldShowButtonsWhenUnfocused(visible);
         }
-
-        mLocationBar.setShouldShowButtonsWhenUnfocused(visible);
 
         boolean buttonsVisible = mHomeButton.getVisibility() == View.VISIBLE
                 || visible;
+
         ApiCompatibilityUtils.setPaddingRelative(this,
                 buttonsVisible ? mStartPaddingWithButtons : mStartPaddingWithoutButtons,
                 getPaddingTop(),
                 ApiCompatibilityUtils.getPaddingEnd(this),
                 getPaddingBottom());
+    }
+
+    private void runToolbarButtonsVisibilityAnimation(boolean visible) {
+        if (mButtonVisibilityAnimators != null) mButtonVisibilityAnimators.cancel();
+
+        mButtonVisibilityAnimators = visible ? buildShowToolbarButtonsAnimation()
+                : buildHideToolbarButtonsAniamtion();
+        mButtonVisibilityAnimators.start();
+    }
+
+    private AnimatorSet buildShowToolbarButtonsAnimation() {
+        Collection<Animator> animators = new ArrayList<>();
+
+        // Create animators for all of the toolbar buttons.
+        for (TintedImageButton button : mToolbarButtons) {
+            animators.add(mLocationBar.createShowButtonAnimator(button));
+        }
+
+        // Add animators for location bar.
+        animators.addAll(mLocationBar.getShowButtonsWhenUnfocusedAnimators());
+
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animators);
+
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                for (TintedImageButton button : mToolbarButtons) {
+                    button.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mButtonVisibilityAnimators = null;
+            }
+        });
+
+        return set;
+    }
+
+    private AnimatorSet buildHideToolbarButtonsAniamtion() {
+        Collection<Animator> animators = new ArrayList<>();
+
+        // Create animators for all of the toolbar buttons.
+        for (TintedImageButton button : mToolbarButtons) {
+            animators.add(mLocationBar.createHideButtonAnimator(button));
+        }
+
+        // Add animators for location bar.
+        animators.addAll(mLocationBar.getHideButtonsWhenUnfocusedAnimators());
+
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animators);
+
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                for (TintedImageButton button : mToolbarButtons) {
+                    button.setVisibility(View.GONE);
+                    button.setAlpha(1.f);
+                }
+                mButtonVisibilityAnimators = null;
+            }
+        });
+
+        return set;
     }
 
 }

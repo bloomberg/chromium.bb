@@ -19,7 +19,13 @@ import android.view.WindowManager;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.toolbar.ToolbarTablet;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Location bar for tablet form factors.
@@ -28,6 +34,11 @@ public class LocationBarTablet extends LocationBarLayout {
 
     private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
     private static final long MAX_NTP_KEYBOARD_FOCUS_DURATION_MS = 200;
+
+    private static final int ICON_FADE_ANIMATION_DURATION_MS = 150;
+    private static final int ICON_FADE_ANIMATION_DELAY_MS = 75;
+    private static final int WIDTH_CHANGE_ANIMATION_DURATION_MS = 225;
+    private static final int WIDTH_CHANGE_ANIMATION_DELAY_MS = 75;
 
     private final Property<LocationBarTablet, Float> mUrlFocusChangePercentProperty =
             new Property<LocationBarTablet, Float>(Float.class, "") {
@@ -42,6 +53,19 @@ public class LocationBarTablet extends LocationBarLayout {
                 }
             };
 
+    private final Property<LocationBarTablet, Float> mWidthChangePercentProperty =
+            new Property<LocationBarTablet, Float>(Float.class, "") {
+                @Override
+                public Float get(LocationBarTablet object) {
+                    return object.mWidthChangePercent;
+                }
+
+                @Override
+                public void set(LocationBarTablet object, Float value) {
+                    setWidthChangeAnimationPercent(value);
+                }
+            };
+
     private final Runnable mKeyboardResizeModeTask = new Runnable() {
         @Override
         public void run() {
@@ -50,6 +74,7 @@ public class LocationBarTablet extends LocationBarLayout {
         }
     };
 
+    private View mLocationBarIcon;
     private View mBookmarkButton;
     private float mUrlFocusChangePercent;
     private Animator mUrlFocusChangeAnimator;
@@ -61,6 +86,14 @@ public class LocationBarTablet extends LocationBarLayout {
     private boolean mShouldShowButtonsWhenUnfocused;
     private final int mUrlContainerEndPaddingWithButtons;
     private final int mUrlContainerEndPaddingWithoutButtons;
+
+    // Variables needed for animating the location bar and toolbar buttons hiding/showing.
+    private final int mToolbarButtonsWidth;
+    private final int mMicButtonWidth;
+    private boolean mAnimatingWidthChange;
+    private float mWidthChangePercent;
+    private float mLayoutLeft;
+    private float mLayoutRight;
 
     /**
      * Constructor used to inflate from XML.
@@ -74,11 +107,17 @@ public class LocationBarTablet extends LocationBarLayout {
         mUrlContainerEndPaddingWithButtons = 0;
         mUrlContainerEndPaddingWithoutButtons = getResources().getDimensionPixelOffset(
                 R.dimen.toolbar_edge_padding);
+
+        mToolbarButtonsWidth = getResources().getDimensionPixelOffset(R.dimen.toolbar_button_width)
+                * ToolbarTablet.HIDEABLE_BUTTON_COUNT;
+        mMicButtonWidth = getResources().getDimensionPixelOffset(R.dimen.location_bar_icon_width);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
+        mLocationBarIcon = findViewById(R.id.location_bar_icon);
 
         mBookmarkButton = findViewById(R.id.bookmark_button);
         mTargets = new View[] { mUrlBar, mDeleteButton };
@@ -258,5 +297,227 @@ public class LocationBarTablet extends LocationBarLayout {
         mBookmarkButton.setLayoutParams(bookmarkLayoutParams);
 
         super.updateLayoutParams();
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        mLayoutLeft = left;
+        mLayoutRight = right;
+
+        if (mAnimatingWidthChange) {
+            setWidthChangeAnimationPercent(mWidthChangePercent);
+        }
+    }
+
+    /**
+     * @param button The {@link View} of the button to show.
+     * @return An animator to run for the given view when showing buttons in the unfocused location
+     *         bar. This should also be used to create animators for showing toolbar buttons.
+     */
+    public ObjectAnimator createShowButtonAnimator(View button) {
+        if (button.getVisibility() != View.VISIBLE) {
+            button.setAlpha(0.f);
+        }
+        ObjectAnimator buttonAnimator = ObjectAnimator.ofFloat(button, View.ALPHA, 1.f);
+        buttonAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+        buttonAnimator.setStartDelay(ICON_FADE_ANIMATION_DELAY_MS);
+        buttonAnimator.setDuration(ICON_FADE_ANIMATION_DURATION_MS);
+        return buttonAnimator;
+    }
+
+    /**
+     * @param button The {@link View} of the button to hide.
+     * @return An animator to run for the given view when hiding buttons in the unfocused location
+     *         bar. This should also be used to create animators for hiding toolbar buttons.
+     */
+    public ObjectAnimator createHideButtonAnimator(View button) {
+        ObjectAnimator buttonAnimator = ObjectAnimator.ofFloat(button, View.ALPHA, 0.f);
+        buttonAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+        buttonAnimator.setDuration(ICON_FADE_ANIMATION_DURATION_MS);
+        return buttonAnimator;
+    }
+
+    /**
+     * Creates animators for showing buttons in the unfocused location bar. The buttons fade in
+     * while width of the location bar gets smaller. There are toolbar buttons that also show at
+     * the same time, causing the width of the location bar to change.
+     *
+     * @return An ArrayList of animators to run.
+     */
+    public List<Animator> getShowButtonsWhenUnfocusedAnimators() {
+        ArrayList<Animator> animators = new ArrayList<>();
+
+        Animator widthChangeAnimator = ObjectAnimator.ofFloat(
+                this, mWidthChangePercentProperty, 0f);
+        widthChangeAnimator.setDuration(WIDTH_CHANGE_ANIMATION_DURATION_MS);
+        widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        widthChangeAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mAnimatingWidthChange = true;
+                setShouldShowButtonsWhenUnfocused(true);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Only reset values if the animation is ending because it's completely finished
+                // and not because it was canceled.
+                if (mWidthChangePercent == 0.f) {
+                    mAnimatingWidthChange = false;
+                    resetValuesAfterAnimation();
+                }
+            }
+        });
+        animators.add(widthChangeAnimator);
+
+        // When buttons show in the unfocused location bar, either the delete button or bookmark
+        // button will be showing. If the delete button is currently showing, the bookmark button
+        // should not fade in.
+        if (mDeleteButton.getVisibility() != View.VISIBLE) {
+            animators.add(createShowButtonAnimator(mBookmarkButton));
+        }
+
+        // If the microphone button is already fully visible, don't animate its appearance.
+        if (mMicButton.getVisibility() != View.VISIBLE || mMicButton.getAlpha() != 1.f) {
+            animators.add(createShowButtonAnimator(mMicButton));
+        }
+
+        return animators;
+    }
+
+    /**
+     * Creates animators for hiding buttons in the unfocused location bar. The buttons fade out
+     * while width of the location bar gets larger. There are toolbar buttons that also hide at the
+     * same time, causing the width of the location bar to change.
+     *
+     * @return An ArrayList of animators to run.
+     */
+    public List<Animator> getHideButtonsWhenUnfocusedAnimators() {
+        ArrayList<Animator> animators = new ArrayList<>();
+
+        Animator widthChangeAnimator =
+                ObjectAnimator.ofFloat(this, mWidthChangePercentProperty, 1f);
+        widthChangeAnimator.setStartDelay(WIDTH_CHANGE_ANIMATION_DELAY_MS);
+        widthChangeAnimator.setDuration(WIDTH_CHANGE_ANIMATION_DURATION_MS);
+        widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        widthChangeAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mAnimatingWidthChange = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Only reset values if the animation is ending because it's completely finished
+                // and not because it was canceled.
+                if (mWidthChangePercent == 1.f) {
+                    mAnimatingWidthChange = false;
+                    resetValuesAfterAnimation();
+                    setShouldShowButtonsWhenUnfocused(false);
+                }
+            }
+        });
+        animators.add(widthChangeAnimator);
+
+        // When buttons show in the unfocused location bar, either the delete button or bookmark
+        // button will be showing. If the delete button is currently showing, the bookmark button
+        // should not fade out.
+        if (mDeleteButton.getVisibility() != View.VISIBLE) {
+            animators.add(createHideButtonAnimator(mBookmarkButton));
+        }
+
+        // The microphone button always shows when buttons are shown in the unfocused location
+        // bar. When buttons are hidden in the unfocused location bar, the microphone shows if
+        // the location bar is focused and the delete button isn't showing. The microphone button
+        // should not be hidden if the url bar is currently focused and the delete button isn't
+        // showing.
+        if (!(mUrlBar.isFocused() && mDeleteButton.getVisibility() != View.VISIBLE)) {
+            animators.add(createHideButtonAnimator(mMicButton));
+        }
+
+        return animators;
+    }
+
+    /**
+     * Resets the alpha and translation X for all views affected by the animations for showing or
+     * hiding buttons.
+     */
+    private void resetValuesAfterAnimation() {
+        mMicButton.setTranslationX(0);
+        mDeleteButton.setTranslationX(0);
+        mBookmarkButton.setTranslationX(0);
+        mLocationBarIcon.setTranslationX(0);
+        mUrlContainer.setTranslationX(0);
+
+        mMicButton.setAlpha(1.f);
+        mDeleteButton.setAlpha(1.f);
+        mBookmarkButton.setAlpha(1.f);
+    }
+
+    /**
+     * Updates completion percentage for the location bar width change animation.
+     * @param percent How complete the animation is, where 0 represents the normal width (toolbar
+     *                buttons fully visible) and 1.f represents the expanded width (toolbar buttons
+     *                fully hidden).
+     */
+    private void setWidthChangeAnimationPercent(float percent) {
+        mWidthChangePercent = percent;
+        float offset = mToolbarButtonsWidth * percent;
+
+        if (LocalizationUtils.isLayoutRtl()) {
+            // The location bar's right edge is its regular layout position when toolbar buttons are
+            // completely visible and its layout position + mToolbarButtonsWidth when toolbar
+            // buttons are completely hidden.
+            setRight((int) (mLayoutRight + offset));
+        } else {
+            // The location bar's left edge is it's regular layout position when toolbar buttons are
+            // completely visible and its layout position - mToolbarButtonsWidth when they are
+            // completely hidden.
+            setLeft((int) (mLayoutLeft - offset));
+        }
+
+        // As the location bar's right edge moves right (increases) or left edge moves left
+        // (decreases), the child views' translation X increases, keeping them visually in the same
+        // location for the duration of the animation.
+        int deleteOffset = (int) (mMicButtonWidth * percent);
+        setChildTranslationsForWidthChangeAnimation((int) offset, deleteOffset);
+    }
+
+    /**
+     * Sets the translation X values for child views during the width change animation. This
+     * compensates for the change to the left/right position of the location bar and ensures child
+     * views stay in the same spot visually during the animation.
+     *
+     * The delete button is special because if it's visible during the animation its start and end
+     * location are not the same. When buttons are shown in the unfocused location bar, the delete
+     * button is left of the microphone. When buttons are not shown in the unfocused location bar,
+     * the delete button is aligned with the left edge of the location bar.
+     *
+     * @param offset The offset to use for the child views.
+     * @param deleteOffset The additional offset to use for the delete button.
+     */
+    private void setChildTranslationsForWidthChangeAnimation(int offset, int deleteOffset) {
+        if (!ApiCompatibilityUtils.isLayoutRtl(this)) {
+            // When the location bar layout direction is LTR, the buttons at the end (left side)
+            // of the location bar need to stick to the left edge.
+            mMicButton.setTranslationX(offset);
+
+            if (mDeleteButton.getVisibility() == View.VISIBLE) {
+                mDeleteButton.setTranslationX(offset + deleteOffset);
+            } else {
+                mBookmarkButton.setTranslationX(offset);
+            }
+        } else {
+            // When the location bar layout direction is RTL, the location bar icon and url
+            // container at the start (right side) of the location bar need to stick to the right
+            // edge.
+            mLocationBarIcon.setTranslationX(offset);
+            mUrlContainer.setTranslationX(offset);
+
+            if (mDeleteButton.getVisibility() == View.VISIBLE) {
+                mDeleteButton.setTranslationX(-deleteOffset);
+            }
+        }
     }
 }

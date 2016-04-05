@@ -42,7 +42,7 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/delete_button"
         style="@style/LocationBarButton"
-        android:layout_width="40dp"
+        android:layout_width="@dimen/location_bar_icon_width"
         android:layout_height="match_parent"
         android:scaleType="center"
         android:layout_marginEnd="44dp"
@@ -54,7 +54,7 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/bookmark_button"
         style="@style/LocationBarButton"
-        android:layout_width="40dp"
+        android:layout_width="@dimen/location_bar_icon_width"
         android:layout_height="match_parent"
         android:scaleType="center"
         android:layout_marginEnd="40dp"
@@ -65,7 +65,7 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/mic_button"
         style="@style/LocationBarButton"
-        android:layout_width="40dp"
+        android:layout_width="@dimen/location_bar_icon_width"
         android:layout_height="match_parent"
         android:scaleType="center"
         android:layout_gravity="end"
