@@ -164,21 +164,21 @@ FrameView::FrameView(LocalFrame* frame)
     init();
 }
 
-RawPtr<FrameView> FrameView::create(LocalFrame* frame)
+FrameView* FrameView::create(LocalFrame* frame)
 {
-    RawPtr<FrameView> view = new FrameView(frame);
+    FrameView* view = new FrameView(frame);
     view->show();
-    return view.release();
+    return view;
 }
 
-RawPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initialSize)
+FrameView* FrameView::create(LocalFrame* frame, const IntSize& initialSize)
 {
-    RawPtr<FrameView> view = new FrameView(frame);
+    FrameView* view = new FrameView(frame);
     view->Widget::setFrameRect(IntRect(view->location(), initialSize));
     view->setLayoutSizeInternal(initialSize);
 
     view->show();
-    return view.release();
+    return view;
 }
 
 FrameView::~FrameView()
@@ -495,7 +495,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
     return false;
 }
 
-RawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
+Scrollbar* FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
     Element* customScrollbarElement = nullptr;
     LocalFrame* customScrollbarFrame = nullptr;
@@ -756,7 +756,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // FrameView for a layout. After that the LayoutEmbeddedObject (ownerLayoutObject) carries the
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
-    RawPtr<FrameView> frameView = ownerLayoutObject->frame()->view();
+    FrameView* frameView = ownerLayoutObject->frame()->view();
 
     // Mark the owner layoutObject as needing layout.
     ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
@@ -924,9 +924,6 @@ void FrameView::layout()
 
     TRACE_EVENT0("blink,benchmark", "FrameView::layout");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
-
-    // Protect the view from being deleted during layout (in recalcStyle)
-    RawPtr<FrameView> protector(this);
 
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
@@ -1610,8 +1607,6 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     if (!hasViewportConstrainedObjects())
         return;
 
-    RawPtr<FrameView> protect(this);
-
     // If there fixed position elements, scrolling may cause compositing layers to change.
     // Update widget and layer positions after scrolling, but only if we're not inside of
     // layout.
@@ -1906,7 +1901,7 @@ void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool t
 
 void FrameView::scrollToFragmentAnchor()
 {
-    RawPtr<Node> anchorNode = m_fragmentAnchor;
+    Node* anchorNode = m_fragmentAnchor;
     if (!anchorNode)
         return;
 
@@ -1924,21 +1919,21 @@ void FrameView::scrollToFragmentAnchor()
                 rect = documentElement->boundingBox();
         }
 
-        RawPtr<Frame> boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
+        Frame* boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
 
         // FIXME: Handle RemoteFrames
         if (boundaryFrame && boundaryFrame->isLocalFrame())
-            toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
+            toLocalFrame(boundaryFrame)->view()->setSafeToPropagateScrollToParent(false);
 
         // Scroll nested layers and frames to reveal the anchor.
         // Align to the top and to the closest side (this matches other browsers).
         anchorNode->layoutObject()->scrollRectToVisible(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
 
         if (boundaryFrame && boundaryFrame->isLocalFrame())
-            toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
+            toLocalFrame(boundaryFrame)->view()->setSafeToPropagateScrollToParent(true);
 
         if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
-            cache->handleScrolledToAnchor(anchorNode.get());
+            cache->handleScrolledToAnchor(anchorNode);
     }
 
     // The fragment anchor should only be maintained while the frame is still loading.
@@ -1988,7 +1983,6 @@ bool FrameView::updateWidgets()
 void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
 {
     ASSERT(!isInPerformLayout());
-    RawPtr<FrameView> protect(this);
     m_updateWidgetsTimer.stop();
     for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
         if (updateWidgets())
@@ -2021,7 +2015,6 @@ void FrameView::performPostLayoutTasks()
     // We should ASSERT(isActive()); or at least return early if we can!
     ASSERT(!isInPerformLayout()); // Always before or after performLayout(), part of the highest-level layout() call.
     TRACE_EVENT0("blink,benchmark", "FrameView::performPostLayoutTasks");
-    RawPtr<FrameView> protect(this);
 
     m_postLayoutTasksTimer.stop();
 
@@ -2412,9 +2405,6 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
     ASSERT(m_frame->isLocalRoot());
-
-    // Updating layout can run script, which can tear down the FrameView.
-    RawPtr<FrameView> protector(this);
 
     if (shouldThrottleRendering()) {
         updateViewportIntersectionsForSubtree(std::min(phases, OnlyUpToCompositingCleanPlusScrolling));
@@ -3065,12 +3055,11 @@ IntPoint FrameView::maximumScrollPosition() const
     return maximumPosition.expandedTo(minimumScrollPosition());
 }
 
-void FrameView::addChild(RawPtr<Widget> prpChild)
+void FrameView::addChild(Widget* child)
 {
-    Widget* child = prpChild.get();
     ASSERT(child != this && !child->parent());
     child->setParent(this);
-    m_children.add(prpChild);
+    m_children.add(child);
 }
 
 void FrameView::setHasHorizontalScrollbar(bool hasBar)

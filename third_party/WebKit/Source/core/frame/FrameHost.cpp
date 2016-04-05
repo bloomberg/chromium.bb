@@ -40,7 +40,7 @@
 
 namespace blink {
 
-RawPtr<FrameHost> FrameHost::create(Page& page)
+FrameHost* FrameHost::create(Page& page)
 {
     return new FrameHost(page);
 }

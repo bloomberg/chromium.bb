@@ -94,7 +94,7 @@ void DeviceOrientationController::unregisterWithDispatcher()
     dispatcherInstance().removeController(this);
 }
 
-RawPtr<Event> DeviceOrientationController::lastEvent() const
+Event* DeviceOrientationController::lastEvent() const
 {
     return DeviceOrientationEvent::create(eventTypeName(), lastData());
 }

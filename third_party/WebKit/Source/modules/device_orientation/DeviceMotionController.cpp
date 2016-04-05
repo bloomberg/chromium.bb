@@ -82,7 +82,7 @@ void DeviceMotionController::unregisterWithDispatcher()
     DeviceMotionDispatcher::instance().removeController(this);
 }
 
-RawPtr<Event> DeviceMotionController::lastEvent() const
+Event* DeviceMotionController::lastEvent() const
 {
     return DeviceMotionEvent::create(EventTypeNames::devicemotion, DeviceMotionDispatcher::instance().latestDeviceMotionData());
 }

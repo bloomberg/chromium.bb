@@ -214,11 +214,11 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     else if (MixedContentChecker::isMixedContent(frame()->securityContext()->getSecurityOrigin(), sourceDocument->url()))
         UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
 
-    RawPtr<MessageEvent> event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source, sourceSuborigin);
+    MessageEvent* event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source, sourceSuborigin);
     // Give the embedder a chance to intercept this postMessage.  If the
     // target is a remote frame, the message will be forwarded through the
     // browser process.
-    if (frame()->client()->willCheckAndDispatchMessageEvent(target.get(), event.get(), source->document()->frame()))
+    if (frame()->client()->willCheckAndDispatchMessageEvent(target.get(), event, source->document()->frame()))
         return;
 
     // Capture stack trace only when inspector front-end is loaded as it may be time consuming.

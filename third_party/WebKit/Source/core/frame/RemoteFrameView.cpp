@@ -20,11 +20,11 @@ RemoteFrameView::~RemoteFrameView()
 {
 }
 
-RawPtr<RemoteFrameView> RemoteFrameView::create(RemoteFrame* remoteFrame)
+RemoteFrameView* RemoteFrameView::create(RemoteFrame* remoteFrame)
 {
-    RawPtr<RemoteFrameView> view = new RemoteFrameView(remoteFrame);
+    RemoteFrameView* view = new RemoteFrameView(remoteFrame);
     view->show();
-    return view.release();
+    return view;
 }
 
 void RemoteFrameView::dispose()

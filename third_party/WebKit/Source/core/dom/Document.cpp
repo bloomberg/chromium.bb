@@ -5063,7 +5063,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         enforceSuborigin(*getSecurityOrigin()->suborigin());
 }
 
-void Document::initContentSecurityPolicy(RawPtr<ContentSecurityPolicy> csp)
+void Document::initContentSecurityPolicy(ContentSecurityPolicy* csp)
 {
     setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
     if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame()) {

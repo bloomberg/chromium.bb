@@ -117,14 +117,14 @@ String Location::origin() const
     return DOMURLUtilsReadOnly::origin(url());
 }
 
-RawPtr<DOMStringList> Location::ancestorOrigins() const
+DOMStringList* Location::ancestorOrigins() const
 {
-    RawPtr<DOMStringList> origins = DOMStringList::create(DOMStringList::Location);
+    DOMStringList* origins = DOMStringList::create(DOMStringList::Location);
     if (!m_frame)
-        return origins.release();
+        return origins;
     for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent())
         origins->append(frame->securityContext()->getSecurityOrigin()->toString());
-    return origins.release();
+    return origins;
 }
 
 String Location::hash() const

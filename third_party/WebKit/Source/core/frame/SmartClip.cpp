@@ -69,7 +69,7 @@ const String& SmartClipData::clipData() const
     return m_string;
 }
 
-SmartClip::SmartClip(RawPtr<LocalFrame> frame)
+SmartClip::SmartClip(LocalFrame* frame)
     : m_frame(frame)
 {
 }

@@ -33,9 +33,9 @@ protected:
 
     Document& document() const { return *m_document; }
 
-    void dispatchDeviceEvent(const RawPtr<Event>);
+    void dispatchDeviceEvent(Event*);
 
-    virtual RawPtr<Event> lastEvent() const = 0;
+    virtual Event* lastEvent() const = 0;
     virtual const AtomicString& eventTypeName() const = 0;
     virtual bool isNullEvent(Event*) const = 0;
 

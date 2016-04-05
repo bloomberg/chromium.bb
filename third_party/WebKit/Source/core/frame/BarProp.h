@@ -45,7 +45,7 @@ class BarProp final : public GarbageCollected<BarProp>, public ScriptWrappable, 
 public:
     enum Type { Locationbar, Menubar, Personalbar, Scrollbars, Statusbar, Toolbar };
 
-    static RawPtr<BarProp> create(LocalFrame* frame, Type type)
+    static BarProp* create(LocalFrame* frame, Type type)
     {
         return new BarProp(frame, type);
     }

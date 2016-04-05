@@ -81,20 +81,20 @@ protected:
 TEST_F(ImageBitmapTest, ImageResourceConsistency)
 {
     const ImageBitmapOptions defaultOptions;
-    RawPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
-    RawPtr<ImageResource> image = ImageResource::create(StaticBitmapImage::create(m_image).get());
-    imageElement->setImageResource(image.get());
+    HTMLImageElement* imageElement = HTMLImageElement::create(*Document::create().get());
+    ImageResource* image = ImageResource::create(StaticBitmapImage::create(m_image).get());
+    imageElement->setImageResource(image);
 
-    RawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(),
+    ImageBitmap* imageBitmapNoCrop = ImageBitmap::create(imageElement,
         IntRect(0, 0, m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
-    RawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(),
+    ImageBitmap* imageBitmapInteriorCrop = ImageBitmap::create(imageElement,
         IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width() / 2, m_image->height() / 2),
         &(imageElement->document()), defaultOptions);
-    RawPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(),
+    ImageBitmap* imageBitmapExteriorCrop = ImageBitmap::create(imageElement,
         IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
-    RawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(),
+    ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(imageElement,
         IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
 
@@ -109,20 +109,20 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 {
-    RawPtr<HTMLImageElement> image = HTMLImageElement::create(*Document::create().get());
-    RawPtr<ImageResource> originalImageResource = ImageResource::create(
+    HTMLImageElement* image = HTMLImageElement::create(*Document::create().get());
+    ImageResource* originalImageResource = ImageResource::create(
         StaticBitmapImage::create(m_image).get());
-    image->setImageResource(originalImageResource.get());
+    image->setImageResource(originalImageResource);
 
     const ImageBitmapOptions defaultOptions;
-    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(),
+    ImageBitmap* imageBitmap = ImageBitmap::create(image,
         IntRect(0, 0, m_image->width(), m_image->height()),
         &(image->document()), defaultOptions);
     ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
 
-    RawPtr<ImageResource> newImageResource = ImageResource::create(
+    ImageResource* newImageResource = ImageResource::create(
         StaticBitmapImage::create(m_image2).get());
-    image->setImageResource(newImageResource.get());
+    image->setImageResource(newImageResource);
 
     // The ImageBitmap should contain the same data as the original cached image
     {

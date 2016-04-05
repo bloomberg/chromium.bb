@@ -44,7 +44,7 @@ private:
     bool hasLastData() override;
 
     // Inherited from DeviceSingleWindowEventController.
-    RawPtr<Event> lastEvent() const override;
+    Event* lastEvent() const override;
     const AtomicString& eventTypeName() const override;
     bool isNullEvent(Event*) const override;
 

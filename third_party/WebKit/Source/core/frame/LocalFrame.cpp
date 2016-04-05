@@ -165,14 +165,14 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 } // namespace
 
-RawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
+LocalFrame* LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
-    RawPtr<LocalFrame> frame = new LocalFrame(client, host, owner);
-    InspectorInstrumentation::frameAttachedToParent(frame.get());
-    return frame.release();
+    LocalFrame* frame = new LocalFrame(client, host, owner);
+    InspectorInstrumentation::frameAttachedToParent(frame);
+    return frame;
 }
 
-void LocalFrame::setView(RawPtr<FrameView> view)
+void LocalFrame::setView(FrameView* view)
 {
     ASSERT(!m_view || m_view != view);
     ASSERT(!document() || !document()->isActive());
@@ -196,7 +196,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
 
     setView(nullptr);
 
-    RawPtr<FrameView> frameView = nullptr;
+    FrameView* frameView = nullptr;
     if (isLocalRoot) {
         frameView = FrameView::create(this, viewportSize);
 
@@ -316,9 +316,6 @@ void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedir
 void LocalFrame::detach(FrameDetachType type)
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
-    // A lot of the following steps can result in the current frame being
-    // detached, so protect a reference to it.
-    RawPtr<LocalFrame> protect(this);
     m_loader.stopAllLoaders();
     // Don't allow any new child frames to load in this frame: attaching a new
     // child frame during or after detaching children results in an attached
@@ -408,7 +405,7 @@ void LocalFrame::willDetachFrameHost()
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 }
 
-void LocalFrame::setDOMWindow(RawPtr<LocalDOMWindow> domWindow)
+void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow)
 {
     // Oilpan: setDOMWindow() cannot be used when finalizing. Which
     // is acceptable as its actions are either not needed or handled
@@ -521,9 +518,9 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
     }
 
     // Subframes of the one we're printing don't lay out to the page size.
-    for (RawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child.get())->setPrinting(printing, FloatSize(), FloatSize(), 0);
+            toLocalFrame(child)->setPrinting(printing, FloatSize(), FloatSize(), 0);
     }
 }
 
@@ -598,9 +595,9 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
     m_pageZoomFactor = pageZoomFactor;
     m_textZoomFactor = textZoomFactor;
 
-    for (RawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child.get())->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
+            toLocalFrame(child)->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
     }
 
     document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Zoom));
@@ -610,9 +607,9 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
 void LocalFrame::deviceScaleFactorChanged()
 {
     document()->mediaQueryAffectingValueChanged();
-    for (RawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child.get())->deviceScaleFactorChanged();
+            toLocalFrame(child)->deviceScaleFactorChanged();
     }
 }
 

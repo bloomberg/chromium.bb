@@ -57,7 +57,7 @@ public:
 
 protected:
     ExecutionContext* context() override;
-    void reportMessageToConsole(RawPtr<ConsoleMessage>) override;
+    void reportMessageToConsole(ConsoleMessage*) override;
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);

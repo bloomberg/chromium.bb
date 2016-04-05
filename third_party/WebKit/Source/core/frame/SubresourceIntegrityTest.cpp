@@ -150,16 +150,16 @@ protected:
     void expectIntegrity(const char* integrity, const char* script, size_t size, const KURL& url, const KURL& requestorUrl, CorsStatus corsStatus = WithCors)
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus).get()));
+        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus)));
     }
 
     void expectIntegrityFailure(const char* integrity, const char* script, size_t size, const KURL& url, const KURL& requestorUrl, CorsStatus corsStatus = WithCors)
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus).get()));
+        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus)));
     }
 
-    RawPtr<Resource> createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
+    Resource* createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
     {
         ResourceResponse response;
         response.setURL(url);
@@ -168,7 +168,7 @@ protected:
             response.setHTTPHeaderField("access-control-allow-origin", SecurityOrigin::create(allowOriginUrl)->toAtomicString());
             response.setHTTPHeaderField("access-control-allow-credentials", "true");
         }
-        RawPtr<Resource> resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
+        Resource* resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
         resource->setResponse(response);
         return resource;
     }

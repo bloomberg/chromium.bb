@@ -18,7 +18,7 @@ class FrameView;
 class FrameViewAutoSizeInfo final : public GarbageCollected<FrameViewAutoSizeInfo> {
     WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
 public:
-    static RawPtr<FrameViewAutoSizeInfo> create(FrameView* frameView)
+    static FrameViewAutoSizeInfo* create(FrameView* frameView)
     {
         return new FrameViewAutoSizeInfo(frameView);
     }

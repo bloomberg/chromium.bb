@@ -344,43 +344,43 @@ ImageBitmap::~ImageBitmap()
 {
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return new ImageBitmap(image, normalizedCropRect, document, options);
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return new ImageBitmap(video, normalizedCropRect, document, options);
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return new ImageBitmap(canvas, normalizedCropRect, options);
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return new ImageBitmap(data, normalizedCropRect, options);
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return new ImageBitmap(bitmap, normalizedCropRect, options);
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return new ImageBitmap(image, normalizedCropRect, options);
 }
 
-RawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
+ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
 {
     return new ImageBitmap(image);
 }

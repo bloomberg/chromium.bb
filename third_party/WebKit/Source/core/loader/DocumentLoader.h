@@ -117,7 +117,7 @@ public:
     void clearRedirectChain();
     void appendRedirect(const KURL&);
 
-    RawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+    ContentSecurityPolicy* releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
     ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 

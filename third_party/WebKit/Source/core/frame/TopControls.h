@@ -21,7 +21,7 @@ class FloatSize;
 // complete (i.e, upon ScrollEnd or FlingEnd).
 class CORE_EXPORT TopControls final : public GarbageCollectedFinalized<TopControls> {
 public:
-    static RawPtr<TopControls> create(const FrameHost& host)
+    static TopControls* create(const FrameHost& host)
     {
         return new TopControls(host);
     }

@@ -15,7 +15,7 @@ class RemoteFrame;
 
 class RemoteFrameView final : public Widget {
 public:
-    static RawPtr<RemoteFrameView> create(RemoteFrame*);
+    static RemoteFrameView* create(RemoteFrame*);
 
     ~RemoteFrameView() override;
 

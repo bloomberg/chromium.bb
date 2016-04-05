@@ -25,7 +25,7 @@ class ContentSecurityPolicy;
 class CSPDirectiveList : public GarbageCollectedFinalized<CSPDirectiveList> {
     WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
 public:
-    static RawPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+    static CSPDirectiveList* create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     void parse(const UChar* begin, const UChar* end);
 

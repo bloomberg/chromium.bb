@@ -70,7 +70,7 @@ class CORE_EXPORT VisualViewport final
     USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<VisualViewport> create(FrameHost& host)
+    static VisualViewport* create(FrameHost& host)
     {
         return new VisualViewport(host);
     }

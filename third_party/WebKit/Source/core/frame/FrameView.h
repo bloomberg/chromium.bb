@@ -91,8 +91,8 @@ class CORE_EXPORT FrameView final : public Widget, public PaintInvalidationCapab
     friend class LayoutPart; // for invalidateTreeIfNeeded
 
 public:
-    static RawPtr<FrameView> create(LocalFrame*);
-    static RawPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
+    static FrameView* create(LocalFrame*);
+    static FrameView* create(LocalFrame*, const IntSize& initialSize);
 
     ~FrameView() override;
 
@@ -111,7 +111,7 @@ public:
 
     void setCanHaveScrollbars(bool);
 
-    RawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+    Scrollbar* createScrollbar(ScrollbarOrientation);
 
     void setContentsSize(const IntSize&);
 
@@ -396,7 +396,7 @@ public:
     // Functions for child manipulation and inspection.
     void setParent(Widget*) override;
     void removeChild(Widget*);
-    void addChild(RawPtr<Widget>);
+    void addChild(Widget*);
     const ChildrenWidgetSet* children() const { return &m_children; }
 
     // If the scroll view does not use a native widget, then it will have cross-platform Scrollbars. These functions

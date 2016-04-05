@@ -75,8 +75,8 @@ int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const ScriptV
         // be done using the scheduler instead.
         V8GCForContextDispose::instance().notifyIdle();
     }
-    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
-    return DOMTimer::install(executionContext, action.release(), timeout, true);
+    ScheduledAction* action = ScheduledAction::create(scriptState, handler, arguments);
+    return DOMTimer::install(executionContext, action, timeout, true);
 }
 
 int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const String& handler, int timeout, const Vector<ScriptValue>&)
@@ -93,8 +93,8 @@ int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const String&
         // be done using the scheduler instead.
         V8GCForContextDispose::instance().notifyIdle();
     }
-    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
-    return DOMTimer::install(executionContext, action.release(), timeout, true);
+    ScheduledAction* action = ScheduledAction::create(scriptState, handler);
+    return DOMTimer::install(executionContext, action, timeout, true);
 }
 
 int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments)
@@ -102,8 +102,8 @@ int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const Script
     ExecutionContext* executionContext = eventTarget.getExecutionContext();
     if (!isAllowed(scriptState, executionContext, false))
         return 0;
-    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
-    return DOMTimer::install(executionContext, action.release(), timeout, false);
+    ScheduledAction* action = ScheduledAction::create(scriptState, handler, arguments);
+    return DOMTimer::install(executionContext, action, timeout, false);
 }
 
 int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const String& handler, int timeout, const Vector<ScriptValue>&)
@@ -115,8 +115,8 @@ int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const String
     // perfomance issue.
     if (handler.isEmpty())
         return 0;
-    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
-    return DOMTimer::install(executionContext, action.release(), timeout, false);
+    ScheduledAction* action = ScheduledAction::create(scriptState, handler);
+    return DOMTimer::install(executionContext, action, timeout, false);
 }
 
 void clearTimeout(EventTarget& eventTarget, int timeoutID)

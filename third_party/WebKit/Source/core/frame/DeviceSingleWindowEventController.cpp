@@ -28,16 +28,15 @@ void DeviceSingleWindowEventController::didUpdateData()
     dispatchDeviceEvent(lastEvent());
 }
 
-void DeviceSingleWindowEventController::dispatchDeviceEvent(RawPtr<Event> prpEvent)
+void DeviceSingleWindowEventController::dispatchDeviceEvent(Event* event)
 {
     if (!document().domWindow() || document().activeDOMObjectsAreSuspended() || document().activeDOMObjectsAreStopped())
         return;
 
-    RawPtr<Event> event = prpEvent;
     document().domWindow()->dispatchEvent(event);
 
     if (m_needsCheckingNullEvents) {
-        if (isNullEvent(event.get()))
+        if (isNullEvent(event))
             stopUpdating();
         else
             m_needsCheckingNullEvents = false;

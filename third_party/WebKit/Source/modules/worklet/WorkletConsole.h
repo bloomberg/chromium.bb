@@ -28,7 +28,7 @@ public:
 
 protected:
     ExecutionContext* context() final;
-    void reportMessageToConsole(RawPtr<ConsoleMessage>) final;
+    void reportMessageToConsole(ConsoleMessage*) final;
 
 private:
     explicit WorkletConsole(WorkletGlobalScope*);

@@ -17,7 +17,7 @@ DOMTimerCoordinator::DOMTimerCoordinator(PassOwnPtr<WebTaskRunner> timerTaskRunn
 {
 }
 
-int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, RawPtr<ScheduledAction> action, int timeout, bool singleShot)
+int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, ScheduledAction* action, int timeout, bool singleShot)
 {
     // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
     ASSERT(context->timers() == this);

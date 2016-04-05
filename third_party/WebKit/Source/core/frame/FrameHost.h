@@ -65,7 +65,7 @@ class Visitor;
 class CORE_EXPORT FrameHost final : public GarbageCollectedFinalized<FrameHost> {
     WTF_MAKE_NONCOPYABLE(FrameHost);
 public:
-    static RawPtr<FrameHost> create(Page&);
+    static FrameHost* create(Page&);
     ~FrameHost();
 
     // Careful: This function will eventually be removed.

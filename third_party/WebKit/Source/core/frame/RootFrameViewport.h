@@ -24,7 +24,7 @@ class LayoutRect;
 class CORE_EXPORT RootFrameViewport final : public GarbageCollectedFinalized<RootFrameViewport>, public ScrollableArea {
     USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
 public:
-    static RawPtr<RootFrameViewport> create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
+    static RootFrameViewport* create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
     {
         return new RootFrameViewport(visualViewport, layoutViewport);
     }

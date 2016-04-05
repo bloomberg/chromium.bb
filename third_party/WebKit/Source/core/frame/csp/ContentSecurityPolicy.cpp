@@ -995,7 +995,7 @@ void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel lev
     logToConsole(ConsoleMessage::create(SecurityMessageSource, level, message));
 }
 
-void ContentSecurityPolicy::logToConsole(RawPtr<ConsoleMessage> consoleMessage, LocalFrame* frame)
+void ContentSecurityPolicy::logToConsole(ConsoleMessage* consoleMessage, LocalFrame* frame)
 {
     if (frame)
         frame->document()->addConsoleMessage(consoleMessage);

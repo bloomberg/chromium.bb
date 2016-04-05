@@ -44,7 +44,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>, p
     USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 public:
     // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.
-    static int install(ExecutionContext*, RawPtr<ScheduledAction>, int timeout, bool singleShot);
+    static int install(ExecutionContext*, ScheduledAction*, int timeout, bool singleShot);
     static void removeByID(ExecutionContext*, int timeoutID);
 
     ~DOMTimer() override;
@@ -64,12 +64,12 @@ public:
 private:
     friend class DOMTimerCoordinator; // For create().
 
-    static RawPtr<DOMTimer> create(ExecutionContext* context, RawPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
+    static DOMTimer* create(ExecutionContext* context, ScheduledAction* action, int timeout, bool singleShot, int timeoutID)
     {
         return new DOMTimer(context, action, timeout, singleShot, timeoutID);
     }
 
-    DOMTimer(ExecutionContext*, RawPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
+    DOMTimer(ExecutionContext*, ScheduledAction*, int interval, bool singleShot, int timeoutID);
     void fired() override;
 
     WebTaskRunner* timerTaskRunner() const override;

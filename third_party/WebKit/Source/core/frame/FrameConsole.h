@@ -50,12 +50,12 @@ class WorkerInspectorProxy;
 // It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
 class CORE_EXPORT FrameConsole final : public GarbageCollected<FrameConsole> {
 public:
-    static RawPtr<FrameConsole> create(LocalFrame& frame)
+    static FrameConsole* create(LocalFrame& frame)
     {
         return new FrameConsole(frame);
     }
 
-    void addMessage(RawPtr<ConsoleMessage>);
+    void addMessage(ConsoleMessage*);
     void adoptWorkerMessagesAfterTermination(WorkerInspectorProxy*);
 
     void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);

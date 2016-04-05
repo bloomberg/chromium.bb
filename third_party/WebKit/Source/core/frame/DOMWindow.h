@@ -157,13 +157,13 @@ public:
     virtual void resizeBy(int x, int y) const = 0;
     virtual void resizeTo(int width, int height) const = 0;
 
-    virtual RawPtr<MediaQueryList> matchMedia(const String&) = 0;
+    virtual MediaQueryList* matchMedia(const String&) = 0;
 
     // DOM Level 2 Style Interface
-    virtual RawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const = 0;
+    virtual CSSStyleDeclaration* getComputedStyle(Element*, const String& pseudoElt) const = 0;
 
     // WebKit extensions
-    virtual RawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const = 0;
+    virtual CSSRuleList* getMatchedCSSRules(Element*, const String& pseudoElt) const = 0;
 
     // WebKit animation extensions
     virtual int requestAnimationFrame(FrameRequestCallback*) = 0;

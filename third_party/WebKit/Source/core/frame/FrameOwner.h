@@ -43,7 +43,7 @@ public:
 class CORE_EXPORT DummyFrameOwner : public GarbageCollectedFinalized<DummyFrameOwner>, public FrameOwner {
     USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
 public:
-    static RawPtr<DummyFrameOwner> create()
+    static DummyFrameOwner* create()
     {
         return new DummyFrameOwner;
     }

@@ -28,7 +28,7 @@ public:
     explicit DOMTimerCoordinator(PassOwnPtr<WebTaskRunner>);
 
     // Creates and installs a new timer. Returns the assigned ID.
-    int installNewTimeout(ExecutionContext*, RawPtr<ScheduledAction>, int timeout, bool singleShot);
+    int installNewTimeout(ExecutionContext*, ScheduledAction*, int timeout, bool singleShot);
 
     // Removes and disposes the timer with the specified ID, if any. This may
     // destroy the timer.

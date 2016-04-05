@@ -84,7 +84,7 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
         // Since the dimensions are only for the view rectangle, once a
         // dimension exceeds the maximum, there is no need to increase it further.
         if (newSize.width() > m_maxAutoSize.width()) {
-            RawPtr<Scrollbar> localHorizontalScrollbar = m_frameView->horizontalScrollbar();
+            Scrollbar* localHorizontalScrollbar = m_frameView->horizontalScrollbar();
             if (!localHorizontalScrollbar)
                 localHorizontalScrollbar = m_frameView->createScrollbar(HorizontalScrollbar);
             if (!localHorizontalScrollbar->isOverlayScrollbar())
@@ -93,7 +93,7 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
             // Don't bother checking for a vertical scrollbar because the width is at
             // already greater the maximum.
         } else if (newSize.height() > m_maxAutoSize.height()) {
-            RawPtr<Scrollbar> localVerticalScrollbar = m_frameView->verticalScrollbar();
+            Scrollbar* localVerticalScrollbar = m_frameView->verticalScrollbar();
             if (!localVerticalScrollbar)
                 localVerticalScrollbar = m_frameView->createScrollbar(VerticalScrollbar);
             if (!localVerticalScrollbar->isOverlayScrollbar())

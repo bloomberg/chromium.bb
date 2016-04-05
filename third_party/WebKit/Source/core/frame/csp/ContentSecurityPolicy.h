@@ -131,7 +131,7 @@ public:
         URLViolation
     };
 
-    static RawPtr<ContentSecurityPolicy> create()
+    static ContentSecurityPolicy* create()
     {
         return new ContentSecurityPolicy();
     }
@@ -214,7 +214,7 @@ public:
 
     // If a frame is passed in, the message will be logged to its active document's console.
     // Otherwise, the message will be logged to this object's |m_executionContext|.
-    void logToConsole(RawPtr<ConsoleMessage>, LocalFrame* = nullptr);
+    void logToConsole(ConsoleMessage*, LocalFrame* = nullptr);
 
     void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression);
     void reportDuplicateDirective(const String&);

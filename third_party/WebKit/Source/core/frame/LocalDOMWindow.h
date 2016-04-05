@@ -67,8 +67,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public Supplementable
     USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
     USING_PRE_FINALIZER(LocalDOMWindow, dispose);
 public:
-    static RawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
-    static RawPtr<LocalDOMWindow> create(LocalFrame& frame)
+    static Document* createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
+    static LocalDOMWindow* create(LocalFrame& frame)
     {
         return new LocalDOMWindow(frame);
     }
@@ -77,7 +77,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    RawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
+    Document* installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
     // EventTarget overrides:
     ExecutionContext* getExecutionContext() const override;
@@ -137,15 +137,15 @@ public:
     void moveTo(int x, int y) const override;
     void resizeBy(int x, int y) const override;
     void resizeTo(int width, int height) const override;
-    RawPtr<MediaQueryList> matchMedia(const String&) override;
-    RawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
-    RawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
+    MediaQueryList* matchMedia(const String&) override;
+    CSSStyleDeclaration* getComputedStyle(Element*, const String& pseudoElt) const override;
+    CSSRuleList* getMatchedCSSRules(Element*, const String& pseudoElt) const override;
     int requestAnimationFrame(FrameRequestCallback*) override;
     int webkitRequestAnimationFrame(FrameRequestCallback*) override;
     void cancelAnimationFrame(int id) override;
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
-    void schedulePostMessage(RawPtr<MessageEvent>, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
+    void schedulePostMessage(MessageEvent*, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
@@ -159,7 +159,7 @@ public:
 
     Element* frameElement() const;
 
-    RawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+    DOMWindow* open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
         LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
 
     FrameConsole* frameConsole() const;
@@ -175,7 +175,7 @@ public:
     void removeAllEventListeners() override;
 
     using EventTarget::dispatchEvent;
-    DispatchEventResult dispatchEvent(RawPtr<Event> prpEvent, RawPtr<EventTarget> prpTarget);
+    DispatchEventResult dispatchEvent(Event*, EventTarget*);
 
     void finishedLoading();
 
@@ -186,8 +186,8 @@ public:
     void willDetachDocumentFromFrame();
 
     EventQueue* getEventQueue() const;
-    void enqueueWindowEvent(RawPtr<Event>);
-    void enqueueDocumentEvent(RawPtr<Event>);
+    void enqueueWindowEvent(Event*);
+    void enqueueDocumentEvent(Event*);
     void enqueuePageshowEvent(PageshowEventPersistence);
     void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
     void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue>);
@@ -215,7 +215,7 @@ private:
     class WindowFrameObserver final : public GarbageCollected<WindowFrameObserver>, public LocalFrameLifecycleObserver {
         USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
     public:
-        static RawPtr<WindowFrameObserver> create(LocalDOMWindow*, LocalFrame&);
+        static WindowFrameObserver* create(LocalDOMWindow*, LocalFrame&);
 
         DECLARE_VIRTUAL_TRACE();
 

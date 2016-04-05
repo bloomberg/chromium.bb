@@ -46,7 +46,7 @@ WorkerConsole::~WorkerConsole()
 {
 }
 
-void WorkerConsole::reportMessageToConsole(RawPtr<ConsoleMessage> consoleMessage)
+void WorkerConsole::reportMessageToConsole(ConsoleMessage* consoleMessage)
 {
     m_scope->addConsoleMessage(consoleMessage);
 }

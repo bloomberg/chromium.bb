@@ -43,57 +43,57 @@ ConsoleBase::~ConsoleBase()
 {
 }
 
-void ConsoleBase::debug(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::debug(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(LogMessageType, DebugMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::error(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::error(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(LogMessageType, ErrorMessageLevel, scriptState, arguments, false);
 }
 
-void ConsoleBase::info(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::info(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(LogMessageType, InfoMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::log(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::log(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(LogMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::warn(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::warn(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(LogMessageType, WarningMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::dir(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::dir(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(DirMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::dirxml(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::dirxml(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(DirXMLMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::table(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::table(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(TableMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::clear(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::clear(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(ClearMessageType, LogMessageLevel, scriptState, arguments, true);
 }
 
-void ConsoleBase::trace(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::trace(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(TraceMessageType, LogMessageLevel, scriptState, arguments, true);
 }
 
-void ConsoleBase::assertCondition(ScriptState* scriptState, RawPtr<ScriptArguments> arguments, bool condition)
+void ConsoleBase::assertCondition(ScriptState* scriptState, ScriptArguments* arguments, bool condition)
 {
     if (condition)
         return;
@@ -101,7 +101,7 @@ void ConsoleBase::assertCondition(ScriptState* scriptState, RawPtr<ScriptArgumen
     internalAddMessage(AssertMessageType, ErrorMessageLevel, scriptState, arguments, true);
 }
 
-void ConsoleBase::count(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::count(ScriptState* scriptState, ScriptArguments* arguments)
 {
     RefPtr<ScriptCallStack> callStack(ScriptCallStack::capture(1));
     // Follow Firebug's behavior of counting with null and undefined title in
@@ -114,11 +114,11 @@ void ConsoleBase::count(ScriptState* scriptState, RawPtr<ScriptArguments> argume
     HashCountedSet<String>::AddResult result = m_counts.add(identifier);
     String message = title + ": " + String::number(result.storedValue->value);
 
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(CountMessageType);
     consoleMessage->setScriptState(scriptState);
     consoleMessage->setCallStack(callStack.release());
-    reportMessageToConsole(consoleMessage.release());
+    reportMessageToConsole(consoleMessage);
 }
 
 void ConsoleBase::markTimeline(const String& title)
@@ -165,11 +165,11 @@ void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
     double elapsed = monotonicallyIncreasingTime() - startTime;
     String message = title + String::format(": %.3fms", elapsed * 1000);
 
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(TimeEndMessageType);
     consoleMessage->setScriptState(scriptState);
     consoleMessage->setCallStack(ScriptCallStack::capture(1));
-    reportMessageToConsole(consoleMessage.release());
+    reportMessageToConsole(consoleMessage);
 }
 
 void ConsoleBase::timeStamp(const String& title)
@@ -192,12 +192,12 @@ void ConsoleBase::timelineEnd(ScriptState* scriptState, const String& title)
     TRACE_EVENT_COPY_ASYNC_END0("blink.console", formatTimelineTitle(title).utf8().data(), this);
 }
 
-void ConsoleBase::group(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::group(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(StartGroupMessageType, LogMessageLevel, scriptState, arguments, true);
 }
 
-void ConsoleBase::groupCollapsed(ScriptState* scriptState, RawPtr<ScriptArguments> arguments)
+void ConsoleBase::groupCollapsed(ScriptState* scriptState, ScriptArguments* arguments)
 {
     internalAddMessage(StartGroupCollapsedMessageType, LogMessageLevel, scriptState, arguments, true);
 }
@@ -207,24 +207,24 @@ void ConsoleBase::groupEnd()
     internalAddMessage(EndGroupMessageType, LogMessageLevel, nullptr, nullptr, true);
 }
 
-void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* scriptState, RawPtr<ScriptArguments> scriptArguments, bool acceptNoArguments)
+void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* scriptState, ScriptArguments* scriptArguments, bool acceptNoArguments)
 {
-    RawPtr<ScriptArguments> arguments = scriptArguments;
+    ScriptArguments* arguments = scriptArguments;
     if (!acceptNoArguments && (!arguments || !arguments->argumentCount()))
         return;
 
     if (scriptState && !scriptState->contextIsValid())
-        arguments.clear();
+        arguments = nullptr;
     String message;
     if (arguments)
         arguments->getFirstArgumentAsString(message);
 
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message);
     consoleMessage->setType(type);
     consoleMessage->setScriptState(scriptState);
     consoleMessage->setScriptArguments(arguments);
     consoleMessage->setCallStack(ScriptCallStack::captureForConsole());
-    reportMessageToConsole(consoleMessage.release());
+    reportMessageToConsole(consoleMessage);
 }
 
 } // namespace blink

@@ -80,10 +80,10 @@ template <typename Strategy> class PositionWithAffinityTemplate;
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame>, public DisplayItemClient {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
-    static RawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
+    static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
     void init();
-    void setView(RawPtr<FrameView>);
+    void setView(FrameView*);
     void createView(const IntSize&, const Color&, bool,
         ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
         ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
@@ -106,7 +106,7 @@ public:
     void willDetachFrameHost();
 
     LocalDOMWindow* localDOMWindow() const;
-    void setDOMWindow(RawPtr<LocalDOMWindow>);
+    void setDOMWindow(LocalDOMWindow*);
     FrameView* view() const;
     Document* document() const;
     void setPagePopupOwner(Element&);

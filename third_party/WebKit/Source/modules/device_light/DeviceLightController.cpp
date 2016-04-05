@@ -54,7 +54,7 @@ void DeviceLightController::unregisterWithDispatcher()
     DeviceLightDispatcher::instance().removeController(this);
 }
 
-RawPtr<Event> DeviceLightController::lastEvent() const
+Event* DeviceLightController::lastEvent() const
 {
     return DeviceLightEvent::create(EventTypeNames::devicelight,
         DeviceLightDispatcher::instance().latestDeviceLightData());

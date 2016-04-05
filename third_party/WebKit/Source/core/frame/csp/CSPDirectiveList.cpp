@@ -57,9 +57,9 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
 
-RawPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
+CSPDirectiveList* CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
-    RawPtr<CSPDirectiveList> directives = new CSPDirectiveList(policy, type, source);
+    CSPDirectiveList* directives = new CSPDirectiveList(policy, type, source);
     directives->parse(begin, end);
 
     if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get()))) {
@@ -70,7 +70,7 @@ RawPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy,
     if (directives->isReportOnly() && directives->reportEndpoints().isEmpty())
         policy->reportMissingReportURI(String(begin, end - begin));
 
-    return directives.release();
+    return directives;
 }
 
 void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const
@@ -102,9 +102,9 @@ void CSPDirectiveList::reportViolationWithState(const String& directiveText, con
     // never get thrown in report-only mode because the caller won't see
     // a violation.)
     if (m_reportOnly || exceptionStatus == ContentSecurityPolicy::WillNotThrowException) {
-        RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
+        ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
         consoleMessage->setScriptState(scriptState);
-        m_policy->logToConsole(consoleMessage.release());
+        m_policy->logToConsole(consoleMessage);
     }
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::EvalViolation);
 }

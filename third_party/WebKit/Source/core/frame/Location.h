@@ -52,7 +52,7 @@ class KURL;
 class CORE_EXPORT Location final : public GarbageCollected<Location>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<Location> create(Frame* frame)
+    static Location* create(Frame* frame)
     {
         return new Location(frame);
     }
@@ -83,7 +83,7 @@ public:
     String hash() const;
     String origin() const;
 
-    RawPtr<DOMStringList> ancestorOrigins() const;
+    DOMStringList* ancestorOrigins() const;
 
     // Just return the |this| object the way the normal valueOf function on the Object prototype would.
     // The valueOf function is only added to make sure that it cannot be overwritten on location

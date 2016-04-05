@@ -24,7 +24,7 @@ struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame: public Frame {
 public:
-    static RawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
+    static RemoteFrame* create(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
     ~RemoteFrame() override;
 
@@ -55,7 +55,7 @@ public:
 
     void advanceFocus(WebFocusType, LocalFrame* source);
 
-    void setView(RawPtr<RemoteFrameView>);
+    void setView(RemoteFrameView*);
     void createView();
 
     RemoteFrameView* view() const;

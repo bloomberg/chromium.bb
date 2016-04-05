@@ -70,7 +70,7 @@ private:
 class CORE_EXPORT SmartClip {
     STACK_ALLOCATED();
 public:
-    explicit SmartClip(RawPtr<LocalFrame>);
+    explicit SmartClip(LocalFrame*);
 
     SmartClipData dataForRect(const IntRect&);
 

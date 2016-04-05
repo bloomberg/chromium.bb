@@ -858,7 +858,7 @@ public:
     const SVGDocumentExtensions* svgExtensions();
     SVGDocumentExtensions& accessSVGExtensions();
 
-    void initContentSecurityPolicy(RawPtr<ContentSecurityPolicy> = nullptr);
+    void initContentSecurityPolicy(ContentSecurityPolicy* = nullptr);
 
     bool isSecureTransitionTo(const KURL&) const;
 

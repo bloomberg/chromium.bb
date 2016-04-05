@@ -19,7 +19,7 @@ WorkletConsole::~WorkletConsole()
 {
 }
 
-void WorkletConsole::reportMessageToConsole(RawPtr<ConsoleMessage> consoleMessage)
+void WorkletConsole::reportMessageToConsole(ConsoleMessage* consoleMessage)
 {
     m_scope->addConsoleMessage(consoleMessage);
 }

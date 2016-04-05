@@ -47,18 +47,18 @@ class ScriptArguments;
 class CORE_EXPORT ConsoleBase : public GarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    void debug(ScriptState*, RawPtr<ScriptArguments>);
-    void error(ScriptState*, RawPtr<ScriptArguments>);
-    void info(ScriptState*, RawPtr<ScriptArguments>);
-    void log(ScriptState*, RawPtr<ScriptArguments>);
-    void clear(ScriptState*, RawPtr<ScriptArguments>);
-    void warn(ScriptState*, RawPtr<ScriptArguments>);
-    void dir(ScriptState*, RawPtr<ScriptArguments>);
-    void dirxml(ScriptState*, RawPtr<ScriptArguments>);
-    void table(ScriptState*, RawPtr<ScriptArguments>);
-    void trace(ScriptState*, RawPtr<ScriptArguments>);
-    void assertCondition(ScriptState*, RawPtr<ScriptArguments>, bool condition);
-    void count(ScriptState*, RawPtr<ScriptArguments>);
+    void debug(ScriptState*, ScriptArguments*);
+    void error(ScriptState*, ScriptArguments*);
+    void info(ScriptState*, ScriptArguments*);
+    void log(ScriptState*, ScriptArguments*);
+    void clear(ScriptState*, ScriptArguments*);
+    void warn(ScriptState*, ScriptArguments*);
+    void dir(ScriptState*, ScriptArguments*);
+    void dirxml(ScriptState*, ScriptArguments*);
+    void table(ScriptState*, ScriptArguments*);
+    void trace(ScriptState*, ScriptArguments*);
+    void assertCondition(ScriptState*, ScriptArguments*, bool condition);
+    void count(ScriptState*, ScriptArguments*);
     void markTimeline(const String&);
     void profile(const String&);
     void profileEnd(const String&);
@@ -67,8 +67,8 @@ public:
     void timeStamp(const String&);
     void timeline(ScriptState*, const String&);
     void timelineEnd(ScriptState*, const String&);
-    void group(ScriptState*, RawPtr<ScriptArguments>);
-    void groupCollapsed(ScriptState*, RawPtr<ScriptArguments>);
+    void group(ScriptState*, ScriptArguments*);
+    void groupCollapsed(ScriptState*, ScriptArguments*);
     void groupEnd();
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -77,10 +77,10 @@ public:
 
 protected:
     virtual ExecutionContext* context() = 0;
-    virtual void reportMessageToConsole(RawPtr<ConsoleMessage>) = 0;
+    virtual void reportMessageToConsole(ConsoleMessage*) = 0;
 
 private:
-    void internalAddMessage(MessageType, MessageLevel, ScriptState*, RawPtr<ScriptArguments>, bool acceptNoArguments = false);
+    void internalAddMessage(MessageType, MessageLevel, ScriptState*, ScriptArguments*, bool acceptNoArguments = false);
 
     HashCountedSet<String> m_counts;
     HashMap<String, double> m_times;

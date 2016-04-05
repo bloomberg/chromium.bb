@@ -12,7 +12,7 @@ namespace blink {
 
 class RemoteDOMWindow final : public DOMWindow {
 public:
-    static RawPtr<RemoteDOMWindow> create(RemoteFrame& frame)
+    static RemoteDOMWindow* create(RemoteFrame& frame)
     {
         return new RemoteDOMWindow(frame);
     }
@@ -70,9 +70,9 @@ public:
     void moveTo(int x, int y) const override;
     void resizeBy(int x, int y) const override;
     void resizeTo(int width, int height) const override;
-    RawPtr<MediaQueryList> matchMedia(const String&) override;
-    RawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
-    RawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
+    MediaQueryList* matchMedia(const String&) override;
+    CSSStyleDeclaration* getComputedStyle(Element*, const String& pseudoElt) const override;
+    CSSRuleList* getMatchedCSSRules(Element*, const String& pseudoElt) const override;
     int requestAnimationFrame(FrameRequestCallback*) override;
     int webkitRequestAnimationFrame(FrameRequestCallback*) override;
     void cancelAnimationFrame(int id) override;
