@@ -961,7 +961,7 @@ public:
 
     bool canContainFixedPositionObjects() const
     {
-        return isLayoutView() || (hasTransformRelatedProperty() && isLayoutBlock()) || isSVGForeignObject() || style()->containsPaint();
+        return isLayoutView() || ((hasTransformRelatedProperty() || style()->containsPaint()) && isLayoutBlock()) || isSVGForeignObject();
     }
 
     // Convert the given local point to absolute coordinates
