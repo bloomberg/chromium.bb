@@ -156,7 +156,6 @@
             '../third_party/lzma_sdk/lzma_sdk.gyp:*',
             '../third_party/mesa/mesa.gyp:*',
             '../third_party/modp_b64/modp_b64.gyp:*',
-            '../third_party/npapi/npapi.gyp:*',
             '../third_party/ots/ots.gyp:*',
             '../third_party/pdfium/samples/samples.gyp:*',
             '../third_party/qcms/qcms.gyp:*',

@@ -75,7 +75,6 @@ source_set("renderer") {
     "//third_party/icu",
     "//third_party/libjingle",
     "//third_party/libyuv",
-    "//third_party/npapi",
     "//third_party/widevine/cdm:version_h",
     "//ui/accessibility",
     "//ui/base",

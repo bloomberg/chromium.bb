@@ -29,7 +29,6 @@
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "third_party/WebKit/public/platform/linux/WebFontInfo.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"

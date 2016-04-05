@@ -17,7 +17,6 @@
     '../third_party/WebKit/public/blink.gyp:blink',
     '../third_party/WebKit/public/blink_resources.gyp:blink_image_resources',
     '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
-    '../third_party/npapi/npapi.gyp:npapi',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/events/events.gyp:gestures_blink',
     '../ui/gfx/gfx.gyp:gfx',

@@ -127,9 +127,6 @@ source_set("blink_headers") {
 
     # Blink exposes icu headers in the public API.
     "//third_party/icu:icu_config",
-
-    # Blink exposes NPAPI headers in the public API.
-    "//third_party/npapi:npapi_config",
   ]
   sources = blink_headers_values.blink_public_sources
 }
