@@ -415,11 +415,17 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_CLEAR_BROWSING_DATA_SUMMARY" desc="Summary of the settings item that opens the Clear Browsing Data dialog.">
         Clear history, cookies, site data, cache…
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that not all data can be cleared through this dialog.">
-        Saved site settings will not be deleted and may reflect your browsing habits.
+      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SITE_SETTINGS" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that not all data can be cleared through this dialog.">
+        Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SIGNED" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that synced data types are deleted across devices, and that not all data can be cleared through this dialog.">
-        This clears synced data from all devices. You won’t be signed out of your Google account. Saved site settings will not be deleted and may reflect your browsing habits.
+      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SYNC_AND_SITE_SETTINGS" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that synced data types are deleted across devices, and also that not all data can be cleared through this dialog.">
+        This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SIGNED" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that deleting cookies will not sign them out of their Google account.">
+        You won’t be signed out of your Google account.
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SIGNED_AND_OTHER_FORMS_OF_HISTORY" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that deleting cookies will not sign them out of their Google account, and also that there are other forms of browsing history present.">
+        You won’t be signed out of your Google account. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>history.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_CLEAR_CACHE_TITLE" desc="Title for Clear Cache in Clear Browsing Data dialog">
         Cached images and files

@@ -15,11 +15,16 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.TimePeriod;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SpinnerPreference;
+import org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataCounterBridge.BrowsingDataCounterCallback;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.Arrays;
@@ -109,14 +114,21 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     private static final String PREF_PASSWORDS = "clear_passwords_checkbox";
     private static final String PREF_FORM_DATA = "clear_form_data_checkbox";
 
-    private static final String PREF_SUMMARY = "summary";
+    @VisibleForTesting
+    public static final String PREF_GOOGLE_SUMMARY = "google_summary";
+    @VisibleForTesting
+    public static final String PREF_GENERAL_SUMMARY = "general_summary";
     private static final String PREF_TIME_RANGE = "time_period_spinner";
 
-    /** The "Clear" button preference. Referenced in tests. */
+    /** The "Clear" button preference. */
+    @VisibleForTesting
     public static final String PREF_CLEAR_BUTTON = "clear_button";
 
     /** The tag used for logging. */
     public static final String TAG = "ClearBrowsingDataPreferences";
+
+    /** The my activity URL. */
+    private static final String URL_MY_ACTIVITY = "https://history.google.com";
 
     /**
      * The various data types that can be cleared via this screen.
@@ -362,13 +374,39 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         clearButton.setOnPreferenceClickListener(this);
         clearButton.setShouldDisableView(true);
 
-        // Only one footnote should be shown, the unsynced or synced version, depending on whether
-        // the user is signed in.
-        Preference summary = findPreference(PREF_SUMMARY);
+        // The general information footnote informs users about data that will not be deleted.
+        // If the user is signed in, it also informs users about the behavior of synced deletions.
+        // and we show an additional Google-specific footnote. This footnote informs users that they
+        // will not be signed out of their Google account, and if the web history service indicates
+        // that they have other forms of browsing history, then also about that.
+        TextMessageWithLinkAndIconPreference google_summary =
+                (TextMessageWithLinkAndIconPreference) findPreference(PREF_GOOGLE_SUMMARY);
+        TextMessageWithLinkAndIconPreference general_summary =
+                (TextMessageWithLinkAndIconPreference) findPreference(PREF_GENERAL_SUMMARY);
+
+        google_summary.setLinkClickDelegate(new Runnable() {
+            @Override
+            public void run() {
+                new TabDelegate(false /* incognito */).launchUrl(
+                        URL_MY_ACTIVITY, TabLaunchType.FROM_CHROME_UI);
+            }
+        });
+        general_summary.setLinkClickDelegate(new Runnable() {
+            @Override
+            public void run() {
+                HelpAndFeedback.getInstance(getActivity()).show(
+                        getActivity(),
+                        getResources().getString(R.string.help_context_clear_browsing_data),
+                        Profile.getLastUsedProfile(),
+                        null);
+            }
+        });
         if (ChromeSigninController.get(getActivity()).isSignedIn()) {
-            summary.setSummary(R.string.clear_browsing_data_footnote_signed);
+            general_summary.setSummary(
+                    R.string.clear_browsing_data_footnote_sync_and_site_settings);
         } else {
-            summary.setSummary(R.string.clear_browsing_data_footnote);
+            getPreferenceScreen().removePreference(google_summary);
+            general_summary.setSummary(R.string.clear_browsing_data_footnote_site_settings);
         }
     }
 
@@ -403,5 +441,18 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @VisibleForTesting
     ProgressDialog getProgressDialog() {
         return mProgressDialog;
+    }
+
+    /**
+     * Shows a notice about other forms of browsing history. To be called by the web history
+     * service when it discovers that they exist.
+     */
+    @VisibleForTesting
+    public void showNoticeAboutOtherFormsOfBrowsingHistory() {
+        TextMessageWithLinkAndIconPreference google_summary =
+                (TextMessageWithLinkAndIconPreference) findPreference(PREF_GOOGLE_SUMMARY);
+        if (google_summary == null) return;
+        google_summary.setSummary(
+                R.string.clear_browsing_data_footnote_signed_and_other_forms_of_history);
     }
 }

@@ -44,11 +44,13 @@
 
     <Preference android:layout="@layout/divider_preference" />
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
-        android:key="summary" />
+    <org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference
+        android:key="google_summary"
+        android:summary="@string/clear_browsing_data_footnote_signed"
+        android:icon="@drawable/googleg" />
 
-    <org.chromium.chrome.browser.preferences.LearnMorePreference
-        android:title="@string/learn_more"
-        chrome:helpContext="@string/help_context_clear_browsing_data" />
+    <org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference
+        android:key="general_summary"
+        android:icon="@drawable/ic_info_grey" />
 
 </PreferenceScreen>

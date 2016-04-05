@@ -624,6 +624,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/SyncedAccountPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/TextAndButtonPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/TextMessagePreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/TextMessageWithLinkAndIconPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/TextScalePreference.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillCreditCardEditor.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillPreferences.java",

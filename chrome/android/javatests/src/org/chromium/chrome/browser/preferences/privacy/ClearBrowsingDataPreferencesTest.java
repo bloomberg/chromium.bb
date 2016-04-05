@@ -8,6 +8,8 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
+import android.text.SpannableString;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -18,6 +20,7 @@ import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferen
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -40,6 +43,7 @@ public class ClearBrowsingDataPreferencesTest
 
     @Override
     public void startMainActivity() throws InterruptedException {
+        SigninTestUtil.setUpAuthForTest(getInstrumentation());
         startMainActivityOnBlankPage();
     }
 
@@ -242,6 +246,72 @@ public class ClearBrowsingDataPreferencesTest
                 ClearBrowsingDataPreferences fragment =
                         (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
                 return fragment.getProgressDialog() == null;
+            }
+        });
+    }
+
+    /**
+     * Tests that for users who are not signed in, only the general footnote is shown.
+     */
+    @SmallTest
+    public void testFooterNonsigned() throws Exception {
+        SigninTestUtil.get().resetSigninState();
+
+        final Preferences preferences =
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                PreferenceScreen screen = fragment.getPreferenceScreen();
+
+                assertNotNull(
+                        screen.findPreference(ClearBrowsingDataPreferences.PREF_GENERAL_SUMMARY));
+                assertNull(
+                        screen.findPreference(ClearBrowsingDataPreferences.PREF_GOOGLE_SUMMARY));
+            }
+        });
+    }
+
+    /**
+     * Tests that for users who are signed in, both the general and the Google-specific footnotes
+     * are shown.
+     */
+    @MediumTest
+    public void testFooterSigned() throws Exception {
+        // Sign in.
+        SigninTestUtil.get().addAndSignInTestAccount();
+
+        final Preferences preferences =
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                PreferenceScreen screen = fragment.getPreferenceScreen();
+
+                assertNotNull(
+                        screen.findPreference(ClearBrowsingDataPreferences.PREF_GENERAL_SUMMARY));
+
+                Preference google_summary =
+                        screen.findPreference(ClearBrowsingDataPreferences.PREF_GOOGLE_SUMMARY);
+                assertNotNull(google_summary);
+
+                // There is currently no clickable link in the Google-specific summary.
+                assertTrue(!(google_summary.getSummary() instanceof SpannableString)
+                        || ((SpannableString) google_summary.getSummary()).getSpans(
+                                0, google_summary.getSummary().length(), Object.class).length == 0);
+
+                // When the web history service reports that there are other forms of browsing
+                // history, we should show a link to them.
+                fragment.showNoticeAboutOtherFormsOfBrowsingHistory();
+                assertTrue(google_summary.getSummary() instanceof SpannableString);
+                assertTrue(((SpannableString) google_summary.getSummary()).getSpans(
+                        0, google_summary.getSummary().length(), Object.class).length == 1);
             }
         });
     }
