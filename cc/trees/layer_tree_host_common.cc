@@ -253,130 +253,9 @@ static inline bool IsRootLayer(const LayerImpl* layer) {
 }
 
 template <typename LayerType>
-static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  return layer->Is3dSorted() && layer->parent() &&
-         layer->parent()->Is3dSorted() &&
-         (layer->parent()->sorting_context_id() == layer->sorting_context_id());
-}
-
-static bool IsLayerBackFaceVisible(LayerImpl* layer,
-                                   const TransformTree& transform_tree) {
-  // The current W3C spec on CSS transforms says that backface visibility should
-  // be determined differently depending on whether the layer is in a "3d
-  // rendering context" or not. For Chromium code, we can determine whether we
-  // are in a 3d rendering context by checking if the parent preserves 3d.
-
-  if (LayerIsInExisting3DRenderingContext(layer)) {
-    return draw_property_utils::DrawTransform(layer, transform_tree)
-        .IsBackFaceVisible();
-  }
-
-  // In this case, either the layer establishes a new 3d rendering context, or
-  // is not in a 3d rendering context at all.
-  return layer->transform().IsBackFaceVisible();
-}
-
-static bool IsSurfaceBackFaceVisible(LayerImpl* layer,
-                                     const gfx::Transform& draw_transform) {
-  return layer->layer_tree_impl()
-      ->property_trees()
-      ->effect_tree.Node(layer->effect_tree_index())
-      ->data.hidden_by_backface_visibility;
-}
-
-static bool LayerShouldBeSkipped(LayerImpl* layer,
-                                 bool layer_is_drawn,
-                                 const TransformTree& transform_tree) {
-  // Layers can be skipped if any of these conditions are met.
-  //   - is not drawn due to it or one of its ancestors being hidden (or having
-  //     no copy requests).
-  //   - does not draw content.
-  //   - is transparent.
-  //   - has empty bounds
-  //   - the layer is not double-sided, but its back face is visible.
-  //
-  // Some additional conditions need to be computed at a later point after the
-  // recursion is finished.
-  //   - the intersection of render_surface content and layer clip_rect is empty
-  //   - the visible_layer_rect is empty
-  //
-  // Note, if the layer should not have been drawn due to being fully
-  // transparent, we would have skipped the entire subtree and never made it
-  // into this function, so it is safe to omit this check here.
-
-  if (!layer_is_drawn)
-    return true;
-
-  if (!layer->DrawsContent() || layer->bounds().IsEmpty())
-    return true;
-
-  LayerImpl* backface_test_layer = layer;
-  if (layer->use_parent_backface_visibility()) {
-    DCHECK(!IsRootLayer(layer));
-    DCHECK(!layer->parent()->use_parent_backface_visibility());
-    backface_test_layer = layer->parent();
-  }
-
-  // The layer should not be drawn if (1) it is not double-sided and (2) the
-  // back of the layer is known to be facing the screen.
-  if (!backface_test_layer->double_sided() &&
-      IsLayerBackFaceVisible(backface_test_layer, transform_tree))
-    return true;
-
-  return false;
-}
-
-template <typename LayerType>
 static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
   return layer->transform_is_invertible() ||
          layer->HasPotentiallyRunningTransformAnimation();
-}
-
-static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
-                                          bool layer_is_drawn) {
-  // If the layer transform is not invertible, it should not be drawn.
-  // TODO(ajuma): Correctly process subtrees with singular transform for the
-  // case where we may animate to a non-singular transform and wish to
-  // pre-raster.
-  TransformNode* node =
-      layer->layer_tree_impl()->property_trees()->transform_tree.Node(
-          layer->transform_tree_index());
-  bool has_invertible_transform =
-      node->data.is_invertible && node->data.ancestors_are_invertible;
-  if (!(has_invertible_transform ||
-        layer->HasPotentiallyRunningTransformAnimation()))
-    return true;
-
-  // When we need to do a readback/copy of a layer's output, we can not skip
-  // it or any of its ancestors.
-  if (layer->num_copy_requests_in_target_subtree() > 0)
-    return false;
-
-  // We cannot skip the the subtree if a descendant has a touch handler
-  // or the hit testing code will break (it requires fresh transforms, etc).
-  if (layer->layer_or_descendant_has_touch_handler())
-    return false;
-
-  // If the layer is not drawn, then skip it and its subtree.
-  if (!layer_is_drawn)
-    return true;
-
-  // If layer is on the pending tree and opacity is being animated then
-  // this subtree can't be skipped as we need to create, prioritize and
-  // include tiles for this layer when deciding if tree can be activated.
-  if (layer->layer_tree_impl()->IsPendingTree() &&
-      layer->HasPotentiallyRunningOpacityAnimation())
-    return false;
-
-  // If layer has a background filter, don't skip the layer, even it the
-  // opacity is 0.
-  if (!layer->background_filters().IsEmpty())
-    return false;
-
-  // The opacity of a layer always applies to its children (either implicitly
-  // via a render surface or explicitly if the parent preserves 3D), so the
-  // entire subtree can be skipped if this layer is fully transparent.
-  return !layer->EffectiveOpacity();
 }
 
 static inline void MarkLayerWithRenderSurfaceLayerListId(
@@ -658,7 +537,9 @@ void CalculateRenderTarget(LayerImpl* layer,
                        ->data.is_drawn;
 
   // The root layer cannot be skipped.
-  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
+  if (!IsRootLayer(layer) &&
+      draw_property_utils::LayerShouldBeSkipped(
+          layer, layer_is_drawn, property_trees->transform_tree)) {
     layer->draw_properties().render_target = nullptr;
     return;
   }
@@ -684,7 +565,6 @@ void CalculateRenderTarget(LayerImpl* layer,
     DCHECK(!IsRootLayer(layer));
     layer->draw_properties().render_target = layer->parent()->render_target();
   }
-
   for (size_t i = 0; i < layer->children().size(); ++i) {
     CalculateRenderTarget(
         LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i),
@@ -723,7 +603,9 @@ void CalculateRenderSurfaceLayerList(
                        ->data.is_drawn;
 
   // The root layer cannot be skipped.
-  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
+  if (!IsRootLayer(layer) &&
+      draw_property_utils::LayerShouldBeSkipped(
+          layer, layer_is_drawn, property_trees->transform_tree)) {
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
     layer->draw_properties().render_target = nullptr;
@@ -739,13 +621,6 @@ void CalculateRenderSurfaceLayerList(
     draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
                                                       layer->render_surface());
 
-    if (!layer->double_sided() &&
-        IsSurfaceBackFaceVisible(layer,
-                                 layer->render_surface()->draw_transform())) {
-      layer->ClearRenderSurfaceLayerList();
-      layer->draw_properties().render_target = nullptr;
-      return;
-    }
 
     if (IsRootLayer(layer)) {
       // The root surface does not contribute to any other surface, it has no
@@ -782,7 +657,7 @@ void CalculateRenderSurfaceLayerList(
 
   size_t descendants_size = descendants->size();
 
-  bool layer_should_be_skipped = LayerShouldBeSkipped(
+  bool layer_should_be_skipped = !draw_property_utils::LayerNeedsUpdate(
       layer, layer_is_drawn, property_trees->transform_tree);
   if (!layer_should_be_skipped) {
     MarkLayerWithRenderSurfaceLayerListId(layer,
@@ -998,6 +873,8 @@ void CalculateDrawPropertiesInternal(
   DCHECK(inputs->can_render_to_separate_surface ==
          inputs->property_trees->non_root_surfaces_enabled);
   const bool subtree_visible_from_ancestor = true;
+  for (auto* layer : *inputs->root_layer->layer_tree_impl())
+    layer->draw_properties().render_target = nullptr;
   CalculateRenderTarget(inputs->root_layer, inputs->property_trees,
                         subtree_visible_from_ancestor,
                         inputs->can_render_to_separate_surface);

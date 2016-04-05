@@ -131,39 +131,6 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
                                   grand_child->ScreenSpaceTransform());
 }
 
-TEST_F(LayerTreeHostCommonTest,
-       ScreenSpaceTransformOfSkippedLayersWithHandlers) {
-  // Even for layers that are skipped, we need to compute the correct screen
-  // space transform because it is used during hit testing.
-  LayerImpl* parent = root_layer();
-  LayerImpl* child = AddChild<LayerImpl>(parent);
-  LayerImpl* grand_child = AddChild<LayerImpl>(child);
-  child->SetDrawsContent(true);
-  grand_child->SetDrawsContent(true);
-
-  gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(100, 100), true, false);
-  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
-                               gfx::PointF(10, 10), gfx::Size(100, 100), true,
-                               false);
-  // This will cause the subtree to be skipped.
-  child->SetOpacity(0.f);
-  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
-                               gfx::PointF(10, 10), gfx::Size(100, 100), true,
-                               false);
-  grand_child->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
-
-  ExecuteCalculateDrawProperties(parent);
-
-  EXPECT_TRUE(child->has_render_surface());
-  EXPECT_FALSE(grand_child->has_render_surface());
-  // Check that we've computed draw properties for the subtree rooted at
-  // |child|.
-  EXPECT_FALSE(child->render_surface()->screen_space_transform().IsIdentity());
-  EXPECT_FALSE(grand_child->ScreenSpaceTransform().IsIdentity());
-}
-
 TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
   // Tests that effect tree node gets a valid transform id when a layer
   // has opacity but doesn't create a render surface.
@@ -491,6 +458,35 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
       draw_property_utils::ScreenSpaceTransform(grand_child, tree));
+}
+
+// Render target should get cleared when subtree is skipped.
+TEST_F(LayerTreeHostCommonTest, ClearRenderTargetForSkippedLayers) {
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  child->SetDrawsContent(true);
+
+  gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+  ASSERT_TRUE(parent->render_surface());
+  EXPECT_EQ(parent, child->render_target());
+
+  // child is skipped when root's opacity is set to 0. So, its render target
+  // should be reset.
+  root->OnOpacityAnimated(0.0f);
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(child->render_target());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {

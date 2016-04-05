@@ -84,6 +84,18 @@ void CC_EXPORT ComputeLayerDrawProperties(LayerImpl* layer,
 void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                             RenderSurfaceImpl* render_surface);
 
+bool CC_EXPORT LayerShouldBeSkipped(LayerImpl* layer,
+                                    bool layer_is_drawn,
+                                    const TransformTree& transform_tree);
+
+bool CC_EXPORT LayerNeedsUpdate(Layer* layer,
+                                bool layer_is_drawn,
+                                const TransformTree& tree);
+
+bool CC_EXPORT LayerNeedsUpdate(LayerImpl* layer,
+                                bool layer_is_drawn,
+                                const TransformTree& tree);
+
 gfx::Transform CC_EXPORT DrawTransform(const LayerImpl* layer,
                                        const TransformTree& tree);
 

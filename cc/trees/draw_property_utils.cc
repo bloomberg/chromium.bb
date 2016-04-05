@@ -314,54 +314,6 @@ static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
          layer->HasPotentiallyRunningTransformAnimation();
 }
 
-static inline bool LayerShouldBeSkipped(LayerImpl* layer,
-                                        bool layer_is_drawn,
-                                        const TransformTree& transform_tree) {
-  const TransformNode* transform_node =
-      transform_tree.Node(layer->transform_tree_index());
-  const EffectTree& effect_tree = transform_tree.property_trees()->effect_tree;
-  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
-  // If the layer transform is not invertible, it should not be drawn.
-  // TODO(ajuma): Correctly process subtrees with singular transform for the
-  // case where we may animate to a non-singular transform and wish to
-  // pre-raster.
-  bool has_inherited_invertible_or_animated_transform =
-      (transform_node->data.is_invertible &&
-       transform_node->data.ancestors_are_invertible) ||
-      transform_node->data.to_screen_is_animated;
-  if (!has_inherited_invertible_or_animated_transform)
-    return true;
-
-  // When we need to do a readback/copy of a layer's output, we can not skip
-  // it or any of its ancestors.
-  if (effect_node->data.num_copy_requests_in_subtree > 0)
-    return false;
-
-  // If the layer is not drawn, then skip it and its subtree.
-  if (!effect_node->data.is_drawn)
-    return true;
-
-  if (effect_node->data.hidden_by_backface_visibility)
-    return true;
-
-  // If layer is on the pending tree and opacity is being animated then
-  // this subtree can't be skipped as we need to create, prioritize and
-  // include tiles for this layer when deciding if tree can be activated.
-  if (!transform_tree.property_trees()->is_active &&
-      effect_node->data.to_screen_opacity_is_animated)
-    return false;
-
-  // If layer has a background filter, don't skip the layer, even it the
-  // opacity is 0.
-  if (effect_node->data.node_or_ancestor_has_background_filters)
-    return false;
-
-  // The opacity of a layer always applies to its children (either implicitly
-  // via a render surface or explicitly if the parent preserves 3D), so the
-  // entire subtree can be skipped if this layer is fully transparent.
-  return !effect_node->data.screen_space_opacity;
-}
-
 static inline bool SubtreeShouldBeSkipped(Layer* layer,
                                           bool layer_is_drawn,
                                           const TransformTree& tree) {
@@ -401,9 +353,9 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
 }
 
 template <typename LayerType>
-static bool LayerNeedsUpdate(LayerType* layer,
-                             bool layer_is_drawn,
-                             const TransformTree& tree) {
+static bool LayerNeedsUpdateInternal(LayerType* layer,
+                                     bool layer_is_drawn,
+                                     const TransformTree& tree) {
   // Layers can be skipped if any of these conditions are met.
   //   - is not drawn due to it or one of its ancestors being hidden (or having
   //     no copy requests).
@@ -780,6 +732,66 @@ void ComputeVisibleRects(LayerImpl* root_layer,
   ComputeVisibleRectsInternal(root_layer, property_trees,
                               can_render_to_separate_surface,
                               &update_layer_list, visible_layer_list);
+}
+
+bool LayerShouldBeSkipped(LayerImpl* layer,
+                          bool layer_is_drawn,
+                          const TransformTree& transform_tree) {
+  const TransformNode* transform_node =
+      transform_tree.Node(layer->transform_tree_index());
+  const EffectTree& effect_tree = transform_tree.property_trees()->effect_tree;
+  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+  // If the layer transform is not invertible, it should not be drawn.
+  // TODO(ajuma): Correctly process subtrees with singular transform for the
+  // case where we may animate to a non-singular transform and wish to
+  // pre-raster.
+  bool has_inherited_invertible_or_animated_transform =
+      (transform_node->data.is_invertible &&
+       transform_node->data.ancestors_are_invertible) ||
+      transform_node->data.to_screen_is_animated;
+  if (!has_inherited_invertible_or_animated_transform)
+    return true;
+
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (effect_node->data.num_copy_requests_in_subtree > 0)
+    return false;
+
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!effect_node->data.is_drawn)
+    return true;
+
+  if (effect_node->data.hidden_by_backface_visibility)
+    return true;
+
+  // If layer is on the pending tree and opacity is being animated then
+  // this subtree can't be skipped as we need to create, prioritize and
+  // include tiles for this layer when deciding if tree can be activated.
+  if (!transform_tree.property_trees()->is_active &&
+      effect_node->data.to_screen_opacity_is_animated)
+    return false;
+
+  // If layer has a background filter, don't skip the layer, even it the
+  // opacity is 0.
+  if (effect_node->data.node_or_ancestor_has_background_filters)
+    return false;
+
+  // The opacity of a layer always applies to its children (either implicitly
+  // via a render surface or explicitly if the parent preserves 3D), so the
+  // entire subtree can be skipped if this layer is fully transparent.
+  return !effect_node->data.screen_space_opacity;
+}
+
+bool LayerNeedsUpdate(Layer* layer,
+                      bool layer_is_drawn,
+                      const TransformTree& tree) {
+  return LayerNeedsUpdateInternal(layer, layer_is_drawn, tree);
+}
+
+bool LayerNeedsUpdate(LayerImpl* layer,
+                      bool layer_is_drawn,
+                      const TransformTree& tree) {
+  return LayerNeedsUpdateInternal(layer, layer_is_drawn, tree);
 }
 
 gfx::Transform DrawTransform(const LayerImpl* layer,

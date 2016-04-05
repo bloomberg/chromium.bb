@@ -1027,6 +1027,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   // Create a fully transparent child layer so that its tile priorities are not
   // considered to be valid.
   pending_child_layer->SetDrawsContent(true);
+  pending_child_layer->SetForceRenderSurface(true);
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
