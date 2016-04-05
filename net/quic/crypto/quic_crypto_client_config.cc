@@ -384,7 +384,6 @@ void QuicCryptoClientConfig::SetDefaults() {
   if (ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
     aead.push_back(kCC20);
   }
-  aead.push_back(kCC12);
   aead.push_back(kAESG);
 
   disable_ecdsa_ = false;

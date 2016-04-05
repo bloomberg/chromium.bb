@@ -294,12 +294,9 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
   } else {
     msg.SetTaglist(kKEXS, kC255, 0);
   }
-  if (FLAGS_quic_crypto_server_config_default_has_chacha20) {
-    if (ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
-      msg.SetTaglist(kAEAD, kAESG, kCC12, kCC20, 0);
-    } else {
-      msg.SetTaglist(kAEAD, kAESG, kCC12, 0);
-    }
+  if (FLAGS_quic_crypto_server_config_default_has_chacha20 &&
+      ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
+    msg.SetTaglist(kAEAD, kAESG, kCC20, 0);
   } else {
     msg.SetTaglist(kAEAD, kAESG, 0);
   }

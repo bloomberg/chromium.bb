@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/cert_compressor.h"
+#include "net/quic/crypto/chacha20_poly1305_rfc7539_encrypter.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_secret_boxer.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
@@ -243,7 +244,11 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
   ASSERT_EQ(QUIC_NO_ERROR, message->GetTaglist(kAEAD, &aead_tags, &aead_len));
   vector<QuicTag> aead(aead_tags, aead_tags + aead_len);
   EXPECT_THAT(aead, ::testing::Contains(kAESG));
-  EXPECT_LE(2u, aead.size());
+  if (ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
+    EXPECT_LE(2u, aead.size());
+  } else {
+    EXPECT_LE(1u, aead.size());
+  }
 }
 
 TEST(QuicCryptoServerConfigTest, ServerConfigDisableChaCha) {
