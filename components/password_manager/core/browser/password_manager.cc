@@ -345,6 +345,12 @@ void PasswordManager::UpdateFormManagers() {
   }
 }
 
+void PasswordManager::DropFormManagers() {
+  pending_login_managers_.clear();
+  provisional_save_manager_.reset();
+  all_visible_forms_.clear();
+}
+
 void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
                                     const GURL& form_origin,
                                     BrowserSavePasswordProgressLogger* logger) {

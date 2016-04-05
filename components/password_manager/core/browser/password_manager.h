@@ -143,6 +143,10 @@ class PasswordManager : public LoginModel {
   // Results in updating the fill information on the page.
   void UpdateFormManagers();
 
+  // Cleans the state by removing all the PasswordFormManager instances and
+  // visible forms.
+  void DropFormManagers();
+
   PasswordManagerClient* client() { return client_; }
 
  private:

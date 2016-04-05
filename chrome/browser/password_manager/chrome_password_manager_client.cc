@@ -263,10 +263,8 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   // Set up an intercept callback if the prompt is zero-clickable (e.g. just one
   // form provided).
   CredentialsCallback intercept =
-      local_forms.size() == 1u
-          ? base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
-                       base::Unretained(this), callback)
-          : callback;
+      base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
+                 base::Unretained(this), callback, local_forms.size() == 1);
 #if defined(OS_ANDROID)
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
@@ -285,9 +283,14 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 
 void ChromePasswordManagerClient::OnCredentialsChosen(
     const CredentialsCallback& callback,
+    bool one_local_credential,
     const autofill::PasswordForm* form) {
   callback.Run(form);
+  // If a site gets back a credential some navigations are likely to occur. They
+  // shouldn't trigger the autofill password manager.
   if (form)
+    password_manager_.DropFormManagers();
+  if (form && one_local_credential)
     PromptUserToEnableAutosigninIfNecessary();
 }
 
@@ -307,6 +310,9 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms,
     const GURL& origin) {
   DCHECK(!local_forms.empty());
+  // If a site gets back a credential some navigations are likely to occur. They
+  // shouldn't trigger the autofill password manager.
+  password_manager_.DropFormManagers();
 #if BUILDFLAG(ANDROID_JAVA_UI)
   ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else

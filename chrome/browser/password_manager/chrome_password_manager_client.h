@@ -155,9 +155,11 @@ class ChromePasswordManagerClient
   // for UMA stats.
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
-  // Called as a response to PromptUserToChooseCredentials. nullptr means that
-  // nothing was chosen.
+  // Called as a response to PromptUserToChooseCredentials. nullptr in |form|
+  // means that nothing was chosen. |one_local_credential| is true if there was
+  // just one local credential to be chosen from.
   void OnCredentialsChosen(const CredentialsCallback& callback,
+                           bool one_local_credential,
                            const autofill::PasswordForm* form);
 
   Profile* const profile_;
