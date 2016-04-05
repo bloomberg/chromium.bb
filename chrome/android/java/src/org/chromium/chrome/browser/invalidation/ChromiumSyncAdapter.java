@@ -12,20 +12,18 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
-import android.os.Handler;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.PendingInvalidation;
-import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.ModelTypeHelper;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -74,10 +72,10 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
         // Browser startup is asynchronous, so we will need to wait for startup to finish.
         Semaphore semaphore = new Semaphore(0);
 
-        // Configure the callback with all the data it needs.
-        BrowserStartupController.StartupCallback callback =
-                getStartupCallback(mApplication, account.name, invalidation, syncResult, semaphore);
-        startBrowserProcess(callback, syncResult, semaphore);
+        // Configure the BrowserParts with all the data it needs.
+        BrowserParts parts =
+                getBrowserParts(mApplication, account.name, invalidation, syncResult, semaphore);
+        startBrowserProcess(parts, syncResult, semaphore);
 
         try {
             // This code is only synchronously calling a single native method
@@ -93,25 +91,21 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    private void startBrowserProcess(final BrowserStartupController.StartupCallback callback,
-            final SyncResult syncResult, Semaphore semaphore) {
+    private void startBrowserProcess(final BrowserParts parts, final SyncResult syncResult,
+            Semaphore semaphore) {
         try {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 @SuppressFBWarnings("DM_EXIT")
                 public void run() {
-                    ContentApplication.initCommandLine(getContext());
-                    if (mAsyncStartup) {
-                        try {
-                            BrowserStartupController.get(mApplication,
-                                                             LibraryProcessType.PROCESS_BROWSER)
-                                    .startBrowserProcessesAsync(callback);
-                        } catch (ProcessInitException e) {
-                            Log.e(TAG, "Unable to load native library.", e);
-                            System.exit(-1);
-                        }
-                    } else {
-                        startBrowserProcessesSync(callback);
+                    ChromeBrowserInitializer.getInstance(getContext()).handlePreNativeStartup(
+                            parts);
+                    try {
+                        ChromeBrowserInitializer.getInstance(getContext()).handlePostNativeStartup(
+                                mAsyncStartup, parts);
+                    } catch (ProcessInitException e) {
+                        Log.e(TAG, "Unable to load native library.", e);
+                        System.exit(-1);
                     }
                 }
             });
@@ -124,29 +118,12 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    @SuppressFBWarnings("DM_EXIT")
-    private void startBrowserProcessesSync(
-            final BrowserStartupController.StartupCallback callback) {
-        try {
-            ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            System.exit(-1);
-        }
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onSuccess(false);
-            }
-        });
-    }
-
-    private BrowserStartupController.StartupCallback getStartupCallback(final Context context,
+    private BrowserParts getBrowserParts(final Context context,
             final String account, final PendingInvalidation invalidation,
             final SyncResult syncResult, final Semaphore semaphore) {
-        return new BrowserStartupController.StartupCallback() {
+        return new EmptyBrowserParts() {
             @Override
-            public void onSuccess(boolean alreadyStarted) {
+            public void finishNativeInitialization() {
                 // Startup succeeded, so we can notify the invalidation.
                 notifyInvalidation(invalidation.mObjectSource, invalidation.mObjectId,
                         invalidation.mVersion, invalidation.mPayload);
@@ -154,7 +131,7 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             @Override
-            public void onFailure() {
+            public void onStartupFailure() {
                 // The startup failed, so we defer the invalidation.
                 DelayedInvalidationsController.getInstance().addPendingInvalidation(
                         context, account, invalidation);
