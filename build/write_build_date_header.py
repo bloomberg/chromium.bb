@@ -94,7 +94,7 @@ def main():
       # invalidation to not happen exactly at midnight. Use the same calculation
       # as the day before.
       # See //base/build_time.cc.
-      now = now - datetime.timedelta(day=1)
+      now = now - datetime.timedelta(days=1)
     now = datetime.datetime(now.year, now.month, now.day, 5, 0, 0)
     build_date = GetBuildDate(args.build_type, now)
 
