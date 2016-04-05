@@ -2003,6 +2003,9 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   if (GetState() == kUninitialized)
     return;
 
+  // Best effort to make the GL context current.
+  make_context_current_.Run();
+
   decoder_thread_.Stop();
   weak_this_factory_.InvalidateWeakPtrs();
   output_picture_buffers_.clear();
@@ -2294,6 +2297,9 @@ void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
 }
 
 void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+    "Failed to make context current", PLATFORM_FAILURE, );
+
   OutputBuffers::iterator index;
 
   for (index = output_picture_buffers_.begin();
@@ -2314,6 +2320,9 @@ void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
 
 void DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer(
     int32_t picture_buffer_id) {
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+    "Failed to make context current", PLATFORM_FAILURE, );
+
   OutputBuffers::iterator it = stale_output_picture_buffers_.find(
       picture_buffer_id);
   DCHECK(it != stale_output_picture_buffers_.end());
@@ -2832,6 +2841,7 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(
 void DXVAVideoDecodeAccelerator::ConfigChanged(
     const Config& config) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
   SetState(kConfigChange);
   DismissStaleBuffers(true);
   Invalidate();
