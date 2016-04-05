@@ -35,6 +35,10 @@
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_device_info.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 namespace content {
 class VideoCaptureController;
 class VideoCaptureControllerEventHandler;
@@ -174,7 +178,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Finds a DeviceEntry entry for the indicated session, creating a fresh one
   // if necessary. Returns NULL if the session id is invalid.
   DeviceEntry* GetOrCreateDeviceEntry(
-      media::VideoCaptureSessionId capture_session_id);
+      media::VideoCaptureSessionId capture_session_id,
+      const media::VideoCaptureParams& params);
 
   // Finds the DeviceEntry that owns a particular controller pointer.
   DeviceEntry* GetDeviceEntryForController(
@@ -258,6 +263,19 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   bool capture_device_api_initialized_ = false;
 #endif
 
+#if defined(OS_ANDROID)
+  // On Android, we used to stop the video device when the host tab is hidden.
+  // This caused problems on some devices when the device was stopped and
+  // restarted quickly. See http://crbug/582295.  Now instead, the device is
+  // only stopped when Chrome goes to background. When a tab is hidden, it will
+  // not receive video frames but the device is not stopped.
+  void OnApplicationStateChange(base::android::ApplicationState state);
+  void ReleaseDevices();
+  void ResumeDevices();
+
+  scoped_ptr<base::android::ApplicationStatusListener> app_status_listener_;
+#endif
+
   // The message loop of media stream device thread, where VCD's live.
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
 
@@ -283,12 +301,14 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
    public:
     DeviceEntry(MediaStreamType stream_type,
                 const std::string& id,
-                scoped_ptr<VideoCaptureController> controller);
+                scoped_ptr<VideoCaptureController> controller,
+                const media::VideoCaptureParams& params);
     ~DeviceEntry();
 
     const int serial_id;
     const MediaStreamType stream_type;
     const std::string id;
+    const media::VideoCaptureParams parameters;
 
     VideoCaptureController* video_capture_controller();
     media::VideoCaptureDevice* video_capture_device();

@@ -119,6 +119,8 @@ void LogVideoCaptureEvent(VideoCaptureEvent event) {
 // Counter used for identifying a DeviceRequest to start a capture device.
 static int g_device_start_id = 0;
 
+const media::VideoCaptureSessionId kFakeSessionId = -1;
+
 }  // namespace
 
 namespace content {
@@ -126,10 +128,12 @@ namespace content {
 VideoCaptureManager::DeviceEntry::DeviceEntry(
     MediaStreamType stream_type,
     const std::string& id,
-    scoped_ptr<VideoCaptureController> controller)
+    scoped_ptr<VideoCaptureController> controller,
+    const media::VideoCaptureParams& params)
     : serial_id(g_device_start_id++),
       stream_type(stream_type),
       id(id),
+      parameters(params),
       video_capture_controller_(std::move(controller)) {}
 
 VideoCaptureManager::DeviceEntry::~DeviceEntry() {
@@ -193,6 +197,11 @@ void VideoCaptureManager::Register(
   DCHECK(!device_task_runner_.get());
   listener_ = listener;
   device_task_runner_ = device_task_runner;
+#if defined(OS_ANDROID)
+  app_status_listener_.reset(new base::android::ApplicationStatusListener(
+      base::Bind(&VideoCaptureManager::OnApplicationStateChange,
+                 base::Unretained(this))));
+#endif
 }
 
 void VideoCaptureManager::Unregister() {
@@ -459,6 +468,7 @@ void VideoCaptureManager::OnDeviceStarted(
     if (entry->stream_type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
       const media::VideoCaptureSessionId session_id =
           device_start_queue_.front().session_id();
+      DCHECK(session_id != kFakeSessionId);
       MaybePostDesktopCaptureWindowId(session_id);
     }
   }
@@ -556,7 +566,7 @@ void VideoCaptureManager::StartCaptureForClient(
            << ", request: "
            << media::VideoCaptureFormat::ToString(params.requested_format);
 
-  DeviceEntry* entry = GetOrCreateDeviceEntry(session_id);
+  DeviceEntry* entry = GetOrCreateDeviceEntry(session_id, params);
   if (!entry) {
     done_cb.Run(base::WeakPtr<VideoCaptureController>());
     return;
@@ -907,7 +917,8 @@ void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
 }
 
 VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
-    media::VideoCaptureSessionId capture_session_id) {
+    media::VideoCaptureSessionId capture_session_id,
+    const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SessionMap::iterator session_it = sessions_.find(capture_session_id);
@@ -929,8 +940,9 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
       kMaxNumberOfBuffersForTabCapture : kMaxNumberOfBuffers;
   scoped_ptr<VideoCaptureController> video_capture_controller(
       new VideoCaptureController(max_buffers));
-  DeviceEntry* new_device = new DeviceEntry(
-      device_info.type, device_info.id, std::move(video_capture_controller));
+  DeviceEntry* new_device =
+      new DeviceEntry(device_info.type, device_info.id,
+                      std::move(video_capture_controller), params);
   devices_.push_back(new_device);
   return new_device;
 }
@@ -982,5 +994,44 @@ void VideoCaptureManager::InitializeCaptureDeviceApiOnUIThread(
                  and_then));
 }
 #endif
+
+#if defined(OS_ANDROID)
+void VideoCaptureManager::OnApplicationStateChange(
+    base::android::ApplicationState state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+    ResumeDevices();
+  } else if (state == base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
+    ReleaseDevices();
+  }
+}
+
+void VideoCaptureManager::ReleaseDevices() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (auto& entry : devices_) {
+    // Do not stop Content Video Capture devices, e.g. Tab or Screen capture.
+    if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
+      continue;
+
+    DoStopDevice(entry);
+  }
+}
+
+void VideoCaptureManager::ResumeDevices() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (auto& entry : devices_) {
+    // Do not resume Content Video Capture devices, e.g. Tab or Screen capture.
+    if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
+      continue;
+
+    // Session ID is only valid for Screen capture. So we can fake it to resume
+    // video capture devices here.
+    QueueStartDevice(kFakeSessionId, entry, entry->parameters);
+  }
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content
