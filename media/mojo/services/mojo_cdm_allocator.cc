@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "media/cdm/api/content_decryption_module.h"
@@ -203,9 +204,9 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
 }
 
 // Creates a new SimpleCdmVideoFrame on every request.
-scoped_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
+std::unique_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return make_scoped_ptr(new MojoCdmVideoFrame(
+  return base::WrapUnique(new MojoCdmVideoFrame(
       base::Bind(&MojoCdmAllocator::AddBufferToAvailableMap,
                  weak_ptr_factory_.GetWeakPtr())));
 }

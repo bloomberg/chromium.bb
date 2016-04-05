@@ -5,8 +5,9 @@
 #ifndef MEDIA_MOJO_SERVICES_SERVICE_FACTORY_IMPL_H_
 #define MEDIA_MOJO_SERVICES_SERVICE_FACTORY_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -34,7 +35,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
                      mojo::shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
-                     scoped_ptr<mojo::MessageLoopRef> parent_app_refcount,
+                     std::unique_ptr<mojo::MessageLoopRef> parent_app_refcount,
                      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
@@ -50,20 +51,20 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
 #if defined(ENABLE_MOJO_RENDERER)
   RendererFactory* GetRendererFactory();
 
-  scoped_ptr<RendererFactory> renderer_factory_;
+  std::unique_ptr<RendererFactory> renderer_factory_;
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
 #if defined(ENABLE_MOJO_CDM)
   CdmFactory* GetCdmFactory();
 
-  scoped_ptr<CdmFactory> cdm_factory_;
+  std::unique_ptr<CdmFactory> cdm_factory_;
 #endif  // defined(ENABLE_MOJO_CDM)
 
   MojoCdmServiceContext cdm_service_context_;
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
   mojo::shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
-  scoped_ptr<mojo::MessageLoopRef> parent_app_refcount_;
+  std::unique_ptr<mojo::MessageLoopRef> parent_app_refcount_;
   MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);

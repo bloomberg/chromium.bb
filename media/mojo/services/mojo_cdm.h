@@ -6,11 +6,12 @@
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -50,22 +51,22 @@ class MojoCdm : public MediaKeys,
 
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
-                            scoped_ptr<SimpleCdmPromise> promise) final;
+                            std::unique_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<NewSessionCdmPromise> promise) final;
+      std::unique_ptr<NewSessionCdmPromise> promise) final;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
-                   scoped_ptr<NewSessionCdmPromise> promise) final;
+                   std::unique_ptr<NewSessionCdmPromise> promise) final;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<SimpleCdmPromise> promise) final;
+                     std::unique_ptr<SimpleCdmPromise> promise) final;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<SimpleCdmPromise> promise) final;
+                    std::unique_ptr<SimpleCdmPromise> promise) final;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<SimpleCdmPromise> promise) final;
+                     std::unique_ptr<SimpleCdmPromise> promise) final;
   CdmContext* GetCdmContext() final;
 
   // CdmContext implementation. Can be called on a different thread.
@@ -86,7 +87,7 @@ class MojoCdm : public MediaKeys,
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin,
                      const media::CdmConfig& cdm_config,
-                     scoped_ptr<CdmInitializedPromise> promise);
+                     std::unique_ptr<CdmInitializedPromise> promise);
 
   void OnConnectionError();
 
@@ -123,7 +124,7 @@ class MojoCdm : public MediaKeys,
   // it when this method is not inlined. It fails with error C2244
   // "unable to match function definition to an existing declaration".
   template <typename... T>
-  void OnPromiseResult(scoped_ptr<CdmPromiseTemplate<T...>> promise,
+  void OnPromiseResult(std::unique_ptr<CdmPromiseTemplate<T...>> promise,
                        interfaces::CdmPromiseResultPtr result,
                        typename MojoTypeTrait<T>::MojoType... args) {
     if (result->success)
@@ -154,7 +155,7 @@ class MojoCdm : public MediaKeys,
   // Decryptor based on |decryptor_ptr_|, lazily created in GetDecryptor().
   // Since GetDecryptor() can be called on a different thread, use
   // |decryptor_task_runner_| to bind |decryptor_| to that thread.
-  scoped_ptr<MojoDecryptor> decryptor_;
+  std::unique_ptr<MojoDecryptor> decryptor_;
   scoped_refptr<base::SingleThreadTaskRunner> decryptor_task_runner_;
 
   // Callbacks for firing session events.
@@ -165,7 +166,7 @@ class MojoCdm : public MediaKeys,
   SessionExpirationUpdateCB session_expiration_update_cb_;
 
   // Pending promise for InitializeCdm().
-  scoped_ptr<CdmInitializedPromise> pending_init_promise_;
+  std::unique_ptr<CdmInitializedPromise> pending_init_promise_;
 
   // This must be the last member.
   base::WeakPtrFactory<MojoCdm> weak_factory_;

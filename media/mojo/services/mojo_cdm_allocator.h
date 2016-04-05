@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +28,7 @@ class MojoCdmAllocator : public CdmAllocator {
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
-  scoped_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
+  std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
 
  private:
   friend class MojoCdmAllocatorTest;

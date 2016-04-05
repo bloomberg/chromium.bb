@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
@@ -115,7 +116,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   MOCK_METHOD0(ConnectionClosed, void());
 
  protected:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   interfaces::ServiceFactoryPtr service_factory_;
   interfaces::ContentDecryptionModulePtr cdm_;
@@ -127,7 +128,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   StrictMock<MockDemuxerStream> video_demuxer_stream_;
 
  private:
-  scoped_ptr<mojo::Connection> connection_;
+  std::unique_ptr<mojo::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaAppTest);
 };

@@ -16,7 +16,7 @@ namespace media {
 
 // TODO(xhwang): Hook up MediaLog when possible.
 MojoMediaApplication::MojoMediaApplication(
-    scoped_ptr<MojoMediaClient> mojo_media_client)
+    std::unique_ptr<MojoMediaClient> mojo_media_client)
     : mojo_media_client_(std::move(mojo_media_client)),
       connector_(nullptr),
       media_log_(new MediaLog()) {

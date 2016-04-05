@@ -5,6 +5,10 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
 #define MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
 
+#include <stdint.h>
+
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
@@ -22,7 +26,8 @@ class MojoMediaApplication
     : public mojo::ShellClient,
       public mojo::InterfaceFactory<interfaces::ServiceFactory> {
  public:
-  explicit MojoMediaApplication(scoped_ptr<MojoMediaClient> mojo_media_client);
+  explicit MojoMediaApplication(
+      std::unique_ptr<MojoMediaClient> mojo_media_client);
   ~MojoMediaApplication() final;
 
  private:
@@ -38,8 +43,8 @@ class MojoMediaApplication
 
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using
-  // a scoped_ptr here.
-  scoped_ptr<MojoMediaClient> mojo_media_client_;
+  // a unique_ptr here.
+  std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
   mojo::Connector* connector_;
   scoped_refptr<MediaLog> media_log_;

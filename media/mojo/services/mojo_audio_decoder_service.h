@@ -5,8 +5,11 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_AUDIO_DECODER_SERVICE_H_
 #define MEDIA_MOJO_SERVICES_MOJO_AUDIO_DECODER_SERVICE_H_
 
+#include <stdint.h>
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
@@ -22,7 +25,7 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
  public:
   MojoAudioDecoderService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-      scoped_ptr<media::AudioDecoder> decoder,
+      std::unique_ptr<media::AudioDecoder> decoder,
       mojo::InterfaceRequest<interfaces::AudioDecoder> request);
 
   ~MojoAudioDecoderService() final;
@@ -71,7 +74,7 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
 
   // The AudioDecoder that does actual decoding work.
-  scoped_ptr<media::AudioDecoder> decoder_;
+  std::unique_ptr<media::AudioDecoder> decoder_;
 
   // The destination for the decoded buffers.
   interfaces::AudioDecoderClientPtr client_;

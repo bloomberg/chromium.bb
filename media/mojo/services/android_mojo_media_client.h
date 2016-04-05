@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_ANDROID_MOJO_MEDIA_CLIENT_H_
 #define MEDIA_MOJO_SERVICES_ANDROID_MOJO_MEDIA_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "media/mojo/services/mojo_media_client.h"
 
@@ -16,10 +18,10 @@ class AndroidMojoMediaClient : public MojoMediaClient {
   ~AndroidMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  scoped_ptr<AudioDecoder> CreateAudioDecoder(
+  std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
 
-  scoped_ptr<CdmFactory> CreateCdmFactory(
+  std::unique_ptr<CdmFactory> CreateCdmFactory(
       mojo::shell::mojom::InterfaceProvider* interface_provider) final;
 
  private:

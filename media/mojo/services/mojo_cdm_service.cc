@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
@@ -129,7 +130,7 @@ void MojoCdmService::SetServerCertificate(
   DVLOG(2) << __FUNCTION__;
   cdm_->SetServerCertificate(
       certificate_data.storage(),
-      make_scoped_ptr(new SimpleMojoCdmPromise(callback)));
+      base::WrapUnique(new SimpleMojoCdmPromise(callback)));
 }
 
 void MojoCdmService::CreateSessionAndGenerateRequest(
@@ -142,7 +143,7 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
   cdm_->CreateSessionAndGenerateRequest(
       static_cast<MediaKeys::SessionType>(session_type),
       static_cast<EmeInitDataType>(init_data_type), init_data.storage(),
-      make_scoped_ptr(new NewSessionMojoCdmPromise(callback)));
+      base::WrapUnique(new NewSessionMojoCdmPromise(callback)));
 }
 
 void MojoCdmService::LoadSession(
@@ -153,7 +154,7 @@ void MojoCdmService::LoadSession(
   DVLOG(2) << __FUNCTION__;
   cdm_->LoadSession(static_cast<MediaKeys::SessionType>(session_type),
                     session_id.To<std::string>(),
-                    make_scoped_ptr(new NewSessionMojoCdmPromise(callback)));
+                    base::WrapUnique(new NewSessionMojoCdmPromise(callback)));
 }
 
 void MojoCdmService::UpdateSession(
@@ -163,7 +164,7 @@ void MojoCdmService::UpdateSession(
   DVLOG(2) << __FUNCTION__;
   cdm_->UpdateSession(
       session_id.To<std::string>(), response.storage(),
-      scoped_ptr<SimpleCdmPromise>(new SimpleMojoCdmPromise(callback)));
+      std::unique_ptr<SimpleCdmPromise>(new SimpleMojoCdmPromise(callback)));
 }
 
 void MojoCdmService::CloseSession(
@@ -171,7 +172,7 @@ void MojoCdmService::CloseSession(
     const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->CloseSession(session_id.To<std::string>(),
-                     make_scoped_ptr(new SimpleMojoCdmPromise(callback)));
+                     base::WrapUnique(new SimpleMojoCdmPromise(callback)));
 }
 
 void MojoCdmService::RemoveSession(
@@ -179,7 +180,7 @@ void MojoCdmService::RemoveSession(
     const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->RemoveSession(session_id.To<std::string>(),
-                      make_scoped_ptr(new SimpleMojoCdmPromise(callback)));
+                      base::WrapUnique(new SimpleMojoCdmPromise(callback)));
 }
 
 scoped_refptr<MediaKeys> MojoCdmService::GetCdm() {

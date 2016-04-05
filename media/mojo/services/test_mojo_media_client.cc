@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/test_mojo_media_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_stream_sink.h"
 #include "media/base/audio_hardware_config.h"
@@ -37,10 +38,10 @@ void TestMojoMediaClient::Initialize() {
       audio_manager->GetDefaultOutputStreamParameters()));
 }
 
-scoped_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
+std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
   DVLOG(1) << __FUNCTION__;
-  return make_scoped_ptr(new DefaultRendererFactory(
+  return base::WrapUnique(new DefaultRendererFactory(
       media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB(),
       *audio_hardware_config_));
 }
@@ -55,7 +56,7 @@ AudioRendererSink* TestMojoMediaClient::CreateAudioRendererSink() {
 VideoRendererSink* TestMojoMediaClient::CreateVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   if (!video_renderer_sink_) {
-    video_renderer_sink_ = make_scoped_ptr(
+    video_renderer_sink_ = base::WrapUnique(
         new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
                           NullVideoSink::NewFrameCB(), task_runner));
   }
@@ -63,10 +64,10 @@ VideoRendererSink* TestMojoMediaClient::CreateVideoRendererSink(
   return video_renderer_sink_.get();
 }
 
-scoped_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
+std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     mojo::shell::mojom::InterfaceProvider* /* interface_provider */) {
   DVLOG(1) << __FUNCTION__;
-  return make_scoped_ptr(new DefaultCdmFactory());
+  return base::WrapUnique(new DefaultCdmFactory());
 }
 
 }  // namespace media

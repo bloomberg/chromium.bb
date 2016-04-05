@@ -26,7 +26,7 @@
 namespace media {
 
 template <typename PromiseType>
-static void RejectPromise(scoped_ptr<PromiseType> promise,
+static void RejectPromise(std::unique_ptr<PromiseType> promise,
                           interfaces::CdmPromiseResultPtr result) {
   promise->reject(static_cast<MediaKeys::Exception>(result->exception),
                   result->system_code, result->error_message);
@@ -50,7 +50,7 @@ void MojoCdm::Create(
                   session_expiration_update_cb));
 
   // |mojo_cdm| ownership is passed to the promise.
-  scoped_ptr<CdmInitializedPromise> promise(
+  std::unique_ptr<CdmInitializedPromise> promise(
       new CdmInitializedPromise(cdm_created_cb, mojo_cdm));
 
   mojo_cdm->InitializeCdm(key_system, security_origin, cdm_config,
@@ -104,7 +104,7 @@ MojoCdm::~MojoCdm() {
 void MojoCdm::InitializeCdm(const std::string& key_system,
                             const GURL& security_origin,
                             const media::CdmConfig& cdm_config,
-                            scoped_ptr<CdmInitializedPromise> promise) {
+                            std::unique_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -141,7 +141,7 @@ void MojoCdm::OnConnectionError() {
 }
 
 void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
-                                   scoped_ptr<SimpleCdmPromise> promise) {
+                                   std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -155,7 +155,7 @@ void MojoCdm::CreateSessionAndGenerateRequest(
     SessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<NewSessionCdmPromise> promise) {
+    std::unique_ptr<NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -171,7 +171,7 @@ void MojoCdm::CreateSessionAndGenerateRequest(
 
 void MojoCdm::LoadSession(SessionType session_type,
                           const std::string& session_id,
-                          scoped_ptr<NewSessionCdmPromise> promise) {
+                          std::unique_ptr<NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -184,7 +184,7 @@ void MojoCdm::LoadSession(SessionType session_type,
 
 void MojoCdm::UpdateSession(const std::string& session_id,
                             const std::vector<uint8_t>& response,
-                            scoped_ptr<SimpleCdmPromise> promise) {
+                            std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -195,7 +195,7 @@ void MojoCdm::UpdateSession(const std::string& session_id,
 }
 
 void MojoCdm::CloseSession(const std::string& session_id,
-                           scoped_ptr<SimpleCdmPromise> promise) {
+                           std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -205,7 +205,7 @@ void MojoCdm::CloseSession(const std::string& session_id,
 }
 
 void MojoCdm::RemoveSession(const std::string& session_id,
-                            scoped_ptr<SimpleCdmPromise> promise) {
+                            std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -304,7 +304,7 @@ void MojoCdm::OnSessionKeysChange(
   key_data.reserve(keys_info.size());
   for (size_t i = 0; i < keys_info.size(); ++i) {
     key_data.push_back(
-        keys_info[i].To<scoped_ptr<media::CdmKeyInformation>>().release());
+        keys_info[i].To<std::unique_ptr<media::CdmKeyInformation>>().release());
   }
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
                               std::move(key_data));

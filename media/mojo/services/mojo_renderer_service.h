@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "media/base/buffering_state.h"
@@ -32,7 +33,7 @@ class MojoRendererService : interfaces::Renderer {
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-      scoped_ptr<media::Renderer> renderer,
+      std::unique_ptr<media::Renderer> renderer,
       mojo::InterfaceRequest<interfaces::Renderer> request);
   ~MojoRendererService() final;
 
@@ -98,7 +99,7 @@ class MojoRendererService : interfaces::Renderer {
 
   State state_;
 
-  scoped_ptr<DemuxerStreamProviderShim> stream_provider_;
+  std::unique_ptr<DemuxerStreamProviderShim> stream_provider_;
 
   base::RepeatingTimer time_update_timer_;
   uint64_t last_media_time_usec_;
@@ -112,7 +113,7 @@ class MojoRendererService : interfaces::Renderer {
   // Note: Destroy |renderer_| first to avoid access violation into other
   // members, e.g. |stream_provider_| and |cdm_|.
   // Must use "media::" because "Renderer" is ambiguous.
-  scoped_ptr<media::Renderer> renderer_;
+  std::unique_ptr<media::Renderer> renderer_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_;

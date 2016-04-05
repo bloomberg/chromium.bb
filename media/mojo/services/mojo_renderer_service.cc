@@ -19,7 +19,7 @@ const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-    scoped_ptr<media::Renderer> renderer,
+    std::unique_ptr<media::Renderer> renderer,
     mojo::InterfaceRequest<interfaces::Renderer> request)
     : binding_(this, std::move(request)),
       mojo_cdm_service_context_(mojo_cdm_service_context),

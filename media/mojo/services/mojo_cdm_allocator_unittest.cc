@@ -27,7 +27,7 @@ class MojoCdmAllocatorTest : public testing::Test {
     return allocator_.CreateCdmBuffer(capacity);
   }
 
-  scoped_ptr<VideoFrameImpl> CreateCdmVideoFrame() {
+  std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() {
     return allocator_.CreateCdmVideoFrame();
   }
 
@@ -92,7 +92,7 @@ TEST_F(MojoCdmAllocatorTest, CreateCdmVideoFrame) {
   const size_t kBufferSize = VideoFrame::AllocationSize(kFormat, kSize);
 
   // Create a VideoFrameImpl and initialize it.
-  scoped_ptr<VideoFrameImpl> video_frame = CreateCdmVideoFrame();
+  std::unique_ptr<VideoFrameImpl> video_frame = CreateCdmVideoFrame();
   video_frame->SetFormat(cdm::kI420);
   video_frame->SetSize(cdm::Size(kHeight, kWidth));
   video_frame->SetStride(

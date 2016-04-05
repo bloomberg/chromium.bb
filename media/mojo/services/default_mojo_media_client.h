@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_DEFAULT_MOJO_MEDIA_CLIENT_H_
 #define MEDIA_MOJO_SERVICES_DEFAULT_MOJO_MEDIA_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "media/mojo/services/mojo_media_client.h"
 
@@ -18,7 +20,7 @@ class DefaultMojoMediaClient : public MojoMediaClient {
 
   // MojoMediaClient implementation.
   void Initialize() final;
-  scoped_ptr<CdmFactory> CreateCdmFactory(
+  std::unique_ptr<CdmFactory> CreateCdmFactory(
       mojo::shell::mojom::InterfaceProvider* /* interface_provider */) final;
 
  private:

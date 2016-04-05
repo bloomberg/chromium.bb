@@ -5,8 +5,9 @@
 #ifndef MEDIA_MOJO_COMMON_MEDIA_TYPE_CONVERTERS_H_
 #define MEDIA_MOJO_COMMON_MEDIA_TYPE_CONVERTERS_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
@@ -61,9 +62,9 @@ struct TypeConverter<media::interfaces::DecryptConfigPtr,
       const media::DecryptConfig& input);
 };
 template <>
-struct TypeConverter<scoped_ptr<media::DecryptConfig>,
+struct TypeConverter<std::unique_ptr<media::DecryptConfig>,
                      media::interfaces::DecryptConfigPtr> {
-  static scoped_ptr<media::DecryptConfig> Convert(
+  static std::unique_ptr<media::DecryptConfig> Convert(
       const media::interfaces::DecryptConfigPtr& input);
 };
 
@@ -113,9 +114,9 @@ struct TypeConverter<media::interfaces::CdmKeyInformationPtr,
       const media::CdmKeyInformation& input);
 };
 template <>
-struct TypeConverter<scoped_ptr<media::CdmKeyInformation>,
+struct TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
                      media::interfaces::CdmKeyInformationPtr> {
-  static scoped_ptr<media::CdmKeyInformation> Convert(
+  static std::unique_ptr<media::CdmKeyInformation> Convert(
       const media::interfaces::CdmKeyInformationPtr& input);
 };
 

@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_RENDERER_FACTORY_H_
 #define MEDIA_MOJO_SERVICES_MOJO_RENDERER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
@@ -26,7 +28,7 @@ class MojoRendererFactory : public RendererFactory {
       mojo::shell::mojom::InterfaceProvider* interface_provider);
   ~MojoRendererFactory() final;
 
-  scoped_ptr<Renderer> CreateRenderer(
+  std::unique_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,

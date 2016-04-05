@@ -20,7 +20,7 @@ MojoRendererFactory::MojoRendererFactory(
 MojoRendererFactory::~MojoRendererFactory() {
 }
 
-scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
+std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& /* worker_task_runner */,
     AudioRendererSink* /* audio_renderer_sink */,
@@ -29,7 +29,7 @@ scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
   interfaces::RendererPtr renderer_ptr;
   mojo::GetInterface<interfaces::Renderer>(interface_provider_, &renderer_ptr);
 
-  return scoped_ptr<Renderer>(
+  return std::unique_ptr<Renderer>(
       new MojoRendererImpl(media_task_runner, std::move(renderer_ptr)));
 }
 

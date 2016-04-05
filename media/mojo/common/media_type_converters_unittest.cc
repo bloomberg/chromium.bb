@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
@@ -258,7 +259,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
-      make_scoped_ptr(new DecryptConfig(kKeyId, kIv, subsamples)));
+      base::WrapUnique(new DecryptConfig(kKeyId, kIv, subsamples)));
 
   // Convert from and back.
   interfaces::DecoderBufferPtr ptr(interfaces::DecoderBuffer::From(buffer));
@@ -271,7 +272,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
 
   // Test empty IV. This is used for clear buffer in an encrypted stream.
-  buffer->set_decrypt_config(make_scoped_ptr(
+  buffer->set_decrypt_config(base::WrapUnique(
       new DecryptConfig(kKeyId, "", std::vector<SubsampleEntry>())));
   result = interfaces::DecoderBuffer::From(buffer)
                .To<scoped_refptr<DecoderBuffer>>();

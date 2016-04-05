@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/memory/ptr_util.h"
 #include "media/mojo/services/mojo_media_application.h"
 #include "media/mojo/services/test_mojo_media_client.h"
 #include "mojo/logging/init_logging.h"
@@ -16,6 +17,6 @@ MojoResult MojoMain(MojoHandle mojo_handle) {
   mojo::InitLogging();
 
   mojo::ApplicationRunner runner(new media::MojoMediaApplication(
-      make_scoped_ptr(new media::TestMojoMediaClient())));
+      base::WrapUnique(new media::TestMojoMediaClient())));
   return runner.Run(mojo_handle, false /* init_base */);
 }

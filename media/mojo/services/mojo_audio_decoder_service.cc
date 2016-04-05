@@ -16,7 +16,7 @@ namespace media {
 
 MojoAudioDecoderService::MojoAudioDecoderService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-    scoped_ptr<media::AudioDecoder> decoder,
+    std::unique_ptr<media::AudioDecoder> decoder,
     mojo::InterfaceRequest<interfaces::AudioDecoder> request)
     : binding_(this, std::move(request)),
       mojo_cdm_service_context_(mojo_cdm_service_context),

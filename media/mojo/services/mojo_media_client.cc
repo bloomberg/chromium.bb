@@ -12,12 +12,12 @@ MojoMediaClient::~MojoMediaClient() {}
 
 void MojoMediaClient::Initialize() {}
 
-scoped_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
+std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return nullptr;
 }
 
-scoped_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
+std::unique_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
   return nullptr;
 }
@@ -31,7 +31,7 @@ VideoRendererSink* MojoMediaClient::CreateVideoRendererSink(
   return nullptr;
 }
 
-scoped_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
+std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
     mojo::shell::mojom::InterfaceProvider* interface_provider) {
   return nullptr;
 }

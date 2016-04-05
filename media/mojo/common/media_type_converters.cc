@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -398,11 +399,11 @@ media::interfaces::DecryptConfigPtr TypeConverter<
 }
 
 // static
-scoped_ptr<media::DecryptConfig>
-TypeConverter<scoped_ptr<media::DecryptConfig>,
+std::unique_ptr<media::DecryptConfig>
+TypeConverter<std::unique_ptr<media::DecryptConfig>,
               media::interfaces::DecryptConfigPtr>::
     Convert(const media::interfaces::DecryptConfigPtr& input) {
-  return make_scoped_ptr(new media::DecryptConfig(
+  return base::WrapUnique(new media::DecryptConfig(
       input->key_id, input->iv,
       input->subsamples.To<std::vector<media::SubsampleEntry>>()));
 }
@@ -471,7 +472,7 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
 
   if (input->decrypt_config) {
     buffer->set_decrypt_config(
-        input->decrypt_config.To<scoped_ptr<media::DecryptConfig>>());
+        input->decrypt_config.To<std::unique_ptr<media::DecryptConfig>>());
   }
 
   media::DecoderBuffer::DiscardPadding discard_padding(
@@ -582,11 +583,11 @@ media::interfaces::CdmKeyInformationPtr TypeConverter<
 }
 
 // static
-scoped_ptr<media::CdmKeyInformation>
-TypeConverter<scoped_ptr<media::CdmKeyInformation>,
+std::unique_ptr<media::CdmKeyInformation>
+TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
               media::interfaces::CdmKeyInformationPtr>::
     Convert(const media::interfaces::CdmKeyInformationPtr& input) {
-  return make_scoped_ptr(new media::CdmKeyInformation(
+  return base::WrapUnique(new media::CdmKeyInformation(
       input->key_id.storage(),
       static_cast<media::CdmKeyInformation::KeyStatus>(input->status),
       input->system_code));

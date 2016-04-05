@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_media_application_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "media/mojo/services/mojo_media_application.h"
 
 #if defined(ENABLE_TEST_MOJO_MEDIA_CLIENT)
@@ -20,9 +21,9 @@ using DefaultClient = media::DefaultMojoMediaClient;
 namespace media {
 
 // static
-scoped_ptr<mojo::ShellClient> CreateMojoMediaApplication() {
-  return scoped_ptr<mojo::ShellClient>(
-      new MojoMediaApplication(make_scoped_ptr(new DefaultClient())));
+std::unique_ptr<mojo::ShellClient> CreateMojoMediaApplication() {
+  return std::unique_ptr<mojo::ShellClient>(
+      new MojoMediaApplication(base::WrapUnique(new DefaultClient())));
 }
 
 }  // namespace media

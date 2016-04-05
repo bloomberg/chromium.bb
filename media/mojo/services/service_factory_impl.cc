@@ -29,7 +29,7 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
     mojo::shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
-    scoped_ptr<mojo::MessageLoopRef> parent_app_refcount,
+    std::unique_ptr<mojo::MessageLoopRef> parent_app_refcount,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
       interfaces_(interfaces),
@@ -51,7 +51,7 @@ void ServiceFactoryImpl::CreateAudioDecoder(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
 
-  scoped_ptr<AudioDecoder> audio_decoder =
+  std::unique_ptr<AudioDecoder> audio_decoder =
       mojo_media_client_->CreateAudioDecoder(task_runner);
   if (!audio_decoder) {
     LOG(ERROR) << "AudioDecoder creation failed.";
@@ -79,7 +79,7 @@ void ServiceFactoryImpl::CreateRenderer(
   if (!renderer_factory)
     return;
 
-  scoped_ptr<Renderer> renderer = renderer_factory->CreateRenderer(
+  std::unique_ptr<Renderer> renderer = renderer_factory->CreateRenderer(
       task_runner, task_runner, audio_renderer_sink, video_renderer_sink,
       RequestSurfaceCB());
   if (!renderer) {
