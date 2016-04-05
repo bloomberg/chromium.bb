@@ -609,19 +609,5 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                         .setMimeType("application/pdf")
                         .setHasUserGesture(false)
                         .build()));
-
-        // But should not open any PDFs with Content-Disposition: attachment.
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
-                        .setContentDisposition("attachment")
-                        .setMimeType("application/pdf")
-                        .setHasUserGesture(true)
-                        .build()));
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
-                        .setContentDisposition("attachment; filename=test.pdf")
-                        .setMimeType("application/pdf")
-                        .setHasUserGesture(true)
-                        .build()));
     }
 }

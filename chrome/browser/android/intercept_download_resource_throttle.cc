@@ -52,11 +52,13 @@ InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
     net::URLRequest* request,
     int render_process_id,
     int render_view_id,
-    int request_id)
+    int request_id,
+    bool must_download)
     : request_(request),
       render_process_id_(render_process_id),
       render_view_id_(render_view_id),
-      request_id_(request_id) {
+      request_id_(request_id),
+      must_download_(must_download) {
 }
 
 InterceptDownloadResourceThrottle::~InterceptDownloadResourceThrottle() {
@@ -119,7 +121,7 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   }
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(
-      render_process_id_, render_view_id_, request_id_);
+      render_process_id_, render_view_id_, request_id_, must_download_);
   controller()->Cancel();
   RecordInterceptFailureReasons(NO_FAILURE);
 }

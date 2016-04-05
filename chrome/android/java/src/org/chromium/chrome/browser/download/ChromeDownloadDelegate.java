@@ -149,16 +149,11 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         mDangerousDownloadListener = new DangerousDownloadListener();
     }
 
-    /**
-     * Request a download from the given url, or if a streaming viewer is available stream the
-     * content into the viewer.
-     * @param downloadInfo Information about the download.
-     */
     @Override
-    public void requestHttpGetDownload(DownloadInfo downloadInfo) {
+    public void requestHttpGetDownload(DownloadInfo downloadInfo, boolean mustDownload) {
         // If we're dealing with A/V content that's not explicitly marked for download, check if it
         // is streamable.
-        if (!DownloadManagerService.isAttachment(downloadInfo.getContentDisposition())) {
+        if (!mustDownload) {
             // Query the package manager to see if there's a registered handler that matches.
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(downloadInfo.getUrl()), downloadInfo.getMimeType());

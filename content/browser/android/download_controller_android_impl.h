@@ -95,7 +95,8 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid {
   // DownloadControllerAndroid implementation.
   void CreateGETDownload(int render_process_id,
                          int render_view_id,
-                         int request_id) override;
+                         int request_id,
+                         bool must_download) override;
   void OnDownloadStarted(DownloadItem* download_item) override;
   void StartContextMenuDownload(const ContextMenuParams& params,
                                 WebContents* web_contents,
@@ -126,9 +127,11 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid {
                                const DownloadInfoAndroid& info);
   void StartAndroidDownload(int render_process_id,
                             int render_view_id,
+                            bool must_download,
                             const DownloadInfoAndroid& info);
   void StartAndroidDownloadInternal(int render_process_id,
                                     int render_view_id,
+                                    bool must_download,
                                     const DownloadInfoAndroid& info,
                                     bool allowed);
 

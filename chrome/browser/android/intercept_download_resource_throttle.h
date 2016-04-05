@@ -24,7 +24,8 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
   InterceptDownloadResourceThrottle(net::URLRequest* request,
                                     int render_process_id,
                                     int render_view_id,
-                                    int request_id);
+                                    int request_id,
+                                    bool must_download);
 
   // content::ResourceThrottle implementation:
   void WillProcessResponse(bool* defer) override;
@@ -39,6 +40,7 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
   int render_process_id_;
   int render_view_id_;
   int request_id_;
+  bool must_download_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptDownloadResourceThrottle);
 };

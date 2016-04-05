@@ -12,8 +12,12 @@ public interface ContentViewDownloadDelegate {
     * Notify the host application that a file should be downloaded. Replaces
     * onDownloadStart from DownloadListener.
     * @param downloadInfo Information about the requested download.
+    * @param mustDownload Whether the content must be downloded. If chrome cannot resolve a MIME
+    *                     type, clicking a link will trigger a download. mustDownload is false if
+    *                     the link has no download attribute and content-disposition is not
+    *                     attachment.
     */
-    void requestHttpGetDownload(DownloadInfo downloadInfo);
+    void requestHttpGetDownload(DownloadInfo downloadInfo, boolean mustDownload);
 
     /**
      * Notify the host application that a download is started.

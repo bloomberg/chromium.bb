@@ -416,7 +416,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 #if BUILDFLAG(ANDROID_JAVA_UI)
     throttles->push_back(
         new chrome::InterceptDownloadResourceThrottle(
-            request, child_id, route_id, request_id));
+            request, child_id, route_id, request_id, must_download));
 #endif
   }
 

@@ -919,19 +919,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @VisibleForTesting
     static boolean shouldOpenAfterDownload(DownloadInfo downloadInfo) {
         String type = downloadInfo.getMimeType();
-        return downloadInfo.hasUserGesture() && !isAttachment(downloadInfo.getContentDisposition())
-                && MIME_TYPES_TO_OPEN.contains(type);
-    }
-
-    /**
-     * Returns true if the download meant to be treated as an attachment.
-     *
-     * @param contentDisposition Content disposition of the download.
-     * @return true if the downloaded is an attachment, or false otherwise.
-     */
-    public static boolean isAttachment(String contentDisposition) {
-        return contentDisposition != null
-                && contentDisposition.regionMatches(true, 0, "attachment", 0, 10);
+        return downloadInfo.hasUserGesture() && MIME_TYPES_TO_OPEN.contains(type);
     }
 
     /**

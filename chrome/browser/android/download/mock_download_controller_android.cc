@@ -20,7 +20,8 @@ MockDownloadControllerAndroid::MockDownloadControllerAndroid()
 MockDownloadControllerAndroid::~MockDownloadControllerAndroid() {}
 
 void MockDownloadControllerAndroid::CreateGETDownload(
-    int render_process_id, int render_view_id, int request_id) {
+    int render_process_id, int render_view_id, int request_id,
+    bool must_download) {
 }
 
 void MockDownloadControllerAndroid::OnDownloadStarted(

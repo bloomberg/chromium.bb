@@ -80,7 +80,7 @@ public class DownloadController {
     private void newHttpGetDownload(ContentViewCore view, String url,
             String userAgent, String contentDisposition, String mimeType,
             String cookie, String referer, boolean hasUserGesture,
-            String filename, long contentLength) {
+            String filename, long contentLength, boolean mustDownload) {
         ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
 
         if (downloadDelegate == null) return;
@@ -96,7 +96,7 @@ public class DownloadController {
                 .setContentLength(contentLength)
                 .setIsGETRequest(true)
                 .build();
-        downloadDelegate.requestHttpGetDownload(downloadInfo);
+        downloadDelegate.requestHttpGetDownload(downloadInfo, mustDownload);
     }
 
     /**

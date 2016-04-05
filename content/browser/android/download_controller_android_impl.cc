@@ -239,7 +239,8 @@ bool DownloadControllerAndroidImpl::HasFileAccessPermission(
 }
 
 void DownloadControllerAndroidImpl::CreateGETDownload(
-    int render_process_id, int render_view_id, int request_id) {
+    int render_process_id, int render_view_id, int request_id,
+    bool must_download) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GlobalRequestID global_id(render_process_id, request_id);
 
@@ -249,7 +250,7 @@ void DownloadControllerAndroidImpl::CreateGETDownload(
   GetDownloadInfoCB cb = base::Bind(
         &DownloadControllerAndroidImpl::StartAndroidDownload,
         base::Unretained(this), render_process_id,
-        render_view_id);
+        render_view_id, must_download);
 
   PrepareDownloadInfo(
       global_id,
@@ -343,7 +344,7 @@ void DownloadControllerAndroidImpl::StartDownloadOnUIThread(
 }
 
 void DownloadControllerAndroidImpl::StartAndroidDownload(
-    int render_process_id, int render_view_id,
+    int render_process_id, int render_view_id, bool must_download,
     const DownloadInfoAndroid& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -363,7 +364,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
         web_contents,
         base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownload,
                    base::Unretained(this), render_process_id, render_view_id,
-                   info)));
+                   must_download, info)));
     return;
   }
 
@@ -371,11 +372,11 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
       web_contents,
       base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownloadInternal,
                  base::Unretained(this), render_process_id, render_view_id,
-                 info));
+                 must_download, info));
 }
 
 void DownloadControllerAndroidImpl::StartAndroidDownloadInternal(
-    int render_process_id, int render_view_id,
+    int render_process_id, int render_view_id, bool must_download,
     const DownloadInfoAndroid& info, bool allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!allowed)
@@ -418,7 +419,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownloadInternal(
       env, GetJavaObject()->Controller(env).obj(), view.obj(), jurl.obj(),
       juser_agent.obj(), jcontent_disposition.obj(), jmime_type.obj(),
       jcookie.obj(), jreferer.obj(), info.has_user_gesture, jfilename.obj(),
-      info.total_bytes);
+      info.total_bytes, must_download);
 }
 
 void DownloadControllerAndroidImpl::OnDownloadStarted(

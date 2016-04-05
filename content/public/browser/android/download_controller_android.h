@@ -28,7 +28,7 @@ class CONTENT_EXPORT DownloadControllerAndroid : public DownloadItem::Observer {
   // Starts a new download request with Android. Should be called on the
   // UI thread.
   virtual void CreateGETDownload(int render_process_id, int render_view_id,
-                                 int request_id) = 0;
+                                 int request_id, bool must_download) = 0;
 
   // Should be called when a download is started. It can be either a GET
   // request with authentication or a POST request. Notifies the embedding

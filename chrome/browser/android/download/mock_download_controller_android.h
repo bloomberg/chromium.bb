@@ -27,7 +27,7 @@ class MockDownloadControllerAndroid
 
   // DownloadControllerAndroid implementation.
   void CreateGETDownload(int render_process_id, int render_view_id,
-                         int request_id) override;
+                         int request_id, bool mustDownload) override;
   void OnDownloadStarted(content::DownloadItem* download_item) override;
   void StartContextMenuDownload(
       const content::ContextMenuParams& params,
