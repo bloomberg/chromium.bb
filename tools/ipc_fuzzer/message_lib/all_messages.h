@@ -24,7 +24,6 @@
 #include "components/tracing/tracing_messages.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/visitedlink/common/visitedlink_message_generator.h"
-#include "content/child/plugin_message_generator.h"
 #include "content/common/all_messages.h"
 #include "extensions/common/extension_message_generator.h"
 #include "remoting/host/chromoting_messages.h"
