@@ -18,6 +18,10 @@
 namespace base {
 namespace {
 
+WeakPtr<int> PassThru(WeakPtr<int> ptr) {
+  return ptr;
+}
+
 template <class T>
 class OffThreadObjectCreator {
  public:
@@ -114,7 +118,7 @@ class BackgroundThread : public Thread {
 
   Target* DeRef(const Arrow* arrow) {
     WaitableEvent completion(true, false);
-    Target* result = NULL;
+    Target* result = nullptr;
     task_runner()->PostTask(FROM_HERE, base::Bind(&BackgroundThread::DoDeRef,
                                                   arrow, &result, &completion));
     completion.Wait();
@@ -194,13 +198,13 @@ TEST(WeakPtrFactoryTest, Comparison) {
 
 TEST(WeakPtrFactoryTest, OutOfScope) {
   WeakPtr<int> ptr;
-  EXPECT_EQ(NULL, ptr.get());
+  EXPECT_EQ(nullptr, ptr.get());
   {
     int data;
     WeakPtrFactory<int> factory(&data);
     ptr = factory.GetWeakPtr();
   }
-  EXPECT_EQ(NULL, ptr.get());
+  EXPECT_EQ(nullptr, ptr.get());
 }
 
 TEST(WeakPtrFactoryTest, Multiple) {
@@ -213,8 +217,8 @@ TEST(WeakPtrFactoryTest, Multiple) {
     EXPECT_EQ(&data, a.get());
     EXPECT_EQ(&data, b.get());
   }
-  EXPECT_EQ(NULL, a.get());
-  EXPECT_EQ(NULL, b.get());
+  EXPECT_EQ(nullptr, a.get());
+  EXPECT_EQ(nullptr, b.get());
 }
 
 TEST(WeakPtrFactoryTest, MultipleStaged) {
@@ -226,9 +230,9 @@ TEST(WeakPtrFactoryTest, MultipleStaged) {
     {
       WeakPtr<int> b = factory.GetWeakPtr();
     }
-    EXPECT_TRUE(NULL != a.get());
+    EXPECT_NE(nullptr, a.get());
   }
-  EXPECT_EQ(NULL, a.get());
+  EXPECT_EQ(nullptr, a.get());
 }
 
 TEST(WeakPtrFactoryTest, Dereference) {
@@ -247,6 +251,11 @@ TEST(WeakPtrFactoryTest, UpCast) {
   WeakPtr<Base> ptr = factory.GetWeakPtr();
   ptr = factory.GetWeakPtr();
   EXPECT_EQ(ptr.get(), &data);
+}
+
+TEST(WeakPtrTest, ConstructFromNullptr) {
+  WeakPtr<int> ptr = PassThru(nullptr);
+  EXPECT_EQ(nullptr, ptr.get());
 }
 
 TEST(WeakPtrTest, SupportsWeakPtr) {
@@ -299,7 +308,7 @@ TEST(WeakPtrTest, InvalidateWeakPtrs) {
   EXPECT_EQ(&data, ptr.get());
   EXPECT_TRUE(factory.HasWeakPtrs());
   factory.InvalidateWeakPtrs();
-  EXPECT_EQ(NULL, ptr.get());
+  EXPECT_EQ(nullptr, ptr.get());
   EXPECT_FALSE(factory.HasWeakPtrs());
 
   // Test that the factory can create new weak pointers after a
@@ -309,7 +318,7 @@ TEST(WeakPtrTest, InvalidateWeakPtrs) {
   EXPECT_EQ(&data, ptr2.get());
   EXPECT_TRUE(factory.HasWeakPtrs());
   factory.InvalidateWeakPtrs();
-  EXPECT_EQ(NULL, ptr2.get());
+  EXPECT_EQ(nullptr, ptr2.get());
   EXPECT_FALSE(factory.HasWeakPtrs());
 }
 
@@ -416,7 +425,7 @@ TEST(WeakPtrTest, MoveOwnershipAfterInvalidate) {
   EXPECT_EQ(target.get(), arrow.target.get());
 
   target->factory.InvalidateWeakPtrs();
-  EXPECT_EQ(NULL, arrow.target.get());
+  EXPECT_EQ(nullptr, arrow.target.get());
 
   arrow.target = target->factory.GetWeakPtr();
   // Re-bind to background thread.
@@ -479,7 +488,7 @@ TEST(WeakPtrTest, OwnerThreadDeletesObject) {
     arrow.target = target.AsWeakPtr();
     background.CreateArrowFromArrow(&arrow_copy, &arrow);
   }
-  EXPECT_EQ(NULL, arrow_copy->target.get());
+  EXPECT_EQ(nullptr, arrow_copy->target.get());
   background.DeleteArrow(arrow_copy);
 }
 
