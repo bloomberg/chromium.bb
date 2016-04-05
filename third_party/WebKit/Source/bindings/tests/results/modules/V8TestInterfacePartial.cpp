@@ -17,8 +17,6 @@
 #include "bindings/tests/idls/modules/TestPartialInterfaceImplementation3.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/GetPtr.h"
@@ -242,15 +240,6 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
 
 static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
 }
 
@@ -293,15 +282,6 @@ static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethod(info);
 }
 
@@ -323,11 +303,13 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-        {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-    };
-    V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+            {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        };
+        V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+        V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    } // if (RuntimeEnabledFeatures::featureNameEnabled())
 
     instanceTemplate->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
 }

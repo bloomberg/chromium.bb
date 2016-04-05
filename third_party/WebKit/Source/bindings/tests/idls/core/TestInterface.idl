@@ -38,7 +38,6 @@
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,
     Iterable,
-    OriginTrialEnabled=OriginTrialFeatureName,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
     Exposed=(Worker,Window),

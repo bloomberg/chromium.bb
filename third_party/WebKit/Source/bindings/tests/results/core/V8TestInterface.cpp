@@ -31,7 +31,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/GetPtr.h"
@@ -65,15 +64,6 @@ static void (*partial2StaticVoidMethodMethodForPartialInterface)(const v8::Funct
 
 static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
@@ -82,15 +72,6 @@ static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo
 static void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestInterface_TestInterfaceAttribute_AttributeGetter);
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetter(info);
 }
 
@@ -117,15 +98,6 @@ static void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->doubleAttribute());
@@ -133,15 +105,6 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 
 static void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetter(info);
 }
 
@@ -164,15 +127,6 @@ static void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInf
 
 static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->floatAttribute());
@@ -180,15 +134,6 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
 
 static void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::floatAttributeAttributeGetter(info);
 }
 
@@ -211,15 +156,6 @@ static void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo
 
 static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
@@ -227,15 +163,6 @@ static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbac
 
 static void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeGetter(info);
 }
 
@@ -258,15 +185,6 @@ static void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::Functio
 
 static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
@@ -274,15 +192,6 @@ static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallback
 
 static void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeGetter(info);
 }
 
@@ -305,15 +214,6 @@ static void unrestrictedFloatAttributeAttributeSetterCallback(const v8::Function
 
 static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->testEnumAttribute(), info.GetIsolate());
@@ -321,15 +221,6 @@ static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
 
 static void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::testEnumAttributeAttributeGetter(info);
 }
 
@@ -362,15 +253,6 @@ static void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackI
 
 static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     StringOrDouble result;
@@ -380,15 +262,6 @@ static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInf
 
 static void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeGetter(info);
 }
 
@@ -412,15 +285,6 @@ static void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCal
 
 static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->conditionalLongAttribute());
@@ -428,15 +292,6 @@ static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackIn
 
 static void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeGetter(info);
 }
 
@@ -459,15 +314,6 @@ static void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCa
 
 static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->conditionalReadOnlyLongAttribute());
@@ -475,43 +321,16 @@ static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCa
 
 static void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
 static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueString(info, TestInterfaceImplementation::staticStringAttribute(), info.GetIsolate());
 }
 
 static void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::staticStringAttributeAttributeGetter(info);
 }
 
@@ -531,29 +350,11 @@ static void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallb
 
 static void staticReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValue(info, TestInterfaceImplementation::staticReturnDOMWrapperAttribute(), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeGetter(info);
 }
 
@@ -578,43 +379,16 @@ static void staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::Fun
 
 static void staticReadOnlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueString(info, TestInterfaceImplementation::staticReadOnlyStringAttribute(), info.GetIsolate());
 }
 
 static void staticReadOnlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::staticReadOnlyStringAttributeAttributeGetter(info);
 }
 
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     RefPtr<TestInterfaceImplementation> cppValue(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute());
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
         return;
@@ -627,57 +401,21 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
 
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(info);
 }
 
 static void staticConditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueInt(info, TestInterfaceImplementation::staticConditionalReadOnlyLongAttribute());
 }
 
 static void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
 static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingAttribute()), impl);
@@ -685,15 +423,6 @@ static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::Functi
 
 static void legacyInterfaceTypeCheckingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeGetter(info);
 }
 
@@ -713,15 +442,6 @@ static void legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8
 
 static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->alwaysExposedAttribute());
@@ -729,15 +449,6 @@ static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
 static void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeGetter(info);
 }
 
@@ -760,15 +471,6 @@ static void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->workerExposedAttribute());
@@ -776,15 +478,6 @@ static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
 static void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetter(info);
 }
 
@@ -807,15 +500,6 @@ static void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->windowExposedAttribute());
@@ -823,15 +507,6 @@ static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
 static void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetter(info);
 }
 
@@ -854,15 +529,6 @@ static void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
         return; // Return silently because of [LenientThis].
     v8::Local<v8::Object> holder = info.Holder();
@@ -872,15 +538,6 @@ static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 
 static void lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeGetter(info);
 }
 
@@ -902,57 +559,21 @@ static void lenientThisAttributeAttributeSetterCallback(const v8::FunctionCallba
 
 static void implementsStaticReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueInt(info, TestInterfaceImplementation::implementsStaticReadOnlyLongAttribute());
 }
 
 static void implementsStaticReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsStaticReadOnlyLongAttributeAttributeGetter(info);
 }
 
 static void implementsStaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueString(info, TestInterfaceImplementation::implementsStaticStringAttribute(), info.GetIsolate());
 }
 
 static void implementsStaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeGetter(info);
 }
 
@@ -972,15 +593,6 @@ static void implementsStaticStringAttributeAttributeSetterCallback(const v8::Fun
 
 static void implementsReadonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->implementsReadonlyStringAttribute(), info.GetIsolate());
@@ -988,29 +600,11 @@ static void implementsReadonlyStringAttributeAttributeGetter(const v8::FunctionC
 
 static void implementsReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsReadonlyStringAttributeAttributeGetter(info);
 }
 
 static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->implementsStringAttribute(), info.GetIsolate());
@@ -1018,15 +612,6 @@ static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackI
 
 static void implementsStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeGetter(info);
 }
 
@@ -1048,15 +633,6 @@ static void implementsStringAttributeAttributeSetterCallback(const v8::FunctionC
 
 static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->implementsNodeAttribute()), impl);
@@ -1064,15 +640,6 @@ static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInf
 
 static void implementsNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeGetter(info);
 }
 
@@ -1098,15 +665,6 @@ static void implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCal
 
 static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     EventListener* cppValue(impl->implementsEventHandlerAttribute());
@@ -1115,15 +673,6 @@ static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCal
 
 static void implementsEventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeGetter(info);
 }
 
@@ -1143,15 +692,6 @@ static void implementsEventHandlerAttributeAttributeSetterCallback(const v8::Fun
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->implementsRuntimeEnabledNodeAttribute()), impl);
@@ -1159,15 +699,6 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::Funct
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeGetter(info);
 }
 
@@ -1193,29 +724,11 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v
 
 static void implements2StaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueString(info, TestImplements2::implements2StaticStringAttribute(), info.GetIsolate());
 }
 
 static void implements2StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeGetter(info);
 }
 
@@ -1235,15 +748,6 @@ static void implements2StaticStringAttributeAttributeSetterCallback(const v8::Fu
 
 static void implements2StringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, TestImplements2::implements2StringAttribute(*impl), info.GetIsolate());
@@ -1251,15 +755,6 @@ static void implements2StringAttributeAttributeGetter(const v8::FunctionCallback
 
 static void implements2StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeGetter(info);
 }
 
@@ -1281,15 +776,6 @@ static void implements2StringAttributeAttributeSetterCallback(const v8::Function
 
 static void implements3StringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, TestImplements3Implementation::implements3StringAttribute(*impl), info.GetIsolate());
@@ -1297,15 +783,6 @@ static void implements3StringAttributeAttributeGetter(const v8::FunctionCallback
 
 static void implements3StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeGetter(info);
 }
 
@@ -1327,29 +804,11 @@ static void implements3StringAttributeAttributeSetterCallback(const v8::Function
 
 static void implements3StaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueString(info, TestImplements3Implementation::implements3StaticStringAttribute(), info.GetIsolate());
 }
 
 static void implements3StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeGetter(info);
 }
 
@@ -1369,15 +828,6 @@ static void implements3StaticStringAttributeAttributeSetterCallback(const v8::Fu
 
 static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, TestPartialInterface::partialLongAttribute(*impl));
@@ -1385,15 +835,6 @@ static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 
 static void partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialLongAttributeAttributeGetter(info);
 }
 
@@ -1416,29 +857,11 @@ static void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallba
 
 static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueInt(info, TestPartialInterface::partialStaticLongAttribute());
 }
 
 static void partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetter(info);
 }
 
@@ -1460,15 +883,6 @@ static void partialStaticLongAttributeAttributeSetterCallback(const v8::Function
 
 static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -1477,15 +891,6 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
 
 static void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetter(info);
 }
 
@@ -1509,15 +914,6 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(
 
 static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, TestPartialInterface::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
@@ -1525,15 +921,6 @@ static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCal
 
 static void partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeGetter(info);
 }
 
@@ -1564,15 +951,6 @@ static void partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::Fun
 
 static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     String result;
@@ -1583,15 +961,6 @@ static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 
 static void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::stringAttributeAttributeGetter(info);
 }
 
@@ -1613,15 +982,6 @@ static void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInf
 
 static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2LongAttribute(*impl));
@@ -1629,15 +989,6 @@ static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 
 static void partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetter(info);
 }
 
@@ -1660,29 +1011,11 @@ static void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallb
 
 static void partial2StaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2StaticLongAttribute());
 }
 
 static void partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetter(info);
 }
 
@@ -1722,15 +1055,6 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
 
 static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
 }
 
@@ -1758,15 +1082,6 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
 
@@ -1794,15 +1109,6 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
 
 static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(info);
 }
 
@@ -1836,15 +1142,6 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethod(info);
 }
 
@@ -1856,15 +1153,6 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::voidMethodMethod(info);
 }
 
@@ -1876,15 +1164,6 @@ static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Valu
 
 static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::voidMethodMethodForMainWorld(info);
 }
 
@@ -1896,15 +1175,6 @@ static void alwaysExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::alwaysExposedMethodMethod(info);
 }
 
@@ -1916,15 +1186,6 @@ static void workerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::workerExposedMethodMethod(info);
 }
 
@@ -1936,15 +1197,6 @@ static void windowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::windowExposedMethodMethod(info);
 }
 
@@ -1955,15 +1207,6 @@ static void alwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 
 static void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethod(info);
 }
 
@@ -1974,15 +1217,6 @@ static void workerExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 
 static void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethod(info);
 }
 
@@ -1993,15 +1227,6 @@ static void windowExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 
 static void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethod(info);
 }
 
@@ -2012,15 +1237,6 @@ static void staticReturnDOMWrapperMethodMethod(const v8::FunctionCallbackInfo<v8
 
 static void staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethod(info);
 }
 
@@ -2032,15 +1248,6 @@ static void methodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallb
 
 static void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
 
@@ -2135,15 +1342,6 @@ static void methodWithExposedHavingRuntimeEnabldFlagMethod(const v8::FunctionCal
 
 static void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethod(info);
 }
 
@@ -2155,15 +1353,6 @@ static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallback
 
 static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethod(info);
 }
 
@@ -2232,15 +1421,6 @@ static void legacyInterfaceTypeCheckingMethodMethod(const v8::FunctionCallbackIn
 
 static void legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethod(info);
 }
 
@@ -2252,15 +1432,6 @@ static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 
 static void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsVoidMethodMethod(info);
 }
 
@@ -2297,29 +1468,11 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 
 static void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsComplexMethodMethod(info);
 }
 
 static void implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     V8TestInterface::implementsCustomVoidMethodMethodCustom(info);
 }
 
@@ -2330,15 +1483,6 @@ static void implementsStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::
 
 static void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethod(info);
 }
 
@@ -2350,15 +1494,6 @@ static void implements2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements2VoidMethodMethod(info);
 }
 
@@ -2370,15 +1505,6 @@ static void implements3VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements3VoidMethodMethod(info);
 }
 
@@ -2389,15 +1515,6 @@ static void implements3StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8:
 
 static void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethod(info);
 }
 
@@ -2409,15 +1526,6 @@ static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialVoidMethodMethod(info);
 }
 
@@ -2428,15 +1536,6 @@ static void partialStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 
 static void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethod(info);
 }
 
@@ -2460,15 +1559,6 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
 
 static void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethod(info);
 }
 
@@ -2486,15 +1576,6 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
 
 static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(info);
 }
 
@@ -2518,15 +1599,6 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
 
 static void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethod(info);
 }
 
@@ -2553,15 +1625,6 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
 
 static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(info);
 }
 
@@ -2735,15 +1798,6 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::toJSONMethod(info);
 }
 
@@ -2755,15 +1809,6 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::toStringMethod(info);
 }
 
@@ -2782,15 +1827,6 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
     TestInterfaceImplementationV8Internal::iteratorMethod(info);
 }
 
@@ -3022,23 +2058,25 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-        {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
-        {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
-        {"IMPLEMENTS_CONSTANT_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"IMPLEMENTS_CONSTANT_2", 2, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"PARTIAL2_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-    };
-    V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
-    if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        const V8DOMConfiguration::ConstantConfiguration constantPartialUnsignedShortConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialUnsignedShortConfiguration);
-        const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
-    }
-    V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes));
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+            {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
+            {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
+            {"IMPLEMENTS_CONSTANT_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+            {"IMPLEMENTS_CONSTANT_2", 2, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+            {"PARTIAL2_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        };
+        V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+        if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
+            const V8DOMConfiguration::ConstantConfiguration constantPartialUnsignedShortConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+            V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialUnsignedShortConfiguration);
+            const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
+            V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
+        }
+        V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes));
+        V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
+        V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    } // if (RuntimeEnabledFeatures::featureNameEnabled())
 
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorconditionalReadOnlyLongAttributeConfiguration = \
@@ -3266,15 +2304,6 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     if (holder.IsEmpty())
         return false;
 
-    ExecutionContext* executionContext = currentExecutionContext(scriptState->isolate());
-    String errorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-        }
-        return;
-    }
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder);
