@@ -2013,6 +2013,24 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Close navigation drawer
       </message>
 
+      <!-- Bookmark widget -->
+      <!-- TODO(ianwen): delete these strings once GYP is no longer used -->
+      <message name="IDS_BOOKMARK_WIDGET_TITLE_STABLE" desc="Title for the widget that shows bookmarks from Chrome.">
+        Chrome bookmarks
+      </message>
+      <message name="IDS_BOOKMARK_WIDGET_TITLE_BETA" desc="Title for the widget that shows bookmarks from Chrome Beta.">
+        Chrome Beta bookmarks
+      </message>
+      <message name="IDS_BOOKMARK_WIDGET_TITLE_DEV" desc="Title for the widget that shows bookmarks from Chrome Dev.">
+        Chrome Dev bookmarks
+      </message>
+      <message name="IDS_BOOKMARK_WIDGET_TITLE_CANARY" desc="Title for the widget that shows bookmarks from Chrome Canary.">
+        Chrome Canary bookmarks
+      </message>
+      <message name="IDS_BOOKMARK_WIDGET_TITLE_WORK" desc="Title for the widget that shows bookmarks from Work Chrome (Chrome for Enterprise).">
+        Work Chrome bookmarks
+      </message>
+
       <!-- Offline pages -->
       <message name="IDS_OFFLINE_PAGES_ACTION_BAR_DELETE" desc="Button text to delete the saved web pages that are being selected [CHAR-LIMIT=32]">
         Delete saved pages
