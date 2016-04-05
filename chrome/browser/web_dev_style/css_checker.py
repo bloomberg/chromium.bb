@@ -55,7 +55,7 @@ class CSSChecker(object):
       return re.sub(re.compile(r'--[\d\w-]+: {.*?};', re.DOTALL), '', s)
 
     def _remove_template_expressions(s):
-      return re.sub(re.compile(r'\$i18n{[^}]*}', re.DOTALL), '', s)
+      return re.sub(re.compile(r'\$i18n(Raw)?{[^}]*}', re.DOTALL), '', s)
 
     def _remove_grit(s):
       grit_reg = re.compile(r"""

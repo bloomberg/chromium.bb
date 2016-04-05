@@ -28,7 +28,30 @@ TEST(TemplateExpressionsTest,
   EXPECT_EQ("$ $$ $$$", ReplaceTemplateExpressions("$ $$ $$$", substitutions));
   EXPECT_EQ("$x", ReplaceTemplateExpressions("$$i18n{a}", substitutions));
   EXPECT_EQ("$$x", ReplaceTemplateExpressions("$$$i18n{a}", substitutions));
-  EXPECT_EQ("$i18n12", ReplaceTemplateExpressions("$i18n12", substitutions));
+  EXPECT_EQ("$i1812", ReplaceTemplateExpressions("$i1812", substitutions));
+}
+
+TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsEscaping) {
+  static TemplateReplacements substitutions;
+  substitutions["punctuationSample"] = "a\"b'c<d>e&f";
+  substitutions["htmlSample"] = "<div>hello</div>";
+  EXPECT_EQ(
+      "a&quot;b&#39;c&lt;d&gt;e&amp;f",
+      ReplaceTemplateExpressions("$i18n{punctuationSample}", substitutions));
+  EXPECT_EQ("&lt;div&gt;hello&lt;/div&gt;",
+            ReplaceTemplateExpressions("$i18n{htmlSample}", substitutions));
+  EXPECT_EQ(
+      "multiple: &lt;div&gt;hello&lt;/div&gt;, a&quot;b&#39;c&lt;d&gt;e&amp;f.",
+      ReplaceTemplateExpressions(
+          "multiple: $i18n{htmlSample}, $i18n{punctuationSample}.",
+          substitutions));
+}
+
+TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsRaw) {
+  static TemplateReplacements substitutions;
+  substitutions["rawSample"] = "<a href=\"example.com\">hello</a>";
+  EXPECT_EQ("<a href=\"example.com\">hello</a>",
+            ReplaceTemplateExpressions("$i18nRaw{rawSample}", substitutions));
 }
 
 }  // namespace ui

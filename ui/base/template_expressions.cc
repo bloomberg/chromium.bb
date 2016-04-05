@@ -7,12 +7,13 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "net/base/escape.h"
 
 namespace {
-const char kLeader[] = "$i18n{";
+const char kLeader[] = "$i18n";
 const size_t kLeaderSize = arraysize(kLeader) - 1;
-const char kTail[] = "}";
-const size_t kTailSize = arraysize(kTail) - 1;
+const char kKeyOpen = '{';
+const char kKeyClose = '}';
 }  // namespace
 
 namespace ui {
@@ -38,18 +39,37 @@ std::string ReplaceTemplateExpressions(
         .AppendToString(&formatted);
     current_pos = next_pos + kLeaderSize;
 
-    size_t key_end = source.find(kTail, current_pos);
+    size_t context_end = source.find(kKeyOpen, current_pos);
+    CHECK_NE(context_end, std::string::npos);
+    std::string context;
+    source.substr(current_pos, context_end - current_pos)
+        .AppendToString(&context);
+    current_pos = context_end + sizeof(kKeyOpen);
+
+    size_t key_end = source.find(kKeyClose, current_pos);
     CHECK_NE(key_end, std::string::npos);
 
     std::string key =
         source.substr(current_pos, key_end - current_pos).as_string();
     CHECK(!key.empty());
 
-    TemplateReplacements::const_iterator replacement = replacements.find(key);
-    CHECK(replacement != replacements.end());
-    formatted.append(replacement->second);
+    TemplateReplacements::const_iterator value = replacements.find(key);
+    CHECK(value != replacements.end()) << "$i18n replacement key \"" << key
+                                       << "\" not found";
 
-    current_pos = key_end + kTailSize;
+    std::string replacement = value->second;
+    if (context.empty()) {
+      // Make the replacement HTML safe.
+      replacement = net::EscapeForHTML(replacement);
+    } else if (context == "Raw") {
+      // Pass the replacement through unchanged.
+    } else {
+      CHECK(false) << "Unknown context " << context;
+    }
+
+    formatted.append(replacement);
+
+    current_pos = key_end + sizeof(kKeyClose);
   }
   return formatted;
 }

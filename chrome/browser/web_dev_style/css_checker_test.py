@@ -185,8 +185,9 @@ blah /* hey! */
   100% { height: 500px; }
 }
 
-#id { /* $i18n{TemplateExpressions} should be ignored. */
+#id { /* $i18n{*} and $i18nRaw{*} should be ignored. */
   rule: $i18n{someValue};
+  rule2: $i18nRaw{someValue};
   --css-mixin: {
     color: red;
   };
