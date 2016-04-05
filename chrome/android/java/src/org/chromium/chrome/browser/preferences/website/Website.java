@@ -26,20 +26,22 @@ public class Website implements Serializable {
     private final WebsiteAddress mAddress;
     private final String mTitle;
     private String mSummary;
+
+    private ContentSettingException mBackgroundSyncExceptionInfo;
     private CameraInfo mCameraInfo;
     private CookieInfo mCookieInfo;
+    private FullscreenInfo mFullscreenInfo;
     private GeolocationInfo mGeolocationInfo;
+    private ContentSettingException mJavaScriptException;
     private KeygenInfo mKeygenInfo;
+    private LocalStorageInfo mLocalStorageInfo;
     private MicrophoneInfo mMicrophoneInfo;
     private MidiInfo mMidiInfo;
-    private ContentSettingException mJavaScriptException;
+    private NotificationInfo mNotificationInfo;
     private ContentSettingException mPopupException;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
-    private NotificationInfo mNotificationInfo;
-    private LocalStorageInfo mLocalStorageInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
-    private FullscreenInfo mFullscreenInfo;
 
     public Website(WebsiteAddress address) {
         mAddress = address;
@@ -72,6 +74,60 @@ public class Website implements Serializable {
     }
 
     /**
+     * Sets the background sync setting exception info for this website.
+     */
+    public void setBackgroundSyncException(ContentSettingException exception) {
+        mBackgroundSyncExceptionInfo = exception;
+    }
+
+    /**
+     * @return what permission governs background sync.
+     */
+    public ContentSetting getBackgroundSyncPermission() {
+        return mBackgroundSyncExceptionInfo != null
+                ? mBackgroundSyncExceptionInfo.getContentSetting()
+                : null;
+    }
+
+    /**
+     * Configures the background sync setting for this site.
+     */
+    public void setBackgroundSyncPermission(ContentSetting value) {
+        if (mBackgroundSyncExceptionInfo != null) {
+            mBackgroundSyncExceptionInfo.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Sets camera capture info class.
+     */
+    public void setCameraInfo(CameraInfo info) {
+        mCameraInfo = info;
+        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
+        if (embedder != null) {
+            mSummary = embedder.getTitle();
+        }
+    }
+
+    public CameraInfo getCameraInfo() {
+        return mCameraInfo;
+    }
+
+    /**
+     * Returns what setting governs camera capture access.
+     */
+    public ContentSetting getCameraPermission() {
+        return mCameraInfo != null ? mCameraInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure camera capture setting for this site.
+     */
+    public void setCameraPermission(ContentSetting value) {
+        if (mCameraInfo != null) mCameraInfo.setContentSetting(value);
+    }
+
+    /**
      * Sets the CookieInfo object for this site.
      */
     public void setCookieInfo(CookieInfo info) {
@@ -99,6 +155,44 @@ public class Website implements Serializable {
     public void setCookiePermission(ContentSetting value) {
         if (mCookieInfo != null) {
             mCookieInfo.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Set fullscreen permission information class.
+     *
+     * @param info Fullscreen information about the website.
+     */
+    public void setFullscreenInfo(FullscreenInfo info) {
+        mFullscreenInfo = info;
+        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
+        if (embedder != null) {
+            mSummary = embedder.getTitle();
+        }
+    }
+
+    /**
+     * @return fullscreen information of the site.
+     */
+    public FullscreenInfo getFullscreenInfo() {
+        return mFullscreenInfo;
+    }
+
+    /**
+     * @return what permission governs fullscreen access.
+     */
+    public ContentSetting getFullscreenPermission() {
+        return mFullscreenInfo != null ? mFullscreenInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure fullscreen setting for this site.
+     *
+     * @param value Content setting for fullscreen permission.
+     */
+    public void setFullscreenPermission(ContentSetting value) {
+        if (mFullscreenInfo != null) {
+            mFullscreenInfo.setContentSetting(value);
         }
     }
 
@@ -134,6 +228,29 @@ public class Website implements Serializable {
     }
 
     /**
+     * Returns what permission governs JavaScript access.
+     */
+    public ContentSetting getJavaScriptPermission() {
+        return mJavaScriptException != null ? mJavaScriptException.getContentSetting() : null;
+    }
+
+    /**
+     * Configure JavaScript permission access setting for this site.
+     */
+    public void setJavaScriptPermission(ContentSetting value) {
+        if (mJavaScriptException != null) {
+            mJavaScriptException.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Sets the JavaScript exception info for this Website.
+     */
+    public void setJavaScriptException(ContentSettingException exception) {
+        mJavaScriptException = exception;
+    }
+
+    /**
      * Sets the KeygenInfo object for this Website.
      */
     public void setKeygenInfo(KeygenInfo info) {
@@ -162,6 +279,35 @@ public class Website implements Serializable {
         if (mKeygenInfo != null) {
             mKeygenInfo.setContentSetting(value);
         }
+    }
+
+    /**
+     * Sets microphone capture info class.
+     */
+    public void setMicrophoneInfo(MicrophoneInfo info) {
+        mMicrophoneInfo = info;
+        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
+        if (embedder != null) {
+            mSummary = embedder.getTitle();
+        }
+    }
+
+    public MicrophoneInfo getMicrophoneInfo() {
+        return mMicrophoneInfo;
+    }
+
+    /**
+     * Returns what setting governs microphone capture access.
+     */
+    public ContentSetting getMicrophonePermission() {
+        return mMicrophoneInfo != null ? mMicrophoneInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure microphone capture setting for this site.
+     */
+    public void setMicrophonePermission(ContentSetting value) {
+        if (mMicrophoneInfo != null) mMicrophoneInfo.setContentSetting(value);
     }
 
     /**
@@ -196,27 +342,30 @@ public class Website implements Serializable {
     }
 
     /**
-     * Returns what permission governs JavaScript access.
+     * Sets Notification access permission information class.
      */
-    public ContentSetting getJavaScriptPermission() {
-        return mJavaScriptException != null
-                ? mJavaScriptException.getContentSetting() : null;
+    public void setNotificationInfo(NotificationInfo info) {
+        mNotificationInfo = info;
+    }
+
+    public NotificationInfo getNotificationInfo() {
+        return mNotificationInfo;
     }
 
     /**
-     * Configure JavaScript permission access setting for this site.
+     * Returns what setting governs notification access.
      */
-    public void setJavaScriptPermission(ContentSetting value) {
-        if (mJavaScriptException != null) {
-            mJavaScriptException.setContentSetting(value);
+    public ContentSetting getNotificationPermission() {
+        return mNotificationInfo != null ? mNotificationInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure notification setting for this site.
+     */
+    public void setNotificationPermission(ContentSetting value) {
+        if (mNotificationInfo != null) {
+            mNotificationInfo.setContentSetting(value);
         }
-    }
-
-    /**
-     * Sets the JavaScript exception info for this Website.
-     */
-    public void setJavaScriptException(ContentSettingException exception) {
-        mJavaScriptException = exception;
     }
 
     /**
@@ -279,91 +428,6 @@ public class Website implements Serializable {
         }
     }
 
-    /**
-     * Sets Notification access permission information class.
-     */
-    public void setNotificationInfo(NotificationInfo info) {
-        mNotificationInfo = info;
-    }
-
-    public NotificationInfo getNotificationInfo() {
-        return mNotificationInfo;
-    }
-
-    /**
-     * Returns what setting governs notification access.
-     */
-    public ContentSetting getNotificationPermission() {
-        return mNotificationInfo != null ? mNotificationInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure notification setting for this site.
-     */
-    public void setNotificationPermission(ContentSetting value) {
-        if (mNotificationInfo != null) {
-            mNotificationInfo.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Sets camera capture info class.
-     */
-    public void setCameraInfo(CameraInfo info) {
-        mCameraInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
-    }
-
-    public CameraInfo getCameraInfo() {
-        return mCameraInfo;
-    }
-
-    /**
-     * Sets microphone capture info class.
-     */
-    public void setMicrophoneInfo(MicrophoneInfo info) {
-        mMicrophoneInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
-    }
-
-    public MicrophoneInfo getMicrophoneInfo() {
-        return mMicrophoneInfo;
-    }
-
-    /**
-     * Returns what setting governs microphone capture access.
-     */
-    public ContentSetting getMicrophonePermission() {
-        return mMicrophoneInfo != null ? mMicrophoneInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Returns what setting governs camera capture access.
-     */
-    public ContentSetting getCameraPermission() {
-        return mCameraInfo != null ? mCameraInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure microphone capture setting for this site.
-     */
-    public void setMicrophonePermission(ContentSetting value) {
-        if (mMicrophoneInfo != null) mMicrophoneInfo.setContentSetting(value);
-    }
-
-    /**
-     * Configure camera capture setting for this site.
-     */
-    public void setCameraPermission(ContentSetting value) {
-        if (mCameraInfo != null) mCameraInfo.setContentSetting(value);
-    }
-
     public void setLocalStorageInfo(LocalStorageInfo info) {
         mLocalStorageInfo = info;
     }
@@ -417,43 +481,5 @@ public class Website implements Serializable {
             usage += info.getSize();
         }
         return usage;
-    }
-
-    /**
-     * Set fullscreen permission information class.
-     *
-     * @param info Fullscreen information about the website.
-     */
-    public void setFullscreenInfo(FullscreenInfo info) {
-        mFullscreenInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
-    }
-
-    /**
-     * @return fullscreen information of the site.
-     */
-    public FullscreenInfo getFullscreenInfo() {
-        return mFullscreenInfo;
-    }
-
-    /**
-     * @return what permission governs fullscreen access.
-     */
-    public ContentSetting getFullscreenPermission() {
-        return mFullscreenInfo != null ? mFullscreenInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure fullscreen setting for this site.
-     *
-     * @param value Content setting for fullscreen permission.
-     */
-    public void setFullscreenPermission(ContentSetting value) {
-        if (mFullscreenInfo != null) {
-            mFullscreenInfo.setContentSetting(value);
-        }
     }
 }

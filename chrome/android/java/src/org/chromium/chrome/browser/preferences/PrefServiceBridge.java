@@ -327,6 +327,20 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return true if background sync is managed by policy.
+     */
+    public boolean isBackgroundSyncManaged() {
+        return isContentSettingManaged(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
+    }
+
+    /**
+     * @return true if background sync is enabled.
+     */
+    public boolean isBackgroundSyncAllowed() {
+        return nativeGetBackgroundSyncEnabled();
+    }
+
+    /**
      * Sets the preference that controls protected media identifier.
      */
     public void setProtectedMediaIdentifierEnabled(boolean enabled) {
@@ -366,6 +380,13 @@ public final class PrefServiceBridge {
      */
     public void setJavaScriptEnabled(boolean enabled) {
         setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT, enabled);
+    }
+
+    /**
+     * Enable or disable background sync.
+     */
+    public void setBackgroundSyncEnabled(boolean enabled) {
+        nativeSetBackgroundSyncEnabled(enabled);
     }
 
     /**
@@ -956,6 +977,7 @@ public final class PrefServiceBridge {
 
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
+    private native boolean nativeGetBackgroundSyncEnabled();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
     private native boolean nativeGetBlockThirdPartyCookiesManaged();
     private native boolean nativeGetRememberPasswordsEnabled();
@@ -1001,6 +1023,7 @@ public final class PrefServiceBridge {
     private native void nativeClearBrowsingData(int[] dataTypes, int timePeriod);
     private native boolean nativeCanDeleteBrowsingHistory();
     private native void nativeSetAllowCookiesEnabled(boolean allow);
+    private native void nativeSetBackgroundSyncEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetFullscreenAllowed(boolean allowed);

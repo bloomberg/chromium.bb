@@ -9,6 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
@@ -62,7 +63,7 @@ void GetOrigins(JNIEnv* env,
                 jboolean managedOnly) {
   ContentSettingsForOneType all_settings;
   HostContentSettingsMap* content_settings_map =
-      GetHostContentSettingsMap(false);
+      GetHostContentSettingsMap(false);  // is_incognito
   content_settings_map->GetSettingsForOneType(
       content_type, std::string(), &all_settings);
   ContentSetting default_content_setting = content_settings_map->
@@ -329,7 +330,7 @@ static void SetNotificationSettingForOrigin(
   // permission types. See https://crbug.com/416894.
   Profile* profile = GetActiveUserProfile(is_incognito);
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
-  ContentSetting setting = (ContentSetting) value;
+  ContentSetting setting = static_cast<ContentSetting>(value);
   switch (setting) {
     case CONTENT_SETTING_DEFAULT:
       DesktopNotificationProfileUtil::ClearSetting(profile, url);

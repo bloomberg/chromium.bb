@@ -301,6 +301,23 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         preferenceActivity.finish();
     }
 
+    private void setEnableBackgroundSync(final boolean enabled) {
+        final Preferences preferenceActivity =
+                startSiteSettingsCategory(SiteSettingsCategory.CATEGORY_BACKGROUND_SYNC);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SingleCategoryPreferences backgroundSyncPreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference toggle =
+                        (ChromeSwitchPreference) backgroundSyncPreferences.findPreference(
+                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
+                backgroundSyncPreferences.onPreferenceChange(toggle, enabled);
+            }
+        });
+    }
+
     /**
      * Tests that disabling cookies turns off the third-party cookie toggle.
      * @throws Exception
@@ -540,6 +557,33 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         assertEquals("Wrong page encoding while auto detect encoding enabled", "Big5",
                 getActivity().getCurrentContentViewCore().getWebContents().getEncoding());
 
+    }
+
+    /**
+     * Helper function to test allowing and blocking background sync.
+     * @param enabled true to test enabling background sync, false to test disabling the feature.
+     */
+    private void testBackgroundSyncPermission(final boolean enabled) {
+        setEnableBackgroundSync(enabled);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
+                        PrefServiceBridge.getInstance().isBackgroundSyncAllowed(), enabled);
+            }
+        });
+    }
+
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowBackgroundSync() {
+        testBackgroundSyncPermission(true);
+    }
+
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockBackgroundSync() {
+        testBackgroundSyncPermission(false);
     }
 
     private int getTabCount() {

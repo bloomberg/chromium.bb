@@ -539,6 +539,9 @@ Usage statistics include information such as preferences, button clicks, and mem
       <message name="IDS_MIDI_SYSEX_PERMISSION_TITLE" desc="Title of the permission that allows a website to get full control of MIDI devices [CHAR-LIMIT=32]">
         Allow full control of MIDI devices
       </message>
+      <message name="IDS_BACKGROUND_SYNC_PERMISSION_TITLE" desc="Title of the permission that allows websites to queue an operation for the next time the device is online[CHAR-LIMIT=32]">
+        Background sync
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE" desc="The label for the button to add a new website to the exception list.">
         Add site
       </message>
@@ -552,7 +555,10 @@ Usage statistics include information such as preferences, button clicks, and mem
         Site <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph> added
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_JAVASCRIPT" desc="The description for the allow Javascript for website dialog.">
-        Allow JavaScript on websites you specify while blocking it for the rest of the web
+        Allow JavaScript on the following site.
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_BACKGROUND_SYNC" desc="The description for the allow Background Sync for website dialog.">
+        Allow Background Sync on the following site.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_SITE_URL" desc="The label for the input field where the user can type a website URL.">
         Site URL

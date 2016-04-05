@@ -70,7 +70,7 @@ public class WebsitePermissionsFetcher {
         // Website storage is per-host.
         queue.add(new WebStorageInfoFetcher());
         // Popup exceptions are host-based patterns (unless we start
-        // synchronizing popup exceptions with desktop Chrome.)
+        // synchronizing popup exceptions with desktop Chrome).
         queue.add(new PopupExceptionInfoFetcher());
         // JavaScript exceptions are host-based patterns.
         queue.add(new JavaScriptExceptionInfoFetcher());
@@ -82,6 +82,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new CameraCaptureInfoFetcher());
         // Micropohone capture permission is per-origin and per-embedder.
         queue.add(new MicrophoneCaptureInfoFetcher());
+        // Background sync permission is per-origin.
+        queue.add(new BackgroundSyncExceptionInfoFetcher());
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
     }
@@ -129,6 +131,9 @@ public class WebsitePermissionsFetcher {
         } else if (category.showNotificationsSites()) {
             // Push notification permission is per-origin.
             queue.add(new NotificationInfoFetcher());
+        } else if (category.showBackgroundSyncSites()) {
+            // Background sync info is per-origin.
+            queue.add(new BackgroundSyncExceptionInfoFetcher());
         } else if (category.showProtectedMediaSites()) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new ProtectedMediaIdentifierInfoFetcher());
@@ -374,6 +379,24 @@ public class WebsitePermissionsFetcher {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
                 createSiteByOriginAndHost(address).setMicrophoneInfo(info);
+            }
+        }
+    }
+
+    private class BackgroundSyncExceptionInfoFetcher extends Task {
+        @Override
+        public void run() {
+            for (ContentSettingException exception :
+                    WebsitePreferenceBridge.getContentSettingsExceptions(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC)) {
+                // The pattern "*" represents the default setting, not a specific website.
+                if (exception.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
+                if (address == null) continue;
+                Set<Website> sites = findOrCreateSitesByHost(address);
+                for (Website site : sites) {
+                    site.setBackgroundSyncException(exception);
+                }
             }
         }
     }

@@ -28,13 +28,13 @@ public class SiteSettingsPreferences extends PreferenceFragment
         implements OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page.
     static final String ALL_SITES_KEY = "all_sites";
+    static final String BACKGROUND_SYNC_KEY = "background_sync";
     static final String CAMERA_KEY = "camera";
     static final String COOKIES_KEY = "cookies";
     static final String FULLSCREEN_KEY = "fullscreen";
+    static final String JAVASCRIPT_KEY = "javascript";
     static final String LOCATION_KEY = "device_location";
     static final String MICROPHONE_KEY = "microphone";
-    static final String JAVASCRIPT_KEY = "javascript";
-    static final String BLOCK_POPUPS_KEY = "block_popups";
     static final String NOTIFICATIONS_KEY = "notifications";
     static final String POPUPS_KEY = "popups";
     static final String PROTECTED_CONTENT_KEY = "protected_content";
@@ -54,18 +54,20 @@ public class SiteSettingsPreferences extends PreferenceFragment
     }
 
     private int keyToContentSettingsType(String key) {
-        if (CAMERA_KEY.equals(key)) {
+        if (BACKGROUND_SYNC_KEY.equals(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+        } else if (CAMERA_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
         } else if (COOKIES_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
         } else if (FULLSCREEN_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN;
+        } else if (JAVASCRIPT_KEY.equals(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         } else if (LOCATION_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
         } else if (MICROPHONE_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
-        } else if (JAVASCRIPT_KEY.equals(key)) {
-            return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         } else if (NOTIFICATIONS_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
         } else if (POPUPS_KEY.equals(key)) {
@@ -85,8 +87,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
         if (Build.VERSION.SDK_INT >= 19) {
             websitePrefs.add(PROTECTED_CONTENT_KEY);
         }
-        websitePrefs.add(COOKIES_KEY);
+        websitePrefs.add(BACKGROUND_SYNC_KEY);
         websitePrefs.add(CAMERA_KEY);
+        websitePrefs.add(COOKIES_KEY);
         websitePrefs.add(FULLSCREEN_KEY);
         websitePrefs.add(JAVASCRIPT_KEY);
         websitePrefs.add(MICROPHONE_KEY);
@@ -97,25 +100,28 @@ public class SiteSettingsPreferences extends PreferenceFragment
         for (String prefName : websitePrefs) {
             Preference p = findPreference(prefName);
             boolean checked = false;
-            if (LOCATION_KEY.equals(prefName)) {
-                checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
+            if (BACKGROUND_SYNC_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().isBackgroundSyncAllowed();
             } else if (CAMERA_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isCameraEnabled();
-            } else if (JAVASCRIPT_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().javaScriptEnabled();
-            } else if (MICROPHONE_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isMicEnabled();
-            } else if (PROTECTED_CONTENT_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled();
             } else if (COOKIES_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isAcceptCookiesEnabled();
+            } else if (FULLSCREEN_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().isFullscreenAllowed();
+            } else if (JAVASCRIPT_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().javaScriptEnabled();
+            } else if (LOCATION_KEY.equals(prefName)) {
+                checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
+            } else if (MICROPHONE_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().isMicEnabled();
             } else if (NOTIFICATIONS_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isNotificationsEnabled();
             } else if (POPUPS_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().popupsEnabled();
-            } else if (FULLSCREEN_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isFullscreenAllowed();
+            } else if (PROTECTED_CONTENT_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled();
             }
+
             int contentType = keyToContentSettingsType(prefName);
             p.setTitle(ContentSettingsResources.getTitle(contentType));
             if (COOKIES_KEY.equals(prefName) && checked

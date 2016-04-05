@@ -48,6 +48,10 @@
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="protected_content" />
+    <!-- Background sync -->
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="background_sync" />
     <!-- Language -->
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.LanguagePreferences"
