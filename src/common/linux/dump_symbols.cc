@@ -64,6 +64,7 @@
 #include "common/linux/elfutils-inl.h"
 #include "common/linux/elf_symbols_to_module.h"
 #include "common/linux/file_id.h"
+#include "common/memory.h"
 #include "common/module.h"
 #include "common/scoped_ptr.h"
 #ifndef NO_STABS_SUPPORT
@@ -82,14 +83,18 @@ using google_breakpad::DwarfLineToModule;
 using google_breakpad::ElfClass;
 using google_breakpad::ElfClass32;
 using google_breakpad::ElfClass64;
+using google_breakpad::FileID;
 using google_breakpad::FindElfSectionByName;
 using google_breakpad::GetOffset;
 using google_breakpad::IsValidElf;
+using google_breakpad::kDefaultBuildIdSize;
 using google_breakpad::Module;
+using google_breakpad::PageAllocator;
 #ifndef NO_STABS_SUPPORT
 using google_breakpad::StabsToModule;
 #endif
 using google_breakpad::scoped_ptr;
+using google_breakpad::wasteful_vector;
 
 // Define AARCH64 ELF architecture if host machine does not include this define.
 #ifndef EM_AARCH64
@@ -854,25 +859,6 @@ const char* ElfArchitecture(const typename ElfClass::Ehdr* elf_header) {
   }
 }
 
-// Format the Elf file identifier in IDENTIFIER as a UUID with the
-// dashes removed.
-string FormatIdentifier(unsigned char identifier[16]) {
-  char identifier_str[40];
-  google_breakpad::FileID::ConvertIdentifierToString(
-      identifier,
-      identifier_str,
-      sizeof(identifier_str));
-  string id_no_dash;
-  for (int i = 0; identifier_str[i] != '\0'; ++i)
-    if (identifier_str[i] != '-')
-      id_no_dash += identifier_str[i];
-  // Add an extra "0" by the end.  PDB files on Windows have an 'age'
-  // number appended to the end of the file identifier; this isn't
-  // really used or necessary on other platforms, but be consistent.
-  id_no_dash += '0';
-  return id_no_dash;
-}
-
 // Return the non-directory portion of FILENAME: the portion after the
 // last slash, or the whole filename if there are no slashes.
 string BaseFileName(const string &filename) {
@@ -924,9 +910,10 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
 
   *out_module = NULL;
 
-  unsigned char identifier[16];
-  if (!google_breakpad::FileID::ElfFileIdentifierFromMappedFile(elf_header,
-                                                                identifier)) {
+  PageAllocator allocator;
+  wasteful_vector<uint8_t> identifier(&allocator, kDefaultBuildIdSize);
+  if (!FileID::ElfFileIdentifierFromMappedFile(elf_header,
+                                               identifier)) {
     fprintf(stderr, "%s: unable to generate file identifier\n",
             obj_filename.c_str());
     return false;
@@ -946,7 +933,10 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
 
   string name = BaseFileName(obj_filename);
   string os = "Linux";
-  string id = FormatIdentifier(identifier);
+  // Add an extra "0" at the end.  PDB files on Windows have an 'age'
+  // number appended to the end of the file identifier; this isn't
+  // really used or necessary on other platforms, but be consistent.
+  string id = FileID::ConvertIdentifierToUUIDString(identifier) + "0";
 
   LoadSymbolsInfo<ElfClass> info(debug_dirs);
   scoped_ptr<Module> module(new Module(name, os, architecture, id));

@@ -49,6 +49,7 @@
 
 #include "client/linux/dump_writer_common/mapping_info.h"
 #include "client/linux/dump_writer_common/thread_info.h"
+#include "common/linux/file_id.h"
 #include "common/memory.h"
 #include "google_breakpad/common/minidump_format.h"
 
@@ -129,7 +130,7 @@ class LinuxDumper {
   bool ElfFileIdentifierForMapping(const MappingInfo& mapping,
                                    bool member,
                                    unsigned int mapping_id,
-                                   uint8_t identifier[sizeof(MDGUID)]);
+                                   wasteful_vector<uint8_t>& identifier);
 
   uintptr_t crash_address() const { return crash_address_; }
   void set_crash_address(uintptr_t crash_address) {

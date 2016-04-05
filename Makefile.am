@@ -527,8 +527,10 @@ src_client_linux_linux_client_unittest_shlib_DEPENDENCIES = \
 	src/libbreakpad.a
 
 src_client_linux_linux_client_unittest_SOURCES =
+# The extra-long build id is for a test in minidump_writer_unittest.cc.
 src_client_linux_linux_client_unittest_LDFLAGS = \
-	-Wl,-rpath,'$$ORIGIN'
+	-Wl,-rpath,'$$ORIGIN' \
+	-Wl,--build-id=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 if ANDROID_HOST
 src_client_linux_linux_client_unittest_LDFLAGS += \
         -llog

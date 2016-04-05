@@ -121,9 +121,8 @@ bool
 LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
                                          bool member,
                                          unsigned int mapping_id,
-                                         uint8_t identifier[sizeof(MDGUID)]) {
+                                         wasteful_vector<uint8_t>& identifier) {
   assert(!member || mapping_id < mappings_.size());
-  my_memset(identifier, 0, sizeof(MDGUID));
   if (IsMappedFileOpenUnsafe(mapping))
     return false;
 

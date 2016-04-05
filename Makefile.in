@@ -2264,8 +2264,11 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/libbreakpad.a
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = 
+# The extra-long build id is for a test in minidump_writer_unittest.cc.
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
-@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_24)
+@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' \
+@LINUX_HOST_TRUE@	-Wl,--build-id=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f \
+@LINUX_HOST_TRUE@	$(am__append_24)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib \
 @LINUX_HOST_TRUE@	$(TEST_LIBS)

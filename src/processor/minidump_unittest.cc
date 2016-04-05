@@ -625,6 +625,80 @@ TEST(Dump, CVELFShort) {
   ASSERT_EQ("B4CDA95F0000000000000000000000000", md_module->debug_identifier());
 }
 
+// Test that a build_id that's very long is handled properly.
+TEST(Dump, CVELFLong) {
+  Dump dump(0, kLittleEndian);
+  String module_name(dump, "elf module");
+  Section cv_info(dump);
+  cv_info
+    .D32(MD_CVINFOELF_SIGNATURE)  // signature
+    // build_id, lots of bytes
+    .Append("\x5f\xa9\xcd\xb4\x10\x53\xdf\x1b\x86\xfa\xb7\x33\xb4\xdf"
+            "\x37\x38\xce\xa3\x4a\x87\x01\x02\x03\x04\x05\x06\x07\x08"
+            "\x09\x0a\x0b\x0c\x0d\x0e\x0f");
+
+
+  const MDRawSystemInfo linux_x86 = {
+    MD_CPU_ARCHITECTURE_X86,              // processor_architecture
+    6,                                    // processor_level
+    0xd08,                                // processor_revision
+    1,                                    // number_of_processors
+    0,                                    // product_type
+    0,                                    // major_version
+    0,                                    // minor_version
+    0,                                    // build_number
+    MD_OS_LINUX,                          // platform_id
+    0xdeadbeef,                           // csd_version_rva
+    0x100,                                // suite_mask
+    0,                                    // reserved2
+    {                                     // cpu
+      { // x86_cpu_info
+        { 0x756e6547, 0x49656e69, 0x6c65746e }, // vendor_id
+        0x6d8,                                  // version_information
+        0xafe9fbff,                             // feature_information
+        0xffffffff                              // amd_extended_cpu_features
+      }
+    }
+  };
+  String csd_version(dump, "Literally Linux");
+  SystemInfo system_info(dump, linux_x86, csd_version);
+
+  Module module(dump, 0xa90206ca83eb2852ULL, 0xada542bd,
+                module_name,
+                0xb1054d2a,
+                0x34571371,
+                fixed_file_info, // from synth_minidump_unittest_data.h
+                &cv_info, nullptr);
+
+  dump.Add(&module);
+  dump.Add(&module_name);
+  dump.Add(&cv_info);
+  dump.Add(&system_info);
+  dump.Add(&csd_version);
+  dump.Finish();
+
+  string contents;
+  ASSERT_TRUE(dump.GetContents(&contents));
+  istringstream minidump_stream(contents);
+  Minidump minidump(minidump_stream);
+  ASSERT_TRUE(minidump.Read());
+  ASSERT_EQ(2U, minidump.GetDirectoryEntryCount());
+
+  MinidumpModuleList *md_module_list = minidump.GetModuleList();
+  ASSERT_TRUE(md_module_list != NULL);
+  ASSERT_EQ(1U, md_module_list->module_count());
+
+  const MinidumpModule *md_module = md_module_list->GetModuleAtIndex(0);
+  ASSERT_TRUE(md_module != NULL);
+  // just the build_id, directly
+  ASSERT_EQ(
+      "5fa9cdb41053df1b86fab733b4df3738cea34a870102030405060708090a0b0c0d0e0f",
+      md_module->code_identifier());
+  // build_id truncated to GUID length and treated as such, with zero
+  // age appended.
+  ASSERT_EQ("B4CDA95F53101BDF86FAB733B4DF37380", md_module->debug_identifier());
+}
+
 TEST(Dump, OneSystemInfo) {
   Dump dump(0, kLittleEndian);
   String csd_version(dump, "Petulant Pierogi");

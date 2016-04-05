@@ -73,6 +73,7 @@
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
 #include "client/linux/minidump_writer/proc_cpuinfo_reader.h"
 #include "client/minidump_file_writer.h"
+#include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/minidump_type_helper.h"
 #include "google_breakpad/common/minidump_format.h"
@@ -81,8 +82,10 @@
 namespace {
 
 using google_breakpad::AppMemoryList;
+using google_breakpad::auto_wasteful_vector;
 using google_breakpad::ExceptionHandler;
 using google_breakpad::CpuSet;
+using google_breakpad::kDefaultBuildIdSize;
 using google_breakpad::LineReader;
 using google_breakpad::LinuxDumper;
 using google_breakpad::LinuxPtraceDumper;
@@ -546,40 +549,39 @@ class MinidumpWriter {
     mod->base_of_image = mapping.start_addr;
     mod->size_of_image = mapping.size;
 
-    uint8_t cv_buf[MDCVInfoPDB70_minsize + NAME_MAX];
-    uint8_t* cv_ptr = cv_buf;
+    auto_wasteful_vector<uint8_t, kDefaultBuildIdSize> identifier_bytes(
+        dumper_->allocator());
 
-    const uint32_t cv_signature = MD_CVINFOPDB70_SIGNATURE;
-    my_memcpy(cv_ptr, &cv_signature, sizeof(cv_signature));
-    cv_ptr += sizeof(cv_signature);
-    uint8_t* signature = cv_ptr;
-    cv_ptr += sizeof(MDGUID);
     if (identifier) {
       // GUID was provided by caller.
-      my_memcpy(signature, identifier, sizeof(MDGUID));
+      identifier_bytes.insert(identifier_bytes.end(),
+                              identifier,
+                              identifier + sizeof(MDGUID));
     } else {
       // Note: ElfFileIdentifierForMapping() can manipulate the |mapping.name|.
-      dumper_->ElfFileIdentifierForMapping(mapping, member,
-                                           mapping_id, signature);
+      dumper_->ElfFileIdentifierForMapping(mapping,
+                                           member,
+                                           mapping_id,
+                                           identifier_bytes);
     }
-    my_memset(cv_ptr, 0, sizeof(uint32_t));  // Set age to 0 on Linux.
-    cv_ptr += sizeof(uint32_t);
+
+    if (!identifier_bytes.empty()) {
+      UntypedMDRVA cv(&minidump_writer_);
+      if (!cv.Allocate(MDCVInfoELF_minsize + identifier_bytes.size()))
+        return false;
+
+      const uint32_t cv_signature = MD_CVINFOELF_SIGNATURE;
+      cv.Copy(&cv_signature, sizeof(cv_signature));
+      cv.Copy(cv.position() + sizeof(cv_signature), &identifier_bytes[0],
+              identifier_bytes.size());
+
+      mod->cv_record = cv.location();
+    }
 
     char file_name[NAME_MAX];
     char file_path[NAME_MAX];
     dumper_->GetMappingEffectiveNameAndPath(
         mapping, file_path, sizeof(file_path), file_name, sizeof(file_name));
-
-    const size_t file_name_len = my_strlen(file_name);
-    UntypedMDRVA cv(&minidump_writer_);
-    if (!cv.Allocate(MDCVInfoPDB70_minsize + file_name_len + 1))
-      return false;
-
-    // Write pdb_file_name
-    my_memcpy(cv_ptr, file_name, file_name_len + 1);
-    cv.Copy(cv_buf, MDCVInfoPDB70_minsize + file_name_len + 1);
-
-    mod->cv_record = cv.location();
 
     MDLocationDescriptor ld;
     if (!minidump_writer_.WriteString(file_path, my_strlen(file_path), &ld))
