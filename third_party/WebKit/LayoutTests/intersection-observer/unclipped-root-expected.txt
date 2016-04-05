@@ -1,0 +1,25 @@
+Test that border bounding box is used to calculate intersection with a non-scrolling root.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS entries.length is 0
+PASS entries.length is 0
+PASS entries.length is 1
+PASS entries[0].boundingClientRect.left is 15
+PASS entries[0].boundingClientRect.right is 115
+PASS entries[0].boundingClientRect.top is 210
+PASS entries[0].boundingClientRect.bottom is 310
+PASS entries[0].intersectionRect.left is 15
+PASS entries[0].intersectionRect.right is 115
+PASS entries[0].intersectionRect.top is 210
+PASS entries[0].intersectionRect.bottom is 222
+PASS entries[0].rootBounds.left is 8
+PASS entries[0].rootBounds.right is 222
+PASS entries[0].rootBounds.top is 8
+PASS entries[0].rootBounds.bottom is 222
+PASS entries[0].target is [object HTMLDivElement]
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

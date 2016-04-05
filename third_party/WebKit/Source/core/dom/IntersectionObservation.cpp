@@ -55,8 +55,7 @@ void IntersectionObservation::initializeRootRect(LayoutRect& rect) const
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     if (rootLayoutObject->isLayoutView())
         rect = LayoutRect(toLayoutView(rootLayoutObject)->frameView()->visibleContentRect());
-    // TODO(szager): Obey the spec -- use content box for a scrolling element, border box otherwise.
-    else if (rootLayoutObject->isBox())
+    else if (rootLayoutObject->isBox() && rootLayoutObject->hasOverflowClip())
         rect = LayoutRect(toLayoutBox(rootLayoutObject)->contentBoxRect());
     else
         rect = LayoutRect(toLayoutBoxModelObject(rootLayoutObject)->borderBoundingBox());

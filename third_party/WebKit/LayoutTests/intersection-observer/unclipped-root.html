@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="helper-functions.js"></script>
+<style>
+#root {
+  overflow: visible;
+  height: 200px;
+  width: 200px;
+  border: 7px solid black;
+}
+#target {
+  width: 100px;
+  height: 100px;
+  background-color: green;
+}
+</style>
+<div id="root">
+  <div id="target" style="transform: translateY(300px)"></div>
+</div>
+
+<script>
+description("Test that border bounding box is used to calculate intersection with a non-scrolling root.");
+var target = document.getElementById("target");
+var root = document.getElementById("root");
+var entries = [];
+var observer = new IntersectionObserver(
+    changes => { entries.push(...changes) },
+    { root: document.getElementById("root") }
+);
+
+onload = function() {
+  observer.observe(target);
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  // See README for explanation of double RAF.
+  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+}
+
+function step0() {
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  target.style.transform = "translateY(195px)";
+  requestAnimationFrame(step1);
+}
+
+function step1() {
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 1);
+  if (entries.length > 0) {
+    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 15);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 115);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 210);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 310);
+    shouldBeEqualToNumber("entries[0].intersectionRect.left", 15);
+    shouldBeEqualToNumber("entries[0].intersectionRect.right", 115);
+    shouldBeEqualToNumber("entries[0].intersectionRect.top", 210);
+    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 222);
+    shouldBeEqualToNumber("entries[0].rootBounds.left", 8);
+    shouldBeEqualToNumber("entries[0].rootBounds.right", 222);
+    shouldBeEqualToNumber("entries[0].rootBounds.top", 8);
+    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 222);
+    shouldEvaluateToSameObject("entries[0].target", target);
+  }
+
+  finishJSTest();
+}
+</script>
