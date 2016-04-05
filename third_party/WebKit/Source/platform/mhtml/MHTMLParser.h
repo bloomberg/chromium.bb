@@ -64,7 +64,7 @@ public:
 
 private:
     bool parseArchiveWithHeader(MIMEHeader*, HeapVector<Member<ArchiveResource>>&);
-    RawPtr<ArchiveResource> parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
+    ArchiveResource* parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
 
     SharedBufferChunkReader m_lineReader;
 };

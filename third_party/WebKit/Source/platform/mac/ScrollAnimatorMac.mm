@@ -673,7 +673,7 @@ private:
 
 namespace blink {
 
-RawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
+ScrollAnimatorBase* ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
     return new ScrollAnimatorMac(scrollableArea);
 }
@@ -686,9 +686,7 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     , m_haveScrolledSincePageLoad(false)
     , m_needsScrollerStyleUpdate(false)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 
     m_scrollAnimationHelperDelegate.adoptNS([[BlinkScrollAnimationHelperDelegate alloc] initWithScrollAnimator:this]);
     m_scrollAnimationHelper.adoptNS([[NSClassFromString(@"NSScrollAnimationHelper") alloc] initWithDelegate:m_scrollAnimationHelperDelegate.get()]);
@@ -701,9 +699,6 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
 
 ScrollAnimatorMac::~ScrollAnimatorMac()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void ScrollAnimatorMac::dispose()

@@ -49,7 +49,7 @@ struct SerializedResource;
 
 class PLATFORM_EXPORT MHTMLArchive final : public GarbageCollectedFinalized<MHTMLArchive> {
 public:
-    static RawPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
+    static MHTMLArchive* create(const KURL&, SharedBuffer*);
     ~MHTMLArchive();
 
     // Binary encoding results in smaller MHTML files but they might not work in other browsers.
@@ -100,7 +100,7 @@ public:
 private:
     MHTMLArchive();
 
-    void setMainResource(RawPtr<ArchiveResource>);
+    void setMainResource(ArchiveResource*);
     void addSubresource(ArchiveResource*);
 
     Member<ArchiveResource> m_mainResource;

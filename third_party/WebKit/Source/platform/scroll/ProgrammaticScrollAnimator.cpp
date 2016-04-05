@@ -15,11 +15,6 @@
 
 namespace blink {
 
-RawPtr<ProgrammaticScrollAnimator> ProgrammaticScrollAnimator::create(ScrollableArea* scrollableArea)
-{
-    return new ProgrammaticScrollAnimator(scrollableArea);
-}
-
 ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(ScrollableArea* scrollableArea)
     : m_scrollableArea(scrollableArea)
     , m_startTime(0.0)

@@ -12,8 +12,6 @@
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/Locker.h"
-#include "wtf/RawPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/TypeTraits.h"
 
 namespace blink {

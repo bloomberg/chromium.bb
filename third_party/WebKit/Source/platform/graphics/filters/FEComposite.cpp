@@ -43,7 +43,7 @@ FEComposite::FEComposite(Filter* filter, const CompositeOperationType& type, flo
 {
 }
 
-RawPtr<FEComposite> FEComposite::create(Filter* filter, const CompositeOperationType& type, float k1, float k2, float k3, float k4)
+FEComposite* FEComposite::create(Filter* filter, const CompositeOperationType& type, float k1, float k2, float k3, float k4)
 {
     return new FEComposite(filter, type, k1, k2, k3, k4);
 }

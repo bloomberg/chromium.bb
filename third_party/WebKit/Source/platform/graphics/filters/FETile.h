@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FETile final : public FilterEffect {
 public:
-    static RawPtr<FETile> create(Filter*);
+    static FETile* create(Filter*);
 
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
 

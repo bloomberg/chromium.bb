@@ -31,7 +31,7 @@ class LightSource;
 
 class PLATFORM_EXPORT FEDiffuseLighting final : public FELighting {
 public:
-    static RawPtr<FEDiffuseLighting> create(Filter*, const Color&, float, float,
+    static FEDiffuseLighting* create(Filter*, const Color&, float, float,
         PassRefPtr<LightSource>);
     ~FEDiffuseLighting() override;
 

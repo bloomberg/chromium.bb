@@ -10,7 +10,7 @@
 
 namespace blink {
 
-RawPtr<FEBoxReflect> FEBoxReflect::create(Filter* filter, ReflectionDirection direction, float offset)
+FEBoxReflect* FEBoxReflect::create(Filter* filter, ReflectionDirection direction, float offset)
 {
     return new FEBoxReflect(filter, direction, offset);
 }

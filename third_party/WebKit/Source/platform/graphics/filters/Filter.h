@@ -42,8 +42,8 @@ public:
         BoundingBox
     };
 
-    static RawPtr<Filter> create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);
-    static RawPtr<Filter> create(float scale);
+    static Filter* create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);
+    static Filter* create(float scale);
 
     ~Filter();
     DECLARE_TRACE();
@@ -62,7 +62,7 @@ public:
     const FloatRect& filterRegion() const { return m_filterRegion; }
     const FloatRect& referenceBox() const { return m_referenceBox; }
 
-    void setLastEffect(RawPtr<FilterEffect>);
+    void setLastEffect(FilterEffect*);
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }
 
     SourceGraphic* getSourceGraphic() const { return m_sourceGraphic.get(); }

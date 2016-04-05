@@ -27,7 +27,7 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
 public:
-    static RawPtr<SourceAlpha> create(FilterEffect*);
+    static SourceAlpha* create(FilterEffect*);
 
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 

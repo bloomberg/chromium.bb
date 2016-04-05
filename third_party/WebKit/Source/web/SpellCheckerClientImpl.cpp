@@ -137,14 +137,14 @@ void SpellCheckerClientImpl::checkSpellingOfString(const String& text, int* miss
         *misspellingLength = spellLength;
 }
 
-void SpellCheckerClientImpl::requestCheckingOfString(RawPtr<TextCheckingRequest> request)
+void SpellCheckerClientImpl::requestCheckingOfString(TextCheckingRequest* request)
 {
-    if (m_webView->spellCheckClient()) {
-        const String& text = request->data().text();
-        const Vector<uint32_t>& markers = request->data().markers();
-        const Vector<unsigned>& markerOffsets = request->data().offsets();
-        m_webView->spellCheckClient()->requestCheckingOfText(text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
-    }
+    if (!m_webView->spellCheckClient())
+        return;
+    const String& text = request->data().text();
+    const Vector<uint32_t>& markers = request->data().markers();
+    const Vector<unsigned>& markerOffsets = request->data().offsets();
+    m_webView->spellCheckClient()->requestCheckingOfText(text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
 }
 
 void SpellCheckerClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)

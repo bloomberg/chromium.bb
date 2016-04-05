@@ -33,7 +33,7 @@ FETile::FETile(Filter* filter)
 {
 }
 
-RawPtr<FETile> FETile::create(Filter* filter)
+FETile* FETile::create(Filter* filter)
 {
     return new FETile(filter);
 }

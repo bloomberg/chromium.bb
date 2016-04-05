@@ -62,16 +62,7 @@ enum IncludeScrollbarsInRect {
     IncludeScrollbars,
 };
 
-#if ENABLE(OILPAN)
-// Oilpan: Using the transition type GarbageCollectedMixin is
-// problematic non-Oilpan as the type expands to DummyBase, exporting it
-// also from 'platform' as a result. Bringing about duplicate DummyBases
-// as core also exports same; with component build linking fails as a
-// result. Hence the workaround of not using a transition type.
 class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
-#else
-class PLATFORM_EXPORT ScrollableArea {
-#endif
     WTF_MAKE_NONCOPYABLE(ScrollableArea);
 public:
     static int pixelsPerLineStep(HostWindow*);
@@ -130,10 +121,10 @@ public:
     ScrollAnimatorBase& scrollAnimator() const;
 
     // This getter will return null if the ScrollAnimatorBase hasn't been created yet.
-    ScrollAnimatorBase* existingScrollAnimator() const { return m_scrollAnimator.get(); }
+    ScrollAnimatorBase* existingScrollAnimator() const { return m_scrollAnimator; }
 
     ProgrammaticScrollAnimator& programmaticScrollAnimator() const;
-    ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const { return m_programmaticScrollAnimator.get(); }
+    ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const { return m_programmaticScrollAnimator; }
 
     virtual CompositorAnimationTimeline* compositorAnimationTimeline() const { return nullptr; }
 

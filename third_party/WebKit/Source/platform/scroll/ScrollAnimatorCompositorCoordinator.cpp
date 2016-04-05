@@ -22,9 +22,7 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
     , m_compositorAnimationId(0)
     , m_compositorAnimationGroupId(0)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
     m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
     ASSERT(m_compositorPlayer);
     m_compositorPlayer->setAnimationDelegate(this);
@@ -32,9 +30,6 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
 
 ScrollAnimatorCompositorCoordinator::~ScrollAnimatorCompositorCoordinator()
 {
-#if !ENABLE(OILPAN)
-    ScrollAnimatorCompositorCoordinator::dispose();
-#endif
 }
 
 void ScrollAnimatorCompositorCoordinator::dispose()

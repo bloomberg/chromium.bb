@@ -53,7 +53,7 @@ public:
     void updateSpellingUIWithMisspelledWord(const String&) override;
     void showSpellingUI(bool show) override;
     bool spellingUIIsShowing() override;
-    void requestCheckingOfString(RawPtr<TextCheckingRequest>) override;
+    void requestCheckingOfString(TextCheckingRequest*) override;
 
     TextCheckerClient& textChecker() override { return *this; }
 

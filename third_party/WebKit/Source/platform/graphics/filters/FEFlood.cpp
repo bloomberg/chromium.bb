@@ -38,7 +38,7 @@ FEFlood::FEFlood(Filter* filter, const Color& floodColor, float floodOpacity)
     FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
 }
 
-RawPtr<FEFlood> FEFlood::create(Filter* filter, const Color& floodColor, float floodOpacity)
+FEFlood* FEFlood::create(Filter* filter, const Color& floodColor, float floodOpacity)
 {
     return new FEFlood(filter, floodColor, floodOpacity);
 }

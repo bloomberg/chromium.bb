@@ -308,14 +308,6 @@ void FontCache::addClient(FontCacheClient* client)
     fontCacheClients().add(client);
 }
 
-#if !ENABLE(OILPAN)
-void FontCache::removeClient(FontCacheClient* client)
-{
-    ASSERT(fontCacheClients().contains(client));
-    fontCacheClients().remove(client);
-}
-#endif
-
 static unsigned short gGeneration = 0;
 
 unsigned short FontCache::generation()

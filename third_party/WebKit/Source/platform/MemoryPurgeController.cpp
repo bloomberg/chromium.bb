@@ -29,10 +29,6 @@ MemoryPurgeController::MemoryPurgeController()
 {
 }
 
-MemoryPurgeController::~MemoryPurgeController()
-{
-}
-
 void MemoryPurgeController::purgeMemory()
 {
     // TODO(bashi): Add UMA

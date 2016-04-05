@@ -74,7 +74,7 @@ public:
 
     const FontDescription& getFontDescription() const { return m_fontDescription; }
 
-    void update(RawPtr<FontSelector>) const;
+    void update(FontSelector*) const;
 
     enum CustomFontNotReadyAction { DoNotPaintIfFontNotReady, UseFallbackIfFontNotReady };
     bool drawText(SkCanvas*, const TextRunPaintInfo&, const FloatPoint&, float deviceScaleFactor, const SkPaint&) const;

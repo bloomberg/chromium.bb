@@ -33,7 +33,6 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/MathExtras.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -48,10 +47,16 @@ class ScrollbarTheme;
 
 class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
 public:
-    static RawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, HostWindow*);
+    static Scrollbar* create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, HostWindow* hostWindow)
+    {
+        return new Scrollbar(scrollableArea, orientation, size, hostWindow);
+    }
 
     // Theme object ownership remains with the caller and it must outlive the scrollbar.
-    static RawPtr<Scrollbar> createForTesting(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme*);
+    static Scrollbar* createForTesting(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, ScrollbarTheme* theme)
+    {
+        return new Scrollbar(scrollableArea, orientation, size, nullptr, theme);
+    }
 
     ~Scrollbar() override;
 
@@ -176,9 +181,7 @@ public:
 
     // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
     EAGERLY_FINALIZE();
-#if ENABLE(OILPAN)
     DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-#endif
     DECLARE_VIRTUAL_TRACE();
 
 protected:

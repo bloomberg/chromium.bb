@@ -48,7 +48,7 @@ class Scrollbar;
 
 class PLATFORM_EXPORT ScrollAnimatorBase : public ScrollAnimatorCompositorCoordinator {
 public:
-    static RawPtr<ScrollAnimatorBase> create(ScrollableArea*);
+    static ScrollAnimatorBase* create(ScrollableArea*);
 
     virtual ~ScrollAnimatorBase();
 

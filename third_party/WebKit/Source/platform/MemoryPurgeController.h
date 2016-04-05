@@ -36,16 +36,15 @@ public:
 // for reducing memory consumption and notifies its clients.
 // Since we want to control memory per tab, MemoryPurgeController is owned by
 // Page.
-class PLATFORM_EXPORT MemoryPurgeController final : public GarbageCollectedFinalized<MemoryPurgeController> {
+class PLATFORM_EXPORT MemoryPurgeController final : public GarbageCollected<MemoryPurgeController> {
     WTF_MAKE_NONCOPYABLE(MemoryPurgeController);
 public:
     static void onMemoryPressure(WebMemoryPressureLevel);
 
-    static RawPtr<MemoryPurgeController> create()
+    static MemoryPurgeController* create()
     {
         return new MemoryPurgeController;
     }
-    ~MemoryPurgeController();
 
     void registerClient(MemoryPurgeClient* client)
     {

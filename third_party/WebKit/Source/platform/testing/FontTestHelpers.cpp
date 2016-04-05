@@ -20,7 +20,7 @@ namespace {
 
 class TestFontSelector : public FontSelector {
 public:
-    static RawPtr<TestFontSelector> create(const String& path)
+    static TestFontSelector* create(const String& path)
     {
         RefPtr<SharedBuffer> fontBuffer = testing::readFromFile(path);
         String otsParseMessage;

@@ -37,7 +37,7 @@ SourceGraphic::~SourceGraphic()
 {
 }
 
-RawPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
+SourceGraphic* SourceGraphic::create(Filter* filter)
 {
     return new SourceGraphic(filter);
 }

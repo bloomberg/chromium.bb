@@ -33,7 +33,7 @@ FEDiffuseLighting::FEDiffuseLighting(Filter* filter, const Color& lightingColor,
 {
 }
 
-RawPtr<FEDiffuseLighting> FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
+FEDiffuseLighting* FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
     float surfaceScale, float diffuseConstant, PassRefPtr<LightSource> lightSource)
 {
     return new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, lightSource);

@@ -37,16 +37,6 @@
 
 namespace blink {
 
-RawPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, HostWindow* hostWindow)
-{
-    return new Scrollbar(scrollableArea, orientation, size, hostWindow);
-}
-
-RawPtr<Scrollbar> Scrollbar::createForTesting(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, ScrollbarTheme* theme)
-{
-    return new Scrollbar(scrollableArea, orientation, size, nullptr, theme);
-}
-
 Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, HostWindow* hostWindow, ScrollbarTheme* theme)
     : m_scrollableArea(scrollableArea)
     , m_orientation(orientation)

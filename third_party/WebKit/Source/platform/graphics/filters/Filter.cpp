@@ -48,12 +48,12 @@ Filter::~Filter()
 {
 }
 
-RawPtr<Filter> Filter::create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling unitScaling)
+Filter* Filter::create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling unitScaling)
 {
     return new Filter(referenceBox, filterRegion, scale, unitScaling);
 }
 
-RawPtr<Filter> Filter::create(float scale)
+Filter* Filter::create(float scale)
 {
     return new Filter(FloatRect(), FloatRect(), scale, UserSpace);
 }
@@ -101,7 +101,7 @@ FloatPoint3D Filter::resolve3dPoint(const FloatPoint3D& point) const
         point.z() * sqrtf(referenceBox().size().diagonalLengthSquared() / 2));
 }
 
-void Filter::setLastEffect(RawPtr<FilterEffect> effect)
+void Filter::setLastEffect(FilterEffect* effect)
 {
     m_lastEffect = effect;
 }

@@ -39,7 +39,7 @@ FEDisplacementMap::FEDisplacementMap(Filter* filter, ChannelSelectorType xChanne
 {
 }
 
-RawPtr<FEDisplacementMap> FEDisplacementMap::create(Filter* filter, ChannelSelectorType xChannelSelector,
+FEDisplacementMap* FEDisplacementMap::create(Filter* filter, ChannelSelectorType xChannelSelector,
     ChannelSelectorType yChannelSelector, float scale)
 {
     return new FEDisplacementMap(filter, xChannelSelector, yChannelSelector, scale);

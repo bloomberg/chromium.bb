@@ -282,7 +282,7 @@ public:
 
     void checkSpellingOfString(const String&, int*, int*) override {}
     void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int*, int*) override {}
-    void requestCheckingOfString(RawPtr<TextCheckingRequest>) override;
+    void requestCheckingOfString(TextCheckingRequest*) override;
 };
 
 class EmptySpellCheckerClient : public SpellCheckerClient {

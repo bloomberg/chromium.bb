@@ -31,7 +31,7 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceGraphic final : public FilterEffect {
 public:
-    static RawPtr<SourceGraphic> create(Filter*);
+    static SourceGraphic* create(Filter*);
     ~SourceGraphic() override;
 
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;

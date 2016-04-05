@@ -29,7 +29,7 @@
 
 namespace blink {
 
-RawPtr<FilterOperation> FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
+FilterOperation* FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
 {
     ASSERT(from || to);
     if (to)
@@ -43,7 +43,7 @@ DEFINE_TRACE(ReferenceFilterOperation)
     FilterOperation::trace(visitor);
 }
 
-RawPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const
+FilterOperation* BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     double fromAmount;
     if (from) {
@@ -82,7 +82,7 @@ RawPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterOpera
     return BasicColorMatrixFilterOperation::create(result, m_type);
 }
 
-RawPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const FilterOperation* from, double progress) const
+FilterOperation* BasicComponentTransferFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     double fromAmount;
     if (from) {
@@ -120,7 +120,7 @@ RawPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const Filte
     return BasicComponentTransferFilterOperation::create(result, m_type);
 }
 
-RawPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, double progress) const
+FilterOperation* BlurFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     LengthType lengthType = m_stdDeviation.type();
     if (!from)
@@ -130,7 +130,7 @@ RawPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, 
     return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative));
 }
 
-RawPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
+FilterOperation* DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     if (!from) {
         return DropShadowFilterOperation::create(
@@ -146,7 +146,7 @@ RawPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* 
         blink::blend(fromOp->getColor(), m_color, progress));
 }
 
-RawPtr<FilterOperation> BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
+FilterOperation* BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;

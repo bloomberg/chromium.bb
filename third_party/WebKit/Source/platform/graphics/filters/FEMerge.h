@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FEMerge final : public FilterEffect {
 public:
-    static RawPtr<FEMerge> create(Filter*);
+    static FEMerge* create(Filter*);
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 

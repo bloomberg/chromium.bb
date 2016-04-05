@@ -34,7 +34,7 @@ FEMerge::FEMerge(Filter* filter)
 {
 }
 
-RawPtr<FEMerge> FEMerge::create(Filter* filter)
+FEMerge* FEMerge::create(Filter* filter)
 {
     return new FEMerge(filter);
 }

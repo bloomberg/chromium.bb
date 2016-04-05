@@ -24,7 +24,10 @@ class CompositorScrollOffsetAnimationCurve;
 class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
     WTF_MAKE_NONCOPYABLE(ProgrammaticScrollAnimator);
 public:
-    static RawPtr<ProgrammaticScrollAnimator> create(ScrollableArea*);
+    static ProgrammaticScrollAnimator* create(ScrollableArea* scrollableArea)
+    {
+        return new ProgrammaticScrollAnimator(scrollableArea);
+    }
 
     virtual ~ProgrammaticScrollAnimator();
 

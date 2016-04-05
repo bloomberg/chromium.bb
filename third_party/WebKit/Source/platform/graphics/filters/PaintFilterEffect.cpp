@@ -21,7 +21,7 @@ PaintFilterEffect::~PaintFilterEffect()
 {
 }
 
-RawPtr<PaintFilterEffect> PaintFilterEffect::create(Filter* filter, const SkPaint& paint)
+PaintFilterEffect* PaintFilterEffect::create(Filter* filter, const SkPaint& paint)
 {
     return new PaintFilterEffect(filter, paint);
 }

@@ -37,7 +37,7 @@ FEBlend::FEBlend(Filter* filter, WebBlendMode mode)
 {
 }
 
-RawPtr<FEBlend> FEBlend::create(Filter* filter, WebBlendMode mode)
+FEBlend* FEBlend::create(Filter* filter, WebBlendMode mode)
 {
     return new FEBlend(filter, mode);
 }

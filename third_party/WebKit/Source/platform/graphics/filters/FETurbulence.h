@@ -39,7 +39,7 @@ enum TurbulenceType {
 
 class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
 public:
-    static RawPtr<FETurbulence> create(Filter*, TurbulenceType, float, float, int, float, bool);
+    static FETurbulence* create(Filter*, TurbulenceType, float, float, int, float, bool);
 
     TurbulenceType type() const;
     bool setType(TurbulenceType);

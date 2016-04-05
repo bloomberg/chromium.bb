@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
 public:
-    static RawPtr<FEGaussianBlur> create(Filter*, float, float);
+    static FEGaussianBlur* create(Filter*, float, float);
 
     FloatRect mapRect(const FloatRect&, bool forward = true) const final;
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;

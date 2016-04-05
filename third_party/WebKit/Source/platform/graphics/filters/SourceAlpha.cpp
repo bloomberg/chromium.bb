@@ -29,7 +29,7 @@
 
 namespace blink {
 
-RawPtr<SourceAlpha> SourceAlpha::create(FilterEffect* sourceEffect)
+SourceAlpha* SourceAlpha::create(FilterEffect* sourceEffect)
 {
     return new SourceAlpha(sourceEffect);
 }

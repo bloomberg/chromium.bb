@@ -162,7 +162,7 @@ PassOwnPtr<WebMediaSession> EmptyFrameLoaderClient::createWebMediaSession()
     return nullptr;
 }
 
-void EmptyTextCheckerClient::requestCheckingOfString(RawPtr<TextCheckingRequest>)
+void EmptyTextCheckerClient::requestCheckingOfString(TextCheckingRequest*)
 {
 }
 

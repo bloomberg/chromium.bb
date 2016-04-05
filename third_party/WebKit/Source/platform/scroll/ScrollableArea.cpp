@@ -40,7 +40,6 @@
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "wtf/PassOwnPtr.h"
 
 #include "platform/TraceEvent.h"
 
@@ -51,7 +50,7 @@ namespace blink {
 
 struct SameSizeAsScrollableArea {
     virtual ~SameSizeAsScrollableArea();
-#if ENABLE(ASSERT) && ENABLE(OILPAN)
+#if ENABLE(ASSERT)
     VerifyEagerFinalization verifyEager;
 #endif
     Member<void*> pointer[2];
@@ -94,9 +93,7 @@ ScrollableArea::~ScrollableArea()
 
 void ScrollableArea::clearScrollAnimators()
 {
-#if OS(MACOSX) && ENABLE(OILPAN)
-    // TODO(ymalik): Let oilpan decide when to call dispose rather than
-    // explicitly calling it here to cleanup.
+#if OS(MACOSX)
     if (m_scrollAnimator)
         m_scrollAnimator->dispose();
 #endif

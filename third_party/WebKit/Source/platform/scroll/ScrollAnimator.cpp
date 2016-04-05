@@ -53,7 +53,7 @@ WebLayer* toWebLayer(GraphicsLayer* layer)
 
 } // namespace
 
-RawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
+ScrollAnimatorBase* ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
     if (scrollableArea && scrollableArea->scrollAnimatorEnabled())
         return new ScrollAnimator(scrollableArea);

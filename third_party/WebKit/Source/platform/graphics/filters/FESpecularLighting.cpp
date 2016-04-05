@@ -35,7 +35,7 @@ FESpecularLighting::FESpecularLighting(Filter* filter, const Color& lightingColo
 {
 }
 
-RawPtr<FESpecularLighting> FESpecularLighting::create(Filter* filter, const Color& lightingColor,
+FESpecularLighting* FESpecularLighting::create(Filter* filter, const Color& lightingColor,
     float surfaceScale, float specularConstant, float specularExponent, PassRefPtr<LightSource> lightSource)
 {
     return new FESpecularLighting(filter, lightingColor, surfaceScale, specularConstant, specularExponent,

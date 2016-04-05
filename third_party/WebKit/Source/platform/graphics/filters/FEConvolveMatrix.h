@@ -41,7 +41,7 @@ enum EdgeModeType {
 
 class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
 public:
-    static RawPtr<FEConvolveMatrix> create(Filter*, const IntSize&,
+    static FEConvolveMatrix* create(Filter*, const IntSize&,
         float, float, const IntPoint&, EdgeModeType, bool, const Vector<float>&);
 
     bool setDivisor(float);

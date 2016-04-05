@@ -71,7 +71,7 @@ MHTMLArchive::~MHTMLArchive()
 {
 }
 
-RawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
+MHTMLArchive* MHTMLArchive::create(const KURL& url, SharedBuffer* data)
 {
     // For security reasons we only load MHTML pages from local URLs.
     if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
@@ -82,7 +82,7 @@ RawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
     if (resources.isEmpty())
         return nullptr; // Invalid MHTML file.
 
-    RawPtr<MHTMLArchive> archive = new MHTMLArchive;
+    MHTMLArchive* archive = new MHTMLArchive;
     // The first document suitable resource is the main resource of the top frame.
     for (size_t i = 0; i < resources.size(); ++i) {
         const AtomicString& mimeType = resources[i]->mimeType();
@@ -91,7 +91,7 @@ RawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
         else
             archive->setMainResource(resources[i].get());
     }
-    return archive.release();
+    return archive;
 }
 
 void MHTMLArchive::generateMHTMLHeader(
@@ -220,7 +220,7 @@ void MHTMLArchive::generateMHTMLFooter(
     outputBuffer.append(asciiString.data(), asciiString.length());
 }
 
-void MHTMLArchive::setMainResource(RawPtr<ArchiveResource> mainResource)
+void MHTMLArchive::setMainResource(ArchiveResource* mainResource)
 {
     m_mainResource = mainResource;
 }

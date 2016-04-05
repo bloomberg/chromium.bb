@@ -39,7 +39,7 @@ FEColorMatrix::FEColorMatrix(Filter* filter, ColorMatrixType type, const Vector<
 {
 }
 
-RawPtr<FEColorMatrix> FEColorMatrix::create(Filter* filter, ColorMatrixType type, const Vector<float>& values)
+FEColorMatrix* FEColorMatrix::create(Filter* filter, ColorMatrixType type, const Vector<float>& values)
 {
     return new FEColorMatrix(filter, type, values);
 }

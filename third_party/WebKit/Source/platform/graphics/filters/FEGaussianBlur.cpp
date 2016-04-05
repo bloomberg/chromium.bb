@@ -45,7 +45,7 @@ FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
 {
 }
 
-RawPtr<FEGaussianBlur> FEGaussianBlur::create(Filter* filter, float x, float y)
+FEGaussianBlur* FEGaussianBlur::create(Filter* filter, float x, float y)
 {
     return new FEGaussianBlur(filter, x, y);
 }

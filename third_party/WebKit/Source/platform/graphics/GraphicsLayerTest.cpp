@@ -161,7 +161,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>, public ScrollableArea {
     USING_GARBAGE_COLLECTED_MIXIN(FakeScrollableArea);
 public:
-    static RawPtr<FakeScrollableArea> create()
+    static FakeScrollableArea* create()
     {
         return new FakeScrollableArea;
     }
@@ -201,8 +201,8 @@ private:
 
 TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
 {
-    RawPtr<FakeScrollableArea> scrollableArea = FakeScrollableArea::create();
-    m_graphicsLayer->setScrollableArea(scrollableArea.get(), false);
+    FakeScrollableArea* scrollableArea = FakeScrollableArea::create();
+    m_graphicsLayer->setScrollableArea(scrollableArea, false);
 
     WebDoublePoint scrollPosition(7, 9);
     m_platformLayer->setScrollPositionDouble(scrollPosition);

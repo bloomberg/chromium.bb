@@ -68,7 +68,7 @@ public:
 
     ~FontFallbackList() { releaseFontData(); }
     bool isValid() const;
-    void invalidate(RawPtr<FontSelector>);
+    void invalidate(FontSelector*);
 
     bool loadingCustomFonts() const;
     bool shouldSkipDrawing() const;

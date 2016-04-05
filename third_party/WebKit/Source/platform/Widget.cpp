@@ -39,9 +39,6 @@ Widget::Widget()
 
 Widget::~Widget()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!parent());
-#endif
 }
 
 DEFINE_TRACE(Widget)

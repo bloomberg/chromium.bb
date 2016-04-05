@@ -140,11 +140,7 @@ private:
 
     Timer<AsyncMethodRunner<TargetClass>> m_timer;
 
-#if ENABLE(OILPAN)
     Member<TargetClass> m_object;
-#else
-    typename RawPtrOrMemberTrait<TargetClass>::Type m_object;
-#endif
     TargetMethod m_method;
 
     bool m_suspended;

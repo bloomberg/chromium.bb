@@ -38,7 +38,7 @@ FEOffset::FEOffset(Filter* filter, float dx, float dy)
 {
 }
 
-RawPtr<FEOffset> FEOffset::create(Filter* filter, float dx, float dy)
+FEOffset* FEOffset::create(Filter* filter, float dx, float dy)
 {
     return new FEOffset(filter, dx, dy);
 }

@@ -39,7 +39,7 @@ FEMorphology::FEMorphology(Filter* filter, MorphologyOperatorType type, float ra
 {
 }
 
-RawPtr<FEMorphology> FEMorphology::create(Filter* filter, MorphologyOperatorType type, float radiusX, float radiusY)
+FEMorphology* FEMorphology::create(Filter* filter, MorphologyOperatorType type, float radiusX, float radiusY)
 {
     return new FEMorphology(filter, type, radiusX, radiusY);
 }

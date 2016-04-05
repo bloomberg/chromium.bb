@@ -95,9 +95,6 @@ public:
     ShapeCache* getShapeCache(const FallbackListCompositeKey&);
 
     void addClient(FontCacheClient*);
-#if !ENABLE(OILPAN)
-    void removeClient(FontCacheClient*);
-#endif
 
     unsigned short generation();
     void invalidate();
