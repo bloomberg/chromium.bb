@@ -98,14 +98,16 @@ void GuestViewContainer::Destroy(bool embedder_frame_destroyed) {
   if (element_instance_id() != guest_view::kInstanceIDNone)
     g_guest_view_container_map.Get().erase(element_instance_id());
 
-  if (pending_response_.get())
-    pending_response_->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
+  if (!embedder_frame_destroyed) {
+    if (pending_response_.get())
+      pending_response_->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
 
-  while (pending_requests_.size() > 0) {
-    linked_ptr<GuestViewRequest> pending_request = pending_requests_.front();
-    pending_requests_.pop_front();
-    // Call the JavaScript callbacks with no arguments which implies an error.
-    pending_request->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
+    while (pending_requests_.size() > 0) {
+      linked_ptr<GuestViewRequest> pending_request = pending_requests_.front();
+      pending_requests_.pop_front();
+      // Call the JavaScript callbacks with no arguments which implies an error.
+      pending_request->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
+    }
   }
 
   delete this;
