@@ -364,6 +364,10 @@ const char kCrosRegion[] = "cros-region";
 const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
+// This flag enables SystemTimezoneAutomaticDetection policy.
+const char kEnableSystemTimezoneAutomaticDetectionPolicy[] =
+    "enable-system-timezone-automatic-detection";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

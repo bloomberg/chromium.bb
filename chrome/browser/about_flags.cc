@@ -1822,6 +1822,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"opt-in-ime-menu", IDS_FLAGS_ENABLE_IME_MENU_NAME,
      IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kOptInImeMenu)},
+    {"enable-system-timezone-automatic-detection",
+     IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_NAME,
+     IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy)},
 #endif
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",

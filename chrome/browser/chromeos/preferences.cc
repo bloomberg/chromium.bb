@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
+#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -96,6 +97,9 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
   registry->RegisterBooleanPref(prefs::kResolveDeviceTimezoneByGeolocation,
                                 true);
+  registry->RegisterIntegerPref(
+      prefs::kSystemTimezoneAutomaticDetectionPolicy,
+      enterprise_management::SystemTimezoneProto::USERS_DECIDE);
 }
 
 // static
@@ -374,6 +378,12 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   DCHECK(session_manager);
   ime_state_ = session_manager->GetDefaultIMEState(profile);
 
+  if (user_is_primary_) {
+    g_browser_process->platform_part()
+        ->GetTimezoneResolverManager()
+        ->SetPrimaryUserPrefs(prefs_);
+  }
+
   // Initialize preferences to currently saved state.
   ApplyPreferences(REASON_INITIALIZATION, "");
 
@@ -641,10 +651,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
           prefs::kResolveDeviceTimezoneByGeolocation, value);
     }
     if (user_is_primary_) {
-      system::TimeZoneResolverManager* manager =
-          g_browser_process->platform_part()->GetTimezoneResolverManager();
-      manager->SetPrimaryUserPrefs(prefs_);
-      manager->UpdateTimezoneResolver();
+      g_browser_process->platform_part()
+          ->GetTimezoneResolverManager()
+          ->UpdateTimezoneResolver();
       if (!value && reason == REASON_PREF_CHANGED) {
         // Allow immediate timezone update on Stop + Start.
         g_browser_process->local_state()->ClearPref(

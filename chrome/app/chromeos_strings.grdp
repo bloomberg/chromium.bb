@@ -2365,6 +2365,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_DESCRIPTION" desc="Description of the about:flag option for experimental accessibility features.">
     Enable additional accessibility features in the Settings page.
   </message>
+  <message name="IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_NAME" desc="Name of the about:flag option for enabling EnableSystemTimezoneAutomaticDetection policy.">
+    SystemTimezoneAutomaticDetection policy support
+  </message>
+  <message name="IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_DESCRIPTION" desc="Description of the about:flag option for enabling EnableSystemTimezoneAutomaticDetection policy.">
+    Enable system timezone automatic detection device policy.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL" desc="Label for the button opening display settings tab.">
     Display settings
   </message>

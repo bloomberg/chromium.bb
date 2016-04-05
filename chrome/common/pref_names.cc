@@ -1875,6 +1875,12 @@ const char kDebuggingFeaturesRequested[] = "DebuggingFeaturesRequested";
 // kResolveTimezoneByGeolocation
 const char kResolveDeviceTimezoneByGeolocation[] =
     "settings.resolve_device_timezone_by_geolocation";
+
+// This is policy-controlled preference.
+// It has values defined in policy enum
+// SystemTimezoneAutomaticDetectionProto_AutomaticTimezoneDetectionType;
+const char kSystemTimezoneAutomaticDetectionPolicy[] =
+    "settings.resolve_device_timezone_by_geolocation_policy";
 #endif  // defined(OS_CHROMEOS)
 
 // *************** SERVICE PREFS ***************

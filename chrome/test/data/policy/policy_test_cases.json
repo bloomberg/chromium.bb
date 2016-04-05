@@ -2699,6 +2699,14 @@
     ]
   },
 
+  "SystemTimezoneAutomaticDetection": {
+    "os": ["chromeos"],
+    "test_policy": { "SystemTimezoneAutomaticDetection": 1 },
+    "pref_mappings": [
+      { "pref": "cros.device.system_timezone_automatic_detection" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

@@ -224,6 +224,12 @@ class BrowserOptionsHandler
   // kSystemTimezonePolicy is set, and preventing the user from changing the
   // system time zone if kSystemTimezonePolicy is not set.
   void OnSystemTimezonePolicyChanged();
+
+  // Updates the UI, preventing the user from changing timezone or timezone
+  // detection settings if kSystemTimezoneAutomaticDetectionPolicy is set, and
+  // allowing the user to update these settings if
+  // kSystemTimezoneAutomaticDetectionPolicy is not set.
+  void OnSystemTimezoneAutomaticDetectionPolicyChanged();
 #endif
 
   // Callback for the "selectDownloadLocation" message. This will prompt the
@@ -402,6 +408,8 @@ class BrowserOptionsHandler
 
   // Whether factory reset can be performed.
   bool enable_factory_reset_;
+
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 #endif
 
   ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>

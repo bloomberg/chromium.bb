@@ -693,6 +693,7 @@ extern const char kDebuggingFeaturesRequested[];
 
 #if defined(OS_CHROMEOS)
 extern const char kResolveDeviceTimezoneByGeolocation[];
+extern const char kSystemTimezoneAutomaticDetectionPolicy[];
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
