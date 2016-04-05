@@ -484,10 +484,15 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
   libusb_device_descriptor descriptor;
   int rv = libusb_get_device_descriptor(platform_device, &descriptor);
   if (rv == LIBUSB_SUCCESS) {
+    if (descriptor.bDeviceClass == LIBUSB_CLASS_HUB) {
+      // Don't try to enumerate hubs. We never want to connect to a hub.
+      refresh_complete.Run();
+      return;
+    }
+
     scoped_refptr<UsbDeviceImpl> device(
         new UsbDeviceImpl(context_, platform_device, descriptor.idVendor,
                           descriptor.idProduct, blocking_task_runner_));
-
     base::Closure add_device =
         base::Bind(&UsbServiceImpl::AddDevice, weak_factory_.GetWeakPtr(),
                    refresh_complete, device);
