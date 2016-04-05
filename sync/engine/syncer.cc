@@ -184,6 +184,7 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
             session->context()->max_commit_batch_size(),
             session->context()->account_name(),
             session->context()->directory()->cache_guid(),
+            session->context()->cookie_jar_mismatch(),
             commit_processor,
             session->context()->extensions_activity()));
     if (!commit) {

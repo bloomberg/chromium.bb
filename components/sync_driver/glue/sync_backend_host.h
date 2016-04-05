@@ -227,6 +227,10 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   virtual void ClearServerData(
       const syncer::SyncManager::ClearServerDataCallback& callback) = 0;
 
+  // Notify the syncer that the cookie jar has changed.
+  // See SyncManager::OnCookieJarChanged.
+  virtual void OnCookieJarChanged(bool account_mismatch) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

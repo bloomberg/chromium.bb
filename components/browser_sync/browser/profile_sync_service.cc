@@ -180,6 +180,7 @@ ProfileSyncService::InitParams::InitParams(InitParams&& other)  // NOLINT
     : sync_client(std::move(other.sync_client)),
       signin_wrapper(std::move(other.signin_wrapper)),
       oauth2_token_service(other.oauth2_token_service),
+      gaia_cookie_manager_service(other.gaia_cookie_manager_service),
       start_behavior(other.start_behavior),
       network_time_update_callback(
           std::move(other.network_time_update_callback)),
@@ -225,6 +226,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       connection_status_(syncer::CONNECTION_NOT_ATTEMPTED),
       last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()),
+      gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
       network_resources_(new syncer::HttpBridgeNetworkResources),
       start_behavior_(init_params.start_behavior),
       directory_path_(
@@ -248,6 +250,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 }
 
 ProfileSyncService::~ProfileSyncService() {
+  if (gaia_cookie_manager_service_)
+    gaia_cookie_manager_service_->RemoveObserver(this);
   sync_prefs_.RemoveSyncPrefObserver(this);
   // Shutdown() should have been called before destruction.
   CHECK(!backend_initialized_);
@@ -309,6 +313,9 @@ void ProfileSyncService::Initialize() {
           sync_client_->GetRegisterPlatformTypesCallback();
   sync_client_->GetSyncApiComponentFactory()->RegisterDataTypes(
       this, register_platform_types_callback);
+
+  if (gaia_cookie_manager_service_)
+    gaia_cookie_manager_service_->AddObserver(this);
 
   // We clear this here (vs Shutdown) because we want to remember that an error
   // happened on shutdown so we can display details (message, location) about it
@@ -974,6 +981,14 @@ void ProfileSyncService::PostBackendInitialization() {
     SetFirstSetupComplete();
   } else if (CanConfigureDataTypes()) {
     ConfigureDataTypeManager();
+  }
+
+  // Check for a cookie jar mismatch.
+  std::vector<gaia::ListedAccount> accounts;
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  if (gaia_cookie_manager_service_ &&
+      gaia_cookie_manager_service_->ListAccounts(&accounts)) {
+    OnGaiaAccountsInCookieUpdated(accounts, error);
   }
 
   NotifyObservers();
@@ -2099,6 +2114,27 @@ void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
   RequestStop(CLEAR_DATA);
+}
+
+void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
+    const std::vector<gaia::ListedAccount>& accounts,
+    const GoogleServiceAuthError& error) {
+  if (!IsBackendInitialized())
+    return;
+
+  bool cookie_mismatch = true;
+  std::string account_id = signin_->GetAccountIdToUse();
+
+  // Iterate through list of accounts, looking for current sync account.
+  for (const auto& account : accounts) {
+    if (account.gaia_id == account_id) {
+      cookie_mismatch = false;
+      break;
+    }
+  }
+
+  DVLOG(1) << "Cookie jar mismatch: " << cookie_mismatch;
+  backend_->OnCookieJarChanged(cookie_mismatch);
 }
 
 void ProfileSyncService::AddObserver(

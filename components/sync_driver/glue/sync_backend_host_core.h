@@ -255,6 +255,9 @@ class SyncBackendHostCore
   void DoClearServerData(
       const syncer::SyncManager::ClearServerDataCallback& frontend_callback);
 
+  // Notify the syncer that the cookie jar has changed.
+  void DoOnCookieJarChanged(bool account_mismatch);
+
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
   friend class SyncBackendHostForProfileSyncTest;

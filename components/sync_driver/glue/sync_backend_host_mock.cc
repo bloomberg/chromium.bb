@@ -153,4 +153,6 @@ void SyncBackendHostMock::ClearServerData(
   callback.Run();
 }
 
+void SyncBackendHostMock::OnCookieJarChanged(bool account_mismatch) {}
+
 }  // namespace browser_sync

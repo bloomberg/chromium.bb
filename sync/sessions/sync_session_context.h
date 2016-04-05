@@ -126,6 +126,14 @@ class SYNC_EXPORT SyncSessionContext {
     return model_type_registry_;
   }
 
+  bool cookie_jar_mismatch() const {
+    return cookie_jar_mismatch_;
+  }
+
+  void set_cookie_jar_mismatch(bool cookie_jar_mismatch) {
+    cookie_jar_mismatch_ = cookie_jar_mismatch;
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -179,6 +187,11 @@ class SYNC_EXPORT SyncSessionContext {
   // If true, indicates that we've been passed a command-line flag to force
   // enable the pre-commit update avoidance experiment described above.
   const bool client_enabled_pre_commit_update_avoidance_;
+
+   // Whether the account(s) present in the content area's cookie jar match the
+   // chrome account. If multiple accounts are present in the cookie jar, a
+   // mismatch implies all of them are different from the chrome account.
+  bool cookie_jar_mismatch_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

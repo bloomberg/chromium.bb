@@ -118,6 +118,7 @@ class SYNC_EXPORT SyncManagerImpl
       syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
   void ClearServerData(const ClearServerDataCallback& callback) override;
+  void OnCookieJarChanged(bool account_mismatch) override;
 
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(

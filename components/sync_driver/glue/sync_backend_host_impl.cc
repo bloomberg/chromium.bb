@@ -853,6 +853,13 @@ void SyncBackendHostImpl::ClearServerData(
                             core_.get(), callback));
 }
 
+void SyncBackendHostImpl::OnCookieJarChanged(bool account_mismatch) {
+  DCHECK(ui_thread_->BelongsToCurrentThread());
+  registrar_->sync_thread()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::DoOnCookieJarChanged,
+                            core_.get(), account_mismatch));
+}
+
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(
     const syncer::SyncManager::ClearServerDataCallback& frontend_callback) {
   DCHECK(ui_thread_->BelongsToCurrentThread());

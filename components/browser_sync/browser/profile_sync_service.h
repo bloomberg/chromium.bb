@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -24,6 +25,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_manager.h"
@@ -179,7 +181,8 @@ class ProfileSyncService : public sync_driver::SyncService,
                            public KeyedService,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
-                           public SigninManagerBase::Observer {
+                           public SigninManagerBase::Observer,
+                           public GaiaCookieManagerService::Observer {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
   typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
@@ -238,6 +241,7 @@ class ProfileSyncService : public sync_driver::SyncService,
     scoped_ptr<sync_driver::SyncClient> sync_client;
     scoped_ptr<SigninManagerWrapper> signin_wrapper;
     ProfileOAuth2TokenService* oauth2_token_service = nullptr;
+    GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     base::FilePath base_directory;
@@ -405,6 +409,11 @@ class ProfileSyncService : public sync_driver::SyncService,
                              const std::string& password) override;
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
+
+  // GaiaCookieManagerService::Observer implementation.
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<gaia::ListedAccount>& accounts,
+      const GoogleServiceAuthError& error) override;
 
   // Get the sync status code.
   SyncStatusSummary QuerySyncStatusSummary();
@@ -952,6 +961,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   base::Time token_receive_time_;
   GoogleServiceAuthError last_get_token_error_;
   base::Time next_token_request_time_;
+
+  // The gaia cookie manager. Used for monitoring cookie jar changes to detect
+  // when the user signs out of the content area.
+  GaiaCookieManagerService* const gaia_cookie_manager_service_;
 
   scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 

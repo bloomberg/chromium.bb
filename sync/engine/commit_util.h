@@ -39,6 +39,7 @@ SYNC_EXPORT void AddExtensionsActivityToMessage(
 // Fills the config_params field of |message|.
 SYNC_EXPORT void AddClientConfigParamsToMessage(
     ModelTypeSet enabled_types,
+    bool cookie_jar_mismatch,
     sync_pb::CommitMessage* message);
 
 // Takes a snapshot of |meta_entry| and puts it into a protobuf suitable for use

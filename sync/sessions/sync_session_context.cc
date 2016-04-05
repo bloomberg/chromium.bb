@@ -31,7 +31,8 @@ SyncSessionContext::SyncSessionContext(
       invalidator_client_id_(invalidator_client_id),
       server_enabled_pre_commit_update_avoidance_(false),
       client_enabled_pre_commit_update_avoidance_(
-          client_enabled_pre_commit_update_avoidance) {
+          client_enabled_pre_commit_update_avoidance),
+      cookie_jar_mismatch_(false) {
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);

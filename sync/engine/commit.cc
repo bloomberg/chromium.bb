@@ -38,6 +38,7 @@ Commit* Commit::Init(
     size_t max_entries,
     const std::string& account_name,
     const std::string& cache_guid,
+    bool cookie_jar_mismatch,
     CommitProcessor* commit_processor,
     ExtensionsActivity* extensions_activity) {
   // Gather per-type contributions.
@@ -71,6 +72,7 @@ Commit* Commit::Init(
   // Set the client config params.
   commit_util::AddClientConfigParamsToMessage(
       enabled_types,
+      cookie_jar_mismatch,
       commit_message);
 
   int previous_message_size = message.ByteSize();

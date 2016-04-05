@@ -400,6 +400,11 @@ message ClientConfigParams {
 
  // Whether the PROXY_TABS proxy datatype is enabled on this client.
  optional bool tabs_datatype_enabled = 2;
+
+ // Whether the account(s) present in the content area's cookie jar match the
+ // chrome account. If multiple accounts are present in the cookie jar, a
+ // mismatch implies all of them are different from the chrome account.
+ optional bool cookie_jar_mismatch = 3;
 };
 
 message CommitMessage {

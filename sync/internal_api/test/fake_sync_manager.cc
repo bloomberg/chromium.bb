@@ -266,4 +266,6 @@ void FakeSyncManager::ClearServerData(const ClearServerDataCallback& callback) {
   callback.Run();
 }
 
+void FakeSyncManager::OnCookieJarChanged(bool account_mismatch) {}
+
 }  // namespace syncer

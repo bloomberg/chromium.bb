@@ -68,6 +68,7 @@ void AddExtensionsActivityToMessage(
 
 void AddClientConfigParamsToMessage(
     ModelTypeSet enabled_types,
+    bool cookie_jar_mismatch,
     sync_pb::CommitMessage* message) {
   sync_pb::ClientConfigParams* config_params = message->mutable_config_params();
   for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good(); it.Inc()) {
@@ -78,6 +79,7 @@ void AddClientConfigParamsToMessage(
   }
   config_params->set_tabs_datatype_enabled(
       enabled_types.Has(syncer::PROXY_TABS));
+  config_params->set_cookie_jar_mismatch(cookie_jar_mismatch);
 }
 
 namespace {

@@ -144,6 +144,7 @@ class SyncBackendHostImpl
   void RefreshTypesForTest(syncer::ModelTypeSet types) override;
   void ClearServerData(
       const syncer::SyncManager::ClearServerDataCallback& callback) override;
+  void OnCookieJarChanged(bool account_mismatch) override;
 
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(syncer::InvalidatorState state) override;

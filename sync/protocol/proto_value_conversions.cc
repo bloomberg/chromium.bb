@@ -1056,6 +1056,7 @@ scoped_ptr<base::DictionaryValue> ClientConfigParamsToValue(
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   SET_INT32_REP(enabled_type_ids);
   SET_BOOL(tabs_datatype_enabled);
+  SET_BOOL(cookie_jar_mismatch);
   return value;
 }
 

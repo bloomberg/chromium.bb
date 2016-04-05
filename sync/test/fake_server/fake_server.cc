@@ -277,10 +277,12 @@ void FakeServer::HandleCommand(const string& request,
     bool success = false;
     switch (message.message_contents()) {
       case sync_pb::ClientToServerMessage::GET_UPDATES:
+        last_getupdates_message_ = message;
         success = HandleGetUpdatesRequest(message.get_updates(),
                                           response_proto.mutable_get_updates());
         break;
       case sync_pb::ClientToServerMessage::COMMIT:
+        last_commit_message_ = message;
         success = HandleCommitRequest(message.commit(),
                                       message.invalidator_client_id(),
                                       response_proto.mutable_commit());
@@ -317,6 +319,24 @@ void FakeServer::HandleCommand(const string& request,
   *response_code = net::HTTP_OK;
   *response = response_proto.SerializeAsString();
   completion_closure.Run();
+}
+
+bool FakeServer::GetLastCommitMessage(
+    sync_pb::ClientToServerMessage* message) {
+  if (!last_commit_message_.has_commit())
+    return false;
+
+  message->CopyFrom(last_commit_message_);
+  return true;
+}
+
+bool FakeServer::GetLastGetUpdatesMessage(
+    sync_pb::ClientToServerMessage* message) {
+  if (!last_getupdates_message_.has_get_updates())
+    return false;
+
+  message->CopyFrom(last_getupdates_message_);
+  return true;
 }
 
 bool FakeServer::HandleGetUpdatesRequest(

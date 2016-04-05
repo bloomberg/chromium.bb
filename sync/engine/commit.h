@@ -56,6 +56,7 @@ class SYNC_EXPORT Commit {
       size_t max_entries,
       const std::string& account_name,
       const std::string& cache_guid,
+      bool cookie_jar_mismatch,
       CommitProcessor* commit_processor,
       ExtensionsActivity* extensions_activity);
 

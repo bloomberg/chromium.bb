@@ -404,6 +404,11 @@ class SYNC_EXPORT SyncManager {
   // server. The operation will automatically be retried with backoff until it
   // completes successfully or sync is shutdown.
   virtual void ClearServerData(const ClearServerDataCallback& callback) = 0;
+
+  // Updates Sync's tracking of whether the cookie jar has a mismatch with the
+  // chrome account. See ClientConfigParams proto message for more info.
+  // Note: this does not trigger a sync cycle. It just updates the sync context.
+  virtual void OnCookieJarChanged(bool account_mismatch) = 0;
 };
 
 }  // namespace syncer
