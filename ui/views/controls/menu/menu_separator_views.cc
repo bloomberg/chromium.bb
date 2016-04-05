@@ -10,12 +10,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/menu/menu_config.h"
 
-namespace {
-
-const int kSeparatorHeight = 1;
-
-}  // namespace
-
 namespace views {
 
 #if !defined(OS_WIN)
@@ -47,9 +41,11 @@ gfx::Size MenuSeparator::GetPreferredSize() const {
 
 gfx::Rect MenuSeparator::GetPaintBounds() {
   int pos = 0;
+  const MenuConfig& menu_config = MenuConfig::instance();
+  int separator_thickness = menu_config.separator_thickness;
   switch (type_) {
     case ui::LOWER_SEPARATOR:
-      pos = height() - kSeparatorHeight;
+      pos = height() - separator_thickness;
       break;
     case ui::SPACING_SEPARATOR:
       return gfx::Rect();
@@ -60,8 +56,8 @@ gfx::Rect MenuSeparator::GetPaintBounds() {
       break;
   }
 
-  gfx::Rect paint_rect(0, pos, width(), kSeparatorHeight);
-  if (MenuConfig::instance().use_outer_border)
+  gfx::Rect paint_rect(0, pos, width(), separator_thickness);
+  if (menu_config.use_outer_border)
     paint_rect.Inset(1, 0);
   return paint_rect;
 }

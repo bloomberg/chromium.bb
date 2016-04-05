@@ -77,6 +77,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Height of a ui::SPACING_SEPARATOR.
   int separator_spacing_height;
 
+  // Thickness of the drawn separator line in pixels.
+  int separator_thickness;
+
   // Are mnemonics shown?
   bool show_mnemonics;
 

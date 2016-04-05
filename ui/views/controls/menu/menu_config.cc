@@ -29,6 +29,7 @@ MenuConfig::MenuConfig()
       separator_upper_height(3),
       separator_lower_height(4),
       separator_spacing_height(3),
+      separator_thickness(1),
       show_mnemonics(false),
       scroll_arrow_height(3),
       label_to_minor_text_padding(10),

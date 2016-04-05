@@ -26,12 +26,13 @@ namespace {
 // value between 0.0 and 1.0 (i.e. divide by 255.0). Then,
 // alpha = (P2 - P1 + B1 - B2) / (B1 - B2)
 // color = (P1 - B1 + alpha * B1) / alpha.
-const SkColor kMenuPopupBackgroundColor = SkColorSetARGB(255, 255, 255, 255);
-const SkColor kMenuSeparatorColor = SkColorSetARGB(243, 228, 228, 228);
+const SkColor kMenuPopupBackgroundColor = SkColorSetARGB(245, 255, 255, 255);
+const SkColor kMenuSeparatorColor = SkColorSetARGB(255, 217, 217, 217);
 const SkColor kMenuBorderColor = SkColorSetARGB(60, 0, 0, 0);
 
-const SkColor kMenuPopupBackgroundColorYosemite =
-    SkColorSetARGB(255, 230, 230, 230);
+const SkColor kMenuPopupBackgroundColorMavericks =
+    SkColorSetARGB(255, 255, 255, 255);
+const SkColor kMenuSeparatorColorMavericks = SkColorSetARGB(243, 228, 228, 228);
 
 // Hardcoded color used for some existing dialogs in Chrome's Cocoa UI.
 const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
@@ -172,7 +173,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return kMenuSeparatorColor;
+      return base::mac::IsOSMavericks() ? kMenuSeparatorColorMavericks
+                                        : kMenuSeparatorColor;
     case kColorId_MenuBorderColor:
       return kMenuBorderColor;
 
@@ -233,8 +235,8 @@ void NativeThemeMac::PaintMenuPopupBackground(
     const MenuBackgroundExtraParams& menu_background) const {
   SkPaint paint;
   paint.setAntiAlias(true);
-  if (base::mac::IsOSYosemiteOrLater())
-    paint.setColor(kMenuPopupBackgroundColorYosemite);
+  if (base::mac::IsOSMavericks())
+    paint.setColor(kMenuPopupBackgroundColorMavericks);
   else
     paint.setColor(kMenuPopupBackgroundColor);
   const SkScalar radius = SkIntToScalar(menu_background.corner_radius);

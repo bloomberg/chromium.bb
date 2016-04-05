@@ -96,7 +96,7 @@ using NSViewComparatorValue = __kindof NSView*;
 #endif
 
 const CGFloat kMavericksMenuOpacity = 251.0 / 255.0;
-const CGFloat kYosemiteMenuOpacity = 194.0 / 255.0;
+const CGFloat kYosemiteMenuOpacity = 177.0 / 255.0;
 const int kYosemiteMenuBlur = 80;
 
 // Margin at edge and corners of the window that trigger resizing. These match
