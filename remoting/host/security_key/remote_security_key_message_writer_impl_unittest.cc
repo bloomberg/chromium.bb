@@ -15,6 +15,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "remoting/host/security_key/remote_security_key_message_writer_impl.h"
 #include "remoting/host/security_key/security_key_message.h"
 #include "remoting/host/setup/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,10 +28,10 @@ const unsigned int kLargeMessageSizeBytes = 200000;
 
 namespace remoting {
 
-class RemoteSecurityKeyMessageWriterTest : public testing::Test {
+class RemoteSecurityKeyMessageWriterImplTest : public testing::Test {
  public:
-  RemoteSecurityKeyMessageWriterTest();
-  ~RemoteSecurityKeyMessageWriterTest() override;
+  RemoteSecurityKeyMessageWriterImplTest();
+  ~RemoteSecurityKeyMessageWriterImplTest() override;
 
   // Run on a separate thread, this method reads the message written to the
   // output stream and returns the result.
@@ -56,14 +57,16 @@ class RemoteSecurityKeyMessageWriterTest : public testing::Test {
   std::string message_result_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyMessageWriterTest);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyMessageWriterImplTest);
 };
 
-RemoteSecurityKeyMessageWriterTest::RemoteSecurityKeyMessageWriterTest() {}
+RemoteSecurityKeyMessageWriterImplTest::
+    RemoteSecurityKeyMessageWriterImplTest() {}
 
-RemoteSecurityKeyMessageWriterTest::~RemoteSecurityKeyMessageWriterTest() {}
+RemoteSecurityKeyMessageWriterImplTest::
+    ~RemoteSecurityKeyMessageWriterImplTest() {}
 
-std::string RemoteSecurityKeyMessageWriterTest::ReadMessage(
+std::string RemoteSecurityKeyMessageWriterImplTest::ReadMessage(
     int payload_length_bytes) {
   std::string message_header(SecurityKeyMessage::kHeaderSizeBytes, '\0');
   read_file_.ReadAtCurrentPos(string_as_array(&message_header),
@@ -82,19 +85,19 @@ std::string RemoteSecurityKeyMessageWriterTest::ReadMessage(
   return message_header + message_type + message_data;
 }
 
-void RemoteSecurityKeyMessageWriterTest::OnReadComplete(
+void RemoteSecurityKeyMessageWriterImplTest::OnReadComplete(
     const base::Closure& done_callback,
     const std::string& result) {
   message_result_ = result;
   done_callback.Run();
 }
 
-void RemoteSecurityKeyMessageWriterTest::SetUp() {
+void RemoteSecurityKeyMessageWriterImplTest::SetUp() {
   ASSERT_TRUE(MakePipe(&read_file_, &write_file_));
-  writer_.reset(new RemoteSecurityKeyMessageWriter(std::move(write_file_)));
+  writer_.reset(new RemoteSecurityKeyMessageWriterImpl(std::move(write_file_)));
 }
 
-void RemoteSecurityKeyMessageWriterTest::WriteMessageToOutput(
+void RemoteSecurityKeyMessageWriterImplTest::WriteMessageToOutput(
     const std::string& payload) {
   // Thread used for blocking IO operations.
   base::Thread reader_thread("ReaderThread");
@@ -109,9 +112,9 @@ void RemoteSecurityKeyMessageWriterTest::WriteMessageToOutput(
 
   ASSERT_TRUE(base::PostTaskAndReplyWithResult(
       reader_thread.task_runner().get(), FROM_HERE,
-      base::Bind(&RemoteSecurityKeyMessageWriterTest::ReadMessage,
+      base::Bind(&RemoteSecurityKeyMessageWriterImplTest::ReadMessage,
                  base::Unretained(this), payload.size()),
-      base::Bind(&RemoteSecurityKeyMessageWriterTest::OnReadComplete,
+      base::Bind(&RemoteSecurityKeyMessageWriterImplTest::OnReadComplete,
                  base::Unretained(this), run_loop.QuitClosure())));
 
   if (payload.size()) {
@@ -141,20 +144,20 @@ void RemoteSecurityKeyMessageWriterTest::WriteMessageToOutput(
   ASSERT_LE(read_file_.ReadAtCurrentPos(&unused, 1), 0);
 }
 
-TEST_F(RemoteSecurityKeyMessageWriterTest, WriteMessageWithoutPayload) {
+TEST_F(RemoteSecurityKeyMessageWriterImplTest, WriteMessageWithoutPayload) {
   std::string empty_payload;
   WriteMessageToOutput(empty_payload);
 }
 
-TEST_F(RemoteSecurityKeyMessageWriterTest, WriteMessageWithPayload) {
+TEST_F(RemoteSecurityKeyMessageWriterImplTest, WriteMessageWithPayload) {
   WriteMessageToOutput("Super-test-payload!");
 }
 
-TEST_F(RemoteSecurityKeyMessageWriterTest, WriteMessageWithLargePayload) {
+TEST_F(RemoteSecurityKeyMessageWriterImplTest, WriteMessageWithLargePayload) {
   WriteMessageToOutput(std::string(kLargeMessageSizeBytes, 'Y'));
 }
 
-TEST_F(RemoteSecurityKeyMessageWriterTest, WriteMultipleMessages) {
+TEST_F(RemoteSecurityKeyMessageWriterImplTest, WriteMultipleMessages) {
   int total_messages_to_write = 10;
   for (int i = 0; i < total_messages_to_write; i++) {
     if (i % 2 == 0) {
@@ -192,7 +195,7 @@ TEST_F(RemoteSecurityKeyMessageWriterTest, WriteMultipleMessages) {
   ASSERT_LE(read_file_.ReadAtCurrentPos(&unused, 1), 0);
 }
 
-TEST_F(RemoteSecurityKeyMessageWriterTest, EnsureWriteFailsWhenPipeClosed) {
+TEST_F(RemoteSecurityKeyMessageWriterImplTest, EnsureWriteFailsWhenPipeClosed) {
   // Close the read end so that writing fails immediately.
   read_file_.Close();
 

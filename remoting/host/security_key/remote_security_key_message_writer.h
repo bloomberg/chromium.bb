@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "remoting/host/security_key/security_key_message.h"
 
@@ -16,24 +15,15 @@ namespace remoting {
 // Used for sending remote security key messages using a file handle.
 class RemoteSecurityKeyMessageWriter {
  public:
-  explicit RemoteSecurityKeyMessageWriter(base::File output_file);
-  ~RemoteSecurityKeyMessageWriter();
+  virtual ~RemoteSecurityKeyMessageWriter() {}
 
   // Writes a remote security key message w/o a payload to |output_stream_|.
-  bool WriteMessage(RemoteSecurityKeyMessageType message_type);
+  virtual bool WriteMessage(RemoteSecurityKeyMessageType message_type) = 0;
 
   // Writes a remote security key message with a payload to |output_stream_|.
-  bool WriteMessageWithPayload(RemoteSecurityKeyMessageType message_type,
-                               const std::string& message_payload);
-
- private:
-  // Writes |bytes_to_write| bytes from |message| to |output_stream_|.
-  bool WriteBytesToOutput(const char* message, int bytes_to_write);
-
-  base::File output_stream_;
-  bool write_failed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyMessageWriter);
+  virtual bool WriteMessageWithPayload(
+      RemoteSecurityKeyMessageType message_type,
+      const std::string& message_payload) = 0;
 };
 
 }  // namespace remoting
