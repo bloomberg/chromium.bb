@@ -116,7 +116,6 @@ const AttributeNameMap& getSupportedAttributes()
             &SVGNames::modeAttr,
             &SVGNames::numOctavesAttr,
             &SVGNames::offsetAttr,
-            &SVGNames::opacityAttr,
             &SVGNames::operatorAttr,
             &SVGNames::orderAttr,
             &SVGNames::orientAttr,
@@ -170,8 +169,10 @@ const AttributeNameMap& getSupportedAttributes()
             &SVGNames::yChannelSelectorAttr,
             &SVGNames::zAttr,
         };
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++)
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++) {
+            ASSERT(!SVGElement::isAnimatableCSSProperty(*attributes[i]));
             supportedAttributes.set(*attributes[i], attributes[i]);
+        }
     }
     return supportedAttributes;
 }
