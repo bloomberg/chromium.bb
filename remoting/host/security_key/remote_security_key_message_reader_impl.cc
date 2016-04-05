@@ -34,9 +34,8 @@ RemoteSecurityKeyMessageReaderImpl::RemoteSecurityKeyMessageReaderImpl(
 RemoteSecurityKeyMessageReaderImpl::~RemoteSecurityKeyMessageReaderImpl() {
   DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
 
-  // In order to ensure the reader thread is stopped cleanly, we close the
-  // stream it is blocking on and then wait for the thread to exit.
-  read_stream_.Close();
+  // In order to ensure the reader thread is stopped cleanly, we want to stop
+  // the thread before the task runners and weak pointers are invalidated.
   reader_thread_.Stop();
 }
 
