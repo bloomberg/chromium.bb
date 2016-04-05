@@ -1084,6 +1084,9 @@ void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
   if (must_suspend) {
     must_suspend_ = true;
   } else {
+    // TODO(sandersd): Remove this when |delegate_| becomes aware of this state.
+    if (delegate_state_ == DelegateState::PAUSED_SEEK)
+      return;
     is_idle_ = true;
   }
 
@@ -1427,6 +1430,14 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
     case DelegateState::PAUSED:
       delegate_->DidPause(delegate_id_, false);
       break;
+    case DelegateState::PAUSED_SEEK:
+      // It doesn't really matter what happens when we enter this state, only
+      // that we reset the idle timer when leaving it.
+      //
+      // TODO(sandersd): Ideally |delegate_| would understand this state and not
+      // run the idle timer.
+      delegate_->DidPause(delegate_id_, false);
+      break;
     case DelegateState::ENDED:
       delegate_->DidPause(delegate_id_, true);
       break;
@@ -1523,11 +1534,13 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   if (!has_session) {
     result.delegate_state = DelegateState::GONE;
   } else if (paused_) {
-    // TODO(sandersd): There should be a paused+seeking state, during which
-    // the idle timer is disabled. Without that, idle suspending before or
-    // during seeking will have bad results.
-    result.delegate_state =
-        ended_ ? DelegateState::ENDED : DelegateState::PAUSED;
+    if (seeking()) {
+      result.delegate_state = DelegateState::PAUSED_SEEK;
+    } else if (ended_) {
+      result.delegate_state = DelegateState::ENDED;
+    } else {
+      result.delegate_state = DelegateState::PAUSED;
+    }
   } else {
     result.delegate_state = DelegateState::PLAYING;
   }

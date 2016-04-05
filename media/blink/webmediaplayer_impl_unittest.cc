@@ -130,7 +130,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void SetPaused(bool is_paused) { wmpi_->paused_ = is_paused; }
-
+  void SetSeeking(bool is_seeking) { wmpi_->seeking_ = is_seeking; }
   void SetEnded(bool is_ended) { wmpi_->ended_ = is_ended; }
 
   void SetMetadata(bool has_audio, bool has_video) {
@@ -326,6 +326,19 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing_AudioOnly) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_Paused_Seek) {
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetSeeking(true);
+
+  state = ComputePlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED_SEEK,
+            state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
 }
 
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Ended) {
