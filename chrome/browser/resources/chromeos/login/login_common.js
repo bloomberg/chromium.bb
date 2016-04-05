@@ -297,12 +297,6 @@ cr.define('cr.ui', function() {
   Oobe.loginForTesting = function(username, password, gaia_id) {
     Oobe.disableSigninUI();
     chrome.send('skipToLoginForTesting', [username]);
-    if (!gaia_id) {
-      /* TODO (alemate): Remove this backward compatibility hack when
-         as soon as all telemetry tests will pass gaia_id directly.
-      */
-      gaia_id = '12345';
-    }
     chrome.send('completeLogin', [gaia_id, username, password, false]);
   };
 
