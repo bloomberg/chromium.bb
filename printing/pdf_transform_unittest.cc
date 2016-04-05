@@ -191,7 +191,7 @@ TEST(PdfTransformTest, CalculateClipBoxBoundary) {
 }
 
 TEST(PdfTransformTest, CalculateScaledClipBoxOffset) {
-  gfx::Rect rect(kDefaultWidth, kDefaultHeight);
+  const gfx::Rect rect(kDefaultWidth, kDefaultHeight);
   ClipBox clip_box;
   double offset_x;
   double offset_y;
@@ -213,7 +213,7 @@ TEST(PdfTransformTest, CalculateScaledClipBoxOffset) {
 TEST(PdfTransformTest, CalculateNonScaledClipBoxOffset) {
   int page_width = kDefaultWidth;
   int page_height = kDefaultHeight;
-  gfx::Rect rect(kDefaultWidth, kDefaultHeight);
+  const gfx::Rect rect(kDefaultWidth, kDefaultHeight);
   ClipBox clip_box;
   double offset_x;
   double offset_y;
@@ -277,6 +277,62 @@ TEST(PdfTransformTest, CalculateNonScaledClipBoxOffset) {
       rect, 3, page_width, page_height, clip_box, &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(200, offset_x);
   EXPECT_DOUBLE_EQ(-170, offset_y);
+}
+
+// https://crbug.com/491160 and https://crbug.com/588757
+TEST(PdfTransformTest, ReversedMediaBox) {
+  int page_width = kDefaultWidth;
+  int page_height = kDefaultHeight;
+  const gfx::Rect rect(kDefaultWidth, kDefaultHeight);
+  ClipBox clip_box;
+  double offset_x;
+  double offset_y;
+
+  const ClipBox expected_media_box_b491160 = {0, 612, 0, -792};
+  ClipBox media_box_b491160 = {0, 612, -792, 0};
+  CalculateMediaBoxAndCropBox(false, true, false, &media_box_b491160,
+                              &clip_box);
+  ExpectBoxesAreEqual(expected_media_box_b491160, media_box_b491160);
+  ExpectBoxesAreEqual(expected_media_box_b491160, clip_box);
+
+  CalculateScaledClipBoxOffset(rect, media_box_b491160, &offset_x, &offset_y);
+  EXPECT_DOUBLE_EQ(0, offset_x);
+  EXPECT_DOUBLE_EQ(792, offset_y);
+
+  CalculateNonScaledClipBoxOffset(rect, 0, page_width, page_height,
+                                  media_box_b491160, &offset_x, &offset_y);
+  EXPECT_DOUBLE_EQ(0, offset_x);
+  EXPECT_DOUBLE_EQ(792, offset_y);
+
+  ClipBox media_box_b588757 = {0, 612, 0, 792};
+  CalculateMediaBoxAndCropBox(false, true, false, &media_box_b588757,
+                              &clip_box);
+  ExpectDefaultPortraitBox(media_box_b588757);
+  ExpectDefaultPortraitBox(clip_box);
+
+  CalculateScaledClipBoxOffset(rect, clip_box, &offset_x, &offset_y);
+  EXPECT_DOUBLE_EQ(0, offset_x);
+  EXPECT_DOUBLE_EQ(0, offset_y);
+
+  CalculateNonScaledClipBoxOffset(rect, 0, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
+  EXPECT_DOUBLE_EQ(0, offset_x);
+  EXPECT_DOUBLE_EQ(0, offset_y);
+
+  ClipBox media_box_left_right_flipped = {612, 0, 0, 792};
+  CalculateMediaBoxAndCropBox(false, true, false, &media_box_left_right_flipped,
+                              &clip_box);
+  ExpectDefaultPortraitBox(media_box_left_right_flipped);
+  ExpectDefaultPortraitBox(clip_box);
+
+  CalculateScaledClipBoxOffset(rect, clip_box, &offset_x, &offset_y);
+  EXPECT_DOUBLE_EQ(0, offset_x);
+  EXPECT_DOUBLE_EQ(0, offset_y);
+
+  CalculateNonScaledClipBoxOffset(rect, 0, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
+  EXPECT_DOUBLE_EQ(0, offset_x);
+  EXPECT_DOUBLE_EQ(0, offset_y);
 }
 
 }  // namespace printing
