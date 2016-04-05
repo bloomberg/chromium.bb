@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_IMAGE_DECODER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/common/image_decoder.mojom.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -154,7 +156,11 @@ class ImageDecoder : public content::UtilityProcessHostClient {
 
   // Calls StopBatchMode() after |kBatchModeTimeoutSeconds| have elapsed,
   // unless a new decoding request resets the timer.
-  scoped_ptr<base::DelayTimer> batch_mode_timer_;
+  std::unique_ptr<base::DelayTimer> batch_mode_timer_;
+
+  // Mojo service connection. Must always be bound/reset and used on the IO
+  // thread.
+  mojom::ImageDecoderPtr decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };

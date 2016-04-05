@@ -378,6 +378,7 @@ source_set("browser") {
       "//mojo/shell/public/cpp",
       "//net:extras",
       "//net:net_with_v8",
+      "//skia/public",
       "//storage/browser",
       "//storage/common",
       "//third_party/WebKit/public:image_resources",

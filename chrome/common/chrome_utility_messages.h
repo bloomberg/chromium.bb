@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
@@ -141,25 +140,6 @@ IPC_STRUCT_END()
 // Utility process messages:
 // These are messages from the browser to the utility process.
 
-// Tell the utility process to decode the given image data.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_DecodeImage,
-                     std::vector<unsigned char> /* encoded image contents */,
-                     bool /* shrink image if needed for IPC msg limit */,
-                     int /* delegate id */)
-
-#if defined(OS_CHROMEOS)
-// Tell the utility process to decode the given JPEG image data with a robust
-// libjpeg codec.
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RobustJPEGDecodeImage,
-                     std::vector<unsigned char> /* encoded image contents*/,
-                     int /* delegate id */)
-// Tell the utility process to decode the given PNG image data with a robust
-// libpng codec.
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RobustPNGDecodeImage,
-                     std::vector<unsigned char> /* encoded image contents*/,
-                     int /* delegate id */)
-#endif  // defined(OS_CHROMEOS)
-
 // Tell the utility process to patch the given |input_file| using |patch_file|
 // and place the output in |output_file|. The patch should use the bsdiff
 // algorithm (Courgette's version).
@@ -241,15 +221,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
 // went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackWebResource_Failed,
                      std::string /* error_message, if any */)
-
-// Reply when the utility process has succeeded in decoding the image.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_DecodeImage_Succeeded,
-                     SkBitmap /* decoded image */,
-                     int /* delegate id */)
-
-// Reply when an error occurred decoding the image.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DecodeImage_Failed,
-                     int /* delegate id */)
 
 // Reply when a file has been patched.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_PatchFile_Finished, int /* result */)

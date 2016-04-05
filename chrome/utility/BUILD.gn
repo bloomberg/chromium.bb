@@ -30,6 +30,7 @@ static_library("utility") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/common",
+    "//chrome/common:mojo_bindings",
     "//components/safe_json:safe_json_parser_message_filter",
     "//components/search_engines",
     "//components/strings",
@@ -41,6 +42,7 @@ static_library("utility") {
     "//media",
     "//net:net_with_v8",
     "//skia",
+    "//skia/public",
     "//sql",
     "//third_party/libxml",
   ]

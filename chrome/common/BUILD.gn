@@ -399,6 +399,11 @@ static_library("app_mode_app_support") {
 
 mojom("mojo_bindings") {
   sources = [
+    "image_decoder.mojom",
     "resource_usage_reporter.mojom",
+  ]
+
+  public_deps = [
+    "//skia/public/interfaces",
   ]
 }

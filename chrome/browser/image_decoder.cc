@@ -8,10 +8,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/image_decoder.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "content/public/common/service_registry.h"
+#include "skia/public/type_converters.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -25,6 +28,21 @@ base::LazyInstance<ImageDecoder>::Leaky g_decoder = LAZY_INSTANCE_INITIALIZER;
 // How long to wait after the last request has been received before ending
 // batch mode.
 const int kBatchModeTimeoutSeconds = 5;
+
+void OnDecodeImageDone(
+    base::Callback<void(int)> fail_callback,
+    base::Callback<void(const SkBitmap&, int)> success_callback,
+    int request_id, skia::mojom::BitmapPtr image) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (image) {
+    SkBitmap bitmap = image.To<SkBitmap>();
+    if (!bitmap.empty()) {
+      success_callback.Run(bitmap, request_id);
+      return;
+    }
+  }
+  fail_callback.Run(request_id);
+}
 
 }  // namespace
 
@@ -132,22 +150,21 @@ void ImageDecoder::DecodeImageInSandbox(
   }
   batch_mode_timer_->Reset();
 
-  switch (image_codec) {
+  mojom::ImageCodec mojo_codec = mojom::ImageCodec::DEFAULT;
 #if defined(OS_CHROMEOS)
-    case ROBUST_JPEG_CODEC:
-      utility_process_host_->Send(new ChromeUtilityMsg_RobustJPEGDecodeImage(
-          image_data, request_id));
-      break;
-    case ROBUST_PNG_CODEC:
-      utility_process_host_->Send(new ChromeUtilityMsg_RobustPNGDecodeImage(
-          image_data, request_id));
-      break;
+  if (image_codec == ROBUST_JPEG_CODEC)
+    mojo_codec = mojom::ImageCodec::ROBUST_JPEG;
+  if (image_codec == ROBUST_PNG_CODEC)
+    mojo_codec = mojom::ImageCodec::ROBUST_PNG;
 #endif  // defined(OS_CHROMEOS)
-    case DEFAULT_CODEC:
-      utility_process_host_->Send(new ChromeUtilityMsg_DecodeImage(
-          image_data, shrink_to_fit, request_id));
-      break;
-  }
+  decoder_->DecodeImage(
+      mojo::Array<uint8_t>::From(image_data),
+      mojo_codec,
+      shrink_to_fit,
+      base::Bind(&OnDecodeImageDone,
+                 base::Bind(&ImageDecoder::OnDecodeImageFailed, this),
+                 base::Bind(&ImageDecoder::OnDecodeImageSucceeded, this),
+                 request_id));
 }
 
 void ImageDecoder::CancelImpl(ImageRequest* image_request) {
@@ -169,10 +186,13 @@ void ImageDecoder::StartBatchMode() {
           this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_IMAGE_DECODER_NAME));
-  if (!utility_process_host_->StartBatchMode()) {
-     utility_process_host_.reset();
-     return;
+  if (!utility_process_host_->Start()) {
+    delete utility_process_host_.get();
+    return;
   }
+  content::ServiceRegistry* service_registry =
+      utility_process_host_->GetServiceRegistry();
+  service_registry->ConnectToRemoteService(mojo::GetProxy(&decoder_));
 }
 
 void ImageDecoder::StopBatchMode() {
@@ -187,7 +207,10 @@ void ImageDecoder::StopBatchMode() {
   }
 
   if (utility_process_host_) {
-    utility_process_host_->EndBatchMode();
+    // With Mojo, the utility process needs to be explicitly shut down by
+    // deleting the host.
+    delete utility_process_host_.get();
+    decoder_.reset();
     utility_process_host_.reset();
   }
 }
@@ -219,17 +242,8 @@ void ImageDecoder::OnProcessLaunchFailed() {
   FailAllRequests();
 }
 
-bool ImageDecoder::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ImageDecoder, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Succeeded,
-                        OnDecodeImageSucceeded)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Failed,
-                        OnDecodeImageFailed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+bool ImageDecoder::OnMessageReceived(const IPC::Message& message) {
+  return false;
 }
 
 void ImageDecoder::OnDecodeImageSucceeded(

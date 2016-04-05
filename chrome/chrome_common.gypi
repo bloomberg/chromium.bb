@@ -647,10 +647,12 @@
         '../mojo/mojom_bindings_generator.gypi'
       ],
       'sources': [
+        'common/image_decoder.mojom',
         'common/resource_usage_reporter.mojom',
       ],
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../skia/skia.gyp:skia_mojo',
       ],
     },
   ],
