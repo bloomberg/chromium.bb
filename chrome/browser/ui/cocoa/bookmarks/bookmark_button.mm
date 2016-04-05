@@ -36,12 +36,7 @@ namespace {
 BookmarkButton* gDraggedButton = nil; // Weak
 };
 
-@interface BookmarkButton() <NSPasteboardItemDataProvider>
-
-// NSPasteboardItemDataProvider:
-- (void)pasteboard:(NSPasteboard*)sender
-                  item:(NSPasteboardItem*)item
-    provideDataForType:(NSString*)type;
+@interface BookmarkButton()
 
 // NSDraggingSource:
 - (void)draggingSession:(NSDraggingSession*)session
@@ -201,7 +196,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
                                              delay:NO];
   }
   const BookmarkNode* node = [self bookmarkNode];
-  const BookmarkNode* parent = node ? node->parent() : NULL;
+  const BookmarkNode* parent = node->parent();
   if (parent && parent->type() == BookmarkNode::FOLDER) {
     content::RecordAction(UserMetricsAction("BookmarkBarFolder_DragStart"));
   } else {
@@ -215,13 +210,12 @@ BookmarkButton* gDraggedButton = nil; // Weak
   NSImage* image = [self dragImage];
   [self setHidden:YES];
 
-  NSPasteboardItem* pbItem = [NSPasteboardItem new];
-  [pbItem setDataProvider:self
-                 forTypes:@[ ui::ClipboardUtil::UTIForPasteboardType(
-                              kBookmarkButtonDragType) ]];
+  NSPasteboardItem* item = [[self delegate] pasteboardItemForDragOfButton:self];
+  if ([[self delegate] respondsToSelector:@selector(willBeginPasteboardDrag)])
+    [[self delegate] willBeginPasteboardDrag];
 
   base::scoped_nsobject<NSDraggingItem> dragItem(
-      [[NSDraggingItem alloc] initWithPasteboardWriter:pbItem]);
+      [[NSDraggingItem alloc] initWithPasteboardWriter:item]);
   [dragItem setDraggingFrame:[self bounds] contents:image];
 
   [self beginDraggingSessionWithItems:@[ dragItem.get() ]
@@ -238,15 +232,6 @@ BookmarkButton* gDraggedButton = nil; // Weak
   gDraggedButton = nil;
 
   [self autorelease];
-}
-
-- (void)pasteboard:(NSPasteboard*)sender
-                  item:(NSPasteboardItem*)item
-    provideDataForType:(NSString*)type {
-  [sender
-      setData:[NSData dataWithBytes:&gDraggedButton
-                             length:sizeof(gDraggedButton)]
-      forType:ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType)];
 }
 
 - (NSDragOperation)draggingSession:(NSDraggingSession*)session

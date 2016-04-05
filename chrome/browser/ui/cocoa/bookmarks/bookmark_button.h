@@ -22,11 +22,8 @@ class BookmarkNode;
 // things on behalf of a bookmark button.
 @protocol BookmarkButtonDelegate
 
-// Fill the given pasteboard with appropriate data when the given button is
-// dragged. Since the delegate has no way of providing pasteboard data later,
-// all data must actually be put into the pasteboard and not merely promised.
-- (void)fillPasteboard:(NSPasteboard*)pboard
-       forDragOfButton:(BookmarkButton*)button;
+// Returns a pasteboard item that has all bookmark information.
+- (NSPasteboardItem*)pasteboardItemForDragOfButton:(BookmarkButton*)button;
 
 // Bookmark buttons pass mouseEntered: and mouseExited: events to
 // their delegate.  This allows the delegate to decide (for example)
@@ -55,6 +52,10 @@ class BookmarkNode;
 // doing that hover thing.
 - (void)bookmarkDragDidEnd:(BookmarkButton*)button
                  operation:(NSDragOperation)operation;
+
+@optional
+// Called when a pasteboard drag is about to begin.
+- (void)willBeginPasteboardDrag;
 
 @end
 

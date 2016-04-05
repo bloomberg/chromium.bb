@@ -2464,9 +2464,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 #pragma mark BookmarkButtonDelegate Protocol
 
-- (void)fillPasteboard:(NSPasteboard*)pboard
-       forDragOfButton:(BookmarkButton*)button {
-  [[self folderTarget] fillPasteboard:pboard forDragOfButton:button];
+- (NSPasteboardItem*)pasteboardItemForDragOfButton:(BookmarkButton*)button {
+  return [[self folderTarget] pasteboardItemForDragOfButton:button];
 }
 
 // BookmarkButtonDelegate protocol implementation.  When menus are

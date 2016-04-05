@@ -180,13 +180,12 @@ NSArray* GetPlistForBookmarkList(
 }
 
 void WriteBookmarkDictionaryListPboardType(
-    NSPasteboard* pb,
+    NSPasteboardItem* item,
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* plist = GetPlistForBookmarkList(elements);
   NSString* uti = ui::ClipboardUtil::UTIForPasteboardType(
       kBookmarkDictionaryListPboardType);
-  [pb addTypes:@[ uti ] owner:nil];
-  [pb setPropertyList:plist forType:uti];
+  [item setPropertyList:plist forType:uti];
 }
 
 void FillFlattenedArraysForBookmarks(
@@ -210,8 +209,7 @@ void FillFlattenedArraysForBookmarks(
   }
 }
 
-void WriteSimplifiedBookmarkTypes(
-    NSPasteboard* pb,
+base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSMutableArray* url_titles = [NSMutableArray array];
   NSMutableArray* urls = [NSMutableArray array];
@@ -219,22 +217,23 @@ void WriteSimplifiedBookmarkTypes(
   FillFlattenedArraysForBookmarks(
       elements, url_titles, urls, toplevel_string_data);
 
+  base::scoped_nsobject<NSPasteboardItem> item;
   if ([urls count] > 0) {
-    base::scoped_nsobject<NSPasteboardItem> item;
     if ([urls count] == 1) {
       item = ui::ClipboardUtil::PasteboardItemFromUrl([urls firstObject],
                                                       [url_titles firstObject]);
     } else {
       item = ui::ClipboardUtil::PasteboardItemFromUrls(urls, url_titles);
     }
-
-    ui::ClipboardUtil::AddDataToPasteboard(pb, item);
   }
 
-  // Write NSStringPboardType.
-  [pb addTypes:@[ NSStringPboardType ] owner:nil];
-  [pb setString:[toplevel_string_data componentsJoinedByString:@"\n"]
-        forType:NSStringPboardType];
+  if (!item) {
+    item = [[NSPasteboardItem alloc] init];
+  }
+
+  [item setString:[toplevel_string_data componentsJoinedByString:@"\n"]
+          forType:NSPasteboardTypeString];
+  return item;
 }
 
 NSPasteboard* PasteboardFromType(ui::ClipboardType type) {
@@ -256,6 +255,20 @@ NSPasteboard* PasteboardFromType(ui::ClipboardType type) {
 
 }  // namespace
 
+NSPasteboardItem* PasteboardItemFromBookmarks(
+    const std::vector<BookmarkNodeData::Element>& elements,
+    const base::FilePath& profile_path) {
+  base::scoped_nsobject<NSPasteboardItem> item =
+      WriteSimplifiedBookmarkTypes(elements);
+
+  WriteBookmarkDictionaryListPboardType(item, elements);
+
+  NSString* uti =
+      ui::ClipboardUtil::UTIForPasteboardType(kChromiumProfilePathPboardType);
+  [item setString:base::SysUTF8ToNSString(profile_path.value()) forType:uti];
+  return [[item retain] autorelease];
+}
+
 void WriteBookmarksToPasteboard(
     ui::ClipboardType type,
     const std::vector<BookmarkNodeData::Element>& elements,
@@ -263,14 +276,10 @@ void WriteBookmarksToPasteboard(
   if (elements.empty())
     return;
 
+  NSPasteboardItem* item = PasteboardItemFromBookmarks(elements, profile_path);
   NSPasteboard* pb = PasteboardFromType(type);
-
-  NSString* uti =
-      ui::ClipboardUtil::UTIForPasteboardType(kChromiumProfilePathPboardType);
-  [pb declareTypes:@[ uti ] owner:nil];
-  [pb setString:base::SysUTF8ToNSString(profile_path.value()) forType:uti];
-  WriteBookmarkDictionaryListPboardType(pb, elements);
-  WriteSimplifiedBookmarkTypes(pb, elements);
+  [pb clearContents];
+  [pb writeObjects:@[ item ]];
 }
 
 bool ReadBookmarksFromPasteboard(

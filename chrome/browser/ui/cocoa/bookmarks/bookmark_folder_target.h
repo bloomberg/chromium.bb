@@ -30,11 +30,8 @@ class Profile;
 // Main IBAction for a button click.
 - (IBAction)openBookmarkFolderFromButton:(id)sender;
 
-// Fill the given pasteboard with appropriate data when the given button is
-// dragged. Since the delegate has no way of providing pasteboard data later,
-// all data must actually be put into the pasteboard and not merely promised.
-- (void)fillPasteboard:(NSPasteboard*)pboard
-       forDragOfButton:(BookmarkButton*)button;
+// Returns a pasteboard item that has all bookmark information.
+- (NSPasteboardItem*)pasteboardItemForDragOfButton:(BookmarkButton*)button;
 
 @end
 

@@ -8,6 +8,7 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
 #if defined(__OBJC__)
+@class NSPasteboardItem;
 @class NSString;
 #endif  // __OBJC__
 
@@ -19,6 +20,13 @@ namespace bookmarks {
 
 // This set of functions lets C++ code interact with the cocoa pasteboard and
 // dragging methods.
+
+#if defined(__OBJC__)
+// Creates a NSPasteboardItem that contains all the data for the bookmarks.
+NSPasteboardItem* PasteboardItemFromBookmarks(
+    const std::vector<BookmarkNodeData::Element>& elements,
+    const base::FilePath& profile_path);
+#endif  // __OBJC__
 
 // Writes a set of bookmark elements from a profile to the specified pasteboard.
 void WriteBookmarksToPasteboard(

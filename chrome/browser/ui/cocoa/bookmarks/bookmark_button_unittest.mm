@@ -29,8 +29,8 @@ using bookmarks::BookmarkNode;
 
 @implementation FakeButtonDelegate
 
-- (void)fillPasteboard:(NSPasteboard*)pboard
-       forDragOfButton:(BookmarkButton*)button {
+- (NSPasteboardItem*)pasteboardItemForDragOfButton:(BookmarkButton*)button {
+  return nil;
 }
 
 - (void)mouseEnteredButton:(id)buton event:(NSEvent*)event {
