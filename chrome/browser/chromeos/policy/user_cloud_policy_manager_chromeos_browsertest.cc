@@ -103,7 +103,9 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
+// Test disabled. See crbug.com/600617.
+IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest,
+                       DISABLED_ErrorLoadingPolicy) {
   // Delete the policy file - this will cause a 500 error on policy requests.
   user_policy_helper()->DeletePolicyFile();
   SkipToLoginScreen();
