@@ -99,8 +99,6 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_.name;
   }
 
-  const url::Origin& frame_origin() const { return replication_state_.origin; }
-
   size_t child_count() const {
     return children_.size();
   }
