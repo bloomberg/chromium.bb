@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
@@ -20,21 +20,18 @@
         font-weight: 500;
       }
 
-      paper-menu {
-        --paper-menu-focused-item-after: {
-          background: none;
-        };
-        --paper-menu-selected-item: {
-          color: var(--google-blue-500);
-          font-size: 14px;
-          font-weight: 500;
-        };
+      paper-item.iron-selected {
+        color: var(--google-blue-500);
+        font-weight: 500;
+      }
+
+      paper-listbox {
         -webkit-user-select: none;
         background-color: transparent;
         color: #5a5a5a;
       }
     </style>
-    <paper-menu id="overflow-menu" selected="0" on-iron-select="onSelect_">
+    <paper-listbox id="overflow-menu" selected="0" on-iron-select="onSelect_">
       <paper-item id="history-button">
         <div>$i18n{historyMenuItem}</div>
         <paper-ripple></paper-ripple>
@@ -43,7 +40,7 @@
         <div>$i18n{openTabsMenuItem}</div>
         <paper-ripple></paper-ripple>
       </paper-item>
-    </paper-menu>
+    </paper-listbox>
   </template>
   <script src="chrome://history/side_bar.js"></script>
 </dom-module>
