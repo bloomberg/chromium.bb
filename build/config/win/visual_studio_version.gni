@@ -21,6 +21,9 @@ declare_args() {
   # installation location.
   windows_sdk_path = "C:\Program Files (x86)\Windows Kits\10"
 
+  # Tell VS to create a PDB that references information in .obj files rather
+  # than copying it all. This should improve linker performance. mspdbcmf.exe
+  # can be used to convert a fastlink pdb to a normal one.
   is_win_fastlink = false
 }
 
