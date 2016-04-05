@@ -59,11 +59,11 @@ const char* validValues[] = {
 {% if origin_trial_name %}
 String {{errorName}};
 if (!{{origin_trial_name}}(executionContext, {{errorName}})) {
-     v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-     if (!{{errorName}}.isEmpty()) {
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, {{errorName}}));
-     }
-     return;
+    v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+    if (!{{errorName}}.isEmpty()) {
+        toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, {{errorName}}));
+    }
+    return;
 }
 {% endif %}
 {% endmacro %}

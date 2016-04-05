@@ -245,11 +245,11 @@ static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::Function
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     String errorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         if (!errorMessage.isEmpty()) {
-             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-         }
-         return;
+        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+        }
+        return;
     }
     TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
 }
@@ -296,11 +296,11 @@ static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     String errorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
-         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         if (!errorMessage.isEmpty()) {
-             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-         }
-         return;
+        v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+        }
+        return;
     }
     TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethod(info);
 }
