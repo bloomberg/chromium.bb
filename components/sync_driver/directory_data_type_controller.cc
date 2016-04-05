@@ -22,6 +22,9 @@ bool DirectoryDataTypeController::ShouldLoadModelBeforeConfigure() const {
   return false;
 }
 
+void DirectoryDataTypeController::RegisterWithBackend(
+    BackendDataTypeConfigurer* configurer) {}
+
 void DirectoryDataTypeController::ActivateDataType(
     BackendDataTypeConfigurer* configurer) {
   // Tell the backend about the change processor for this type so it can

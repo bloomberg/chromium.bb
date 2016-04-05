@@ -42,7 +42,10 @@ enum ModelSafeGroup {
   GROUP_PASSWORD,      // Models that live on the password thread and are
                        // being synced.  On windows and linux, this runs on the
                        // DB thread.
-  MODEL_SAFE_GROUP_COUNT,
+  GROUP_NON_BLOCKING,  // Models that correspond to non-blocking types. These
+                       // models always stay in GROUP_NON_BLOCKING; changes are
+                       // forwarded to these models without ModelSafeWorker/
+                       // SyncBackendRegistrar involvement.
 };
 
 SYNC_EXPORT std::string ModelSafeGroupToString(ModelSafeGroup group);

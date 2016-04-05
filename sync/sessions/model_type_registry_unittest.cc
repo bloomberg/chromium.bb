@@ -105,8 +105,14 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Once) {
   routing_info.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
   routing_info.insert(std::make_pair(BOOKMARKS, GROUP_UI));
   routing_info.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
   registry()->SetEnabledDirectoryTypes(routing_info);
+
+  UpdateHandlerMap* update_handler_map = registry()->update_handler_map();
+  // Apps is non-blocking type, SetEnabledDirectoryTypes shouldn't instantiate
+  // update_handler for it.
+  EXPECT_TRUE(update_handler_map->find(APPS) == update_handler_map->end());
 }
 
 // Try two different routing info settings.
@@ -118,6 +124,7 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Repeatedly) {
   routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
   routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_PASSIVE));
   routing_info1.insert(std::make_pair(AUTOFILL, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
   registry()->SetEnabledDirectoryTypes(routing_info1);
 
@@ -125,6 +132,7 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Repeatedly) {
   routing_info2.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
   routing_info2.insert(std::make_pair(BOOKMARKS, GROUP_UI));
   routing_info2.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info2.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
   registry()->SetEnabledDirectoryTypes(routing_info2);
 }
@@ -138,6 +146,7 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Clear) {
   routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
   routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
   routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info1.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
   registry()->SetEnabledDirectoryTypes(routing_info1);
 
@@ -154,6 +163,7 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_OffAndOn) {
   routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
   routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
   routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info1.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
   registry()->SetEnabledDirectoryTypes(routing_info1);
 
@@ -202,6 +212,10 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
   routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
   routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info1.insert(std::make_pair(THEMES, GROUP_NON_BLOCKING));
+  routing_info1.insert(std::make_pair(SESSIONS, GROUP_NON_BLOCKING));
+
+  ModelTypeSet directory_types(NIGORI, BOOKMARKS, AUTOFILL);
 
   ModelTypeSet current_types;
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
@@ -215,7 +229,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add some directory types.
   registry()->SetEnabledDirectoryTypes(routing_info1);
-  current_types.PutAll(GetRoutingInfoTypes(routing_info1));
+  current_types.PutAll(directory_types);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
   // Add sessions non-blocking type.
@@ -234,7 +248,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   // Clear all directory types.
   ModelSafeRoutingInfo routing_info2;
   registry()->SetEnabledDirectoryTypes(routing_info2);
-  current_types.RemoveAll(GetRoutingInfoTypes(routing_info1));
+  current_types.RemoveAll(directory_types);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 }
 

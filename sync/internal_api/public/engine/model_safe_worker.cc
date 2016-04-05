@@ -63,6 +63,8 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
       return "GROUP_PASSIVE";
     case GROUP_PASSWORD:
       return "GROUP_PASSWORD";
+    case GROUP_NON_BLOCKING:
+      return "GROUP_NON_BLOCKING";
     default:
       NOTREACHED();
       return "INVALID";

@@ -1695,10 +1695,12 @@ TEST_F(SyncDataTypeManagerImplTest, DelayConfigureForUSSTypes) {
   // Bookmarks model isn't loaded yet and it is required to complete before
   // call to configure. Ensure that configure wasn't called.
   EXPECT_EQ(0, configurer_.configure_call_count());
+  EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
 
   // Finishing model load should trigger configure.
   GetController(BOOKMARKS)->SimulateModelLoadFinishing();
   EXPECT_EQ(1, configurer_.configure_call_count());
+  EXPECT_EQ(1, GetController(BOOKMARKS)->register_with_backend_call_count());
 
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());

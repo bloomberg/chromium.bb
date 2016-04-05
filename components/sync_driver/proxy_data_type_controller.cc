@@ -30,6 +30,9 @@ void ProxyDataTypeController::LoadModels(
   model_load_callback.Run(type(), syncer::SyncError());
 }
 
+void ProxyDataTypeController::RegisterWithBackend(
+    BackendDataTypeConfigurer* configurer) {}
+
 void ProxyDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   syncer::SyncMergeResult local_merge_result(type_);

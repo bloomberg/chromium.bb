@@ -177,6 +177,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
 
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   const ModelTypeSet initial_types(BOOKMARKS, NIGORI, PASSWORDS);
+  registrar_->RegisterNonBlockingType(BOOKMARKS);
   registrar_->SetInitialTypes(initial_types);
   EXPECT_TRUE(registrar_->IsNigoriEnabled());
   {
@@ -186,7 +187,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   }
   {
     syncer::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[BOOKMARKS] = syncer::GROUP_PASSIVE;
+    expected_routing_info[BOOKMARKS] = syncer::GROUP_NON_BLOCKING;
     expected_routing_info[NIGORI] = syncer::GROUP_PASSIVE;
     // Passwords dropped because of no password store.
     ExpectRoutingInfo(registrar_.get(), expected_routing_info);
@@ -195,6 +196,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
 }
 
 TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
+  registrar_->RegisterNonBlockingType(BOOKMARKS);
   registrar_->SetInitialTypes(ModelTypeSet());
 
   // Add.
@@ -203,7 +205,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
       registrar_->ConfigureDataTypes(types1, ModelTypeSet()).Equals(types1));
   {
     syncer::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[BOOKMARKS] = syncer::GROUP_PASSIVE;
+    expected_routing_info[BOOKMARKS] = syncer::GROUP_NON_BLOCKING;
     expected_routing_info[NIGORI] = syncer::GROUP_PASSIVE;
     expected_routing_info[AUTOFILL] = syncer::GROUP_PASSIVE;
     ExpectRoutingInfo(registrar_.get(), expected_routing_info);

@@ -125,6 +125,9 @@ class DataTypeManagerImpl : public DataTypeManager,
   void ConfigureImpl(syncer::ModelTypeSet desired_types,
                      syncer::ConfigureReason reason);
 
+  // Calls data type controllers of requested types to register with backend.
+  void RegisterTypesWithBackend();
+
   BackendDataTypeConfigurer::DataTypeConfigStateMap
   BuildDataTypeConfigStateMap(
       const syncer::ModelTypeSet& types_being_configured) const;

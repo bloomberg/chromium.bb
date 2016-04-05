@@ -267,20 +267,19 @@ class NonUIModelTypeControllerTest : public testing::Test,
     }
   }
 
+  void RegisterWithBackend() {
+    controller_->RegisterWithBackend(&configurer_);
+    if (auto_run_tasks_) {
+      RunAllTasks();
+    }
+  }
+
   void StartAssociating() {
     controller_->StartAssociating(
         base::Bind(&NonUIModelTypeControllerTest::AssociationDone,
                    base::Unretained(this)));
     // The callback is expected to be promptly called.
     EXPECT_TRUE(association_callback_called_);
-  }
-
-  void ActivateDataType() {
-    DCHECK(association_callback_called_);
-    controller_->ActivateDataType(&configurer_);
-    if (auto_run_tasks_) {
-      RunAllTasks();
-    }
   }
 
   void DeactivateDataTypeAndStop() {
@@ -380,19 +379,19 @@ TEST_F(NonUIModelTypeControllerTest, ActivateDataTypeOnBackendThread) {
   LoadModels();
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
             controller_->state());
+  RegisterWithBackend();
+  TestTypeProcessor(true, true);  // enabled, connected.
 
   StartAssociating();
   EXPECT_EQ(sync_driver::DataTypeController::RUNNING, controller_->state());
-
-  ActivateDataType();
-  TestTypeProcessor(true, true);  // enabled, connected.
 }
 
 TEST_F(NonUIModelTypeControllerTest, Stop) {
   LoadModels();
-  StartAssociating();
-  ActivateDataType();
+  RegisterWithBackend();
   TestTypeProcessor(true, true);  // enabled, connected.
+
+  StartAssociating();
 
   DeactivateDataTypeAndStop();
   EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_->state());

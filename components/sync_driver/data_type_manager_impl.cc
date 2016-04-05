@@ -172,6 +172,15 @@ void DataTypeManagerImpl::ConfigureImpl(
   Restart(reason);
 }
 
+void DataTypeManagerImpl::RegisterTypesWithBackend() {
+  for (syncer::ModelTypeSet::Iterator type_iter = last_requested_types_.First();
+       type_iter.Good(); type_iter.Inc()) {
+    const auto& dtc_iter = controllers_->find(type_iter.Get());
+    if (dtc_iter != controllers_->end())
+      dtc_iter->second->RegisterWithBackend(configurer_);
+  }
+}
+
 BackendDataTypeConfigurer::DataTypeConfigStateMap
 DataTypeManagerImpl::BuildDataTypeConfigStateMap(
     const syncer::ModelTypeSet& types_being_configured) const {
@@ -312,6 +321,7 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
   // TODO(pavely): By now some of datatypes in download_types_queue_ could have
   // failed loading and should be excluded from configuration. I need to adjust
   // download_types_queue_ for such types.
+  RegisterTypesWithBackend();
   StartNextDownload(syncer::ModelTypeSet());
 }
 

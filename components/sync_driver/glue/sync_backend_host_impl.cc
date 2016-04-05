@@ -4,7 +4,9 @@
 
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -439,6 +441,7 @@ void SyncBackendHostImpl::DeactivateDirectoryDataType(syncer::ModelType type) {
 void SyncBackendHostImpl::ActivateNonBlockingDataType(
     syncer::ModelType type,
     scoped_ptr<syncer_v2::ActivationContext> activation_context) {
+  registrar_->RegisterNonBlockingType(type);
   sync_context_proxy_->ConnectTypeToSync(type, std::move(activation_context));
 }
 

@@ -131,6 +131,16 @@ void NonBlockingDataTypeController::OnProcessorStartedOnUIThread(
   LoadModelsDone(result, error);
 }
 
+void NonBlockingDataTypeController::RegisterWithBackend(
+    sync_driver::BackendDataTypeConfigurer* configurer) {
+  DCHECK(BelongsToUIThread());
+  DCHECK(configurer);
+  DCHECK(activation_context_);
+  DCHECK_EQ(MODEL_LOADED, state_);
+  configurer->ActivateNonBlockingDataType(type(),
+                                          std::move(activation_context_));
+}
+
 void NonBlockingDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK(BelongsToUIThread());
@@ -147,10 +157,11 @@ void NonBlockingDataTypeController::ActivateDataType(
     sync_driver::BackendDataTypeConfigurer* configurer) {
   DCHECK(BelongsToUIThread());
   DCHECK(configurer);
-  DCHECK(activation_context_);
   DCHECK_EQ(RUNNING, state_);
-  configurer->ActivateNonBlockingDataType(type(),
-                                          std::move(activation_context_));
+  // In contrast with directory datatypes, non-blocking data types should be
+  // activated in RegisterWithBackend. activation_context_ should be passed
+  // to backend before call to ActivateDataType.
+  DCHECK(!activation_context_);
 }
 
 void NonBlockingDataTypeController::DeactivateDataType(

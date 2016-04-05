@@ -295,8 +295,7 @@ class SYNC_EXPORT SyncManagerImpl
   // This state changes when entering or exiting a configuration cycle.
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
 
-  // The main interface for non-blocking sync types and a thread-safe wrapper.
-  scoped_ptr<syncer_v2::SyncContext> sync_context_;
+  // Thread-safe wrapper for main interface for non-blocking sync types.
   scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 
   // A container of various bits of information used by the SyncScheduler to

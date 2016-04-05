@@ -98,6 +98,12 @@ class DataTypeController
   // the models are ready.
   virtual void LoadModels(const ModelLoadCallback& model_load_callback) = 0;
 
+  // Registers with sync backend if needed. This function is called by
+  // DataTypeManager before downloading initial data. Non-blocking types need to
+  // pass activation context containing progress marker to sync backend before
+  // initial download starts.
+  virtual void RegisterWithBackend(BackendDataTypeConfigurer* configurer) = 0;
+
   // Will start a potentially asynchronous operation to perform the
   // model association. Once the model association is done the callback will
   // be invoked.

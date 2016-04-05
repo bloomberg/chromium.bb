@@ -606,10 +606,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
 
-  const sync_driver::DataTypeController::TypeMap& data_type_controllers() {
-    return data_type_controllers_;
-  }
-
   // Helper method for managing encryption UI.
   bool IsEncryptedDatatypeEnabled() const;
 

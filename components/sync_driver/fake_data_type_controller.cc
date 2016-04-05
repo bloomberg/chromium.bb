@@ -20,7 +20,8 @@ FakeDataTypeController::FakeDataTypeController(ModelType type)
       model_load_delayed_(false),
       type_(type),
       ready_for_start_(true),
-      should_load_model_before_configure_(false) {}
+      should_load_model_before_configure_(false),
+      register_with_backend_call_count_(0) {}
 
 FakeDataTypeController::~FakeDataTypeController() {
 }
@@ -47,6 +48,11 @@ void FakeDataTypeController::LoadModels(
   } else {
     state_ = MODEL_STARTING;
   }
+}
+
+void FakeDataTypeController::RegisterWithBackend(
+    BackendDataTypeConfigurer* configurer) {
+  ++register_with_backend_call_count_;
 }
 
 // MODEL_LOADED -> MODEL_STARTING.
