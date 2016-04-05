@@ -1067,6 +1067,7 @@ void IOThread::NetworkSessionConfigurator::ConfigurePriorityDependencies(
   }
 }
 
+// static
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthSchemes,
                                "basic,digest,ntlm,negotiate");
@@ -1630,6 +1631,7 @@ net::QuicVersion IOThread::NetworkSessionConfigurator::ParseQuicVersion(
   return net::QUIC_VERSION_UNSUPPORTED;
 }
 
+// static
 net::URLRequestContext* IOThread::ConstructSystemRequestContext(
     IOThread::Globals* globals,
     const net::HttpNetworkSession::Params& params,
@@ -1678,6 +1680,7 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
   return context;
 }
 
+// static
 net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
     IOThread::Globals* globals,
     const net::HttpNetworkSession::Params& params,

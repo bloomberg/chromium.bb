@@ -446,11 +446,6 @@ class IOThread : public content::BrowserThreadDelegate {
   void Init() override;
   void CleanUp() override;
 
-  // Initializes |params| based on the settings in |globals|.
-  static void InitializeNetworkSessionParamsFromGlobals(
-      const Globals& globals,
-      net::HttpNetworkSession::Params* params);
-
   void InitializeNetworkOptions(const base::CommandLine& parsed_command_line);
 
   // Global state must be initialized on the IO thread, then this
