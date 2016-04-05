@@ -204,8 +204,6 @@
         'url_scheme_util.mm',
         'url_util.cc',
         'user_metrics.cc',
-        'weak_nsobject_counter.h',
-        'weak_nsobject_counter.mm',
         'web_kit_constants.cc',
         'web_state/blocked_popup_info.h',
         'web_state/blocked_popup_info.mm',

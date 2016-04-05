@@ -16,7 +16,6 @@
 #import "ios/web/public/browsing_data_partition.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_view_creation_util.h"
-#import "ios/web/weak_nsobject_counter.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 
 #if !defined(NDEBUG)

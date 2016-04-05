@@ -52,7 +52,6 @@
         'ui_web_view_util_unittest.mm',
         'url_scheme_util_unittest.mm',
         'url_util_unittest.cc',
-        'weak_nsobject_counter_unittest.mm',
         'web_state/crw_pass_kit_downloader_unittest.mm',
         'web_state/crw_web_view_scroll_view_proxy_unittest.mm',
         'web_state/js/common_js_unittest.mm',
