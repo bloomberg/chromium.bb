@@ -3416,13 +3416,12 @@
           ],
           'link_settings': {
             'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreImage.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreTelephony.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreText.framework',
               '$(SDKROOT)/System/Library/Frameworks/MobileCoreServices.framework',
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
             ],
-            # CoreImage is iOS 5+, but iOS 4.3 is still supported.
-            'xcode_settings': {'OTHER_LDFLAGS': ['-weak_framework CoreImage']},
           },
         }],
         ['OS=="win" or OS=="mac"', {
