@@ -181,11 +181,8 @@ bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
 bool IsValidAndroidFacetURI(const std::string& uri);
 
 // Returns the origin URI in a format which can be presented to a user based of
-// |password_from| field values. For web URIs |languages| is using in order to
-// determine whether a URI is 'comprehensible' to a user who understands
-// languages listed.
-std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form,
-                                   const std::string& languages);
+// |password_from| field values.
+std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form);
 
 // Returns the Android origin URI for presenting to a user.
 std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri);

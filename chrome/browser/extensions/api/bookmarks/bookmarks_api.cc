@@ -519,8 +519,6 @@ bool BookmarksSearchFunction::RunOnReady() {
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
-  std::string lang = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
   if (params->query.as_string) {
     ::bookmarks::QueryFields query;
@@ -530,7 +528,6 @@ bool BookmarksSearchFunction::RunOnReady() {
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
         std::numeric_limits<int>::max(),
-        lang,
         &nodes);
   } else {
     DCHECK(params->query.as_object);
@@ -549,7 +546,6 @@ bool BookmarksSearchFunction::RunOnReady() {
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
         std::numeric_limits<int>::max(),
-        lang,
         &nodes);
   }
 

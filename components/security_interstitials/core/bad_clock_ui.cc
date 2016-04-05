@@ -17,13 +17,11 @@ BadClockUI::BadClockUI(const GURL& request_url,
                        const net::SSLInfo& ssl_info,
                        const base::Time& time_triggered,
                        ssl_errors::ClockState clock_state,
-                       const std::string& languages,
                        ControllerClient* controller)
     : request_url_(request_url),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       time_triggered_(time_triggered),
-      languages_(languages),
       controller_(controller),
       clock_state_(clock_state) {
   controller_->metrics_helper()->RecordUserInteraction(
@@ -74,7 +72,7 @@ void BadClockUI::PopulateClockStrings(base::DictionaryValue* load_time_data) {
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
           IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_, languages_),
+          common_string_util::GetFormattedHostName(request_url_),
           base::TimeFormatFriendlyDateAndTime(time_triggered_)));
   load_time_data->SetString(
       "primaryButtonText",

@@ -3631,10 +3631,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       title = @"JavaScript";
     } else {
       DCHECK(web::GetWebClient());
-      const std::string& acceptLangs = web::GetWebClient()->GetAcceptLangs(
-          self.webStateImpl->GetBrowserState());
-      base::string16 urlText =
-          url_formatter::FormatUrl(GURL(href), acceptLangs);
+      base::string16 urlText = url_formatter::FormatUrl(GURL(href));
       title = base::SysUTF16ToNSString(urlText);
     }
   }

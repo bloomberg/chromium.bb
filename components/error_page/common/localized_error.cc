@@ -845,7 +845,6 @@ void LocalizedError::GetStrings(int error_code,
                                 bool can_show_network_diagnostics_dialog,
                                 bool has_offline_pages,
                                 const std::string& locale,
-                                const std::string& accept_languages,
                                 scoped_ptr<error_page::ErrorPageParams> params,
                                 base::DictionaryValue* error_strings) {
   webui::SetLoadTimeDataDefaults(locale, error_strings);
@@ -881,7 +880,7 @@ void LocalizedError::GetStrings(int error_code,
   }
 
   base::string16 failed_url_string(url_formatter::FormatUrl(
-      failed_url, accept_languages, url_formatter::kFormatUrlOmitNothing,
+      failed_url, url_formatter::kFormatUrlOmitNothing,
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (base::i18n::IsRTL())
@@ -891,8 +890,7 @@ void LocalizedError::GetStrings(int error_code,
   std::string icon_class = GetIconClassForError(error_domain, error_code);
   error_strings->SetString("iconClass", icon_class);
 
-  base::string16 host_name(url_formatter::IDNToUnicode(failed_url.host(),
-                                                       accept_languages));
+  base::string16 host_name(url_formatter::IDNToUnicode(failed_url.host()));
 
   base::DictionaryValue* heading = new base::DictionaryValue;
   heading->SetString("msg",

@@ -67,7 +67,3 @@ std::string SearchTermsData::ForceInstantResultsParam(
 std::string SearchTermsData::GoogleImageSearchSource() const {
   return std::string();
 }
-
-std::string SearchTermsData::GetAcceptLanguages() const {
-  return std::string();
-}

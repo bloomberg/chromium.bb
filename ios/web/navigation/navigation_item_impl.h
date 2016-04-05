@@ -51,8 +51,7 @@ class NavigationItemImpl : public web::NavigationItem {
   const base::string16& GetTitle() const override;
   void SetPageDisplayState(const PageDisplayState& display_state) override;
   const PageDisplayState& GetPageDisplayState() const override;
-  const base::string16& GetTitleForDisplay(
-      const std::string& languages) const override;
+  const base::string16& GetTitleForDisplay() const override;
   void SetTransitionType(ui::PageTransition transition_type) override;
   ui::PageTransition GetTransitionType() const override;
   const FaviconStatus& GetFavicon() const override;

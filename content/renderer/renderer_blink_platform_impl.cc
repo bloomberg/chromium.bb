@@ -1088,9 +1088,8 @@ blink::WebCompositorSupport* RendererBlinkPlatformImpl::compositorSupport() {
 //------------------------------------------------------------------------------
 
 blink::WebString RendererBlinkPlatformImpl::convertIDNToUnicode(
-    const blink::WebString& host,
-    const blink::WebString& languages) {
-  return url_formatter::IDNToUnicode(host.utf8(), languages.utf8());
+    const blink::WebString& host) {
+  return url_formatter::IDNToUnicode(host.utf8());
 }
 
 //------------------------------------------------------------------------------

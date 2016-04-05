@@ -278,11 +278,7 @@ const base::string16& WebStateImpl::GetTitle() const {
   // match the WebContents implementation of this method.
   DCHECK(Configured());
   web::NavigationItem* item = navigation_manager_.GetLastCommittedItem();
-  if (item) {
-    return item->GetTitleForDisplay(
-        web::GetWebClient()->GetAcceptLangs(GetBrowserState()));
-  }
-  return empty_string16_;
+  return item ? item->GetTitleForDisplay() : empty_string16_;
 }
 
 void WebStateImpl::ShowTransientContentView(CRWContentView* content_view) {

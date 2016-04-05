@@ -41,8 +41,6 @@ using base::TimeDelta;
 
 namespace {
 
-const char kDefaultAcceptLanguages[] = "en-US,en,ko";
-
 struct TestURLInfo {
   const char* url;
   const char* title;
@@ -163,7 +161,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
         make_scoped_ptr(new TemplateURLService(nullptr, 0)));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(
-          history_dir_.path(), kDefaultAcceptLanguages, create_history_db);
+          history_dir_.path(), create_history_db);
     }
   }
 
@@ -280,8 +278,6 @@ bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
   client_.reset(new FakeAutocompleteProviderClient(create_history_db));
   if (!client_->GetHistoryService())
     return false;
-  EXPECT_CALL(*client_, GetAcceptLanguages())
-      .WillRepeatedly(testing::Return(kDefaultAcceptLanguages));
   autocomplete_ = new HistoryURLProvider(client_.get(), this);
   FillData();
   return true;
@@ -336,10 +332,8 @@ void HistoryURLProviderTest::RunTest(
   matches_ = autocomplete_->matches();
   if (sort_matches_) {
     TemplateURLService* service = client_->GetTemplateURLService();
-    for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i) {
-      i->ComputeStrippedDestinationURL(
-          input, client_->GetAcceptLanguages(), service);
-    }
+    for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
+      i->ComputeStrippedDestinationURL(input, service);
     AutocompleteResult::DedupMatchesByDestination(
         input.current_page_classification(), false, &matches_);
     std::sort(matches_.begin(), matches_.end(),

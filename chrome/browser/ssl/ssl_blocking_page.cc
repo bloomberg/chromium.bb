@@ -123,15 +123,12 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       expired_but_previously_allowed_(
           (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
       controller_(new ChromeControllerClient(web_contents)) {
-  // Get the language and override prefs for the SSLErrorUI.
-  std::string languages;
+  // Override prefs for the SSLErrorUI.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile) {
-    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    if (!profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed)) {
-      options_mask |= SSLErrorUI::HARD_OVERRIDE_DISABLED;
-    }
+  if (profile &&
+      !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed)) {
+    options_mask |= SSLErrorUI::HARD_OVERRIDE_DISABLED;
   }
   if (overridable_)
     options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
@@ -156,7 +153,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       controller_->metrics_helper()));
 
   ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
-                                     options_mask, time_triggered, languages,
+                                     options_mask, time_triggered,
                                      controller_.get()));
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)

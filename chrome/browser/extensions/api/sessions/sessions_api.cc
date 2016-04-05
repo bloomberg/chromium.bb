@@ -28,9 +28,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/prefs/pref_service.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/synced_session.h"
@@ -93,10 +91,8 @@ tabs::Tab CreateTabModelHelper(
   if (!title.empty()) {
     tab_struct.title.reset(new std::string(title));
   } else {
-    const std::string languages =
-        profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     tab_struct.title.reset(new std::string(
-        base::UTF16ToUTF8(url_formatter::FormatUrl(url, languages))));
+        base::UTF16ToUTF8(url_formatter::FormatUrl(url))));
   }
   tab_struct.index = index;
   tab_struct.pinned = pinned;

@@ -37,7 +37,6 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
@@ -64,7 +63,6 @@ scoped_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
           make_scoped_ptr(new BookmarkClientImpl(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(),
-      browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
       browser_state->GetStatePath(), browser_state->GetIOTaskRunner(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
   return std::move(bookmark_model);
@@ -334,7 +332,6 @@ bool TestChromeBrowserState::CreateHistoryService(bool delete_file) {
           ios::HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               this, &BuildHistoryService));
   if (!history_service->Init(
-          GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(
               GetOriginalChromeBrowserState()->GetStatePath()))) {
     ios::HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);

@@ -35,9 +35,8 @@ class StatusBubble {
 
   // Sets the bubble text to a URL - if given a non-empty URL, this will cause
   // the bubble to fade in and remain open until given an empty URL or until
-  // the Hide() method is called. languages is the value of Accept-Language
-  // to determine what characters are understood by a user.
-  virtual void SetURL(const GURL& url, const std::string& languages) = 0;
+  // the Hide() method is called.
+  virtual void SetURL(const GURL& url) = 0;
 
   // Skip the fade and instant-hide the bubble.
   virtual void Hide() = 0;

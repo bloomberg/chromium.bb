@@ -51,7 +51,6 @@ using base::ASCIIToUTF16;
 namespace {
 const size_t kInvalid = base::string16::npos;
 const size_t kMaxMatches = 3;
-const char kTestLanguages[] = "en,ja,hi,zh";
 const char kClientWhitelistedScheme[] = "xyz";
 
 // Helper function to set lower case |lower_string| and |lower_terms| (words
@@ -208,8 +207,8 @@ const SchemeSet& InMemoryURLIndexTest::scheme_whitelist() {
 
 bool InMemoryURLIndexTest::UpdateURL(const history::URLRow& row) {
   return GetPrivateData()->UpdateURL(
-      history_service_.get(), row, url_index_->languages_,
-      url_index_->scheme_whitelist_, GetPrivateDataTracker());
+      history_service_.get(), row, url_index_->scheme_whitelist_,
+      GetPrivateDataTracker());
 }
 
 bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
@@ -218,10 +217,8 @@ bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
 
 void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
-  if (history_dir_.CreateUniqueTempDir()) {
-    history_service_ = history::CreateHistoryService(
-        history_dir_.path(), std::string(), true);
-  }
+  if (history_dir_.CreateUniqueTempDir())
+    history_service_ = history::CreateHistoryService(history_dir_.path(), true);
   ASSERT_TRUE(history_service_);
   BlockUntilInMemoryURLIndexIsRefreshed(url_index_.get());
 
@@ -330,7 +327,7 @@ void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   client_schemes_to_whitelist.insert(kClientWhitelistedScheme);
   url_index_.reset(new InMemoryURLIndex(
       nullptr, history_service_.get(), nullptr, pool_owner_.pool().get(),
-      base::FilePath(), kTestLanguages, client_schemes_to_whitelist));
+      base::FilePath(), client_schemes_to_whitelist));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
 }
@@ -1245,8 +1242,8 @@ TEST_F(InMemoryURLIndexTest, AddHistoryMatch) {
                   &lower_string, &lower_terms);
     URLIndexPrivateData::AddHistoryMatch match(nullptr, nullptr,
                                                *GetPrivateData(),
-                                               kTestLanguages, lower_string,
-                                               lower_terms, base::Time::Now());
+                                               lower_string, lower_terms,
+                                               base::Time::Now());
 
     // Verify against expectations.
     EXPECT_EQ(test_cases[i].expected_word_starts_offsets_size,
@@ -1285,7 +1282,7 @@ void InMemoryURLIndexCacheTest::SetUp() {
   base::FilePath path(temp_dir_.path());
   url_index_.reset(new InMemoryURLIndex(nullptr, nullptr, nullptr,
                                         pool_owner_.pool().get(), path,
-                                        kTestLanguages, SchemeSet()));
+                                        SchemeSet()));
 }
 
 void InMemoryURLIndexCacheTest::TearDown() {

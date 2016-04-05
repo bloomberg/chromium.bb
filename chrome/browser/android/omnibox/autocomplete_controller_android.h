@@ -126,11 +126,6 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
   base::android::ScopedJavaLocalRef<jobject> BuildOmniboxSuggestion(
       JNIEnv* env, const AutocompleteMatch& match);
 
-  // Converts destination_url (which is in its canonical form or punycode) to a
-  // user-friendly URL by looking up accept languages of the current profile.
-  // e.g. http://xn--6q8b.kr/ --> 한.kr
-  base::string16 FormatURLUsingAcceptLanguages(GURL url);
-
   // A helper method for fetching the top synchronous autocomplete result.
   // The |prevent_inline_autocomplete| flag is passed to the AutocompleteInput
   // object, see documentation there for its description.

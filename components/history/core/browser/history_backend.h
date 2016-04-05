@@ -188,11 +188,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // fails, all other functions will fail as well. (Since this runs on another
   // thread, we don't bother returning failure.)
   //
-  // |languages| gives a list of language encodings with which the history
-  // URLs and omnibox searches are interpreted.
   // |force_fail| can be set during unittests to unconditionally fail to init.
-  void Init(const std::string& languages,
-            bool force_fail,
+  void Init(bool force_fail,
             const HistoryDatabaseParams& history_database_params);
 
   // Notification that the history system is shutting down. This will break
@@ -579,8 +576,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class URLQuerier;
 
   // Does the work of Init.
-  void InitImpl(const std::string& languages,
-                const HistoryDatabaseParams& history_database_params);
+  void InitImpl(const HistoryDatabaseParams& history_database_params);
 
   // Called when the system is under memory pressure.
   void OnMemoryPressure(

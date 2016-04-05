@@ -18,9 +18,7 @@
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -157,7 +155,6 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
       views::View* anchor_view,
       views::BubbleBorder::Arrow anchor_arrow,
       PermissionBubbleViewViews* owner,
-      const std::string& languages,
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state);
   ~PermissionsBubbleDelegateView() override;
@@ -200,7 +197,6 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow anchor_arrow,
     PermissionBubbleViewViews* owner,
-    const std::string& languages,
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state)
     : views::BubbleDelegateView(anchor_view, anchor_arrow),
@@ -216,7 +212,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
                                         kItemMajorSpacing));
 
   display_origin_ = url_formatter::FormatUrlForSecurityDisplay(
-      requests[0]->GetOrigin(), languages);
+      requests[0]->GetOrigin());
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   for (size_t index = 0; index < requests.size(); index++) {
@@ -444,9 +440,7 @@ void PermissionBubbleViewViews::Show(
     bubble_delegate_->Close();
 
   bubble_delegate_ =
-      new PermissionsBubbleDelegateView(
-          GetAnchorView(), GetAnchorArrow(), this,
-          browser_->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      new PermissionsBubbleDelegateView(GetAnchorView(), GetAnchorArrow(), this,
           requests, values);
 
   // Set |parent_window| because some valid anchors can become hidden.

@@ -10,10 +10,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_fetcher.h"
 #include "components/search_engines/template_url_service.h"
@@ -41,8 +39,7 @@ bool IsFormSubmit(const NavigationEntry* entry) {
 }
 
 base::string16 GenerateKeywordFromNavigationEntry(
-    const NavigationEntry* entry,
-    const std::string& accept_languages) {
+    const NavigationEntry* entry) {
   // Don't autogenerate keywords for pages that are the result of form
   // submissions.
   if (IsFormSubmit(entry))
@@ -69,7 +66,7 @@ base::string16 GenerateKeywordFromNavigationEntry(
     return base::string16();
   }
 
-  return TemplateURL::GenerateKeyword(url, accept_languages);
+  return TemplateURL::GenerateKeyword(url);
 }
 
 void AssociateURLFetcherWithWebContents(content::WebContents* web_contents,
@@ -164,8 +161,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // generate a keyword later after fetching the OSDD.
   base::string16 keyword;
   if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER) {
-    keyword = GenerateKeywordFromNavigationEntry(
-        entry, profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
+    keyword = GenerateKeywordFromNavigationEntry(entry);
     if (keyword.empty())
       return;
   }
@@ -207,8 +203,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
 
   base::string16 keyword(GenerateKeywordFromNavigationEntry(
-      controller.GetEntryAtIndex(last_index - 1),
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+      controller.GetEntryAtIndex(last_index - 1)));
   if (keyword.empty())
     return;
 

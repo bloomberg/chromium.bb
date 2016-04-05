@@ -97,11 +97,7 @@ String EmailInputType::convertEmailAddressToUnicode(const String& address) const
     if (address.find("xn--", atPosition + 1) == kNotFound)
         return address;
 
-    if (!chromeClient())
-        return address;
-
-    String languages = chromeClient()->acceptLanguages();
-    String unicodeHost = Platform::current()->convertIDNToUnicode(address.substring(atPosition + 1), languages);
+    String unicodeHost = Platform::current()->convertIDNToUnicode(address.substring(atPosition + 1));
     StringBuilder builder;
     builder.append(address, 0, atPosition + 1);
     builder.append(unicodeHost);

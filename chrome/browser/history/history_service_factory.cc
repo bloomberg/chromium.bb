@@ -83,7 +83,6 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
               BookmarkModelFactory::GetForProfile(profile))),
           make_scoped_ptr(new history::ContentVisitDelegate(profile))));
   if (!history_service->Init(
-          profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return nullptr;
   }

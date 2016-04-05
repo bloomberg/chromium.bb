@@ -449,8 +449,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
                        false);
     }
 
-    model->Load(profile_sync_service_bundle_.pref_service(), std::string(),
-                data_path, base::ThreadTaskRunnerHandle::Get(),
+    model->Load(profile_sync_service_bundle_.pref_service(), data_path,
+                base::ThreadTaskRunnerHandle::Get(),
                 base::ThreadTaskRunnerHandle::Get());
     bookmarks::test::WaitForBookmarkModelToLoad(model.get());
     return model;

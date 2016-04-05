@@ -25,7 +25,6 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   PermissionBubbleRequestImpl(
       const GURL& request_origin,
       content::PermissionType permission_type,
-      const std::string& display_languages,
       const PermissionDecidedCallback& permission_decided_callback,
       const base::Closure delete_callback);
 
@@ -50,7 +49,6 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
  private:
   GURL request_origin_;
   content::PermissionType permission_type_;
-  std::string display_languages_;
 
   // Called once a decision is made about the permission.
   const PermissionDecidedCallback permission_decided_callback_;

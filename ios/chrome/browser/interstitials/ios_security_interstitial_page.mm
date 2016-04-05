@@ -53,12 +53,8 @@ std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
 }
 
 base::string16 IOSSecurityInterstitialPage::GetFormattedHostName() const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
-  std::string languages =
-      browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages);
   return security_interstitials::common_string_util::GetFormattedHostName(
-      request_url_, languages);
+      request_url_);
 }
 
 bool IOSSecurityInterstitialPage::IsPrefEnabled(const char* pref_name) const {

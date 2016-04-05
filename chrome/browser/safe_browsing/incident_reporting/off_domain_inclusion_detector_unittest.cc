@@ -79,7 +79,6 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
               BookmarkModelFactory::GetForProfile(profile))),
           scoped_ptr<history::VisitDelegate>()));
   if (history_service->Init(
-          profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return std::move(history_service);
   }

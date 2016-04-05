@@ -48,11 +48,9 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // match's URL is referenced by any bookmarks, which can also affect the raw
   // score.  The raw score allows the matches to be ordered and can be used to
   // influence the final score calculated by the client of this index.  If the
-  // row does not qualify the raw score will be 0.  |languages| is used to help
-  // parse/format the URL before looking for the terms.
+  // row does not qualify the raw score will be 0.
   ScoredHistoryMatch(const history::URLRow& row,
                      const VisitInfoVector& visits,
-                     const std::string& languages,
                      const base::string16& lower_string,
                      const String16Vector& terms_vector,
                      const WordStarts& terms_to_word_starts_offsets,

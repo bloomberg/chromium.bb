@@ -94,19 +94,19 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
   query.word_phrase_query.reset(new base::string16);
   // No nodes are returned for empty string.
   *query.word_phrase_query = ASCIIToUTF16("");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   EXPECT_TRUE(nodes.empty());
   nodes.clear();
 
   // No nodes are returned for space-only string.
   *query.word_phrase_query = ASCIIToUTF16("   ");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   EXPECT_TRUE(nodes.empty());
   nodes.clear();
 
   // Node "foo bar" and folder "foo" are returned in search results.
   *query.word_phrase_query = ASCIIToUTF16("foo");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(2U, nodes.size());
   EXPECT_TRUE(nodes[0] == folder1);
   EXPECT_TRUE(nodes[1] == node1);
@@ -114,21 +114,21 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
 
   // Ensure url matches return in search results.
   *query.word_phrase_query = ASCIIToUTF16("cnn");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node2);
   nodes.clear();
 
   // Ensure folder "foo" is not returned in more specific search.
   *query.word_phrase_query = ASCIIToUTF16("foo bar");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node1);
   nodes.clear();
 
   // Bookmark Bar and Other Bookmarks are not returned in search results.
   *query.word_phrase_query = ASCIIToUTF16("Bookmark");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(0U, nodes.size());
   nodes.clear();
 }
@@ -151,19 +151,19 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
   QueryFields query;
   query.url.reset(new base::string16);
   *query.url = ASCIIToUTF16("https://www.google.com/");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node1);
   nodes.clear();
 
   *query.url = ASCIIToUTF16("calendar");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(0U, nodes.size());
   nodes.clear();
 
   // Empty URL should not match folders.
   *query.url = ASCIIToUTF16("");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(0U, nodes.size());
   nodes.clear();
 }
@@ -187,19 +187,19 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
   QueryFields query;
   query.title.reset(new base::string16);
   *query.title = ASCIIToUTF16("Google");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node1);
   nodes.clear();
 
   *query.title = ASCIIToUTF16("Calendar");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(0U, nodes.size());
   nodes.clear();
 
   // Title should match folders.
   *query.title = ASCIIToUTF16("Folder");
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == folder1);
   nodes.clear();
@@ -226,7 +226,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   query.word_phrase_query.reset(new base::string16(ASCIIToUTF16("www")));
   query.url.reset(new base::string16(ASCIIToUTF16("https://www.google.com/")));
   query.title.reset(new base::string16(ASCIIToUTF16("Google")));
-  GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node1);
   nodes.clear();
@@ -237,7 +237,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   // Test two fields matching.
   for (size_t i = 0; i < arraysize(fields); i++) {
     scoped_ptr<base::string16> original_value(fields[i]->release());
-    GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+    GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
     ASSERT_EQ(1U, nodes.size());
     EXPECT_TRUE(nodes[0] == node1);
     nodes.clear();
@@ -248,7 +248,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   for (size_t i = 0; i < arraysize(fields); i++) {
     scoped_ptr<base::string16> original_value(fields[i]->release());
     fields[i]->reset(new base::string16(ASCIIToUTF16("fjdkslafjkldsa")));
-    GetBookmarksMatchingProperties(model.get(), query, 100, string(), &nodes);
+    GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
     ASSERT_EQ(0U, nodes.size());
     nodes.clear();
     fields[i]->reset(original_value.release());

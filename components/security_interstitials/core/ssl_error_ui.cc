@@ -29,13 +29,11 @@ SSLErrorUI::SSLErrorUI(const GURL& request_url,
                        const net::SSLInfo& ssl_info,
                        int display_options,
                        const base::Time& time_triggered,
-                       const std::string& languages,
                        ControllerClient* controller)
     : request_url_(request_url),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       time_triggered_(time_triggered),
-      languages_(languages),
       requested_strict_enforcement_(
           IsMasked(display_options, STRICT_ENFORCEMENT)),
       soft_override_enabled_(IsMasked(display_options, SOFT_OVERRIDE_ENABLED)),
@@ -79,7 +77,7 @@ void SSLErrorUI::PopulateStringsForHTML(base::DictionaryValue* load_time_data) {
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
           IDS_SSL_V2_PRIMARY_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_, languages_)));
+          common_string_util::GetFormattedHostName(request_url_)));
 
   if (soft_override_enabled_)
     PopulateOverridableStrings(load_time_data);
@@ -91,8 +89,7 @@ void SSLErrorUI::PopulateOverridableStrings(
     base::DictionaryValue* load_time_data) {
   DCHECK(soft_override_enabled_);
 
-  base::string16 url(
-      common_string_util::GetFormattedHostName(request_url_, languages_));
+  base::string16 url(common_string_util::GetFormattedHostName(request_url_));
   ssl_errors::ErrorInfo error_info = ssl_errors::ErrorInfo::CreateError(
       ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_),
       ssl_info_.cert.get(), request_url_);
@@ -111,8 +108,7 @@ void SSLErrorUI::PopulateNonOverridableStrings(
     base::DictionaryValue* load_time_data) {
   DCHECK(!soft_override_enabled_);
 
-  base::string16 url(
-      common_string_util::GetFormattedHostName(request_url_, languages_));
+  base::string16 url(common_string_util::GetFormattedHostName(request_url_));
   ssl_errors::ErrorInfo::ErrorType type =
       ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
 

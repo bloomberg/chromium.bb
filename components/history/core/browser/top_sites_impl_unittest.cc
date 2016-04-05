@@ -37,9 +37,6 @@ namespace history {
 
 namespace {
 
-// Key for URL blacklist.
-const char kAcceptLanguages[] = "en-US,en";
-
 const char kApplicationScheme[] = "application";
 const char kPrepopulatedPageURL[] =
     "http://www.google.com/int/chrome/welcome.html";
@@ -147,7 +144,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     history_service_.reset(
         new HistoryService(nullptr, scoped_ptr<VisitDelegate>()));
     ASSERT_TRUE(history_service_->Init(
-        kAcceptLanguages,
         TestHistoryDatabaseParamsForPath(scoped_temp_dir_.path())));
     ResetTopSites();
     WaitTopSitesLoaded();

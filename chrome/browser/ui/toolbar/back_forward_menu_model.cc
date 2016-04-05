@@ -11,16 +11,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon_base/favicon_types.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -104,10 +101,7 @@ base::string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // Return the entry title, escaping any '&' characters and eliding it if it's
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
-  Profile* profile =
-      Profile::FromBrowserContext(GetWebContents()->GetBrowserContext());
-  base::string16 menu_text(entry->GetTitleForDisplay(
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+  base::string16 menu_text(entry->GetTitleForDisplay());
   menu_text =
       gfx::ElideText(menu_text, gfx::FontList(), kMaxWidth, gfx::ELIDE_TAIL);
 

@@ -15,24 +15,21 @@
 infobars::InfoBar* MidiPermissionInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new MidiPermissionInfoBarDelegateAndroid(
-              requesting_frame, display_languages, callback))));
+              requesting_frame, callback))));
 }
 
 MidiPermissionInfoBarDelegateAndroid::MidiPermissionInfoBarDelegateAndroid(
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 content::PermissionType::MIDI_SYSEX,
                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                 callback),
-      requesting_frame_(requesting_frame),
-      display_languages_(display_languages) {}
+      requesting_frame_(requesting_frame) {}
 
 MidiPermissionInfoBarDelegateAndroid::~MidiPermissionInfoBarDelegateAndroid() {}
 
@@ -48,6 +45,6 @@ int MidiPermissionInfoBarDelegateAndroid::GetIconId() const {
 base::string16 MidiPermissionInfoBarDelegateAndroid::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_MIDI_SYSEX_INFOBAR_QUESTION,
-      url_formatter::FormatUrlForSecurityDisplay(requesting_frame_.GetOrigin(),
-                                                 display_languages_));
+      url_formatter::FormatUrlForSecurityDisplay(
+          requesting_frame_.GetOrigin()));
 }

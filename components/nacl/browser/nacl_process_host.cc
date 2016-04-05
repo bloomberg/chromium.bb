@@ -316,7 +316,7 @@ NaClProcessHost::NaClProcessHost(
   // We aren't on the UI thread so getting the pref locale for language
   // formatting isn't possible, so IDN will be lost, but this is probably OK
   // for this use case.
-  process_->SetName(url_formatter::FormatUrl(manifest_url_, std::string()));
+  process_->SetName(url_formatter::FormatUrl(manifest_url_));
 
   enable_debug_stub_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClDebug);

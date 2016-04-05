@@ -67,7 +67,6 @@ class AutocompleteResult {
   // Copies matches from |old_matches| to provide a consistant result set. See
   // comments in code for specifics.
   void CopyOldMatches(const AutocompleteInput& input,
-                      const std::string& languages,
                       const AutocompleteResult& old_matches,
                       TemplateURLService* template_url_service);
 
@@ -81,7 +80,6 @@ class AutocompleteResult {
   // the best kMaxMatches matches.  Sets the default match to the best match
   // and updates the alternate nav URL.
   void SortAndCull(const AutocompleteInput& input,
-                   const std::string& languages,
                    TemplateURLService* template_url_service);
 
   // Returns true if at least one match was copied from the last result.

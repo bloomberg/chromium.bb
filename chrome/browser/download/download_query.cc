@@ -25,9 +25,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
@@ -219,12 +216,8 @@ bool DownloadQuery::MatchesQuery(const std::vector<base::string16>& query_terms,
 
   base::string16 url_raw(base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
   base::string16 url_formatted = url_raw;
-  if (item.GetBrowserContext()) {
-    Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
-    url_formatted = url_formatter::FormatUrl(
-        item.GetOriginalUrl(),
-        profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  }
+  if (item.GetBrowserContext())
+    url_formatted = url_formatter::FormatUrl(item.GetOriginalUrl());
   base::string16 path(item.GetTargetFilePath().LossyDisplayName());
 
   for (std::vector<base::string16>::const_iterator it = query_terms.begin();

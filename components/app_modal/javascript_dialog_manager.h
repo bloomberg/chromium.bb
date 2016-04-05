@@ -45,7 +45,6 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(content::WebContents* web_contents,
                            const GURL& origin_url,
-                           const std::string& accept_lang,
                            content::JavaScriptMessageType message_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
@@ -63,7 +62,6 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
 
   base::string16 GetTitle(content::WebContents* web_contents,
                           const GURL& origin_url,
-                          const std::string& accept_lang,
                           bool is_alert);
 
   // Wrapper around OnDialogClosed; logs UMA stats before continuing on.

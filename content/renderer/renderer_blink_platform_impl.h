@@ -177,9 +177,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebGraphicsContext3DProvider*
   createSharedOffscreenGraphicsContext3DProvider() override;
   blink::WebCompositorSupport* compositorSupport() override;
-  blink::WebString convertIDNToUnicode(
-      const blink::WebString& host,
-      const blink::WebString& languages) override;
+  blink::WebString convertIDNToUnicode(const blink::WebString& host) override;
   void connectToRemoteService(const char* name,
                               mojo::ScopedMessagePipeHandle handle) override;
   void startListening(blink::WebPlatformEventType,

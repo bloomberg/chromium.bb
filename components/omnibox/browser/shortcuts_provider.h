@@ -104,7 +104,6 @@ class ShortcutsProvider : public AutocompleteProvider,
   static const int kShortcutsProviderDefaultMaxRelevance;
 
   AutocompleteProviderClient* client_;
-  std::string languages_;
   bool initialized_;
 };
 

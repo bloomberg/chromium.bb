@@ -77,9 +77,6 @@ class BookmarkProvider : public AutocompleteProvider {
   AutocompleteProviderClient* client_;
   bookmarks::BookmarkModel* bookmark_model_;
 
-  // Languages used during the URL formatting.
-  std::string languages_;
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkProvider);
 };
 

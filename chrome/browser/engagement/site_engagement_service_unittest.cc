@@ -92,8 +92,7 @@ base::Time GetReferenceTime() {
 scoped_ptr<KeyedService> BuildTestHistoryService(
     content::BrowserContext* context) {
   scoped_ptr<history::HistoryService> service(new history::HistoryService());
-  service->Init(std::string(),
-                history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
+  service->Init(history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
   return std::move(service);
 }
 

@@ -529,12 +529,10 @@ base::string16 NotificationView::FormatContextMessage(
   if (notification.UseOriginAsContextMessage()) {
     const GURL url = notification.origin_url();
     DCHECK(url.is_valid());
-    // TODO(palmer): Find a way to get the Profile's real languages.
-    // crbug.com/496965.
-    return gfx::ElideText(url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-                              url, std::string()),
-                          views::Label().font_list(), kContextMessageViewWidth,
-                          gfx::ELIDE_HEAD);
+    return gfx::ElideText(
+        url_formatter::FormatUrlForSecurityDisplayOmitScheme(url),
+        views::Label().font_list(), kContextMessageViewWidth,
+        gfx::ELIDE_HEAD);
   }
 
   return gfx::TruncateString(notification.context_message(),

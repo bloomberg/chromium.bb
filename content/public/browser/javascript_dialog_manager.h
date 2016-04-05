@@ -31,7 +31,6 @@ class CONTENT_EXPORT JavaScriptDialogManager {
   virtual void RunJavaScriptDialog(
       WebContents* web_contents,
       const GURL& origin_url,
-      const std::string& accept_lang,
       JavaScriptMessageType javascript_message_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,

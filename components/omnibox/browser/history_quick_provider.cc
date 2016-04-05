@@ -38,7 +38,6 @@ bool HistoryQuickProvider::disabled_ = false;
 
 HistoryQuickProvider::HistoryQuickProvider(AutocompleteProviderClient* client)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_QUICK, client),
-      languages_(client->GetAcceptLanguages()),
       in_memory_url_index_(client->GetInMemoryURLIndex()) {
 }
 
@@ -209,7 +208,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       ~(!history_match.match_in_scheme ? 0 : url_formatter::kFormatUrlOmitHTTP);
   base::OffsetAdjuster::Adjustments adjustments;
   match.contents = url_formatter::FormatUrlWithAdjustments(
-      info.url(), languages_, format_types, net::UnescapeRule::SPACES, nullptr,
+      info.url(), format_types, net::UnescapeRule::SPACES, nullptr,
       nullptr, &adjustments);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -242,10 +241,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
         !PreventInlineAutocomplete(autocomplete_input_);
   }
-  match.EnsureUWYTIsAllowedToBeDefault(
-      autocomplete_input_,
-      client()->GetAcceptLanguages(),
-      client()->GetTemplateURLService());
+  match.EnsureUWYTIsAllowedToBeDefault(autocomplete_input_,
+                                       client()->GetTemplateURLService());
 
   // Format the description autocomplete presentation.
   match.description = info.title();

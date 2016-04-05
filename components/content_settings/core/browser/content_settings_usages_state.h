@@ -14,7 +14,6 @@
 #include "url/gurl.h"
 
 class HostContentSettingsMap;
-class PrefService;
 
 // This class manages a content setting state per tab for a given
 // |ContentSettingsType|, and provides information and presentation data about
@@ -33,9 +32,7 @@ class ContentSettingsUsagesState {
 
   ContentSettingsUsagesState(
       HostContentSettingsMap* host_content_settings_map,
-      ContentSettingsType type,
-      const std::string& accept_language_pref,
-      PrefService* prefs);
+      ContentSettingsType type);
   ~ContentSettingsUsagesState();
 
   typedef std::map<GURL, ContentSetting> StateMap;
@@ -75,8 +72,6 @@ class ContentSettingsUsagesState {
   std::string GURLToFormattedHost(const GURL& url) const;
 
   HostContentSettingsMap* const host_content_settings_map_;
-  PrefService* const pref_service_;
-  std::string accept_language_pref_;
   ContentSettingsType type_;
   StateMap state_map_;
   GURL embedder_url_;

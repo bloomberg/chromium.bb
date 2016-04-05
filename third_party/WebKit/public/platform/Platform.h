@@ -228,7 +228,7 @@ public:
 
     // IDN conversion ------------------------------------------------------
 
-    virtual WebString convertIDNToUnicode(const WebString& host, const WebString& languages) { return host; }
+    virtual WebString convertIDNToUnicode(const WebString& host) { return host; }
 
 
     // IndexedDB ----------------------------------------------------------

@@ -77,13 +77,12 @@ std::string GetEntryTypeCode(bool is_android_uri, bool is_clickable) {
 // to the key. The entry type code (non-Android, Android w/ or w/o affiliated
 // web realm) is also appended to the key.
 std::string CreateSortKey(const autofill::PasswordForm& form,
-                          const std::string& languages,
                           bool username_and_password_in_key) {
   bool is_android_uri = false;
   bool is_clickable = false;
   GURL link_url;
   std::string origin = password_manager::GetShownOriginAndLinkUrl(
-      form, languages, &is_android_uri, &link_url, &is_clickable);
+      form, &is_android_uri, &link_url, &is_clickable);
 
   if (!is_clickable) {  // e.g. android://com.example.r => r.example.com.
     origin = SplitByDotAndReverse(
@@ -116,12 +115,11 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
 // Finds duplicates of |form| in |duplicates|, removes them from |store| and
 // from |duplicates|.
 void RemoveDuplicates(const autofill::PasswordForm& form,
-                      const std::string& languages,
                       DuplicatesMap* duplicates,
                       PasswordStore* store,
                       bool username_and_password_in_key) {
   std::string key =
-      CreateSortKey(form, languages, username_and_password_in_key);
+      CreateSortKey(form, username_and_password_in_key);
   std::pair<DuplicatesMap::iterator, DuplicatesMap::iterator> dups =
       duplicates->equal_range(key);
   for (DuplicatesMap::iterator it = dups.first; it != dups.second; ++it)
@@ -149,9 +147,6 @@ void PasswordManagerPresenter::Initialize() {
   PasswordStore* store = GetPasswordStore();
   if (store)
     store->AddObserver(this);
-
-  languages_ = password_view_->GetProfile()->GetPrefs()->
-      GetString(prefs::kAcceptLanguages);
 }
 
 void PasswordManagerPresenter::OnLoginsChanged(
@@ -192,7 +187,7 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   if (!store)
     return;
 
-  RemoveDuplicates(*password_list_[index], languages_, &password_duplicates_,
+  RemoveDuplicates(*password_list_[index], &password_duplicates_,
                    store, true);
   store->RemoveLogin(*password_list_[index]);
   content::RecordAction(
@@ -210,7 +205,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
-  RemoveDuplicates(*password_exception_list_[index], languages_,
+  RemoveDuplicates(*password_exception_list_[index],
                    &password_exception_duplicates_, store, false);
   store->RemoveLogin(*password_exception_list_[index]);
   content::RecordAction(
@@ -256,7 +251,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 
   // Call back the front end to reveal the password.
   std::string origin_url = password_manager::GetHumanReadableOrigin(
-      *password_list_[index], languages_);
+      *password_list_[index]);
   password_view_->ShowPassword(
       index,
       origin_url,
@@ -298,7 +293,6 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
 }
 
 void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
-    const std::string& languages,
     std::vector<scoped_ptr<autofill::PasswordForm>>* list,
     DuplicatesMap* duplicates,
     bool username_and_password_in_key) {
@@ -306,8 +300,7 @@ void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
   pairs.reserve(list->size());
   for (auto& form : *list) {
     pairs.push_back(std::make_pair(
-        CreateSortKey(*form, languages, username_and_password_in_key),
-        std::move(form)));
+        CreateSortKey(*form, username_and_password_in_key), std::move(form)));
   }
 
   std::sort(
@@ -354,7 +347,7 @@ void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
   page_->password_list_ =
       password_manager_util::ConvertScopedVector(std::move(results));
-  page_->SortEntriesAndHideDuplicates(page_->languages_, &page_->password_list_,
+  page_->SortEntriesAndHideDuplicates(&page_->password_list_,
                                       &page_->password_duplicates_,
                                       true /* use username and password */);
   page_->SetPasswordList();
@@ -379,8 +372,7 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::
     OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
   page_->password_exception_list_ =
       password_manager_util::ConvertScopedVector(std::move(results));
-  page_->SortEntriesAndHideDuplicates(
-      page_->languages_, &page_->password_exception_list_,
+  page_->SortEntriesAndHideDuplicates(&page_->password_exception_list_,
       &page_->password_exception_duplicates_,
       false /* don't use username and password*/);
   page_->SetPasswordExceptionList();

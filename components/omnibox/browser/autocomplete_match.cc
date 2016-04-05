@@ -36,17 +36,15 @@ bool IsTrivialClassification(const ACMatchClassifications& classifications) {
 // |terms_prefixed_by_http_or_https|, for the input "http://a b" will be
 // ["a"].)  This suggests that the user wants a particular URL with a scheme
 // in mind, hence the caller should not consider another URL like this one
-// but with a different scheme to be a duplicate.  |languages| is used to
-// format punycoded URLs to decide if they match.
+// but with a different scheme to be a duplicate.
 bool WordMatchesURLContent(
     const std::vector<base::string16>& terms_prefixed_by_http_or_https,
-    const std::string& languages,
     const GURL& url) {
   size_t prefix_length =
       url.scheme().length() + strlen(url::kStandardSchemeSeparator);
   DCHECK_GE(url.spec().length(), prefix_length);
   const base::string16& formatted_url = url_formatter::FormatUrl(
-      url, languages, url_formatter::kFormatUrlOmitNothing,
+      url, url_formatter::kFormatUrlOmitNothing,
       net::UnescapeRule::NORMAL, nullptr, nullptr, &prefix_length);
   if (prefix_length == base::string16::npos)
     return false;
@@ -461,7 +459,6 @@ TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
 GURL AutocompleteMatch::GURLToStrippedGURL(
     const GURL& url,
     const AutocompleteInput& input,
-    const std::string& languages,
     TemplateURLService* template_url_service,
     const base::string16& keyword) {
   if (!url.is_valid())
@@ -512,7 +509,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   if (stripped_destination_url.SchemeIs(url::kHttpsScheme) &&
       (input.terms_prefixed_by_http_or_https().empty() ||
        !WordMatchesURLContent(
-           input.terms_prefixed_by_http_or_https(), languages, url))) {
+           input.terms_prefixed_by_http_or_https(), url))) {
     replacements.SetScheme(url::kHttpScheme,
                            url::Component(0, strlen(url::kHttpScheme)));
     needs_replacement = true;
@@ -526,22 +523,20 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
 
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
-    const std::string& languages,
     TemplateURLService* template_url_service) {
   stripped_destination_url = GURLToStrippedGURL(
-      destination_url, input, languages, template_url_service, keyword);
+      destination_url, input, template_url_service, keyword);
 }
 
 void AutocompleteMatch::EnsureUWYTIsAllowedToBeDefault(
     const AutocompleteInput& input,
-    const std::string& languages,
     TemplateURLService* template_url_service) {
   if (!allowed_to_be_default_match) {
     const GURL& stripped_canonical_input_url =
         AutocompleteMatch::GURLToStrippedGURL(
-            input.canonicalized_url(), input, languages, template_url_service,
+            input.canonicalized_url(), input, template_url_service,
             base::string16());
-    ComputeStrippedDestinationURL(input, languages, template_url_service);
+    ComputeStrippedDestinationURL(input, template_url_service);
     allowed_to_be_default_match =
         stripped_canonical_input_url == stripped_destination_url;
   }

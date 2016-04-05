@@ -93,16 +93,14 @@ bool DoesBookmarkTextContainWords(const base::string16& text,
 }
 
 // Returns true if |node|s title or url contains the strings in |words|.
-// |languages| argument is user's accept-language setting to decode IDN.
 bool DoesBookmarkContainWords(const BookmarkNode* node,
-                              const std::vector<base::string16>& words,
-                              const std::string& languages) {
+                              const std::vector<base::string16>& words) {
   return DoesBookmarkTextContainWords(node->GetTitle(), words) ||
          DoesBookmarkTextContainWords(base::UTF8ToUTF16(node->url().spec()),
                                       words) ||
          DoesBookmarkTextContainWords(
              url_formatter::FormatUrl(
-                 node->url(), languages, url_formatter::kFormatUrlOmitNothing,
+                 node->url(), url_formatter::kFormatUrlOmitNothing,
                  net::UnescapeRule::NORMAL, NULL, NULL, NULL),
              words);
 }
@@ -191,12 +189,11 @@ void GetBookmarksMatchingPropertiesImpl(
     const QueryFields& query,
     const std::vector<base::string16>& query_words,
     size_t max_count,
-    const std::string& languages,
     std::vector<const BookmarkNode*>* nodes) {
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if ((!query_words.empty() &&
-         !DoesBookmarkContainWords(node, query_words, languages)) ||
+         !DoesBookmarkContainWords(node, query_words)) ||
         model->is_permanent_node(node)) {
       continue;
     }
@@ -398,7 +395,6 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2) {
 void GetBookmarksMatchingProperties(BookmarkModel* model,
                                     const QueryFields& query,
                                     size_t max_count,
-                                    const std::string& languages,
                                     std::vector<const BookmarkNode*>* nodes) {
   std::vector<base::string16> query_words;
   query_parser::QueryParser parser;
@@ -418,12 +414,12 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
       model->GetNodesByURL(url, &url_matched_nodes);
     VectorIterator iterator(&url_matched_nodes);
     GetBookmarksMatchingPropertiesImpl<VectorIterator>(
-        iterator, model, query, query_words, max_count, languages, nodes);
+        iterator, model, query, query_words, max_count, nodes);
   } else {
     ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
     GetBookmarksMatchingPropertiesImpl<
         ui::TreeNodeIterator<const BookmarkNode>>(
-        iterator, model, query, query_words, max_count, languages, nodes);
+        iterator, model, query, query_words, max_count, nodes);
   }
 }
 
@@ -521,11 +517,10 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
 
 base::string16 CleanUpUrlForMatching(
     const GURL& gurl,
-    const std::string& languages,
     base::OffsetAdjuster::Adjustments* adjustments) {
   base::OffsetAdjuster::Adjustments tmp_adjustments;
   return base::i18n::ToLower(url_formatter::FormatUrlWithAdjustments(
-      GURL(TruncateUrl(gurl.spec())), languages,
+      GURL(TruncateUrl(gurl.spec())),
       url_formatter::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
           net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,

@@ -17,26 +17,23 @@
 infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new ProtectedMediaIdentifierInfoBarDelegateAndroid(
-              requesting_frame, display_languages, callback))));
+              requesting_frame, callback))));
 }
 
 ProtectedMediaIdentifierInfoBarDelegateAndroid::
     ProtectedMediaIdentifierInfoBarDelegateAndroid(
         const GURL& requesting_frame,
-        const std::string& display_languages,
         const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(
           requesting_frame,
           content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
           CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
           callback),
-      requesting_frame_(requesting_frame),
-      display_languages_(display_languages) {}
+      requesting_frame_(requesting_frame) {}
 
 ProtectedMediaIdentifierInfoBarDelegateAndroid::
     ~ProtectedMediaIdentifierInfoBarDelegateAndroid() {}
@@ -54,8 +51,7 @@ base::string16 ProtectedMediaIdentifierInfoBarDelegateAndroid::GetMessageText()
     const {
   return l10n_util::GetStringFUTF16(
       IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION,
-      url_formatter::FormatUrlForSecurityDisplay(requesting_frame_,
-                                                 display_languages_));
+      url_formatter::FormatUrlForSecurityDisplay(requesting_frame_));
 }
 
 base::string16 ProtectedMediaIdentifierInfoBarDelegateAndroid::GetLinkText()

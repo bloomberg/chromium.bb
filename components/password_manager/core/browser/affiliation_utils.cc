@@ -295,15 +295,15 @@ bool IsValidAndroidFacetURI(const std::string& url) {
   return facet.IsValidAndroidFacetURI();
 }
 
-std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form,
-                                   const std::string& languages) {
+std::string GetHumanReadableOrigin(
+    const autofill::PasswordForm& password_form) {
   FacetURI facet_uri =
       FacetURI::FromPotentiallyInvalidSpec(password_form.signon_realm);
   if (facet_uri.IsValidAndroidFacetURI())
     return GetHumanReadableOriginForAndroidUri(facet_uri);
 
-  return base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
-      password_form.origin, languages));
+  return base::UTF16ToUTF8(
+      url_formatter::FormatUrlForSecurityDisplay(password_form.origin));
 }
 
 std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri) {

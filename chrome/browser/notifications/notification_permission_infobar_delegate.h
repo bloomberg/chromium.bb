@@ -18,12 +18,10 @@ class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
   static infobars::InfoBar* Create(
       InfoBarService* infobar_service,
       const GURL& requesting_frame,
-      const std::string& display_languages,
       const PermissionSetCallback& callback);
  private:
   NotificationPermissionInfobarDelegate(
       const GURL& requesting_frame,
-      const std::string& display_languages,
       const PermissionSetCallback& callback);
   ~NotificationPermissionInfobarDelegate() override;
 
@@ -33,7 +31,6 @@ class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
   base::string16 GetMessageText() const override;
 
   GURL requesting_frame_;
-  std::string display_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfobarDelegate);
 };

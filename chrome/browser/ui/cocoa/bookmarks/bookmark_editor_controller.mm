@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 
@@ -66,11 +65,8 @@ using bookmarks::BookmarkNode;
   // from an "Add Page..." item in a context menu.
   if (node_) {
     [self setInitialName:base::SysUTF16ToNSString(node_->GetTitle())];
-    PrefService* prefs = [self profile] ?
-        user_prefs::UserPrefs::Get([self profile]) :
-        NULL;
     base::string16 urlString =
-        chrome::FormatBookmarkURLForDisplay(node_->url(), prefs);
+        chrome::FormatBookmarkURLForDisplay(node_->url());
     initialUrl_.reset([base::SysUTF16ToNSString(urlString) retain]);
   } else {
     GURL url = [self url];

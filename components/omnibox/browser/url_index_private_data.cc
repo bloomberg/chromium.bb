@@ -156,7 +156,6 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     base::string16 search_string,
     size_t cursor_position,
     size_t max_matches,
-    const std::string& languages,
     bookmarks::BookmarkModel* bookmark_model,
     TemplateURLService* template_url_service) {
   // If cursor position is set and useful (not at either end of the
@@ -183,7 +182,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // search string. When the user types "colspec=ID%20Mstone Release" we get
   // four 'words': "colspec", "id", "mstone" and "release".
   String16Vector lower_words(
-      String16VectorFromString16(lower_unescaped_string, false, NULL));
+      String16VectorFromString16(lower_unescaped_string, false, nullptr));
   ScoredHistoryMatches scored_items;
 
   // Do nothing if we have indexed no words (probably because we've not been
@@ -255,7 +254,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
       std::for_each(
           history_id_set.begin(), history_id_set.end(),
           AddHistoryMatch(bookmark_model, template_url_service, *this,
-                          languages, lower_raw_string, lower_raw_terms,
+                          lower_raw_string, lower_raw_terms,
                           base::Time::Now())).ScoredMatches();
 
   // Select and sort only the top |max_matches| results.
@@ -291,7 +290,6 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
 bool URLIndexPrivateData::UpdateURL(
     history::HistoryService* history_service,
     const history::URLRow& row,
-    const std::string& languages,
     const std::set<std::string>& scheme_whitelist,
     base::CancelableTaskTracker* tracker) {
   // The row may or may not already be in our index. If it is not already
@@ -306,10 +304,9 @@ bool URLIndexPrivateData::UpdateURL(
     history::URLRow new_row(row);
     new_row.set_id(row_id);
     row_was_updated = RowQualifiesAsSignificant(new_row, base::Time()) &&
-                      IndexRow(NULL,
+                      IndexRow(nullptr,
                                history_service,
                                new_row,
-                               languages,
                                scheme_whitelist,
                                tracker);
   } else if (RowQualifiesAsSignificant(row, base::Time())) {
@@ -335,7 +332,7 @@ bool URLIndexPrivateData::UpdateURL(
         RemoveRowWordsFromIndex(row_to_update);
         row_to_update.set_title(row.title());
         RowWordStarts word_starts;
-        AddRowWordsToIndex(row_to_update, &word_starts, languages);
+        AddRowWordsToIndex(row_to_update, &word_starts);
         word_starts_map_[row_id] = word_starts;
       }
       row_was_updated = true;
@@ -410,16 +407,15 @@ bool URLIndexPrivateData::DeleteURL(const GURL& url) {
 
 // static
 scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
-    const base::FilePath& file_path,
-    const std::string& languages) {
+    const base::FilePath& file_path) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   if (!base::PathExists(file_path))
-    return NULL;
+    return nullptr;
   std::string data;
   // If there is no cache file then simply give up. This will cause us to
   // attempt to rebuild from the history database.
   if (!base::ReadFileToString(file_path, &data))
-    return NULL;
+    return nullptr;
 
   scoped_refptr<URLIndexPrivateData> restored_data(new URLIndexPrivateData);
   InMemoryURLIndexCacheItem index_cache;
@@ -429,8 +425,8 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
     return restored_data;
   }
 
-  if (!restored_data->RestorePrivateData(index_cache, languages))
-    return NULL;
+  if (!restored_data->RestorePrivateData(index_cache))
+    return nullptr;
 
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexRestoreCacheTime",
                       base::TimeTicks::Now() - beginning_time);
@@ -442,17 +438,16 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
                              restored_data->char_word_map_.size());
   if (restored_data->Empty())
-    return NULL;  // 'No data' is the same as a failed reload.
+    return nullptr;  // 'No data' is the same as a failed reload.
   return restored_data;
 }
 
 // static
 scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
     history::HistoryDatabase* history_db,
-    const std::string& languages,
     const std::set<std::string>& scheme_whitelist) {
   if (!history_db)
-    return NULL;
+    return nullptr;
 
   base::TimeTicks beginning_time = base::TimeTicks::Now();
 
@@ -460,11 +455,11 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
       rebuilt_data(new URLIndexPrivateData);
   history::URLDatabase::URLEnumerator history_enum;
   if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
-    return NULL;
+    return nullptr;
   rebuilt_data->last_time_rebuilt_from_history_ = base::Time::Now();
   for (history::URLRow row; history_enum.GetNextURL(&row);) {
     rebuilt_data->IndexRow(
-        history_db, NULL, row, languages, scheme_whitelist, NULL);
+        history_db, nullptr, row, scheme_whitelist, nullptr);
   }
 
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
@@ -702,7 +697,6 @@ bool URLIndexPrivateData::IndexRow(
     history::HistoryDatabase* history_db,
     history::HistoryService* history_service,
     const history::URLRow& row,
-    const std::string& languages,
     const std::set<std::string>& scheme_whitelist,
     base::CancelableTaskTracker* tracker) {
   const GURL& gurl(row.url());
@@ -714,7 +708,7 @@ bool URLIndexPrivateData::IndexRow(
   history::URLID row_id = row.id();
   // Strip out username and password before saving and indexing.
   base::string16 url(url_formatter::FormatUrl(
-      gurl, languages, url_formatter::kFormatUrlOmitUsernamePassword,
+      gurl, url_formatter::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::NONE, nullptr, nullptr, nullptr));
 
   HistoryID history_id = static_cast<HistoryID>(row_id);
@@ -730,7 +724,7 @@ bool URLIndexPrivateData::IndexRow(
 
   // Index the words contained in the URL and title of the row.
   RowWordStarts word_starts;
-  AddRowWordsToIndex(new_row, &word_starts, languages);
+  AddRowWordsToIndex(new_row, &word_starts);
   word_starts_map_[history_id] = word_starts;
 
   // Update the recent visits information or schedule the update
@@ -757,18 +751,17 @@ bool URLIndexPrivateData::IndexRow(
 }
 
 void URLIndexPrivateData::AddRowWordsToIndex(const history::URLRow& row,
-                                             RowWordStarts* word_starts,
-                                             const std::string& languages) {
+                                             RowWordStarts* word_starts) {
   HistoryID history_id = static_cast<HistoryID>(row.id());
   // Split URL into individual, unique words then add in the title words.
   const GURL& gurl(row.url());
   const base::string16& url =
-      bookmarks::CleanUpUrlForMatching(gurl, languages, NULL);
+      bookmarks::CleanUpUrlForMatching(gurl, nullptr);
   String16Set url_words = String16SetFromString16(url,
-      word_starts ? &word_starts->url_word_starts_ : NULL);
+      word_starts ? &word_starts->url_word_starts_ : nullptr);
   const base::string16& title = bookmarks::CleanUpTitleForMatching(row.title());
   String16Set title_words = String16SetFromString16(title,
-      word_starts ? &word_starts->title_word_starts_ : NULL);
+      word_starts ? &word_starts->title_word_starts_ : nullptr);
   String16Set words = base::STLSetUnion<String16Set>(url_words, title_words);
   for (String16Set::iterator word_iter = words.begin();
        word_iter != words.end(); ++word_iter)
@@ -1046,8 +1039,7 @@ void URLIndexPrivateData::SaveWordStartsMap(
 }
 
 bool URLIndexPrivateData::RestorePrivateData(
-    const InMemoryURLIndexCacheItem& cache,
-    const std::string& languages) {
+    const InMemoryURLIndexCacheItem& cache) {
   last_time_rebuilt_from_history_ =
       base::Time::FromInternalValue(cache.last_rebuild_timestamp());
   const base::TimeDelta rebuilt_ago =
@@ -1072,7 +1064,7 @@ bool URLIndexPrivateData::RestorePrivateData(
   }
   return RestoreWordList(cache) && RestoreWordMap(cache) &&
       RestoreCharWordMap(cache) && RestoreWordIDHistoryMap(cache) &&
-      RestoreHistoryInfoMap(cache) && RestoreWordStartsMap(cache, languages);
+      RestoreHistoryInfoMap(cache) && RestoreWordStartsMap(cache);
 }
 
 bool URLIndexPrivateData::RestoreWordList(
@@ -1204,8 +1196,7 @@ bool URLIndexPrivateData::RestoreHistoryInfoMap(
 }
 
 bool URLIndexPrivateData::RestoreWordStartsMap(
-    const InMemoryURLIndexCacheItem& cache,
-    const std::string& languages) {
+    const InMemoryURLIndexCacheItem& cache) {
   // Note that this function must be called after RestoreHistoryInfoMap() has
   // been run as the word starts may have to be recalculated from the urls and
   // page titles.
@@ -1241,7 +1232,7 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
       RowWordStarts word_starts;
       const history::URLRow& row(iter->second.url_row);
       const base::string16& url =
-          bookmarks::CleanUpUrlForMatching(row.url(), languages, NULL);
+          bookmarks::CleanUpUrlForMatching(row.url(), nullptr);
       String16VectorFromString16(url, false, &word_starts.url_word_starts_);
       const base::string16& title =
           bookmarks::CleanUpTitleForMatching(row.title());
@@ -1283,14 +1274,12 @@ URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     bookmarks::BookmarkModel* bookmark_model,
     TemplateURLService* template_url_service,
     const URLIndexPrivateData& private_data,
-    const std::string& languages,
     const base::string16& lower_string,
     const String16Vector& lower_terms,
     const base::Time now)
     : bookmark_model_(bookmark_model),
       template_url_service_(template_url_service),
       private_data_(private_data),
-      languages_(languages),
       lower_string_(lower_string),
       lower_terms_(lower_terms),
       now_(now) {
@@ -1330,7 +1319,7 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
         private_data_.word_starts_map_.find(history_id);
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
     ScoredHistoryMatch match(
-        hist_item, visits, languages_, lower_string_, lower_terms_,
+        hist_item, visits, lower_string_, lower_terms_,
         lower_terms_to_word_starts_offsets_, starts_pos->second,
         bookmark_model_ && bookmark_model_->IsBookmarked(hist_item.url()),
         template_url_service_, now_);

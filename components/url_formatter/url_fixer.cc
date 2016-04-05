@@ -187,7 +187,7 @@ std::string FixupPath(const std::string& text) {
   GURL file_url = net::FilePathToFileURL(base::FilePath(filename));
   if (file_url.is_valid()) {
     return base::UTF16ToUTF8(url_formatter::FormatUrl(
-        file_url, std::string(), url_formatter::kFormatUrlOmitUsernamePassword,
+        file_url, url_formatter::kFormatUrlOmitUsernamePassword,
         net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   }
 
@@ -641,8 +641,7 @@ GURL FixupRelativeFile(const base::FilePath& base_dir,
     GURL file_url = net::FilePathToFileURL(full_path);
     if (file_url.is_valid())
       return GURL(base::UTF16ToUTF8(url_formatter::FormatUrl(
-          file_url, std::string(),
-          url_formatter::kFormatUrlOmitUsernamePassword,
+          file_url, url_formatter::kFormatUrlOmitUsernamePassword,
           net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr)));
     // Invalid files fall through to regular processing.
   }

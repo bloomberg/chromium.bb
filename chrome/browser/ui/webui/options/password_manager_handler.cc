@@ -57,7 +57,6 @@ const char kFederationField[] = "federation";
 // Copies from |form| to |entry| the origin, shown origin, whether the origin is
 // Android URI, and whether the origin is secure.
 void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
-                                  const std::string& languages,
                                   base::DictionaryValue* entry) {
   bool is_android_uri = false;
   bool origin_is_clickable = false;
@@ -65,11 +64,11 @@ void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
   entry->SetString(
       kShownOriginField,
       password_manager::GetShownOriginAndLinkUrl(
-          form, languages, &is_android_uri, &link_url, &origin_is_clickable));
+          form, &is_android_uri, &link_url, &origin_is_clickable));
   DCHECK(link_url.is_valid());
   entry->SetString(
       kUrlField, url_formatter::FormatUrl(
-                     link_url, languages, url_formatter::kFormatUrlOmitNothing,
+                     link_url, url_formatter::kFormatUrlOmitNothing,
                      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   entry->SetBoolean(kIsAndroidUriField, is_android_uri);
   entry->SetBoolean(kIsClickable, origin_is_clickable);
@@ -230,11 +229,10 @@ void PasswordManagerHandler::HandleUpdatePasswordLists(
 void PasswordManagerHandler::SetPasswordList(
     const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) {
   base::ListValue entries;
-  languages_ = GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (const auto& saved_password : password_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    CopyOriginInfoOfPasswordForm(*saved_password, languages_, entry.get());
+    CopyOriginInfoOfPasswordForm(*saved_password, entry.get());
 
     entry->SetString(kUsernameField, saved_password->username_value);
     // Use a placeholder value with the same length as the password.
@@ -262,7 +260,7 @@ void PasswordManagerHandler::SetPasswordExceptionList(
   base::ListValue entries;
   for (const auto& exception : password_exception_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    CopyOriginInfoOfPasswordForm(*exception, languages_, entry.get());
+    CopyOriginInfoOfPasswordForm(*exception,  entry.get());
     entries.Append(entry.release());
   }
 

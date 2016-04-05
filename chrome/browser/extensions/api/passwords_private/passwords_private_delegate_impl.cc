@@ -33,7 +33,6 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       set_password_list_called_(false),
       set_password_exception_list_called_(false),
       is_initialized_(false),
-      languages_(profile->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       web_contents_(nullptr) {
   password_manager_presenter_->Initialize();
   password_manager_presenter_->UpdatePasswordLists();
@@ -152,7 +151,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
   login_pair_to_index_map_.clear();
   for (size_t i = 0; i < password_list.size(); i++) {
     std::string key = LoginPairToMapKey(
-        password_manager::GetHumanReadableOrigin(*password_list[i], languages_),
+        password_manager::GetHumanReadableOrigin(*password_list[i]),
         base::UTF16ToUTF8(password_list[i]->username_value));
     login_pair_to_index_map_[key] = i;
   }
@@ -162,7 +161,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
   for (const auto& form : password_list) {
     api::passwords_private::PasswordUiEntry entry;
     entry.login_pair.origin_url =
-        password_manager::GetHumanReadableOrigin(*form, languages_);
+        password_manager::GetHumanReadableOrigin(*form);
     entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
     entry.num_characters_in_password = form->password_value.length();
 
@@ -194,7 +193,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
   exception_url_to_index_map_.clear();
   for (size_t i = 0; i < password_exception_list.size(); i++) {
     std::string key = password_manager::GetHumanReadableOrigin(
-        *password_exception_list[i], languages_);
+        *password_exception_list[i]);
     exception_url_to_index_map_[key] = i;
   }
 
@@ -202,7 +201,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
   current_exceptions_.clear();
   for (const auto& form : password_exception_list) {
     current_exceptions_.push_back(
-        password_manager::GetHumanReadableOrigin(*form, languages_));
+        password_manager::GetHumanReadableOrigin(*form));
   }
 
   SendPasswordExceptionsList();

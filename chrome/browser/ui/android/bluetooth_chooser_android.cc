@@ -7,11 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
@@ -44,14 +41,10 @@ BluetoothChooserAndroid::BluetoothChooserAndroid(
 
   // Create (and show) the BluetoothChooser dialog.
   JNIEnv* env = AttachCurrentThread();
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  std::string languages =
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
   base::android::ScopedJavaLocalRef<jstring> origin_string =
       base::android::ConvertUTF16ToJavaString(
           env, url_formatter::FormatUrlForSecurityDisplay(
-                   frame->GetLastCommittedURL(), languages));
+                   frame->GetLastCommittedURL()));
   java_dialog_.Reset(Java_BluetoothChooserDialog_create(
       env, window_android.obj(), origin_string.obj(),
       security_model_client->GetSecurityInfo().security_level,

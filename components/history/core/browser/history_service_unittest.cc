@@ -69,7 +69,7 @@ class HistoryServiceTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
     history_service_.reset(new history::HistoryService);
     if (!history_service_->Init(
-            std::string(), TestHistoryDatabaseParamsForPath(history_dir_))) {
+            TestHistoryDatabaseParamsForPath(history_dir_))) {
       history_service_.reset();
       ADD_FAILURE();
     }

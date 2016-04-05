@@ -36,7 +36,6 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   PepperBrokerInfoBarDelegate(const GURL& url,
                               const base::FilePath& plugin_path,
-                              const std::string& languages,
                               HostContentSettingsMap* content_settings,
                               TabSpecificContentSettings* tab_content_settings,
                               const base::Callback<void(bool)>& callback);
@@ -56,7 +55,6 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   const GURL url_;
   const base::FilePath plugin_path_;
-  const std::string languages_;
   HostContentSettingsMap* content_settings_;
   TabSpecificContentSettings* tab_content_settings_;
   base::Callback<void(bool)> callback_;

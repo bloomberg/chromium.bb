@@ -202,8 +202,7 @@ class SearchSuggestionParser {
                      bool from_keyword_provider,
                      int relevance,
                      bool relevance_from_server,
-                     const base::string16& input_text,
-                     const std::string& languages);
+                     const base::string16& input_text);
     ~NavigationResult() override;
 
     const GURL& url() const { return url_; }
@@ -211,13 +210,11 @@ class SearchSuggestionParser {
     const base::string16& formatted_url() const { return formatted_url_; }
 
     // Fills in |match_contents_| and |match_contents_class_| to reflect how
-    // the URL should be displayed and bolded against the current |input_text|
-    // and user |languages|.  If |allow_bolding_nothing| is false and
-    // |match_contents_class_| would result in an entirely unbolded
-    // |match_contents_|, do nothing.
+    // the URL should be displayed and bolded against the current |input_text|.
+    // If |allow_bolding_nothing| is false and |match_contents_class_| would
+    // result in an entirely unbolded |match_contents_|, do nothing.
     void CalculateAndClassifyMatchContents(const bool allow_bolding_nothing,
-                                           const base::string16& input_text,
-                                           const std::string& languages);
+                                           const base::string16& input_text);
 
     // Result:
     int CalculateRelevance(const AutocompleteInput& input,
@@ -300,7 +297,6 @@ class SearchSuggestionParser {
       const AutocompleteInput& input,
       const AutocompleteSchemeClassifier& scheme_classifier,
       int default_result_relevance,
-      const std::string& languages,
       bool is_keyword_result,
       Results* results);
 

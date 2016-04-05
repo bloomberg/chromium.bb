@@ -55,7 +55,7 @@ class StatusBubbleViews : public StatusBubble {
 
   // Overridden from StatusBubble:
   void SetStatus(const base::string16& status) override;
-  void SetURL(const GURL& url, const std::string& languages) override;
+  void SetURL(const GURL& url) override;
   void Hide() override;
   void MouseMoved(const gfx::Point& location, bool left_content) override;
   void UpdateDownloadShelfVisibility(bool visible) override;
@@ -105,9 +105,6 @@ class StatusBubbleViews : public StatusBubble {
 
   // The original, non-elided URL.
   GURL url_;
-
-  // Used to elide the original URL again when we expand it.
-  std::string languages_;
 
   // Position relative to the base_view_.
   gfx::Point original_position_;

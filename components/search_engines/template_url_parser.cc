@@ -319,8 +319,7 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   // Generate a keyword for this search engine if a custom one was not present
   // in the imported data.
   if (!has_custom_keyword_)
-    data_.SetKeyword(TemplateURL::GenerateKeyword(
-        search_url, search_terms_data.GetAcceptLanguages()));
+    data_.SetKeyword(TemplateURL::GenerateKeyword(search_url));
 
   data_.show_in_default_list = show_in_default_list;
 

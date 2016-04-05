@@ -186,7 +186,7 @@ class FakeAutocompleteProviderClient
         make_scoped_ptr(new TemplateURLService(nullptr, 0)));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(history_dir_.path(),
-                                                       std::string(), true);
+                                                       true);
     }
 
     db_thread_.Start();

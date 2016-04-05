@@ -189,14 +189,14 @@ TEST(AutocompleteMatchTest, Duplicates) {
         base::WideToUTF16(cases[i].input), base::string16::npos, std::string(),
         GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false, true,
         true, false, TestSchemeClassifier());
-    AutocompleteMatch m1(NULL, 100, false,
+    AutocompleteMatch m1(nullptr, 100, false,
                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     m1.destination_url = GURL(cases[i].url1);
-    m1.ComputeStrippedDestinationURL(input, "zh-CN", NULL);
-    AutocompleteMatch m2(NULL, 100, false,
+    m1.ComputeStrippedDestinationURL(input, nullptr);
+    AutocompleteMatch m2(nullptr, 100, false,
                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     m2.destination_url = GURL(cases[i].url2);
-    m2.ComputeStrippedDestinationURL(input, "zh-CN", NULL);
+    m2.ComputeStrippedDestinationURL(input, nullptr);
     EXPECT_EQ(cases[i].expected_duplicate,
               AutocompleteMatch::DestinationsEqual(m1, m2));
   }

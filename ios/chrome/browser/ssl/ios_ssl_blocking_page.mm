@@ -9,13 +9,11 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/interstitials/ios_chrome_controller_client.h"
 #include "ios/chrome/browser/interstitials/ios_chrome_metrics_helper.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/browser_constants.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -81,13 +79,7 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(
       expired_but_previously_allowed_(
           (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
       controller_(new IOSChromeControllerClient(web_state)) {
-  // Get the language and override prefs for the SSLErrorUI.
-  std::string languages;
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
-  if (browser_state) {
-    languages = browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  }
+  // Override prefs for the SSLErrorUI.
   if (overridable_)
     options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   else
@@ -104,7 +96,7 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(
   controller_->set_metrics_helper(make_scoped_ptr(ios_chrome_metrics_helper));
 
   ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
-                                     options_mask, time_triggered, languages,
+                                     options_mask, time_triggered,
                                      controller_.get()));
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)

@@ -274,7 +274,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   void NavigationCorrectionsLoadFinished(const std::string& result) {
     url_being_fetched_ = GURL();
-    core()->OnNavigationCorrectionsFetched(result, "en", false);
+    core()->OnNavigationCorrectionsFetched(result, false);
   }
 
   void DoErrorLoadOfURL(net::Error error, const GURL& url) {

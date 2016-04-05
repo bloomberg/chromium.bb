@@ -99,11 +99,9 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
-  // the history files. |languages| is a comma-separated list of languages to
-  // use when interpreting URLs, it must not be empty (except during testing).
-  bool Init(const std::string& languages,
-            const HistoryDatabaseParams& history_database_params) {
-    return Init(false, languages, history_database_params);
+  // the history files.
+  bool Init(const HistoryDatabaseParams& history_database_params) {
+    return Init(false, history_database_params);
   }
 
   // Triggers the backend to load if it hasn't already, and then returns whether
@@ -568,9 +566,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class ::SyncBookmarkDataTypeControllerTest;
   friend class ::TestingProfile;
   friend scoped_ptr<HistoryService> CreateHistoryService(
-      const base::FilePath& history_dir,
-      const std::string& accept_languages,
-      bool create_db);
+      const base::FilePath& history_dir, bool create_db);
 
   // Called on shutdown, this will tell the history backend to complete and
   // will release pointers to it. No other functions should be called once
@@ -585,9 +581,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
-  bool Init(bool no_db,
-            const std::string& languages,
-            const HistoryDatabaseParams& history_database_params);
+  bool Init(bool no_db, const HistoryDatabaseParams& history_database_params);
 
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history

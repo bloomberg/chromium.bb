@@ -101,8 +101,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   PageState GetPageState() const override;
   void SetPageID(int page_id) override;
   int32_t GetPageID() const override;
-  const base::string16& GetTitleForDisplay(
-      const std::string& languages) const override;
+  const base::string16& GetTitleForDisplay() const override;
   bool IsViewSourceMode() const override;
   void SetTransitionType(ui::PageTransition transition_type) override;
   ui::PageTransition GetTransitionType() const override;

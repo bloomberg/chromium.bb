@@ -228,8 +228,7 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     bool from_keyword_provider,
     int relevance,
     bool relevance_from_server,
-    const base::string16& input_text,
-    const std::string& languages)
+    const base::string16& input_text)
     : Result(from_keyword_provider,
              relevance,
              relevance_from_server,
@@ -239,7 +238,6 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
           url,
           url_formatter::FormatUrl(url,
-                                   languages,
                                    url_formatter::kFormatUrlOmitAll &
                                        ~url_formatter::kFormatUrlOmitHTTP,
                                    net::UnescapeRule::SPACES,
@@ -249,7 +247,7 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
           scheme_classifier)),
       description_(description) {
   DCHECK(url_.is_valid());
-  CalculateAndClassifyMatchContents(true, input_text, languages);
+  CalculateAndClassifyMatchContents(true, input_text);
 }
 
 SearchSuggestionParser::NavigationResult::~NavigationResult() {}
@@ -257,8 +255,7 @@ SearchSuggestionParser::NavigationResult::~NavigationResult() {}
 void
 SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
     const bool allow_bolding_nothing,
-    const base::string16& input_text,
-    const std::string& languages) {
+    const base::string16& input_text) {
   if (input_text.empty()) {
     // In case of zero-suggest results, do not highlight matches.
     match_contents_class_.push_back(
@@ -280,7 +277,7 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
       ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
 
   base::string16 match_contents = url_formatter::FormatUrl(
-      url_, languages, format_types, net::UnescapeRule::SPACES, nullptr,
+      url_, format_types, net::UnescapeRule::SPACES, nullptr,
       nullptr, &match_start);
   // If the first match in the untrimmed string was inside a scheme that we
   // trimmed, look for a subsequent match.
@@ -393,7 +390,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
     const AutocompleteInput& input,
     const AutocompleteSchemeClassifier& scheme_classifier,
     int default_result_relevance,
-    const std::string& languages,
     bool is_keyword_result,
     Results* results) {
   base::string16 query;
@@ -493,8 +489,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
             scheme_classifier, url, match_type, title, deletion_url,
-            is_keyword_result, relevance, relevances != NULL, input.text(),
-            languages));
+            is_keyword_result, relevance, relevances != NULL, input.text()));
       }
     } else {
       // TODO(dschuyler) If the "= " is no longer sent from the back-end

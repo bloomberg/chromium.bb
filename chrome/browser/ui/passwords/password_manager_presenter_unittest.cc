@@ -147,9 +147,8 @@ void PasswordManagerPresenterTest::SortAndCheckPositions(
   }
 
   DuplicatesMap duplicates;
-  std::string languages;
   mock_controller_->GetPasswordManagerPresenter()->SortEntriesAndHideDuplicates(
-      languages, &list, &duplicates, username_and_password_in_key);
+      &list, &duplicates, username_and_password_in_key);
 
   ASSERT_EQ(expected_number_of_unique_entries, list.size());
   ASSERT_EQ(number_of_entries - expected_number_of_unique_entries,

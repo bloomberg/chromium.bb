@@ -17,12 +17,10 @@
 PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     const GURL& request_origin,
     content::PermissionType permission_type,
-    const std::string& display_languages,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
       permission_type_(permission_type),
-      display_languages_(display_languages),
       permission_decided_callback_(permission_decided_callback),
       delete_callback_(delete_callback),
       is_finished_(false),
@@ -107,9 +105,8 @@ base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
       NOTREACHED();
       return base::string16();
   }
-  return l10n_util::GetStringFUTF16(message_id,
-                                    url_formatter::FormatUrlForSecurityDisplay(
-                                        request_origin_, display_languages_));
+  return l10n_util::GetStringFUTF16(
+      message_id, url_formatter::FormatUrlForSecurityDisplay(request_origin_));
 }
 
 base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {

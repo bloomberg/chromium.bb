@@ -23,9 +23,7 @@ class HistoryService;
 // runloop before returning to ensure that any initialization-related tasks are
 // run.
 scoped_ptr<HistoryService> CreateHistoryService(
-    const base::FilePath& history_dir,
-    const std::string& accept_languages,
-    bool create_db);
+    const base::FilePath& history_dir, bool create_db);
 
 // Schedules a task on the history backend and runs a nested loop until the task
 // is processed.  This blocks the caller until the history service processes all

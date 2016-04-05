@@ -275,7 +275,7 @@ class BookmarkButton : public BookmarkButtonBase {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(
-        GetWidget(), location, url_, GetText(), profile_);
+        GetWidget(), location, url_, GetText());
     return !tooltip->empty();
   }
 
@@ -769,8 +769,7 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     const views::Widget* widget,
     const gfx::Point& screen_loc,
     const GURL& url,
-    const base::string16& title,
-    Profile* profile) {
+    const base::string16& title) {
   const views::TooltipManager* tooltip_manager = widget->GetTooltipManager();
   int max_width = tooltip_manager->GetMaxWidth(screen_loc);
   const gfx::FontList tt_fonts = tooltip_manager->GetFontList();
@@ -795,10 +794,8 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
-    std::string languages = profile->GetPrefs()->GetString(
-        prefs::kAcceptLanguages);
     base::string16 elided_url(
-        url_formatter::ElideUrl(url, tt_fonts, max_width, languages));
+        url_formatter::ElideUrl(url, tt_fonts, max_width));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(elided_url);
   }

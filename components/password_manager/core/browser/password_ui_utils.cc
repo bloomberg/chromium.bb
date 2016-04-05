@@ -23,7 +23,6 @@ const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 
 std::string GetShownOriginAndLinkUrl(
     const autofill::PasswordForm& password_form,
-    const std::string& languages,
     bool* is_android_uri,
     GURL* link_url,
     bool* origin_is_clickable) {
@@ -45,16 +44,16 @@ std::string GetShownOriginAndLinkUrl(
     }
     *origin_is_clickable = true;
     *link_url = GURL(password_form.affiliated_web_realm);
-    return GetShownOrigin(*link_url, languages);
+    return GetShownOrigin(*link_url);
   }
   *origin_is_clickable = true;
   *link_url = password_form.origin;
-  return GetShownOrigin(password_form.origin, languages);
+  return GetShownOrigin(password_form.origin);
 }
 
-std::string GetShownOrigin(const GURL& origin, const std::string& languages) {
+std::string GetShownOrigin(const GURL& origin) {
   std::string original = base::UTF16ToUTF8(
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin, languages));
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin));
   base::StringPiece result = original;
   for (base::StringPiece prefix : kRemovedPrefixes) {
     if (base::StartsWith(result, prefix,

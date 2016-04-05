@@ -123,7 +123,6 @@ AutocompleteResult::~AutocompleteResult() {}
 
 void AutocompleteResult::CopyOldMatches(
     const AutocompleteInput& input,
-    const std::string& languages,
     const AutocompleteResult& old_matches,
     TemplateURLService* template_url_service) {
   if (old_matches.empty())
@@ -161,7 +160,7 @@ void AutocompleteResult::CopyOldMatches(
                            i->second, matches_per_provider[i->first]);
   }
 
-  SortAndCull(input, languages, template_url_service);
+  SortAndCull(input, template_url_service);
 }
 
 void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
@@ -204,10 +203,9 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
 
 void AutocompleteResult::SortAndCull(
     const AutocompleteInput& input,
-    const std::string& languages,
     TemplateURLService* template_url_service) {
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)
-    i->ComputeStrippedDestinationURL(input, languages, template_url_service);
+    i->ComputeStrippedDestinationURL(input, template_url_service);
 
   DedupMatchesByDestination(input.current_page_classification(), true,
                             &matches_);

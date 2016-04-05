@@ -41,13 +41,10 @@ class QuitTask : public history::HistoryDBTask {
 namespace history {
 
 scoped_ptr<HistoryService> CreateHistoryService(
-    const base::FilePath& history_dir,
-    const std::string& accept_languages,
-    bool create_db) {
+    const base::FilePath& history_dir, bool create_db) {
   scoped_ptr<HistoryService> history_service(new HistoryService());
   if (!history_service->Init(
-          !create_db, accept_languages,
-          history::TestHistoryDatabaseParamsForPath(history_dir))) {
+          !create_db, history::TestHistoryDatabaseParamsForPath(history_dir))) {
     return nullptr;
   }
 

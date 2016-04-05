@@ -202,7 +202,6 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
         error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
         error.staleCopyInCache, can_show_network_diagnostics_dialog,
         has_offline_pages, RenderThread::Get()->GetLocale(),
-        render_frame()->GetRenderView()->GetAcceptLanguages(),
         std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
@@ -241,7 +240,6 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
       can_show_network_diagnostics_dialog,
       has_offline_pages,
       RenderThread::Get()->GetLocale(),
-      render_frame()->GetRenderView()->GetAcceptLanguages(),
       scoped_ptr<ErrorPageParams>(),
       &error_strings);
 
@@ -366,10 +364,8 @@ void NetErrorHelper::OnNavigationCorrectionsFetched(
   scoped_ptr<content::ResourceFetcher> fetcher(
       correction_fetcher_.release());
   bool success = (!response.isNull() && response.httpStatusCode() == 200);
-  core_->OnNavigationCorrectionsFetched(
-      success ? data : "",
-      render_frame()->GetRenderView()->GetAcceptLanguages(),
-      base::i18n::IsRTL());
+  core_->OnNavigationCorrectionsFetched(success ? data : "",
+                                        base::i18n::IsRTL());
 }
 
 void NetErrorHelper::OnTrackingRequestComplete(

@@ -165,8 +165,7 @@ class HistoryQueryTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
 
     history_.reset(new HistoryService);
-    if (!history_->Init(std::string(),
-                        TestHistoryDatabaseParamsForPath(history_dir_))) {
+    if (!history_->Init(TestHistoryDatabaseParamsForPath(history_dir_))) {
       history_.reset();  // Tests should notice this NULL ptr & fail.
       return;
     }

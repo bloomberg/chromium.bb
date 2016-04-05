@@ -91,7 +91,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
         make_scoped_ptr(new bookmarks::TestBookmarkClient())));
     if (bookmark_load_policy == LOAD_MODEL) {
       TestingPrefServiceSimple prefs;
-      bookmark_model_->Load(&prefs, std::string(), base::FilePath(),
+      bookmark_model_->Load(&prefs, base::FilePath(),
                             base::ThreadTaskRunnerHandle::Get(),
                             base::ThreadTaskRunnerHandle::Get());
       bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());
@@ -169,7 +169,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   EXPECT_EQ(DataTypeController::MODEL_STARTING, bookmark_dtc_->state());
 
   TestingPrefServiceSimple prefs;
-  bookmark_model_->Load(&prefs, std::string(), base::FilePath(),
+  bookmark_model_->Load(&prefs, base::FilePath(),
                        base::ThreadTaskRunnerHandle::Get(),
                        base::ThreadTaskRunnerHandle::Get());
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());

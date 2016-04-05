@@ -103,8 +103,8 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
                    : IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE;
     // TODO(palmer): Look into passing real language prefs here, not "".
     // crbug.com/498069.
-    replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
-        form_origin_url, std::string()));
+    replacements.push_back(
+        url_formatter::FormatUrlForSecurityDisplay(form_origin_url));
   }
 
   if (is_smartlock_branding_enabled) {
@@ -131,9 +131,8 @@ void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
   // (i.e. the one seen in the omnibox) and the managed password origin URL
   // differ or not.
   if (!SameDomainOrHost(user_visible_url, password_origin_url)) {
-    // TODO(palmer): Look into passing real language prefs here, not "".
-    base::string16 formatted_url = url_formatter::FormatUrlForSecurityDisplay(
-        password_origin_url, std::string());
+    base::string16 formatted_url =
+        url_formatter::FormatUrlForSecurityDisplay(password_origin_url);
     *title = l10n_util::GetStringFUTF16(
         IDS_MANAGE_PASSWORDS_TITLE_DIFFERENT_DOMAIN, formatted_url);
   } else {

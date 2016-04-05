@@ -110,9 +110,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // callbacks are invoked.
   std::vector<base::Callback<void()>> pre_initialization_callbacks_;
 
-  // User pref for storing accept languages.
-  std::string languages_;
-
   // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.
   content::WebContents* web_contents_;

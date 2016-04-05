@@ -887,7 +887,6 @@ void HistoryService::Cleanup() {
 
 bool HistoryService::Init(
     bool no_db,
-    const std::string& languages,
     const HistoryDatabaseParams& history_database_params) {
   TRACE_EVENT0("browser,startup", "HistoryService::Init")
   SCOPED_UMA_HISTOGRAM_TIMER("History.HistoryServiceInitTime");
@@ -911,7 +910,7 @@ bool HistoryService::Init(
 
   ScheduleTask(PRIORITY_UI,
                base::Bind(&HistoryBackend::Init, history_backend_.get(),
-                          languages, no_db, history_database_params));
+                          no_db, history_database_params));
 
   if (visit_delegate_ && !visit_delegate_->Init(this))
     return false;

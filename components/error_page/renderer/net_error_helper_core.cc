@@ -260,11 +260,10 @@ std::string CreateClickTrackingUrlRequestBody(
                            correction_params, std::move(params));
 }
 
-base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl,
-                                   const std::string accept_languages) {
+base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl) {
   // Translate punycode into UTF8, unescape UTF8 URLs.
   base::string16 url_for_display(url_formatter::FormatUrl(
-      url, accept_languages, url_formatter::kFormatUrlOmitNothing,
+      url, url_formatter::kFormatUrlOmitNothing,
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (is_rtl)
@@ -294,13 +293,11 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
     const NavigationCorrectionResponse& response,
     const blink::WebURLError& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
-    const std::string& accept_languages,
     bool is_rtl) {
   // Version of URL for display in suggestions.  It has to be sanitized first
   // because any received suggestions will be relative to the sanitized URL.
   base::string16 original_url_for_display =
-      FormatURLForDisplay(SanitizeURL(GURL(error.unreachableURL)), is_rtl,
-                          accept_languages);
+      FormatURLForDisplay(SanitizeURL(GURL(error.unreachableURL)), is_rtl);
 
   scoped_ptr<ErrorPageParams> params(new ErrorPageParams());
   params->override_suggestions.reset(new base::ListValue());
@@ -354,8 +351,7 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
       suggest->SetString("urlCorrection", (*it)->url_correction);
       suggest->SetString(
           "urlCorrectionForDisplay",
-          FormatURLForDisplay(GURL((*it)->url_correction), is_rtl,
-                              accept_languages));
+          FormatURLForDisplay(GURL((*it)->url_correction), is_rtl));
       suggest->SetString("originalUrlForDisplay", original_url_for_display);
       suggest->SetInteger("trackingId", tracking_id);
       suggest->SetInteger("type", static_cast<int>(correction_index));
@@ -820,7 +816,6 @@ void NetErrorHelperCore::UpdateErrorPage() {
 
 void NetErrorHelperCore::OnNavigationCorrectionsFetched(
     const std::string& corrections,
-    const std::string& accept_languages,
     bool is_rtl) {
   // Loading suggestions only starts when a blank error page finishes loading,
   // and is cancelled with a new load.
@@ -847,8 +842,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
     params = CreateErrorPageParams(
           *pending_error_page_info_->navigation_correction_response,
           pending_error_page_info_->error,
-          *pending_error_page_info_->navigation_correction_params,
-          accept_languages, is_rtl);
+          *pending_error_page_info_->navigation_correction_params, is_rtl);
     delegate_->GenerateLocalizedErrorPage(
         pending_error_page_info_->error,
         pending_error_page_info_->was_failed_post,

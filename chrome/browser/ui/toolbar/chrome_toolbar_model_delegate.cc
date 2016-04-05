@@ -24,12 +24,6 @@ ChromeToolbarModelDelegate::ChromeToolbarModelDelegate() {}
 
 ChromeToolbarModelDelegate::~ChromeToolbarModelDelegate() {}
 
-std::string ChromeToolbarModelDelegate::GetAcceptLanguages() const {
-  Profile* profile = GetProfile();
-  return profile ? profile->GetPrefs()->GetString(prefs::kAcceptLanguages)
-                 : std::string();
-}
-
 base::string16 ChromeToolbarModelDelegate::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url) const {

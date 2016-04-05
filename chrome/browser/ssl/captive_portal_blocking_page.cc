@@ -14,13 +14,10 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/certificate_reporting/error_reporter.h"
-#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
@@ -155,13 +152,8 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   } else {
     // Portal redirection was done with HTTP redirects, so show the login URL.
     // If |languages| is empty, punycode in |login_host| will always be decoded.
-    std::string languages;
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    if (profile)
-      languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     base::string16 login_host =
-        url_formatter::IDNToUnicode(login_url_.host(), languages);
+        url_formatter::IDNToUnicode(login_url_.host());
     if (base::i18n::IsRTL())
       base::i18n::WrapStringWithLTRFormatting(&login_host);
 

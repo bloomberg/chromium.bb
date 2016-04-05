@@ -84,7 +84,6 @@ class PasswordManagerPresenter
   // forms with the same key, all such forms but the first one are
   // stored in |duplicates| instead of |list|.
   void SortEntriesAndHideDuplicates(
-      const std::string& languages,
       std::vector<scoped_ptr<autofill::PasswordForm>>* list,
       DuplicatesMap* duplicates,
       bool username_and_password_in_key);
@@ -143,9 +142,6 @@ class PasswordManagerPresenter
 
   // UI view that owns this presenter.
   PasswordUIView* password_view_;
-
-  // User pref for storing accept languages.
-  std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenter);
 };

@@ -446,11 +446,10 @@ void SearchProvider::UpdateMatchContentsClass(
        sug_it != results->suggest_results.end(); ++sug_it) {
     sug_it->ClassifyMatchContents(false, input_text);
   }
-  const std::string languages(client()->GetAcceptLanguages());
   for (SearchSuggestionParser::NavigationResults::iterator nav_it =
            results->navigation_results.begin();
        nav_it != results->navigation_results.end(); ++nav_it) {
-    nav_it->CalculateAndClassifyMatchContents(false, input_text, languages);
+    nav_it->CalculateAndClassifyMatchContents(false, input_text);
   }
 }
 
@@ -1417,13 +1416,12 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       url_formatter::kFormatUrlOmitAll &
       ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
 
-  const std::string languages(client()->GetAcceptLanguages());
   size_t inline_autocomplete_offset = (prefix == NULL) ?
       base::string16::npos : (match_start + input.length());
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           navigation.url(),
-          url_formatter::FormatUrl(navigation.url(), languages, format_types,
+          url_formatter::FormatUrl(navigation.url(), format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier());
@@ -1455,7 +1453,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       !navigation.received_after_last_keystroke() &&
       (match.inline_autocompletion.empty() ||
       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
-  match.EnsureUWYTIsAllowedToBeDefault(input_, client()->GetAcceptLanguages(),
+  match.EnsureUWYTIsAllowedToBeDefault(input_,
                                        client()->GetTemplateURLService());
 
   match.contents = navigation.match_contents();

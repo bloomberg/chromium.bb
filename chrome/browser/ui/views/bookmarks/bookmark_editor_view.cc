@@ -20,7 +20,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "grit/components_strings.h"
@@ -377,9 +376,7 @@ void BookmarkEditorView::Init() {
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
 
     url_tf_ = new views::Textfield;
-    PrefService* prefs =
-        profile_ ? user_prefs::UserPrefs::Get(profile_) : NULL;
-    url_tf_->SetText(chrome::FormatBookmarkURLForDisplay(url, prefs));
+    url_tf_->SetText(chrome::FormatBookmarkURLForDisplay(url));
     url_tf_->set_controller(this);
     url_tf_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));

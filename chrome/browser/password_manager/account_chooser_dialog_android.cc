@@ -150,7 +150,7 @@ void AccountChooserDialogAndroid::ShowDialog() {
       base::android::ConvertUTF16ToJavaString(env, title).obj(),
       title_link_range.start(), title_link_range.end(),
       base::android::ConvertUTF8ToJavaString(
-          env, password_manager::GetShownOrigin(origin_, std::string()))
+          env, password_manager::GetShownOrigin(origin_))
           .obj()));
   base::android::ScopedJavaLocalRef<jobject> java_dialog(java_dialog_global);
   net::URLRequestContextGetter* request_context =

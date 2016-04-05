@@ -36,10 +36,7 @@ class ContentSettingsUsagesStateTests : public testing::Test {
   void ClearOnNewOrigin(ContentSettingsType type) {
     TestingProfile profile;
     ContentSettingsUsagesState state(
-        HostContentSettingsMapFactory::GetForProfile(&profile),
-        type,
-        prefs::kAcceptLanguages,
-        profile.GetPrefs());
+        HostContentSettingsMapFactory::GetForProfile(&profile), type);
     GURL url_0("http://www.example.com");
 
     ContentSettingsUsagesState::CommittedDetails details =
@@ -136,10 +133,7 @@ class ContentSettingsUsagesStateTests : public testing::Test {
   void ShowPortOnSameHost(ContentSettingsType type) {
     TestingProfile profile;
     ContentSettingsUsagesState state(
-        HostContentSettingsMapFactory::GetForProfile(&profile),
-        type,
-        prefs::kAcceptLanguages,
-        profile.GetPrefs());
+        HostContentSettingsMapFactory::GetForProfile(&profile), type);
     GURL url_0("http://www.example.com");
 
     ContentSettingsUsagesState::CommittedDetails details =

@@ -28,8 +28,6 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   ~ChromeToolbarModelDelegate() override;
 
  private:
-  // ToolbarModelDelegate implementation:
-  std::string GetAcceptLanguages() const override;
   base::string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
       const base::string16& formatted_url) const override;

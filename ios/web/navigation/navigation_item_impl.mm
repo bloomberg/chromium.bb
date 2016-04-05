@@ -127,8 +127,7 @@ const PageDisplayState& NavigationItemImpl::GetPageDisplayState() const {
   return page_display_state_;
 }
 
-const base::string16& NavigationItemImpl::GetTitleForDisplay(
-    const std::string& languages) const {
+const base::string16& NavigationItemImpl::GetTitleForDisplay() const {
   // Most pages have real titles. Don't even bother caching anything if this is
   // the case.
   if (!title_.empty())
@@ -142,9 +141,9 @@ const base::string16& NavigationItemImpl::GetTitleForDisplay(
   // Use the virtual URL first if any, and fall back on using the real URL.
   base::string16 title;
   if (!virtual_url_.is_empty()) {
-    title = url_formatter::FormatUrl(virtual_url_, languages);
+    title = url_formatter::FormatUrl(virtual_url_);
   } else if (!url_.is_empty()) {
-    title = url_formatter::FormatUrl(url_, languages);
+    title = url_formatter::FormatUrl(url_);
   }
 
   // For file:// URLs use the filename as the title, not the full path.

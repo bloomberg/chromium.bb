@@ -41,7 +41,6 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -186,11 +185,8 @@ WebsiteSettings::SiteIdentityStatus GetSiteIdentityStatusByCTInfo(
   return WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR;
 }
 
-base::string16 GetSimpleSiteName(const GURL& url, Profile* profile) {
-  std::string languages;
-  if (profile)
-    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  return url_formatter::FormatUrlForSecurityDisplayOmitScheme(url, languages);
+base::string16 GetSimpleSiteName(const GURL& url) {
+  return url_formatter::FormatUrlForSecurityDisplayOmitScheme(url);
 }
 
 ChooserContextBase* GetUsbChooserContext(Profile* profile) {
@@ -523,7 +519,7 @@ void WebsiteSettings::Init(
   // weakly encrypted connections.
   site_connection_status_ = SITE_CONNECTION_STATUS_UNKNOWN;
 
-  base::string16 subject_name(GetSimpleSiteName(url, profile_));
+  base::string16 subject_name(GetSimpleSiteName(url));
   if (subject_name.empty()) {
     subject_name.assign(
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
@@ -759,7 +755,7 @@ void WebsiteSettings::PresentSiteIdentity() {
   if (site_identity_status_ == SITE_IDENTITY_STATUS_EV_CERT)
     info.site_identity = UTF16ToUTF8(organization_name());
   else
-    info.site_identity = UTF16ToUTF8(GetSimpleSiteName(site_url_, profile_));
+    info.site_identity = UTF16ToUTF8(GetSimpleSiteName(site_url_));
 
   info.connection_status = site_connection_status_;
   info.connection_status_description =

@@ -15,15 +15,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
@@ -113,19 +110,10 @@ void ShowLoginPrompt(const GURL& request_url,
     return;
   }
 
-  std::string languages;
-  content::WebContents* web_contents = handler->GetWebContentsForLogin();
-  if (web_contents) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    if (profile)
-      languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  }
-
   base::string16 authority = l10n_util::GetStringFUTF16(
       auth_info->is_proxy ? IDS_LOGIN_DIALOG_PROXY_AUTHORITY
                           : IDS_LOGIN_DIALOG_AUTHORITY,
-      url_formatter::FormatUrlForSecurityDisplay(request_url, languages));
+      url_formatter::FormatUrlForSecurityDisplay(request_url));
   base::string16 explanation;
   if (!content::IsOriginSecure(request_url)) {
     explanation =

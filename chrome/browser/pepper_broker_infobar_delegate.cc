@@ -10,11 +10,9 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/plugin_service.h"
@@ -58,9 +56,8 @@ void PepperBrokerInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents);
     infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(new PepperBrokerInfoBarDelegate(
-            url, plugin_path,
-            profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
-            content_settings, tab_content_settings, callback))));
+            url, plugin_path, content_settings, tab_content_settings,
+            callback))));
     return;
   }
 
@@ -75,14 +72,12 @@ void PepperBrokerInfoBarDelegate::Create(
 PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     const GURL& url,
     const base::FilePath& plugin_path,
-    const std::string& languages,
     HostContentSettingsMap* content_settings,
     TabSpecificContentSettings* tab_content_settings,
     const base::Callback<void(bool)>& callback)
     : ConfirmInfoBarDelegate(),
       url_(url),
       plugin_path_(plugin_path),
-      languages_(languages),
       content_settings_(content_settings),
       tab_content_settings_(tab_content_settings),
       callback_(callback) {
@@ -112,7 +107,7 @@ base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
       PluginFinder::GetInstance()->GetPluginMetadata(plugin));
   return l10n_util::GetStringFUTF16(
       IDS_PEPPER_BROKER_MESSAGE, plugin_metadata->name(),
-      url_formatter::FormatUrlForSecurityDisplay(url_, languages_));
+      url_formatter::FormatUrlForSecurityDisplay(url_));
 }
 
 base::string16 PepperBrokerInfoBarDelegate::GetButtonLabel(

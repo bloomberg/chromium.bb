@@ -150,8 +150,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   static base::string16 CreateToolTipForURLAndTitle(const views::Widget* widget,
                                               const gfx::Point& screen_loc,
                                               const GURL& url,
-                                              const base::string16& title,
-                                              Profile* profile);
+                                              const base::string16& title);
 
   // Returns true if Bookmarks Bar is currently detached from the Toolbar.
   bool IsDetached() const;

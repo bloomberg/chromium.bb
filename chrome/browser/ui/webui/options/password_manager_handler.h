@@ -64,9 +64,6 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   // |index| The index of the entry.
   void HandleRequestShowPassword(const base::ListValue* args);
 
-  // User pref for storing accept languages.
-  std::string languages_;
-
   // The PasswordManagerPresenter object owned by the this view.
   PasswordManagerPresenter password_manager_presenter_;
 

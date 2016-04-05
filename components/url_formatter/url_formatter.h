@@ -54,13 +54,12 @@ extern const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname;
 extern const FormatUrlType kFormatUrlOmitAll;
 
 // Creates a string representation of |url|. The IDN host name is turned to
-// Unicode if the Unicode representation is deemed safe. |languages| is not
-// used any more and will be removed. |format_type| is a bitmask
-// of FormatUrlTypes, see it for details. |unescape_rules| defines how to clean
-// the URL for human readability. You will generally want |UnescapeRule::SPACES|
-// for display to the user if you can handle spaces, or |UnescapeRule::NORMAL|
-// if not. If the path part and the query part seem to be encoded in %-encoded
-// UTF-8, decodes %-encoding and UTF-8.
+// Unicode if the Unicode representation is deemed safe. |format_type| is a
+// bitmask of FormatUrlTypes, see it for details. |unescape_rules| defines how
+// to clean the URL for human readability. You will generally want
+// |UnescapeRule::SPACES| for display to the user if you can handle spaces, or
+// |UnescapeRule::NORMAL| if not. If the path part and the query part seem to
+// be encoded in %-encoded UTF-8, decodes %-encoding and UTF-8.
 //
 // The last three parameters may be NULL.
 //
@@ -86,7 +85,6 @@ extern const FormatUrlType kFormatUrlOmitAll;
 // components are always transformed the same way regardless of what other
 // components are adjacent.
 base::string16 FormatUrl(const GURL& url,
-                         const std::string& languages,
                          FormatUrlTypes format_types,
                          net::UnescapeRule::Type unescape_rules,
                          url::Parsed* new_parsed,
@@ -95,7 +93,6 @@ base::string16 FormatUrl(const GURL& url,
 
 base::string16 FormatUrlWithOffsets(
     const GURL& url,
-    const std::string& languages,
     FormatUrlTypes format_types,
     net::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
@@ -108,7 +105,6 @@ base::string16 FormatUrlWithOffsets(
 // value.
 base::string16 FormatUrlWithAdjustments(
     const GURL& url,
-    const std::string& languages,
     FormatUrlTypes format_types,
     net::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
@@ -119,8 +115,8 @@ base::string16 FormatUrlWithAdjustments(
 // format_types = kFormatUrlOmitAll and unescape = SPACES.  This is the typical
 // set of flags for "URLs to display to the user".  You should be cautious about
 // using this for URLs which will be parsed or sent to other applications.
-inline base::string16 FormatUrl(const GURL& url, const std::string& languages) {
-  return FormatUrl(url, languages, kFormatUrlOmitAll, net::UnescapeRule::SPACES,
+inline base::string16 FormatUrl(const GURL& url) {
+  return FormatUrl(url, kFormatUrlOmitAll, net::UnescapeRule::SPACES,
                    nullptr, nullptr, nullptr);
 }
 
@@ -128,12 +124,8 @@ inline base::string16 FormatUrl(const GURL& url, const std::string& languages) {
 // format flag including kFormatUrlOmitTrailingSlashOnBareHostname.
 bool CanStripTrailingSlash(const GURL& url);
 
-// Formats the host in |url| and appends it to |output|.  The host formatter
-// takes the same accept languages component as ElideURL(), but it does not
-// affect the result. It'll be removed.
-void AppendFormattedHost(const GURL& url,
-                         const std::string& languages,
-                         base::string16* output);
+// Formats the host in |url| and appends it to |output|.
+void AppendFormattedHost(const GURL& url, base::string16* output);
 
 // Converts the given host name to unicode characters. This can be called for
 // any host name, if the input is not IDN or is invalid in some way, we'll just
@@ -141,9 +133,7 @@ void AppendFormattedHost(const GURL& url,
 //
 // The input should be the canonicalized ASCII host name from GURL. This
 // function does NOT accept UTF-8!
-// |languages| is not used any more and will be removed.
-base::string16 IDNToUnicode(const std::string& host,
-                            const std::string& languages);
+base::string16 IDNToUnicode(const std::string& host);
 
 // If |text| starts with "www." it is removed, otherwise |text| is returned
 // unmodified.

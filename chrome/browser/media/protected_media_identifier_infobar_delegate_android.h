@@ -20,13 +20,11 @@ class ProtectedMediaIdentifierInfoBarDelegateAndroid
   // added.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const GURL& requesting_frame,
-                                   const std::string& display_languages,
                                    const PermissionSetCallback& callback);
 
  protected:
   ProtectedMediaIdentifierInfoBarDelegateAndroid(
       const GURL& requesting_frame,
-      const std::string& display_languages,
       const PermissionSetCallback& callback);
   ~ProtectedMediaIdentifierInfoBarDelegateAndroid() override;
 
@@ -39,7 +37,6 @@ class ProtectedMediaIdentifierInfoBarDelegateAndroid
   GURL GetLinkURL() const override;
 
   GURL requesting_frame_;
-  std::string display_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedMediaIdentifierInfoBarDelegateAndroid);
 };

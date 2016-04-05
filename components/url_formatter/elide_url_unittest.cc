@@ -36,13 +36,10 @@ void RunUrlTest(Testcase* testcases, size_t num_testcases) {
   static const gfx::FontList font_list;
   for (size_t i = 0; i < num_testcases; ++i) {
     const GURL url(testcases[i].input);
-    // Should we test with non-empty language list?
-    // That's kinda redundant with net_util_unittests.
     const float available_width =
         gfx::GetStringWidthF(base::UTF8ToUTF16(testcases[i].output), font_list);
     EXPECT_EQ(base::UTF8ToUTF16(testcases[i].output),
-              url_formatter::ElideUrl(url, font_list, available_width,
-                                      std::string()));
+              url_formatter::ElideUrl(url, font_list, available_width));
   }
 }
 
@@ -95,11 +92,10 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
       gfx::GetStringWidthF(base::UTF8ToUTF16("d" + kEllipsisStr), font_list));
   GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
   base::string16 expected = url_formatter::ElideUrl(
-      long_url, font_list, available_width, std::string());
+      long_url, font_list, available_width);
   // Ensure that the expected result still contains part of the directory name.
   ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
-  EXPECT_EQ(expected, url_formatter::ElideUrl(url, font_list, available_width,
-                                              std::string()));
+  EXPECT_EQ(expected, url_formatter::ElideUrl(url, font_list, available_width));
 
   // More space available - elide directories, partially elide filename.
   Testcase testcases[] = {
@@ -327,42 +323,27 @@ TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
        L"blob:http%3A//www.html5rocks.com/"
        L"4d4ff040-6d61-4446-86d3-13ca07ec9ab9"}};
 
-  const char languages[] = "zh-TW,en-US,en,am,ar-EG,ar";
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    base::string16 formatted = url_formatter::FormatUrlForSecurityDisplay(
-        GURL(tests[i].input), std::string());
+    base::string16 formatted =
+        url_formatter::FormatUrlForSecurityDisplay(GURL(tests[i].input));
     EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted)
         << tests[i].description;
 
     base::string16 formatted_omit_scheme =
         url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-            GURL(tests[i].input), std::string());
+            GURL(tests[i].input));
     EXPECT_EQ(base::WideToUTF16(tests[i].output_omit_scheme),
               formatted_omit_scheme)
-        << tests[i].description;
-
-    base::string16 formatted_with_languages =
-        url_formatter::FormatUrlForSecurityDisplay(GURL(tests[i].input),
-                                                   languages);
-    EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted_with_languages)
-        << tests[i].description;
-
-    base::string16 formatted_with_languages_omit_scheme =
-        url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-            GURL(tests[i].input), languages);
-    EXPECT_EQ(base::WideToUTF16(tests[i].output_omit_scheme),
-              formatted_with_languages_omit_scheme)
         << tests[i].description;
   }
 
   base::string16 formatted =
-      url_formatter::FormatUrlForSecurityDisplay(GURL(), std::string());
+      url_formatter::FormatUrlForSecurityDisplay(GURL());
   EXPECT_EQ(base::string16(), formatted)
       << "Explicitly test the 0-argument GURL constructor";
 
   base::string16 formatted_omit_scheme =
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(GURL(),
-                                                           std::string());
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(GURL());
   EXPECT_EQ(base::string16(), formatted_omit_scheme)
       << "Explicitly test the 0-argument GURL constructor";
 }

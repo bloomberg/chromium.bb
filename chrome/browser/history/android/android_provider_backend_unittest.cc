@@ -302,7 +302,7 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
                                        history_client_->CreateBackendClient(),
                                        message_loop_.task_runner());
-  history_backend->Init(std::string(), false,
+  history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
@@ -441,7 +441,7 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
                                        history_client_->CreateBackendClient(),
                                        message_loop_.task_runner());
-  history_backend->Init(std::string(), false,
+  history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
@@ -1879,7 +1879,7 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
                                        history_client_->CreateBackendClient(),
                                        message_loop_.task_runner());
-  history_backend->Init(std::string(), false,
+  history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);

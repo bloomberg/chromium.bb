@@ -18,12 +18,10 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/mime_util/mime_util.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -846,9 +844,7 @@ base::string16 DownloadItemNotification::GetStatusString() const {
 
   // The hostname. (E.g.:"example.com" or "127.0.0.1")
   base::string16 host_name =
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-          item_->GetURL(),
-          profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(item_->GetURL());
 
   DownloadItemModel model(item_);
   base::string16 sub_status_text;

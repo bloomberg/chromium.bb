@@ -16,25 +16,21 @@
 infobars::InfoBar* NotificationPermissionInfobarDelegate::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const base::Callback<void(bool, bool)>& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(
           new NotificationPermissionInfobarDelegate(requesting_frame,
-                                                    display_languages,
                                                     callback))));
 }
 
 NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const base::Callback<void(bool, bool)>& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 content::PermissionType::NOTIFICATIONS,
                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                 callback),
-      requesting_frame_(requesting_frame),
-      display_languages_(display_languages) {}
+      requesting_frame_(requesting_frame) {}
 
 NotificationPermissionInfobarDelegate::~NotificationPermissionInfobarDelegate()
     {}
@@ -51,6 +47,6 @@ int NotificationPermissionInfobarDelegate::GetIconId() const {
 base::string16 NotificationPermissionInfobarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_NOTIFICATION_PERMISSIONS,
-      url_formatter::FormatUrlForSecurityDisplay(requesting_frame_.GetOrigin(),
-                                                 display_languages_));
+      url_formatter::FormatUrlForSecurityDisplay(
+          requesting_frame_.GetOrigin()));
 }

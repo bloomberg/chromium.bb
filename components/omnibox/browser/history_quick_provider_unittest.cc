@@ -182,13 +182,12 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(
-          history_dir_.path(), GetAcceptLanguages(), true);
+          history_dir_.path(), true);
     }
 
     in_memory_url_index_.reset(new InMemoryURLIndex(
         bookmark_model_.get(), history_service_.get(), nullptr,
-        pool_owner_.pool().get(), history_dir_.path(), GetAcceptLanguages(),
-        SchemeSet()));
+        pool_owner_.pool().get(), history_dir_.path(), SchemeSet()));
     in_memory_url_index_->Init();
   }
 
@@ -211,8 +210,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   InMemoryURLIndex* GetInMemoryURLIndex() override {
     return in_memory_url_index_.get();
   }
-
-  std::string GetAcceptLanguages() const override { return "en,en-US,ko"; }
 
   void set_in_memory_url_index(scoped_ptr<InMemoryURLIndex> index) {
     in_memory_url_index_ = std::move(index);

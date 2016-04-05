@@ -24,7 +24,6 @@ class BadClockUI {
              const net::SSLInfo& ssl_info,
              const base::Time& time_triggered,  // Time the error was triggered
              ssl_errors::ClockState clock_state,
-             const std::string& languages,
              ControllerClient* controller_);
   ~BadClockUI();
 
@@ -38,7 +37,6 @@ class BadClockUI {
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const base::Time time_triggered_;
-  const std::string languages_;
   ControllerClient* controller_;
   ssl_errors::ClockState clock_state_;
 

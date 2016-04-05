@@ -220,8 +220,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   void SetUp() override {
     fake_history_backend_ = new TestHistoryBackend();
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    fake_history_backend_->Init(
-        std::string(), false,
+    fake_history_backend_->Init(false,
         TestHistoryDatabaseParamsForPath(test_dir_.path()));
     typed_url_sync_service_ =
         fake_history_backend_->GetTypedUrlSyncableService();

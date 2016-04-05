@@ -452,8 +452,7 @@ bool BaseSearchProvider::ParseSuggestResults(
     SearchSuggestionParser::Results* results) {
   if (!SearchSuggestionParser::ParseSuggestResults(
           root_val, GetInput(is_keyword_result), client_->GetSchemeClassifier(),
-          default_result_relevance, client_->GetAcceptLanguages(),
-          is_keyword_result, results))
+          default_result_relevance, is_keyword_result, results))
     return false;
 
   for (const GURL& url : results->answers_image_urls)

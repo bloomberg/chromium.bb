@@ -27,10 +27,7 @@ namespace url_formatter {
 // which composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
 // than the |available_pixel_width|. For |available_pixel_width| == 0, a
-// formatted, but un-elided, string is returned. |languages| is a comma
-// separated list of ISO 639 language codes and is used to determine what
-// characters are understood by a user. It should come from
-// |prefs::kAcceptLanguages|.
+// formatted, but un-elided, string is returned.
 //
 // Note: in RTL locales, if the URL returned by this function is going to be
 // displayed in the UI, then it is likely that the string needs to be marked
@@ -39,8 +36,7 @@ namespace url_formatter {
 // http://crbug.com/6487 for more information.
 base::string16 ElideUrl(const GURL& url,
                         const gfx::FontList& font_list,
-                        float available_pixel_width,
-                        const std::string& languages);
+                        float available_pixel_width);
 
 // This function takes a GURL object and elides the host to fit within
 // the given width. The function will never elide past the TLD+1 point,
@@ -58,8 +54,8 @@ base::string16 ElideHost(const GURL& host_url,
 // otherwise-simplified URLs from each other).
 //
 // Internationalized domain names (IDN) may be presented in Unicode if
-// |languages| accepts the Unicode representation (see
-// |url_formatter::FormatUrl| for more details on the algorithm).
+// they're regarded safe. See |url_formatter::FormatUrl| for more details on
+// the algorithm).
 //
 // - Omits the path for standard schemes, excepting file and filesystem.
 // - Omits the port if it is the default for the scheme.
@@ -72,15 +68,12 @@ base::string16 ElideHost(const GURL& host_url,
 // Chrome's Origin Info Bubble, there are icons and strings indicating origin
 // (non-)security. But in the HTTP Basic Auth prompt (for example), the scheme
 // may be the only indicator.
-base::string16 FormatUrlForSecurityDisplay(const GURL& origin,
-                                           const std::string& languages);
+base::string16 FormatUrlForSecurityDisplay(const GURL& origin);
 
 // Just like |FormatUrlForSecurityDisplay|, but also:
 //
 // - Omits the scheme if SchemeIsHTTPOrHTTPS().
-base::string16 FormatUrlForSecurityDisplayOmitScheme(
-    const GURL& origin,
-    const std::string& languages);
+base::string16 FormatUrlForSecurityDisplayOmitScheme(const GURL& origin);
 
 }  // namespace url_formatter
 

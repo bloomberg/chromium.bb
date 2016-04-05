@@ -16,23 +16,20 @@
 infobars::InfoBar* GeolocationInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new GeolocationInfoBarDelegateAndroid(
-          requesting_frame, display_languages, callback))));
+          requesting_frame, callback))));
 }
 
 GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
     const GURL& requesting_frame,
-    const std::string& display_languages,
     const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 content::PermissionType::GEOLOCATION,
                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 callback),
-      requesting_frame_(requesting_frame),
-      display_languages_(display_languages) {}
+      requesting_frame_(requesting_frame) {}
 
 GeolocationInfoBarDelegateAndroid::~GeolocationInfoBarDelegateAndroid() {}
 
@@ -48,5 +45,5 @@ int GeolocationInfoBarDelegateAndroid::GetIconId() const {
 base::string16 GeolocationInfoBarDelegateAndroid::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
                                     url_formatter::FormatUrlForSecurityDisplay(
-                                        requesting_frame_, display_languages_));
+                                        requesting_frame_));
 }

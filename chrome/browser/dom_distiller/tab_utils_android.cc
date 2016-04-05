@@ -10,9 +10,7 @@
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/dom_distiller/core/experiments.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
@@ -45,11 +43,6 @@ ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  std::string languages;  // Empty if Profile cannot be retrieved.
-  if (profile) {
-    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  }
 
   if (url.spec().length() > content::kMaxURLDisplayChars)
     url = url.IsStandard() ? url.GetOrigin() : GURL(url.scheme() + ":");
@@ -59,7 +52,7 @@ ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
   // the space.
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrl(
-               url, languages, url_formatter::kFormatUrlOmitAll,
+               url, url_formatter::kFormatUrlOmitAll,
                net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
 }
 

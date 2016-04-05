@@ -320,7 +320,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   results.AppendMatches(AutocompleteInput(), matches);
   results.SortAndCull(
       AutocompleteInput(),
-      std::string(),
       TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.

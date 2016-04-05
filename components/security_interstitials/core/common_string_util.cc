@@ -16,9 +16,8 @@ namespace security_interstitials {
 
 namespace common_string_util {
 
-base::string16 GetFormattedHostName(const GURL& gurl,
-                                    const std::string& languages) {
-  base::string16 host = url_formatter::IDNToUnicode(gurl.host(), languages);
+base::string16 GetFormattedHostName(const GURL& gurl) {
+  base::string16 host = url_formatter::IDNToUnicode(gurl.host());
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&host);
   return host;

@@ -60,8 +60,7 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
                  const std::string& client_id,
                  bool is_search_result,
                  const base::string16& snippet,
-                 bool blocked_visit,
-                 const std::string& accept_languages);
+                 bool blocked_visit);
     HistoryEntry();
     virtual ~HistoryEntry();
 
@@ -102,9 +101,6 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
-
-    // kAcceptLanguages pref value.
-    std::string accept_languages;
   };
 
   BrowsingHistoryHandler();
@@ -177,9 +173,6 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
 
   // Sets the query options for a monthly query, |offset| months ago.
   void SetQueryTimeInMonths(int offset, history::QueryOptions* options);
-
-  // kAcceptLanguages pref value.
-  std::string GetAcceptLanguages() const;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

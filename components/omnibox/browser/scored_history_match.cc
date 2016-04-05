@@ -125,7 +125,6 @@ std::vector<ScoredHistoryMatch::ScoreMaxRelevance>*
 ScoredHistoryMatch::ScoredHistoryMatch()
     : ScoredHistoryMatch(history::URLRow(),
                          VisitInfoVector(),
-                         std::string(),
                          base::string16(),
                          String16Vector(),
                          WordStarts(),
@@ -138,7 +137,6 @@ ScoredHistoryMatch::ScoredHistoryMatch()
 ScoredHistoryMatch::ScoredHistoryMatch(
     const history::URLRow& row,
     const VisitInfoVector& visits,
-    const std::string& languages,
     const base::string16& lower_string,
     const String16Vector& terms_vector,
     const WordStarts& terms_to_word_starts_offsets,
@@ -171,7 +169,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // so that we can score as well as provide autocomplete highlighting.
   base::OffsetAdjuster::Adjustments adjustments;
   base::string16 url =
-      bookmarks::CleanUpUrlForMatching(gurl, languages, &adjustments);
+      bookmarks::CleanUpUrlForMatching(gurl, &adjustments);
   base::string16 title = bookmarks::CleanUpTitleForMatching(row.title());
   int term_num = 0;
   for (const auto& term : terms_vector) {

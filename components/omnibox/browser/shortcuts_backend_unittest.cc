@@ -110,10 +110,8 @@ void ShortcutsBackendTest::SetSearchProvider() {
 
 void ShortcutsBackendTest::SetUp() {
   template_url_service_.reset(new TemplateURLService(nullptr, 0));
-  if (profile_dir_.CreateUniqueTempDir()) {
-    history_service_ =
-        history::CreateHistoryService(profile_dir_.path(), std::string(), true);
-  }
+  if (profile_dir_.CreateUniqueTempDir())
+    history_service_ = history::CreateHistoryService(profile_dir_.path(), true);
   ASSERT_TRUE(history_service_);
 
   db_thread_.Start();

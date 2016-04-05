@@ -53,7 +53,6 @@ class HistoryQuickProvider : public HistoryProvider {
                                         int score);
 
   AutocompleteInput autocomplete_input_;
-  std::string languages_;
   InMemoryURLIndex* in_memory_url_index_;  // Not owned by this class.
 
   // This provider is disabled when true.

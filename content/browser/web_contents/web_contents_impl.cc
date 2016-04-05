@@ -925,11 +925,8 @@ const base::string16& WebContentsImpl::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
   NavigationEntry* entry = controller_.GetTransientEntry();
-  std::string accept_languages =
-      GetContentClient()->browser()->GetAcceptLangs(
-          GetBrowserContext());
   if (entry) {
-    return entry->GetTitleForDisplay(accept_languages);
+    return entry->GetTitleForDisplay();
   }
 
   WebUI* navigating_web_ui = GetRenderManager()->GetNavigatingWebUI();
@@ -970,7 +967,7 @@ const base::string16& WebContentsImpl::GetTitle() const {
   }
 
   if (entry) {
-    return entry->GetTitleForDisplay(accept_languages);
+    return entry->GetTitleForDisplay();
   }
 
   // |page_title_when_no_navigation_entry_| is finally used
@@ -3869,12 +3866,9 @@ void WebContentsImpl::RunJavaScriptMessage(
       !delegate_->GetJavaScriptDialogManager(this);
 
   if (!suppress_this_message) {
-    std::string accept_lang = GetContentClient()->browser()->
-      GetAcceptLangs(GetBrowserContext());
     dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
     dialog_manager_->RunJavaScriptDialog(
-        this, frame_url, accept_lang, javascript_message_type, message,
-        default_prompt,
+        this, frame_url, javascript_message_type, message, default_prompt,
         base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
                    render_frame_host->GetProcess()->GetID(),
                    render_frame_host->GetRoutingID(), reply_msg, false),
@@ -4464,9 +4458,7 @@ void WebContentsImpl::LoadStateChanged(
   load_state_ = load_state;
   upload_position_ = upload_position;
   upload_size_ = upload_size;
-  load_state_host_ = url_formatter::IDNToUnicode(
-      url.host(),
-      GetContentClient()->browser()->GetAcceptLangs(GetBrowserContext()));
+  load_state_host_ = url_formatter::IDNToUnicode(url.host());
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading()) {

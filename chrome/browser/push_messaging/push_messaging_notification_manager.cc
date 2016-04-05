@@ -15,9 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/common/features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
@@ -65,11 +63,10 @@ content::StoragePartition* GetStoragePartition(Profile* profile,
 
 NotificationDatabaseData CreateDatabaseData(
     const GURL& origin,
-    int64_t service_worker_registration_id,
-    const std::string& languages) {
+    int64_t service_worker_registration_id) {
   PlatformNotificationData notification_data;
   notification_data.title =
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin, languages);
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin);
   notification_data.direction =
       PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   notification_data.body =
@@ -299,9 +296,8 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   // The site failed to show a notification when one was needed, and they have
   // already failed once in the previous 10 push messages, so we will show a
   // generic notification. See https://crbug.com/437277.
-  NotificationDatabaseData database_data = CreateDatabaseData(
-      origin, service_worker_registration_id,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  NotificationDatabaseData database_data =
+      CreateDatabaseData(origin, service_worker_registration_id);
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   BrowserThread::PostTask(

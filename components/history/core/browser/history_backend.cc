@@ -238,7 +238,6 @@ HistoryBackend::~HistoryBackend() {
 }
 
 void HistoryBackend::Init(
-    const std::string& languages,
     bool force_fail,
     const HistoryDatabaseParams& history_database_params) {
   // HistoryBackend is created on the UI thread by HistoryService, then the
@@ -247,7 +246,7 @@ void HistoryBackend::Init(
   supports_user_data_helper_.reset(new HistoryBackendHelper);
 
   if (!force_fail)
-    InitImpl(languages, history_database_params);
+    InitImpl(history_database_params);
   delegate_->DBLoaded();
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
@@ -624,7 +623,6 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 }
 
 void HistoryBackend::InitImpl(
-    const std::string& languages,
     const HistoryDatabaseParams& history_database_params) {
   DCHECK(!db_) << "Initializing HistoryBackend twice";
   // In the rare case where the db fails to initialize a dialog may get shown

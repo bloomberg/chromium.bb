@@ -32,8 +32,7 @@ TEST(GetShownOriginTest, RemovePrefixes) {
   for (const auto& test_case : kTestCases) {
     autofill::PasswordForm password_form;
     password_form.origin = GURL(test_case.input);
-    EXPECT_EQ(test_case.output,
-              GetShownOrigin(password_form.origin, std::string()))
+    EXPECT_EQ(test_case.output, GetShownOrigin(password_form.origin))
         << "for input " << test_case.input;
   }
 }
@@ -50,10 +49,9 @@ TEST(GetShownOriginAndLinkUrlTest, OriginFromAndroidForm_NoAffiliatedRealm) {
   bool is_android_uri;
   GURL link_url;
   bool origin_is_clickable;
-  EXPECT_EQ(
-      "android://com.example.android",
-      GetShownOriginAndLinkUrl(android_form, std::string(), &is_android_uri,
-                               &link_url, &origin_is_clickable));
+  EXPECT_EQ("android://com.example.android",
+            GetShownOriginAndLinkUrl(android_form, &is_android_uri, &link_url,
+                                     &origin_is_clickable));
   EXPECT_TRUE(is_android_uri);
   EXPECT_FALSE(origin_is_clickable);
   EXPECT_EQ(GURL(android_form.signon_realm), link_url);
@@ -71,9 +69,9 @@ TEST(GetShownOriginAndLinkUrlTest, OriginFromAndroidForm_WithAffiliatedRealm) {
   bool is_android_uri;
   GURL link_url;
   bool origin_is_clickable;
-  EXPECT_EQ("example.com", GetShownOriginAndLinkUrl(android_form, std::string(),
-                                                    &is_android_uri, &link_url,
-                                                    &origin_is_clickable));
+  EXPECT_EQ("example.com",
+            GetShownOriginAndLinkUrl(android_form, &is_android_uri, &link_url,
+                                     &origin_is_clickable));
   EXPECT_TRUE(is_android_uri);
   EXPECT_TRUE(origin_is_clickable);
   EXPECT_EQ(GURL(android_form.affiliated_web_realm), link_url);
@@ -88,8 +86,8 @@ TEST(GetShownOriginAndLinkUrlTest, OriginFromNonAndroidForm) {
   GURL link_url;
   bool origin_is_clickable;
   EXPECT_EQ("example.com",
-            GetShownOriginAndLinkUrl(form, std::string(), &is_android_uri,
-                                     &link_url, &origin_is_clickable));
+            GetShownOriginAndLinkUrl(form, &is_android_uri, &link_url,
+                                     &origin_is_clickable));
   EXPECT_FALSE(is_android_uri);
   EXPECT_TRUE(origin_is_clickable);
   EXPECT_EQ(form.origin, link_url);

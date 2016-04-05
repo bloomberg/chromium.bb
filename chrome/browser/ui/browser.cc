@@ -1632,10 +1632,8 @@ void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
   if (!GetStatusBubble())
     return;
 
-  if (source == tab_strip_model_->GetActiveWebContents()) {
-    PrefService* prefs = profile_->GetPrefs();
-    GetStatusBubble()->SetURL(url, prefs->GetString(prefs::kAcceptLanguages));
-  }
+  if (source == tab_strip_model_->GetActiveWebContents())
+    GetStatusBubble()->SetURL(url);
 }
 
 void Browser::ContentsMouseEvent(WebContents* source,
@@ -1651,7 +1649,7 @@ void Browser::ContentsMouseEvent(WebContents* source,
   if (source == tab_strip_model_->GetActiveWebContents()) {
     GetStatusBubble()->MouseMoved(location, exited);
     if (exited)
-      GetStatusBubble()->SetURL(GURL(), std::string());
+      GetStatusBubble()->SetURL(GURL());
   }
 }
 

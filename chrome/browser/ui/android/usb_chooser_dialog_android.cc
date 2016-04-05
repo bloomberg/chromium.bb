@@ -17,9 +17,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
@@ -60,14 +58,10 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
           ->GetWindowAndroid()
           ->GetJavaObject();
   JNIEnv* env = base::android::AttachCurrentThread();
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  std::string languages =
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
   base::android::ScopedJavaLocalRef<jstring> origin_string =
       base::android::ConvertUTF16ToJavaString(
           env, url_formatter::FormatUrlForSecurityDisplay(
-                   render_frame_host->GetLastCommittedURL(), languages));
+                   render_frame_host->GetLastCommittedURL()));
   ChromeSecurityStateModelClient* security_model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(security_model_client);

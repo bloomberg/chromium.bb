@@ -397,7 +397,7 @@ content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
   return web_contents;
 }
 
-void WriteURLToClipboard(const GURL& url, const std::string& languages) {
+void WriteURLToClipboard(const GURL& url) {
   if (url.is_empty() || !url.is_valid())
     return;
 
@@ -407,7 +407,7 @@ void WriteURLToClipboard(const GURL& url, const std::string& languages) {
       url.SchemeIs(url::kMailToScheme)
           ? base::ASCIIToUTF16(url.path())
           : url_formatter::FormatUrl(
-                url, languages, url_formatter::kFormatUrlOmitNothing,
+                url, url_formatter::kFormatUrlOmitNothing,
                 net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
 
   ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
@@ -2267,8 +2267,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
-  ::WriteURLToClipboard(
-      url, GetPrefs(browser_context_)->GetString(prefs::kAcceptLanguages));
+  ::WriteURLToClipboard(url);
 }
 
 void RenderViewContextMenu::MediaPlayerActionAt(

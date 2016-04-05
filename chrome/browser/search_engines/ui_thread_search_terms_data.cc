@@ -148,11 +148,6 @@ std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   return version;
 }
 
-std::string UIThreadSearchTermsData::GetAcceptLanguages() const {
-  return profile_ ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
-                  : std::string();
-}
-
 // static
 void UIThreadSearchTermsData::SetGoogleBaseURL(const std::string& base_url) {
   delete google_base_url_;

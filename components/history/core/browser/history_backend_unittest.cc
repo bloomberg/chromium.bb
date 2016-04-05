@@ -65,8 +65,6 @@ const int kTinyEdgeSize = 10;
 const int kSmallEdgeSize = 16;
 const int kLargeEdgeSize = 32;
 
-const char kAcceptLanguagesForTest[] = "en-US,en";
-
 const gfx::Size kTinySize = gfx::Size(kTinyEdgeSize, kTinyEdgeSize);
 const gfx::Size kSmallSize = gfx::Size(kSmallEdgeSize, kSmallEdgeSize);
 const gfx::Size kLargeSize = gfx::Size(kLargeEdgeSize, kLargeEdgeSize);
@@ -257,8 +255,7 @@ class HistoryBackendTestBase : public testing::Test {
     backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
                                   history_client_.CreateBackendClient(),
                                   base::ThreadTaskRunnerHandle::Get());
-    backend_->Init(std::string(), false,
-                   TestHistoryDatabaseParamsForPath(test_dir_));
+    backend_->Init(false, TestHistoryDatabaseParamsForPath(test_dir_));
   }
 
   void TearDown() override {
@@ -1707,8 +1704,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
                                 history_client_.CreateBackendClient(),
                                 base::ThreadTaskRunnerHandle::Get());
-  backend_->Init(std::string(), false,
-                 TestHistoryDatabaseParamsForPath(new_history_path));
+  backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = NULL;
 
@@ -3266,8 +3262,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
                                 history_client_.CreateBackendClient(),
                                 base::ThreadTaskRunnerHandle::Get());
-  backend_->Init(std::string(), false,
-                 TestHistoryDatabaseParamsForPath(new_history_path));
+  backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = NULL;
 
@@ -3494,8 +3489,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
       new HistoryService(make_scoped_ptr(new HistoryClientFakeBookmarks),
                          scoped_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(
-      service->Init(kAcceptLanguagesForTest,
-                    TestHistoryDatabaseParamsForPath(scoped_temp_dir.path())));
+      service->Init(TestHistoryDatabaseParamsForPath(scoped_temp_dir.path())));
 
   service->AddPage(
       url, base::Time::Now(), NULL, 1, GURL(), RedirectList(),

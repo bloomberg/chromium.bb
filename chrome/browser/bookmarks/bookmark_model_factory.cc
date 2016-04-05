@@ -17,7 +17,6 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
-#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
@@ -75,7 +74,6 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
       new BookmarkModel(make_scoped_ptr(new ChromeBookmarkClient(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile))));
   bookmark_model->Load(profile->GetPrefs(),
-                       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
                        profile->GetPath(),
                        StartupTaskRunnerServiceFactory::GetForProfile(profile)
                            ->GetBookmarkTaskRunner(),

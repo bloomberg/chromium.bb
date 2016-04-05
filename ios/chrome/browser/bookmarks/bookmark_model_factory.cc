@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/web/public/web_thread.h"
 
@@ -67,7 +66,6 @@ scoped_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
           make_scoped_ptr(new BookmarkClientImpl(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(),
-      browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
       browser_state->GetStatePath(),
       ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browser_state)
           ->GetBookmarkTaskRunner(),

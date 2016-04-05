@@ -556,19 +556,6 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       match.SupportsDeletion());
 }
 
-base::string16 AutocompleteControllerAndroid::FormatURLUsingAcceptLanguages(
-    GURL url) {
-  if (profile_ == NULL)
-    return base::string16();
-
-  std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-
-  return url_formatter::FormatUrl(
-      url, languages, url_formatter::kFormatUrlOmitAll,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-}
-
 ScopedJavaLocalRef<jobject>
 AutocompleteControllerAndroid::GetTopSynchronousResult(
     JNIEnv* env,

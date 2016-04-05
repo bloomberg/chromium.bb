@@ -56,7 +56,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     HistoryEntry(EntryType type, const GURL& url, const base::string16& title,
                  base::Time time, const std::string& client_id,
                  bool is_search_result, const base::string16& snippet,
-                 bool blocked_visit, const std::string& accept_languages);
+                 bool blocked_visit);
     HistoryEntry();
     HistoryEntry(const HistoryEntry& other);
     virtual ~HistoryEntry();
@@ -98,9 +98,6 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
-
-    // kAcceptLanguages pref value.
-    std::string accept_languages;
   };
 
   BrowsingHistoryHandler();

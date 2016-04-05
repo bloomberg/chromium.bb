@@ -54,7 +54,6 @@ const int ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance = 1199;
 ShortcutsProvider::ShortcutsProvider(AutocompleteProviderClient* client)
     : AutocompleteProvider(AutocompleteProvider::TYPE_SHORTCUTS),
       client_(client),
-      languages_(client_->GetAcceptLanguages()),
       initialized_(false) {
   scoped_refptr<ShortcutsBackend> backend = client_->GetShortcutsBackend();
   if (backend.get()) {
@@ -149,8 +148,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     if (relevance) {
       matches_.push_back(
           ShortcutToACMatch(it->second, relevance, input, fixed_up_input));
-      matches_.back().ComputeStrippedDestinationURL(
-          input, client_->GetAcceptLanguages(), template_url_service);
+      matches_.back().ComputeStrippedDestinationURL(input,
+                                                    template_url_service);
     }
   }
   // Remove duplicates.  This is important because it's common to have multiple
@@ -247,7 +246,6 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     }
   }
   match.EnsureUWYTIsAllowedToBeDefault(input,
-                                       client_->GetAcceptLanguages(),
                                        client_->GetTemplateURLService());
 
   // Try to mark pieces of the contents and description as matches if they

@@ -9,14 +9,12 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/common/experiments.h"
-#include "components/prefs/pref_service.h"
 #include "jni/PasswordUIView_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;
@@ -84,8 +82,8 @@ ScopedJavaLocalRef<jobject> PasswordUIViewAndroid::GetSavedPasswordEntry(
         ConvertUTF8ToJavaString(env, std::string()).obj(),
         ConvertUTF16ToJavaString(env, base::string16()).obj());
   }
-  std::string human_readable_origin = password_manager::GetHumanReadableOrigin(
-      *form, GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string human_readable_origin =
+      password_manager::GetHumanReadableOrigin(*form);
   return Java_PasswordUIView_createSavedPasswordEntry(
       env, ConvertUTF8ToJavaString(env, human_readable_origin).obj(),
       ConvertUTF16ToJavaString(env, form->username_value).obj());
@@ -99,8 +97,8 @@ ScopedJavaLocalRef<jstring> PasswordUIViewAndroid::GetSavedPasswordException(
       password_manager_presenter_.GetPasswordException(index);
   if (!form)
     return ConvertUTF8ToJavaString(env, std::string());
-  std::string human_readable_origin = password_manager::GetHumanReadableOrigin(
-      *form, GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string human_readable_origin =
+      password_manager::GetHumanReadableOrigin(*form);
   return ConvertUTF8ToJavaString(env, human_readable_origin);
 }
 

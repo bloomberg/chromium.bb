@@ -93,15 +93,11 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       geolocation_usages_state_(
           HostContentSettingsMapFactory::GetForProfile(
               Profile::FromBrowserContext(tab->GetBrowserContext())),
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          prefs::kAcceptLanguages,
-          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs()),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION),
       midi_usages_state_(
           HostContentSettingsMapFactory::GetForProfile(
               Profile::FromBrowserContext(tab->GetBrowserContext())),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-          prefs::kAcceptLanguages,
-          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs()),
+          CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),

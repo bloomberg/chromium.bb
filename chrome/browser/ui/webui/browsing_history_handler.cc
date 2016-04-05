@@ -163,8 +163,7 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
     BrowsingHistoryHandler::HistoryEntry::EntryType entry_type,
     const GURL& url, const base::string16& title, base::Time time,
     const std::string& client_id, bool is_search_result,
-    const base::string16& snippet, bool blocked_visit,
-    const std::string& accept_languages) {
+    const base::string16& snippet, bool blocked_visit) {
   this->entry_type = entry_type;
   this->url = url;
   this->title = title;
@@ -174,7 +173,6 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
   this->is_search_result = is_search_result;
   this->snippet = snippet;
   this->blocked_visit = blocked_visit;
-  this->accept_languages = accept_languages;
 }
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry()
@@ -218,8 +216,7 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetUrlAndTitle(result.get());
 
-  base::string16 domain =
-      url_formatter::IDNToUnicode(url.host(), accept_languages);
+  base::string16 domain = url_formatter::IDNToUnicode(url.host());
   // When the domain is empty, use the scheme instead. This allows for a
   // sensible treatment of e.g. file: URLs when group by domain is on.
   if (domain.empty())
@@ -718,7 +715,6 @@ void BrowsingHistoryHandler::QueryComplete(
     history::QueryResults* results) {
   DCHECK_EQ(0U, query_results_.size());
   query_results_.reserve(results->size());
-  const std::string accept_languages = GetAcceptLanguages();
 
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
@@ -732,8 +728,7 @@ void BrowsingHistoryHandler::QueryComplete(
             std::string(),
             !search_text.empty(),
             page.snippet().text(),
-            page.blocked_visit(),
-            accept_languages));
+            page.blocked_visit()));
   }
 
   // The items which are to be written into results_info_value_ are also
@@ -767,7 +762,6 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
     const base::DictionaryValue* results_value) {
   base::TimeDelta delta = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES("WebHistory.ResponseTime", delta);
-  const std::string accept_languages = GetAcceptLanguages();
 
   // If the response came in too late, do nothing.
   // TODO(dubroy): Maybe show a banner, and prompt the user to reload?
@@ -841,8 +835,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
                 client_id,
                 !search_text.empty(),
                 base::string16(),
-                /* blocked_visit */ false,
-                accept_languages));
+                /* blocked_visit */ false));
       }
     }
   }
@@ -933,11 +926,6 @@ static bool DeletionsDiffer(const history::URLRows& deleted_rows,
       return true;
   }
   return false;
-}
-
-std::string BrowsingHistoryHandler::GetAcceptLanguages() const {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
 void BrowsingHistoryHandler::OnURLsDeleted(

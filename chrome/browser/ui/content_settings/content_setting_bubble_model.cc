@@ -249,8 +249,8 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
   GURL url = web_contents()->GetURL();
-  base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(
-      url, profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  base::string16 display_host =
+      url_formatter::FormatUrlForSecurityDisplay(url);
   if (display_host.empty())
     display_host = base::ASCIIToUTF16(url.spec());
 
@@ -659,8 +659,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   radio_group.url = url;
 
   base::string16 display_host_utf16 =
-      url_formatter::FormatUrlForSecurityDisplay(
-          url, profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      url_formatter::FormatUrlForSecurityDisplay(url);
   std::string display_host(base::UTF16ToUTF8(display_host_utf16));
   if (display_host.empty())
     display_host = url.spec();

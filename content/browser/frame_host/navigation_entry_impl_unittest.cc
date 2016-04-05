@@ -61,44 +61,42 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
 
   EXPECT_EQ(GURL(), entry1_->GetURL());
   EXPECT_EQ(GURL(), entry1_->GetVirtualURL());
-  EXPECT_TRUE(entry1_->GetTitleForDisplay(std::string()).empty());
+  EXPECT_TRUE(entry1_->GetTitleForDisplay().empty());
 
   // Setting URL affects virtual_url and GetTitleForDisplay
   entry1_->SetURL(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_->GetURL());
   EXPECT_EQ(GURL("http://www.google.com"), entry1_->GetVirtualURL());
   EXPECT_EQ(ASCIIToUTF16("www.google.com"),
-            entry1_->GetTitleForDisplay(std::string()));
+            entry1_->GetTitleForDisplay());
 
   // file:/// URLs should only show the filename.
   entry1_->SetURL(GURL("file:///foo/bar baz.txt"));
-  EXPECT_EQ(ASCIIToUTF16("bar baz.txt"),
-            entry1_->GetTitleForDisplay(std::string()));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt"), entry1_->GetTitleForDisplay());
 
   // For file:/// URLs, make sure that slashes after the filename are ignored.
   // Regression test for https://crbug.com/503003.
   entry1_->SetURL(GURL("file:///foo/bar baz.txt#foo/bar"));
-  EXPECT_EQ(ASCIIToUTF16("bar baz.txt#foo/bar"),
-            entry1_->GetTitleForDisplay(std::string()));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt#foo/bar"), entry1_->GetTitleForDisplay());
   entry1_->SetURL(GURL("file:///foo/bar baz.txt?x=foo/bar"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar"),
-            entry1_->GetTitleForDisplay(std::string()));
+            entry1_->GetTitleForDisplay());
   entry1_->SetURL(GURL("file:///foo/bar baz.txt#baz/boo?x=foo/bar"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt#baz/boo?x=foo/bar"),
-            entry1_->GetTitleForDisplay(std::string()));
+            entry1_->GetTitleForDisplay());
   entry1_->SetURL(GURL("file:///foo/bar baz.txt?x=foo/bar#baz/boo"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar#baz/boo"),
-            entry1_->GetTitleForDisplay(std::string()));
+            entry1_->GetTitleForDisplay());
   entry1_->SetURL(GURL("file:///foo/bar baz.txt#foo/bar#baz/boo"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt#foo/bar#baz/boo"),
-            entry1_->GetTitleForDisplay(std::string()));
+            entry1_->GetTitleForDisplay());
   entry1_->SetURL(GURL("file:///foo/bar baz.txt?x=foo/bar?y=baz/boo"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar?y=baz/boo"),
-            entry1_->GetTitleForDisplay(std::string()));
+            entry1_->GetTitleForDisplay());
 
   // Title affects GetTitleForDisplay
   entry1_->SetTitle(ASCIIToUTF16("Google"));
-  EXPECT_EQ(ASCIIToUTF16("Google"), entry1_->GetTitleForDisplay(std::string()));
+  EXPECT_EQ(ASCIIToUTF16("Google"), entry1_->GetTitleForDisplay());
 
   // Setting virtual_url doesn't affect URL
   entry2_->SetVirtualURL(GURL("display:url"));
@@ -107,7 +105,7 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(GURL("display:url"), entry2_->GetVirtualURL());
 
   // Having a title set in constructor overrides virtual URL
-  EXPECT_EQ(ASCIIToUTF16("title"), entry2_->GetTitleForDisplay(std::string()));
+  EXPECT_EQ(ASCIIToUTF16("title"), entry2_->GetTitleForDisplay());
 
   // User typed URL is independent of the others
   EXPECT_EQ(GURL(), entry1_->GetUserTypedURL());

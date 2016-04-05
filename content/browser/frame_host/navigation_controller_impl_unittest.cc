@@ -4947,7 +4947,7 @@ TEST_F(NavigationControllerTest, PushStateUpdatesTitleAndFavicon) {
 
   // The title should immediately be visible on the new NavigationEntry.
   base::string16 new_title =
-      controller().GetLastCommittedEntry()->GetTitleForDisplay(std::string());
+      controller().GetLastCommittedEntry()->GetTitleForDisplay();
   EXPECT_EQ(title, new_title);
   FaviconStatus new_favicon =
       controller().GetLastCommittedEntry()->GetFavicon();

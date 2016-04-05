@@ -162,7 +162,6 @@ class NetErrorHelperCore {
   // Called when an error page have has been retrieved over the network.  |html|
   // must be an empty string on error.
   void OnNavigationCorrectionsFetched(const std::string& corrections,
-                                      const std::string& accept_languages,
                                       bool is_rtl);
 
   // Notifies |this| that network error information from the browser process

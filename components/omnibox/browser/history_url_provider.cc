@@ -423,7 +423,6 @@ HistoryURLProviderParams::HistoryURLProviderParams(
     const AutocompleteInput& input,
     bool trim_http,
     const AutocompleteMatch& what_you_typed_match,
-    const std::string& languages,
     TemplateURL* default_search_provider,
     const SearchTermsData& search_terms_data)
     : message_loop(base::MessageLoop::current()),
@@ -434,7 +433,6 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       failed(false),
       exact_suggestion_is_in_history(false),
       promote_type(NEITHER),
-      languages(languages),
       default_search_provider(default_search_provider ?
           new TemplateURL(default_search_provider->data()) : NULL),
       search_terms_data(new SearchTermsDataSnapshot(search_terms_data)) {
@@ -518,8 +516,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // 2.
   scoped_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
       fixed_up_input, trim_http, what_you_typed_match,
-      client()->GetAcceptLanguages(), default_search_provider,
-      client()->GetSearchTermsData()));
+      default_search_provider, client()->GetSearchTermsData()));
   // Note that we use the non-fixed-up input here, since fixup may strip
   // trailing whitespace.
   params->prevent_inline_autocomplete = PreventInlineAutocomplete(input);
@@ -580,7 +577,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     DCHECK(!trim_http ||
            !AutocompleteInput::HasHTTPScheme(input.text()));
     base::string16 display_string(url_formatter::FormatUrl(
-        destination_url, std::string(),
+        destination_url,
         url_formatter::kFormatUrlOmitAll & ~url_formatter::kFormatUrlOmitHTTP,
         net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
@@ -818,7 +815,7 @@ void HistoryURLProvider::PromoteMatchesIfNecessary(
     return;
   if (params.promote_type == HistoryURLProviderParams::FRONT_HISTORY_MATCH) {
     matches_.push_back(
-        HistoryMatchToACMatch(params, 0, INLINE_AUTOCOMPLETE,
+        HistoryMatchToACMatch(params, 0,
                               CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
   }
   // There are two cases where we need to add the what-you-typed-match:
@@ -882,7 +879,7 @@ void HistoryURLProvider::QueryComplete(
         relevance = CalculateRelevanceScoreUsingScoringParams(
             params->matches[i], relevance, scoring_params_);
       }
-      matches_.push_back(HistoryMatchToACMatch(*params, i, NORMAL, relevance));
+      matches_.push_back(HistoryMatchToACMatch(*params, i, relevance));
     }
   }
 
@@ -1136,7 +1133,6 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
 AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     const HistoryURLProviderParams& params,
     size_t match_number,
-    MatchType match_type,
     int relevance) {
   // The FormattedStringWithEquivalentMeaning() call below requires callers to
   // be on the main thread.
@@ -1151,8 +1147,6 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   DCHECK(match.destination_url.is_valid());
   size_t inline_autocomplete_offset =
       history_match.input_location + params.input.text().length();
-  std::string languages = (match_type == WHAT_YOU_TYPED) ?
-      std::string() : params.languages;
   const url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitAll &
       ~((params.trim_http && !history_match.match_in_scheme)
@@ -1161,7 +1155,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(),
-          url_formatter::FormatUrl(info.url(), languages, format_types,
+          url_formatter::FormatUrl(info.url(), format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier());
@@ -1185,7 +1179,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
-  match.contents = url_formatter::FormatUrl(info.url(), languages, format_types,
+  match.contents = url_formatter::FormatUrl(info.url(), format_types,
                                             net::UnescapeRule::SPACES, nullptr,
                                             nullptr, &match_start);
   if ((match_start != base::string16::npos) && autocomplete_offset_valid &&

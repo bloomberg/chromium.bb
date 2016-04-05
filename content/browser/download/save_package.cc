@@ -1293,8 +1293,7 @@ void SavePackage::CompleteSavableResourceLinksResponse() {
 
 base::FilePath SavePackage::GetSuggestedNameForSaveAs(
     bool can_save_as_complete,
-    const std::string& contents_mime_type,
-    const std::string& accept_langs) {
+    const std::string& contents_mime_type) {
   base::FilePath name_with_proper_ext = base::FilePath::FromUTF16Unsafe(title_);
 
   // If the page's title matches its URL, use the URL. Try to use the last path
@@ -1306,7 +1305,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
   // back to a URL, and if it matches the original page URL, we know the page
   // had no title (or had a title equal to its URL, which is fine to treat
   // similarly).
-  if (title_ == url_formatter::FormatUrl(page_url_, accept_langs)) {
+  if (title_ == url_formatter::FormatUrl(page_url_)) {
     std::string url_path;
     if (!page_url_.SchemeIs(url::kDataScheme)) {
       std::vector<std::string> url_parts = base::SplitString(
@@ -1406,23 +1405,17 @@ void SavePackage::GetSaveInfo() {
         &download_save_dir, &skip_dir_check);
   }
   std::string mime_type = web_contents()->GetContentsMimeType();
-  std::string accept_languages =
-      GetContentClient()->browser()->GetAcceptLangs(
-          web_contents()->GetBrowserContext());
-
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SavePackage::CreateDirectoryOnFileThread, this,
-          website_save_dir, download_save_dir, skip_dir_check,
-          mime_type, accept_languages));
+          website_save_dir, download_save_dir, skip_dir_check, mime_type));
 }
 
 void SavePackage::CreateDirectoryOnFileThread(
     const base::FilePath& website_save_dir,
     const base::FilePath& download_save_dir,
     bool skip_dir_check,
-    const std::string& mime_type,
-    const std::string& accept_langs) {
+    const std::string& mime_type) {
   base::FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
   // We skip the directory check for gdata directories on ChromeOS.
@@ -1440,7 +1433,7 @@ void SavePackage::CreateDirectoryOnFileThread(
 
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
   base::FilePath suggested_filename = GetSuggestedNameForSaveAs(
-      can_save_as_complete, mime_type, accept_langs);
+      can_save_as_complete, mime_type);
   base::FilePath::StringType pure_file_name =
       suggested_filename.RemoveExtension().BaseName().value();
   base::FilePath::StringType file_name_ext = suggested_filename.Extension();

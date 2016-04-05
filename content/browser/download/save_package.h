@@ -265,8 +265,7 @@ class CONTENT_EXPORT SavePackage
   void CreateDirectoryOnFileThread(const base::FilePath& website_save_dir,
                                    const base::FilePath& download_save_dir,
                                    bool skip_dir_check,
-                                   const std::string& mime_type,
-                                   const std::string& accept_langs);
+                                   const std::string& mime_type);
   void ContinueGetSaveInfo(const base::FilePath& suggested_path,
                            bool can_save_as_complete);
   void OnPathPicked(
@@ -305,8 +304,7 @@ class CONTENT_EXPORT SavePackage
   // suggested name is determined by the web document's title.
   base::FilePath GetSuggestedNameForSaveAs(
       bool can_save_as_complete,
-      const std::string& contents_mime_type,
-      const std::string& accept_langs);
+      const std::string& contents_mime_type);
 
   // Ensures that the file name has a proper extension for HTML by adding ".htm"
   // if necessary.

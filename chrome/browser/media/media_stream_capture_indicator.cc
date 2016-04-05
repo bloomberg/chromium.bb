@@ -14,13 +14,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -84,12 +81,7 @@ base::string16 GetTitle(WebContents* web_contents) {
     return base::UTF8ToUTF16(extension->name());
 #endif
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  std::string languages =
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  return url_formatter::FormatUrlForSecurityDisplay(web_contents->GetURL(),
-                                                    languages);
+  return url_formatter::FormatUrlForSecurityDisplay(web_contents->GetURL());
 }
 
 }  // namespace

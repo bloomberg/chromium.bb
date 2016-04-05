@@ -166,8 +166,8 @@ base::string16 FormatViewSourceUrl(
   base::string16 result(
       base::ASCIIToUTF16(kViewSource) +
       FormatUrlWithAdjustments(GURL(url_str.substr(kViewSourceLength)),
-                               std::string(), format_types, unescape_rules,
-                               new_parsed, prefix_end, adjustments));
+                               format_types, unescape_rules, new_parsed,
+                               prefix_end, adjustments));
   // Revise |adjustments| by shifting to the offsets to prefix that the above
   // call to FormatUrl didn't get to see.
   for (base::OffsetAdjuster::Adjustments::iterator it = adjustments->begin();
@@ -577,7 +577,6 @@ const FormatUrlType kFormatUrlOmitAll =
     kFormatUrlOmitTrailingSlashOnBareHostname;
 
 base::string16 FormatUrl(const GURL& url,
-                         const std::string& languages,
                          FormatUrlTypes format_types,
                          net::UnescapeRule::Type unescape_rules,
                          url::Parsed* new_parsed,
@@ -587,8 +586,8 @@ base::string16 FormatUrl(const GURL& url,
   if (offset_for_adjustment)
     offsets.push_back(*offset_for_adjustment);
   base::string16 result =
-      FormatUrlWithOffsets(url, std::string(), format_types, unescape_rules,
-                           new_parsed, prefix_end, &offsets);
+      FormatUrlWithOffsets(url, format_types, unescape_rules, new_parsed,
+                           prefix_end, &offsets);
   if (offset_for_adjustment)
     *offset_for_adjustment = offsets[0];
   return result;
@@ -596,7 +595,6 @@ base::string16 FormatUrl(const GURL& url,
 
 base::string16 FormatUrlWithOffsets(
     const GURL& url,
-    const std::string& languages,
     FormatUrlTypes format_types,
     net::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
@@ -604,8 +602,8 @@ base::string16 FormatUrlWithOffsets(
     std::vector<size_t>* offsets_for_adjustment) {
   base::OffsetAdjuster::Adjustments adjustments;
   const base::string16& format_url_return_value =
-      FormatUrlWithAdjustments(url, std::string(), format_types, unescape_rules,
-                               new_parsed, prefix_end, &adjustments);
+      FormatUrlWithAdjustments(url, format_types, unescape_rules, new_parsed,
+                               prefix_end, &adjustments);
   base::OffsetAdjuster::AdjustOffsets(adjustments, offsets_for_adjustment);
   if (offsets_for_adjustment) {
     std::for_each(
@@ -617,7 +615,6 @@ base::string16 FormatUrlWithOffsets(
 
 base::string16 FormatUrlWithAdjustments(
     const GURL& url,
-    const std::string& languages,
     FormatUrlTypes format_types,
     net::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
@@ -780,17 +777,14 @@ bool CanStripTrailingSlash(const GURL& url) {
          !url.has_query() && !url.has_ref() && url.path() == "/";
 }
 
-void AppendFormattedHost(const GURL& url,
-                         const std::string& languages,
-                         base::string16* output) {
+void AppendFormattedHost(const GURL& url, base::string16* output) {
   AppendFormattedComponent(
       url.possibly_invalid_spec(), url.parsed_for_possibly_invalid_spec().host,
       HostComponentTransform(), output, NULL, NULL);
 }
 
-base::string16 IDNToUnicode(const std::string& host,
-                            const std::string& languages) {
-  return IDNToUnicodeWithAdjustments(host, NULL);
+base::string16 IDNToUnicode(const std::string& host) {
+  return IDNToUnicodeWithAdjustments(host, nullptr);
 }
 
 base::string16 StripWWW(const base::string16& text) {

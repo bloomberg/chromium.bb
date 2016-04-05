@@ -290,9 +290,8 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   match.destination_url = navigation.url();
 
   // Zero suggest results should always omit protocols and never appear bold.
-  const std::string languages(client()->GetAcceptLanguages());
   match.contents = url_formatter::FormatUrl(
-      navigation.url(), languages, url_formatter::kFormatUrlOmitAll,
+      navigation.url(), url_formatter::kFormatUrlOmitAll,
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -384,13 +383,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     }
     const base::string16 current_query_string16(
         base::ASCIIToUTF16(current_query_));
-    const std::string languages(client()->GetAcceptLanguages());
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
       SearchSuggestionParser::NavigationResult nav(
           client()->GetSchemeClassifier(), url.url,
           AutocompleteMatchType::NAVSUGGEST, url.title, std::string(), false,
-          relevance, true, current_query_string16, languages);
+          relevance, true, current_query_string16);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;
     }

@@ -48,8 +48,8 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
                           AutocompleteMatchType::CLIPBOARD);
   match.destination_url = url;
   match.contents.assign(url_formatter::FormatUrl(
-      url, client_->GetAcceptLanguages(), url_formatter::kFormatUrlOmitAll,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+      url, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::SPACES,
+      nullptr, nullptr, nullptr));
   AutocompleteMatch::ClassifyLocationInString(
       base::string16::npos, 0, match.contents.length(),
       ACMatchClassification::URL, &match.contents_class);

@@ -204,7 +204,6 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(
                                            ServiceAccessType::IMPLICIT_ACCESS),
       TemplateURLServiceFactory::GetForProfile(profile),
       content::BrowserThread::GetBlockingPool(), profile->GetPath(),
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
       SchemeSet()));
   in_memory_url_index->Init();
   return std::move(in_memory_url_index);
@@ -216,7 +215,6 @@ scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
       new BookmarkModel(make_scoped_ptr(new ChromeBookmarkClient(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile)))));
   bookmark_model->Load(profile->GetPrefs(),
-                       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
                        profile->GetPath(),
                        profile->GetIOTaskRunner(),
                        content::BrowserThread::GetMessageLoopProxyForThread(
@@ -547,8 +545,7 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
           HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               this, BuildHistoryService));
   if (!history_service->Init(
-          no_db, GetPrefs()->GetString(prefs::kAcceptLanguages),
-          history::HistoryDatabaseParamsForPath(GetPath()))) {
+          no_db, history::HistoryDatabaseParamsForPath(GetPath()))) {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
     return false;
   }

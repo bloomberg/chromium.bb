@@ -124,19 +124,14 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
   prefs->SetBoolean(bookmarks::prefs::kShowBookmarkBar, always_show);
 }
 
-base::string16 FormatBookmarkURLForDisplay(const GURL& url,
-                                           const PrefService* prefs) {
-  std::string languages;
-  if (prefs)
-    languages = prefs->GetString(prefs::kAcceptLanguages);
-
+base::string16 FormatBookmarkURLForDisplay(const GURL& url) {
   // Because this gets re-parsed by FixupURL(), it's safe to omit the scheme
   // and trailing slash, and unescape most characters.  However, it's
   // important not to drop any username/password, or unescape anything that
   // changes the URL's meaning.
   return url_formatter::FormatUrl(
-      url, languages, url_formatter::kFormatUrlOmitAll &
-                          ~url_formatter::kFormatUrlOmitUsernamePassword,
+      url, url_formatter::kFormatUrlOmitAll &
+               ~url_formatter::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 

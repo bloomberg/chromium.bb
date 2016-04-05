@@ -14,8 +14,6 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/bad_clock_ui.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -64,12 +62,6 @@ BadClockBlockingPage::BadClockBlockingPage(
       ssl_info_(ssl_info),
       time_triggered_(time_triggered),
       controller_(new ChromeControllerClient(web_contents)) {
-  // Get the language for the BadClockUI.
-  std::string languages;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile)
-    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 
   // Set up the metrics helper for the BadClockUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
@@ -87,7 +79,7 @@ BadClockBlockingPage::BadClockBlockingPage(
       false /* overridable */, controller_->metrics_helper()));
 
   bad_clock_ui_.reset(new security_interstitials::BadClockUI(
-      request_url, cert_error, ssl_info, time_triggered, clock_state, languages,
+      request_url, cert_error, ssl_info, time_triggered, clock_state,
       controller_.get()));
 }
 

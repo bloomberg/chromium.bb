@@ -406,8 +406,7 @@ TEST_F(SavePackageTest, MAYBE_TestSuggestedSaveNames) {
     save_package->title_ = kSuggestedSaveNames[i].page_title;
 
     base::FilePath save_name = save_package->GetSuggestedNameForSaveAs(
-        kSuggestedSaveNames[i].ensure_html_extension,
-        std::string(), std::string());
+        kSuggestedSaveNames[i].ensure_html_extension, std::string());
     EXPECT_EQ(kSuggestedSaveNames[i].expected_name, save_name.value()) <<
         "Test case " << i;
   }

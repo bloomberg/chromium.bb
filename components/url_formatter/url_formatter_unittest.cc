@@ -379,8 +379,8 @@ void CheckAdjustedOffsets(const std::string& url_string,
     offsets.push_back(i);
   offsets.push_back(500000);  // Something larger than any input length.
   offsets.push_back(std::string::npos);
-  base::string16 formatted_url = FormatUrlWithOffsets(url, std::string(),
-      format_types, unescape_rules, NULL, NULL, &offsets);
+  base::string16 formatted_url = FormatUrlWithOffsets(url, format_types,
+      unescape_rules, nullptr, nullptr, &offsets);
   for (size_t i = 0; i < url_length; ++i)
     VerboseExpect(output_offsets[i], offsets[i], url_string, i, formatted_url);
   VerboseExpect(formatted_url.length(), offsets[url_length], url_string,
@@ -393,7 +393,7 @@ void CheckAdjustedOffsets(const std::string& url_string,
 
 TEST(UrlFormatterTest, IDNToUnicode) {
   for (size_t i = 0; i < arraysize(idn_cases); i++) {
-    base::string16 output(IDNToUnicode(idn_cases[i].input, std::string()));
+    base::string16 output(IDNToUnicode(idn_cases[i].input));
     base::string16 expected(idn_cases[i].unicode_allowed
                                 ? WideToUTF16(idn_cases[i].unicode_output)
                                 : ASCIIToUTF16(idn_cases[i].input));
@@ -553,8 +553,8 @@ TEST(UrlFormatterTest, FormatUrl) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     size_t prefix_len;
     base::string16 formatted = FormatUrl(
-        GURL(tests[i].input), std::string(), tests[i].format_types,
-        tests[i].escape_rules, NULL,  &prefix_len, NULL);
+        GURL(tests[i].input), tests[i].format_types, tests[i].escape_rules,
+        nullptr,  &prefix_len, nullptr);
     EXPECT_EQ(WideToUTF16(tests[i].output), formatted) << tests[i].description;
     EXPECT_EQ(tests[i].prefix_len, prefix_len) << tests[i].description;
   }
@@ -566,8 +566,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
   base::string16 formatted =
       FormatUrl(GURL("http://\xE3\x82\xB0:\xE3\x83\xBC@xn--qcka1pmc.jp:8080/"
                      "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
-                std::string(), kFormatUrlOmitNothing, net::UnescapeRule::NONE,
-                &parsed, NULL, NULL);
+                kFormatUrlOmitNothing, net::UnescapeRule::NONE,
+                &parsed, nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(
       L"http://%E3%82%B0:%E3%83%BC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
       L"/%E3%82%B0/?q=%E3%82%B0#\x30B0"), formatted);
@@ -590,8 +590,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
   formatted =
       FormatUrl(GURL("http://\xE3\x82\xB0:\xE3\x83\xBC@xn--qcka1pmc.jp:8080/"
                      "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
-                "ja", kFormatUrlOmitNothing, net::UnescapeRule::NORMAL, &parsed,
-                NULL, NULL);
+                kFormatUrlOmitNothing, net::UnescapeRule::NORMAL, &parsed,
+                nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"http://\x30B0:\x30FC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
       L"/\x30B0/?q=\x30B0#\x30B0"), formatted);
   EXPECT_EQ(WideToUTF16(L"\x30B0"),
@@ -613,8 +613,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
   formatted =
       FormatUrl(GURL("http://\xE3\x82\xB0:\xE3\x83\xBC@xn--qcka1pmc.jp:8080/"
                      "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
-                "ja", kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL,
-                &parsed, NULL, NULL);
+                kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL,
+                &parsed, nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"http://\x30B0\x30FC\x30B0\x30EB.jp:8080"
       L"/\x30B0/?q=\x30B0#\x30B0"), formatted);
   EXPECT_FALSE(parsed.username.is_valid());
@@ -633,8 +633,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
   // View-source case.
   formatted =
       FormatUrl(GURL("view-source:http://user:passwd@host:81/path?query#ref"),
-                std::string(), kFormatUrlOmitUsernamePassword,
-                net::UnescapeRule::NORMAL, &parsed, NULL, NULL);
+                kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL,
+                &parsed, nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"view-source:http://host:81/path?query#ref"),
       formatted);
   EXPECT_EQ(WideToUTF16(L"view-source:http"),
@@ -653,9 +653,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http case.
-  formatted = FormatUrl(GURL("http://host:8000/a?b=c#d"), std::string(),
-                        kFormatUrlOmitHTTP, net::UnescapeRule::NORMAL, &parsed,
-                        NULL, NULL);
+  formatted = FormatUrl(GURL("http://host:8000/a?b=c#d"), kFormatUrlOmitHTTP,
+                        net::UnescapeRule::NORMAL, &parsed, nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"host:8000/a?b=c#d"), formatted);
   EXPECT_FALSE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
@@ -672,9 +671,9 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http starts with ftp case.
-  formatted = FormatUrl(GURL("http://ftp.host:8000/a?b=c#d"), std::string(),
+  formatted = FormatUrl(GURL("http://ftp.host:8000/a?b=c#d"),
                         kFormatUrlOmitHTTP, net::UnescapeRule::NORMAL, &parsed,
-                        NULL, NULL);
+                        nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"http://ftp.host:8000/a?b=c#d"), formatted);
   EXPECT_TRUE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
@@ -693,8 +692,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http starts with 'f' case.
-  formatted = FormatUrl(GURL("http://f/"), std::string(), kFormatUrlOmitHTTP,
-                        net::UnescapeRule::NORMAL, &parsed, NULL, NULL);
+  formatted = FormatUrl(GURL("http://f/"), kFormatUrlOmitHTTP,
+                        net::UnescapeRule::NORMAL, &parsed, nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"f/"), formatted);
   EXPECT_FALSE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
@@ -717,8 +716,8 @@ TEST(UrlFormatterTest, FormatUrlRoundTripPathASCII) {
              static_cast<char>(test_char));
     size_t prefix_len;
     base::string16 formatted =
-        FormatUrl(url, std::string(), kFormatUrlOmitUsernamePassword,
-                  net::UnescapeRule::NORMAL, NULL, &prefix_len, NULL);
+        FormatUrl(url, kFormatUrlOmitUsernamePassword,
+                  net::UnescapeRule::NORMAL, nullptr, &prefix_len, nullptr);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
   }
 }
@@ -733,9 +732,8 @@ TEST(UrlFormatterTest, FormatUrlRoundTripPathEscaped) {
 
     GURL url(original_url);
     size_t prefix_len;
-    base::string16 formatted =
-        FormatUrl(url, std::string(), kFormatUrlOmitUsernamePassword,
-                  net::UnescapeRule::NORMAL, NULL, &prefix_len, NULL);
+    base::string16 formatted = FormatUrl(url, kFormatUrlOmitUsernamePassword,
+        net::UnescapeRule::NORMAL, nullptr, &prefix_len, nullptr);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
   }
 }
@@ -748,8 +746,8 @@ TEST(UrlFormatterTest, FormatUrlRoundTripQueryASCII) {
              static_cast<char>(test_char));
     size_t prefix_len;
     base::string16 formatted =
-        FormatUrl(url, std::string(), kFormatUrlOmitUsernamePassword,
-                  net::UnescapeRule::NORMAL, NULL, &prefix_len, NULL);
+        FormatUrl(url, kFormatUrlOmitUsernamePassword,
+                  net::UnescapeRule::NORMAL, nullptr, &prefix_len, nullptr);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
   }
 }
@@ -769,8 +767,8 @@ TEST(UrlFormatterTest, FormatUrlRoundTripQueryEscaped) {
     GURL url(original_url);
     size_t prefix_len;
     base::string16 formatted =
-        FormatUrl(url, std::string(), kFormatUrlOmitUsernamePassword,
-                  net::UnescapeRule::NORMAL, NULL, &prefix_len, NULL);
+        FormatUrl(url, kFormatUrlOmitUsernamePassword,
+                  net::UnescapeRule::NORMAL, nullptr, &prefix_len, nullptr);
 
     if (test_char &&
         strchr(kUnescapedCharacters, static_cast<char>(test_char))) {
@@ -783,7 +781,7 @@ TEST(UrlFormatterTest, FormatUrlRoundTripQueryEscaped) {
 
 TEST(UrlFormatterTest, FormatUrlWithOffsets) {
   CheckAdjustedOffsets(std::string(),  kFormatUrlOmitNothing,
-                       net::UnescapeRule::NORMAL, NULL);
+                       net::UnescapeRule::NORMAL, nullptr);
 
   const size_t basic_offsets[] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,

@@ -36,7 +36,7 @@ namespace {
 base::string16 Normalize(const base::string16& text) {
   UErrorCode status = U_ZERO_ERROR;
   const icu::Normalizer2* normalizer2 =
-      icu::Normalizer2::getInstance(NULL, "nfkc", UNORM2_COMPOSE, status);
+      icu::Normalizer2::getInstance(nullptr, "nfkc", UNORM2_COMPOSE, status);
   if (U_FAILURE(status)) {
     // Log and crash right away to capture the error code in the crash report.
     LOG(FATAL) << "failed to create a normalizer: " << u_errorName(status);
@@ -72,10 +72,8 @@ struct NodeTypedCountPairExtractNodeFunctor {
 
 }  // namespace
 
-BookmarkIndex::BookmarkIndex(BookmarkClient* client,
-                             const std::string& languages)
-    : client_(client),
-      languages_(languages) {
+BookmarkIndex::BookmarkIndex(BookmarkClient* client)
+    : client_(client) {
   DCHECK(client_);
 }
 
@@ -90,7 +88,7 @@ void BookmarkIndex::Add(const BookmarkNode* node) {
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
   terms =
-      ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
+      ExtractQueryWords(CleanUpUrlForMatching(node->url(), nullptr));
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
 }
@@ -104,7 +102,7 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
   terms =
-      ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
+      ExtractQueryWords(CleanUpUrlForMatching(node->url(), nullptr));
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
 }
@@ -182,7 +180,7 @@ void BookmarkIndex::AddMatchToResults(
   parser->ExtractQueryWords(lower_title, &title_words);
   base::OffsetAdjuster::Adjustments adjustments;
   parser->ExtractQueryWords(
-      CleanUpUrlForMatching(node->url(), languages_, &adjustments),
+      CleanUpUrlForMatching(node->url(), &adjustments),
       &url_words);
   query_parser::Snippet::MatchPositions title_matches, url_matches;
   for (size_t i = 0; i < query_nodes.size(); ++i) {

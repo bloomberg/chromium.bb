@@ -101,7 +101,6 @@ JavaScriptDialogManager::~JavaScriptDialogManager() {
 void JavaScriptDialogManager::RunJavaScriptDialog(
     content::WebContents* web_contents,
     const GURL& origin_url,
-    const std::string& accept_lang,
     content::JavaScriptMessageType message_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -152,8 +151,7 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
   }
 
   bool is_alert = message_type == content::JAVASCRIPT_MESSAGE_TYPE_ALERT;
-  base::string16 dialog_title =
-      GetTitle(web_contents, origin_url, accept_lang, is_alert);
+  base::string16 dialog_title = GetTitle(web_contents, origin_url, is_alert);
 
   extensions_client_->OnDialogOpened(web_contents);
 
@@ -252,7 +250,6 @@ void JavaScriptDialogManager::ResetDialogState(
 base::string16 JavaScriptDialogManager::GetTitle(
     content::WebContents* web_contents,
     const GURL& origin_url,
-    const std::string& accept_lang,
     bool is_alert) {
   // For extensions, show the extension name, but only if the origin of
   // the alert matches the top-level WebContents.
@@ -271,8 +268,7 @@ base::string16 JavaScriptDialogManager::GetTitle(
         url_formatter::ElideHost(origin_url, gfx::FontList(), kUrlElideWidth);
 #else
     base::string16 url_string =
-        url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin_url,
-                                                             accept_lang);
+        url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin_url);
 #endif
     return l10n_util::GetStringFUTF16(
         is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE

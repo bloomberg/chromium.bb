@@ -44,7 +44,6 @@ class SSLErrorUI {
              const net::SSLInfo& ssl_info,
              int display_options,  // Bitmask of SSLErrorOptionsMask values.
              const base::Time& time_triggered,
-             const std::string& languages,
              ControllerClient* controller);
   ~SSLErrorUI();
 
@@ -59,7 +58,6 @@ class SSLErrorUI {
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const base::Time time_triggered_;
-  const std::string languages_;
 
   // Set by the |display_options|.
   const bool requested_strict_enforcement_;

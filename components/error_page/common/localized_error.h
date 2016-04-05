@@ -32,7 +32,6 @@ class LocalizedError {
                          bool can_show_network_diagnostics_dialog,
                          bool has_offline_pages,
                          const std::string& locale,
-                         const std::string& accept_languages,
                          scoped_ptr<error_page::ErrorPageParams> params,
                          base::DictionaryValue* strings);
 

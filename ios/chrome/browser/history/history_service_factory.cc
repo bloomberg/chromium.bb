@@ -76,10 +76,8 @@ scoped_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
           make_scoped_ptr(new HistoryClientImpl(
               ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
           nullptr));
-  if (!history_service->Init(
-          browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
-          history::HistoryDatabaseParamsForPath(
-              browser_state->GetStatePath()))) {
+  if (!history_service->Init(history::HistoryDatabaseParamsForPath(
+          browser_state->GetStatePath()))) {
     return nullptr;
   }
   return std::move(history_service);

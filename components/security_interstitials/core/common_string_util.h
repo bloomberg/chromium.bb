@@ -18,8 +18,7 @@ namespace security_interstitials {
 namespace common_string_util {
 
 // Returns the |gurl| as a URL appropriate for display in an error page.
-base::string16 GetFormattedHostName(const GURL& gurl,
-                                    const std::string& languages);
+base::string16 GetFormattedHostName(const GURL& gurl);
 
 // For SSL-related errors that share a basic structure.
 void PopulateSSLLayoutStrings(int cert_error,
