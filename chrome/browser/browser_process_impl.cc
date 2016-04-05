@@ -134,7 +134,6 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -228,7 +227,6 @@ BrowserProcessImpl::BrowserProcessImpl(
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
 
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
-  ExtensionRendererState::GetInstance()->Init();
 
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
@@ -311,8 +309,6 @@ void BrowserProcessImpl::StartTearDown() {
   child_process_watcher_.reset();
 
 #if defined(ENABLE_EXTENSIONS)
-  ExtensionRendererState::GetInstance()->Shutdown();
-
   media_file_system_registry_.reset();
   // Remove the global instance of the Storage Monitor now. Otherwise the
   // FILE thread would be gone when we try to release it in the dtor and

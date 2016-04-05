@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSIONS_BROWSER_CLIENT_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSIONS_BROWSER_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -116,7 +117,9 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                                      ViewType view_type) override;
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
-  int GetTabIdForWebContents(content::WebContents* web_contents) override;
+  std::unique_ptr<ExtensionApiFrameIdMapHelper>
+  CreateExtensionApiFrameIdMapHelper(
+      ExtensionApiFrameIdMap* map) override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

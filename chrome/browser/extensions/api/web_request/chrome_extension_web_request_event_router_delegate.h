@@ -15,12 +15,6 @@ class ChromeExtensionWebRequestEventRouterDelegate
   ~ChromeExtensionWebRequestEventRouterDelegate() override;
 
   // WebRequestEventRouterDelegate implementation.
-  void ExtractExtraRequestDetails(
-      const net::URLRequest* request,
-      extensions::WebRequestEventDetails* out) override;
-  bool OnGetMatchingListenersImplCheck(int tab_id,
-                                       int window_id,
-                                       const net::URLRequest* request) override;
   void LogExtensionActivity(content::BrowserContext* browser_context,
                             bool is_incognito,
                             const std::string& extension_id,

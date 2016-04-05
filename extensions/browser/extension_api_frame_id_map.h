@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -20,6 +21,14 @@ class WebContents;
 }  // namespace content
 
 namespace extensions {
+
+class ExtensionApiFrameIdMapHelper {
+ public:
+  virtual void GetTabAndWindowId(content::RenderFrameHost* rfh,
+                                 int* tab_id_out,
+                                 int* window_id_out) = 0;
+  virtual ~ExtensionApiFrameIdMapHelper() {}
+};
 
 // Extension frame IDs are exposed through the chrome.* APIs and have the
 // following characteristics:
@@ -49,7 +58,7 @@ class ExtensionApiFrameIdMap {
   // The data for a RenderFrame. Every RenderFrameIdKey maps to a FrameData.
   struct FrameData {
     FrameData();
-    FrameData(int frame_id, int parent_frame_id, int tab_id);
+    FrameData(int frame_id, int parent_frame_id, int tab_id, int window_id);
 
     // The extension API frame ID of the frame.
     int frame_id;
@@ -60,6 +69,10 @@ class ExtensionApiFrameIdMap {
     // The id of the tab that the frame is in, or -1 if the frame isn't in a
     // tab.
     int tab_id;
+
+    // The id of the window that the frame is in, or -1 if the frame isn't in a
+    // window.
+    int window_id;
   };
 
   using FrameDataCallback = base::Callback<void(const FrameData&)>;
@@ -117,6 +130,11 @@ class ExtensionApiFrameIdMap {
   // forever.
   void RemoveFrameData(content::RenderFrameHost* rfh);
 
+  // Updates the tab and window id for the given RenderFrameHost, if any exists.
+  void UpdateTabAndWindowId(int tab_id,
+                            int window_id,
+                            content::RenderFrameHost* rfh);
+
  protected:
   friend struct base::DefaultLazyInstanceTraits<ExtensionApiFrameIdMap>;
 
@@ -152,7 +170,7 @@ class ExtensionApiFrameIdMap {
   using FrameDataCallbacksMap = std::map<RenderFrameIdKey, FrameDataCallbacks>;
 
   ExtensionApiFrameIdMap();
-  ~ExtensionApiFrameIdMap();
+  virtual ~ExtensionApiFrameIdMap();
 
   // Determines the value to be stored in |frame_id_map_| for a given key. This
   // method is only called when |key| is not in |frame_id_map_|.
@@ -174,6 +192,8 @@ class ExtensionApiFrameIdMap {
 
   // Implementation of RemoveFrameId(RenderFrameHost), separated for testing.
   void RemoveFrameData(const RenderFrameIdKey& key);
+
+  std::unique_ptr<ExtensionApiFrameIdMapHelper> helper_;
 
   // Queued callbacks for use on the IO thread.
   FrameDataCallbacksMap callbacks_map_;

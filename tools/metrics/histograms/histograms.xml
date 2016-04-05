@@ -13193,6 +13193,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ExtensionRendererStateCacheHit" units="Boolean">
   <owner>rdevlin.cronin@chromium.org</owner>
+  <obsolete>
+    Deprecated 4/2016. ExtensionRendererState was replaced with
+    ExtensionFrameMap.
+  </obsolete>
   <summary>
     True if the cache for the ExtensionRendererState was hit during a lookup.
   </summary>

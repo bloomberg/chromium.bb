@@ -7,32 +7,14 @@
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
-#include "extensions/browser/api/web_request/web_request_api.h"
-#include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/url_request/url_request.h"
 
-namespace keys = extension_web_request_api_constants;
-
 namespace {
-
-void ExtractExtraRequestDetailsInternal(const net::URLRequest* request,
-                                        int* tab_id,
-                                        int* window_id) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info)
-    return;
-
-  ExtensionRendererState::GetInstance()->GetTabAndWindowId(info, tab_id,
-                                                           window_id);
-}
 
 void NotifyWebRequestWithheldOnUI(int render_process_id,
                                   int render_frame_id,
@@ -96,28 +78,6 @@ void ChromeExtensionWebRequestEventRouterDelegate::LogExtensionActivity(
   action->mutable_other()->Set(activity_log_constants::kActionWebRequest,
                                details.release());
   extensions::ActivityLog::GetInstance(browser_context)->LogAction(action);
-}
-
-void ChromeExtensionWebRequestEventRouterDelegate::ExtractExtraRequestDetails(
-    const net::URLRequest* request,
-    extensions::WebRequestEventDetails* out) {
-  int tab_id = -1;
-  int window_id = -1;
-  ExtractExtraRequestDetailsInternal(request, &tab_id, &window_id);
-  out->SetInteger(keys::kTabIdKey, tab_id);
-}
-
-bool
-ChromeExtensionWebRequestEventRouterDelegate::OnGetMatchingListenersImplCheck(
-    int filter_tab_id,
-    int filter_window_id,
-    const net::URLRequest* request) {
-  int tab_id = -1;
-  int window_id = -1;
-  ExtractExtraRequestDetailsInternal(request, &tab_id, &window_id);
-  if (filter_tab_id != -1 && tab_id != filter_tab_id)
-    return true;
-  return (filter_window_id != -1 && window_id != filter_window_id);
 }
 
 void ChromeExtensionWebRequestEventRouterDelegate::NotifyWebRequestWithheld(

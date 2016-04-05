@@ -39,8 +39,19 @@ int ToTestTabId(int render_process_id, int frame_routing_id) {
   return render_process_id * 1000 + frame_routing_id * 10 + 5;
 }
 
+int ToTestWindowId(int render_process_id, int frame_routing_id) {
+  if (render_process_id < 0 && frame_routing_id < 0)
+    return -1;
+  // Return a deterministic value (yet different from the input) for testing.
+  // To make debugging easier: Ending with 4 = window ID.
+  return render_process_id * 1000 + frame_routing_id * 10 + 4;
+}
+
 class TestExtensionApiFrameIdMap : public ExtensionApiFrameIdMap {
  public:
+  TestExtensionApiFrameIdMap() {}
+  ~TestExtensionApiFrameIdMap() override {}
+
   int GetInternalSize() { return frame_data_map_.size(); }
   int GetInternalCallbackCount() {
     int count = 0;
@@ -68,7 +79,8 @@ class TestExtensionApiFrameIdMap : public ExtensionApiFrameIdMap {
     return FrameData(
         ToTestFrameId(key.render_process_id, key.frame_routing_id),
         ToTestParentFrameId(key.render_process_id, key.frame_routing_id),
-        ToTestTabId(key.render_process_id, key.frame_routing_id));
+        ToTestTabId(key.render_process_id, key.frame_routing_id),
+        ToTestWindowId(key.render_process_id, key.frame_routing_id));
   }
 };
 
@@ -99,6 +111,8 @@ class ExtensionApiFrameIdMapTest : public testing::Test {
               frame_data.parent_frame_id);
     EXPECT_EQ(ToTestTabId(render_process_id, frame_routing_id),
               frame_data.tab_id);
+    EXPECT_EQ(ToTestWindowId(render_process_id, frame_routing_id),
+              frame_data.window_id);
   }
 
   const std::vector<std::string>& results() { return results_; }
@@ -258,6 +272,7 @@ TEST_F(ExtensionApiFrameIdMapTest, GetCachedFrameDataOnIO) {
   EXPECT_EQ(ToTestParentFrameId(kRenderProcessId, kFrameRoutingId),
             data.parent_frame_id);
   EXPECT_EQ(ToTestTabId(kRenderProcessId, kFrameRoutingId), data.tab_id);
+  EXPECT_EQ(ToTestWindowId(kRenderProcessId, kFrameRoutingId), data.window_id);
 }
 
 }  // namespace extensions

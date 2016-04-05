@@ -16,17 +16,5 @@ WebRequestEventRouterDelegate::WebRequestEventRouterDelegate() {
 
 WebRequestEventRouterDelegate::~WebRequestEventRouterDelegate() {
 }
-void WebRequestEventRouterDelegate::ExtractExtraRequestDetails(
-    const net::URLRequest* request,
-    WebRequestEventDetails* out) {
-  out->SetInteger(keys::kTabIdKey, -1);
-}
-
-bool WebRequestEventRouterDelegate::OnGetMatchingListenersImplCheck(
-    int tab_id,
-    int window_id,
-    const net::URLRequest* request) {
-  return false;
-}
 
 }  // namespace extensions

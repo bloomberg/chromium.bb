@@ -24,13 +24,6 @@ namespace {
 base::LazyInstance<ExtensionApiFrameIdMap>::Leaky g_map_instance =
     LAZY_INSTANCE_INITIALIZER;
 
-int GetTabId(content::RenderFrameHost* rfh) {
-  if (!rfh)
-    return -1;
-  return ExtensionsBrowserClient::Get()->GetTabIdForWebContents(
-      content::WebContents::FromRenderFrameHost(rfh));
-}
-
 bool IsFrameRoutingIdValid(int frame_routing_id) {
   // frame_routing_id == -2 = MSG_ROUTING_NONE -> not a RenderFrameHost.
   // frame_routing_id == -1 -> should be MSG_ROUTING_NONE, but there are
@@ -44,12 +37,19 @@ const int ExtensionApiFrameIdMap::kInvalidFrameId = -1;
 const int ExtensionApiFrameIdMap::kTopFrameId = 0;
 
 ExtensionApiFrameIdMap::FrameData::FrameData()
-    : frame_id(kInvalidFrameId), parent_frame_id(kInvalidFrameId), tab_id(-1) {}
+    : frame_id(kInvalidFrameId),
+      parent_frame_id(kInvalidFrameId),
+      tab_id(-1),
+      window_id(-1) {}
 
 ExtensionApiFrameIdMap::FrameData::FrameData(int frame_id,
                                              int parent_frame_id,
-                                             int tab_id)
-    : frame_id(frame_id), parent_frame_id(parent_frame_id), tab_id(tab_id) {}
+                                             int tab_id,
+                                             int window_id)
+    : frame_id(frame_id),
+      parent_frame_id(parent_frame_id),
+      tab_id(tab_id),
+      window_id(window_id) {}
 
 ExtensionApiFrameIdMap::RenderFrameIdKey::RenderFrameIdKey()
     : render_process_id(content::ChildProcessHost::kInvalidUniqueID),
@@ -81,7 +81,14 @@ bool ExtensionApiFrameIdMap::RenderFrameIdKey::operator==(
          frame_routing_id == other.frame_routing_id;
 }
 
-ExtensionApiFrameIdMap::ExtensionApiFrameIdMap() {}
+ExtensionApiFrameIdMap::ExtensionApiFrameIdMap() {
+  // The browser client can be null in unittests.
+  if (ExtensionsBrowserClient::Get()) {
+    helper_ =
+        ExtensionsBrowserClient::Get()->CreateExtensionApiFrameIdMapHelper(
+            this);
+  }
+}
 
 ExtensionApiFrameIdMap::~ExtensionApiFrameIdMap() {}
 
@@ -148,7 +155,11 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
     const RenderFrameIdKey& key) const {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       key.render_process_id, key.frame_routing_id);
-  return FrameData(GetFrameId(rfh), GetParentFrameId(rfh), GetTabId(rfh));
+  int tab_id = -1;
+  int window_id = -1;
+  if (helper_)
+    helper_->GetTabAndWindowId(rfh, &tab_id, &window_id);
+  return FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::LookupFrameDataOnUI(
@@ -313,6 +324,24 @@ void ExtensionApiFrameIdMap::RemoveFrameData(content::RenderFrameHost* rfh) {
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
   RemoveFrameData(key);
+}
+
+void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
+    int tab_id,
+    int window_id,
+    content::RenderFrameHost* rfh) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(rfh);
+  const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  base::AutoLock lock(frame_data_map_lock_);
+  FrameDataMap::iterator iter = frame_data_map_.find(key);
+  if (iter != frame_data_map_.end()) {
+    iter->second.tab_id = tab_id;
+    iter->second.window_id = window_id;
+  } else {
+    frame_data_map_[key] =
+        FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
+  }
 }
 
 void ExtensionApiFrameIdMap::RemoveFrameData(const RenderFrameIdKey& key) {

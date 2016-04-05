@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
+#include "chrome/browser/extensions/chrome_extension_api_frame_id_map_helper.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_mojo_service_registration.h"
@@ -398,9 +399,10 @@ ChromeExtensionsBrowserClient::CreateUpdateClient(
       make_scoped_refptr(new ChromeUpdateClientConfig(context)));
 }
 
-int ChromeExtensionsBrowserClient::GetTabIdForWebContents(
-    content::WebContents* web_contents) {
-  return SessionTabHelper::IdForTab(web_contents);
+std::unique_ptr<ExtensionApiFrameIdMapHelper>
+ChromeExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
+    ExtensionApiFrameIdMap* map) {
+  return make_scoped_ptr(new ChromeExtensionApiFrameIdMapHelper(map));
 }
 
 }  // namespace extensions

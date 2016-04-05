@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 #define EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,8 @@ class ExtensionCache;
 class ExtensionError;
 class ExtensionHostDelegate;
 class ExtensionPrefsObserver;
+class ExtensionApiFrameIdMap;
+class ExtensionApiFrameIdMapHelper;
 class ExtensionSystem;
 class ExtensionSystemProvider;
 class ExtensionWebContentsObserver;
@@ -246,8 +249,8 @@ class ExtensionsBrowserClient {
   virtual scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context);
 
-  // Returns the tab id for a given |web_contents|.
-  virtual int GetTabIdForWebContents(content::WebContents* web_contents);
+  virtual std::unique_ptr<ExtensionApiFrameIdMapHelper>
+  CreateExtensionApiFrameIdMapHelper(ExtensionApiFrameIdMap* map);
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
