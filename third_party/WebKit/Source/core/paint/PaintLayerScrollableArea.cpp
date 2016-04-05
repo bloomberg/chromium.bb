@@ -631,8 +631,7 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
         scrollToPosition(clampedScrollPosition);
 
     if (originalScrollOffset != adjustedScrollOffset()) {
-        DoublePoint origin(scrollOrigin());
-        scrollPositionChanged(-origin + adjustedScrollOffset(), ProgrammaticScroll);
+        scrollPositionChanged(scrollPositionDouble(), ProgrammaticScroll);
     }
 
     m_scrollbarManager.setCanDetachScrollbars(false);
