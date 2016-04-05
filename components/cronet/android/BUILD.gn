@@ -569,6 +569,7 @@ android_library("cronet_javatests") {
   testonly = true
 
   java_files = [
+    "test/javatests/src/org/chromium/net/BidirectionalStreamQuicTest.java",
     "test/javatests/src/org/chromium/net/BidirectionalStreamTest.java",
     "test/javatests/src/org/chromium/net/ChromiumUrlRequestTest.java",
     "test/javatests/src/org/chromium/net/ChunkedWritableByteChannelTest.java",
