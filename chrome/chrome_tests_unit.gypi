@@ -1858,7 +1858,6 @@
         ['OS!="ios"', {
           'dependencies': [
             'child',
-            'plugin',
             'renderer',
             'utility',
             '../content/content.gyp:content_gpu',

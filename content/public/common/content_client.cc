@@ -64,7 +64,6 @@ ContentUtilityClient* SetUtilityClientForTesting(ContentUtilityClient* u) {
 ContentClient::ContentClient()
     : browser_(NULL),
       gpu_(NULL),
-      plugin_(NULL),
       renderer_(NULL),
       utility_(NULL) {}
 

@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 
 #include "content/public/gpu/content_gpu_client.h"
-#include "content/public/plugin/content_plugin_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
 
@@ -68,14 +67,6 @@ ContentGpuClient* ContentMainDelegate::CreateContentGpuClient() {
   return NULL;
 #else
   return new ContentGpuClient();
-#endif
-}
-
-ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return NULL;
-#else
-  return new ContentPluginClient();
 #endif
 }
 

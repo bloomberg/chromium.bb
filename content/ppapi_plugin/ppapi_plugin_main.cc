@@ -20,7 +20,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/proxy_module.h"
@@ -43,6 +42,10 @@
 
 #if defined(OS_LINUX)
 #include "content/public/common/sandbox_init.h"
+#endif
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/v8_initializer.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -123,10 +126,10 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventPpapiProcessSortIndex);
 
-  // Allow the embedder to perform any necessary per-process initialization
-  // before the sandbox is initialized.
-  if (GetContentClient()->plugin())
-    GetContentClient()->plugin()->PreSandboxInitialization();
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Natives();
+#endif
 
 #if defined(OS_LINUX)
   LinuxSandbox::InitializeSandbox();

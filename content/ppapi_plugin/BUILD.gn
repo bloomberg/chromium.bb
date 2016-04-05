@@ -21,6 +21,7 @@ source_set("ppapi_plugin_sources") {
   visibility = [
     ":ppapi_plugin",
     "//content",  # For the component build.
+    "//gin",
   ]
 
   sources = [
@@ -36,7 +37,10 @@ source_set("ppapi_plugin_sources") {
     "ppapi_thread.h",
   ]
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//v8:external_startup_data",
+  ]
 
   deps = [
     "//base",

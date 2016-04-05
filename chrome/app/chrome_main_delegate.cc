@@ -40,7 +40,6 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -145,8 +144,6 @@ base::LazyInstance<ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ChromeContentPluginClient>
-    g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -981,14 +978,6 @@ ChromeMainDelegate::CreateContentBrowserClient() {
   return NULL;
 #else
   return g_chrome_content_browser_client.Pointer();
-#endif
-}
-
-content::ContentPluginClient* ChromeMainDelegate::CreateContentPluginClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return NULL;
-#else
-  return g_chrome_content_plugin_client.Pointer();
 #endif
 }
 

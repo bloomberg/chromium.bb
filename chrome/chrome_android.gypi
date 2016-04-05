@@ -15,7 +15,6 @@
         'chrome.gyp:browser_ui',
         'chrome.gyp:child',
         'chrome_features.gyp:chrome_common_features',
-        'chrome.gyp:plugin',
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
         '../components/components.gyp:safe_browsing_db_mobile',

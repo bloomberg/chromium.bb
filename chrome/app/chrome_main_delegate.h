@@ -46,7 +46,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   bool ShouldEnableProfilerRecording() override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
-  content::ContentPluginClient* CreateContentPluginClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
 

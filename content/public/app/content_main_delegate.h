@@ -17,7 +17,6 @@ namespace content {
 
 class ContentBrowserClient;
 class ContentGpuClient;
-class ContentPluginClient;
 class ContentRendererClient;
 class ContentUtilityClient;
 class ZygoteForkDelegate;
@@ -90,7 +89,6 @@ class CONTENT_EXPORT ContentMainDelegate {
   // override this.
   virtual ContentBrowserClient* CreateContentBrowserClient();
   virtual ContentGpuClient* CreateContentGpuClient();
-  virtual ContentPluginClient* CreateContentPluginClient();
   virtual ContentRendererClient* CreateContentRendererClient();
   virtual ContentUtilityClient* CreateContentUtilityClient();
 };

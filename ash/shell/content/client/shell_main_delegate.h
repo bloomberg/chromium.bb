@@ -13,7 +13,6 @@
 
 namespace content {
 class ShellContentRendererClient;
-class ShellContentPluginClient;
 class ShellContentUtilityClient;
 }
 

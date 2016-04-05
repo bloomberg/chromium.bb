@@ -56,7 +56,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/gpu/content_gpu_client.h"
-#include "content/public/plugin/content_plugin_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/renderer/in_process_renderer_thread.h"
@@ -133,8 +132,6 @@ base::LazyInstance<ContentBrowserClient>
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<ContentGpuClient>
     g_empty_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ContentPluginClient>
-    g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentRendererClient>
     g_empty_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentUtilityClient>
@@ -236,16 +233,9 @@ class ContentClientInitializer {
         content_client->gpu_ = &g_empty_content_gpu_client.Get();
     }
 
-    if (process_type == switches::kPluginProcess ||
-        process_type == switches::kPpapiPluginProcess) {
-      if (delegate)
-        content_client->plugin_ = delegate->CreateContentPluginClient();
-      if (!content_client->plugin_)
-        content_client->plugin_ = &g_empty_content_plugin_client.Get();
-      // Single process not supported in split dll mode.
-    } else if (process_type == switches::kRendererProcess ||
-               base::CommandLine::ForCurrentProcess()->HasSwitch(
-                   switches::kSingleProcess)) {
+    if (process_type == switches::kRendererProcess ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess)) {
       if (delegate)
         content_client->renderer_ = delegate->CreateContentRendererClient();
       if (!content_client->renderer_)

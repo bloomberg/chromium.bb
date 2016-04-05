@@ -43,7 +43,6 @@ namespace content {
 class ContentBrowserClient;
 class ContentClient;
 class ContentGpuClient;
-class ContentPluginClient;
 class ContentRendererClient;
 class ContentUtilityClient;
 struct PepperPluginInfo;
@@ -74,7 +73,6 @@ class CONTENT_EXPORT ContentClient {
 
   ContentBrowserClient* browser() { return browser_; }
   ContentGpuClient* gpu() { return gpu_; }
-  ContentPluginClient* plugin() { return plugin_; }
   ContentRendererClient* renderer() { return renderer_; }
   ContentUtilityClient* utility() { return utility_; }
 
@@ -168,8 +166,6 @@ class CONTENT_EXPORT ContentClient {
   ContentBrowserClient* browser_;
   // The embedder API for participating in gpu logic.
   ContentGpuClient* gpu_;
-  // The embedder API for participating in plugin logic.
-  ContentPluginClient* plugin_;
   // The embedder API for participating in renderer logic.
   ContentRendererClient* renderer_;
   // The embedder API for participating in utility logic.

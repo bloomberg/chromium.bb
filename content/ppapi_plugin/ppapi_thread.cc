@@ -36,7 +36,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
@@ -550,13 +549,6 @@ bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,
 void PpapiThread::SavePluginName(const base::FilePath& path) {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_name(
       path.BaseName().AsUTF8Unsafe());
-
-  // plugin() is NULL when in-process, which is fine, because this is
-  // just a hook for setting the process name.
-  if (GetContentClient()->plugin()) {
-    GetContentClient()->plugin()->PluginProcessStarted(
-        path.BaseName().RemoveExtension().LossyDisplayName());
-  }
 }
 
 static std::string GetHistogramName(bool is_broker,

@@ -32,7 +32,6 @@
         ],
         'chromium_child_dependencies': [
           'child',
-          'plugin',
           'renderer',
           'utility',
           '../content/content.gyp:content_gpu',
@@ -114,7 +113,6 @@
         'chrome_dll.gypi',
         'chrome_exe.gypi',
         'chrome_installer.gypi',
-        'chrome_plugin.gypi',
         'chrome_renderer.gypi',
         'chrome_tests.gypi',
         'chrome_tests_unit.gypi',

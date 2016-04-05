@@ -130,7 +130,6 @@ source_set("test_support") {
   if (!is_ios) {
     public_deps += [
       "//chrome/child",
-      "//chrome/plugin",
       "//chrome/renderer",
       "//chrome/utility",
       "//components/autofill/core/browser:test_support",
@@ -142,7 +141,6 @@ source_set("test_support") {
       "//components/web_resource:test_support",
       "//content/public/child",
       "//content/public/common",
-      "//content/public/plugin",
       "//content/public/renderer",
       "//content/public/utility",
       "//google_apis:test_support",
