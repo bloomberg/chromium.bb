@@ -1796,20 +1796,59 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
 }
 
 void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
+  RECT window_rect;
+  GetWindowRect(hwnd(), &window_rect);
+  RECT dirty_region;
+  // A value of 1 indicates paint all.
+  if (!rgn || rgn == reinterpret_cast<HRGN>(1)) {
+    dirty_region.left = 0;
+    dirty_region.top = 0;
+    dirty_region.right = window_rect.right - window_rect.left;
+    dirty_region.bottom = window_rect.bottom - window_rect.top;
+  } else {
+    RECT rgn_bounding_box;
+    GetRgnBox(rgn, &rgn_bounding_box);
+    if (!IntersectRect(&dirty_region, &rgn_bounding_box, &window_rect)) {
+      SetMsgHandled(FALSE);
+      return;  // Dirty region doesn't intersect window bounds, bail.
+    }
+
+    // rgn_bounding_box is in screen coordinates. Map it to window coordinates.
+    OffsetRect(&dirty_region, -window_rect.left, -window_rect.top);
+  }
+
   // We only do non-client painting if we're not using the system frame.
   // It's required to avoid some native painting artifacts from appearing when
   // the window is resized.
   if (!delegate_->HasNonClientView() ||
       delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
+    if (ui::win::IsAeroGlassEnabled()) {
+      // The default WM_NCPAINT handler under Aero Glass doesn't clear the
+      // nonclient area, so it'll remain the default white color. That area is
+      // invisible initially (covered by the window border) but can become
+      // temporarily visible on maximizing or fullscreening, so clear it here.
+      HDC dc = GetWindowDC(hwnd());
+      RECT client_rect;
+      ::GetClientRect(hwnd(), &client_rect);
+      ::MapWindowPoints(hwnd(), nullptr, reinterpret_cast<POINT*>(&client_rect),
+                        2);
+      ::OffsetRect(&client_rect, -window_rect.left, -window_rect.top);
+      // client_rect now is in window space.
+
+      base::win::ScopedRegion base(::CreateRectRgnIndirect(&dirty_region));
+      base::win::ScopedRegion client(::CreateRectRgnIndirect(&client_rect));
+      base::win::ScopedRegion nonclient(::CreateRectRgn(0, 0, 0, 0));
+      ::CombineRgn(nonclient.get(), base.get(), client.get(), RGN_DIFF);
+
+      ::SelectClipRgn(dc, nonclient.get());
+      HBRUSH brush = CreateSolidBrush(0);
+      ::FillRect(dc, &dirty_region, brush);
+      ::DeleteObject(brush);
+      ::ReleaseDC(hwnd(), dc);
+    }
     SetMsgHandled(FALSE);
     return;
   }
-
-  // We have an NC region and need to paint it. We expand the NC region to
-  // include the dirty region of the root view. This is done to minimize
-  // paints.
-  RECT window_rect;
-  GetWindowRect(hwnd(), &window_rect);
 
   gfx::Size root_view_size = delegate_->GetRootViewSize();
   if (gfx::Size(window_rect.right - window_rect.left,
@@ -1822,24 +1861,6 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
     // all is well.
     return;
   }
-
-  RECT dirty_region;
-  // A value of 1 indicates paint all.
-  if (!rgn || rgn == reinterpret_cast<HRGN>(1)) {
-    dirty_region.left = 0;
-    dirty_region.top = 0;
-    dirty_region.right = window_rect.right - window_rect.left;
-    dirty_region.bottom = window_rect.bottom - window_rect.top;
-  } else {
-    RECT rgn_bounding_box;
-    GetRgnBox(rgn, &rgn_bounding_box);
-    if (!IntersectRect(&dirty_region, &rgn_bounding_box, &window_rect))
-      return;  // Dirty region doesn't intersect window bounds, bale.
-
-    // rgn_bounding_box is in screen coordinates. Map it to window coordinates.
-    OffsetRect(&dirty_region, -window_rect.left, -window_rect.top);
-  }
-
   delegate_->HandlePaintAccelerated(gfx::Rect(dirty_region));
 
   // When using a custom frame, we want to avoid calling DefWindowProc() since
