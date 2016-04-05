@@ -35,22 +35,6 @@ using content::PermissionType;
 
 namespace {
 
-// Enum for UMA purposes, make sure you update histograms.xml if you add new
-// permission actions. Never delete or reorder an entry; only add new entries
-// immediately before PERMISSION_NUM
-enum PermissionAction {
-  GRANTED = 0,
-  DENIED = 1,
-  DISMISSED = 2,
-  IGNORED = 3,
-  REVOKED = 4,
-  REENABLED = 5,
-  REQUESTED = 6,
-
-  // Always keep this at the end.
-  PERMISSION_ACTION_NUM,
-};
-
 // Deprecated. This method is used for the single-dimensional RAPPOR metrics
 // that are being replaced by the multi-dimensional ones.
 const std::string GetRapporMetric(PermissionType permission,

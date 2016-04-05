@@ -19,6 +19,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/storage/storage_info_fetcher.h"
@@ -137,9 +138,9 @@ void SetSettingForOrigin(JNIEnv* env,
   GURL origin_url(ConvertJavaStringToUTF8(env, origin));
   GURL embedder_url =
       embedder ? GURL(ConvertJavaStringToUTF8(env, embedder)) : GURL();
-  GetHostContentSettingsMap(is_incognito)
-      ->SetContentSettingDefaultScope(origin_url, embedder_url, content_type,
-                                      std::string(), setting);
+  PermissionUtil::SetContentSettingAndRecordRevocation(
+      GetActiveUserProfile(is_incognito), origin_url, embedder_url,
+      content_type, std::string(), setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
 }
 

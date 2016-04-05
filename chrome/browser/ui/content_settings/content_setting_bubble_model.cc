@@ -18,6 +18,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -722,8 +723,6 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
 void ContentSettingMediaStreamBubbleModel::UpdateSettings(
     ContentSetting setting) {
   if (profile()) {
-    HostContentSettingsMap* content_settings =
-        HostContentSettingsMapFactory::GetForProfile(profile());
     TabSpecificContentSettings* tab_content_settings =
         TabSpecificContentSettings::FromWebContents(web_contents());
     // The same urls must be used as in other places (e.g. the infobar) in
@@ -731,12 +730,12 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
     // TODO(markusheintz): Extract to a helper so that there is only a single
     // place to touch.
     if (MicrophoneAccessed()) {
-      content_settings->SetContentSettingDefaultScope(
+      PermissionUtil::SetContentSettingAndRecordRevocation(profile(),
           tab_content_settings->media_stream_access_origin(), GURL(),
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
     }
     if (CameraAccessed()) {
-      content_settings->SetContentSettingDefaultScope(
+      PermissionUtil::SetContentSettingAndRecordRevocation(profile(),
           tab_content_settings->media_stream_access_origin(), GURL(),
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
     }
@@ -940,11 +939,9 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
       TabSpecificContentSettings::FromWebContents(web_contents());
   const ContentSettingsUsagesState::StateMap& state_map =
       content_settings->geolocation_usages_state().state_map();
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
 
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
-    settings_map->SetContentSettingDefaultScope(
+    PermissionUtil::SetContentSettingAndRecordRevocation(profile(),
         map_entry.first, embedder_url, CONTENT_SETTINGS_TYPE_GEOLOCATION,
         std::string(), CONTENT_SETTING_DEFAULT);
   }
@@ -1199,13 +1196,12 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
       TabSpecificContentSettings::FromWebContents(web_contents());
   const ContentSettingsUsagesState::StateMap& state_map =
       content_settings->midi_usages_state().state_map();
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
 
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
-    settings_map->SetContentSettingDefaultScope(
-        map_entry.first, embedder_url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-        std::string(), CONTENT_SETTING_DEFAULT);
+    PermissionUtil::SetContentSettingAndRecordRevocation(
+        profile(), map_entry.first, embedder_url,
+        CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string(),
+        CONTENT_SETTING_DEFAULT);
   }
 }
 

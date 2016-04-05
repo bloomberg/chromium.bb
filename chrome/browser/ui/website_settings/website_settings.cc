@@ -286,6 +286,8 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
         num_values);
     // Trigger Rappor sampling if it is a permission revoke action.
+    // TODO(tsergeant): Integrate this with the revocation recording performed
+    // in the permissions layer. See crbug.com/469221.
     content::PermissionType permission_type;
     if (PermissionUtil::GetPermissionType(type, &permission_type)) {
       PermissionUmaUtil::PermissionRevoked(permission_type,

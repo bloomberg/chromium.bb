@@ -8,7 +8,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+
+class GURL;
+class Profile;
 
 namespace content {
 enum class PermissionType;
@@ -28,6 +32,23 @@ class PermissionUtil {
   // PermissionType directly.
   static bool GetPermissionType(ContentSettingsType type,
                                 content::PermissionType* out);
+
+  // Helper method which proxies
+  // HostContentSettingsMap::SetContentSettingDefaultScope(). Checks the content
+  // setting value before and after the change to determine whether it has gone
+  // from ALLOW to BLOCK or ASK, and records metrics accordingly. Should be
+  // called from UI code when a user changes permissions for a particular origin
+  // pair.
+  // TODO(tsergeant): This is a temporary solution to begin gathering metrics.
+  // We should integrate this better with the permissions layer. See
+  // crbug.com/469221.
+  static void SetContentSettingAndRecordRevocation(
+      Profile* profile,
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      std::string resource_identifier,
+      ContentSetting setting);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUtil);

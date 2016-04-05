@@ -15,6 +15,22 @@ namespace content {
 enum class PermissionType;
 }  // namespace content
 
+// Enum for UMA purposes, make sure you update histograms.xml if you add new
+// permission actions. Never delete or reorder an entry; only add new entries
+// immediately before PERMISSION_NUM
+enum PermissionAction {
+  GRANTED = 0,
+  DENIED = 1,
+  DISMISSED = 2,
+  IGNORED = 3,
+  REVOKED = 4,
+  REENABLED = 5,
+  REQUESTED = 6,
+
+  // Always keep this at the end.
+  PERMISSION_ACTION_NUM,
+};
+
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:

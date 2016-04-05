@@ -5,6 +5,9 @@
 #include "chrome/browser/permissions/permission_util.h"
 
 #include "base/logging.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_type.h"
 
 using content::PermissionType;
@@ -68,4 +71,31 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     return false;
   }
   return true;
+}
+
+void PermissionUtil::SetContentSettingAndRecordRevocation(
+    Profile* profile,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    std::string resource_identifier,
+    ContentSetting setting) {
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  ContentSetting previous_value = map->GetContentSetting(
+      primary_url, secondary_url, content_type, resource_identifier);
+
+  map->SetContentSettingDefaultScope(primary_url, secondary_url, content_type,
+                                     resource_identifier, setting);
+
+  ContentSetting final_value = map->GetContentSetting(
+      primary_url, secondary_url, content_type, resource_identifier);
+
+  if (previous_value == CONTENT_SETTING_ALLOW &&
+      final_value != CONTENT_SETTING_ALLOW) {
+    PermissionType permission_type;
+    if (PermissionUtil::GetPermissionType(content_type, &permission_type)) {
+      PermissionUmaUtil::PermissionRevoked(permission_type, primary_url);
+    }
+  }
 }

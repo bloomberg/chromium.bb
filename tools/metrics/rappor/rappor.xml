@@ -258,7 +258,8 @@ components/rappor/rappor_parameters.h.
   <owner>tsergeant@chromium.org</owner>
   <summary>
     The domain for which an AudioCapture permission was revoked. Also recorded
-    as a multi-dimensional metric in Permissions.Action.AudioCapture.
+    as a multi-dimensional metric in Permissions.Action.AudioCapture. Note: This
+    metric is recorded for more revocation actions as of 2016-04-01 (M51).
   </summary>
 </rappor-metric>
 
@@ -309,7 +310,8 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>
   <summary>
-    The domain for which a Geolocation permission was revoked.
+    The domain for which a Geolocation permission was revoked. Note: This
+    metric is recorded for more revocation actions as of 2016-04-01 (M51).
   </summary>
 </rappor-metric>
 
@@ -364,7 +366,8 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>
   <summary>
-    The domain for which a Notification permission was revoked.
+    The domain for which a Notification permission was revoked. Note: This
+    metric is recorded for more revocation actions as of 2016-04-01 (M51).
   </summary>
 </rappor-metric>
 
@@ -421,7 +424,8 @@ components/rappor/rappor_parameters.h.
   <owner>tsergeant@chromium.org</owner>
   <summary>
     The domain for which an VideoCapture permission was revoked. Also recorded
-    as a multi-dimensional metric in Permissions.Action.VideoCapture.
+    as a multi-dimensional metric in Permissions.Action.VideoCapture. Note: This
+    metric is recorded for more revocation actions as of 2016-04-01 (M51).
   </summary>
 </rappor-metric>
 
