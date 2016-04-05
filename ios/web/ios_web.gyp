@@ -170,6 +170,8 @@
         'public/url_util.h',
         'public/user_metrics.h',
         'public/web/url_data_source_ios.h',
+        'public/web_capabilities.cc',
+        'public/web_capabilities.h',
         'public/web_client.h',
         'public/web_client.mm',
         'public/web_controller_factory.h',
