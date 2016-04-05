@@ -14,6 +14,11 @@ const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+// Enables Expect CT reporting, which sends reports for opted-in sites
+// that don't serve sufficient Certificate Transparency information.
+const base::Feature kExpectCTReporting{"ExpectCTReporting",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experimental fullscreen prototype that allows pages to map browser and
 // system-reserved keyboard shortcuts.
 const base::Feature kExperimentalKeyboardLockUI{

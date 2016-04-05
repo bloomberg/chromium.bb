@@ -8,9 +8,10 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "net/base/test_data_directory.h"
 #include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "net/test/cert_test_util.h"
@@ -249,11 +250,18 @@ void CheckExpectCTReport(const std::string& serialized_report,
       *report_invalid_scts, *report_valid_scts));
 }
 
+void EnableFeature() {
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(features::kExpectCTReporting.name,
+                                          "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+}
+
 }  // namespace
 
-// Test that no report is sent when the command line switch is not
-// enabled.
-TEST(ChromeExpectCTReporterTest, NoCommandLineSwitch) {
+// Test that no report is sent when the feature is not enabled.
+TEST(ChromeExpectCTReporterTest, FeatureDisabled) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
@@ -277,8 +285,7 @@ TEST(ChromeExpectCTReporterTest, NoCommandLineSwitch) {
 
 // Test that no report is sent if the report URI is empty.
 TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExpectCTReporting);
+  EnableFeature();
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
@@ -294,8 +301,7 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
 
 // Test that a sent report has the right format.
 TEST(ChromeExpectCTReporterTest, SendReport) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExpectCTReporting);
+  EnableFeature();
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);

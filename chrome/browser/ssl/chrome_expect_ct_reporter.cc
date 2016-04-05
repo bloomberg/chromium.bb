@@ -8,11 +8,12 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "net/url_request/certificate_report_sender.h"
 
 namespace {
@@ -117,10 +118,8 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   if (report_uri.is_empty())
     return;
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExpectCTReporting)) {
+  if (!base::FeatureList::IsEnabled(features::kExpectCTReporting))
     return;
-  }
 
   // TODO(estark): De-duplicate reports so that the same report isn't
   // sent too often in some period of time.
