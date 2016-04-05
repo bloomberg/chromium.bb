@@ -321,10 +321,10 @@ void walkInlineText(LayoutSVGInlineText* text, TreeWalkTextState& textState, Upd
     textState.valueListPosition += calculator.currentPosition() - skippedWhitespace;
 }
 
-void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtText, SVGCharacterDataMap* allCharactersMap = nullptr)
+void walkTree(LayoutSVGText& start, LayoutSVGInlineText* stopAtText, SVGCharacterDataMap* allCharactersMap = nullptr)
 {
     TreeWalkTextState textState;
-    LayoutObject* child = start->firstChild();
+    LayoutObject* child = start.firstChild();
     while (child) {
         if (child->isSVGInlineText()) {
             LayoutSVGInlineText* text = toLayoutSVGInlineText(child);
@@ -341,23 +341,20 @@ void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtText, SVGCharacte
                 continue;
             }
         }
-        child = child->nextInPreOrderAfterChildren(start);
+        child = child->nextInPreOrderAfterChildren(&start);
     }
 }
 
 } // namespace
 
-void SVGTextMetricsBuilder::measureTextLayoutObject(LayoutSVGInlineText* text)
+void SVGTextMetricsBuilder::measureTextLayoutObject(LayoutSVGText& textRoot, LayoutSVGInlineText& text)
 {
-    ASSERT(text);
-    if (LayoutSVGText* textRoot = LayoutSVGText::locateLayoutSVGTextAncestor(text))
-        walkTree(textRoot, text);
+    walkTree(textRoot, &text);
 }
 
-void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(LayoutSVGText* textRoot, LayoutSVGInlineText* stopAtText, SVGCharacterDataMap& allCharactersMap)
+void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(LayoutSVGText& textRoot, SVGCharacterDataMap& allCharactersMap)
 {
-    ASSERT(textRoot);
-    walkTree(textRoot, stopAtText, &allCharactersMap);
+    walkTree(textRoot, nullptr, &allCharactersMap);
 }
 
 } // namespace blink

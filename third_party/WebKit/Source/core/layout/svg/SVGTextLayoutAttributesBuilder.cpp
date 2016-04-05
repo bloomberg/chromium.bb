@@ -32,30 +32,6 @@ SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
 {
 }
 
-void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForText(LayoutSVGInlineText* text)
-{
-    ASSERT(text);
-
-    LayoutSVGText* textRoot = LayoutSVGText::locateLayoutSVGTextAncestor(text);
-    if (!textRoot)
-        return;
-
-    if (m_textPositions.isEmpty()) {
-        m_characterDataMap.clear();
-
-        m_textLength = 0;
-        UChar lastCharacter = ' ';
-        collectTextPositioningElements(*textRoot, lastCharacter);
-
-        if (!m_textLength)
-            return;
-
-        buildCharacterDataMap(*textRoot);
-    }
-
-    SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(textRoot, text, m_characterDataMap);
-}
-
 bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(LayoutSVGText& textRoot)
 {
     m_characterDataMap.clear();
@@ -70,14 +46,13 @@ bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(LayoutSV
         return false;
 
     buildCharacterDataMap(textRoot);
-    SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(&textRoot, nullptr, m_characterDataMap);
+    SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(textRoot, m_characterDataMap);
     return true;
 }
 
-void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextLayoutObject(LayoutSVGInlineText* text)
+void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextLayoutObject(LayoutSVGText& textRoot, LayoutSVGInlineText& text)
 {
-    ASSERT(text);
-    SVGTextMetricsBuilder::measureTextLayoutObject(text);
+    SVGTextMetricsBuilder::measureTextLayoutObject(textRoot, text);
 }
 
 static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)

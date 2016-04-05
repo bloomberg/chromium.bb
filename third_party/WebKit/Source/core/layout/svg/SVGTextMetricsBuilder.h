@@ -29,8 +29,8 @@ class LayoutSVGText;
 
 namespace SVGTextMetricsBuilder {
 
-void measureTextLayoutObject(LayoutSVGInlineText*);
-void buildMetricsAndLayoutAttributes(LayoutSVGText*, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
+void measureTextLayoutObject(LayoutSVGText&, LayoutSVGInlineText&);
+void buildMetricsAndLayoutAttributes(LayoutSVGText&, SVGCharacterDataMap& allCharactersMap);
 
 } // namespace SVGTextMetricsBuilder
 

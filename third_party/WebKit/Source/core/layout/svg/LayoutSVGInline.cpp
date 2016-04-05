@@ -138,15 +138,9 @@ void LayoutSVGInline::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
 
-    LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this);
-    if (!textLayoutObject) {
-        LayoutInline::removeChild(child);
-        return;
-    }
-    Vector<SVGTextLayoutAttributes*, 2> affectedAttributes;
-    textLayoutObject->subtreeChildWillBeRemoved(child, affectedAttributes);
+    if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this))
+        textLayoutObject->subtreeChildWillBeRemoved(child);
     LayoutInline::removeChild(child);
-    textLayoutObject->subtreeChildWasRemoved(affectedAttributes);
 }
 
 void LayoutSVGInline::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)

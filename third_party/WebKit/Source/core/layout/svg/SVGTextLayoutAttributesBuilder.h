@@ -47,9 +47,8 @@ class SVGTextLayoutAttributesBuilder {
 public:
     SVGTextLayoutAttributesBuilder();
     bool buildLayoutAttributesForForSubtree(LayoutSVGText&);
-    void buildLayoutAttributesForText(LayoutSVGInlineText*);
 
-    void rebuildMetricsForTextLayoutObject(LayoutSVGInlineText*);
+    void rebuildMetricsForTextLayoutObject(LayoutSVGText&, LayoutSVGInlineText&);
 
     // Invoked whenever the underlying DOM tree changes, so that m_textPositions is rebuild.
     void clearTextPositioningElements() { m_textPositions.clear(); }

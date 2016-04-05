@@ -53,8 +53,7 @@ public:
     Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
 
     void subtreeChildWasAdded(LayoutObject*);
-    void subtreeChildWillBeRemoved(LayoutObject*, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
-    void subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
+    void subtreeChildWillBeRemoved(LayoutObject*);
     void subtreeTextDidChange(LayoutSVGInlineText*);
 
     const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
