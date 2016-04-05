@@ -164,6 +164,7 @@ public:
     void setLayerSquashingEnabled(bool) { }
     virtual void setLoadsImagesAutomatically(bool) = 0;
     virtual void setLoadWithOverviewMode(bool) = 0;
+    virtual void setShouldReuseGlobalForUnownedMainFrame(bool) = 0;
     virtual void setLocalStorageEnabled(bool) = 0;
     virtual void setMainFrameClipsContent(bool) = 0;
     virtual void setMainFrameResizesAreOrientationChanges(bool) = 0;

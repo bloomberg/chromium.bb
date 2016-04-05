@@ -292,6 +292,11 @@ void WebSettingsImpl::setLoadWithOverviewMode(bool enabled)
     m_settings->setLoadWithOverviewMode(enabled);
 }
 
+void WebSettingsImpl::setShouldReuseGlobalForUnownedMainFrame(bool enabled)
+{
+    m_settings->setShouldReuseGlobalForUnownedMainFrame(enabled);
+}
+
 void WebSettingsImpl::setPluginsEnabled(bool enabled)
 {
     m_devToolsEmulator->setPluginsEnabled(enabled);

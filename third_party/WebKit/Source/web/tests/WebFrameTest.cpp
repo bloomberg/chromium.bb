@@ -8497,4 +8497,81 @@ TEST_F(WebFrameVisibilityChangeTest, RemoteFrameParentVisibilityChange)
     EXPECT_FALSE(remoteFrameClient()->isVisible());
 }
 
+static void enableGlobalReuseForUnownedMainFrames(WebSettings* settings)
+{
+    settings->setShouldReuseGlobalForUnownedMainFrame(true);
+}
+
+// A main frame with no opener should have a unique security origin. Thus, the
+// global should never be reused on the initial navigation.
+TEST(WebFrameGlobalReuseTest, MainFrameWithNoOpener)
+{
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initialize(true);
+
+    WebLocalFrame* mainFrame = helper.webView()->mainFrame()->toWebLocalFrame();
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    mainFrame->executeScript(WebScriptSource("hello = 'world';"));
+    FrameTestHelpers::loadFrame(mainFrame, "data:text/html,new page");
+    v8::Local<v8::Value> result = mainFrame->executeScriptAndReturnValue(WebScriptSource("hello"));
+    EXPECT_TRUE(result.IsEmpty());
+}
+
+// Child frames should never reuse the global on a cross-origin navigation, even
+// if the setting is enabled. It's not safe to since the parent could have
+// injected script before the initial navigation.
+TEST(WebFrameGlobalReuseTest, ChildFrame)
+{
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initialize(true, nullptr, nullptr, enableGlobalReuseForUnownedMainFrames);
+
+    WebLocalFrame* mainFrame = helper.webView()->mainFrame()->toWebLocalFrame();
+    FrameTestHelpers::loadFrame(mainFrame, "data:text/html,<iframe></iframe>");
+
+    WebLocalFrame* childFrame = mainFrame->firstChild()->toWebLocalFrame();
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    childFrame->executeScript(WebScriptSource("hello = 'world';"));
+    FrameTestHelpers::loadFrame(childFrame, "data:text/html,new page");
+    v8::Local<v8::Value> result = childFrame->executeScriptAndReturnValue(WebScriptSource("hello"));
+    EXPECT_TRUE(result.IsEmpty());
+}
+
+// A main frame with an opener should never reuse the global on a cross-origin
+// navigation, even if the setting is enabled. It's not safe to since the opener
+// could have injected script.
+TEST(WebFrameGlobalReuseTest, MainFrameWithOpener)
+{
+    FrameTestHelpers::TestWebViewClient openerWebViewClient;
+    FrameTestHelpers::WebViewHelper openerHelper;
+    openerHelper.initialize(false, nullptr, &openerWebViewClient);
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initializeWithOpener(openerHelper.webView()->mainFrame(), true, nullptr, nullptr, enableGlobalReuseForUnownedMainFrames);
+
+    WebLocalFrame* mainFrame = helper.webView()->mainFrame()->toWebLocalFrame();
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    mainFrame->executeScript(WebScriptSource("hello = 'world';"));
+    FrameTestHelpers::loadFrame(mainFrame, "data:text/html,new page");
+    v8::Local<v8::Value> result = mainFrame->executeScriptAndReturnValue(WebScriptSource("hello"));
+    EXPECT_TRUE(result.IsEmpty());
+}
+
+// A main frame that is unrelated to any other frame /can/ reuse the global if
+// the setting is enabled. In this case, it's impossible for any other frames to
+// have touched the global. Only the embedder could have injected script, and
+// the embedder enabling this setting is a signal that the injected script needs
+// to persist on the first navigation away from the initial empty document.
+TEST(WebFrameGlobalReuseTest, ReuseForMainFrameIfEnabled)
+{
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initialize(true, nullptr, nullptr, enableGlobalReuseForUnownedMainFrames);
+
+    WebLocalFrame* mainFrame = helper.webView()->mainFrame()->toWebLocalFrame();
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    mainFrame->executeScript(WebScriptSource("hello = 'world';"));
+    FrameTestHelpers::loadFrame(mainFrame, "data:text/html,new page");
+    v8::Local<v8::Value> result = mainFrame->executeScriptAndReturnValue(WebScriptSource("hello"));
+    ASSERT_TRUE(result->IsString());
+    EXPECT_EQ("world", toCoreString(result->ToString(mainFrame->mainWorldScriptContext()).ToLocalChecked()));
+}
+
 } // namespace blink

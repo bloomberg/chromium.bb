@@ -1558,6 +1558,8 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, 
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
     frame()->init();
+    if (frame() && frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() && !parent() && !opener() && frame()->settings()->shouldReuseGlobalForUnownedMainFrame())
+        frame()->document()->getSecurityOrigin()->grantUniversalAccess();
 }
 
 RawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,

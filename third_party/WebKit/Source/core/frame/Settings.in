@@ -214,6 +214,12 @@ useWideViewport initial=true, invalidate=ViewportDescription
 # http://developer.android.com/reference/android/webkit/WebSettings.html#setLoadWithOverviewMode(boolean)
 loadWithOverviewMode initial=true, invalidate=ViewportDescription
 
+# Used by android_webview to support legacy apps that inject script into a top-level initial empty
+# document and expect it to persist on navigation, even though the origin is unique. Note that this
+# behavior violates the requirements described by [Initialising a new Document object] in
+# https://html.spec.whatwg.org/multipage/browsers.html#navigating-across-documents.
+shouldReuseGlobalForUnownedMainFrame initial=false
+
 ######## End of settings used by Android WebView ########
 
 
