@@ -207,6 +207,7 @@ class TracingTrack(devtools_monitor.Track):
           'M': self._Ignore,
           'X': self._Ignore,
           'R': self._Ignore,
+          'p': self._Ignore,
           '(': self._Ignore, # Context events.
           ')': self._Ignore, # Ditto.
           None: self._Ignore,
@@ -313,9 +314,6 @@ class Event(object):
     if not synthetic and tracing_event['ph'] in ['s', 't', 'f']:
       raise devtools_monitor.DevToolsConnectionException(
           'Unsupported event: %s' % tracing_event)
-    if not synthetic and tracing_event['ph'] in ['p']:
-      raise devtools_monitor.DevToolsConnectionException(
-          'Deprecated event: %s' % tracing_event)
 
     self._tracing_event = tracing_event
     # Note tracing event times are in microseconds.
