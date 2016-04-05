@@ -98,20 +98,35 @@ void ZoomDecoration::ShowAndUpdateUI(ui_zoom::ZoomController* zoom_controller,
                                      NSString* tooltip_string,
                                      bool location_bar_is_dark) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::VectorIconId iconId = gfx::VectorIconId::VECTOR_ICON_NONE;
     ui_zoom::ZoomController::RelativeZoom relative_zoom =
         zoom_controller->GetZoomRelativeToDefault();
-    // There is no ZOOM_NORMAL under Material Design.
-    gfx::VectorIconId iconId =
-        relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
-            ? gfx::VectorIconId::ZOOM_MINUS
-            : gfx::VectorIconId::ZOOM_PLUS;
+    if (relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
+      iconId = gfx::VectorIconId::ZOOM_MINUS;
+    } else if (relative_zoom ==
+               ui_zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
+      iconId = gfx::VectorIconId::ZOOM_PLUS;
+    }
 
-    SkColor vectorIconColor = location_bar_is_dark ? SK_ColorWHITE
-                                                   : gfx::kChromeIconGrey;
-    NSImage* theImage =
-        NSImageFromImageSkia(gfx::CreateVectorIcon(iconId,
-                                                   16,
-                                                   vectorIconColor));
+    NSImage* theImage = nil;
+    if (iconId != gfx::VectorIconId::VECTOR_ICON_NONE) {
+      SkColor vectorIconColor = location_bar_is_dark ? SK_ColorWHITE
+                                                     : gfx::kChromeIconGrey;
+      theImage = NSImageFromImageSkia(gfx::CreateVectorIcon(iconId,
+                                                            16,
+                                                            vectorIconColor));
+    } else {
+      // Under Material Design there is no icon for ZOOM_NORMAL. This means
+      // it should be OK to set a nil image. However if the user is actively
+      // changing the zoom level and drives it back to 100%, there will be no
+      // icon and the zoom bubble will still be visible. ShowBubble() asks the
+      // autocomplete textfield for the zoom decoration's frame in order to
+      // position the bubble, but when the decoration's image is nil it has
+      // no frame. The result is the bubble positioned incorrectly. So, we have
+      // to set an empty image.
+      theImage =
+          [[[NSImage alloc] initWithSize:NSMakeSize(16, 16)] autorelease];
+    }
     SetImage(theImage);
   } else {
     int image_id = IDR_ZOOM_NORMAL;
