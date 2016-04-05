@@ -256,6 +256,14 @@ void SupervisedUserService::AddURLAccessRequest(
       callback, 0);
 }
 
+void SupervisedUserService::ReportURL(const GURL& url,
+                                      const SuccessCallback& callback) {
+  if (url_reporter_)
+    url_reporter_->ReportUrl(url, callback);
+  else
+    callback.Run(false);
+}
+
 void SupervisedUserService::AddExtensionUpdateRequest(
     const std::string& extension_id,
     const base::Version& version,
@@ -394,6 +402,11 @@ void SupervisedUserService::RemoveObserver(
 void SupervisedUserService::AddPermissionRequestCreator(
     scoped_ptr<PermissionRequestCreator> creator) {
   permissions_creators_.push_back(creator.release());
+}
+
+void SupervisedUserService::SetSafeSearchURLReporter(
+    scoped_ptr<SafeSearchURLReporter> reporter) {
+  url_reporter_ = std::move(reporter);
 }
 
 SupervisedUserService::URLFilterContext::URLFilterContext()
@@ -600,6 +613,7 @@ void SupervisedUserService::SetActive(bool active) {
 #endif
   } else {
     permissions_creators_.clear();
+    url_reporter_.reset();
 
     pref_change_registrar_.Remove(
         prefs::kDefaultSupervisedUserFilteringBehavior);

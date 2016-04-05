@@ -2866,6 +2866,8 @@
       'browser/supervised_user/experimental/supervised_user_blacklist.h',
       'browser/supervised_user/experimental/supervised_user_filtering_switches.cc',
       'browser/supervised_user/experimental/supervised_user_filtering_switches.h',
+      'browser/supervised_user/experimental/safe_search_url_reporter.cc',
+      'browser/supervised_user/experimental/safe_search_url_reporter.h',
       'browser/supervised_user/permission_request_creator.h',
       'browser/supervised_user/supervised_user_bookmarks_handler.cc',
       'browser/supervised_user/supervised_user_bookmarks_handler.h',

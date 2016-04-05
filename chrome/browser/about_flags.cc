@@ -1695,6 +1695,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-md-history", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMaterialDesignHistoryFeature)},
+    {"safe-search-url-reporting",
+     IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_NAME,
+     IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSafeSearchUrlReporting)},
 #if defined(OS_WIN)
     {"enable-windows-desktop-search-redirection",
      IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_NAME,

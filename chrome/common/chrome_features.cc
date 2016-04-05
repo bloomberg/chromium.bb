@@ -39,6 +39,9 @@ const base::Feature kRuntimeMemoryLeakDetector{
     "RuntimeMemoryLeakDetector", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states. The name is a misnomer (for historical reasons); affects both
 // Views and Android builds.

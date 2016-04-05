@@ -20,6 +20,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/supervised_user/experimental/safe_search_url_reporter.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
@@ -120,6 +121,10 @@ class SupervisedUserService : public KeyedService,
   // Adds an access request for the given URL.
   void AddURLAccessRequest(const GURL& url, const SuccessCallback& callback);
 
+  // Reports |url| to the SafeSearch API, because the user thinks this is an
+  // inappropriate URL.
+  void ReportURL(const GURL& url, const SuccessCallback& callback);
+
   // Adds an update request for the given WebStore item (App/Extension).
   void AddExtensionUpdateRequest(const std::string& extension_id,
                                  const base::Version& version,
@@ -179,6 +184,8 @@ class SupervisedUserService : public KeyedService,
 
   void AddPermissionRequestCreator(
       scoped_ptr<PermissionRequestCreator> creator);
+
+  void SetSafeSearchURLReporter(scoped_ptr<SafeSearchURLReporter> reporter);
 
   // ProfileKeyedService override:
   void Shutdown() override;
@@ -397,6 +404,9 @@ class SupervisedUserService : public KeyedService,
 
   // Used to create permission requests.
   ScopedVector<PermissionRequestCreator> permissions_creators_;
+
+  // Used to report inappropriate URLs to SafeSarch API.
+  scoped_ptr<SafeSearchURLReporter> url_reporter_;
 
   base::ObserverList<SupervisedUserServiceObserver> observer_list_;
 

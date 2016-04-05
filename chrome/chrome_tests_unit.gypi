@@ -1409,6 +1409,7 @@
       'browser/supervised_user/child_accounts/family_info_fetcher_unittest.cc',
       'browser/supervised_user/child_accounts/permission_request_creator_apiary_unittest.cc',
       'browser/supervised_user/experimental/supervised_user_async_url_checker_unittest.cc',
+      'browser/supervised_user/experimental/safe_search_url_reporter_unittest.cc',
       'browser/supervised_user/supervised_user_bookmarks_handler_unittest.cc',
       'browser/supervised_user/supervised_user_pref_store_unittest.cc',
       'browser/supervised_user/supervised_user_service_unittest.cc',

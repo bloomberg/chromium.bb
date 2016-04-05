@@ -31,6 +31,8 @@ extern const base::Feature kMaterialDesignHistoryFeature;
 extern const base::Feature kRuntimeMemoryLeakDetector;
 #endif  // defined(OS_CHROMEOS)
 
+extern const base::Feature kSafeSearchUrlReporting;
+
 extern const base::Feature kSimplifiedFullscreenUI;
 
 #if defined(SYZYASAN)
