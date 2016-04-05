@@ -108,7 +108,6 @@
       'WebArrayBuffer.cpp',
       'WebArrayBufferConverter.cpp',
       'WebArrayBufferView.cpp',
-      'WebBindings.cpp',
       'WebBlob.cpp',
       'WebCache.cpp',
       'WebColorSuggestion.cpp',
