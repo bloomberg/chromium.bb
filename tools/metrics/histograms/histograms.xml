@@ -52350,6 +52350,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.RefreshTokenAvailable" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as not useful since it always logged true.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Whether OAuth2 refresh token was available at the time when

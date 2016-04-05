@@ -754,6 +754,13 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Whether sync has been authenticated with an account ID.
   bool IsSignedIn() const;
 
+  // The backend can only start if sync can start and has an auth token. This is
+  // different fron CanSyncStart because it represents whether the backend can
+  // be started at this moment, whereas CanSyncStart represents whether sync can
+  // conceptually start without further user action (acquiring a token is an
+  // automatic process).
+  bool CanBackendStart() const;
+
   // True if a syncing backend exists.
   bool HasSyncingBackend() const;
 

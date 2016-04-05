@@ -261,7 +261,8 @@ void ProfileSyncService::Initialize() {
   sync_client_->Initialize();
 
   startup_controller_.reset(new browser_sync::StartupController(
-      oauth2_token_service_, &sync_prefs_, signin_.get(),
+      &sync_prefs_,
+      base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                  startup_controller_weak_factory_.GetWeakPtr())));
   scoped_ptr<browser_sync::LocalSessionEventRouter> router(
@@ -1532,6 +1533,12 @@ void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
 bool ProfileSyncService::IsSignedIn() const {
   // Sync is logged in if there is a non-empty effective account id.
   return !signin_->GetAccountIdToUse().empty();
+}
+
+bool ProfileSyncService::CanBackendStart() const {
+  return CanSyncStart() && oauth2_token_service_ &&
+         oauth2_token_service_->RefreshTokenIsAvailable(
+             signin_->GetAccountIdToUse());
 }
 
 bool ProfileSyncService::IsBackendInitialized() const {

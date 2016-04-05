@@ -10,9 +10,6 @@
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-class ProfileOAuth2TokenService;
-class SigninManagerWrapper;
-
 namespace sync_driver {
 class SyncPrefs;
 }
@@ -24,9 +21,8 @@ namespace browser_sync {
 // to as "the backend").
 class StartupController {
  public:
-  StartupController(const ProfileOAuth2TokenService* token_service,
-                    const sync_driver::SyncPrefs* sync_prefs,
-                    const SigninManagerWrapper* signin,
+  StartupController(const sync_driver::SyncPrefs* sync_prefs,
+                    base::Callback<bool()> can_start,
                     base::Closure start_backend);
   ~StartupController();
 
@@ -89,9 +85,9 @@ class StartupController {
 
   const sync_driver::SyncPrefs* sync_prefs_;
 
-  const ProfileOAuth2TokenService* token_service_;
-
-  const SigninManagerWrapper* signin_;
+  // A function that can be invoked repeatedly to determine whether sync can be
+  // started. |start_backend_| should not be invoked unless this returns true.
+  base::Callback<bool()> can_start_;
 
   // The callback we invoke when it's time to call expensive
   // startup routines for the sync backend.

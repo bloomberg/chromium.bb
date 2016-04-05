@@ -12,8 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 
@@ -38,16 +36,13 @@ enum DeferredInitTrigger {
 
 }  // namespace
 
-StartupController::StartupController(
-    const ProfileOAuth2TokenService* token_service,
-    const sync_driver::SyncPrefs* sync_prefs,
-    const SigninManagerWrapper* signin,
-    base::Closure start_backend)
+StartupController::StartupController(const sync_driver::SyncPrefs* sync_prefs,
+                                     base::Callback<bool()> can_start,
+                                     base::Closure start_backend)
     : received_start_request_(false),
       setup_in_progress_(false),
       sync_prefs_(sync_prefs),
-      token_service_(token_service),
-      signin_(signin),
+      can_start_(can_start),
       start_backend_(start_backend),
       fallback_timeout_(
           base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
@@ -119,28 +114,8 @@ void StartupController::OverrideFallbackTimeoutForTest(
 }
 
 bool StartupController::TryStart() {
-  if (sync_prefs_->IsManaged())
+  if (!can_start_.Run())
     return false;
-
-  if (!sync_prefs_->IsSyncRequested())
-    return false;
-
-  if (signin_->GetAccountIdToUse().empty())
-    return false;
-
-  if (!token_service_)
-    return false;
-
-  if (!token_service_->RefreshTokenIsAvailable(signin_->GetAccountIdToUse())) {
-    return false;
-  }
-
-  // TODO(tim): Seems wrong to always record this histogram here...
-  // If we got here then tokens are loaded and user logged in and sync is
-  // enabled. If OAuth refresh token is not available then something is wrong.
-  // When PSS requests access token, OAuth2TokenService will return error and
-  // PSS will show error to user asking to reauthenticate.
-  UMA_HISTOGRAM_BOOLEAN("Sync.RefreshTokenAvailable", true);
 
   // For performance reasons, defer the heavy lifting for sync init unless:
   //
