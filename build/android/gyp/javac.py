@@ -69,46 +69,6 @@ def _FilterJavaFiles(paths, filters):
 _MAX_MANIFEST_LINE_LEN = 72
 
 
-def _CreateManifest(manifest_path, classpath, main_class=None,
-                    manifest_entries=None):
-  """Creates a manifest file with the given parameters.
-
-  This generates a manifest file that compiles with the spec found at
-  http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#JAR_Manifest
-
-  Args:
-    manifest_path: The path to the manifest file that should be created.
-    classpath: The JAR files that should be listed on the manifest file's
-      classpath.
-    main_class: If present, the class containing the main() function.
-    manifest_entries: If present, a list of (key, value) pairs to add to
-      the manifest.
-
-  """
-  output = ['Manifest-Version: 1.0']
-  if main_class:
-    output.append('Main-Class: %s' % main_class)
-  if manifest_entries:
-    for k, v in manifest_entries:
-      output.append('%s: %s' % (k, v))
-  if classpath:
-    sanitized_paths = []
-    for path in classpath:
-      sanitized_paths.append(os.path.basename(path.strip('"')))
-    output.append('Class-Path: %s' % ' '.join(sanitized_paths))
-  output.append('Created-By: ')
-  output.append('')
-
-  wrapper = textwrap.TextWrapper(break_long_words=True,
-                                 drop_whitespace=False,
-                                 subsequent_indent=' ',
-                                 width=_MAX_MANIFEST_LINE_LEN - 2)
-  output = '\r\n'.join(w for l in output for w in wrapper.wrap(l))
-
-  with open(manifest_path, 'w') as f:
-    f.write(output)
-
-
 def _ExtractClassFiles(jar_path, dest_dir, java_files):
   """Extracts all .class files not corresponding to |java_files|."""
   # Two challenges exist here:
@@ -160,8 +120,7 @@ def _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir):
       fileobj.write(re.sub(r'/tmp/[^/]*', temp_dir, pdb_data))
 
 
-def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
-                runtime_classpath):
+def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
   with build_utils.TempDir() as temp_dir:
     srcjars = options.java_srcjars
     # The .excluded.jar contains .class files excluded from the main jar.
@@ -263,23 +222,12 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       # Make sure output exists.
       build_utils.Touch(pdb_path)
 
-    if options.main_class or options.manifest_entry:
-      entries = []
-      if options.manifest_entry:
-        entries = [e.split(':') for e in options.manifest_entry]
-      manifest_file = os.path.join(temp_dir, 'manifest')
-      _CreateManifest(manifest_file, runtime_classpath, options.main_class,
-                      entries)
-    else:
-      manifest_file = None
-
     glob = options.jar_excluded_classes
     inclusion_predicate = lambda f: not build_utils.MatchesGlob(f, glob)
     exclusion_predicate = lambda f: not inclusion_predicate(f)
 
     jar.JarDirectory(classes_dir,
                      options.jar_path,
-                     manifest_file=manifest_file,
                      predicate=inclusion_predicate)
     jar.JarDirectory(classes_dir,
                      excluded_jar_path,
@@ -310,10 +258,6 @@ def _ParseOptions(argv):
       help='Classpath for javac. If this is specified multiple times, they '
       'will all be appended to construct the classpath.')
   parser.add_option(
-      '--use-ijars',
-      action='store_true',
-      help='Whether to use interface jars (.interface.jar) when compiling')
-  parser.add_option(
       '--incremental',
       action='store_true',
       help='Whether to re-use .class files rather than recompiling them '
@@ -327,26 +271,15 @@ def _ParseOptions(argv):
       '--jar-excluded-classes',
       default='',
       help='List of .class file patterns to exclude from the jar.')
-
   parser.add_option(
       '--chromium-code',
       type='int',
       help='Whether code being compiled should be built with stricter '
       'warnings for chromium code.')
-
   parser.add_option(
       '--use-errorprone-path',
       help='Use the Errorprone compiler at this path.')
-
   parser.add_option('--jar-path', help='Jar output path.')
-  parser.add_option(
-      '--main-class',
-      help='The class containing the main method.')
-  parser.add_option(
-      '--manifest-entry',
-      action='append',
-      help='Key:value pairs to add to the .jar manifest.')
-
   parser.add_option('--stamp', help='Path to touch on success.')
 
   options, args = parser.parse_args(argv)
@@ -387,13 +320,6 @@ def main(argv):
 
   java_files = _FilterJavaFiles(java_files, options.javac_includes)
 
-  runtime_classpath = options.classpath
-  compile_classpath = runtime_classpath
-  if options.use_ijars:
-    ijar_re = re.compile(r'\.jar$')
-    compile_classpath = (
-        [ijar_re.sub('.interface.jar', p) for p in runtime_classpath])
-
   javac_cmd = ['javac']
   if options.use_errorprone_path:
     javac_cmd = [options.use_errorprone_path] + ERRORPRONE_OPTIONS
@@ -403,7 +329,7 @@ def main(argv):
       # Chromium only allows UTF8 source files.  Being explicit avoids
       # javac pulling a default encoding from the user's environment.
       '-encoding', 'UTF-8',
-      '-classpath', ':'.join(compile_classpath),
+      '-classpath', ':'.join(options.classpath),
       # Prevent compiler from compiling .java files not listed as inputs.
       # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
       '-sourcepath', ''
@@ -426,10 +352,8 @@ def main(argv):
 
   classpath_inputs = options.bootclasspath
   # TODO(agrieve): Remove this .TOC heuristic once GYP is no more.
-  if options.use_ijars:
-    classpath_inputs.extend(compile_classpath)
-  else:
-    for path in compile_classpath:
+  if options.classpath and not options.classpath[0].endswith('.interface.jar'):
+    for path in options.classpath:
       if os.path.exists(path + '.TOC'):
         classpath_inputs.append(path + '.TOC')
       else:
@@ -453,7 +377,7 @@ def main(argv):
   # of them does not change what gets written to the depsfile.
   build_utils.CallAndWriteDepfileIfStale(
       lambda changes: _OnStaleMd5(changes, options, javac_cmd, java_files,
-                                  classpath_inputs, runtime_classpath),
+                                  classpath_inputs),
       options,
       input_paths=input_paths,
       input_strings=javac_cmd,

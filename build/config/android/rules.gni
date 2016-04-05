@@ -1599,12 +1599,8 @@ template("android_apk") {
         rebase_path(depfile, root_build_dir),
         "--output",
         rebase_path("${_dist_ijar_path}", root_build_dir),
-        "--use-ijars",
-        "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)",
+        "--inputs=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)",
       ]
-      inputs += [ _jar_path ]
-      _rebased_jar_path = rebase_path([ _jar_path ], root_build_dir)
-      args += [ "--inputs=$_rebased_jar_path" ]
       deps = [
         ":$build_config_target",  # Generates the build config file.
         ":$java_target",  # Generates the jar file.

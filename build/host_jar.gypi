@@ -82,9 +82,6 @@
           ['"<(jar_excluded_classes)" != ""', {
             'extra_args': ['--jar-excluded-classes=<(jar_excluded_classes)']
           }],
-          ['main_class != ""', {
-            'extra_args': ['--main-class=>(main_class)']
-          }],
           ['enable_errorprone == 1', {
             'extra_inputs': [
               '<(errorprone_exe_path)',

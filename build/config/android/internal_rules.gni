@@ -1477,8 +1477,7 @@ template("compile_java") {
     _rebased_depfile = rebase_path(depfile, root_build_dir)
     args = [
       "--depfile=$_rebased_depfile",
-      "--use-ijars",
-      "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
+      "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
       "--jar-path=$_rebased_jar_path",
       "--java-srcjars=$_rebased_java_srcjars",
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
