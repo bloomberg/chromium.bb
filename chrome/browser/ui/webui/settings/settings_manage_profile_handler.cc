@@ -56,8 +56,8 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("setProfileIconAndName",
       base::Bind(&ManageProfileHandler::SetProfileIconAndName,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestDefaultProfileIcons",
-      base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
+  web_ui()->RegisterMessageCallback("getAvailableIcons",
+      base::Bind(&ManageProfileHandler::GetAvailableIcons,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestHasProfileShortcuts",
       base::Bind(&ManageProfileHandler::RequestHasProfileShortcuts,
@@ -76,19 +76,13 @@ void ManageProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ManageProfileHandler::OnProfileNameChanged(
-    const base::FilePath& profile_path,
-    const base::string16& old_profile_name) {
-  SendAvailableIcons();
-}
-
 void ManageProfileHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
+  // This is necessary to send the potentially updated GAIA photo.
   SendAvailableIcons();
 }
 
-void ManageProfileHandler::RequestDefaultProfileIcons(
-    const base::ListValue* args) {
+void ManageProfileHandler::GetAvailableIcons(const base::ListValue* args) {
   SendAvailableIcons();
 }
 
@@ -113,9 +107,9 @@ void ManageProfileHandler::SendAvailableIcons() {
     image_url_list.AppendString(url);
   }
 
-  web_ui()->CallJavascriptFunction(
-      "settings.SyncPrivateApi.receiveAvailableIcons",
-      image_url_list);
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   base::StringValue("available-icons-changed"),
+                                   image_url_list);
 }
 
 void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {

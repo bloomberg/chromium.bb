@@ -10,6 +10,8 @@
 Polymer({
   is: 'settings-manage-profile',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /**
      * The currently selected profile icon URL. May be a data URL.
@@ -22,28 +24,32 @@ Polymer({
     profileName: String,
 
     /**
-     * The available icons for selection. Populated by SyncPrivateApi.
-     * @type {!Array<!string>}
+     * The available icons for selection.
+     * @type {!Array<string>}
      */
     availableIconUrls: {
       type: Array,
       value: function() { return []; },
     },
+
+    /**
+     * @private {!settings.ManageProfileBrowserProxyImpl}
+     */
+    browserProxy_: {
+      type: Object,
+      value: function() {
+        return settings.ManageProfileBrowserProxyImpl.getInstance();
+      },
+    },
   },
 
   /** @override */
-  created: function() {
-    settings.SyncPrivateApi.getAvailableIcons(
-        this.handleAvailableIcons_.bind(this));
-  },
+  attached: function() {
+    this.addWebUIListener('available-icons-changed', function(iconUrls) {
+      this.availableIconUrls = iconUrls;
+    }.bind(this));
 
-  /**
-   * Handler for when the available icons are pushed from SyncPrivateApi.
-   * @private
-   * @param {!Array<!string>} iconUrls
-   */
-  handleAvailableIcons_: function(iconUrls) {
-    this.availableIconUrls = iconUrls;
+    this.browserProxy_.getAvailableIcons();
   },
 
   /**
@@ -55,8 +61,8 @@ Polymer({
     if (event.target.invalid)
       return;
 
-    settings.SyncPrivateApi.setProfileIconAndName(this.profileIconUrl,
-                                                  event.target.value);
+    this.browserProxy_.setProfileIconAndName(this.profileIconUrl,
+                                             event.target.value);
   },
 
   /**
@@ -76,7 +82,7 @@ Polymer({
     if (!iconUrl)
       return;
 
-    settings.SyncPrivateApi.setProfileIconAndName(iconUrl, this.profileName);
+    this.browserProxy_.setProfileIconAndName(iconUrl, this.profileName);
 
     // Button toggle state is controlled by the selected icon URL. Prevent
     // tap events from changing the toggle state.
@@ -86,8 +92,8 @@ Polymer({
   /**
    * Computed binding determining which profile icon button is toggled on.
    * @private
-   * @param {!string} iconUrl
-   * @param {!string} paramIconUrl
+   * @param {string} iconUrl
+   * @param {string} profileIconUrl
    * @return {boolean}
    */
   isActiveIcon_: function(iconUrl, profileIconUrl) {

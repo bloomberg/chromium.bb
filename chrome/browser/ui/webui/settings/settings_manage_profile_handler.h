@@ -30,15 +30,12 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   void RegisterMessages() override;
 
   // ProfileAttributesStorage::Observer:
-  void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
-  // Callback for the "requestDefaultProfileIcons" message.
+  // Callback for the "getAvailableIcons" message.
   // Sends the array of default profile icon URLs and profile names to WebUI.
-  // First item of |args| is the dialog mode, i.e. "create" or "manage".
-  void RequestDefaultProfileIcons(const base::ListValue* args);
+  void GetAvailableIcons(const base::ListValue* args);
 
   // Send all the available profile icons to choose from.
   void SendAvailableIcons();
