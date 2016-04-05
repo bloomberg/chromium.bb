@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/ios_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -38,8 +37,6 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
   }
 
   void SimulateDeviceRestart() {
-    // TODO(jif): Simulates the fact that on iOS7, the pasteboard's changeCount
-    // is reset. http://crbug.com/503609
     ResetClipboardRecentContent(kAppSpecificScheme,
                                 base::TimeDelta::FromSeconds(0));
   }
@@ -108,15 +105,9 @@ TEST_F(ClipboardRecentContentIOSTest, PasteboardURLObsolescence) {
   EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
 
   SimulateDeviceRestart();
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    // Tests that if the device is restarted, old pasteboard data is still
-    // not provided.
-    EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
-  } else {
-    // TODO(jif): Simulates the fact that on iOS7, the pasteboard's changeCount
-    // is reset. http://crbug.com/503609
-  }
-
+  // Tests that if the device is restarted, old pasteboard data is still
+  // not provided.
+  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
 }
 
 TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboard) {
