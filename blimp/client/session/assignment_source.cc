@@ -49,11 +49,6 @@ const char kCertificateKey[] = "certificate";
 const char kSSLTransportValue[] = "ssl";
 const char kTCPTransportValue[] = "tcp";
 
-GURL GetBlimpAssignerURL() {
-  // TODO(dtrainor): Add a way to specify another assigner.
-  return GURL(kDefaultAssignerURL);
-}
-
 class SimpleURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   SimpleURLRequestContextGetter(
@@ -192,12 +187,16 @@ bool Assignment::IsValid() const {
 }
 
 AssignmentSource::AssignmentSource(
+    const GURL& assigner_endpoint,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
-    : file_task_runner_(std::move(file_task_runner)),
+    : assigner_endpoint_(assigner_endpoint),
+      file_task_runner_(std::move(file_task_runner)),
       url_request_context_(
           new SimpleURLRequestContextGetter(network_task_runner)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(assigner_endpoint_.is_valid());
+}
 
 AssignmentSource::~AssignmentSource() {}
 
@@ -235,8 +234,8 @@ void AssignmentSource::OnGetAssignmentFromCommandLineDone(
 void AssignmentSource::QueryAssigner(const std::string& client_auth_token) {
   // Call out to the network for a real assignment.  Build the network request
   // to hit the assigner.
-  url_fetcher_ = net::URLFetcher::Create(GetBlimpAssignerURL(),
-                                         net::URLFetcher::POST, this);
+  url_fetcher_ =
+      net::URLFetcher::Create(assigner_endpoint_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(url_request_context_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES);

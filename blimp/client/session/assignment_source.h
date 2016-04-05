@@ -12,6 +12,7 @@
 #include "blimp/client/blimp_client_export.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -30,10 +31,6 @@ namespace client {
 
 // TODO(kmarshall): Take values from configuration data.
 const char kDummyClientToken[] = "MyVoiceIsMyPassport";
-
-// Potential assigner URLs.
-const char kDefaultAssignerURL[] =
-    "https://blimp-pa.googleapis.com/v1/assignment";
 
 // An Assignment contains the configuration data needed for a client
 // to connect to the engine.
@@ -89,11 +86,13 @@ class BLIMP_CLIENT_EXPORT AssignmentSource : public net::URLFetcherDelegate {
   typedef base::Callback<void(AssignmentSource::Result, const Assignment&)>
       AssignmentCallback;
 
+  // |assigner_endpoint|: The URL of the Assigner service to query.
   // |network_task_runner|: The task runner to use for querying the Assigner API
   // over the network.
   // |file_task_runner|: The task runner to use for reading cert files from disk
   // (specified on the command line.)
   AssignmentSource(
+      const GURL& assigner_endpoint,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
@@ -121,6 +120,7 @@ class BLIMP_CLIENT_EXPORT AssignmentSource : public net::URLFetcherDelegate {
   // GetAssignment() callback, invoked after URLFetcher completion.
   AssignmentCallback callback_;
 
+  const GURL assigner_endpoint_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_ptr<net::URLFetcher> url_fetcher_;

@@ -22,6 +22,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::_;
 using testing::DoAll;
@@ -43,6 +44,7 @@ const char kCertRelativePath[] =
     "blimp/client/session/test_selfsigned_cert.pem";
 const char kTestClientToken[] = "secrett0ken";
 const char kTestAuthToken[] = "UserAuthT0kenz";
+const char kAssignerUrl[] = "http://www.assigner.test/";
 
 MATCHER_P(AssignmentEquals, assignment, "") {
   return arg.transport_protocol == assignment.transport_protocol &&
@@ -63,7 +65,9 @@ std::string ValueToString(const base::Value& value) {
 class AssignmentSourceTest : public testing::Test {
  public:
   AssignmentSourceTest()
-      : source_(message_loop_.task_runner(), message_loop_.task_runner()) {}
+      : source_(GURL(kAssignerUrl),
+                message_loop_.task_runner(),
+                message_loop_.task_runner()) {}
 
   void SetUp() override {
     base::FilePath src_root;
@@ -107,7 +111,7 @@ class AssignmentSourceTest : public testing::Test {
     net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
 
     EXPECT_NE(nullptr, fetcher);
-    EXPECT_EQ(kDefaultAssignerURL, fetcher->GetOriginalURL().spec());
+    EXPECT_EQ(kAssignerUrl, fetcher->GetOriginalURL().spec());
 
     // Check that the request has a valid protocol_version.
     scoped_ptr<base::Value> json =

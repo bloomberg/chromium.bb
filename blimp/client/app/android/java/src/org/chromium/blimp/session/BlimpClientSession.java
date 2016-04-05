@@ -44,12 +44,15 @@ public class BlimpClientSession {
         void onDisconnected(String reason);
     }
 
+    private static final String DEFAULT_ASSIGNER_URL =
+            "https://blimp-pa.googleapis.com/v1/assignment";
+
     private final Callback mCallback;
     private long mNativeBlimpClientSessionAndroidPtr;
 
     public BlimpClientSession(Callback callback) {
         mCallback = callback;
-        mNativeBlimpClientSessionAndroidPtr = nativeInit();
+        mNativeBlimpClientSessionAndroidPtr = nativeInit(DEFAULT_ASSIGNER_URL);
     }
 
     /**
@@ -132,7 +135,7 @@ public class BlimpClientSession {
         return mNativeBlimpClientSessionAndroidPtr;
     }
 
-    private native long nativeInit();
+    private native long nativeInit(String assignerUrl);
     private native void nativeConnect(long nativeBlimpClientSessionAndroid, String token);
     private native void nativeDestroy(long nativeBlimpClientSessionAndroid);
 }

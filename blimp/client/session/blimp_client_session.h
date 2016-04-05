@@ -56,7 +56,7 @@ class NetworkEventObserver {
 // feature proxies must be interacted with on the UI thread.
 class BLIMP_CLIENT_EXPORT BlimpClientSession : public NetworkEventObserver {
  public:
-  BlimpClientSession();
+  explicit BlimpClientSession(const GURL& assigner_endpoint);
 
   // Uses the AssignmentSource to get an Assignment and then uses the assignment
   // configuration to connect to the Blimplet.

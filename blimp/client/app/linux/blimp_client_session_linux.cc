@@ -18,6 +18,8 @@ namespace client {
 namespace {
 
 const int kDummyTabId = 0;
+const std::string kDefaultAssignerUrl =
+    "https://blimp-pa.googleapis.com/v1/assignment";
 
 class FakeNavigationFeatureDelegate
     : public NavigationFeature::NavigationFeatureDelegate {
@@ -67,7 +69,8 @@ void FakeNavigationFeatureDelegate::OnPageLoadStatusUpdate(int tab_id,
 }  // namespace
 
 BlimpClientSessionLinux::BlimpClientSessionLinux()
-    : event_source_(ui::PlatformEventSource::CreateDefault()),
+    : BlimpClientSession(GURL(kDefaultAssignerUrl)),
+      event_source_(ui::PlatformEventSource::CreateDefault()),
       navigation_feature_delegate_(new FakeNavigationFeatureDelegate) {
   blimp_display_manager_.reset(new BlimpDisplayManager(gfx::Size(800, 600),
                                                        this,

@@ -31,6 +31,7 @@
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "url/gurl.h"
 
 namespace blimp {
 namespace client {
@@ -147,7 +148,7 @@ void ClientNetworkComponents::OnConnectionError(int result) {
   network_observer_->OnDisconnected(result);
 }
 
-BlimpClientSession::BlimpClientSession()
+BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
     : io_thread_("BlimpIOThread"),
       tab_control_feature_(new TabControlFeature),
       navigation_feature_(new NavigationFeature),
@@ -163,8 +164,8 @@ BlimpClientSession::BlimpClientSession()
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
 
-  assignment_source_.reset(
-      new AssignmentSource(io_thread_.task_runner(), io_thread_.task_runner()));
+  assignment_source_.reset(new AssignmentSource(
+      assigner_endpoint, io_thread_.task_runner(), io_thread_.task_runner()));
 
   RegisterFeatures();
 

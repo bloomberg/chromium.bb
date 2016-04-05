@@ -19,8 +19,10 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
   static bool RegisterJni(JNIEnv* env);
   static BlimpClientSessionAndroid* FromJavaObject(JNIEnv* env, jobject jobj);
 
-  BlimpClientSessionAndroid(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& jobj);
+  BlimpClientSessionAndroid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jassigner_url);
 
   // Methods called from Java via JNI.
   // |jclient_auth_token| is an OAuth2 access token created by GoogleAuthUtil.
