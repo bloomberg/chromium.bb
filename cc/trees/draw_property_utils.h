@@ -91,9 +91,6 @@ void CC_EXPORT ComputeLayerDrawProperties(LayerImpl* layer,
 void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                             RenderSurfaceImpl* render_surface);
 
-gfx::Transform CC_EXPORT DrawTransform(const Layer* layer,
-                                       const TransformTree& tree);
-
 gfx::Transform CC_EXPORT DrawTransform(const LayerImpl* layer,
                                        const TransformTree& tree);
 

@@ -796,9 +796,9 @@ void ComputeVisibleRects(LayerImpl* root_layer,
                               &update_layer_list, visible_layer_list);
 }
 
-template <typename LayerType>
-static gfx::Transform DrawTransformInternal(const LayerType* layer,
-                                            const TransformNode* node) {
+gfx::Transform DrawTransform(const LayerImpl* layer,
+                             const TransformTree& tree) {
+  const TransformNode* node = tree.Node(layer->transform_tree_index());
   gfx::Transform xform;
   const bool owns_non_root_surface =
       !IsRootLayer(layer) && layer->has_render_surface();
@@ -815,15 +815,6 @@ static gfx::Transform DrawTransformInternal(const LayerType* layer,
     xform.Scale(node->data.sublayer_scale.x(), node->data.sublayer_scale.y());
   }
   return xform;
-}
-
-gfx::Transform DrawTransform(const Layer* layer, const TransformTree& tree) {
-  return DrawTransformInternal(layer, tree.Node(layer->transform_tree_index()));
-}
-
-gfx::Transform DrawTransform(const LayerImpl* layer,
-                             const TransformTree& tree) {
-  return DrawTransformInternal(layer, tree.Node(layer->transform_tree_index()));
 }
 
 static void SetSurfaceDrawTransform(const TransformTree& tree,
@@ -1024,7 +1015,7 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
       ScreenSpaceTransformInternal(layer, transform_node);
   if (property_trees->non_root_surfaces_enabled) {
     layer->draw_properties().target_space_transform =
-        DrawTransformInternal(layer, transform_node);
+        DrawTransform(layer, property_trees->transform_tree);
   } else {
     layer->draw_properties().target_space_transform =
         layer->draw_properties().screen_space_transform;

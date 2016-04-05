@@ -241,7 +241,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
 
   // TODO(enne): Fix style here (and everywhere) once LayerImpl does the same.
-  gfx::Transform draw_transform() const;
   gfx::Transform screen_space_transform() const;
 
   void set_num_unclipped_descendants(size_t descendants) {
