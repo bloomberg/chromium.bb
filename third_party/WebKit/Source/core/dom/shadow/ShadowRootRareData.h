@@ -115,15 +115,15 @@ inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
 {
     ASSERT(point);
-    if (isHTMLShadowElement(*point))
+    if (isHTMLShadowElement(*point)) {
+        ASSERT(m_descendantShadowElementCount > 0);
         --m_descendantShadowElementCount;
-    else if (isHTMLContentElement(*point))
+    } else if (isHTMLContentElement(*point)) {
+        ASSERT(m_descendantContentElementCount > 0);
         --m_descendantContentElementCount;
-    else
+    } else {
         ASSERT_NOT_REACHED();
-
-    ASSERT(m_descendantContentElementCount >= 0);
-    ASSERT(m_descendantShadowElementCount >= 0);
+    }
 }
 
 } // namespace blink
