@@ -35,7 +35,7 @@
           <cr-expand-button expanded="{{languagesOpened_}}">
           </cr-expand-button>
         </div>
-        <iron-collapse id="collapse" opened="[[languagesOpened_]]">
+        <iron-collapse id="languagesCollapse" opened="[[languagesOpened_]]">
           <div class="list-frame vertical-list">
             <array-selector id="languageSelector"
                 selected="{{detailLanguage}}"
@@ -70,7 +70,8 @@
           <cr-expand-button expanded="{{inputMethodsOpened_}}">
           </cr-expand-button>
         </div>
-        <iron-collapse id="collapse" opened="[[inputMethodsOpened_]]">
+        <iron-collapse id="inputMethodsCollapse"
+            opened="[[inputMethodsOpened_]]">
           <div class="list-frame vertical-list">
             <template is="dom-repeat" items="{{languages.inputMethods}}">
               <div class="list-item">
@@ -98,7 +99,7 @@
           <cr-expand-button expanded="{{spellCheckOpened_}}">
           </cr-expand-button>
         </div>
-        <iron-collapse id="collapse" opened="[[spellCheckOpened_]]">
+        <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
           <div class="list-frame vertical-list">
             <div class="list-item">
               <template is="dom-repeat" items="{{languages.enabledLanguages}}">

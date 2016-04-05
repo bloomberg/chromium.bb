@@ -17,6 +17,10 @@
       'includes': ['../include_js.gypi'],
     },
     {
+      'target_name': 'language_settings_private_interface',
+      'includes': ['../include_js.gypi'],
+    },
+    {
       'target_name': 'networking_private_interface',
       'includes': ['../include_js.gypi'],
     },

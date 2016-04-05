@@ -10,6 +10,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):chrome_send',
         '<(EXTERNS_GYP):language_settings_private',
+        '<(INTERFACES_GYP):language_settings_private_interface',
         '../prefs/compiled_resources2.gyp:prefs_types',
         '../prefs/compiled_resources2.gyp:prefs',
         'languages_types',
