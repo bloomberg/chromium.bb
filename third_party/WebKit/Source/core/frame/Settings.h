@@ -67,11 +67,6 @@ public:
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
-    // FIXME: naming_utilities.py isn't smart enough to handle OpenGL yet.
-    // It could handle "GL", but that seems a bit overly broad.
-    void setOpenGLMultisamplingEnabled(bool flag);
-    bool openGLMultisamplingEnabled() { return m_openGLMultisamplingEnabled; }
-
     void setDelegate(SettingsDelegate*);
 
 private:
@@ -82,7 +77,6 @@ private:
     SettingsDelegate* m_delegate;
 
     GenericFontFamilySettings m_genericFontFamilySettings;
-    bool m_openGLMultisamplingEnabled : 1;
     IntSize m_textAutosizingWindowSizeOverride;
     bool m_textAutosizingEnabled : 1;
 

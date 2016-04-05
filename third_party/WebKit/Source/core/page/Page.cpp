@@ -211,7 +211,6 @@ void Page::setMainFrame(Frame* mainFrame)
 
 void Page::documentDetached(Document* document)
 {
-    m_multisamplingChangedObservers.clear();
     m_pointerLockController->documentDetached(document);
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
@@ -390,19 +389,6 @@ bool Page::isCursorVisible() const
     return m_isCursorVisible && settings().deviceSupportsMouse();
 }
 
-void Page::addMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
-{
-    m_multisamplingChangedObservers.add(observer);
-}
-
-// For Oilpan, unregistration is handled by the GC and weak references.
-#if !ENABLE(OILPAN)
-void Page::removeMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
-{
-    m_multisamplingChangedObservers.remove(observer);
-}
-#endif
-
 void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
 {
     switch (changeType) {
@@ -419,11 +405,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
                 toLocalFrame(frame)->document()->initDNSPrefetch();
         }
         break;
-    case SettingsDelegate::MultisamplingChange: {
-        for (MultisamplingChangedObserver* observer : m_multisamplingChangedObservers)
-            observer->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
-        break;
-    }
     case SettingsDelegate::ImageLoadingChange:
         for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame()) {
@@ -538,7 +519,6 @@ DEFINE_TRACE(Page)
     visitor->trace(m_undoStack);
     visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);
-    visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
     visitor->trace(m_memoryPurgeController);
     Supplementable<Page>::trace(visitor);

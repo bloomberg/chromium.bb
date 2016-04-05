@@ -176,7 +176,6 @@ public:
     virtual void setMinimumLogicalFontSize(int) = 0;
     virtual void setMockScrollbarsEnabled(bool) = 0;
     virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
-    virtual void setOpenGLMultisamplingEnabled(bool) = 0;
     virtual void setPasswordEchoDurationInSeconds(double) = 0;
     virtual void setPasswordEchoEnabled(bool) = 0;
     virtual void setPerTilePaintingEnabled(bool) = 0;

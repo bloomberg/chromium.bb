@@ -23,7 +23,6 @@ class WebGLUniformLocation;
 class WebGLVertexArrayObject;
 
 class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
-    USING_GARBAGE_COLLECTED_MIXIN(WebGL2RenderingContextBase);
 public:
     ~WebGL2RenderingContextBase() override;
 

@@ -200,16 +200,6 @@ public:
     bool isPainting() const { return m_isPainting; }
 #endif
 
-    class CORE_EXPORT MultisamplingChangedObserver : public GarbageCollectedMixin {
-    public:
-        virtual void multisamplingChanged(bool) = 0;
-    };
-
-    void addMultisamplingChangedObserver(MultisamplingChangedObserver*);
-#if !ENABLE(OILPAN)
-    void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
-#endif
-
     void didCommitLoad(LocalFrame*);
 
     void acceptLanguagesChanged();
@@ -286,8 +276,6 @@ private:
 #if ENABLE(ASSERT)
     bool m_isPainting;
 #endif
-
-    HeapHashSet<WeakMember<MultisamplingChangedObserver>> m_multisamplingChangedObservers;
 
     // A pointer to all the interfaces provided to in-process Frames for this Page.
     // FIXME: Most of the members of Page should move onto FrameHost.

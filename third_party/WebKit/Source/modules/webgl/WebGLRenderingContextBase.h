@@ -35,7 +35,6 @@
 #include "core/dom/TypedFlexibleArrayBufferView.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/page/Page.h"
 #include "modules/webgl/WebGLContextAttributes.h"
 #include "modules/webgl/WebGLExtensionName.h"
 #include "modules/webgl/WebGLTexture.h"
@@ -142,8 +141,7 @@ private:
     Member<WebGLFramebuffer> m_readFramebufferBinding;
 };
 
-class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext, public Page::MultisamplingChangedObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
+class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
 public:
     ~WebGLRenderingContextBase() override;
 
@@ -411,6 +409,7 @@ public:
     // to (first) be able to detach its WebGLContextObjects, before
     // they're later swept and finalized.
     EAGERLY_FINALIZE();
+    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
     DECLARE_VIRTUAL_TRACE();
 
     // Returns approximate gpu memory allocated per pixel.
@@ -609,9 +608,6 @@ protected:
 
     bool m_synthesizedErrorsToConsole;
     int m_numGLErrorsToConsoleAllowed;
-
-    bool m_multisamplingAllowed;
-    bool m_multisamplingObserverRegistered;
 
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
@@ -1060,8 +1056,6 @@ protected:
 
     virtual void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();
-
-    void multisamplingChanged(bool) override;
 
     void findNewMaxNonDefaultTextureUnit();
 

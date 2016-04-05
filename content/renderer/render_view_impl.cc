@@ -942,9 +942,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // and support is compiled in.
   settings->setExperimentalWebGLEnabled(prefs.experimental_webgl_enabled);
 
-  // Disable GL multisampling if requested on command line.
-  settings->setOpenGLMultisamplingEnabled(prefs.gl_multisampling_enabled);
-
   // Enable WebGL errors to the JS console if requested.
   settings->setWebGLErrorsToConsoleEnabled(
       prefs.webgl_errors_to_console_enabled);

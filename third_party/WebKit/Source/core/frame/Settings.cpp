@@ -58,12 +58,11 @@ static const bool defaultSelectTrailingWhitespaceEnabled = false;
 #endif
 
 Settings::Settings()
-    : m_openGLMultisamplingEnabled(false)
 #if DEBUG_TEXT_AUTOSIZING_ON_DESKTOP
-    , m_textAutosizingWindowSizeOverride(320, 480)
+    : m_textAutosizingWindowSizeOverride(320, 480)
     , m_textAutosizingEnabled(true)
 #else
-    , m_textAutosizingEnabled(false)
+    : m_textAutosizingEnabled(false)
 #endif
     SETTINGS_INITIALIZER_LIST
 {
@@ -114,15 +113,6 @@ void Settings::setMockScrollbarsEnabled(bool flag)
 bool Settings::mockScrollbarsEnabled()
 {
     return ScrollbarTheme::mockScrollbarsEnabled();
-}
-
-void Settings::setOpenGLMultisamplingEnabled(bool flag)
-{
-    if (m_openGLMultisamplingEnabled == flag)
-        return;
-
-    m_openGLMultisamplingEnabled = flag;
-    invalidate(SettingsDelegate::MultisamplingChange);
 }
 
 } // namespace blink

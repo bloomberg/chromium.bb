@@ -835,8 +835,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_requestedAttributes(requestedAttributes)
     , m_synthesizedErrorsToConsole(true)
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
-    , m_multisamplingAllowed(false)
-    , m_multisamplingObserverRegistered(false)
     , m_onePlusMaxNonDefaultTextureUnit(0)
     , m_isWebGL2FormatsTypesAdded(false)
     , m_isWebGL2InternalFormatsCopyTexImageAdded(false)
@@ -1020,12 +1018,6 @@ void WebGLRenderingContextBase::setupFlags()
     ASSERT(drawingBuffer());
     if (Page* p = canvas()->document().page()) {
         m_synthesizedErrorsToConsole = p->settings().webGLErrorsToConsoleEnabled();
-
-        if (!m_multisamplingObserverRegistered && m_requestedAttributes.antialias()) {
-            m_multisamplingAllowed = drawingBuffer()->multisample();
-            p->addMultisamplingChangedObserver(this);
-            m_multisamplingObserverRegistered = true;
-        }
     }
 
     m_isDepthStencilSupported = extensionsUtil()->isExtensionEnabled("GL_OES_packed_depth_stencil");
@@ -1085,13 +1077,6 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     m_contextGroup->removeContext(this);
 
     destroyContext();
-
-#if !ENABLE(OILPAN)
-    if (m_multisamplingObserverRegistered) {
-        if (Page* page = canvas()->document().page())
-            page->removeMultisamplingChangedObserver(this);
-    }
-#endif
 
     willDestroyContext(this);
 }
@@ -6219,14 +6204,6 @@ void WebGLRenderingContextBase::restoreCurrentFramebuffer()
 void WebGLRenderingContextBase::restoreCurrentTexture2D()
 {
     bindTexture(nullptr, GL_TEXTURE_2D, m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get());
-}
-
-void WebGLRenderingContextBase::multisamplingChanged(bool enabled)
-{
-    if (m_multisamplingAllowed != enabled) {
-        m_multisamplingAllowed = enabled;
-        forceLostContext(WebGLRenderingContextBase::SyntheticLostContext, WebGLRenderingContextBase::Auto);
-    }
 }
 
 void WebGLRenderingContextBase::findNewMaxNonDefaultTextureUnit()

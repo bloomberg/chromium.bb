@@ -55,7 +55,6 @@ public:
         ViewportDescriptionChange,
         ViewportRuleChange,
         DNSPrefetchingChange,
-        MultisamplingChange,
         ImageLoadingChange,
         TextAutosizingChange,
         FontFamilyChange,

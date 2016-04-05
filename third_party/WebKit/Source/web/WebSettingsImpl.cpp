@@ -492,11 +492,6 @@ void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
     m_settings->setWebGLEnabled(enabled);
 }
 
-void WebSettingsImpl::setOpenGLMultisamplingEnabled(bool enabled)
-{
-    m_settings->setOpenGLMultisamplingEnabled(enabled);
-}
-
 void WebSettingsImpl::setRenderVSyncNotificationEnabled(bool enabled)
 {
     m_renderVSyncNotificationEnabled = enabled;
