@@ -74,9 +74,9 @@ static base::ScopedCFTypeRef<CFMutableDictionaryRef>
 BuildImageConfig(CMVideoDimensions coded_dimensions) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config;
 
-  // 4:2:2 is used over the native 4:2:0 because only 4:2:2 can be directly
-  // bound to a texture by CGLTexImageIOSurface2D().
-  int32_t pixel_format = kCVPixelFormatType_422YpCbCr8;
+  // Note that 4:2:0 textures cannot be used directly as RGBA in OpenGL, but are
+  // lower power than 4:2:2 when composited directly by CoreAnimation.
+  int32_t pixel_format = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
   base::ScopedCFTypeRef<CFNumberRef> cf_width(CFINT(coded_dimensions.width));
@@ -88,7 +88,7 @@ BuildImageConfig(CMVideoDimensions coded_dimensions) {
   image_config.reset(
       CFDictionaryCreateMutable(
           kCFAllocatorDefault,
-          4,  // capacity
+          3,  // capacity
           &kCFTypeDictionaryKeyCallBacks,
           &kCFTypeDictionaryValueCallBacks));
   if (!image_config.get())
@@ -98,8 +98,6 @@ BuildImageConfig(CMVideoDimensions coded_dimensions) {
                        cf_pixel_format);
   CFDictionarySetValue(image_config, kCVPixelBufferWidthKey, cf_width);
   CFDictionarySetValue(image_config, kCVPixelBufferHeightKey, cf_height);
-  CFDictionarySetValue(image_config, kCVPixelBufferOpenGLCompatibilityKey,
-                       kCFBooleanTrue);
 
   return image_config;
 }
@@ -1040,26 +1038,13 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   scoped_refptr<gl::GLImageIOSurface> gl_image(
       new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
   if (!gl_image->Initialize(io_surface, gfx::GenericSharedMemoryId(),
-        gfx::BufferFormat::UYVY_422)) {
+        gfx::BufferFormat::YUV_420_BIPLANAR)) {
     NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
         SFT_PLATFORM_ERROR);
   }
 
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
-    glEnable(GL_TEXTURE_RECTANGLE_ARB);
-  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_RECTANGLE_ARB,
-                                          picture_info->service_texture_id);
-  bool bind_result = gl_image->BindTexImage(GL_TEXTURE_RECTANGLE_ARB);
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
-  if (!bind_result) {
-    NOTIFY_STATUS("Failed BindTexImage on GLImageIOSurface", PLATFORM_FAILURE,
-        SFT_PLATFORM_ERROR);
-    return false;
-  }
-
   bind_image_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
-                  gl_image, true);
+                  gl_image, false);
 
   // Assign the new image(s) to the the picture info.
   picture_info->gl_image = gl_image;
