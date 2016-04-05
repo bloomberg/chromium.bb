@@ -1463,7 +1463,7 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
 });
 
 /**
- * Opens the gear menu on Alt-E.
+ * Opens the gear menu.
  * @type {Command}
  */
 CommandHandler.COMMANDS_['open-gear-menu'] = /** @type {Command} */ ({
