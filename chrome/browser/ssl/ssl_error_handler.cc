@@ -47,7 +47,7 @@ namespace {
 // - If a "captive portal detected" result arrives during this time,
 //   a captive portal interstitial is displayed.
 // - Otherwise, an SSL interstitial is displayed.
-int64_t g_interstitial_delay_in_milliseconds = 2000;
+int64_t g_interstitial_delay_in_milliseconds = 3000;
 
 // Callback to call when the interstitial timer is started. Used for testing.
 SSLErrorHandler::TimerStartedCallback* g_timer_started_callback = nullptr;
