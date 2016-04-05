@@ -1327,8 +1327,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Load the url. The UIWebView delegate callbacks take care of updating the
   // session history and UI.
   const GURL targetURL([self currentNavigationURL]);
-  if (!targetURL.is_valid())
+  if (!targetURL.is_valid()) {
+    [self didFinishWithURL:targetURL loadSuccess:NO];
     return;
+  }
 
   // JavaScript should never be evaluated here. User-entered JS should be
   // evaluated via stringByEvaluatingUserJavaScriptFromString.
