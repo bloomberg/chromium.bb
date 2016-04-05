@@ -497,12 +497,25 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit
         if (!enclosingFragmentationContext)
             return; // Not nested. We'll never need more rows than the one we already have then.
         ASSERT(!isLayoutPagedFlowThread());
-        // We have run out of columns here, so we add another row to hold more columns. When we add
-        // a new row, it implicitly means that we're inserting another column in our enclosing
-        // multicol container. That in turn may mean that we've run out of columns there too.
-        const MultiColumnFragmentainerGroup& newRow = columnSet->appendNewFragmentainerGroup();
-        if (LayoutMultiColumnFlowThread* enclosingFlowThread = enclosingFragmentationContext->associatedFlowThread())
-            enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(newRow.blockOffsetInEnclosingFragmentationContext(), AssociateWithLatterPage);
+
+        // We have run out of columns here, so we need to add at least one more row to hold more
+        // columns.
+        do {
+            const MultiColumnFragmentainerGroup& newRow = columnSet->appendNewFragmentainerGroup();
+            // Zero-height rows should really not occur here, but if it does anyway, break, so that
+            // we don't get stuck in an infinite loop.
+            ASSERT(newRow.logicalHeight() > 0);
+            if (newRow.logicalHeight() <= 0)
+                break;
+        } while (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread, pageBoundaryRule));
+
+        if (LayoutMultiColumnFlowThread* enclosingFlowThread = enclosingFragmentationContext->associatedFlowThread()) {
+            // When we add a new row here, it implicitly means that we're inserting another column
+            // in our enclosing multicol container. That in turn may mean that we've run out of
+            // columns there too.
+            const MultiColumnFragmentainerGroup& lastRow = columnSet->lastFragmentainerGroup();
+            enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(lastRow.blockOffsetInEnclosingFragmentationContext(), AssociateWithLatterPage);
+        }
     }
 }
 
