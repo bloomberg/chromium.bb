@@ -37,6 +37,8 @@
 #include "base/command_line.h"
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(USE_OZONE)
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -143,6 +145,10 @@ void MandolineUIServicesApp::Initialize(mojo::Connector* connector,
   // Because GL libraries need to be initialized before entering the sandbox,
   // in MUS, |InitializeForUI| will load the GL libraries.
   ui::OzonePlatform::InitializeForUI();
+
+  // TODO(kylechar): We might not always want a US keyboard layout.
+  ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
+      ->SetCurrentLayoutByName("us");
 #endif
 
 // TODO(rjkroege): Enter sandbox here before we start threads in GpuState

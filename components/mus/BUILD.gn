@@ -95,6 +95,7 @@ source_set("lib") {
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//ui/events",
+    "//ui/events/ozone:events_ozone_layout",
     "//ui/gl:gl",
     "//ui/platform_window:platform_impls",
     "//ui/platform_window:platform_window",
