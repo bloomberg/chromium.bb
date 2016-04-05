@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "storage/browser/storage_browser_export.h"
+#include "storage/common/blob_storage/blob_storage_constants.h"
 
 class GURL;
 
@@ -132,7 +133,8 @@ class STORAGE_EXPORT BlobReader {
   void InvalidateCallbacksAndDone(int net_error, net::CompletionCallback done);
 
   void AsyncCalculateSize(const net::CompletionCallback& done,
-                          bool async_succeeded);
+                          bool async_succeeded,
+                          IPCBlobCreationCancelCode reason);
   Status CalculateSizeImpl(const net::CompletionCallback& done);
   bool AddItemLength(size_t index, uint64_t length);
   bool ResolveFileItemLength(const BlobDataItem& item,

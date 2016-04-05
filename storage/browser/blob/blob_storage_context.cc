@@ -162,7 +162,8 @@ void BlobStorageContext::CompletePendingBlob(
   auto runner = base::ThreadTaskRunnerHandle::Get();
   for (const auto& callback : entry->build_completion_callbacks) {
     runner->PostTask(FROM_HERE,
-                     base::Bind(callback, entry->state == BlobState::COMPLETE));
+                     base::Bind(callback, entry->state == BlobState::COMPLETE,
+                                entry->broken_reason));
   }
   entry->build_completion_callbacks.clear();
 }
@@ -234,15 +235,15 @@ bool BlobStorageContext::IsBeingBuilt(const std::string& uuid) const {
 
 void BlobStorageContext::RunOnConstructionComplete(
     const std::string& uuid,
-    const base::Callback<void(bool)>& done) {
+    const BlobConstructedCallback& done) {
   BlobRegistryEntry* entry = registry_.GetEntry(uuid);
   DCHECK(entry);
   switch (entry->state) {
     case BlobState::COMPLETE:
-      done.Run(true);
+      done.Run(true, IPCBlobCreationCancelCode::UNKNOWN);
       return;
     case BlobState::BROKEN:
-      done.Run(false);
+      done.Run(false, entry->broken_reason);
       return;
     case BlobState::PENDING:
       entry->build_completion_callbacks.push_back(done);

@@ -39,6 +39,25 @@ bool IsFileType(DataElement::Type type) {
       return false;
   }
 }
+
+int ConvertBlobErrorToNetError(IPCBlobCreationCancelCode reason) {
+  switch (reason) {
+    case IPCBlobCreationCancelCode::UNKNOWN:
+      return net::ERR_FAILED;
+    case IPCBlobCreationCancelCode::OUT_OF_MEMORY:
+      return net::ERR_OUT_OF_MEMORY;
+    case IPCBlobCreationCancelCode::FILE_WRITE_FAILED:
+      return net::ERR_FILE_NO_SPACE;
+    case IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT:
+      return net::ERR_UNEXPECTED;
+    case IPCBlobCreationCancelCode::BLOB_DEREFERENCED_WHILE_BUILDING:
+      return net::ERR_UNEXPECTED;
+    case IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN:
+      return net::ERR_INVALID_HANDLE;
+  }
+  NOTREACHED();
+  return net::ERR_FAILED;
+}
 }  // namespace
 
 BlobReader::FileStreamReaderProvider::~FileStreamReaderProvider() {}
@@ -185,9 +204,10 @@ BlobReader::Status BlobReader::ReportError(int net_error) {
 }
 
 void BlobReader::AsyncCalculateSize(const net::CompletionCallback& done,
-                                    bool async_succeeded) {
+                                    bool async_succeeded,
+                                    IPCBlobCreationCancelCode reason) {
   if (!async_succeeded) {
-    InvalidateCallbacksAndDone(net::ERR_FAILED, done);
+    InvalidateCallbacksAndDone(ConvertBlobErrorToNetError(reason), done);
     return;
   }
   DCHECK(!blob_handle_->IsBroken()) << "Callback should have returned false.";

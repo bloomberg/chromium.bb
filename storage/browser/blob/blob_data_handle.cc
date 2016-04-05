@@ -75,15 +75,6 @@ BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
   context_->IncrementBlobRefCount(uuid);
 }
 
-void BlobDataHandle::BlobDataHandleShared::RunOnConstructionComplete(
-    const base::Callback<void(bool)>& done) {
-  if (!context_.get()) {
-    done.Run(false);
-    return;
-  }
-  context_->RunOnConstructionComplete(uuid_, done);
-}
-
 std::unique_ptr<BlobReader> BlobDataHandle::CreateReader(
     FileSystemContext* file_system_context,
     base::SequencedTaskRunner* file_task_runner) const {
@@ -91,13 +82,6 @@ std::unique_ptr<BlobReader> BlobDataHandle::CreateReader(
       this, std::unique_ptr<BlobReader::FileStreamReaderProvider>(
                 new FileStreamReaderProviderImpl(file_system_context)),
       file_task_runner));
-}
-
-std::unique_ptr<BlobDataSnapshot>
-BlobDataHandle::BlobDataHandleShared::CreateSnapshot() const {
-  if (!context_.get())
-    return nullptr;
-  return context_->CreateSnapshot(uuid_);
 }
 
 BlobDataHandle::BlobDataHandleShared::~BlobDataHandleShared() {
@@ -148,14 +132,20 @@ bool BlobDataHandle::IsBroken() const {
 }
 
 void BlobDataHandle::RunOnConstructionComplete(
-    const base::Callback<void(bool)>& done) {
+    const BlobConstructedCallback& done) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  shared_->RunOnConstructionComplete(done);
+  if (!shared_->context_.get()) {
+    done.Run(false, IPCBlobCreationCancelCode::UNKNOWN);
+    return;
+  }
+  shared_->context_->RunOnConstructionComplete(shared_->uuid_, done);
 }
 
 std::unique_ptr<BlobDataSnapshot> BlobDataHandle::CreateSnapshot() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  return shared_->CreateSnapshot();
+  if (!shared_->context_.get())
+    return nullptr;
+  return shared_->context_->CreateSnapshot(shared_->uuid_);
 }
 
 const std::string& BlobDataHandle::uuid() const {

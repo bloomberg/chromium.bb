@@ -51,9 +51,12 @@ const size_t kTestBlobStorageIPCThresholdBytes = 20;
 const size_t kTestBlobStorageMaxSharedMemoryBytes = 50;
 const uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 
-template <typename T>
-void SetPointerValue(T* pointer, T value) {
-  *pointer = value;
+void ConstructionCompletePopulator(bool* succeeded_pointer,
+                                   IPCBlobCreationCancelCode* reason_pointer,
+                                   bool succeeded,
+                                   IPCBlobCreationCancelCode reason) {
+  *succeeded_pointer = succeeded;
+  *reason_pointer = reason;
 }
 
 class TestableBlobDispatcherHost : public BlobDispatcherHost {
@@ -308,8 +311,9 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   scoped_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   bool built = false;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
   EXPECT_FALSE(built);
 
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -374,7 +378,7 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   ExpectDone(kId);
   sink_.ClearMessages();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(built);
+  EXPECT_TRUE(built) << "Error code: " << static_cast<int>(error_code);
   EXPECT_TRUE(context_->registry().HasEntry(kId));
   scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(handle);
@@ -478,8 +482,9 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructing) {
   EXPECT_TRUE(blob_data_handle);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = false;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
 
   // Continue building.
   DataElement element;
@@ -497,7 +502,7 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructing) {
 
   ExpectDone(kId);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(built);
+  EXPECT_TRUE(built) << "Error code: " << static_cast<int>(error_code);
 }
 
 TEST_F(BlobDispatcherHostTest, BlobReferenceWhileShortcutConstructing) {
@@ -514,8 +519,9 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileShortcutConstructing) {
   EXPECT_TRUE(blob_data_handle);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = false;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
 
   // Continue building.
   DataElement element;
@@ -524,7 +530,7 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileShortcutConstructing) {
   host_->OnStartBuildingBlob(kId, elements);
   ExpectDone(kId);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(built);
+  EXPECT_TRUE(built) << "Error code: " << static_cast<int>(error_code);
 }
 
 TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructingCancelled) {
@@ -541,8 +547,9 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructingCancelled) {
   EXPECT_TRUE(blob_data_handle);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = true;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
 
   // Cancel in middle of construction.
   host_->OnCancelBuildingBlob(kId, IPCBlobCreationCancelCode::UNKNOWN);
@@ -552,10 +559,13 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructingCancelled) {
   EXPECT_FALSE(IsBeingBuiltInHost(kId));
   EXPECT_TRUE(blob_data_handle->IsBroken());
   EXPECT_FALSE(built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::UNKNOWN, error_code);
+  error_code = IPCBlobCreationCancelCode::UNKNOWN;
   built = true;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
   EXPECT_FALSE(built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::UNKNOWN, error_code);
 
   // Remove it.
   blob_data_handle.reset();
@@ -681,8 +691,9 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterOnStartWithHandle) {
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = true;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
 
   DataElement element;
   element.SetToBytesDescription(kDataSize);
@@ -710,6 +721,8 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterOnStartWithHandle) {
   // We still have the entry because of our earlier handle.
   EXPECT_TRUE(context_->registry().HasEntry(kId));
   EXPECT_FALSE(IsBeingBuiltInHost(kId));
+  EXPECT_FALSE(built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::UNKNOWN, error_code);
   sink_.ClearMessages();
 
   // Should disappear after dropping the handle.
@@ -731,13 +744,15 @@ TEST_F(BlobDispatcherHostTest, HostDisconnectAfterRegisterWithHandle) {
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = true;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
   blob_data_handle->RunOnConstructionComplete(
-      base::Bind(&SetPointerValue<bool>, &built));
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
   // Get rid of host, which was doing the constructing.
   host_ = nullptr;
   EXPECT_FALSE(blob_data_handle->IsBeingBuilt());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT, error_code);
 
   // Should still be there due to the handle.
   scoped_ptr<BlobDataHandle> another_handle =
@@ -924,6 +939,219 @@ TEST_F(BlobDispatcherHostTest, DeferenceBlobOnDifferentHost) {
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
   // We should be cleaned up.
   EXPECT_FALSE(host_->async_builder_.IsBeingBuilt(kId));
+}
+
+TEST_F(BlobDispatcherHostTest, BuildingReferenceChain) {
+  const std::string kId("id");
+  const std::string kSameHostReferencingId("id2");
+  const std::string kDifferentHostReferencingId("id3");
+  // Data elements for our transfer & checking messages.
+  DataElement element;
+  element.SetToBytes(kData, kDataSize);
+  std::vector<DataElement> elements = {element};
+  DataElement referencing_element;
+  referencing_element.SetToBlob(kId);
+  std::vector<DataElement> referencing_elements = {referencing_element};
+  std::set<std::string> referenced_blobs_set = {kId};
+
+  scoped_refptr<TestableBlobDispatcherHost> host2(
+      new TestableBlobDispatcherHost(chrome_blob_storage_context_, &sink_));
+
+  // We want to have a blob referencing another blob that is building, both on
+  // the same host and a different host. We should successfully build all blobs
+  // after the referenced blob is finished.
+
+  // First we start the referenced blob.
+  host_->OnRegisterBlobUUID(kId, std::string(kContentType),
+                            std::string(kContentDisposition),
+                            std::set<std::string>());
+  EXPECT_TRUE(host_->IsInUseInHost(kId));
+
+  // Next we start the referencing blobs in both the same and different host.
+  host_->OnRegisterBlobUUID(kSameHostReferencingId, std::string(kContentType),
+                            std::string(kContentDisposition),
+                            referenced_blobs_set);
+  EXPECT_FALSE(host_->shutdown_for_bad_message_);
+  host_->OnStartBuildingBlob(kSameHostReferencingId, referencing_elements);
+  EXPECT_FALSE(host_->shutdown_for_bad_message_);
+  ExpectDone(kSameHostReferencingId);
+  EXPECT_TRUE(host_->async_builder_.IsBeingBuilt(kSameHostReferencingId));
+  sink_.ClearMessages();
+  // Now the other host.
+  host2->OnRegisterBlobUUID(
+      kDifferentHostReferencingId, std::string(kContentType),
+      std::string(kContentDisposition), referenced_blobs_set);
+  EXPECT_FALSE(host2->shutdown_for_bad_message_);
+  host2->OnStartBuildingBlob(kDifferentHostReferencingId, referencing_elements);
+  EXPECT_FALSE(host2->shutdown_for_bad_message_);
+  ExpectDone(kDifferentHostReferencingId);
+  EXPECT_TRUE(host2->async_builder_.IsBeingBuilt(kDifferentHostReferencingId));
+  sink_.ClearMessages();
+
+  // Now we finish the first blob, and we expect all blobs to finish.
+  host_->OnStartBuildingBlob(kId, elements);
+  ExpectDone(kId);
+  // We need to run the message loop to propagate the construction callbacks.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(host2->async_builder_.IsBeingBuilt(kDifferentHostReferencingId));
+  EXPECT_FALSE(host_->async_builder_.IsBeingBuilt(kSameHostReferencingId));
+  EXPECT_FALSE(
+      context_->GetBlobDataFromUUID(kSameHostReferencingId)->IsBroken());
+  EXPECT_FALSE(
+      context_->GetBlobDataFromUUID(kDifferentHostReferencingId)->IsBroken());
+  sink_.ClearMessages();
+
+  // Finally check that our data is correct in the child elements.
+  scoped_ptr<BlobDataHandle> handle =
+      context_->GetBlobDataFromUUID(kDifferentHostReferencingId);
+  ExpectHandleEqualsData(handle.get(), elements);
+}
+
+TEST_F(BlobDispatcherHostTest, BuildingReferenceChainWithCancel) {
+  const std::string kId("id");
+  const std::string kSameHostReferencingId("id2");
+  const std::string kDifferentHostReferencingId("id3");
+  // Data elements for our transfer & checking messages.
+  DataElement referencing_element;
+  referencing_element.SetToBlob(kId);
+  std::vector<DataElement> referencing_elements = {referencing_element};
+  std::set<std::string> referenced_blobs_set = {kId};
+
+  scoped_refptr<TestableBlobDispatcherHost> host2(
+      new TestableBlobDispatcherHost(chrome_blob_storage_context_, &sink_));
+
+  // We want to have a blob referencing another blob that is building, both on
+  // the same host and a different host. After we cancel the first blob, the
+  // others should cancel as well.
+
+  // First we start the referenced blob.
+  host_->OnRegisterBlobUUID(kId, std::string(kContentType),
+                            std::string(kContentDisposition),
+                            std::set<std::string>());
+  EXPECT_TRUE(host_->IsInUseInHost(kId));
+
+  // Next we start the referencing blobs in both the same and different host.
+  host_->OnRegisterBlobUUID(kSameHostReferencingId, std::string(kContentType),
+                            std::string(kContentDisposition),
+                            referenced_blobs_set);
+  host_->OnStartBuildingBlob(kSameHostReferencingId, referencing_elements);
+  ExpectDone(kSameHostReferencingId);
+  EXPECT_TRUE(host_->async_builder_.IsBeingBuilt(kSameHostReferencingId));
+  sink_.ClearMessages();
+  // Now the other host.
+  host2->OnRegisterBlobUUID(
+      kDifferentHostReferencingId, std::string(kContentType),
+      std::string(kContentDisposition), referenced_blobs_set);
+  host2->OnStartBuildingBlob(kDifferentHostReferencingId, referencing_elements);
+  ExpectDone(kDifferentHostReferencingId);
+  EXPECT_TRUE(host2->async_builder_.IsBeingBuilt(kDifferentHostReferencingId));
+  sink_.ClearMessages();
+  bool built = false;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
+  context_->GetBlobDataFromUUID(kDifferentHostReferencingId)
+      ->RunOnConstructionComplete(
+          base::Bind(&ConstructionCompletePopulator, &built, &error_code));
+
+  // Now we cancel the first blob, and we expect all blobs to cancel.
+  host_->OnCancelBuildingBlob(kId, IPCBlobCreationCancelCode::UNKNOWN);
+  // We need to run the message loop to propagate the construction callbacks.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(host2->async_builder_.IsBeingBuilt(kDifferentHostReferencingId));
+  EXPECT_FALSE(host_->async_builder_.IsBeingBuilt(kSameHostReferencingId));
+  EXPECT_TRUE(
+      context_->GetBlobDataFromUUID(kSameHostReferencingId)->IsBroken());
+  EXPECT_TRUE(
+      context_->GetBlobDataFromUUID(kDifferentHostReferencingId)->IsBroken());
+  EXPECT_FALSE(built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN, error_code);
+  sink_.ClearMessages();
+}
+
+TEST_F(BlobDispatcherHostTest, BuildingReferenceChainWithSourceDeath) {
+  const std::string kId("id");
+  const std::string kSameHostReferencingId("id2");
+  const std::string kDifferentHostReferencingId("id3");
+  // Data elements for our transfer & checking messages.
+  DataElement referencing_element;
+  referencing_element.SetToBlob(kId);
+  std::vector<DataElement> referencing_elements = {referencing_element};
+  std::set<std::string> referenced_blobs_set = {kId};
+
+  scoped_refptr<TestableBlobDispatcherHost> host2(
+      new TestableBlobDispatcherHost(chrome_blob_storage_context_, &sink_));
+
+  // We want to have a blob referencing another blob that is building, both on
+  // the same host and a different host. When we destroy the host, the other
+  // blob should cancel, as well as the blob on the other host.
+
+  // First we start the referenced blob.
+  host_->OnRegisterBlobUUID(kId, std::string(kContentType),
+                            std::string(kContentDisposition),
+                            std::set<std::string>());
+  EXPECT_TRUE(host_->IsInUseInHost(kId));
+
+  // Next we start the referencing blobs in both the same and different host.
+  host_->OnRegisterBlobUUID(kSameHostReferencingId, std::string(kContentType),
+                            std::string(kContentDisposition),
+                            referenced_blobs_set);
+  host_->OnStartBuildingBlob(kSameHostReferencingId, referencing_elements);
+  ExpectDone(kSameHostReferencingId);
+  EXPECT_TRUE(host_->async_builder_.IsBeingBuilt(kSameHostReferencingId));
+  sink_.ClearMessages();
+  // Now the other host.
+  host2->OnRegisterBlobUUID(
+      kDifferentHostReferencingId, std::string(kContentType),
+      std::string(kContentDisposition), referenced_blobs_set);
+  host2->OnStartBuildingBlob(kDifferentHostReferencingId, referencing_elements);
+  ExpectDone(kDifferentHostReferencingId);
+  EXPECT_TRUE(host2->async_builder_.IsBeingBuilt(kDifferentHostReferencingId));
+  sink_.ClearMessages();
+
+  // Grab handles & add listeners.
+  bool built = true;
+  IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
+  scoped_ptr<BlobDataHandle> blob_handle = context_->GetBlobDataFromUUID(kId);
+  blob_handle->RunOnConstructionComplete(
+      base::Bind(&ConstructionCompletePopulator, &built, &error_code));
+
+  bool same_host_built = true;
+  IPCBlobCreationCancelCode same_host_error_code =
+      IPCBlobCreationCancelCode::UNKNOWN;
+  scoped_ptr<BlobDataHandle> same_host_blob_handle =
+      context_->GetBlobDataFromUUID(kSameHostReferencingId);
+  same_host_blob_handle->RunOnConstructionComplete(base::Bind(
+      &ConstructionCompletePopulator, &same_host_built, &same_host_error_code));
+
+  bool other_host_built = true;
+  IPCBlobCreationCancelCode other_host_error_code =
+      IPCBlobCreationCancelCode::UNKNOWN;
+  scoped_ptr<BlobDataHandle> other_host_blob_handle =
+      context_->GetBlobDataFromUUID(kDifferentHostReferencingId);
+  other_host_blob_handle->RunOnConstructionComplete(
+      base::Bind(&ConstructionCompletePopulator, &other_host_built,
+                 &other_host_error_code));
+
+  // Now we kill the host.
+  host_ = nullptr;
+  // We need to run the message loop to propagate the construction callbacks.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(host2->async_builder_.IsBeingBuilt(kDifferentHostReferencingId));
+  EXPECT_TRUE(
+      context_->GetBlobDataFromUUID(kSameHostReferencingId)->IsBroken());
+  EXPECT_TRUE(
+      context_->GetBlobDataFromUUID(kDifferentHostReferencingId)->IsBroken());
+
+  // Check our callbacks
+  EXPECT_FALSE(built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT, error_code);
+  EXPECT_FALSE(same_host_built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT,
+            same_host_error_code);
+  EXPECT_FALSE(other_host_built);
+  EXPECT_EQ(IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT,
+            other_host_error_code);
+
+  sink_.ClearMessages();
 }
 
 }  // namespace content

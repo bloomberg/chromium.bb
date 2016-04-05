@@ -18,6 +18,7 @@
 
 namespace storage {
 namespace {
+
 bool CalculateBlobMemorySize(const std::vector<DataElement>& elements,
                              size_t* shortcut_bytes,
                              uint64_t* total_bytes) {
@@ -42,6 +43,29 @@ bool CalculateBlobMemorySize(const std::vector<DataElement>& elements,
   *total_bytes = total_size_checked.ValueOrDie();
   return true;
 }
+
+IPCBlobCreationCancelCode ConvertReferencedBlobErrorToConstructingError(
+    IPCBlobCreationCancelCode referenced_blob_error) {
+  switch (referenced_blob_error) {
+    // For most cases we propagate the error.
+    case IPCBlobCreationCancelCode::FILE_WRITE_FAILED:
+    case IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT:
+    case IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN:
+    case IPCBlobCreationCancelCode::OUT_OF_MEMORY:
+      return referenced_blob_error;
+    // Others we report that the referenced blob is broken, as we don't know
+    // why (the BLOB_DEREFERENCED_WHILE_BUILDING should never happen, as we hold
+    // onto the reference of the blobs we're using).
+    case IPCBlobCreationCancelCode::BLOB_DEREFERENCED_WHILE_BUILDING:
+      DCHECK(false) << "Referenced blob should never be dereferenced while we "
+                    << "are depending on it, as our system holds a handle.";
+    case IPCBlobCreationCancelCode::UNKNOWN:
+      return IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN;
+  }
+  NOTREACHED();
+  return IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN;
+}
+
 }  // namespace
 
 using MemoryItemRequest =
@@ -285,7 +309,9 @@ void BlobAsyncBuilderHost::CancelBuildingBlob(const std::string& uuid,
 
 void BlobAsyncBuilderHost::CancelAll(BlobStorageContext* context) {
   DCHECK(context);
-  // Some of our pending blobs may still be referenced elsewhere.
+  // If the blob still exists in the context (and is being built), then we know
+  // that someone else is expecting our blob, and we need to cancel it to let
+  // the dependency know it's gone.
   std::vector<std::unique_ptr<BlobDataHandle>> referenced_pending_blobs;
   for (const auto& uuid_state_pair : async_blob_map_) {
     if (context->IsBeingBuilt(uuid_state_pair.first)) {
@@ -387,7 +413,8 @@ BlobTransportResult BlobAsyncBuilderHost::ContinueBlobMemoryRequests(
 void BlobAsyncBuilderHost::ReferencedBlobFinished(
     const std::string& owning_blob_uuid,
     base::WeakPtr<BlobStorageContext> context,
-    bool construction_success) {
+    bool construction_success,
+    IPCBlobCreationCancelCode reason) {
   if (!context) {
     return;
   }
@@ -397,7 +424,7 @@ void BlobAsyncBuilderHost::ReferencedBlobFinished(
   }
   if (!construction_success) {
     CancelBuildingBlob(owning_blob_uuid,
-                       IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT,
+                       ConvertReferencedBlobErrorToConstructingError(reason),
                        context.get());
     return;
   }

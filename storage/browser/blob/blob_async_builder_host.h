@@ -109,7 +109,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
 
   // This clears this object of pending construction. It also handles marking
   // blobs that haven't been fully constructed as broken in the context if there
-  // are any references being held by anyone.
+  // are any references being held by anyone. We know that they're being used
+  // by someone else if they still exist in the context.
   void CancelAll(BlobStorageContext* context);
 
   size_t blob_building_count() const { return async_blob_map_.size(); }
@@ -178,7 +179,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
   // complete the blob and erase our internal state.
   void ReferencedBlobFinished(const std::string& uuid,
                               base::WeakPtr<BlobStorageContext> context,
-                              bool construction_success);
+                              bool construction_success,
+                              IPCBlobCreationCancelCode reason);
 
   // This finishes creating the blob in the context, decrements blob references
   // that we were holding during construction, and erases our state.

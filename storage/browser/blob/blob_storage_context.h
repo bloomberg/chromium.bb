@@ -85,6 +85,7 @@ class STORAGE_EXPORT BlobStorageContext
 
  private:
   using BlobRegistryEntry = BlobStorageRegistry::Entry;
+  using BlobConstructedCallback = BlobStorageRegistry::BlobConstructedCallback;
   friend class content::BlobDispatcherHost;
   friend class BlobAsyncBuilderHost;
   friend class BlobAsyncBuilderHostTest;
@@ -124,9 +125,11 @@ class STORAGE_EXPORT BlobStorageContext
   std::unique_ptr<BlobDataSnapshot> CreateSnapshot(const std::string& uuid);
   bool IsBroken(const std::string& uuid) const;
   bool IsBeingBuilt(const std::string& uuid) const;
-  // Runs |done| when construction completes, with true if it was successful.
+  // Runs |done| when construction completes, with true if it was successful,
+  // and false if there was an error, which is reported in the second argument
+  // of the callback.
   void RunOnConstructionComplete(const std::string& uuid,
-                                 const base::Callback<void(bool)>& done);
+                                 const BlobConstructedCallback& done);
 
   // Appends the given blob item to the blob builder.  The new blob
   // retains ownership of data_item if applicable, and returns false if there

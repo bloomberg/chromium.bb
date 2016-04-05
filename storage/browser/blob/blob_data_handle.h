@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "storage/browser/storage_browser_export.h"
+#include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -38,6 +39,11 @@ class FileSystemContext;
 class STORAGE_EXPORT BlobDataHandle
     : public base::SupportsUserData::Data {
  public:
+  // True means the blob was constructed successfully, and false means that
+  // there was an error, which is reported in the second argument.
+  using BlobConstructedCallback =
+      base::Callback<void(bool, IPCBlobCreationCancelCode)>;
+
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
   ~BlobDataHandle() override;                   // May be deleted on any thread.
 
@@ -56,7 +62,7 @@ class STORAGE_EXPORT BlobDataHandle
   // Must be called on IO thread.  Returns if construction successful.
   // Calling this multiple times results in registering multiple
   // completion callbacks.
-  void RunOnConstructionComplete(const base::Callback<void(bool)>& done);
+  void RunOnConstructionComplete(const BlobConstructedCallback& done);
 
   // A BlobReader is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period
@@ -89,10 +95,6 @@ class STORAGE_EXPORT BlobDataHandle
                          const std::string& content_type,
                          const std::string& content_disposition,
                          BlobStorageContext* context);
-
-    void RunOnConstructionComplete(const base::Callback<void(bool)>& done);
-
-    std::unique_ptr<BlobDataSnapshot> CreateSnapshot() const;
 
    private:
     friend class base::DeleteHelper<BlobDataHandleShared>;

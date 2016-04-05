@@ -34,6 +34,7 @@ enum class IPCBlobItemRequestStrategy {
 enum class IPCBlobCreationCancelCode {
   UNKNOWN = 0,
   OUT_OF_MEMORY = 1,
+  // We couldn't create or write to a file. File system error, like a full disk.
   FILE_WRITE_FAILED = 2,
   // The renderer was destroyed while data was in transit.
   SOURCE_DIED_IN_TRANSIT = 3,

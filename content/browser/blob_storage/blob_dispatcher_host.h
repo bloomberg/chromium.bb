@@ -87,6 +87,11 @@ class CONTENT_EXPORT BlobDispatcherHost : public BrowserMessageFilter {
                            CreateBlobWithBrokenReference);
   FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest,
                            DeferenceBlobOnDifferentHost);
+  FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest, BuildingReferenceChain);
+  FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest,
+                           BuildingReferenceChainWithCancel);
+  FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest,
+                           BuildingReferenceChainWithSourceDeath);
 
   typedef std::map<std::string, int> BlobReferenceMap;
 

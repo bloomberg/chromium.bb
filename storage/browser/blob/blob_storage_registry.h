@@ -32,6 +32,11 @@ namespace storage {
 //   uuid. The user must keep track of these.
 class STORAGE_EXPORT BlobStorageRegistry {
  public:
+  // True means the blob was constructed successfully, and false means that
+  // there was an error, which is reported in the second argument.
+  using BlobConstructedCallback =
+      base::Callback<void(bool, IPCBlobCreationCancelCode)>;
+
   enum class BlobState {
     // The blob is pending transportation from the renderer. This is the default
     // state on entry construction.
@@ -46,7 +51,7 @@ class STORAGE_EXPORT BlobStorageRegistry {
   struct STORAGE_EXPORT Entry {
     size_t refcount;
     BlobState state;
-    std::vector<base::Callback<void(bool)>> build_completion_callbacks;
+    std::vector<BlobConstructedCallback> build_completion_callbacks;
 
     // Only applicable if the state == BROKEN.
     IPCBlobCreationCancelCode broken_reason =
