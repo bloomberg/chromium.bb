@@ -500,6 +500,7 @@ Polymer({
   },
 
   listeners: {
+    'focus': 'onFocus_',
     'header-height-changed': 'updateElementPositioning_',
     'header-or-arrow-click': 'toggleCastModeHidden_',
     'mouseleave': 'onMouseLeave_',
@@ -512,6 +513,13 @@ Polymer({
 
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
+
+    // If this is not on a Mac platform, remove the placeholder. See
+    // onFocus_() for more details. ready() is only called once, so no need
+    // to check if the placeholder exist before removing.
+    if (!cr.isMac)
+      this.$$('#focus-placeholder').remove();
+
     document.addEventListener('keydown', this.onKeydown_.bind(this));
     this.setSearchFocusHandlers_();
     this.showSinkList_();
@@ -1342,6 +1350,32 @@ Polymer({
       this.resetRouteCreationProperties_(true);
     } else {
       this.pendingCreatedRouteId_ = route.id;
+    }
+  },
+
+  /**
+   * Called when a focus event is triggered.
+   *
+   * @param {!Event} event The event object.
+   * @private
+   */
+  onFocus_: function(event) {
+    // If the focus event was automatically fired by Polymer, remove focus from
+    // the element. This prevents unexpected focusing when the dialog is
+    // initially loaded. This only happens on mac.
+    if (cr.isMac && !event.sourceCapabilities) {
+      // Adding a focus placeholder element is part of the workaround for
+      // handling unexpected focusing, which only happens once on dialog open.
+      // Since the placeholder is focus-enabled as denoted by its tabindex
+      // value, the focus will not appear in other elements.
+      var placeholder = this.$$('#focus-placeholder');
+      // Check that the placeholder is the currently focused element. In some
+      // tests, other elements are non-user-triggered focused.
+      if (placeholder && this.shadowRoot.activeElement == placeholder) {
+        event.path[0].blur();
+        // Remove the placeholder since we have no more use for it.
+        placeholder.remove();
+      }
     }
   },
 

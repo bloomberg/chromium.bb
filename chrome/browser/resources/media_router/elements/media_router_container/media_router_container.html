@@ -18,6 +18,7 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="media_router_container.css">
   <template>
+    <div id="focus-placeholder" tabindex="0"></div>
     <template is="dom-if"
         if="[[computeShowFirstRunFlow_(showFirstRunFlow, currentView_)]]">
       <div id="first-run-flow">
