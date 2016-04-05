@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
@@ -202,6 +203,10 @@ class NET_EXPORT TransportSecurityState
    public:
     // Sends the given serialized |report| to |report_uri|.
     virtual void Send(const GURL& report_uri, const std::string& report) = 0;
+
+    // Sets a callback to be called when report sending fails.
+    virtual void SetErrorCallback(
+        const base::Callback<void(const GURL&, int)>& error_callback) = 0;
 
    protected:
     virtual ~ReportSender() {}

@@ -47,10 +47,10 @@ void CheckUploadData(const URLRequest& request,
   EXPECT_EQ(1u, expect_reports->erase(upload_data));
 }
 
-// Provides an error callback for report sending. If the callback is
-// called, it sets |called| to true.
-void ErrorCallback(bool* called, URLRequest* request) {
-  EXPECT_FALSE(request->status().is_success());
+// Provides an error callback for report sending that sets |called| to
+// true.
+void ErrorCallback(bool* called, const GURL& report_uri, int net_error) {
+  EXPECT_NE(OK, net_error);
   *called = true;
 }
 

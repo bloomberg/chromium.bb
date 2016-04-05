@@ -689,6 +689,9 @@ class MockCertificateReportSender
     latest_report_ = report;
   }
 
+  void SetErrorCallback(
+      const base::Callback<void(const GURL&, int)>& error_callback) override {}
+
   const GURL& latest_report_uri() { return latest_report_uri_; }
   const std::string& latest_report() { return latest_report_; }
 

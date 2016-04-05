@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/host_port_pair.h"
@@ -90,6 +91,9 @@ class MockCertificateReportSender
     latest_report_ = report;
   }
 
+  void SetErrorCallback(
+      const base::Callback<void(const GURL&, int)>& error_callback) override {}
+
   void Clear() {
     latest_report_uri_ = GURL();
     latest_report_ = std::string();
@@ -101,6 +105,31 @@ class MockCertificateReportSender
  private:
   GURL latest_report_uri_;
   std::string latest_report_;
+};
+
+// A mock ReportSender that simulates a net error on every report sent.
+class MockFailingCertificateReportSender
+    : public TransportSecurityState::ReportSender {
+ public:
+  MockFailingCertificateReportSender() : net_error_(ERR_CONNECTION_FAILED) {}
+  ~MockFailingCertificateReportSender() override {}
+
+  int net_error() { return net_error_; }
+
+  // TransportSecurityState::ReportSender:
+  void Send(const GURL& report_uri, const std::string& report) override {
+    ASSERT_FALSE(error_callback_.is_null());
+    error_callback_.Run(report_uri, net_error_);
+  }
+
+  void SetErrorCallback(
+      const base::Callback<void(const GURL&, int)>& error_callback) override {
+    error_callback_ = error_callback;
+  }
+
+ private:
+  const int net_error_;
+  base::Callback<void(const GURL&, int)> error_callback_;
 };
 
 // A mock ExpectCTReporter that remembers the latest violation that was
@@ -1277,6 +1306,52 @@ TEST_F(TransportSecurityStateTest, HPKPReporting) {
   ASSERT_NO_FATAL_FAILURE(CheckHPKPReport(report, subdomain_host_port_pair,
                                           true, kHost, cert1.get(), cert2.get(),
                                           good_hashes));
+}
+
+// Tests that a histogram entry is recorded when TransportSecurityState
+// fails to send an HPKP violation report.
+TEST_F(TransportSecurityStateTest, UMAOnHPKPReportingFailure) {
+  base::HistogramTester histograms;
+  const std::string histogram_name = "Net.PublicKeyPinReportSendingFailure";
+  HostPortPair host_port_pair(kHost, kPort);
+  GURL report_uri(kReportUri);
+  // Two dummy certs to use as the server-sent and validated chains. The
+  // contents don't matter.
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "test_mail_google_com.pem");
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert1);
+  ASSERT_TRUE(cert2);
+
+  HashValueVector good_hashes, bad_hashes;
+
+  for (size_t i = 0; kGoodPath[i]; i++)
+    EXPECT_TRUE(AddHash(kGoodPath[i], &good_hashes));
+  for (size_t i = 0; kBadPath[i]; i++)
+    EXPECT_TRUE(AddHash(kBadPath[i], &bad_hashes));
+
+  // The histogram should start off empty.
+  histograms.ExpectTotalCount(histogram_name, 0);
+
+  TransportSecurityState state;
+  MockFailingCertificateReportSender mock_report_sender;
+  state.SetReportSender(&mock_report_sender);
+
+  const base::Time current_time = base::Time::Now();
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  state.AddHPKP(kHost, expiry, true, good_hashes, report_uri);
+
+  std::string failure_log;
+  EXPECT_FALSE(state.CheckPublicKeyPins(
+      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+
+  // Check that the UMA histogram was updated when the report failed to
+  // send.
+  histograms.ExpectTotalCount(histogram_name, 1);
+  histograms.ExpectBucketCount(histogram_name, mock_report_sender.net_error(),
+                               1);
 }
 
 TEST_F(TransportSecurityStateTest, HPKPReportOnly) {

@@ -27102,6 +27102,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.PublicKeyPinReportSendingFailure" enum="NetErrorCodes">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    A validated certificate chain may be subject to additional pinning
+    requirements on a per-domain basis. When pinning requirements are violated,
+    Chrome attempts to send a report about the incident. This records the net
+    error code when sending a pinning violation report fails.
+  </summary>
+</histogram>
+
 <histogram name="Net.PublicKeyPinSuccess" enum="BooleanSuccess">
   <owner>agl@chromium.org</owner>
   <summary>

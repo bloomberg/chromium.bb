@@ -21,12 +21,12 @@ CertificateReportSender::CertificateReportSender(
     CookiesPreference cookies_preference)
     : CertificateReportSender(request_context,
                               cookies_preference,
-                              base::Callback<void(URLRequest*)>()) {}
+                              ErrorCallback()) {}
 
 CertificateReportSender::CertificateReportSender(
     URLRequestContext* request_context,
     CookiesPreference cookies_preference,
-    const base::Callback<void(URLRequest*)>& error_callback)
+    const ErrorCallback& error_callback)
     : request_context_(request_context),
       cookies_preference_(cookies_preference),
       error_callback_(error_callback) {}
@@ -60,12 +60,17 @@ void CertificateReportSender::Send(const GURL& report_uri,
   raw_url_request->Start();
 }
 
+void CertificateReportSender::SetErrorCallback(
+    const ErrorCallback& error_callback) {
+  error_callback_ = error_callback;
+}
+
 void CertificateReportSender::OnResponseStarted(URLRequest* request) {
   if (!request->status().is_success()) {
     DVLOG(1) << "Failed to send certificate report for "
              << request->url().host();
     if (!error_callback_.is_null())
-      error_callback_.Run(request);
+      error_callback_.Run(request->url(), request->status().error());
   }
 
   CHECK_GT(inflight_requests_.erase(request), 0u);

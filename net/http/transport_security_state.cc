@@ -40,6 +40,11 @@ const size_t kMaxHPKPReportCacheEntries = 50;
 const int kTimeToRememberHPKPReportsMins = 60;
 const size_t kReportCacheKeyLength = 16;
 
+void RecordUMAForHPKPReportFailure(const GURL& report_uri, int net_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.PublicKeyPinReportSendingFailure",
+                              net_error);
+}
+
 std::string TimeToISO8601(const base::Time& t) {
   base::Time::Exploded exploded;
   t.UTCExplode(&exploded);
@@ -689,6 +694,8 @@ void TransportSecurityState::SetReportSender(
     TransportSecurityState::ReportSender* report_sender) {
   DCHECK(CalledOnValidThread());
   report_sender_ = report_sender;
+  if (report_sender_)
+    report_sender_->SetErrorCallback(base::Bind(RecordUMAForHPKPReportFailure));
 }
 
 void TransportSecurityState::SetExpectCTReporter(
