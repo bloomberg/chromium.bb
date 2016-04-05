@@ -7,6 +7,22 @@ See [build](build.md) for instructions on how to build Blimp.
 There are both Android and Linux clients.  The Android client is the shipping
 client while the Linux client is used for development purposes.
 
+### Instructing client to connect to specific host
+
+To have the client connect to a custom engine use the `--engine-ip`,
+`--engine-port`, and `--engine-transport` flags. The possible valid
+values for `--engine-transport` are 'tcp' and 'ssl'.
+An example valid endpoint would be
+`--engine-ip=127.0.0.1 --engine-port=1234 --engine-transport=tcp`.
+
+SSL-encrypted connections take an additional flag
+`--engine-cert-path` which specifies a path to a PEM-encoded certificate
+file (e.g. `--engine-cert-path=/path/to/file.pem`.)
+
+### Requesting the complete page from the engine
+The engine sends partially rendered content to the client. To request the complete
+page from the engine, use the `--download-whole-document` flag on the client.
+
 ### Android Client
 
 Install the Blimp APK with the following:
@@ -20,16 +36,6 @@ Set up any command line flags with:
 ```bash
 ./build/android/adb_blimp_command_line --your-flag-here
 ```
-
-To have the client connect to a custom engine use the `--engine-ip`,
-`--engine-port`, and `--engine-transport` flags. The possible valid
-values for `--engine-transport` are 'tcp' and 'ssl'.
-An example valid endpoint would be
-`--engine-ip=127.0.0.1 --engine-port=1234 --engine-transport=tcp`.
-
-SSL-encrypted connections take an additional flag
-`--engine-cert-path` which specifies a path to a PEM-encoded certificate
-file (e.g. `--engine-cert-path=/path/to/file.pem`.)
 
 To see your current command line, run `adb_blimp_command_line` without any
 arguments.
@@ -50,17 +56,6 @@ logging enabled, execute:
   --user-data-dir=/tmp/blimpclient \
   --enable-logging=stderr \
   --vmodule="*=1"
-```
-
-### Instructing client to connect to specific host
-If you run the engine on your local host and you want the client to connect to
-it instead of using the assigner, you need to instruct the client to use the
-correct host and port to connect to by giving it the correct command line flag.
-
-Typically this flag would be:
-
-```bash
---blimplet-endpoint=tcp:127.0.0.1:25467
 ```
 
 ## Running the engine
