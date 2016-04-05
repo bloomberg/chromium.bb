@@ -50,6 +50,7 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
 #include "core/loader/DocumentLoader.h"
@@ -99,9 +100,6 @@ static size_t maximumResourceBufferSize = 10 * 1000 * 1000;
 }
 
 namespace {
-
-// Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
-const char kDevToolsEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
 
 // Pattern may contain stars ('*') which match to any (possibly empty) string.
 // Stars implicitly assumed at the begin/end of pattern.
@@ -536,7 +534,7 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
     willSendRequestInternal(frame, identifier, loader, request, redirectResponse, initiatorInfo);
 
     if (!m_hostId.isEmpty())
-        request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
+        request.addHTTPHeaderField(InspectorInstrumentation::kInspectorEmulateNetworkConditionsClientId, AtomicString(m_hostId));
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)

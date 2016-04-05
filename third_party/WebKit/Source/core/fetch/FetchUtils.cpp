@@ -4,6 +4,7 @@
 
 #include "core/fetch/FetchUtils.h"
 
+#include "core/inspector/InspectorInstrumentation.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/HashSet.h"
@@ -92,10 +93,13 @@ bool FetchUtils::isSimpleHeader(const AtomicString& name, const AtomicString& va
     // `text/plain`."
     // Treat 'Save-Data' as a simple header, since it is added by Chrome when
     // Data Saver feature is enabled.
+    // Treat inspector header as a simple header, since it is added by blink when
+    // inspector is open.
 
     if (equalIgnoringCase(name, "accept")
         || equalIgnoringCase(name, "accept-language")
         || equalIgnoringCase(name, "content-language")
+        || equalIgnoringCase(name, InspectorInstrumentation::kInspectorEmulateNetworkConditionsClientId)
         || equalIgnoringCase(name, "save-data"))
         return true;
 

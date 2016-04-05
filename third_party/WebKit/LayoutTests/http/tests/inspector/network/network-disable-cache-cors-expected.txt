@@ -1,6 +1,9 @@
+CONSOLE ERROR: Fetch API cannot load http://localhost:8080/inspector/network/resources/cors-redirect.cgi. Response for preflight is invalid (redirect)
 CONSOLE MESSAGE: line 32: Done.
-Tests that preflight OPTIONS is always sent if 'Disable cache' is checked.
+Tests that preflight OPTIONS is always sent if 'Disable cache' is checked, and that network instrumentation does not produce errors for redirected preflights.
 
+OPTIONS: http://localhost:8080/inspector/network/resources/cors-redirect.cgi
+OPTIONS: http://localhost:8080/inspector/network/resources/cors-redirect.cgi
 OPTIONS: http://localhost:8000/inspector/network/resources/cors.cgi
 POST: http://localhost:8000/inspector/network/resources/cors.cgi
 OPTIONS: http://localhost:8000/inspector/network/resources/cors.cgi

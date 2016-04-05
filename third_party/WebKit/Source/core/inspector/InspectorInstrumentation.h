@@ -111,6 +111,8 @@ InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 // Helper for the one above.
 CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
 
+CORE_EXPORT extern const char kInspectorEmulateNetworkConditionsClientId[];
+
 }  // namespace InspectorInstrumentation
 
 namespace InstrumentationEvents {

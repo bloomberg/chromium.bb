@@ -59,6 +59,9 @@ PersistentHeapHashSet<WeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
 
 namespace InspectorInstrumentation {
 int FrontendCounter::s_frontendCounter = 0;
+
+// Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
+const char kInspectorEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
 }
 
 InspectorInstrumentationCookie::InspectorInstrumentationCookie()

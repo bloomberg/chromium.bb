@@ -34,7 +34,13 @@ function step3()
 
 function test()
 {
-    InspectorTest.NetworkAgent.setCacheDisabled(true, step0);
+    InspectorTest.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {headers: {"x-test": "redirect"}}, function () {});
+    InspectorTest.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {}, disableCache);
+
+    function disableCache()
+    {
+        InspectorTest.NetworkAgent.setCacheDisabled(true, step0);
+    }
 
     function step0()
     {
@@ -63,6 +69,6 @@ function test()
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests that preflight OPTIONS is always sent if 'Disable cache' is checked.</p>
+<p>Tests that preflight OPTIONS is always sent if 'Disable cache' is checked, and that network instrumentation does not produce errors for redirected preflights.</p>
 </body>
 </html>
