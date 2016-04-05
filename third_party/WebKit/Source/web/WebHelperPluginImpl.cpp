@@ -83,7 +83,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl
         attributeValues,
         pluginType,
         false,
-        FrameLoaderClient::AllowDetachedPlugin).leakRef());
+        FrameLoaderClient::AllowDetachedPlugin));
 
     if (!m_pluginContainer)
         return false;

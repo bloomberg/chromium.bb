@@ -81,10 +81,10 @@ public:
     void setClientRedirect(ClientRedirectPolicy clientRedirect) { m_clientRedirect = clientRedirect; }
 
     Event* triggeringEvent() const { return m_triggeringEvent.get(); }
-    void setTriggeringEvent(RawPtr<Event> triggeringEvent) { m_triggeringEvent = triggeringEvent; }
+    void setTriggeringEvent(Event* triggeringEvent) { m_triggeringEvent = triggeringEvent; }
 
     HTMLFormElement* form() const { return m_form.get(); }
-    void setForm(RawPtr<HTMLFormElement> form) { m_form = form; }
+    void setForm(HTMLFormElement* form) { m_form = form; }
 
     ShouldSendReferrer getShouldSendReferrer() const { return m_shouldSendReferrer; }
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }

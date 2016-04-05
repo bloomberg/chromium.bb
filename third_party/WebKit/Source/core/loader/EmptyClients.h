@@ -68,7 +68,7 @@ namespace blink {
 
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 public:
-    static RawPtr<EmptyChromeClient> create() { return new EmptyChromeClient; }
+    static EmptyChromeClient* create() { return new EmptyChromeClient; }
 
     ~EmptyChromeClient() override {}
     void chromeDestroyed() override {}
@@ -176,7 +176,7 @@ public:
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
     WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient);
 public:
-    static RawPtr<EmptyFrameLoaderClient> create() { return new EmptyFrameLoaderClient; }
+    static EmptyFrameLoaderClient* create() { return new EmptyFrameLoaderClient; }
     ~EmptyFrameLoaderClient() override {}
 
     bool hasWebView() const override { return true; } // mainly for assertions
@@ -226,7 +226,7 @@ public:
 
     void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String&, bool) override {}
 
-    RawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
+    DocumentLoader* createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
 
     String userAgent() override { return ""; }
 
@@ -242,8 +242,8 @@ public:
     void didDisplayContentWithCertificateErrors(const KURL&, const CString&, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override {}
     void didRunContentWithCertificateErrors(const KURL&, const CString&, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override {}
     void selectorMatchChanged(const Vector<String>&, const Vector<String>&) override {}
-    RawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const AtomicString&, HTMLFrameOwnerElement*) override;
-    RawPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) override;
+    LocalFrame* createFrame(const FrameLoadRequest&, const AtomicString&, HTMLFrameOwnerElement*) override;
+    Widget* createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) override;
     bool canCreatePluginWithoutRenderer(const String& mimeType) const override { return false; }
     PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) override;
     PassOwnPtr<WebMediaSession> createWebMediaSession() override;

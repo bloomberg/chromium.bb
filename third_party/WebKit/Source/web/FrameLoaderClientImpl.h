@@ -119,13 +119,13 @@ public:
     void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override;
     void didChangePerformanceTiming() override;
     void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
-    RawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
+    DocumentLoader* createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
     WTF::String userAgent() override;
     WTF::String doNotTrackValue() override;
     void transitionToCommittedForNewPage() override;
-    RawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
+    LocalFrame* createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
-    RawPtr<Widget> createPlugin(
+    Widget* createPlugin(
         HTMLPlugInElement*, const KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually, DetachedPluginPolicy) override;
@@ -184,7 +184,7 @@ public:
 
     BlameContext* frameBlameContext() override;
 
-    RawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) override;
+    LinkResource* createServiceWorkerLinkResource(HTMLLinkElement*) override;
 
 private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);

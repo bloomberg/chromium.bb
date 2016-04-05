@@ -24,7 +24,7 @@ namespace blink {
 class MockLinkLoaderClient final : public GarbageCollectedFinalized<MockLinkLoaderClient>, public LinkLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MockLinkLoaderClient);
 public:
-    static RawPtr<MockLinkLoaderClient> create(bool shouldLoad)
+    static MockLinkLoaderClient* create(bool shouldLoad)
     {
         return new MockLinkLoaderClient(shouldLoad);
     }
@@ -139,7 +139,7 @@ TEST(LinkLoaderTest, Preload)
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->frame().settings()->setScriptEnabled(true);
         Persistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.linkLoaderShouldLoadValue);
-        RawPtr<LinkLoader> loader = LinkLoader::create(loaderClient.get());
+        LinkLoader* loader = LinkLoader::create(loaderClient.get());
         KURL hrefURL = KURL(KURL(), testCase.href);
         URLTestHelpers::registerMockedErrorURLLoad(hrefURL);
         loader->loadLink(LinkRelAttribute("preload"),
@@ -196,7 +196,7 @@ TEST(LinkLoaderTest, DNSPrefetch)
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->document().settings()->setDNSPrefetchingEnabled(true);
         Persistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.shouldLoad);
-        RawPtr<LinkLoader> loader = LinkLoader::create(loaderClient.get());
+        LinkLoader* loader = LinkLoader::create(loaderClient.get());
         KURL hrefURL = KURL(KURL(ParsedURLStringTag(), String("http://example.com")), testCase.href);
         NetworkHintsMock networkHints;
         loader->loadLink(LinkRelAttribute("dns-prefetch"),
@@ -231,7 +231,7 @@ TEST(LinkLoaderTest, Preconnect)
     for (const auto& testCase : cases) {
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         Persistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.shouldLoad);
-        RawPtr<LinkLoader> loader = LinkLoader::create(loaderClient.get());
+        LinkLoader* loader = LinkLoader::create(loaderClient.get());
         KURL hrefURL = KURL(KURL(ParsedURLStringTag(), String("http://example.com")), testCase.href);
         NetworkHintsMock networkHints;
         loader->loadLink(LinkRelAttribute("preconnect"),

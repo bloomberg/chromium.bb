@@ -89,7 +89,7 @@ public:
         String m_acceptCharset;
     };
 
-    static RawPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, RawPtr<Event>);
+    static FormSubmission* create(HTMLFormElement*, const Attributes&, Event*);
     DECLARE_TRACE();
 
     void populateFrameLoadRequest(FrameLoadRequest&);
@@ -107,7 +107,7 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(SubmitMethod, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, RawPtr<Event>);
+    FormSubmission(SubmitMethod, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, Event*);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 

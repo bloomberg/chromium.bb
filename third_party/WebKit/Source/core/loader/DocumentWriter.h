@@ -43,7 +43,7 @@ class DocumentParser;
 class DocumentWriter final : public GarbageCollectedFinalized<DocumentWriter> {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);
 public:
-    static RawPtr<DocumentWriter> create(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType, const AtomicString& encoding);
+    static DocumentWriter* create(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType, const AtomicString& encoding);
 
     ~DocumentWriter();
     DECLARE_TRACE();

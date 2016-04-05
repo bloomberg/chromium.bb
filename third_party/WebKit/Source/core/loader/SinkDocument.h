@@ -32,7 +32,7 @@ namespace blink {
 
 class SinkDocument final : public HTMLDocument {
 public:
-    static RawPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
+    static SinkDocument* create(const DocumentInit& initializer = DocumentInit())
     {
         return new SinkDocument(initializer);
     }

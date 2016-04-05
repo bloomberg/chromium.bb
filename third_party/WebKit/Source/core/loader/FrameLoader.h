@@ -242,7 +242,7 @@ private:
     class DeferredHistoryLoad : public GarbageCollectedFinalized<DeferredHistoryLoad> {
         WTF_MAKE_NONCOPYABLE(DeferredHistoryLoad);
     public:
-        static RawPtr<DeferredHistoryLoad> create(ResourceRequest request, HistoryItem* item, FrameLoadType loadType, HistoryLoadType historyLoadType)
+        static DeferredHistoryLoad* create(ResourceRequest request, HistoryItem* item, FrameLoadType loadType, HistoryLoadType historyLoadType)
         {
             return new DeferredHistoryLoad(request, item, loadType, historyLoadType);
         }

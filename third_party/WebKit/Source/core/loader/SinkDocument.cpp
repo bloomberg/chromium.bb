@@ -31,7 +31,7 @@ namespace blink {
 
 class SinkDocumentParser : public RawDataDocumentParser {
 public:
-    static RawPtr<SinkDocumentParser> create(SinkDocument* document)
+    static SinkDocumentParser* create(SinkDocument* document)
     {
         return new SinkDocumentParser(document);
     }

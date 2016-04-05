@@ -734,12 +734,12 @@ void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSele
         client->didMatchCSS(m_webFrame, WebVector<WebString>(addedSelectors), WebVector<WebString>(removedSelectors));
 }
 
-RawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+DocumentLoader* FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
-    RawPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
+    WebDataSourceImpl* ds = WebDataSourceImpl::create(frame, request, data);
     if (m_webFrame->client())
-        m_webFrame->client()->didCreateDataSource(m_webFrame, ds.get());
-    return ds.release();
+        m_webFrame->client()->didCreateDataSource(m_webFrame, ds);
+    return ds;
 }
 
 String FrameLoaderClientImpl::userAgent()
@@ -768,7 +768,7 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
     m_webFrame->createFrameView();
 }
 
-RawPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
+LocalFrame* FrameLoaderClientImpl::createFrame(
     const FrameLoadRequest& request,
     const AtomicString& name,
     HTMLFrameOwnerElement* ownerElement)
@@ -784,7 +784,7 @@ bool FrameLoaderClientImpl::canCreatePluginWithoutRenderer(const String& mimeTyp
     return m_webFrame->client()->canCreatePluginWithoutRenderer(mimeType);
 }
 
-RawPtr<Widget> FrameLoaderClientImpl::createPlugin(
+Widget* FrameLoaderClientImpl::createPlugin(
     HTMLPlugInElement* element,
     const KURL& url,
     const Vector<String>& paramNames,
@@ -1058,7 +1058,7 @@ BlameContext* FrameLoaderClientImpl::frameBlameContext()
     return m_webFrame->client()->frameBlameContext();
 }
 
-RawPtr<LinkResource> FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkElement* owner)
+LinkResource* FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkElement* owner)
 {
     return ServiceWorkerLinkResource::create(owner);
 }

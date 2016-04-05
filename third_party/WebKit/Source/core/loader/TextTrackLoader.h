@@ -51,7 +51,7 @@ public:
 class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>, public ResourceOwner<RawResource>, private VTTParserClient {
     USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 public:
-    static RawPtr<TextTrackLoader> create(TextTrackLoaderClient& client, Document& document)
+    static TextTrackLoader* create(TextTrackLoaderClient& client, Document& document)
     {
         return new TextTrackLoader(client, document);
     }

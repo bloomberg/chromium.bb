@@ -144,7 +144,7 @@ public:
     // that match any element on the frame.
     virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) = 0;
 
-    virtual RawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) = 0;
+    virtual DocumentLoader* createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) = 0;
 
     virtual String userAgent() = 0;
 
@@ -152,14 +152,14 @@ public:
 
     virtual void transitionToCommittedForNewPage() = 0;
 
-    virtual RawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*) = 0;
+    virtual LocalFrame* createFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*) = 0;
     // Whether or not plugin creation should fail if the HTMLPlugInElement isn't in the DOM after plugin initialization.
     enum DetachedPluginPolicy {
         FailOnDetachedPlugin,
         AllowDetachedPlugin,
     };
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
-    virtual RawPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
+    virtual Widget* createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
     virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) = 0;
 
@@ -256,7 +256,7 @@ public:
     };
     virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) { }
 
-    virtual RawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) { return nullptr; }
+    virtual LinkResource* createServiceWorkerLinkResource(HTMLLinkElement*) { return nullptr; }
 };
 
 } // namespace blink

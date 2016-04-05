@@ -193,8 +193,6 @@ DEFINE_TRACE(FrameLoader)
 
 void FrameLoader::init()
 {
-    // init() may dispatch JS events, so protect a reference to m_frame.
-    RawPtr<LocalFrame> protect(m_frame.get());
     ResourceRequest initialRequest(KURL(ParsedURLString, emptyString()));
     initialRequest.setRequestContext(WebURLRequest::RequestContextInternal);
     initialRequest.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
@@ -324,7 +322,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
 
     // DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL can cause the DocumentLoader to get deref'ed and possible destroyed,
     // so protect it with a RefPtr.
-    RawPtr<DocumentLoader> documentLoader(m_frame->document()->loader());
+    DocumentLoader* documentLoader(m_frame->document()->loader());
 
     UseCounter::count(*m_frame->document(), UseCounter::ReplaceDocumentViaJavaScriptURL);
 
@@ -361,7 +359,7 @@ void FrameLoader::receivedMainResourceRedirect(const KURL& newURL)
 
 void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
 {
-    RawPtr<HistoryItem> oldItem = m_currentItem;
+    HistoryItem* oldItem = m_currentItem;
     if (historyCommitType == BackForwardCommit && m_provisionalItem)
         m_currentItem = m_provisionalItem.release();
     else
@@ -495,11 +493,6 @@ void FrameLoader::finishedParsing()
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
-    // This can be called from the LocalFrame's destructor, in which case we shouldn't protect ourselves
-    // because doing so will cause us to re-enter the destructor when protector goes out of scope.
-    // Null-checking the FrameView indicates whether or not we're in the destructor.
-    RawPtr<LocalFrame> protect(m_frame->view() ? m_frame.get() : nullptr);
-
     m_progressTracker->finishedParsing();
 
     if (client()) {
@@ -586,7 +579,6 @@ static bool shouldSendCompleteNotification(LocalFrame* frame)
 
 void FrameLoader::checkCompleted()
 {
-    RawPtr<LocalFrame> protect(m_frame.get());
     if (!shouldComplete(m_frame->document()))
         return;
 
@@ -892,8 +884,6 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
 {
     ASSERT(m_frame->document());
 
-    RawPtr<LocalFrame> protect(m_frame.get());
-
     if (m_inStopAllLoaders)
         return;
 
@@ -908,14 +898,14 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RawPtr<Frame> targetFrame = request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame);
+    Frame* targetFrame = request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame);
 
     if (isBackForwardLoadType(frameLoadType)) {
         ASSERT(historyItem);
         m_provisionalItem = historyItem;
     }
 
-    if (targetFrame && targetFrame.get() != m_frame) {
+    if (targetFrame && targetFrame != m_frame) {
         bool wasInSamePage = targetFrame->page() == m_frame->page();
 
         request.setFrameName("_self");
@@ -931,7 +921,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
     FrameLoadType newLoadType = (frameLoadType == FrameLoadTypeStandard) ?
         determineFrameLoadType(request) : frameLoadType;
     NavigationPolicy policy = navigationPolicyForRequest(request);
-    if (shouldOpenInNewWindow(targetFrame.get(), request, policy)) {
+    if (shouldOpenInNewWindow(targetFrame, request, policy)) {
         if (policy == NavigationPolicyDownload) {
             client()->loadURLExternally(request.resourceRequest(), NavigationPolicyDownload, String(), false);
         } else {
@@ -996,14 +986,11 @@ void FrameLoader::stopAllLoaders()
     if (m_inStopAllLoaders)
         return;
 
-    // Stopping a document loader can blow away the frame from underneath.
-    RawPtr<LocalFrame> protect(m_frame.get());
-
     m_inStopAllLoaders = true;
 
-    for (RawPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child.get())->loader().stopAllLoaders();
+            toLocalFrame(child)->loader().stopAllLoaders();
     }
 
     m_frame->document()->suppressLoadEvent();
@@ -1052,7 +1039,7 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
 bool FrameLoader::prepareForCommit()
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
-    RawPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
+    DocumentLoader* pdl = m_provisionalDocumentLoader;
 
     if (m_frame->document()) {
         unsigned nodeCount = 0;
@@ -1108,7 +1095,6 @@ bool FrameLoader::prepareForCommit()
 void FrameLoader::commitProvisionalLoad()
 {
     ASSERT(client()->hasWebView());
-    RawPtr<LocalFrame> protect(m_frame.get());
 
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
@@ -1235,10 +1221,6 @@ void FrameLoader::detach()
 
 void FrameLoader::loadFailed(DocumentLoader* loader, const ResourceError& error)
 {
-    // Retain because the stop may release the last reference to it.
-    RawPtr<LocalFrame> protect(m_frame.get());
-    RawPtr<DocumentLoader> protectDocumentLoader(loader);
-
     if (!error.isCancellation() && m_frame->owner()) {
         // FIXME: For now, fallback content doesn't work cross process.
         if (m_frame->owner()->isLocal())
@@ -1288,11 +1270,11 @@ void FrameLoader::processFragment(const KURL& url, LoadStartType loadStartType)
         return;
 
     // Leaking scroll position to a cross-origin ancestor would permit the so-called "framesniffing" attack.
-    RawPtr<Frame> boundaryFrame = url.hasFragmentIdentifier() ? m_frame->findUnsafeParentScrollPropagationBoundary() : 0;
+    Frame* boundaryFrame = url.hasFragmentIdentifier() ? m_frame->findUnsafeParentScrollPropagationBoundary() : 0;
 
     // FIXME: Handle RemoteFrames
     if (boundaryFrame && boundaryFrame->isLocalFrame())
-        toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
+        toLocalFrame(boundaryFrame)->view()->setSafeToPropagateScrollToParent(false);
 
     // If scroll position is restored from history fragment then we should not override it unless
     // this is a same document reload.
@@ -1303,7 +1285,7 @@ void FrameLoader::processFragment(const KURL& url, LoadStartType loadStartType)
         FrameView::UrlFragmentScroll : FrameView::UrlFragmentDontScroll);
 
     if (boundaryFrame && boundaryFrame->isLocalFrame())
-        toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
+        toLocalFrame(boundaryFrame)->view()->setSafeToPropagateScrollToParent(true);
 }
 
 bool FrameLoader::shouldClose(bool isReload)
@@ -1383,8 +1365,6 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
 void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType type, NavigationPolicy navigationPolicy)
 {
     ASSERT(client()->hasWebView());
-    // Lots of things in this function can detach the LocalFrame (stopAllLoaders, beforeunload handlers, etc.), so protect the frame.
-    RawPtr<LocalFrame> protect(m_frame.get());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
@@ -1467,15 +1447,15 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
     case XFrameOptionsAllowAll:
         return false;
     case XFrameOptionsConflict: {
-        RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.");
+        ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.");
         consoleMessage->setRequestIdentifier(requestIdentifier);
-        m_frame->document()->addConsoleMessage(consoleMessage.release());
+        m_frame->document()->addConsoleMessage(consoleMessage);
         return true;
     }
     case XFrameOptionsInvalid: {
-        RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.");
+        ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.");
         consoleMessage->setRequestIdentifier(requestIdentifier);
-        m_frame->document()->addConsoleMessage(consoleMessage.release());
+        m_frame->document()->addConsoleMessage(consoleMessage);
         return false;
     }
     default:

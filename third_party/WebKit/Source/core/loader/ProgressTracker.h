@@ -46,7 +46,7 @@ struct ProgressItem;
 class CORE_EXPORT ProgressTracker final : public GarbageCollectedFinalized<ProgressTracker> {
     WTF_MAKE_NONCOPYABLE(ProgressTracker);
 public:
-    static RawPtr<ProgressTracker> create(LocalFrame*);
+    static ProgressTracker* create(LocalFrame*);
 
     ~ProgressTracker();
     DECLARE_TRACE();

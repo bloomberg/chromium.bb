@@ -164,12 +164,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // this re-implementation of ResourceOwner.
         RawResource* resource() const { return m_resource.get(); }
         void clearResource() { setResource(nullptr); }
-        void setResource(const RawPtr<RawResource>& newResource)
+        void setResource(RawResource* newResource)
         {
             if (newResource == m_resource)
                 return;
 
-            if (RawPtr<RawResource> oldResource = m_resource.release())
+            if (RawResource* oldResource = m_resource.release())
                 oldResource->removeClient(this);
 
             if (newResource) {

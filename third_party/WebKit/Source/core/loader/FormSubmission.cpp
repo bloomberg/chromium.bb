@@ -142,7 +142,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(SubmitMethod method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, RawPtr<Event> event)
+inline FormSubmission::FormSubmission(SubmitMethod method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, Event* event)
     : m_method(method)
     , m_action(action)
     , m_target(target)
@@ -160,7 +160,7 @@ inline FormSubmission::FormSubmission(const String& result)
 {
 }
 
-RawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, RawPtr<Event> event)
+FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, Event* event)
 {
     ASSERT(form);
 

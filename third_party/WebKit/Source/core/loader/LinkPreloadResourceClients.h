@@ -44,7 +44,7 @@ private:
 class LinkPreloadScriptResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ScriptResource, ScriptResourceClient> {
     USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadScriptResourceClient);
 public:
-    static RawPtr<LinkPreloadScriptResourceClient> create(LinkLoader* loader, RawPtr<ScriptResource> resource)
+    static LinkPreloadScriptResourceClient* create(LinkLoader* loader, ScriptResource* resource)
     {
         return new LinkPreloadScriptResourceClient(loader, resource);
     }
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    LinkPreloadScriptResourceClient(LinkLoader* loader, RawPtr<ScriptResource> resource)
+    LinkPreloadScriptResourceClient(LinkLoader* loader, ScriptResource* resource)
         : LinkPreloadResourceClient(loader)
     {
         setResource(resource);
@@ -77,7 +77,7 @@ private:
 class LinkPreloadStyleResourceClient: public LinkPreloadResourceClient, public ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient> {
     USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadStyleResourceClient);
 public:
-    static RawPtr<LinkPreloadStyleResourceClient> create(LinkLoader* loader, RawPtr<CSSStyleSheetResource> resource)
+    static LinkPreloadStyleResourceClient* create(LinkLoader* loader, CSSStyleSheetResource* resource)
     {
         return new LinkPreloadStyleResourceClient(loader, resource);
     }
@@ -100,7 +100,7 @@ public:
     }
 
 private:
-    LinkPreloadStyleResourceClient(LinkLoader* loader, RawPtr<CSSStyleSheetResource> resource)
+    LinkPreloadStyleResourceClient(LinkLoader* loader, CSSStyleSheetResource* resource)
         : LinkPreloadResourceClient(loader)
     {
         setResource(resource);
@@ -110,7 +110,7 @@ private:
 class LinkPreloadImageResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ImageResource> {
     USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadImageResourceClient);
 public:
-    static RawPtr<LinkPreloadImageResourceClient> create(LinkLoader* loader, RawPtr<ImageResource> resource)
+    static LinkPreloadImageResourceClient* create(LinkLoader* loader, ImageResource* resource)
     {
         return new LinkPreloadImageResourceClient(loader, resource);
     }
@@ -133,7 +133,7 @@ public:
     }
 
 private:
-    LinkPreloadImageResourceClient(LinkLoader* loader, RawPtr<ImageResource> resource)
+    LinkPreloadImageResourceClient(LinkLoader* loader, ImageResource* resource)
         : LinkPreloadResourceClient(loader)
     {
         setResource(resource);
@@ -143,7 +143,7 @@ private:
 class LinkPreloadFontResourceClient: public LinkPreloadResourceClient, public ResourceOwner<FontResource, FontResourceClient> {
     USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadFontResourceClient);
 public:
-    static RawPtr<LinkPreloadFontResourceClient> create(LinkLoader* loader, RawPtr<FontResource> resource)
+    static LinkPreloadFontResourceClient* create(LinkLoader* loader, FontResource* resource)
     {
         return new LinkPreloadFontResourceClient(loader, resource);
     }
@@ -166,7 +166,7 @@ public:
     }
 
 private:
-    LinkPreloadFontResourceClient(LinkLoader* loader, RawPtr<FontResource> resource)
+    LinkPreloadFontResourceClient(LinkLoader* loader, FontResource* resource)
         : LinkPreloadResourceClient(loader)
     {
         setResource(resource);
@@ -176,7 +176,7 @@ private:
 class LinkPreloadRawResourceClient: public LinkPreloadResourceClient, public ResourceOwner<RawResource, RawResourceClient> {
     USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadRawResourceClient);
 public:
-    static RawPtr<LinkPreloadRawResourceClient> create(LinkLoader* loader, RawPtr<RawResource> resource)
+    static LinkPreloadRawResourceClient* create(LinkLoader* loader, RawResource* resource)
     {
         return new LinkPreloadRawResourceClient(loader, resource);
     }
@@ -199,7 +199,7 @@ public:
     }
 
 private:
-    LinkPreloadRawResourceClient(LinkLoader* loader, RawPtr<RawResource> resource)
+    LinkPreloadRawResourceClient(LinkLoader* loader, RawResource* resource)
         : LinkPreloadResourceClient(loader)
     {
         setResource(resource);

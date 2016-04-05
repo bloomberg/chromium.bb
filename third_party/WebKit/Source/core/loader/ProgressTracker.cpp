@@ -63,7 +63,7 @@ public:
     long long estimatedLength;
 };
 
-RawPtr<ProgressTracker> ProgressTracker::create(LocalFrame* frame)
+ProgressTracker* ProgressTracker::create(LocalFrame* frame)
 {
     return new ProgressTracker(frame);
 }

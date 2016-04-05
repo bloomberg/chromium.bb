@@ -48,7 +48,7 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
     USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
     WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
-    static RawPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
+    static PrerenderHandle* create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
 
     virtual ~PrerenderHandle();
 

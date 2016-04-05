@@ -132,7 +132,7 @@ private:
 
 class ScheduledRedirect final : public ScheduledURLNavigation {
 public:
-    static RawPtr<ScheduledRedirect> create(double delay, Document* originDocument, const String& url, bool replacesCurrentItem)
+    static ScheduledRedirect* create(double delay, Document* originDocument, const String& url, bool replacesCurrentItem)
     {
         return new ScheduledRedirect(delay, originDocument, url, replacesCurrentItem);
     }
@@ -160,7 +160,7 @@ private:
 
 class ScheduledLocationChange final : public ScheduledURLNavigation {
 public:
-    static RawPtr<ScheduledLocationChange> create(Document* originDocument, const String& url, bool replacesCurrentItem)
+    static ScheduledLocationChange* create(Document* originDocument, const String& url, bool replacesCurrentItem)
     {
         return new ScheduledLocationChange(originDocument, url, replacesCurrentItem);
     }
@@ -172,7 +172,7 @@ private:
 
 class ScheduledReload final : public ScheduledNavigation {
 public:
-    static RawPtr<ScheduledReload> create()
+    static ScheduledReload* create()
     {
         return new ScheduledReload;
     }
@@ -197,7 +197,7 @@ private:
 
 class ScheduledPageBlock final : public ScheduledURLNavigation {
 public:
-    static RawPtr<ScheduledPageBlock> create(Document* originDocument, const String& url)
+    static ScheduledPageBlock* create(Document* originDocument, const String& url)
     {
         return new ScheduledPageBlock(originDocument, url);
     }
@@ -221,7 +221,7 @@ private:
 
 class ScheduledFormSubmission final : public ScheduledNavigation {
 public:
-    static RawPtr<ScheduledFormSubmission> create(Document* document, RawPtr<FormSubmission> submission, bool replacesCurrentItem)
+    static ScheduledFormSubmission* create(Document* document, FormSubmission* submission, bool replacesCurrentItem)
     {
         return new ScheduledFormSubmission(document, submission, replacesCurrentItem);
     }
@@ -244,7 +244,7 @@ public:
     }
 
 private:
-    ScheduledFormSubmission(Document* document, RawPtr<FormSubmission> submission, bool replacesCurrentItem)
+    ScheduledFormSubmission(Document* document, FormSubmission* submission, bool replacesCurrentItem)
         : ScheduledNavigation(0, document, replacesCurrentItem, true)
         , m_submission(submission)
     {
@@ -349,7 +349,7 @@ void NavigationScheduler::schedulePageBlock(Document* originDocument)
     schedule(ScheduledPageBlock::create(originDocument, url));
 }
 
-void NavigationScheduler::scheduleFormSubmission(Document* document, RawPtr<FormSubmission> submission)
+void NavigationScheduler::scheduleFormSubmission(Document* document, FormSubmission* submission)
 {
     ASSERT(m_frame->page());
     schedule(ScheduledFormSubmission::create(document, submission, mustReplaceCurrentItem(m_frame)));
@@ -375,14 +375,12 @@ void NavigationScheduler::navigateTask()
         return;
     }
 
-    RawPtr<LocalFrame> protect(m_frame.get());
-
-    RawPtr<ScheduledNavigation> redirect(m_redirect.release());
+    ScheduledNavigation* redirect(m_redirect.release());
     redirect->fire(m_frame);
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
 }
 
-void NavigationScheduler::schedule(RawPtr<ScheduledNavigation> redirect)
+void NavigationScheduler::schedule(ScheduledNavigation* redirect)
 {
     ASSERT(m_frame->page());
 
@@ -391,7 +389,6 @@ void NavigationScheduler::schedule(RawPtr<ScheduledNavigation> redirect)
     // and/or confuse the JS when it shortly thereafter tries to schedule a location change. Let the JS have its way.
     // FIXME: This check seems out of place.
     if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() && m_frame->loader().provisionalDocumentLoader()) {
-        RawPtr<LocalFrame> protect(m_frame.get());
         m_frame->loader().stopAllLoaders();
         if (!m_frame->host())
             return;

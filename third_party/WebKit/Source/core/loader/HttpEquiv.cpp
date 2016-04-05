@@ -96,10 +96,10 @@ void HttpEquiv::processHttpEquivXFrameOptions(Document& document, const AtomicSt
     if (!frame->loader().shouldInterruptLoadForXFrameOptions(content, document.url(), requestIdentifier))
         return;
 
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
         "Refused to display '" + document.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.");
     consoleMessage->setRequestIdentifier(requestIdentifier);
-    document.addConsoleMessage(consoleMessage.release());
+    document.addConsoleMessage(consoleMessage);
 
     frame->loader().stopAllLoaders();
     // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's

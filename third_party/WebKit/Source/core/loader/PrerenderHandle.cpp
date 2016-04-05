@@ -41,7 +41,7 @@
 namespace blink {
 
 // static
-RawPtr<PrerenderHandle> PrerenderHandle::create(Document& document, PrerenderClient* client, const KURL& url, const unsigned prerenderRelTypes)
+PrerenderHandle* PrerenderHandle::create(Document& document, PrerenderClient* client, const KURL& url, const unsigned prerenderRelTypes)
 {
     // Prerenders are unlike requests in most ways (for instance, they pass down fragments, and they don't return data),
     // but they do have referrers.

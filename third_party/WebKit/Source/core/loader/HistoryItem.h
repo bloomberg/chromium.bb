@@ -47,7 +47,7 @@ class ResourceRequest;
 
 class CORE_EXPORT HistoryItem final : public GarbageCollectedFinalized<HistoryItem> {
 public:
-    static RawPtr<HistoryItem> create()
+    static HistoryItem* create()
     {
         return new HistoryItem;
     }

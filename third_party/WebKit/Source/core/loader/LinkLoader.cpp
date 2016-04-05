@@ -263,14 +263,14 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
     }
 
     if (!media.isEmpty()) {
-        RawPtr<MediaValues> mediaValues = MediaValues::createDynamicIfFrameExists(document.frame());
+        MediaValues* mediaValues = MediaValues::createDynamicIfFrameExists(document.frame());
         if (viewportDescription)
             mediaValues->overrideViewportDimensions(viewportDescription->maxWidth.getFloatValue(), viewportDescription->maxHeight.getFloatValue());
 
         // Preload only if media matches
-        RawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media);
+        MediaQuerySet* mediaQueries = MediaQuerySet::create(media);
         MediaQueryEvaluator evaluator(*mediaValues);
-        if (!evaluator.eval(mediaQueries.get()))
+        if (!evaluator.eval(mediaQueries))
             return nullptr;
     }
     if (caller == LinkCalledFromHeader)

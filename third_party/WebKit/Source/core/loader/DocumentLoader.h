@@ -60,7 +60,7 @@ class ResourceLoader;
 
 class CORE_EXPORT DocumentLoader : public GarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
 public:
-    static RawPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+    static DocumentLoader* create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     {
         return new DocumentLoader(frame, request, data);
     }
@@ -147,7 +147,7 @@ protected:
     Vector<KURL> m_redirectChain;
 
 private:
-    static RawPtr<DocumentWriter> createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
+    static DocumentWriter* createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
 
     void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
     void endWriting(DocumentWriter*);

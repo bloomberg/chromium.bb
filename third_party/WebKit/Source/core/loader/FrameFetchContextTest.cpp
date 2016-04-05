@@ -50,7 +50,7 @@ namespace blink {
 
 class StubFrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 public:
-    static RawPtr<StubFrameLoaderClientWithParent> create(Frame* parent)
+    static StubFrameLoaderClientWithParent* create(Frame* parent)
     {
         return new StubFrameLoaderClientWithParent(parent);
     }
@@ -568,9 +568,9 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
     response.setURL(url);
     response.setSecurityInfo(securityInfo);
     response.setHasMajorCertificateErrors(true);
-    RawPtr<Resource> resource = Resource::create(resourceRequest, Resource::Image);
+    Resource* resource = Resource::create(resourceRequest, Resource::Image);
     resource->setResponse(response);
-    fetchContext->dispatchDidLoadResourceFromMemoryCache(resource.get(), WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
+    fetchContext->dispatchDidLoadResourceFromMemoryCache(resource, WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
 }
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)

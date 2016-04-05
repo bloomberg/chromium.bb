@@ -52,7 +52,7 @@ class ScheduledNavigation;
 class CORE_EXPORT NavigationScheduler final : public GarbageCollectedFinalized<NavigationScheduler> {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
 public:
-    static RawPtr<NavigationScheduler> create(LocalFrame* frame)
+    static NavigationScheduler* create(LocalFrame* frame)
     {
         return new NavigationScheduler(frame);
     }
@@ -65,7 +65,7 @@ public:
     void scheduleRedirect(double delay, const String& url);
     void scheduleLocationChange(Document*, const String& url, bool replacesCurrentItem = true);
     void schedulePageBlock(Document*);
-    void scheduleFormSubmission(Document*, RawPtr<FormSubmission>);
+    void scheduleFormSubmission(Document*, FormSubmission*);
     void scheduleReload();
 
     void startTimer();
@@ -80,7 +80,7 @@ private:
     bool shouldScheduleNavigation(const String& url) const;
 
     void navigateTask();
-    void schedule(RawPtr<ScheduledNavigation>);
+    void schedule(ScheduledNavigation*);
 
     static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
 

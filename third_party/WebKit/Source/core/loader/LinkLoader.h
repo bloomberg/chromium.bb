@@ -55,7 +55,7 @@ struct ViewportDescriptionWrapper;
 class CORE_EXPORT LinkLoader final : public GarbageCollectedFinalized<LinkLoader>, public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
     USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 public:
-    static RawPtr<LinkLoader> create(LinkLoaderClient* client)
+    static LinkLoader* create(LinkLoaderClient* client)
     {
         return new LinkLoader(client);
     }

@@ -43,7 +43,7 @@
 
 namespace blink {
 
-RawPtr<DocumentWriter> DocumentWriter::create(Document* document, ParserSynchronizationPolicy parsingPolicy, const AtomicString& mimeType, const AtomicString& encoding)
+DocumentWriter* DocumentWriter::create(Document* document, ParserSynchronizationPolicy parsingPolicy, const AtomicString& mimeType, const AtomicString& encoding)
 {
     return new DocumentWriter(document, parsingPolicy, mimeType, encoding);
 }
@@ -97,11 +97,6 @@ void DocumentWriter::end()
 {
     ASSERT(m_document);
 
-    // http://bugs.webkit.org/show_bug.cgi?id=10854
-    // The frame's last ref may be removed and it can be deleted by checkCompleted(),
-    // so we'll add a protective refcount
-    RawPtr<LocalFrame> protect(m_document->frame());
-
     if (!m_parser)
         return;
 
@@ -110,8 +105,6 @@ void DocumentWriter::end()
         m_parser->setDecoder(decoder.release());
     }
 
-    // finish() can result replacing DocumentLoader::m_writer.
-    RawPtr<DocumentWriter> protectingThis(this);
     m_parser->finish();
     m_parser = nullptr;
     m_document = nullptr;
