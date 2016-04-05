@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
@@ -34,9 +35,6 @@ enum {
 };
 
 const int kMaxBubbleViewWidth = 262;
-
-// The vertical inset of the app bubble anchor from the app menu button.
-const int kAnchorVerticalInset = 5;
 
 const int kBubblePadding = 19;
 
@@ -75,8 +73,8 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   set_margins(gfx::Insets(0, kBubblePadding, kBubblePadding, kBubblePadding));
 
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(
-      gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
   std::vector<base::string16> message_strings(error_->GetBubbleViewMessages());
   std::vector<views::Label*> message_labels;

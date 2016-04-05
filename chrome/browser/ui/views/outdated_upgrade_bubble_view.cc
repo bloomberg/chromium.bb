@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
@@ -192,7 +193,8 @@ OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
       later_button_(NULL),
       navigator_(navigator) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
 void OutdatedUpgradeBubbleView::ButtonPressed(

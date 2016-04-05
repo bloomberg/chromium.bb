@@ -17,6 +17,7 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
@@ -144,7 +145,8 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       learn_more_link_(NULL),
       close_button_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {

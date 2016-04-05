@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -58,7 +59,8 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
   set_close_on_esc(true);
 
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
 void ExtensionMessageBubbleView::Show() {

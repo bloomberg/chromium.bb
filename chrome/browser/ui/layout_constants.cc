@@ -16,6 +16,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarBubbleFontVerticalPadding[] = {1, 2, 4};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 4, 4};
   const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
+  const int kLocationBarBubbleAnchorVerticalInset[] = {5, 6, 8};
   const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {0, 1, 1};
@@ -58,6 +59,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kLocationBarBubbleHorizontalPadding[mode];
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return kLocationBarBubbleVerticalPadding[mode];
+    case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
+      return kLocationBarBubbleAnchorVerticalInset[mode];
     case LOCATION_BAR_HEIGHT:
       return kLocationBarHeight[mode];
     case LOCATION_BAR_HORIZONTAL_PADDING:

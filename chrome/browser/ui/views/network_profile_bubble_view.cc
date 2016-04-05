@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
@@ -25,7 +26,6 @@
 namespace {
 
 // Bubble layout constants.
-const int kAnchorVerticalInset = 5;
 const int kInset = 2;
 const int kNotificationBubbleWidth = 250;
 
@@ -63,7 +63,8 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
       navigator_(navigator),
       profile_(profile) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(kAnchorVerticalInset, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

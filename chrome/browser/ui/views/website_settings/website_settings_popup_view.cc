@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
@@ -85,10 +86,6 @@ const int kHeaderPaddingTop = 12;
 // Spacing between the site identity label and the site identity status text in
 // the popup header.
 const int kHeaderRowSpacing = 4;
-
-// To make the bubble's arrow point directly at the location icon rather than at
-// the Omnibox's edge, inset the bubble's anchor rect by this amount of pixels.
-const int kLocationIconVerticalMargin = 5;
 
 // The max possible width of the popup.
 const int kMaxPopupWidth = 1000;
@@ -327,8 +324,8 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   set_parent_window(parent_window);
 
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
-                                     kLocationIconVerticalMargin, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
   const int kSpacing = 16;
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
@@ -434,8 +431,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
 
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
-                                     kLocationIconVerticalMargin, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);

@@ -32,6 +32,12 @@ enum LayoutConstant {
   // The additional vertical padding of a bubble.
   LOCATION_BAR_BUBBLE_VERTICAL_PADDING,
 
+  // The vertical inset to apply to the bounds of a location bar bubble's anchor
+  // view, to bring the bubble closer to the anchor.  This compensates for the
+  // space between the bottoms of most such views and the visible bottoms of the
+  // images inside.
+  LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET,
+
   // The height to be occupied by the LocationBar. For
   // MaterialDesignController::NON_MATERIAL the height is determined from image
   // assets.

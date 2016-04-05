@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,7 +28,8 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
             browser->exclusive_access_manager()->fullscreen_controller()));
   }
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(5, 0));
+  set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
