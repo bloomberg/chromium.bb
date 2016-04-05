@@ -22,7 +22,7 @@ cr.define('sync.confirmation', function() {
     $('undoButton').addEventListener('click', onUndo);
     $('settingsLink').addEventListener('click', onGoToSettings);
     $('profile-picture').addEventListener('load', onPictureLoaded);
-    chrome.send('initialized');
+    chrome.send('initializedWithSize', [document.body.scrollHeight]);
   }
 
   function setUserImageURL(url) {

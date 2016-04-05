@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 
 #include "base/bind.h"
+#include "base/values.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/webui/signin/get_auth_frame.h"
 #include "content/public/browser/web_contents.h"
@@ -24,10 +25,6 @@ SigninViewControllerDelegate::SigninViewControllerDelegate(
     : signin_view_controller_(signin_view_controller),
       web_contents_(web_contents) {
   web_contents_->SetDelegate(this);
-  web_contents_->GetWebUI()->RegisterMessageCallback(
-      "navigationButtonClicked",
-      base::Bind(&SigninViewControllerDelegate::HandleNavigationButtonClicked,
-                 base::Unretained(this)));
 }
 
 SigninViewControllerDelegate::~SigninViewControllerDelegate() {}
@@ -60,8 +57,7 @@ void SigninViewControllerDelegate::LoadingStateChanged(
     source->GetWebUI()->CallJavascriptFunction("inline.login.showCloseButton");
 }
 
-void SigninViewControllerDelegate::HandleNavigationButtonClicked(
-    const base::ListValue* args) {
+void SigninViewControllerDelegate::PerformNavigation() {
   if (CanGoBack(web_contents_)) {
     auto auth_web_contents = GetAuthFrameWebContents(web_contents_);
     auth_web_contents->GetController().GoBack();

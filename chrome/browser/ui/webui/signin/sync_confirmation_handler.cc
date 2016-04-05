@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -32,11 +33,11 @@ void SyncConfirmationHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("undo",
       base::Bind(&SyncConfirmationHandler::HandleUndo, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("initialized",
-      base::Bind(&SyncConfirmationHandler::HandleInitialized,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("goToSettings",
       base::Bind(&SyncConfirmationHandler::HandleGoToSettings,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("initializedWithSize",
+      base::Bind(&SyncConfirmationHandler::HandleInitializedWithSize,
                  base::Unretained(this)));
 }
 
@@ -57,23 +58,6 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
       signin_metrics::ABORT_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   browser->CloseModalSigninWindow();
-}
-
-void SyncConfirmationHandler::HandleInitialized(const base::ListValue* args) {
-  Browser* browser = GetDesktopBrowser();
-  Profile* profile = browser->profile();
-  std::vector<AccountInfo> accounts =
-      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccounts();
-
-  if (accounts.empty())
-    return;
-
-  AccountInfo primary_account_info = accounts[0];
-
-  if (!primary_account_info.IsValid())
-    AccountTrackerServiceFactory::GetForProfile(profile)->AddObserver(this);
-  else
-    SetUserImageURL(primary_account_info.picture_url);
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
@@ -110,4 +94,29 @@ void SyncConfirmationHandler::CloseModalSigninWindow(
   LoginUIServiceFactory::GetForProfile(browser->profile())->
       SyncConfirmationUIClosed(results);
   browser->CloseModalSigninWindow();
+}
+
+void SyncConfirmationHandler::HandleInitializedWithSize(
+    const base::ListValue* args) {
+  Browser* browser = GetDesktopBrowser();
+  Profile* profile = browser->profile();
+  std::vector<AccountInfo> accounts =
+      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccounts();
+
+  if (accounts.empty())
+    return;
+
+  AccountInfo primary_account_info = accounts[0];
+
+  if (!primary_account_info.IsValid())
+    AccountTrackerServiceFactory::GetForProfile(profile)->AddObserver(this);
+  else
+    SetUserImageURL(primary_account_info.picture_url);
+
+  double height;
+  bool success = args->GetDouble(0, &height);
+  DCHECK(success);
+
+  browser->signin_view_controller()->delegate()->ResizeNativeView(
+      static_cast<int>(height));
 }

@@ -43,6 +43,10 @@ class SigninViewController {
   // member has become invalid.
   void ResetModalSigninDelegate();
 
+  SigninViewControllerDelegate* delegate() {
+    return signin_view_controller_delegate_;
+  }
+
  private:
   SigninViewControllerDelegate* signin_view_controller_delegate_;
 

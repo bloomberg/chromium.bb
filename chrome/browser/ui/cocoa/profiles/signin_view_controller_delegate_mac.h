@@ -33,17 +33,16 @@ enum class AccessPoint;
 class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
                                         public SigninViewControllerDelegate {
  public:
+  // Creates and displays a constrained window off of |host_web_contents|,
+  // containing |web_contents|. If |wait_for_size| is true, the delegate will
+  // wait for ResizeNativeView() to be called by the base class before
+  // displaying the constrained window. Otherwise, the window's dimensions will
+  // be |frame|.
   SigninViewControllerDelegateMac(SigninViewController* signin_view_controller,
                                   scoped_ptr<content::WebContents> web_contents,
                                   content::WebContents* host_web_contents,
-                                  NSRect frame);
-
-  static
-  SigninViewControllerDelegateMac* CreateModalSigninDelegateWithNavigation(
-      SigninViewController* signin_view_controller,
-      scoped_ptr<content::WebContents> web_contents,
-      content::WebContents* host_web_contents,
-      NSRect frame);
+                                  NSRect frame,
+                                  bool wait_for_size);
 
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
@@ -61,6 +60,9 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
 
  private:
   void PerformClose() override;
+  void ResizeNativeView(int height) override;
+
+  void DisplayModal();
 
   void HandleKeyboardEvent(
       content::WebContents* source,
@@ -68,9 +70,23 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
 
   ~SigninViewControllerDelegateMac() override;
 
+  // The constrained window opened by this delegate to display signin flow
+  // content.
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
+
+  // The web contents displayed in the constrained window.
   scoped_ptr<content::WebContents> web_contents_;
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window_;
+
+  // wait_for_size_ stores whether the dialog should only be shown after its
+  // content's size has been laid out and measured so that the constrained
+  // window is sized to the content.
+  bool wait_for_size_;
+
+  // The web contents that the constrained window is displayed off of.
+  // Typically, this is going to be the active tab when the window is shown.
+  content::WebContents* host_web_contents_;
+  NSRect window_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateMac);
 };

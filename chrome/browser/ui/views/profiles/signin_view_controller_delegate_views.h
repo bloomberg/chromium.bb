@@ -32,10 +32,14 @@ class WebView;
 class SigninViewControllerDelegateViews : public views::DialogDelegateView,
                                           public SigninViewControllerDelegate {
  public:
+  // Creates and displays a constrained window containing |web_contents|. If
+  // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
+  // be called by the base class before displaying the constrained window.
   SigninViewControllerDelegateViews(
       SigninViewController* signin_view_controller,
       views::WebView* content_view,
-      Browser* browser);
+      Browser* browser,
+      bool wait_for_size);
 
   // Creates the web view that contains the signin flow in |mode| using
   // |profile| as the web content's profile, then sets |delegate| as the created
@@ -59,11 +63,20 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
 
  private:
   void PerformClose() override;
+  void ResizeNativeView(int height) override;
+
+  void DisplayModal();
 
   ~SigninViewControllerDelegateViews() override;
 
   views::WebView* content_view_;
   views::Widget* modal_signin_widget_;  // Not owned.
+
+  // wait_for_size_ stores whether the dialog should only be shown after its
+  // content's size has been laid out and measured so that the constrained
+  // window is sized to the content.
+  bool wait_for_size_;
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateViews);
 };

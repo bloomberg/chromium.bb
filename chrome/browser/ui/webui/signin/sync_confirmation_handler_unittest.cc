@@ -27,6 +27,10 @@
 
 const int kExpectedProfileImageSize = 128;
 
+// The dialog needs to be initialized with a height but the actual value doesn't
+// really matter in unit tests.
+const double kDefaultDialogHeight = 350.0;
+
 class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
  public:
   explicit TestingSyncConfirmationHandler(content::WebUI* web_ui) {
@@ -35,7 +39,7 @@ class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
 
   using SyncConfirmationHandler::HandleConfirm;
   using SyncConfirmationHandler::HandleUndo;
-  using SyncConfirmationHandler::HandleInitialized;
+  using SyncConfirmationHandler::HandleInitializedWithSize;
   using SyncConfirmationHandler::HandleGoToSettings;
   using SyncConfirmationHandler::SetUserImageURL;
 };
@@ -125,6 +129,7 @@ private:
 };
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
+  browser()->ShowModalSyncConfirmationWindow();
   account_fetcher_service()->FakeUserInfoFetchSuccess(
       "gaia",
       "foo@example.com",
@@ -135,7 +140,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
       "locale",
       "http://picture.example.com/picture.jpg");
 
-  handler()->HandleInitialized(nullptr);
+  base::ListValue args;
+  args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
+  handler()->HandleInitializedWithSize(&args);
   EXPECT_EQ(1U, web_ui()->call_data().size());
   EXPECT_EQ("sync.confirmation.setUserImageURL",
             web_ui()->call_data()[0]->function_name());
@@ -157,7 +164,11 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
-  handler()->HandleInitialized(nullptr);
+  browser()->ShowModalSyncConfirmationWindow();
+
+  base::ListValue args;
+  args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
+  handler()->HandleInitializedWithSize(&args);
   EXPECT_EQ(0U, web_ui()->call_data().size());
 
   account_fetcher_service()->FakeUserInfoFetchSuccess(

@@ -14,8 +14,10 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -26,6 +28,19 @@
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+
+namespace {
+
+Browser* GetDesktopBrowser(content::WebUI* web_ui) {
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      web_ui->GetWebContents());
+  if (!browser)
+    browser = chrome::FindLastActiveWithProfile(Profile::FromWebUI(web_ui));
+  DCHECK(browser);
+  return browser;
+}
+
+}  // namespace
 
 InlineLoginHandler::InlineLoginHandler() : weak_ptr_factory_(this) {}
 
@@ -41,6 +56,9 @@ void InlineLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "switchToFullTab",
       base::Bind(&InlineLoginHandler::HandleSwitchToFullTabMessage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("navigationButtonClicked",
+      base::Bind(&InlineLoginHandler::HandleNavigationButtonClicked,
                  base::Unretained(this)));
 }
 
@@ -234,4 +252,12 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
   chrome::Navigate(&params);
 
   web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+}
+
+void InlineLoginHandler::HandleNavigationButtonClicked(
+    const base::ListValue* args) {
+  Browser* browser = GetDesktopBrowser(web_ui());
+  DCHECK(browser);
+
+  browser->signin_view_controller()->delegate()->PerformNavigation();
 }

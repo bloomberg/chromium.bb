@@ -20,7 +20,6 @@ a {
 
 .container {
   background-color: white;
-  height: 351px;
   overflow: hidden;
   width: 448px;
 }
@@ -36,7 +35,7 @@ a {
 }
 
 .details {
-  height: 250px;
+  font-size: 13px;
   padding: 20px 24px;
 }
 

@@ -41,16 +41,16 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // dialog, which aborts signin and prevents sync from starting.
   virtual void HandleUndo(const base::ListValue* args);
 
-  // Handles "initialized" message from the page. No arguments.
-  // This message is sent when the sync confirmation dialog is finished being
-  // initialized.
-  virtual void HandleInitialized(const base::ListValue* args);
-
   // Handles "goToSettings" message from the page. No arguments.
   // This message is sent when the user clicks on the "Settings" link in the
   // sync confirmation dialog, which completes sign in but takes the user to the
   // sync settings page for configuration before starting sync.
   virtual void HandleGoToSettings(const base::ListValue* args);
+
+  // Handles the web ui message sent when the html content is done being laid
+  // out and it's time to resize the native view hosting it to fit. |args| is
+  // a single integer value for the height the native view should resize to.
+  virtual void HandleInitializedWithSize(const base::ListValue* args);
 
   // Sets the profile picture shown in the dialog to the image at |url|.
   virtual void SetUserImageURL(const std::string& url);

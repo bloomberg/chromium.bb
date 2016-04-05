@@ -28,14 +28,14 @@ namespace {
 const CGFloat kPasswordCombinedFixedGaiaViewHeight = 440;
 const CGFloat kPasswordCombinedFixedGaiaViewWidth = 360;
 
-// Dimensions of the tab-modal dialog displaying the password-separated signin
-// flow. These match the dimensions of the server content they display.
-const CGFloat kFixedGaiaViewHeight = 512;
-const CGFloat kFixedGaiaViewWidth = 448;
+// Width of the different dialogs that make up the signin flow.
+const int kModalDialogWidth = 448;
 
-// Dimensions of the sync confirmation tab-modal dialog. These are taken from
-// the design spec for this feature.
-const int kSyncConfirmationDialogWidth = 448;
+// Height of the tab-modal dialog displaying the password-separated signin
+// flow. It matches the dimensions of the server content the dialog displays.
+const CGFloat kFixedGaiaViewHeight = 612;
+
+// Initial height of the sync confirmation t
 const int kSyncConfirmationDialogHeight = 351;
 
 }  // namespace
@@ -44,17 +44,15 @@ SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
     SigninViewController* signin_view_controller,
     scoped_ptr<content::WebContents> web_contents,
     content::WebContents* host_web_contents,
-    NSRect frame)
+    NSRect frame,
+    bool wait_for_size)
     : SigninViewControllerDelegate(signin_view_controller, web_contents.get()),
       web_contents_(std::move(web_contents)),
-      window_(
-          [[ConstrainedWindowCustomWindow alloc] initWithContentRect:frame]) {
-  window_.get().contentView = web_contents_->GetNativeView();
-
-  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
-      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window_]);
-  constrained_window_ =
-      CreateAndShowWebModalDialogMac(this, host_web_contents, sheet);
+      wait_for_size_(wait_for_size),
+      host_web_contents_(host_web_contents),
+      window_frame_(frame) {
+  if (!wait_for_size_)
+    DisplayModal();
 }
 
 SigninViewControllerDelegateMac::~SigninViewControllerDelegateMac() {}
@@ -87,7 +85,7 @@ SigninViewControllerDelegateMac::CreateGaiaWebContents(
   NSView* webview = web_contents->GetNativeView();
   [webview
       setFrameSize:switches::UsePasswordSeparatedSigninFlow()
-                       ? NSMakeSize(kFixedGaiaViewWidth, kFixedGaiaViewHeight)
+                       ? NSMakeSize(kModalDialogWidth, kFixedGaiaViewHeight)
                        : NSMakeSize(kPasswordCombinedFixedGaiaViewWidth,
                                     kPasswordCombinedFixedGaiaViewHeight)];
 
@@ -109,14 +107,37 @@ SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   NSView* webview = web_contents->GetNativeView();
-  [webview setFrameSize:NSMakeSize(kSyncConfirmationDialogWidth,
+  [webview setFrameSize:NSMakeSize(kModalDialogWidth,
                                    kSyncConfirmationDialogHeight)];
 
   return web_contents;
 }
 
 void SigninViewControllerDelegateMac::PerformClose() {
-  constrained_window_->CloseWebContentsModalDialog();
+  if (constrained_window_.get())
+    constrained_window_->CloseWebContentsModalDialog();
+}
+
+void SigninViewControllerDelegateMac::ResizeNativeView(int height) {
+  if (wait_for_size_) {
+    [window_.get().contentView
+        setFrameSize:NSMakeSize(kModalDialogWidth,
+                                height)];
+    window_frame_.size = NSMakeSize(kModalDialogWidth, height);
+    DisplayModal();
+  }
+}
+
+void SigninViewControllerDelegateMac::DisplayModal() {
+  window_.reset(
+      [[ConstrainedWindowCustomWindow alloc]
+          initWithContentRect:window_frame_]);
+
+  window_.get().contentView = web_contents_->GetNativeView();
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window_]);
+  constrained_window_ =
+      CreateAndShowWebModalDialogMac(this, host_web_contents_, sheet);
 }
 
 void SigninViewControllerDelegateMac::HandleKeyboardEvent(
@@ -144,7 +165,8 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
           SigninViewControllerDelegateMac::CreateGaiaWebContents(
               nullptr, mode, browser->profile(), access_point),
           browser->tab_strip_model()->GetActiveWebContents(),
-          NSMakeRect(0, 0, kFixedGaiaViewWidth, kFixedGaiaViewHeight));
+          NSMakeRect(0, 0, kModalDialogWidth, kFixedGaiaViewHeight),
+          false);
 }
 
 // static
@@ -157,6 +179,7 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
       SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
           browser->profile()),
       browser->tab_strip_model()->GetActiveWebContents(),
-      NSMakeRect(0, 0, kSyncConfirmationDialogWidth,
-                 kSyncConfirmationDialogHeight));
+      NSMakeRect(0, 0, kModalDialogWidth,
+                 kSyncConfirmationDialogHeight),
+      true);
 }

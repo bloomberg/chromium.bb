@@ -20,22 +20,23 @@
 
 const int kPasswordCombinedFixedGaiaViewHeight = 440;
 const int kPasswordCombinedFixedGaiaViewWidth = 360;
-const int kFixedGaiaViewHeight = 512;
-const int kFixedGaiaViewWidth = 448;
-const int kSyncConfirmationDialogWidth = 448;
+const int kFixedGaiaViewHeight = 612;
+const int kModalDialogWidth = 448;
 const int kSyncConfirmationDialogHeight = 351;
 
 SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     SigninViewController* signin_view_controller,
     views::WebView* content_view,
-    Browser* browser)
+    Browser* browser,
+    bool wait_for_size)
     : SigninViewControllerDelegate(signin_view_controller,
                                    content_view->GetWebContents()),
       content_view_(content_view),
-      modal_signin_widget_(nullptr) {
-  modal_signin_widget_ = constrained_window::ShowWebModalDialogViews(
-      this, browser->tab_strip_model()->GetActiveWebContents());
-  content_view_->RequestFocus();
+      modal_signin_widget_(nullptr),
+      wait_for_size_(wait_for_size),
+      browser_(browser) {
+  if (!wait_for_size_)
+    DisplayModal();
 }
 
 SigninViewControllerDelegateViews::~SigninViewControllerDelegateViews() {}
@@ -74,6 +75,23 @@ void SigninViewControllerDelegateViews::PerformClose() {
   modal_signin_widget_->Close();
 }
 
+void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
+  content_view_->SetPreferredSize(gfx::Size(kModalDialogWidth, height));
+  content_view_->Layout();
+
+  if (wait_for_size_) {
+    // The modal wasn't displayed yet so just show it with the already resized
+    // view.
+    DisplayModal();
+  }
+}
+
+void SigninViewControllerDelegateViews::DisplayModal() {
+  modal_signin_widget_ = constrained_window::ShowWebModalDialogViews(
+      this, browser_->tab_strip_model()->GetActiveWebContents());
+  content_view_->RequestFocus();
+}
+
 // static
 views::WebView* SigninViewControllerDelegateViews::CreateGaiaWebView(
     content::WebContentsDelegate* delegate,
@@ -86,7 +104,7 @@ views::WebView* SigninViewControllerDelegateViews::CreateGaiaWebView(
   // Adds Gaia signin webview.
   const gfx::Size pref_size =
       switches::UsePasswordSeparatedSigninFlow()
-          ? gfx::Size(kFixedGaiaViewWidth, kFixedGaiaViewHeight)
+          ? gfx::Size(kModalDialogWidth, kFixedGaiaViewHeight)
           : gfx::Size(kPasswordCombinedFixedGaiaViewWidth,
                       kPasswordCombinedFixedGaiaViewHeight);
   views::WebView* web_view = new views::WebView(profile);
@@ -110,7 +128,7 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
   views::WebView* web_view = new views::WebView(profile);
   web_view->LoadInitialURL(GURL(chrome::kChromeUISyncConfirmationURL));
   web_view->SetPreferredSize(
-      gfx::Size(kSyncConfirmationDialogWidth, kSyncConfirmationDialogHeight));
+      gfx::Size(kModalDialogWidth, kSyncConfirmationDialogHeight));
 
   return web_view;
 }
@@ -125,7 +143,7 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
       signin_view_controller,
       SigninViewControllerDelegateViews::CreateGaiaWebView(
           nullptr, mode, browser->profile(), access_point),
-      browser);
+      browser, false);
 }
 
 SigninViewControllerDelegate*
@@ -136,5 +154,5 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
       signin_view_controller,
       SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
           browser->profile()),
-      browser);
+      browser, true);
 }

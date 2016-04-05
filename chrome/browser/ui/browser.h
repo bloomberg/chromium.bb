@@ -276,6 +276,9 @@ class Browser : public TabStripModelObserver,
   extensions::HostedAppBrowserController* hosted_app_controller() {
     return hosted_app_controller_.get();
   }
+  SigninViewController* signin_view_controller() {
+    return &signin_view_controller_;
+  }
 
   // Will lazy create the bubble manager.
   ChromeBubbleManager* GetBubbleManager();

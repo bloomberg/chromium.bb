@@ -36,6 +36,15 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
 
   void CloseModalSignin();
 
+  // Either navigates back in the signin flow if the history state allows it or
+  // closes the flow otherwise.
+  void PerformNavigation();
+
+  // This will be called by the base class to request a resize of the native
+  // view hosting the content to |height|. |height| is the total height of the
+  // content, in pixels.
+  virtual void ResizeNativeView(int height) = 0;
+
  protected:
   SigninViewControllerDelegate(SigninViewController* signin_view_controller,
                                content::WebContents* web_contents);
@@ -47,10 +56,6 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   // content::WebContentsDelegate
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
-
-  // Handles the web ui message sent when the navigation button is clicked by
-  // the user, requesting either a back navigation or closing the dialog.
-  void HandleNavigationButtonClicked(const base::ListValue* args);
 
   // This will be called by this base class when the tab-modal window must be
   // closed. This should close the platform-specific window that is currently
