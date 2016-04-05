@@ -224,7 +224,7 @@ v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* errorString, v8
     function.appendArgument(generatePreview);
     bool hadException = false;
     v8::Local<v8::Value> r = callFunctionWithEvalEnabled(function, hadException);
-    if (hasInternalError(errorString, hadException))
+    if (hasInternalError(errorString, hadException || r.IsEmpty()))
         return v8::MaybeLocal<v8::Value>();
     return r;
 }
