@@ -76,4 +76,15 @@ void LayoutThemeMobile::adjustInnerSpinButtonStyle(ComputedStyle& style) const
     }
 }
 
+bool LayoutThemeMobile::shouldUseFallbackTheme(const ComputedStyle& style) const
+{
+#if OS(MACOSX)
+    // Mac WebThemeEngine cannot handle these controls.
+    ControlPart part = style.appearance();
+    if (part == CheckboxPart || part == RadioPart)
+        return true;
+#endif
+    return LayoutThemeDefault::shouldUseFallbackTheme(style);
+}
+
 } // namespace blink

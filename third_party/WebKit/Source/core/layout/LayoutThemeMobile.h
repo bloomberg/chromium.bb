@@ -51,6 +51,7 @@ public:
 
 protected:
     ~LayoutThemeMobile() override;
+    bool shouldUseFallbackTheme(const ComputedStyle&) const override;
 
 private:
     static const RGBA32 defaultTapHighlightColor = 0x6633b5e5;

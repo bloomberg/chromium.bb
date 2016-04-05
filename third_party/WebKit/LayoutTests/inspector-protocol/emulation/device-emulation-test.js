@@ -105,6 +105,10 @@ function dumpMetrics(full)
     testJS("document.body.offsetHeight");
     testJS("document.body.scrollHeight");
 
+    var measured = document.querySelectorAll(".device-emulation-measure");
+    for (var i = 0; i < measured.length; ++i)
+        writeResult("measured " + measured[i].getAttribute("type") + ": " + measured[i].offsetWidth + "x" + measured[i].offsetHeight);
+
     return results.join("\n");
 }
 
