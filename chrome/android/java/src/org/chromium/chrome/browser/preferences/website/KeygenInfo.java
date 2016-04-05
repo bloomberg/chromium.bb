@@ -19,7 +19,6 @@ public class KeygenInfo extends PermissionInfo {
 
     protected void setNativePreferenceValue(
             String origin, String embedder, ContentSetting value, boolean isIncognito) {
-        WebsitePreferenceBridge.nativeSetKeygenSettingForOrigin(
-                origin, embedder, value.toInt(), isIncognito);
+        WebsitePreferenceBridge.nativeSetKeygenSettingForOrigin(origin, value.toInt(), isIncognito);
     }
 }

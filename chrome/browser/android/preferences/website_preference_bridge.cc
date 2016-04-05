@@ -131,14 +131,15 @@ ContentSetting GetSettingForOrigin(JNIEnv* env,
 void SetSettingForOrigin(JNIEnv* env,
                          ContentSettingsType content_type,
                          jstring origin,
-                         ContentSettingsPattern secondary_pattern,
+                         jstring embedder,
                          ContentSetting setting,
                          jboolean is_incognito) {
-  GURL url(ConvertJavaStringToUTF8(env, origin));
+  GURL origin_url(ConvertJavaStringToUTF8(env, origin));
+  GURL embedder_url =
+      embedder ? GURL(ConvertJavaStringToUTF8(env, embedder)) : GURL();
   GetHostContentSettingsMap(is_incognito)
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(url),
-                          secondary_pattern, content_type, std::string(),
-                          setting);
+      ->SetContentSettingDefaultScope(origin_url, embedder_url, content_type,
+                                      std::string(), setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
 }
 
@@ -168,10 +169,8 @@ static void SetFullscreenSettingForOrigin(JNIEnv* env,
                                           const JavaParamRef<jstring>& embedder,
                                           jint value,
                                           jboolean is_incognito) {
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN, origin,
-                      ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      (ContentSetting) value, is_incognito);
+  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void GetGeolocationOrigins(JNIEnv* env,
@@ -200,10 +199,8 @@ static void SetGeolocationSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_GEOLOCATION, origin,
-                      ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      (ContentSetting) value, is_incognito);
+  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_GEOLOCATION, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void GetKeygenOrigins(JNIEnv* env,
@@ -226,13 +223,11 @@ static jint GetKeygenSettingForOrigin(JNIEnv* env,
 static void SetKeygenSettingForOrigin(JNIEnv* env,
                                       const JavaParamRef<jclass>& clazz,
                                       const JavaParamRef<jstring>& origin,
-                                      const JavaParamRef<jstring>& embedder,
                                       jint value,
                                       jboolean is_incognito) {
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_KEYGEN, origin,
-                      ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      (ContentSetting) value, is_incognito);
+  // Here 'nullptr' indicates that keygen uses wildcard for embedder.
+  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_KEYGEN, origin, nullptr,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static jboolean GetKeygenBlocked(JNIEnv* env,
@@ -266,10 +261,8 @@ static void SetMidiSettingForOrigin(JNIEnv* env,
                                     const JavaParamRef<jstring>& embedder,
                                     jint value,
                                     jboolean is_incognito) {
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MIDI_SYSEX, origin,
-                      ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      (ContentSetting) value, is_incognito);
+  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MIDI_SYSEX, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void GetProtectedMediaIdentifierOrigins(
@@ -300,11 +293,9 @@ static void SetProtectedMediaIdentifierSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                      origin,
-                      ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      (ContentSetting) value, is_incognito);
+                      origin, embedder, static_cast<ContentSetting>(value),
+                      is_incognito);
 }
 
 static void GetNotificationOrigins(JNIEnv* env,
@@ -394,23 +385,23 @@ static jint GetCameraSettingForOrigin(JNIEnv* env,
 static void SetMicrophoneSettingForOrigin(JNIEnv* env,
                                           const JavaParamRef<jclass>& clazz,
                                           const JavaParamRef<jstring>& origin,
-                                          const JavaParamRef<jstring>& embedder,
                                           jint value,
                                           jboolean is_incognito) {
+  // Here 'nullptr' indicates that microphone uses wildcard for embedder.
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, origin,
-                      ContentSettingsPattern::Wildcard(),
-                      (ContentSetting) value, is_incognito);
+                      nullptr, static_cast<ContentSetting>(value),
+                      is_incognito);
 }
 
 static void SetCameraSettingForOrigin(JNIEnv* env,
                                       const JavaParamRef<jclass>& clazz,
                                       const JavaParamRef<jstring>& origin,
-                                      const JavaParamRef<jstring>& embedder,
                                       jint value,
                                       jboolean is_incognito) {
+  // Here 'nullptr' indicates that camera uses wildcard for embedder.
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, origin,
-                      ContentSettingsPattern::Wildcard(),
-                      (ContentSetting) value, is_incognito);
+                      nullptr, static_cast<ContentSetting>(value),
+                      is_incognito);
 }
 
 static scoped_refptr<content_settings::CookieSettings> GetCookieSettings() {

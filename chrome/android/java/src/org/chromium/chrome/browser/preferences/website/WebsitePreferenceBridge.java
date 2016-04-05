@@ -275,7 +275,7 @@ public abstract class WebsitePreferenceBridge {
     static native int nativeGetKeygenSettingForOrigin(
             String origin, String embedder, boolean isIncognito);
     static native void nativeSetKeygenSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
+            String origin, int value, boolean isIncognito);
     private static native boolean nativeGetKeygenBlocked(Object webContents);
     private static native void nativeGetMidiOrigins(Object list);
     static native int nativeGetMidiSettingForOrigin(
@@ -299,9 +299,9 @@ public abstract class WebsitePreferenceBridge {
     static native int nativeGetCameraSettingForOrigin(
             String origin, String embedder, boolean isIncognito);
     static native void nativeSetMicrophoneSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
+            String origin, int value, boolean isIncognito);
     static native void nativeSetCameraSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
+            String origin, int value, boolean isIncognito);
     private static native void nativeGetCookieOrigins(Object list, boolean managedOnly);
     static native int nativeGetCookieSettingForOrigin(
             String origin, String embedder, boolean isIncognito);
