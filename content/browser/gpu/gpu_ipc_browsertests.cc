@@ -14,7 +14,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/gl_switches.h"
@@ -233,17 +235,28 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EXPECT_TRUE(provider->BindToCurrentThread());
 
   skia::RefPtr<GrContext> gr_context = skia::SharePtr(provider->GrContext());
-  provider = nullptr;
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
       gr_context.get(), SkBudgeted::kNo, info));
+  EXPECT_TRUE(surface);
+
+  // Destroy the GL context after we made a surface.
+  provider = nullptr;
+
+  // New surfaces will fail to create now.
+  skia::RefPtr<SkSurface> surface2 = skia::AdoptRef(
+      SkSurface::NewRenderTarget(gr_context.get(), SkBudgeted::kNo, info));
+  EXPECT_FALSE(surface2);
+
+  // Drop our reference to the gr_context also.
   gr_context = nullptr;
 
-  // use the canvas after the provider and grcontext have been locally
-  // unref'ed. This should work just fine thanks to SkSurface_Gpu ref'ing
-  // the GrContext, which is ref'ing the GrGLInterfaceForWebGraphicsContext3D,
-  // which owns the commandbuffer instance.
+  // After the context provider is destroyed, the surface no longer has access
+  // to the GrContext, even though it's alive. Use the canvas after the provider
+  // and GrContext have been locally unref'ed. This should work fine as the
+  // GrContext has been abandoned when the GL context provider was destroyed
+  // above.
   SkPaint greenFillPaint;
   greenFillPaint.setColor(SK_ColorGREEN);
   greenFillPaint.setStyle(SkPaint::kFill_Style);

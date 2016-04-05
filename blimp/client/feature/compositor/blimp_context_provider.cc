@@ -53,6 +53,8 @@ BlimpContextProvider::BlimpContextProvider(
 BlimpContextProvider::~BlimpContextProvider() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
+  if (gr_context_)
+    gr_context_->releaseResourcesAndAbandonContext();
 }
 
 bool BlimpContextProvider::BindToCurrentThread() {
@@ -87,12 +89,12 @@ class GrContext* BlimpContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(new GrGLInterface);
-  skia_bindings::InitGLES2InterfaceBindings(interface.get(), ContextGL());
+  skia::RefPtr<GrGLInterface> interface =
+      skia_bindings::CreateGLES2InterfaceBindings(ContextGL());
 
   gr_context_ = skia::AdoptRef(GrContext::Create(
+      // GrContext takes ownership of |interface|.
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
-
   return gr_context_.get();
 }
 
@@ -100,7 +102,7 @@ void BlimpContextProvider::InvalidateGrContext(uint32_t state) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
-    gr_context_.get()->resetContext(state);
+    gr_context_->resetContext(state);
 }
 
 void BlimpContextProvider::SetupLock() {

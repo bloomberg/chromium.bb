@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
-#include "content/common/gpu/client/grcontext_for_webgraphicscontext3d.h"
+#include "content/common/gpu/client/grcontext_for_gles2_interface.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -25,11 +25,11 @@ class ContextProviderInProcess::LostContextCallbackProxy
  public:
   explicit LostContextCallbackProxy(ContextProviderInProcess* provider)
       : provider_(provider) {
-    provider_->WebContext3DImpl()->setContextLostCallback(this);
+    provider_->context3d_->setContextLostCallback(this);
   }
 
   ~LostContextCallbackProxy() override {
-    provider_->WebContext3DImpl()->setContextLostCallback(NULL);
+    provider_->context3d_->setContextLostCallback(nullptr);
   }
 
   void onContextLost() override {
@@ -45,19 +45,16 @@ scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
     scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
     const std::string& debug_name) {
   if (!context3d)
-    return NULL;
+    return nullptr;
   return new ContextProviderInProcess(std::move(context3d), debug_name);
 }
 
 ContextProviderInProcess::ContextProviderInProcess(
     scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
     const std::string& debug_name)
-    : debug_name_(debug_name) {
+    : context3d_(std::move(context3d)), debug_name_(debug_name) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(context3d);
-  gr_interface_ = skia::AdoptRef(
-      new GrGLInterfaceForWebGraphicsContext3D(std::move(context3d)));
-  DCHECK(gr_interface_->WebContext3D());
+  DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
 }
 
@@ -70,20 +67,11 @@ blink::WebGraphicsContext3D* ContextProviderInProcess::WebContext3D() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  return WebContext3DImpl();
-}
-
-gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
-    ContextProviderInProcess::WebContext3DImpl() {
-  DCHECK(gr_interface_->WebContext3D());
-
-  return
-      static_cast<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*>(
-          gr_interface_->WebContext3D());
+  return context3d_.get();
 }
 
 bool ContextProviderInProcess::BindToCurrentThread() {
-  DCHECK(WebContext3DImpl());
+  DCHECK(context3d_);
 
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -91,14 +79,13 @@ bool ContextProviderInProcess::BindToCurrentThread() {
   if (lost_context_callback_proxy_)
     return true;
 
-  if (!WebContext3DImpl()->InitializeOnCurrentThread())
+  if (!context3d_->InitializeOnCurrentThread())
     return false;
 
-  gr_interface_->BindToCurrentThread();
   InitializeCapabilities();
 
   const std::string unique_context_name =
-      base::StringPrintf("%s-%p", debug_name_.c_str(), WebContext3DImpl());
+      base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
   ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
@@ -110,9 +97,9 @@ void ContextProviderInProcess::DetachFromThread() {
 }
 
 void ContextProviderInProcess::InitializeCapabilities() {
-  capabilities_.gpu = WebContext3DImpl()->GetImplementation()->capabilities();
+  capabilities_.gpu = context3d_->GetImplementation()->capabilities();
 
-  size_t mapped_memory_limit = WebContext3DImpl()->GetMappedMemoryLimit();
+  size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
   capabilities_.max_transfer_buffer_usage_bytes =
       mapped_memory_limit ==
               WebGraphicsContext3DInProcessCommandBufferImpl::kNoLimit
@@ -128,21 +115,21 @@ ContextProviderInProcess::ContextCapabilities() {
 }
 
 ::gpu::gles2::GLES2Interface* ContextProviderInProcess::ContextGL() {
-  DCHECK(WebContext3DImpl());
+  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  return WebContext3DImpl()->GetGLInterface();
+  return context3d_->GetGLInterface();
 }
 
 ::gpu::ContextSupport* ContextProviderInProcess::ContextSupport() {
-  DCHECK(WebContext3DImpl());
+  DCHECK(context3d_);
   if (!lost_context_callback_proxy_)
     return NULL;  // Not bound to anything.
 
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  return WebContext3DImpl()->GetContextSupport();
+  return context3d_->GetContextSupport();
 }
 
 class GrContext* ContextProviderInProcess::GrContext() {
@@ -152,7 +139,8 @@ class GrContext* ContextProviderInProcess::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  gr_context_.reset(new GrContextForWebGraphicsContext3D(gr_interface_));
+  gr_context_.reset(
+      new GrContextForGLES2Interface(context3d_->GetGLInterface()));
   return gr_context_->get();
 }
 
@@ -165,7 +153,7 @@ void ContextProviderInProcess::InvalidateGrContext(uint32_t state) {
 }
 
 void ContextProviderInProcess::SetupLock() {
-  WebContext3DImpl()->SetLock(&context_lock_);
+  context3d_->SetLock(&context_lock_);
 }
 
 base::Lock* ContextProviderInProcess::GetLock() {

@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 
 #include "third_party/khronos/GLES2/gl2.h"
 #ifndef GL_GLEXT_PROTOTYPES

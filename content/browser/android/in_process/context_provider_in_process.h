@@ -14,7 +14,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/blink/context_provider_web_context.h"
-#include "skia/ext/refptr.h"
 
 namespace blink { class WebGraphicsContext3D; }
 
@@ -24,8 +23,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl;
 
 namespace content {
 
-class GrContextForWebGraphicsContext3D;
-class GrGLInterfaceForWebGraphicsContext3D;
+class GrContextForGLES2Interface;
 
 class ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
@@ -44,8 +42,6 @@ class ContextProviderInProcess
 
   // cc_blink::ContextProviderWebContext:
   blink::WebGraphicsContext3D* WebContext3D() override;
-
-  gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl* WebContext3DImpl();
 
   // cc::ContextProvider:
   bool BindToCurrentThread() override;
@@ -67,8 +63,9 @@ class ContextProviderInProcess
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  skia::RefPtr<GrGLInterfaceForWebGraphicsContext3D> gr_interface_;
-  scoped_ptr<GrContextForWebGraphicsContext3D> gr_context_;
+  scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
+      context3d_;
+  scoped_ptr<GrContextForGLES2Interface> gr_context_;
 
   LostContextCallback lost_context_callback_;
 

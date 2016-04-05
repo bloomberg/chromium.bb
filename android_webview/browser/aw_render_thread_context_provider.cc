@@ -64,6 +64,8 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
 
 AwRenderThreadContextProvider::~AwRenderThreadContextProvider() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (gr_context_)
+    gr_context_->releaseResourcesAndAbandonContext();
 }
 
 bool AwRenderThreadContextProvider::BindToCurrentThread() {
@@ -98,12 +100,11 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(new GrGLInterface);
-  skia_bindings::InitGLES2InterfaceBindings(interface.get(), ContextGL());
-
+  skia::RefPtr<GrGLInterface> interface =
+      skia_bindings::CreateGLES2InterfaceBindings(ContextGL());
   gr_context_ = skia::AdoptRef(GrContext::Create(
+      // GrContext takes ownership of |interface|.
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
-
   return gr_context_.get();
 }
 
@@ -111,7 +112,7 @@ void AwRenderThreadContextProvider::InvalidateGrContext(uint32_t state) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
-    gr_context_.get()->resetContext(state);
+    gr_context_->resetContext(state);
 }
 
 void AwRenderThreadContextProvider::SetupLock() {

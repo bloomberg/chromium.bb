@@ -16,12 +16,10 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "skia/ext/refptr.h"
 
 namespace content {
 
-class GrContextForWebGraphicsContext3D;
-class GrGLInterfaceForWebGraphicsContext3D;
+class GrContextForGLES2Interface;
 
 // Implementation of cc::ContextProvider that provides a
 // WebGraphicsContext3DCommandBufferImpl context and a GrContext.
@@ -60,14 +58,13 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   void OnLostContext();
 
  private:
-  WebGraphicsContext3DCommandBufferImpl* WebContext3DNoChecks();
   void InitializeCapabilities();
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  skia::RefPtr<GrGLInterfaceForWebGraphicsContext3D> gr_interface_;
-  scoped_ptr<GrContextForWebGraphicsContext3D> gr_context_;
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
+  scoped_ptr<GrContextForGLES2Interface> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
   CommandBufferContextType context_type_;
@@ -78,7 +75,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::Lock context_lock_;
 
   class LostContextCallbackProxy;
-  friend class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
 };
 

@@ -21,8 +21,8 @@ std::function<R(Args...)> gles_bind(R (GLES2Interface::*func)(Args...),
 
 namespace skia_bindings {
 
-void InitGLES2InterfaceBindings(GrGLInterface* interface,
-                                GLES2Interface* impl) {
+skia::RefPtr<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
+  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(new GrGLInterface);
   interface->fStandard = kGLES_GrGLStandard;
   interface->fExtensions.init(
       kGLES_GrGLStandard, gles_bind(&GLES2Interface::GetString, impl), nullptr,
@@ -246,6 +246,7 @@ void InitGLES2InterfaceBindings(GrGLInterface* interface,
       gles_bind(&GLES2Interface::BindFragmentInputLocationCHROMIUM, impl);
   functions->fCoverageModulation =
       gles_bind(&GLES2Interface::CoverageModulationCHROMIUM, impl);
+  return interface;
 }
 
 }  // namespace skia_bindings
