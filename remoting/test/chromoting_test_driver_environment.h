@@ -64,6 +64,8 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   void SetAccessTokenFetcherForTest(AccessTokenFetcher* access_token_fetcher);
   void SetRefreshTokenStoreForTest(RefreshTokenStore* refresh_token_store);
   void SetHostListFetcherForTest(HostListFetcher* host_list_fetcher);
+  void SetHostNameForTest(const std::string& host_name);
+  void SetHostJidForTest(const std::string& host_jid);
 
   // Accessors for fields used by tests.
   const std::string& access_token() const { return access_token_; }
@@ -74,6 +76,8 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   const HostInfo& host_info() const { return host_info_; }
 
  private:
+  friend class ChromotingTestDriverEnvironmentTest;
+
   // testing::Environment interface.
   void TearDown() override;
 
@@ -89,7 +93,8 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
                               const std::string& retrieved_refresh_token);
 
   // Used to retrieve a host list from the directory service.
-  // Returns true if the request was successful and |host_list_| is valid.
+  // Returns true if the request was successful, |host_list_| is valid, and
+  // |host_info_| has been set.
   bool RetrieveHostList();
 
   // Clears and then retrieves a new host list.
@@ -99,12 +104,6 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   void OnHostListRetrieved(base::Closure done_closure,
                            const std::vector<HostInfo>& retrieved_host_list);
 
-  // Checks the status of the host in |host_list_| that matches the given
-  // host_jid and host_name. Returns true if that host is online, false
-  // otherwise.
-  bool IsHostOnline(const std::string host_jid,
-                    const std::string host_name) const;
-
   // Used for authenticating with the directory service.
   std::string access_token_;
 
@@ -113,6 +112,9 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
 
   // Used to find remote host in host list.
   std::string host_name_;
+
+  // Used to find remote host in host list.
+  std::string host_jid_;
 
   // The test account for a test case.
   std::string user_name_;

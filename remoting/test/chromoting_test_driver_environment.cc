@@ -30,6 +30,7 @@ ChromotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() {
 ChromotingTestDriverEnvironment::ChromotingTestDriverEnvironment(
     const EnvironmentOptions& options)
     : host_name_(options.host_name),
+      host_jid_(options.host_jid),
       user_name_(options.user_name),
       pin_(options.pin),
       refresh_token_file_path_(options.refresh_token_file_path),
@@ -77,10 +78,9 @@ bool ChromotingTestDriverEnvironment::Initialize(
     }
   }
 
-  if (!RetrieveAccessToken(auth_code) || !RetrieveHostList()) {
-    // If we cannot retrieve an access token or a host list, then nothing is
-    // going to work. We should let the caller know that our object is not ready
-    // to be used.
+  if (!RetrieveAccessToken(auth_code)) {
+    // If we cannot retrieve an access token, then nothing is going to work.
+    // Let the caller know that our object is not ready to be used.
     return false;
   }
 
@@ -115,43 +115,34 @@ void ChromotingTestDriverEnvironment::DisplayHostList() {
 bool ChromotingTestDriverEnvironment::WaitForHostOnline(
     const std::string& host_jid,
     const std::string& host_name) {
+  if (host_list_.empty()) {
+    RetrieveHostList();
+  }
+
   // Refresh the |host_list_| periodically to check if expected JID is online.
-  const int kMaxIterations = 12;
+  const base::TimeDelta kTotalTimeInSeconds = base::TimeDelta::FromSeconds(60);
   const base::TimeDelta kSleepTimeInSeconds = base::TimeDelta::FromSeconds(5);
+  const int kMaxIterations = kTotalTimeInSeconds / kSleepTimeInSeconds;
+
   int num_iterations = 0;
   while (num_iterations < kMaxIterations) {
-    if (IsHostOnline(host_jid, host_name)) {
+    if (host_info_.IsReadyForConnection()) {
       if (num_iterations > 0) {
-        VLOG(0) << "Host came online after "
+        VLOG(0) << "Host online after: "
                 << num_iterations * kSleepTimeInSeconds.InSeconds()
                 << " seconds.";
       }
       return true;
     }
+
     // Wait a while before refreshing host list.
     base::PlatformThread::Sleep(kSleepTimeInSeconds);
     RefreshHostList();
     ++num_iterations;
   }
+
   LOG(ERROR) << "Host with JID '" << host_jid << "' still not online after "
              << num_iterations * kSleepTimeInSeconds.InSeconds() << " seconds.";
-  return false;
-}
-
-bool ChromotingTestDriverEnvironment::IsHostOnline(
-    const std::string host_jid,
-    const std::string host_name) const {
-  for (const HostInfo& host_info : host_list_) {
-    if (host_jid == host_info.host_jid && host_name == host_info.host_name) {
-      if (host_info.status == kHostStatusOnline) {
-        return true;
-      } else {
-        LOG(WARNING) << "Host '" << host_name << "' with JID '" << host_jid
-                     << "' not online.";
-        return false;
-      }
-    }
-  }
   return false;
 }
 
@@ -174,6 +165,16 @@ void ChromotingTestDriverEnvironment::SetHostListFetcherForTest(
   DCHECK(host_list_fetcher);
 
   test_host_list_fetcher_ = host_list_fetcher;
+}
+
+void ChromotingTestDriverEnvironment::SetHostNameForTest(
+    const std::string& host_name) {
+  host_name_ = host_name;
+}
+
+void ChromotingTestDriverEnvironment::SetHostJidForTest(
+    const std::string& host_jid) {
+  host_jid_ = host_jid;
 }
 
 void ChromotingTestDriverEnvironment::TearDown() {
@@ -276,6 +277,7 @@ bool ChromotingTestDriverEnvironment::RefreshHostList() {
 bool ChromotingTestDriverEnvironment::RetrieveHostList() {
   base::RunLoop run_loop;
 
+  // Clear the previous host info.
   host_info_ = HostInfo();
 
   // If a unit test has set |test_host_list_fetcher_| then we should use it
@@ -303,30 +305,28 @@ bool ChromotingTestDriverEnvironment::RetrieveHostList() {
     return false;
   }
 
-  // If the host or command line parameters are not setup correctly, we want to
-  // let the user fix the issue before continuing.
-  bool found_host_name = false;
-  auto host_info_iter = std::find_if(host_list_.begin(), host_list_.end(),
-      [this, &found_host_name](const remoting::test::HostInfo& host_info) {
-          if (host_info.host_name == host_name_) {
-            found_host_name = true;
-            return host_info.IsReadyForConnection();
-          }
-          return false;
-      });
-  if (host_info_iter == host_list_.end()) {
-    if (found_host_name) {
-      LOG(ERROR) << this->host_name_ << " is not ready to connect.";
-    } else {
-      LOG(ERROR) << this->host_name_ << " was not found in the host list.";
+  DisplayHostList();
+  for (HostInfo& host_info : host_list_) {
+    // The JID is optional so we consider an empty string to be a '*' match.
+    bool host_jid_match =
+        host_jid_.empty() || (host_jid_ == host_info.host_jid);
+    bool host_name_match = host_name_ == host_info.host_name;
+
+    if (host_name_match && host_jid_match) {
+      host_info_ = host_info;
+
+      if (host_info.IsReadyForConnection()) {
+        return true;
+      } else {
+        LOG(WARNING) << "Host '" << host_name_ << "' with JID '" << host_jid_
+                     << "' not online.";
+        return false;
+      }
     }
-    DisplayHostList();
-    return false;
   }
-
-  host_info_ = *host_info_iter;
-
-  return true;
+  LOG(WARNING) << "Host '" << host_name_ << "' with JID '" << host_jid_
+               << "' not found in host list.";
+  return false;
 }
 
 void ChromotingTestDriverEnvironment::OnHostListRetrieved(

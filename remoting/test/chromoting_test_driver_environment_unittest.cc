@@ -4,6 +4,9 @@
 
 #include "remoting/test/chromoting_test_driver_environment.h"
 
+#include <string>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "remoting/test/fake_access_token_fetcher.h"
@@ -38,6 +41,11 @@ class ChromotingTestDriverEnvironmentTest : public ::testing::Test {
   // testing::Test interface.
   void SetUp() override;
 
+  // Helper method which has access to private method in class under test.
+  bool RefreshHostList();
+
+  HostInfo CreateFakeHostInfo();
+
   FakeAccessTokenFetcher fake_access_token_fetcher_;
   FakeRefreshTokenStore fake_token_store_;
   FakeHostListFetcher fake_host_list_fetcher_;
@@ -62,17 +70,7 @@ void ChromotingTestDriverEnvironmentTest::SetUp() {
   environment_object_.reset(new ChromotingTestDriverEnvironment(options));
 
   std::vector<HostInfo> fake_host_list;
-  HostInfo fake_host;
-  fake_host.host_id = kFakeHostIdValue;
-  fake_host.host_jid = kFakeHostJidValue;
-  fake_host.host_name = kFakeHostNameValue;
-  fake_host.offline_reason = kFakeHostOfflineReasonValue;
-  fake_host.public_key = kFakeHostPublicKeyValue;
-  fake_host.status = kHostStatusOnline;
-  fake_host.token_url_patterns.push_back(kFakeHostFirstTokenUrlValue);
-  fake_host.token_url_patterns.push_back(kFakeHostSecondTokenUrlValue);
-  fake_host.token_url_patterns.push_back(kFakeHostThirdTokenUrlValue);
-  fake_host_list.push_back(fake_host);
+  fake_host_list.push_back(CreateFakeHostInfo());
 
   fake_host_list_fetcher_.set_retrieved_host_list(fake_host_list);
 
@@ -80,6 +78,25 @@ void ChromotingTestDriverEnvironmentTest::SetUp() {
       &fake_access_token_fetcher_);
   environment_object_->SetRefreshTokenStoreForTest(&fake_token_store_);
   environment_object_->SetHostListFetcherForTest(&fake_host_list_fetcher_);
+}
+
+bool ChromotingTestDriverEnvironmentTest::RefreshHostList() {
+  return environment_object_->RefreshHostList();
+}
+
+HostInfo ChromotingTestDriverEnvironmentTest::CreateFakeHostInfo() {
+  HostInfo host_info;
+  host_info.host_id = kFakeHostIdValue;
+  host_info.host_jid = kFakeHostJidValue;
+  host_info.host_name = kFakeHostNameValue;
+  host_info.offline_reason = kFakeHostOfflineReasonValue;
+  host_info.public_key = kFakeHostPublicKeyValue;
+  host_info.status = kHostStatusOnline;
+  host_info.token_url_patterns.push_back(kFakeHostFirstTokenUrlValue);
+  host_info.token_url_patterns.push_back(kFakeHostSecondTokenUrlValue);
+  host_info.token_url_patterns.push_back(kFakeHostThirdTokenUrlValue);
+
+  return host_info;
 }
 
 TEST_F(ChromotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
@@ -94,6 +111,11 @@ TEST_F(ChromotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
   EXPECT_EQ(environment_object_->host_name(), kHostNameValue);
   EXPECT_EQ(environment_object_->access_token(),
             kFakeAccessTokenFetcherAccessTokenValue);
+  EXPECT_EQ(environment_object_->host_list().size(), 0u);
+
+  // Now Retrieve the host list.
+  EXPECT_TRUE(environment_object_->WaitForHostOnline(kFakeHostJidValue,
+                                                     kFakeHostNameValue));
 
   // Should only have one host in the list.
   EXPECT_EQ(environment_object_->host_list().size(), kExpectedHostListSize);
@@ -128,9 +150,15 @@ TEST_F(ChromotingTestDriverEnvironmentTest, InitializeObjectWithRefreshToken) {
   EXPECT_EQ(environment_object_->host_name(), kHostNameValue);
   EXPECT_EQ(environment_object_->access_token(),
             kFakeAccessTokenFetcherAccessTokenValue);
+  EXPECT_EQ(environment_object_->host_list().size(), 0u);
+
+  // Now Retrieve the host list.
+  EXPECT_TRUE(environment_object_->WaitForHostOnline(kFakeHostJidValue,
+                                                     kFakeHostNameValue));
 
   // Should only have one host in the list.
   EXPECT_EQ(environment_object_->host_list().size(), kExpectedHostListSize);
+
   HostInfo fake_host = environment_object_->host_list().at(0);
   EXPECT_EQ(fake_host.host_id, kFakeHostIdValue);
   EXPECT_EQ(fake_host.host_jid, kFakeHostJidValue);
@@ -183,8 +211,70 @@ TEST_F(ChromotingTestDriverEnvironmentTest, HostListEmptyFromDirectory) {
   // Set the host list fetcher to return an empty list.
   fake_host_list_fetcher_.set_retrieved_host_list(std::vector<HostInfo>());
 
-  EXPECT_FALSE(environment_object_->Initialize(kAuthCodeValue));
+  EXPECT_TRUE(environment_object_->Initialize(kAuthCodeValue));
   EXPECT_TRUE(fake_token_store_.refresh_token_write_attempted());
+}
+
+TEST_F(ChromotingTestDriverEnvironmentTest, RefreshHostList_HostOnline) {
+  EXPECT_TRUE(environment_object_->Initialize(std::string()));
+  environment_object_->SetHostNameForTest(kFakeHostNameValue);
+  environment_object_->SetHostJidForTest(kFakeHostJidValue);
+  EXPECT_TRUE(RefreshHostList());
+  EXPECT_TRUE(environment_object_->host_info().IsReadyForConnection());
+}
+
+TEST_F(ChromotingTestDriverEnvironmentTest,
+       RefreshHostList_HostOnline_NoJidPassed) {
+  EXPECT_TRUE(environment_object_->Initialize(std::string()));
+
+  environment_object_->SetHostNameForTest(kFakeHostNameValue);
+  environment_object_->SetHostJidForTest(std::string());
+  EXPECT_TRUE(RefreshHostList());
+  EXPECT_TRUE(environment_object_->host_info().IsReadyForConnection());
+}
+
+TEST_F(ChromotingTestDriverEnvironmentTest, RefreshHostList_NameMismatch) {
+  EXPECT_TRUE(environment_object_->Initialize(std::string()));
+
+  environment_object_->SetHostNameForTest("Ficticious_host");
+  environment_object_->SetHostJidForTest(kFakeHostJidValue);
+  EXPECT_FALSE(RefreshHostList());
+  EXPECT_FALSE(environment_object_->host_info().IsReadyForConnection());
+}
+
+TEST_F(ChromotingTestDriverEnvironmentTest, RefreshHostList_JidMismatch) {
+  EXPECT_TRUE(environment_object_->Initialize(std::string()));
+
+  environment_object_->SetHostNameForTest(kFakeHostNameValue);
+  environment_object_->SetHostJidForTest("Ficticious_jid");
+  EXPECT_FALSE(RefreshHostList());
+  EXPECT_FALSE(environment_object_->host_info().IsReadyForConnection());
+}
+
+TEST_F(ChromotingTestDriverEnvironmentTest, RefreshHostList_HostOffline) {
+  EXPECT_TRUE(environment_object_->Initialize(std::string()));
+
+  HostInfo fake_host(CreateFakeHostInfo());
+  fake_host.status = kHostStatusOffline;
+
+  std::vector<HostInfo> fake_host_list(1, fake_host);
+  fake_host_list_fetcher_.set_retrieved_host_list(fake_host_list);
+
+  environment_object_->SetHostNameForTest(kFakeHostNameValue);
+  environment_object_->SetHostJidForTest(kFakeHostJidValue);
+  EXPECT_FALSE(RefreshHostList());
+  EXPECT_FALSE(environment_object_->host_info().IsReadyForConnection());
+}
+
+TEST_F(ChromotingTestDriverEnvironmentTest, RefreshHostList_HostListEmpty) {
+  EXPECT_TRUE(environment_object_->Initialize(std::string()));
+
+  // Set the host list fetcher to return an empty list.
+  fake_host_list_fetcher_.set_retrieved_host_list(std::vector<HostInfo>());
+  environment_object_->SetHostNameForTest(kFakeHostNameValue);
+  environment_object_->SetHostJidForTest(kFakeHostJidValue);
+  EXPECT_FALSE(RefreshHostList());
+  EXPECT_FALSE(environment_object_->host_info().IsReadyForConnection());
 }
 
 }  // namespace test
