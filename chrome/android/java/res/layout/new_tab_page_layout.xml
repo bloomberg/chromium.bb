@@ -12,8 +12,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:paddingTop="@dimen/toolbar_height_no_shadow"
-    android:visibility="gone"
-    chrome:maxWidth="692dp" >
+    android:visibility="gone" >
 
     <!-- Spacer. Note: this must have layout_weight="1" and the other spacers must have
          layout_weight="0". The NewTabPageLayout will redistribute the extra space between

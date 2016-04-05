@@ -8,15 +8,15 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.BoundedLinearLayout;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
  * There are no separate phone and tablet UIs; this layout adapts based on the available space.
  */
-public class NewTabPageLayout extends BoundedLinearLayout {
+public class NewTabPageLayout extends LinearLayout {
 
     // Space permitting, the spacers will grow from 0dp to the heights given below. If there is
     // additional space, it will be distributed evenly between the top and bottom spacers.
