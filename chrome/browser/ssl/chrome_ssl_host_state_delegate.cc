@@ -109,6 +109,9 @@ void MigrateOldSettings(HostContentSettingsMap* map) {
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
                              std::string(), &settings);
   for (const ContentSettingPatternSource& setting : settings) {
+    // Migrate user preference settings only.
+    if (setting.source != "preference")
+      continue;
     // Migrate old-format settings only.
     if (setting.secondary_pattern != ContentSettingsPattern::Wildcard()) {
       GURL url(setting.primary_pattern.ToString());

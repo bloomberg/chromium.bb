@@ -279,7 +279,8 @@ class HostContentSettingsMap : public content_settings::Observer,
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
-  friend class HostContentSettingsMapTest_NonDefaultSettings_Test;
+  friend class HostContentSettingsMapTest_MigrateOldSettings_Test;
+
   friend class content_settings::TestUtils;
 
   typedef std::map<ProviderType, content_settings::ProviderInterface*>
@@ -292,6 +293,17 @@ class HostContentSettingsMap : public content_settings::Observer,
   ContentSetting GetDefaultContentSettingFromProvider(
       ContentSettingsType content_type,
       content_settings::ProviderInterface* provider) const;
+
+  // Migrate old settings for ContentSettingsTypes which only use a primary
+  // pattern. Settings which only used a primary pattern were inconsistent in
+  // what they did with the secondary pattern. Some stored a
+  // ContentSettingsPattern::Wildcard() whereas others stored the same pattern
+  // twice. This function migrates all such settings to use
+  // ContentSettingsPattern::Wildcard(). This allows us to make the scoping code
+  // consistent across different settings.
+  // TODO(lshang): Remove this when clients have migrated (~M53). We should
+  // leave in some code to remove old-format settings for a long time.
+  void MigrateOldSettings();
 
   // Adds content settings for |content_type| and |resource_identifier|,
   // provided by |provider|, into |settings|. If |incognito| is true, adds only

@@ -1141,3 +1141,53 @@ TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
           GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_TRUE(all_settings_dictionary->empty());
 }
+
+TEST_F(HostContentSettingsMapTest, MigrateOldSettings) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  // Set old formatted settings.
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(host);
+
+  // Default setting is BLOCK.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+
+  host_content_settings_map->SetContentSetting(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_KEYGEN, std::string(),
+      CONTENT_SETTING_ALLOW);
+  // Because of the old formatted setting entry which has two same patterns,
+  // SetContentSetting() to (host, GURL()) will be ignored.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      host, GURL(), CONTENT_SETTINGS_TYPE_KEYGEN, std::string(),
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+
+  host_content_settings_map->MigrateOldSettings();
+
+  ContentSettingsForOneType settings;
+  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_KEYGEN,
+                                                   std::string(), &settings);
+  for (const ContentSettingPatternSource& setting_entry : settings) {
+    EXPECT_EQ(setting_entry.secondary_pattern,
+              ContentSettingsPattern::Wildcard());
+  }
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+
+  // After migrating old settings, changes to the setting works.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      host, GURL(), CONTENT_SETTINGS_TYPE_KEYGEN, std::string(),
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+}
