@@ -4,8 +4,6 @@
 
 component("mozilla") {
   sources = [
-    "ComplexTextInputPanel.h",
-    "ComplexTextInputPanel.mm",
     "MozillaExport.h",
     "NSPasteboard+Utils.h",
     "NSPasteboard+Utils.mm",

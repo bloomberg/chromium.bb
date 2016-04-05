@@ -171,11 +171,6 @@ bool TestRenderWidgetHostView::IsSpeaking() const {
 void TestRenderWidgetHostView::StopSpeaking() {
 }
 
-bool TestRenderWidgetHostView::PostProcessEventForPluginIme(
-    const NativeWebKeyboardEvent& event) {
-  return false;
-}
-
 #endif
 
 bool TestRenderWidgetHostView::GetScreenColorProfile(

@@ -364,15 +364,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void LockCompositingSurface() = 0;
   virtual void UnlockCompositingSurface() = 0;
 
-#if defined(OS_MACOSX)
-  // Does any event handling necessary for plugin IME; should be called after
-  // the plugin has already had a chance to process the event. If plugin IME is
-  // not enabled, this is a no-op, so it is always safe to call.
-  // Returns true if the event was handled by IME.
-  virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) = 0;
-#endif
-
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,

@@ -8,8 +8,6 @@
       'target_name': 'mozilla',
       'type': '<(component)',
       'sources': [
-        'ComplexTextInputPanel.h',
-        'ComplexTextInputPanel.mm',
         'MozillaExport.h',
         'NSPasteboard+Utils.h',
         'NSPasteboard+Utils.mm',

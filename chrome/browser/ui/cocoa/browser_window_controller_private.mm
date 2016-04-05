@@ -310,22 +310,8 @@ willPositionSheet:(NSWindow*)sheet
   NSView* tabContentView = [self tabContentArea];
   NSRect tabContentFrame = [tabContentView frame];
 
-  bool contentShifted =
-      NSMaxY(tabContentFrame) != NSMaxY(newFrame) ||
-      NSMinX(tabContentFrame) != NSMinX(newFrame);
-
   tabContentFrame = newFrame;
   [tabContentView setFrame:tabContentFrame];
-
-  // If the relayout shifts the content area up or down, let the renderer know.
-  if (contentShifted) {
-    WebContents* contents = [self webContents];
-    if (contents) {
-      RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView();
-      if (rwhv)
-        rwhv->WindowFrameChanged();
-    }
-  }
 }
 
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression {

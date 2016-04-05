@@ -28,13 +28,3 @@ Local modifications:
 - MOZILLA_EXPORT was added to some constants in NSPasteboard+Utils.h.
 - +[NSWorkspace(CaminoDefaultBrowserAdditions) isLeopardOrHigher] hidden since
   it relies on methods deprecated in 10.8 (and is unused in Chrome).
-
------------------------------------------------------------------
-
-Also includes IME panel from Gecko, which is based on WebKit's implementation.
-Although it comes from Mozilla (http://mxr.mozilla.org), it uses the original
-WebKit license.
-
-Local modifications:
-- #ifdef'd definitions of a few symbols were added to support the 10.5 SDK.
-- MOZILLA_EXPORT was added to the IME panel class in ComplexTextInputPanel.h.

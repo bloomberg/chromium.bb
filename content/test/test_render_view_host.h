@@ -82,8 +82,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   gfx::Rect GetViewBounds() const override;
 #if defined(OS_MACOSX)
   void SetActive(bool active) override;
-  void SetWindowVisibility(bool visible) override {}
-  void WindowFrameChanged() override {}
   void ShowDefinitionForSelection() override {}
   bool SupportsSpeech() const override;
   void SpeakSelection() override;
@@ -124,10 +122,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-#if defined(OS_MACOSX)
-  bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) override;
-#endif
   void LockCompositingSurface() override {}
   void UnlockCompositingSurface() override {}
   void GetScreenInfo(blink::WebScreenInfo* results) override {}

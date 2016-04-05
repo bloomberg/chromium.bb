@@ -105,17 +105,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.
   void SetActive(bool active) override;
-  void SetWindowVisibility(bool visible) override;
-  void WindowFrameChanged() override;
   void ShowDefinitionForSelection() override;
   bool SupportsSpeech() const override;
   void SpeakSelection() override;
   bool IsSpeaking() const override;
   void StopSpeaking() override;
-
-  // RenderWidgetHostViewBase implementation.
-  bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) override;
 #endif  // defined(OS_MACOSX)
 
   void LockCompositingSurface() override;

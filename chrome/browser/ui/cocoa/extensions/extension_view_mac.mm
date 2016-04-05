@@ -34,11 +34,6 @@ ExtensionViewMac::ExtensionViewMac(extensions::ExtensionHost* extension_host,
 ExtensionViewMac::~ExtensionViewMac() {
 }
 
-void ExtensionViewMac::WindowFrameChanged() {
-  if (render_view_host()->GetWidget()->GetView())
-    render_view_host()->GetWidget()->GetView()->WindowFrameChanged();
-}
-
 void ExtensionViewMac::CreateWidgetHostViewIn(gfx::NativeView superview) {
   [superview addSubview:GetNativeView()];
   extension_host_->CreateRenderViewSoon();

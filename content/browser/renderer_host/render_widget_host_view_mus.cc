@@ -272,13 +272,6 @@ gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {
 void RenderWidgetHostViewMus::SetActive(bool active) {
 }
 
-void RenderWidgetHostViewMus::SetWindowVisibility(bool visible) {
-  // TODO(fsamuel): Propagate visibility to Mus?
-}
-
-void RenderWidgetHostViewMus::WindowFrameChanged() {
-}
-
 void RenderWidgetHostViewMus::ShowDefinitionForSelection() {
   // TODO(fsamuel): Implement this on Mac.
 }
@@ -300,12 +293,6 @@ bool RenderWidgetHostViewMus::IsSpeaking() const {
 void RenderWidgetHostViewMus::StopSpeaking() {
   // TODO(fsamuel): Implement this on Mac.
 }
-
-bool RenderWidgetHostViewMus::PostProcessEventForPluginIme(
-    const NativeWebKeyboardEvent& event) {
-  return false;
-}
-
 #endif  // defined(OS_MACOSX)
 
 void RenderWidgetHostViewMus::LockCompositingSurface() {

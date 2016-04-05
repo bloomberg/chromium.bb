@@ -81,8 +81,6 @@ class Layer;
   // Is YES if there was a mouse-down as yet unbalanced with a mouse-up.
   BOOL hasOpenMouseDown_;
 
-  NSWindow* lastWindow_;  // weak
-
   // The cursor for the page. This is passed up from the renderer.
   base::scoped_nsobject<NSCursor> currentCursor_;
 
@@ -143,12 +141,6 @@ class Layer;
   // etc.
   content::EditCommands editCommands_;
 
-  // The plugin that currently has focus (-1 if no plugin has focus).
-  int focusedPluginIdentifier_;
-
-  // Whether or not plugin IME is currently enabled active.
-  BOOL pluginImeActive_;
-
   // Whether the previous mouse event was ignored due to hitTest check.
   BOOL mouseEventWasIgnored_;
 
@@ -204,13 +196,6 @@ class Layer;
 - (void)cancelComposition;
 // Confirm ongoing composition.
 - (void)confirmComposition;
-// Enables or disables plugin IME.
-- (void)setPluginImeActive:(BOOL)active;
-// Updates the current plugin focus state.
-- (void)pluginFocusChanged:(BOOL)focused forPlugin:(int)pluginId;
-// Evaluates the event in the context of plugin IME, if plugin IME is enabled.
-// Returns YES if the event was handled.
-- (BOOL)postProcessEventForPluginIme:(NSEvent*)event;
 - (void)updateCursor:(NSCursor*)cursor;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange;
@@ -285,8 +270,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Rect GetViewBounds() const override;
   void SetShowingContextMenu(bool showing) override;
   void SetActive(bool active) override;
-  void SetWindowVisibility(bool visible) override;
-  void WindowFrameChanged() override;
   void ShowDefinitionForSelection() override;
   bool SupportsSpeech() const override;
   void SpeakSelection() override;
@@ -334,8 +317,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
-  bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) override;
 
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
@@ -384,9 +365,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void KillSelf();
 
   void SetTextInputActive(bool active);
-
-  // Sends completed plugin IME notification and text back to the renderer.
-  void PluginImeCompositionCompleted(const base::string16& text, int plugin_id);
 
   const std::string& selected_text() const { return selected_text_; }
   const gfx::Range& composition_range() const { return composition_range_; }
@@ -559,8 +537,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void DestroyBrowserCompositorView();
 
   // IPC message handlers.
-  void OnPluginFocusChanged(bool focused, int plugin_id);
-  void OnStartPluginIme();
   void OnGetRenderedTextCompleted(const std::string& text);
 
   // Send updated vsync parameters to the renderer.

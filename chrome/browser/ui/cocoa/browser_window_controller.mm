@@ -407,18 +407,6 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
     // Create the bridge for the status bubble.
     statusBubble_ = new StatusBubbleMac([self window], self);
 
-    // Register for application hide/unhide notifications.
-    [[NSNotificationCenter defaultCenter]
-         addObserver:self
-            selector:@selector(applicationDidHide:)
-                name:NSApplicationDidHideNotification
-              object:nil];
-    [[NSNotificationCenter defaultCenter]
-         addObserver:self
-            selector:@selector(applicationDidUnhide:)
-                name:NSApplicationDidUnhideNotification
-              object:nil];
-
     // This must be done after the view is added to the window since it relies
     // on the window bounds to determine whether to show buttons or not.
     if ([self hasToolbar])  // Do not create the buttons in popups.
@@ -657,12 +645,6 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
 // Called when we have been minimized.
 - (void)windowDidMiniaturize:(NSNotification *)notification {
   [self saveWindowPositionIfNeeded];
-
-  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = [self webContents]) {
-    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
-      rwhv->SetWindowVisibility(false);
-  }
 }
 
 // Called when we have been unminimized.
@@ -670,36 +652,6 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   // Make sure the window's show_state (which is now ui::SHOW_STATE_NORMAL)
   // gets saved.
   [self saveWindowPositionIfNeeded];
-
-  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = [self webContents]) {
-    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
-      rwhv->SetWindowVisibility(true);
-  }
-}
-
-// Called when the application has been hidden.
-- (void)applicationDidHide:(NSNotification *)notification {
-  // Let the selected RenderWidgetHostView know, so that it can tell plugins
-  // (unless we are minimized, in which case nothing has really changed).
-  if (![[self window] isMiniaturized]) {
-    if (WebContents* contents = [self webContents]) {
-      if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
-        rwhv->SetWindowVisibility(false);
-    }
-  }
-}
-
-// Called when the application has been unhidden.
-- (void)applicationDidUnhide:(NSNotification *)notification {
-  // Let the selected RenderWidgetHostView know, so that it can tell plugins
-  // (unless we are minimized, in which case nothing has really changed).
-  if (![[self window] isMiniaturized]) {
-    if (WebContents* contents = [self webContents]) {
-      if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
-        rwhv->SetWindowVisibility(true);
-    }
-  }
 }
 
 // Called when the user clicks the zoom button (or selects it from the Window
@@ -1729,12 +1681,6 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
     statusBubble_->UpdateSizeAndPosition();
   }
 
-  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = [self webContents]) {
-    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
-      rwhv->WindowFrameChanged();
-  }
-
   // The FindBar needs to know its own position to properly detect overlaps
   // with find results. The position changes whenever the window is resized,
   // and |layoutSubviews| computes the FindBar's position.
@@ -1777,12 +1723,6 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
       (windowTopGrowth_ > 0 && NSMinY(windowFrame) != NSMinY(workarea)) ||
       (windowBottomGrowth_ > 0 && NSMaxY(windowFrame) != NSMaxY(workarea)))
     [self resetWindowGrowthState];
-
-  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = [self webContents]) {
-    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
-      rwhv->WindowFrameChanged();
-  }
 }
 
 // Delegate method called when window will be resized; not called for

@@ -447,14 +447,6 @@ void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);
 }
 
-void RenderWidgetHostViewGuest::SetWindowVisibility(bool visible) {
-  platform_view_->SetWindowVisibility(visible);
-}
-
-void RenderWidgetHostViewGuest::WindowFrameChanged() {
-  platform_view_->WindowFrameChanged();
-}
-
 void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
   if (!guest_)
     return;
@@ -493,12 +485,6 @@ bool RenderWidgetHostViewGuest::IsSpeaking() const {
 void RenderWidgetHostViewGuest::StopSpeaking() {
   platform_view_->StopSpeaking();
 }
-
-bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
-    const NativeWebKeyboardEvent& event) {
-  return false;
-}
-
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(USE_AURA)

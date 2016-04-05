@@ -1899,11 +1899,6 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
       InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency);
 
-#if defined(OS_MACOSX)
-  if (!is_hidden() && view_ && view_->PostProcessEventForPluginIme(event.event))
-    return;
-#endif
-
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.

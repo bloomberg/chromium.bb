@@ -52,9 +52,6 @@ class ExtensionViewMac : public extensions::ExtensionView {
   // Sets the container for this view.
   void set_container(Container* container) { container_ = container; }
 
-  // Informs the view that its containing window's frame changed.
-  void WindowFrameChanged();
-
   // Create the host view, adding it as a subview of |superview|.
   void CreateWidgetHostViewIn(gfx::NativeView superview);
 

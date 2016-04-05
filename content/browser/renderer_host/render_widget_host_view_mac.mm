@@ -71,7 +71,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#import "third_party/mozilla/ComplexTextInputPanel.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -187,7 +186,6 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
-- (void)checkForPluginImeCancellation;
 - (void)updateScreenProperties;
 - (void)setResponderDelegate:
         (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
@@ -687,8 +685,6 @@ void RenderWidgetHostViewMac::DestroySuspendedBrowserCompositorViewIfNeeded() {
 bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedTextCompleted,
         OnGetRenderedTextCompleted)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1272,27 +1268,6 @@ void RenderWidgetHostViewMac::KillSelf() {
   }
 }
 
-bool RenderWidgetHostViewMac::PostProcessEventForPluginIme(
-    const NativeWebKeyboardEvent& event) {
-  // Check WebInputEvent type since multiple types of events can be sent into
-  // WebKit for the same OS event (e.g., RawKeyDown and Char), so filtering is
-  // necessary to avoid double processing.
-  // Also check the native type, since NSFlagsChanged is considered a key event
-  // for WebKit purposes, but isn't considered a key event by the OS.
-  if (event.type == WebInputEvent::RawKeyDown &&
-      [event.os_event type] == NSKeyDown)
-    return [cocoa_view_ postProcessEventForPluginIme:event.os_event];
-  return false;
-}
-
-void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
-    const base::string16& text, int plugin_id) {
-  if (render_widget_host_) {
-    render_widget_host_->Send(new ViewMsg_PluginImeCompositionCompleted(
-        render_widget_host_->GetRoutingID(), text, plugin_id));
-  }
-}
-
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
     const std::vector<gfx::Rect>& bounds,
     const gfx::Range& range,
@@ -1689,25 +1664,8 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   }
   if (HasFocus())
     SetTextInputActive(active);
-  if (!active) {
-    [cocoa_view_ setPluginImeActive:NO];
+  if (!active)
     UnlockMouse();
-  }
-}
-
-void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
-  if (render_widget_host_) {
-    render_widget_host_->Send(new ViewMsg_SetWindowVisibility(
-        render_widget_host_->GetRoutingID(), visible));
-  }
-}
-
-void RenderWidgetHostViewMac::WindowFrameChanged() {
-  if (render_widget_host_) {
-    render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
-        render_widget_host_->GetRoutingID(), GetBoundsInRootWindow(),
-        GetViewBounds()));
-  }
 }
 
 void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
@@ -1768,15 +1726,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
-void RenderWidgetHostViewMac::OnPluginFocusChanged(bool focused,
-                                                   int plugin_id) {
-  [cocoa_view_ pluginFocusChanged:(focused ? YES : NO) forPlugin:plugin_id];
-}
-
-void RenderWidgetHostViewMac::OnStartPluginIme() {
-  [cocoa_view_ setPluginImeActive:YES];
-}
-
 void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
     const std::string& text) {
   SpeakText(text);
@@ -1832,7 +1781,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
     opaque_ = YES;
-    focusedPluginIdentifier_ = -1;
     pinchHasReachedZoomThreshold_ = false;
 
     // OpenGL support:
@@ -2208,18 +2156,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   hasEditCommands_ = NO;
   editCommands_.clear();
 
-  // Before doing anything with a key down, check to see if plugin IME has been
-  // cancelled, since the plugin host needs to be informed of that before
-  // receiving the keydown.
-  if ([theEvent type] == NSKeyDown)
-    [self checkForPluginImeCancellation];
-
   // Sends key down events to input method first, then we can decide what should
   // be done according to input method's feedback.
-  // If a plugin is active, bypass this step since events are forwarded directly
-  // to the plugin IME.
-  if (focusedPluginIdentifier_ == -1)
-    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+  [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 
   handlingKeyDown_ = NO;
 
@@ -3122,9 +3061,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
 - (NSTextInputContext *)inputContext {
-  if (focusedPluginIdentifier_ != -1)
-    return [[ComplexTextInputPanel sharedComplexTextInputPanel] inputContext];
-
   switch(renderWidgetHostView_->text_input_type_) {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
@@ -3277,22 +3213,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     renderWidgetHostView_->DestroySuspendedBrowserCompositorViewIfNeeded();
   }
 
-  if (canBeKeyView_) {
-    NSWindow* newWindow = [self window];
-    // Pointer comparison only, since we don't know if lastWindow_ is still
-    // valid.
-    if (newWindow) {
-      // If we move into a new window, refresh the frame information. We
-      // don't need to do it if it was the same window as it used to be in,
-      // since that case is covered by WasShown(). We only want to do this for
-      // real browser views, not popups.
-      if (newWindow != lastWindow_) {
-        lastWindow_ = newWindow;
-        renderWidgetHostView_->WindowFrameChanged();
-      }
-    }
-  }
-
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.
   if (hasOpenMouseDown_) {
@@ -3402,54 +3322,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
         base::string16(), gfx::Range::InvalidRange(), false);
 
   [self cancelComposition];
-}
-
-- (void)setPluginImeActive:(BOOL)active {
-  if (active == pluginImeActive_)
-    return;
-
-  pluginImeActive_ = active;
-  if (!active) {
-    [[ComplexTextInputPanel sharedComplexTextInputPanel] cancelComposition];
-    renderWidgetHostView_->PluginImeCompositionCompleted(
-        base::string16(), focusedPluginIdentifier_);
-  }
-}
-
-- (void)pluginFocusChanged:(BOOL)focused forPlugin:(int)pluginId {
-  if (focused)
-    focusedPluginIdentifier_ = pluginId;
-  else if (focusedPluginIdentifier_ == pluginId)
-    focusedPluginIdentifier_ = -1;
-
-  // Whenever plugin focus changes, plugin IME resets.
-  [self setPluginImeActive:NO];
-}
-
-- (BOOL)postProcessEventForPluginIme:(NSEvent*)event {
-  if (!pluginImeActive_)
-    return false;
-
-  ComplexTextInputPanel* inputPanel =
-      [ComplexTextInputPanel sharedComplexTextInputPanel];
-  NSString* composited_string = nil;
-  BOOL handled = [inputPanel interpretKeyEvent:event
-                                        string:&composited_string];
-  if (composited_string) {
-    renderWidgetHostView_->PluginImeCompositionCompleted(
-        base::SysNSStringToUTF16(composited_string), focusedPluginIdentifier_);
-    pluginImeActive_ = NO;
-  }
-  return handled;
-}
-
-- (void)checkForPluginImeCancellation {
-  if (pluginImeActive_ &&
-      ![[ComplexTextInputPanel sharedComplexTextInputPanel] inComposition]) {
-    renderWidgetHostView_->PluginImeCompositionCompleted(
-        base::string16(), focusedPluginIdentifier_);
-    pluginImeActive_ = NO;
-  }
 }
 
 // Overriding a NSResponder method to support application services.

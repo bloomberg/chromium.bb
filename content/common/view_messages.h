@@ -884,21 +884,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
 // ViewHostMsg_SmartClipDataExtracted IPC.
 IPC_MESSAGE_ROUTED1(ViewMsg_ExtractSmartClipData,
                     gfx::Rect /* rect */)
-
-#elif defined(OS_MACOSX)
-// Let the RenderView know its window has changed visibility.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,
-                    bool /* visibile */)
-
-// Let the RenderView know its window's frame has changed.
-IPC_MESSAGE_ROUTED2(ViewMsg_WindowFrameChanged,
-                    gfx::Rect /* window frame */,
-                    gfx::Rect /* content view frame */)
-
-// Tell the renderer that plugin IME has completed.
-IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionCompleted,
-                    base::string16 /* text */,
-                    int /* plugin_id */)
 #endif
 
 // Sent by the browser as a reply to ViewHostMsg_SwapCompositorFrame.
@@ -1303,14 +1288,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
                     int /* y */)
 
 #elif defined(OS_MACOSX)
-// Informs the browser that a plugin has gained or lost focus.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
-                    bool, /* focused */
-                    int /* plugin_id */)
-
-// Instructs the browser to start plugin IME.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
-
 // Receives content of a web page as plain text.
 IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string)
 #endif

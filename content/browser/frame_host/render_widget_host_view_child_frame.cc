@@ -469,12 +469,6 @@ gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {
 }
 
-void RenderWidgetHostViewChildFrame::SetWindowVisibility(bool visible) {
-}
-
-void RenderWidgetHostViewChildFrame::WindowFrameChanged() {
-}
-
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
 }
 
@@ -490,11 +484,6 @@ bool RenderWidgetHostViewChildFrame::IsSpeaking() const {
 }
 
 void RenderWidgetHostViewChildFrame::StopSpeaking() {
-}
-
-bool RenderWidgetHostViewChildFrame::PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) {
-  return false;
 }
 #endif  // defined(OS_MACOSX)
 

@@ -68,9 +68,6 @@ BOOL gAnimationsEnabled = true;
 // Called when the extension view is shown.
 - (void)onViewDidShow;
 
-// Called when the window moves or resizes. Notifies the extension.
-- (void)onWindowChanged;
-
 @end
 
 class ExtensionPopupContainer : public ExtensionViewMac::Container {
@@ -404,27 +401,6 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
 
 - (void)onViewDidShow {
   [self onSizeChanged:pendingSize_];
-}
-
-- (void)onWindowChanged {
-  // The window is positioned before creating the host, to ensure the host is
-  // created with the correct screen information.
-  if (!host_)
-    return;
-
-  ExtensionViewMac* extensionView =
-      static_cast<ExtensionViewMac*>(host_->view());
-  // Let the extension view know, so that it can tell plugins.
-  if (extensionView)
-    extensionView->WindowFrameChanged();
-}
-
-- (void)windowDidResize:(NSNotification*)notification {
-  [self onWindowChanged];
-}
-
-- (void)windowDidMove:(NSNotification*)notification {
-  [self onWindowChanged];
 }
 
 // Private (TestingAPI)
