@@ -1994,7 +1994,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     }
 
     if (ancestorSkipped) {
-        // If the ancestor is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
+        // If the ancestor is below o, then we need to map the rect into ancestor's coordinates.
         LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
         rect.move(-containerOffset);
         // If the ancestor is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.

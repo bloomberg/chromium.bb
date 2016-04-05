@@ -3416,8 +3416,8 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
 
 inline void LayoutObject::markAncestorsForPaintInvalidation()
 {
-    for (LayoutObject* container = this->parentCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->parentCrossingFrameBoundaries())
-        container->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
+    for (LayoutObject* parent = this->parentCrossingFrameBoundaries(); parent && !parent->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); parent = parent->parentCrossingFrameBoundaries())
+        parent->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
 
 void LayoutObject::setShouldInvalidateSelection()
