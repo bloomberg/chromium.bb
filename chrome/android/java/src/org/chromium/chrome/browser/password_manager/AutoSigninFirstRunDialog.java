@@ -75,7 +75,7 @@ public class AutoSigninFirstRunDialog
                         .setPositiveButton(mOkButtonText, this)
                         .setNegativeButton(mTurnOffButtonText, this);
         View view = LayoutInflater.from(mContext).inflate(
-                R.layout.single_line_bottom_text_dialog, null);
+                R.layout.auto_sign_in_first_run_dialog, null);
         TextView summaryView = (TextView) view.findViewById(R.id.summary);
 
         if (mExplanationLinkStart != mExplanationLinkEnd && mExplanationLinkEnd != 0) {
