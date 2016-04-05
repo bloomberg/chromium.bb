@@ -24,9 +24,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issue_manager.h"
-#include "chrome/browser/media/router/media_router.mojom.h"
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/browser/media/router/mojo/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {

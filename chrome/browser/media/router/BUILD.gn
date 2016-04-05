@@ -11,14 +11,13 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "media_router.gypi" ])
 
-# TODO(mfoltz): Fix problem that requires explicitly listing //skia
 static_library("router") {
   deps = [
     "//base",
     "//chrome/common:constants",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
-    "//skia",
+    "//content/public/browser",
     "//url",
   ]
   sources = rebase_path(gypi_values.media_router_sources,
@@ -38,7 +37,7 @@ static_library("router") {
 
 mojom("mojo_bindings") {
   sources = [
-    "media_router.mojom",
+    "mojo/media_router.mojom",
   ]
 }
 

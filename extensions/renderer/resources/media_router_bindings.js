@@ -8,7 +8,7 @@ define('media_router_bindings', [
     'mojo/public/js/bindings',
     'mojo/public/js/core',
     'content/public/renderer/frame_service_registry',
-    'chrome/browser/media/router/media_router.mojom',
+    'chrome/browser/media/router/mojo/media_router.mojom',
     'extensions/common/mojo/keep_alive.mojom',
     'mojo/public/js/connection',
     'mojo/public/js/router',

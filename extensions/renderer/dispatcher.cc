@@ -809,7 +809,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
 
 #if defined(ENABLE_MEDIA_ROUTER)
   resources.push_back(
-      std::make_pair("chrome/browser/media/router/media_router.mojom",
+      std::make_pair("chrome/browser/media/router/mojo/media_router.mojom",
                      IDR_MEDIA_ROUTER_MOJOM_JS));
   resources.push_back(
       std::make_pair("media_router_bindings", IDR_MEDIA_ROUTER_BINDINGS_JS));

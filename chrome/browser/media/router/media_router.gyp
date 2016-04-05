@@ -19,7 +19,7 @@
         '<(DEPTH)/chrome/common_constants.gyp:common_constants',
         '<(DEPTH)/components/components.gyp:keyed_service_content',
         '<(DEPTH)/components/components.gyp:keyed_service_core',
-        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
@@ -44,7 +44,7 @@
       'target_name': 'media_router_mojo_gen',
       'type': 'none',
       'sources': [
-        'media_router.mojom',
+        'mojo/media_router.mojom',
       ],
       'includes': [
         '../../../../mojo/mojom_bindings_generator.gypi',
@@ -57,8 +57,8 @@
         'media_router_mojo_gen',
       ],
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/media_router.mojom.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/media_router.mojom.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/mojo/media_router.mojom.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/mojo/media_router.mojom.h',
       ],
     },
     {

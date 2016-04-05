@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/media/router/media_router.mojom.h"
 #include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/mojo/media_router.mojom.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
