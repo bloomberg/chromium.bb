@@ -33,13 +33,13 @@ BaseAutomationHandler = function(node) {
     ariaAttributeChanged: this.onEventIfInRange,
     checkedStateChanged: this.onEventIfInRange,
     focus: this.onFocus,
-    hover: this.onEventDefault,
+    hover: this.onEventWithFlushedOutput,
     loadComplete: this.onLoadComplete,
     menuListItemSelected: this.onEventDefault,
     menuStart: this.onMenuStart,
     menuEnd: this.onMenuEnd,
-    selection: this.onEventDefault,
     scrollPositionChanged: this.onScrollPositionChanged,
+    selection: this.onEventWithFlushedOutput,
     textChanged: this.onTextChanged,
     textSelectionChanged: this.onTextSelectionChanged,
     valueChanged: this.onValueChanged
@@ -134,6 +134,14 @@ BaseAutomationHandler.prototype = {
         global.backgroundObj.currentRange.start.node, evt.target) ||
             evt.target.state.focused)
       this.onEventDefault(evt);
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onEventWithFlushedOutput: function(evt) {
+    Output.flushNextSpeechUtterance();
+    this.onEventDefault(evt);
   },
 
   /**
