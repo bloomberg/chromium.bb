@@ -167,7 +167,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
                ['linux', 'nvidia'], bug=524144)
     self.Flaky('conformance/textures/image/' +
                'tex-image-and-sub-image-2d-with-image-' +
-               'rgb-rgb-unsigned-byte.html',
+               'rgb-rgb-unsigned_byte.html',
                ['linux', 'nvidia'], bug=596622)
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
