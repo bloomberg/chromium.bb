@@ -1,3 +1,6 @@
+<?php
+header("Content-Security-Policy-Report-Only: script-src 'self' 'unsafe-inline'; report-uri resources/save-report.php?test=eval-allowed-in-report-only-mode-and-sends-report.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,7 +8,6 @@
         if (window.internals)
             internals.settings.setExperimentalContentSecurityPolicyFeaturesEnabled(false);
     </script>
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="script-src 'self' 'unsafe-inline'; report-uri resources/save-report.php?test=eval-allowed-in-report-only-mode-and-sends-report.html">
 </head>
 <body>
     <script>

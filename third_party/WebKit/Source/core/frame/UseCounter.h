@@ -1096,6 +1096,9 @@ public:
         ScrollAnchored = 1278,
         AddEventListenerFourArguments = 1279,
         RemoveEventListenerFourArguments = 1280,
+        InvalidReportUriDirectiveInMetaCSP = 1281,
+        InvalidSandboxDirectiveInMetaCSP = 1282,
+        InvalidFrameAncestorsDirectiveInMetaCSP = 1283,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

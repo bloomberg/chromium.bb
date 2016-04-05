@@ -1,8 +1,10 @@
+<?php
+header("Content-Security-Policy-Report-Only: script-src 'unsafe-inline';");
+?>
 <!DOCTYPE html>
 <html>
 <head>
     <script src="resources/report-test.js"></script>
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="script-src 'unsafe-inline';">
 </head>
 <body>
     <p>This test passes if a console message is present, warning about the missing 'report-uri' directive.</p>

@@ -1,7 +1,9 @@
+<?php
+header("Content-Security-Policy: sandbox allow-scripts allow-popups");
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Security-Policy" content="sandbox allow-scripts allow-popups">
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
 </head>

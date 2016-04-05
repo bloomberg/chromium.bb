@@ -1,8 +1,10 @@
+<?php
+header("Content-Security-Policy: img-src 'none'; report-uri resources/save-report.php?test=report-blocked-file-uri.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
     <script src="resources/report-test.js"></script>
-    <meta http-equiv="Content-Security-Policy" content="img-src 'none'; report-uri resources/save-report.php?test=report-blocked-file-uri.html">
 </head>
 <body>
     <script>

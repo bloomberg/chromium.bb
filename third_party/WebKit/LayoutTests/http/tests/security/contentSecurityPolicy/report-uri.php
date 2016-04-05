@@ -1,5 +1,7 @@
+<?php
+header("Content-Security-Policy: script-src 'self'; report-uri resources/save-report.php?test=report-uri.php");
+?>
 <script src="resources/report-test.js"></script>
-<meta http-equiv="Content-Security-Policy" content="script-src 'self'; report-uri resources/save-report.php?test=report-uri.html">
 <script>
 // This script block will trigger a violation report.
 alert('FAIL');

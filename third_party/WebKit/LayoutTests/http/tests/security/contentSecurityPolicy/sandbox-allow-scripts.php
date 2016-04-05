@@ -1,8 +1,10 @@
+<?php
+header("Content-Security-Policy: sandbox allow-scripts");
+?>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
 </script>
-<meta http-equiv="Content-Security-Policy" content="sandbox allow-scripts">
 This test passes if it does alert pass.
 <script>
 console.log('PASS');

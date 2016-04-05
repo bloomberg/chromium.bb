@@ -1,8 +1,10 @@
+<?php
+header("Content-Security-Policy: img-src 'none'; report-uri http://localhost:8080/security/contentSecurityPolicy/resources/save-report.php?test=report-cross-origin-no-cookies.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
     <script src="resources/report-test.js"></script>
-    <meta http-equiv="Content-Security-Policy" content="img-src 'none'; report-uri http://localhost:8080/security/contentSecurityPolicy/resources/save-report.php?test=report-cross-origin-no-cookies.html">
 </head>
 <body>
 <script>

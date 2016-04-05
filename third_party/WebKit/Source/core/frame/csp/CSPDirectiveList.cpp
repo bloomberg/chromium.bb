@@ -8,6 +8,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
 #include "platform/ParsingUtilities.h"
@@ -67,7 +68,7 @@ CSPDirectiveList* CSPDirectiveList::create(ContentSecurityPolicy* policy, const 
         directives->setEvalDisabledErrorMessage(message);
     }
 
-    if (directives->isReportOnly() && directives->reportEndpoints().isEmpty())
+    if (directives->isReportOnly() && source != ContentSecurityPolicyHeaderSourceMeta && directives->reportEndpoints().isEmpty())
         policy->reportMissingReportURI(String(begin, end - begin));
 
     return directives;
@@ -541,6 +542,13 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value)
         return;
     }
 
+    // Remove report-uri in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
+    if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
+        UseCounter::count(m_policy->document(), UseCounter::InvalidReportUriDirectiveInMetaCSP);
+        m_policy->reportInvalidDirectiveInMeta(name);
+        return;
+    }
+
     Vector<UChar> characters;
     value.appendTo(characters);
 
@@ -568,11 +576,25 @@ void CSPDirectiveList::setCSPDirective(const String& name, const String& value, 
         m_policy->reportDuplicateDirective(name);
         return;
     }
+
+    // Remove frame-ancestors directives in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
+    if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta && name == ContentSecurityPolicy::FrameAncestors) {
+        UseCounter::count(m_policy->document(), UseCounter::InvalidFrameAncestorsDirectiveInMetaCSP);
+        m_policy->reportInvalidDirectiveInMeta(name);
+        return;
+    }
+
     directive = new CSPDirectiveType(name, value, m_policy);
 }
 
 void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sandboxPolicy)
 {
+    // Remove sandbox directives in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
+    if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
+        UseCounter::count(m_policy->document(), UseCounter::InvalidSandboxDirectiveInMetaCSP);
+        m_policy->reportInvalidDirectiveInMeta(name);
+        return;
+    }
     if (m_reportOnly) {
         m_policy->reportInvalidInReportOnly(name);
         return;

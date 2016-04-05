@@ -1,7 +1,9 @@
+<?php
+header("Content-Security-Policy: default-src 'self'; report-uri ../resources/save-report.php?test=report-uri-effective-directive.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; report-uri ../resources/save-report.php?test=report-uri-effective-directive.html">
 </head>
 <body>
     <script>

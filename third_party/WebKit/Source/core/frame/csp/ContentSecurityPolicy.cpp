@@ -901,6 +901,11 @@ void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name)
     logToConsole("The Content Security Policy directive '" + name + "' is ignored when delivered in a report-only policy.");
 }
 
+void ContentSecurityPolicy::reportInvalidDirectiveInMeta(const String& directive)
+{
+    logToConsole("Content Security Policies delivered via a <meta> element may not contain the " + directive + " directive.");
+}
+
 void ContentSecurityPolicy::reportUnsupportedDirective(const String& name)
 {
     DEFINE_STATIC_LOCAL(String, allow, ("allow"));

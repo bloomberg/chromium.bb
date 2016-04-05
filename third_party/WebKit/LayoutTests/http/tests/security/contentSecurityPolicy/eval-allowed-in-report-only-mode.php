@@ -1,3 +1,6 @@
+<?php
+header("Content-Security-Policy-Report-Only: script-src 'self' 'unsafe-inline'");
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +10,6 @@
         if (window.internals)
             internals.settings.setExperimentalContentSecurityPolicyFeaturesEnabled(false);
     </script>
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="script-src 'self' 'unsafe-inline'">
 </head>
 <body>
     <script>

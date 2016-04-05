@@ -1,9 +1,11 @@
+<?php
+header("Content-Security-Policy: img-src 'none'");
+header("Content-Security-Policy-Report-Only: script-src 'self'; report-uri resources/save-report.php?test=report-and-enforce.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
     <script src="resources/report-test.js"></script>
-    <meta http-equiv="Content-Security-Policy" content="img-src 'none'">
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="script-src 'self'; report-uri resources/save-report.php?test=report-and-enforce.html">
 </head>
 <body>
     This image should be blocked, but should not show up in the violation report.

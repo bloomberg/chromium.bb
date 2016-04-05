@@ -1,4 +1,6 @@
-<meta http-equiv="Content-Security-Policy" content="sandbox allow-scripts">
+<?php
+header("Content-Security-Policy: sandbox allow-scripts");
+?>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>

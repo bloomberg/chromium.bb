@@ -1,7 +1,9 @@
+<?php
+header("Content-Security-Policy: sandbox allow-scripts allow-modals");
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Security-Policy" content="sandbox allow-scripts">
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
 </head>
@@ -19,8 +21,8 @@
 
         test(function () {
             var result = confirm("Question?");
-            assert_equals(result, false);
-        }, "confirm() returns 'false' synchronously in a sandboxed page without blocking on user input.");
+            assert_equals(result, true);
+        }, "confirm() returns 'true' in a sandboxed page (in our test environment).");
 
         test(function () {
             var result = prompt("Question?");

@@ -70146,6 +70146,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1278" label="ScrollAnchored"/>
   <int value="1279" label="AddEventListenerFourArguments"/>
   <int value="1280" label="RemoveEventListenerFourArguments"/>
+  <int value="1281" label="InvalidReportUriDirectiveInMetaCSP"/>
+  <int value="1282" label="InvalidSandboxDirectiveInMetaCSP"/>
+  <int value="1283" label="InvalidFrameAncestorsDirectiveInMetaCSP"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

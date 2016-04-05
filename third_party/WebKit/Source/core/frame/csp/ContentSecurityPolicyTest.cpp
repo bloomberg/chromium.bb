@@ -5,6 +5,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/csp/CSPDirectiveList.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
@@ -157,6 +158,43 @@ TEST_F(ContentSecurityPolicyTest, EmptyReferrerDirective)
     csp->didReceiveHeader("referrer;", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(ReferrerPolicyNever, document->getReferrerPolicy());
+}
+
+// Tests that frame-ancestors directives are discarded from policies
+// delivered in <meta> elements.
+TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta)
+{
+    csp->bindToExecutionContext(document.get());
+    csp->didReceiveHeader("frame-ancestors 'none';", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_FALSE(csp->isFrameAncestorsEnforced());
+    csp->didReceiveHeader("frame-ancestors 'none';", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_TRUE(csp->isFrameAncestorsEnforced());
+}
+
+// Tests that sandbox directives are discarded from policies
+// delivered in <meta> elements.
+TEST_F(ContentSecurityPolicyTest, SandboxInMeta)
+{
+    csp->bindToExecutionContext(document.get());
+    csp->didReceiveHeader("sandbox;", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_FALSE(document->getSecurityOrigin()->isUnique());
+    csp->didReceiveHeader("sandbox;", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_TRUE(document->getSecurityOrigin()->isUnique());
+}
+
+// Tests that report-uri directives are discarded from policies
+// delivered in <meta> elements.
+TEST_F(ContentSecurityPolicyTest, ReportURIInMeta)
+{
+    String policy = "img-src 'none'; report-uri http://foo.test";
+    Vector<UChar> characters;
+    policy.appendTo(characters);
+    const UChar* begin = characters.data();
+    const UChar* end = begin + characters.size();
+    RawPtr<CSPDirectiveList> directiveList(CSPDirectiveList::create(csp, begin, end, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta));
+    EXPECT_TRUE(directiveList->reportEndpoints().isEmpty());
+    directiveList = CSPDirectiveList::create(csp, begin, end, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_FALSE(directiveList->reportEndpoints().isEmpty());
 }
 
 } // namespace blink

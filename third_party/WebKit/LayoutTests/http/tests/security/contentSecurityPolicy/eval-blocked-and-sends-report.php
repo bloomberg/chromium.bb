@@ -1,7 +1,9 @@
+<?php
+header("Content-Security-Policy: script-src 'self' 'unsafe-inline'; report-uri resources/save-report.php?test=eval-blocked-and-sends-report.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; report-uri resources/save-report.php?test=eval-blocked-and-sends-report.html">
 </head>
 <body>
     <script>

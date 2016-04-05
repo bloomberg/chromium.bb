@@ -7,7 +7,17 @@ if ($_GET["report-only"]) {
 ?>
 <!DOCTYPE html>
 <p>Ready</p>
+<?php
+if ($_GET["script-in-subframe"]) {
+?>
+<iframe src="data:text/html,<script>console.log('Script executed in child frame');</script>"></iframe>
+<?php
+} else {
+?>
 <script>
 console.log("Script executed in iframe.");
 window.secret = "I am a secret";
 </script>
+<?php
+}
+?>

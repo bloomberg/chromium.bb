@@ -227,6 +227,7 @@ public:
     void reportMissingReportURI(const String&);
     void reportUnsupportedDirective(const String&);
     void reportInvalidInReportOnly(const String&);
+    void reportInvalidDirectiveInMeta(const String& directiveName);
     void reportInvalidReferrer(const String&);
     void reportReportOnlyInMeta(const String&);
     void reportMetaOutsideHead(const String&);

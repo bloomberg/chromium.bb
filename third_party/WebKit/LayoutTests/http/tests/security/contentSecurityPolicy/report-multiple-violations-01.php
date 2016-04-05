@@ -1,8 +1,10 @@
+<?php
+header("Content-Security-Policy-Report-Only: img-src 'none'; report-uri resources/does-not-exist");
+?>
 <!DOCTYPE html>
 <html>
 <head>
     <script src="resources/report-test.js"></script>
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="img-src 'none'; report-uri resources/does-not-exist">
 </head>
 <body>
     <p>This tests that multiple violations on a page trigger multiple reports.
