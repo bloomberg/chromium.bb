@@ -125,7 +125,8 @@ def run_gsutil(force_version, fallback, target, args, clean=False):
     gsutil_bin = ensure_gsutil(force_version, target, clean)
   else:
     gsutil_bin = fallback
-  cmd = [sys.executable, gsutil_bin] + args
+  disable_update = ['-o', 'GSUtil:software_update_check_period=0']
+  cmd = [sys.executable, gsutil_bin] + disable_update + args
   return subprocess.call(cmd)
 
 
