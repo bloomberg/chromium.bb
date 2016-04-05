@@ -11,6 +11,11 @@
 #include "content/common/input/synthetic_gesture_params.h"
 #include "ui/gfx/geometry/point_f.h"
 
+namespace ipc_fuzzer {
+template <class T>
+struct FuzzTraits;
+}  // namespace ipc_fuzzer
+
 namespace content {
 
 struct CONTENT_EXPORT SyntheticPointerActionParams
@@ -67,6 +72,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams
 
  private:
   friend struct IPC::ParamTraits<content::SyntheticPointerActionParams>;
+  friend struct ipc_fuzzer::FuzzTraits<content::SyntheticPointerActionParams>;
 
   PointerActionType pointer_action_type_;
   // Pass a position value when sending a press or move action.
