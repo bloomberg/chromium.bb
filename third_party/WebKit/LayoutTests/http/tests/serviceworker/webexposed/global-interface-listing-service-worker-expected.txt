@@ -485,6 +485,10 @@ interface OffscreenCanvasRenderingContext2D
     getter lineWidth
     getter miterLimit
     getter offscreenCanvas
+    getter shadowBlur
+    getter shadowColor
+    getter shadowOffsetX
+    getter shadowOffsetY
     getter strokeStyle
     method arc
     method arcTo
@@ -501,15 +505,27 @@ interface OffscreenCanvasRenderingContext2D
     method moveTo
     method quadraticCurveTo
     method rect
+    method resetTransform
+    method restore
+    method rotate
+    method save
+    method scale
     method setLineDash
+    method setTransform
     method stroke
     method strokeRect
+    method transform
+    method translate
     setter fillStyle
     setter lineCap
     setter lineDashOffset
     setter lineJoin
     setter lineWidth
     setter miterLimit
+    setter shadowBlur
+    setter shadowColor
+    setter shadowOffsetX
+    setter shadowOffsetY
     setter strokeStyle
 interface Path2D
     method addPath
