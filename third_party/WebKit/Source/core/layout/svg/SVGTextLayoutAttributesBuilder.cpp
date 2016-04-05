@@ -175,11 +175,7 @@ public:
             || m_dxListRemaining || m_dyListRemaining
             || m_rotateListRemaining;
     }
-    void updateCharacterData(unsigned index, SVGCharacterData&);
-
-    bool hasRotation() const { return !SVGTextLayoutAttributes::isEmptyValue(m_lastRotation); }
-    float lastRotation() const { return m_lastRotation; }
-    unsigned rotateEnd() const { return m_rotateList->length(); }
+    void updateCharacterData(size_t index, SVGCharacterData&);
 
 private:
     SVGLengthContext m_lengthContext;
@@ -193,7 +189,6 @@ private:
     unsigned m_dyListRemaining;
     Member<SVGNumberList> m_rotateList;
     unsigned m_rotateListRemaining;
-    float m_lastRotation;
 };
 
 AttributeListsIterator::AttributeListsIterator(SVGTextPositioningElement* element)
@@ -208,11 +203,10 @@ AttributeListsIterator::AttributeListsIterator(SVGTextPositioningElement* elemen
     , m_dyListRemaining(m_dyList->length())
     , m_rotateList(element->rotate()->currentValue())
     , m_rotateListRemaining(m_rotateList->length())
-    , m_lastRotation(SVGTextLayoutAttributes::emptyValue())
 {
 }
 
-inline void AttributeListsIterator::updateCharacterData(unsigned index, SVGCharacterData& data)
+inline void AttributeListsIterator::updateCharacterData(size_t index, SVGCharacterData& data)
 {
     if (m_xListRemaining) {
         data.x = m_xList->at(index)->value(m_lengthContext);
@@ -231,9 +225,10 @@ inline void AttributeListsIterator::updateCharacterData(unsigned index, SVGChara
         --m_dyListRemaining;
     }
     if (m_rotateListRemaining) {
-        data.rotate = m_rotateList->at(index)->value();
-        m_lastRotation = data.rotate;
-        --m_rotateListRemaining;
+        data.rotate = m_rotateList->at(std::min(index, m_rotateList->length() - 1))->value();
+        // The last rotation value spans the whole scope.
+        if (m_rotateListRemaining > 1)
+            --m_rotateListRemaining;
     }
 }
 
@@ -245,15 +240,6 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& po
     for (unsigned i = 0; attrLists.hasAttributes() && i < position.length; ++i) {
         SVGCharacterData& data = m_characterDataMap.add(position.start + i + 1, SVGCharacterData()).storedValue->value;
         attrLists.updateCharacterData(i, data);
-    }
-
-    if (!attrLists.hasRotation())
-        return;
-
-    // The last rotation value always spans the whole scope.
-    for (unsigned i = attrLists.rotateEnd(); i < position.length; ++i) {
-        SVGCharacterData& data = m_characterDataMap.add(position.start + i + 1, SVGCharacterData()).storedValue->value;
-        data.rotate = attrLists.lastRotation();
     }
 }
 
