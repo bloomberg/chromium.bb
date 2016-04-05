@@ -34,7 +34,9 @@
 
 namespace {
 
-bool ResolveHost(const std::string& host, net::IPAddress* address) {
+bool ResolveHost(const std::string& host,
+                 uint16_t port,
+                 net::AddressList* address_list) {
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
@@ -44,14 +46,10 @@ bool ResolveHost(const std::string& host, net::IPAddress* address) {
   if (getaddrinfo(host.c_str(), NULL, &hints, &result))
     return false;
 
-  auto address_list = net::AddressList::CreateFromAddrinfo(result);
+  auto list = net::AddressList::CreateFromAddrinfo(result);
+  *address_list = net::AddressList::CopyWithPort(list, port);
   freeaddrinfo(result);
-
-  if (address_list.empty())
-    return false;  // No IPv4 / IPv6 addresses in the list.
-
-  *address = address_list[0].address();
-  return true;
+  return !address_list->empty();
 }
 
 }  // namespace
@@ -72,14 +70,15 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
   CHECK_EQ(INITIALIZED, state_);
 
   net::IPAddress address;
-  if (!address.AssignFromIPLiteral(url_.HostNoBrackets())) {
-    if (!ResolveHost(url_.HostNoBrackets(), &address)) {
-      callback.Run(net::ERR_ADDRESS_UNREACHABLE);
-      return;
-    }
+  net::AddressList addresses;
+  uint16_t port = static_cast<uint16_t>(url_.EffectiveIntPort());
+  if (ParseURLHostnameToAddress(url_.host(), &address)) {
+    addresses = net::AddressList::CreateFromIPAddress(address, port);
+  } else if (!ResolveHost(url_.HostNoBrackets(), port, &addresses)) {
+    callback.Run(net::ERR_ADDRESS_UNREACHABLE);
+    return;
   }
-  net::AddressList addresses(
-      net::IPEndPoint(address, static_cast<uint16_t>(url_.EffectiveIntPort())));
+
   net::NetLog::Source source;
   socket_.reset(new net::TCPClientSocket(addresses, NULL, source));
 

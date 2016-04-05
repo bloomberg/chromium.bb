@@ -1707,7 +1707,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     if process is None:
       raise RuntimeError('Chrome could not be started with debugging port')
     try:
-      driver = self.CreateDriver(debugger_address='127.0.0.1:%d' % port)
+      driver = self.CreateDriver(debugger_address='localhost:%d' % port)
       driver.ExecuteScript('console.info("%s")' % 'connecting at %d!' % port)
       driver.Quit()
     finally:
