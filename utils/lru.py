@@ -36,6 +36,10 @@ class LRUDict(object):
     """True if |key| is in the dict."""
     return key in self._items
 
+  def __getitem__(self, key):
+    """Returns value for |key| or raises KeyError if not found."""
+    return self._items[key]
+
   @classmethod
   def load(cls, state_file):
     """Loads previously saved state and returns LRUDict in that state.

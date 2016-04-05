@@ -14,18 +14,21 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.5.5'
+__version__ = '0.6.0'
 
+import base64
 import logging
 import optparse
 import os
 import sys
 import tempfile
+import time
 
 from third_party.depot_tools import fix_encoding
 
 from utils import file_path
 from utils import fs
+from utils import large
 from utils import logging_utils
 from utils import on_error
 from utils import subprocess42
@@ -139,7 +142,6 @@ def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
     tuple(process exit code, bool if had a hard timeout)
   """
   logging.info('run_command(%s, %s)' % (command, cwd))
-  sys.stdout.flush()
 
   env = os.environ.copy()
   if sys.platform == 'darwin':
@@ -215,26 +217,33 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
   """Deletes the temporary run directory and uploads results back.
 
   Returns:
-    tuple(outputs_ref, success)
-    - outputs_ref is a dict referring to the results archived back to the
-      isolated server, if applicable.
-    - success is False if something occurred that means that the task must
-      forcibly be considered a failure, e.g. zombie processes were left behind.
+    tuple(outputs_ref, success, cold, hot)
+    - outputs_ref: a dict referring to the results archived back to the isolated
+          server, if applicable.
+    - success: False if something occurred that means that the task must
+          forcibly be considered a failure, e.g. zombie processes were left
+          behind.
+    - cold: list of size of cold items, they had to be uploaded.
+    - hot: list of size of hot items, they didn't have to be uploaded.
   """
 
   # Upload out_dir and generate a .isolated file out of this directory. It is
   # only done if files were written in the directory.
   outputs_ref = None
+  cold = []
+  hot = []
   if fs.isdir(out_dir) and fs.listdir(out_dir):
     with tools.Profiler('ArchiveOutput'):
       try:
-        results = isolateserver.archive_files_to_storage(
+        results, f_cold, f_hot = isolateserver.archive_files_to_storage(
             storage, [out_dir], None)
         outputs_ref = {
           'isolated': results[0][0],
           'isolatedserver': storage.location,
           'namespace': storage.namespace,
         }
+        cold = sorted(i.size for i in f_cold)
+        hot = sorted(i.size for i in f_hot)
       except isolateserver.Aborted:
         # This happens when a signal SIGTERM was received while uploading data.
         # There is 2 causes:
@@ -249,25 +258,40 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
     if (not leak_temp_dir and fs.isdir(out_dir) and
         not file_path.rmtree(out_dir)):
       logging.error('Had difficulties removing out_dir %s', out_dir)
-      return outputs_ref, False
+      return outputs_ref, False, cold, hot
   except OSError as e:
     # When this happens, it means there's a process error.
     logging.exception('Had difficulties removing out_dir %s: %s', out_dir, e)
-    return outputs_ref, False
-  return outputs_ref, True
+    return outputs_ref, False, cold, hot
+  return outputs_ref, True, cold, hot
+
 
 
 def map_and_run(
     isolated_hash, storage, cache, leak_temp_dir, root_dir, hard_timeout,
     grace_period, extra_args):
   """Maps and run the command. Returns metadata about the result."""
-  # TODO(maruel): Include performance statistics.
   result = {
+    'duration': None,
     'exit_code': None,
     'had_hard_timeout': False,
     'internal_failure': None,
+    'stats': {
+    #  'download': {
+    #    'duration': 0.,
+    #    'initial_number_items': 0,
+    #    'initial_size': 0,
+    #    'items_cold': '<large.pack()>',
+    #    'items_hot': '<large.pack()>',
+    #  },
+    #  'upload': {
+    #    'duration': 0.,
+    #    'items_cold': '<large.pack()>',
+    #    'items_hot': '<large.pack()>',
+    #  },
+    },
     'outputs_ref': None,
-    'version': 2,
+    'version': 3,
   }
   if root_dir:
     if not fs.isdir(root_dir):
@@ -280,6 +304,7 @@ def map_and_run(
   out_dir = make_temp_dir(prefix + u'out', root_dir)
   tmp_dir = make_temp_dir(prefix + u'tmp', root_dir)
   try:
+    start = time.time()
     try:
       bundle = isolateserver.fetch_isolated(
           isolated_hash=isolated_hash,
@@ -297,14 +322,27 @@ def map_and_run(
         sys.stderr.write('<This occurs at the \'isolate\' step>\n')
       result['exit_code'] = 1
       return result
+    result['stats']['download'] = {
+      'duration': time.time() - start,
+      'initial_number_items': cache.initial_number_items,
+      'initial_size': cache.initial_size,
+      'items_cold': base64.b64encode(large.pack(sorted(cache.added))),
+      'items_hot': base64.b64encode(
+          large.pack(sorted(set(cache.linked) - set(cache.added)))),
+    }
 
     change_tree_read_only(run_dir, bundle.read_only)
     cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
     command = bundle.command + extra_args
     file_path.ensure_command_has_abs_path(command, cwd)
-    result['exit_code'], result['had_hard_timeout'] = run_command(
-        process_command(command, out_dir), cwd, tmp_dir, hard_timeout,
-        grace_period)
+    sys.stdout.flush()
+    start = time.time()
+    try:
+      result['exit_code'], result['had_hard_timeout'] = run_command(
+          process_command(command, out_dir), cwd, tmp_dir, hard_timeout,
+          grace_period)
+    finally:
+      result['duration'] = max(time.time() - start, 0)
   except Exception as e:
     # An internal error occured. Report accordingly so the swarming task will be
     # retried automatically.
@@ -352,8 +390,14 @@ def map_and_run(
               result['exit_code'] = 1
 
       # This deletes out_dir if leak_temp_dir is not set.
-      result['outputs_ref'], success = delete_and_upload(
+      start = time.time()
+      result['outputs_ref'], success, cold, hot = delete_and_upload(
           storage, out_dir, leak_temp_dir)
+      result['stats']['upload'] = {
+        'duration': time.time() - start,
+        'items_cold': base64.b64encode(large.pack(cold)),
+        'items_hot': base64.b64encode(large.pack(hot)),
+      }
       if not success and result['exit_code'] == 0:
         result['exit_code'] = 1
     except Exception as e:

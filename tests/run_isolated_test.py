@@ -6,6 +6,7 @@
 # pylint: disable=R0201
 
 import StringIO
+import base64
 import functools
 import json
 import logging
@@ -24,6 +25,7 @@ import run_isolated
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from utils import file_path
+from utils import large
 from utils import logging_utils
 from utils import on_error
 from utils import subprocess42
@@ -61,8 +63,9 @@ class StorageFake(object):
     sink([self._files[digest]])
     channel.send_result(digest)
 
-  def upload_items(self, *args, **kwargs):
-    pass
+  def upload_items(self, items_to_upload):
+    # Return all except the first one.
+    return items_to_upload[1:]
 
 
 class RunIsolatedTestBase(auto_stub.TestCase):
@@ -442,10 +445,10 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
       self.temp_join(u'foo.exe'), u'cmd with space',
       '${ISOLATED_OUTDIR}/out.txt',
     ]
-    isolated_in = json_dumps({'command': sub_cmd})
-    isolated_in_hash = isolateserver_mock.hash_content(isolated_in)
+    isolated_in_json = json_dumps({'command': sub_cmd})
+    isolated_in_hash = isolateserver_mock.hash_content(isolated_in_json)
     def get_storage(_isolate_server, _namespace):
-      return StorageFake({isolated_in_hash:isolated_in})
+      return StorageFake({isolated_in_hash:isolated_in_json})
     self.mock(isolateserver, 'get_storage', get_storage)
 
     out = os.path.join(self.tempdir, 'res.json')
@@ -475,24 +478,48 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     }
     if sys.platform == 'win32':
       del isolated_out['files']['out.txt']['m']
-    isolated_out_hash = isolateserver_mock.hash_content(
-        json_dumps(isolated_out))
+    isolated_out_json = json_dumps(isolated_out)
+    isolated_out_hash = isolateserver_mock.hash_content(isolated_out_json)
     expected = {
       u'exit_code': 0,
       u'had_hard_timeout': False,
       u'internal_failure': None,
       u'outputs_ref': {
-        u'isolated': isolated_out_hash,
+        u'isolated': unicode(isolated_out_hash),
         u'isolatedserver': u'http://localhost:1',
         u'namespace': u'default-gzip',
       },
-      u'version': 2,
+      u'stats': {
+        u'download': {
+          u'initial_number_items': 0,
+          u'initial_size': 0,
+          u'items_cold': [len(isolated_in_json)],
+          u'items_hot': [],
+        },
+        u'upload': {
+          u'items_cold': [len(isolated_out_json)],
+          u'items_hot': [15],
+        },
+      },
+      u'version': 3,
     }
-    self.assertEqual(expected, tools.read_json(out))
+    actual = tools.read_json(out)
+    # duration can be exactly 0 due to low timer resolution, especially but not
+    # exclusively on Windows.
+    self.assertLessEqual(0, actual.pop(u'duration'))
+    self.assertLessEqual(0, actual[u'stats'][u'download'].pop(u'duration'))
+    self.assertLessEqual(0, actual[u'stats'][u'upload'].pop(u'duration'))
+    for i in (u'download', u'upload'):
+      for j in (u'items_cold', u'items_hot'):
+        actual[u'stats'][i][j] = large.unpack(
+            base64.b64decode(actual[u'stats'][i][j]))
+    self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':
   fix_encoding.fix_encoding()
+  if '-v' in sys.argv:
+    unittest.TestCase.maxDiff = None
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   unittest.main()

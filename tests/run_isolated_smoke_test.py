@@ -358,13 +358,13 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertNotEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
 
     # Rerun the test and make sure the cache contains the right file afterwards.
-    _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
-    self.assertEqual(0, returncode)
+    out, err, returncode = self._run(self._cmd_args(isolated_hash))
+    self.assertEqual(0, returncode, (out, err, returncode))
     expected = {
       '.': (040700, 040700, 040777),
-      'state.json': (0100600, 0100600, 0100666),
-      file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100400, 0100400, 0100444),
+      u'state.json': (0100600, 0100600, 0100666),
+      unicode(file1_hash): (0100400, 0100400, 0100666),
+      unicode(isolated_hash): (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self.cache, expected)
     return cached_file_path

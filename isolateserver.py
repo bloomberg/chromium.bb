@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.5'
+__version__ = '0.4.6'
 
 import base64
 import functools
@@ -1206,6 +1206,15 @@ class LocalCache(object):
   """
   cache_dir = None
 
+  def __init__(self):
+    self._lock = threading_utils.LockWithAssert()
+    # Profiling values.
+    self._added = []
+    self._initial_number_items = 0
+    self._initial_size = 0
+    self._evicted = []
+    self._linked = []
+
   def __enter__(self):
     """Context manager interface."""
     return self
@@ -1213,6 +1222,26 @@ class LocalCache(object):
   def __exit__(self, _exc_type, _exec_value, _traceback):
     """Context manager interface."""
     return False
+
+  @property
+  def added(self):
+    return self._added[:]
+
+  @property
+  def evicted(self):
+    return self._evicted[:]
+
+  @property
+  def initial_number_items(self):
+    return self._initial_number_items
+
+  @property
+  def initial_size(self):
+    return self._initial_size
+
+  @property
+  def linked(self):
+    return self._linked[:]
 
   def cached_set(self):
     """Returns a set of all cached digests (always a new object)."""
@@ -1261,8 +1290,6 @@ class MemoryCache(LocalCache):
     """
     super(MemoryCache, self).__init__()
     self._file_mode_mask = file_mode_mask
-    # Let's not assume dict is thread safe.
-    self._lock = threading.Lock()
     self._contents = {}
 
   def cached_set(self):
@@ -1275,7 +1302,9 @@ class MemoryCache(LocalCache):
 
   def evict(self, digest):
     with self._lock:
-      self._contents.pop(digest, None)
+      v = self._contents.pop(digest, None)
+      if v is not None:
+        self._evicted.add(v)
 
   def read(self, digest):
     with self._lock:
@@ -1286,12 +1315,16 @@ class MemoryCache(LocalCache):
     data = ''.join(content)
     with self._lock:
       self._contents[digest] = data
+      self._added.append(len(data))
 
   def hardlink(self, digest, dest, file_mode):
     """Since data is kept in memory, there is no filenode to hardlink."""
-    file_write(dest, [self.read(digest)])
+    data = self.read(digest)
+    file_write(dest, [data])
     if file_mode is not None:
       fs.chmod(dest, file_mode & self._file_mode_mask)
+    with self._lock:
+      self._linked.append(len(data))
 
 
 class CachePolicies(object):
@@ -1324,22 +1357,15 @@ class DiskCache(LocalCache):
       policies: cache retention policies.
       algo: hashing algorithm used.
     """
+    # All protected methods (starting with '_') except _path should be called
+    # with self._lock held.
     super(DiskCache, self).__init__()
     self.cache_dir = cache_dir
     self.policies = policies
     self.hash_algo = hash_algo
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
-
-    # All protected methods (starting with '_') except _path should be called
-    # with this lock locked.
-    self._lock = threading_utils.LockWithAssert()
     self._lru = lru.LRUDict()
-
-    # Profiling values.
-    self._added = []
-    self._removed = []
     self._free_disk = 0
-
     with tools.Profiler('Setup'):
       with self._lock:
         self._load()
@@ -1360,8 +1386,8 @@ class DiskCache(LocalCache):
             len(self._lru),
             sum(self._lru.itervalues()) / 1024)
         logging.info(
-            '%5d (%8dkb) removed',
-            len(self._removed), sum(self._removed) / 1024)
+            '%5d (%8dkb) evicted',
+            len(self._evicted), sum(self._evicted) / 1024)
         logging.info(
             '       %8dkb free',
             self._free_disk / 1024)
@@ -1439,6 +1465,8 @@ class DiskCache(LocalCache):
     if file_mode is not None:
       # Ignores all other bits.
       fs.chmod(dest, file_mode & 0500)
+    with self._lock:
+      self._linked.append(self._lru[digest])
 
   def _load(self):
     """Loads state of the cache from json file."""
@@ -1468,7 +1496,9 @@ class DiskCache(LocalCache):
       if filename == self.STATE_FILE:
         continue
       if filename in previous:
+        self._initial_size += self._lru[filename]
         previous.remove(filename)
+        self._initial_number_items += 1
         continue
       # An untracked file.
       if not isolated_format.is_valid_hash(filename, self.hash_algo):
@@ -1489,7 +1519,13 @@ class DiskCache(LocalCache):
 
     if unknown:
       # Add as oldest files. They will be deleted eventually if not accessed.
-      self._add_oldest_list(unknown)
+      pairs = []
+      for digest in unknown:
+        size = fs.stat(self._path(digest)).st_size
+        self._initial_size += size
+        self._initial_number_items += 1
+        pairs.append((digest, size))
+      self._lru.batch_insert_oldest(pairs)
       logging.warning('Added back %d unknown files', len(unknown))
 
     if previous:
@@ -1568,16 +1604,6 @@ class DiskCache(LocalCache):
     self._added.append(size)
     self._lru.add(digest, size)
 
-  def _add_oldest_list(self, digests):
-    """Adds a bunch of items into LRU cache marking them as oldest ones."""
-    self._lock.assert_locked()
-    pairs = []
-    for digest in digests:
-      size = fs.stat(self._path(digest)).st_size
-      self._added.append(size)
-      pairs.append((digest, size))
-    self._lru.batch_insert_oldest(pairs)
-
   def _delete_file(self, digest, size=UNKNOWN_FILE_SIZE):
     """Deletes cache file from the file system."""
     self._lock.assert_locked()
@@ -1585,7 +1611,7 @@ class DiskCache(LocalCache):
       if size == UNKNOWN_FILE_SIZE:
         size = fs.stat(self._path(digest)).st_size
       file_path.try_remove(self._path(digest))
-      self._removed.append(size)
+      self._evicted.append(size)
     except OSError as e:
       logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
 
@@ -1785,7 +1811,7 @@ def upload_tree(base_url, infiles, namespace):
 
   logging.info('Skipped %d duplicated entries', skipped)
   with get_storage(base_url, namespace) as storage:
-    storage.upload_items(items)
+    return storage.upload_items(items)
 
 
 def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
@@ -1909,11 +1935,16 @@ def archive_files_to_storage(storage, files, blacklist):
     files: list of file paths to upload. If a directory is specified, a
            .isolated file is created and its hash is returned.
     blacklist: function that returns True if a file should be omitted.
+
+  Returns:
+    tuple(list(tuple(hash, path)), list(FileItem cold), list(FileItem hot)).
+    The first file in the first item is always the isolated file.
   """
   assert all(isinstance(i, unicode) for i in files), files
   if len(files) != len(set(map(os.path.abspath, files))):
     raise Error('Duplicate entries found.')
 
+  # List of tuple(hash, path).
   results = []
   # The temporary directory is only created as needed.
   tempdir = None
@@ -1963,10 +1994,10 @@ def archive_files_to_storage(storage, files, blacklist):
           raise Error('%s is neither a file or directory.' % f)
       except OSError:
         raise Error('Failed to process %s.' % f)
-    # Technically we would care about which files were uploaded but we don't
-    # much in practice.
-    _uploaded_files = storage.upload_items(items_to_upload)
-    return results
+    uploaded = storage.upload_items(items_to_upload)
+    cold = [i for i in items_to_upload if i in uploaded]
+    hot = [i for i in items_to_upload if i not in uploaded]
+    return results, cold, hot
   finally:
     if tempdir and fs.isdir(tempdir):
       file_path.rmtree(tempdir)
@@ -1982,7 +2013,8 @@ def archive(out, namespace, files, blacklist):
   files = [f.decode('utf-8') for f in files]
   blacklist = tools.gen_blacklist(blacklist)
   with get_storage(out, namespace) as storage:
-    results = archive_files_to_storage(storage, files, blacklist)
+    # Ignore stats.
+    results = archive_files_to_storage(storage, files, blacklist)[0]
   print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
 
 
