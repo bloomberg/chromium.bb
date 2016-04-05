@@ -1787,8 +1787,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_creator_.reset();
 
 #if !defined(OS_LINUX) || defined(OS_CHROMEOS)  // http://crbug.com/426393
-  if (g_browser_process->metrics_service()->reporting_active())
-    content::StartPowerUsageMonitor();
+  content::StartPowerUsageMonitor();
 #endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   process_power_collector_.reset(new ProcessPowerCollector);
