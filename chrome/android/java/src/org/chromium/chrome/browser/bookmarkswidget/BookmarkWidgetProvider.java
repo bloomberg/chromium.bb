@@ -11,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.widget.RemoteViews;
 
 import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 public class BookmarkWidgetProvider extends AppWidgetProvider {
     private static final String ACTION_BOOKMARK_APPWIDGET_UPDATE_SUFFIX =
             ".BOOKMARK_APPWIDGET_UPDATE";
+    private static final int ICONS_ONLY_THRESHOLD_WIDTH_DP = 110;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -49,6 +51,14 @@ public class BookmarkWidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         super.onUpdate(context, manager, ids);
         performUpdate(context, manager, ids);
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
+            int appWidgetId, Bundle newOptions) {
+        // Update the widget after it's resized in case it's crossed the threshold between icon-
+        // only mode and regular mode.
+        performUpdate(context, appWidgetManager, new int[] { appWidgetId });
     }
 
     @Override
@@ -97,7 +107,10 @@ public class BookmarkWidgetProvider extends AppWidgetProvider {
             updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
 
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.bookmark_widget);
+            int layoutId = shouldShowIconsOnly(appWidgetManager, appWidgetId)
+                    ? R.layout.bookmark_widget_icons_only
+                    : R.layout.bookmark_widget;
+            RemoteViews views = new RemoteViews(context.getPackageName(), layoutId);
             views.setRemoteAdapter(R.id.bookmarks_list, updateIntent);
 
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.bookmarks_list);
@@ -107,6 +120,12 @@ public class BookmarkWidgetProvider extends AppWidgetProvider {
                     PendingIntent.FLAG_UPDATE_CURRENT));
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
+    }
+
+    private boolean shouldShowIconsOnly(AppWidgetManager appWidgetManager, int appWidgetId) {
+        int widthDp = appWidgetManager.getAppWidgetOptions(appWidgetId)
+                .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        return widthDp < ICONS_ONLY_THRESHOLD_WIDTH_DP;
     }
 
     /**

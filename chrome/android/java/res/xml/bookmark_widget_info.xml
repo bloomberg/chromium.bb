@@ -7,9 +7,9 @@
 <appwidget-provider
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="180dp"
-    android:minHeight="110dp"
-    android:minResizeHeight="40dp"
-    android:minResizeWidth="110dp"
+    android:minHeight="150dp"
+    android:minResizeWidth="@dimen/bookmark_widget_min_width"
+    android:minResizeHeight="@dimen/bookmark_widget_min_height"
     android:previewImage="@drawable/bookmark_widget_preview"
     android:initialLayout="@layout/bookmark_widget"
     android:resizeMode="vertical|horizontal"

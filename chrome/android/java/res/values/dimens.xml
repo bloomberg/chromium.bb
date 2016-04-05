@@ -298,6 +298,10 @@
     <dimen name="bookmark_minimum_dialog_size_tablet">500dp</dimen>
     <dimen name="bookmark_drawer_drawable_padding">18dp</dimen>
 
+    <!-- Bookmark widget dimensions -->
+    <dimen name="bookmark_widget_min_width">64dp</dimen>
+    <dimen name="bookmark_widget_min_height">48dp</dimen>
+
     <!-- Custom Tabs dimensions -->
     <dimen name="custom_tabs_toolbar_maxWidth">60dp</dimen>
     <dimen name="custom_tabs_toolbar_vertical_padding">16dp</dimen>
