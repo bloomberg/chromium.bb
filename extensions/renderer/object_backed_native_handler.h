@@ -43,6 +43,11 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // Routed functions are destroyed along with the destruction of this class,
   // and are never called back into, therefore it's safe for |handler_function|
   // to bind to base::Unretained.
+  //
+  // |feature_name| corresponds to the api feature the native handler is used
+  // for. If the associated ScriptContext does not have access to that feature,
+  // the |handler_function| is not invoked.
+  // TODO(devlin): Deprecate the version that doesn't take a |feature_name|.
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
   void RouteFunction(const std::string& name,

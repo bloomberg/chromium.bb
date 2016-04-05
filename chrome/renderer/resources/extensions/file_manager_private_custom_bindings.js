@@ -10,7 +10,6 @@ var eventBindings = require('event_bindings');
 
 // Natives
 var fileManagerPrivateNatives = requireNative('file_manager_private');
-var fileBrowserHandlerNatives = requireNative('file_browser_handler');
 
 // Internals
 var fileManagerPrivateInternal =
@@ -18,7 +17,7 @@ var fileManagerPrivateInternal =
 
 // Shorthands
 var GetFileSystem = fileManagerPrivateNatives.GetFileSystem;
-var GetExternalFileEntry = fileBrowserHandlerNatives.GetExternalFileEntry;
+var GetExternalFileEntry = fileManagerPrivateNatives.GetExternalFileEntry;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -59,7 +58,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('resolveIsolatedEntries',
                                 function(entries, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.resolveIsolatedEntries(urls, function(
         entryDescriptions) {
@@ -72,25 +71,25 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('getEntryProperties',
                                 function(entries, names, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.getEntryProperties(urls, names, callback);
   });
 
   apiFunctions.setHandleRequest('addFileWatch', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.addFileWatch(url, callback);
   });
 
   apiFunctions.setHandleRequest('removeFileWatch', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.removeFileWatch(url, callback);
   });
 
   apiFunctions.setHandleRequest('getCustomActions', function(
         entries, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.getCustomActions(urls, callback);
   });
@@ -98,30 +97,30 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('executeCustomAction', function(
         entries, actionId, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.executeCustomAction(urls, actionId, callback);
   });
 
   apiFunctions.setHandleRequest('computeChecksum', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.computeChecksum(url, callback);
   });
 
   apiFunctions.setHandleRequest('getMimeType', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.getMimeType(url, callback);
   });
 
   apiFunctions.setHandleRequest('pinDriveFile', function(entry, pin, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.pinDriveFile(url, pin, callback);
   });
 
   apiFunctions.setHandleRequest('executeTask',
       function(taskId, entries, callback) {
         var urls = entries.map(function(entry) {
-          return fileBrowserHandlerNatives.GetEntryURL(entry);
+          return fileManagerPrivateNatives.GetEntryURL(entry);
         });
         fileManagerPrivateInternal.executeTask(taskId, urls, callback);
       });
@@ -129,7 +128,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('setDefaultTask',
       function(taskId, entries, mimeTypes, callback) {
         var urls = entries.map(function(entry) {
-          return fileBrowserHandlerNatives.GetEntryURL(entry);
+          return fileManagerPrivateNatives.GetEntryURL(entry);
         });
         fileManagerPrivateInternal.setDefaultTask(
             taskId, urls, mimeTypes, callback);
@@ -137,30 +136,30 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setHandleRequest('getFileTasks', function(entries, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.getFileTasks(urls, callback);
   });
 
   apiFunctions.setHandleRequest('getShareUrl', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.getShareUrl(url, callback);
   });
 
   apiFunctions.setHandleRequest('getDownloadUrl', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.getDownloadUrl(url, callback);
   });
 
   apiFunctions.setHandleRequest('requestDriveShare', function(
         entry, shareType, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.requestDriveShare(url, shareType, callback);
   });
 
   apiFunctions.setHandleRequest('setEntryTag', function(
         entry, visibility, key, value, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.setEntryTag(
         url, visibility, key, value, callback);
   });
@@ -168,24 +167,24 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('cancelFileTransfers', function(
         entries, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.cancelFileTransfers(urls, callback);
   });
 
   apiFunctions.setHandleRequest('startCopy', function(
         entry, parentEntry, newName, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
-    var parentUrl = fileBrowserHandlerNatives.GetEntryURL(parentEntry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
+    var parentUrl = fileManagerPrivateNatives.GetEntryURL(parentEntry);
     fileManagerPrivateInternal.startCopy(
         url, parentUrl, newName, callback);
   });
 
   apiFunctions.setHandleRequest('zipSelection', function(
         parentEntry, entries, destName, callback) {
-    var parentUrl = fileBrowserHandlerNatives.GetEntryURL(parentEntry);
+    var parentUrl = fileManagerPrivateNatives.GetEntryURL(parentEntry);
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.GetEntryURL(entry);
+      return fileManagerPrivateNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.zipSelection(
         parentUrl, urls, destName, callback);
@@ -193,7 +192,7 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setHandleRequest('validatePathNameLength', function(
         entry, name, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.validatePathNameLength(url, name, callback);
   });
 });

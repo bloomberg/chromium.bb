@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "content/public/child/worker_thread.h"
+#include "extensions/common/extension_api.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
@@ -102,6 +103,9 @@ void ObjectBackedNativeHandler::RouteFunction(
   v8::Local<v8::Object> data = v8::Object::New(isolate);
   SetPrivate(data, kHandlerFunction,
              v8::External::New(isolate, new HandlerFunction(handler_function)));
+  DCHECK(feature_name.empty() ||
+         ExtensionAPI::GetSharedInstance()->GetFeatureDependency(feature_name))
+      << feature_name;
   SetPrivate(data, kFeatureName,
              v8_helpers::ToV8StringUnsafe(isolate, feature_name));
   v8::Local<v8::FunctionTemplate> function_template =

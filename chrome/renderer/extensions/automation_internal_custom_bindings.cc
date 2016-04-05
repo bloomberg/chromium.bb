@@ -418,10 +418,10 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   // It's safe to use base::Unretained(this) here because these bindings
   // will only be called on a valid AutomationInternalCustomBindings instance
   // and none of the functions have any side effects.
-  #define ROUTE_FUNCTION(FN) \
-  RouteFunction(#FN, \
+#define ROUTE_FUNCTION(FN)                                        \
+  RouteFunction(#FN, "automation",                                \
                 base::Bind(&AutomationInternalCustomBindings::FN, \
-                base::Unretained(this)))
+                           base::Unretained(this)))
   ROUTE_FUNCTION(IsInteractPermitted);
   ROUTE_FUNCTION(GetSchemaAdditions);
   ROUTE_FUNCTION(GetRoutingID);

@@ -16,9 +16,15 @@ class FileBrowserHandlerCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit FileBrowserHandlerCustomBindings(ScriptContext* context);
 
+  // Public static implementation of GetExternalFileEntry() for use by
+  // FileManagerPrivate native handler.
+  static void GetExternalFileEntry(
+      const v8::FunctionCallbackInfo<v8::Value>& args,
+      ScriptContext* context);
+
  private:
-  void GetExternalFileEntry(const v8::FunctionCallbackInfo<v8::Value>& args);
-  void GetEntryURL(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetExternalFileEntryCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerCustomBindings);
 };
