@@ -147,6 +147,41 @@ class InputLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
                      LogFields* output) const override {
     AddField("render_widget_id", message.input().render_widget_id(), output);
+    AddField("timestamp_seconds", message.input().timestamp_seconds(), output);
+    switch (message.input().type()) {
+      case InputMessage::Type_GestureScrollBegin:
+        AddField("subtype", "GestureScrollBegin", output);
+        break;
+      case InputMessage::Type_GestureScrollEnd:
+        AddField("subtype", "GestureScrollEnd", output);
+        break;
+      case InputMessage::Type_GestureScrollUpdate:
+        AddField("subtype", "GestureScrollUpdate", output);
+        break;
+      case InputMessage::Type_GestureFlingStart:
+        AddField("subtype", "GestureFlingStart", output);
+        break;
+      case InputMessage::Type_GestureFlingCancel:
+        AddField("subtype", "GestureFlingCancel", output);
+        AddField("prevent_boosting",
+                 message.input().gesture_fling_cancel().prevent_boosting(),
+                 output);
+        break;
+      case InputMessage::Type_GestureTap:
+        AddField("subtype", "GestureTap", output);
+        break;
+      case InputMessage::Type_GesturePinchBegin:
+        AddField("subtype", "GesturePinchBegin", output);
+        break;
+      case InputMessage::Type_GesturePinchEnd:
+        AddField("subtype", "GesturePinchEnd", output);
+        break;
+      case InputMessage::Type_GesturePinchUpdate:
+        AddField("subtype", "GesturePinchUpdate", output);
+        break;
+      default:  // unknown
+        break;
+    }
   }
 };
 

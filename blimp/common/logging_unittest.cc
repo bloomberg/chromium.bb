@@ -20,22 +20,21 @@ namespace {
 
 const int kTargetTab = 123;
 
+// Verifies that the logged form of |msg| matches |expected|, modulo prefix
+// and suffix.
+void VerifyLogOutput(const std::string& expected_fragment,
+                     const BlimpMessage& msg) {
+  std::string expected = "<BlimpMessage " + expected_fragment + " byte_size=" +
+                         std::to_string(msg.ByteSize()) + ">";
+  std::stringstream outstream;
+  outstream << msg;
+  EXPECT_EQ(expected, outstream.str());
+}
+
 class LoggingTest : public testing::Test {
  public:
   LoggingTest() {}
   ~LoggingTest() override {}
-
- protected:
-  // Verifies that the logged form of |msg| matches |expected|, modulo prefix
-  // and suffix.
-  void VerifyLogOutput(const std::string& expected_fragment,
-                       const BlimpMessage& msg) {
-    std::string expected = "<BlimpMessage " + expected_fragment +
-                           " byte_size=" + std::to_string(msg.ByteSize()) + ">";
-    std::stringstream outstream;
-    outstream << msg;
-    EXPECT_EQ(expected, outstream.str());
-  }
 
  private:
   // Deletes the singleton on test termination.
@@ -51,10 +50,54 @@ TEST_F(LoggingTest, Compositor) {
 }
 
 TEST_F(LoggingTest, Input) {
+  const char* fragment_format =
+      "type=INPUT render_widget_id=1 timestamp_seconds=2.000000 subtype=%s"
+      " target_tab_id=123";
+
   BlimpMessage base_msg;
   base_msg.set_type(BlimpMessage::INPUT);
   base_msg.set_target_tab_id(kTargetTab);
-  VerifyLogOutput("type=INPUT render_widget_id=0 target_tab_id=123", base_msg);
+  base_msg.mutable_input()->set_type(InputMessage::Type_GestureScrollBegin);
+  base_msg.mutable_input()->set_render_widget_id(1);
+  base_msg.mutable_input()->set_timestamp_seconds(2);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GestureScrollBegin"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GestureScrollEnd);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GestureScrollEnd"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GestureScrollUpdate);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GestureScrollUpdate"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GestureFlingStart);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GestureFlingStart"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GestureTap);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GestureTap"), base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GesturePinchBegin);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GesturePinchBegin"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GesturePinchEnd);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GesturePinchEnd"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GesturePinchUpdate);
+  VerifyLogOutput(base::StringPrintf(fragment_format, "GesturePinchUpdate"),
+                  base_msg);
+
+  base_msg.mutable_input()->set_type(InputMessage::Type_GestureFlingCancel);
+  base_msg.mutable_input()
+      ->mutable_gesture_fling_cancel()
+      ->set_prevent_boosting(true);
+  VerifyLogOutput(
+      "type=INPUT render_widget_id=1 timestamp_seconds=2.000000 "
+      "subtype=GestureFlingCancel prevent_boosting=true target_tab_id=123",
+      base_msg);
 }
 
 TEST_F(LoggingTest, Navigation) {
