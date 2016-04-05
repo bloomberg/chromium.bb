@@ -38,13 +38,14 @@ public class TestTabModelDirectory {
         public final String encodedTabState;
         public final String filename;
 
-        TabStateInfo(int version, int tabId, String url, String title, String encodedTabState) {
+        public TabStateInfo(boolean incognito, int version, int tabId, String url, String title,
+                String encodedTabState) {
             this.version = version;
             this.tabId = tabId;
             this.url = url;
             this.title = title;
             this.encodedTabState = encodedTabState;
-            this.filename = "tab" + tabId;
+            this.filename = (incognito ? "cryptonito" : "tab") + tabId;
         }
     };
 
@@ -80,6 +81,7 @@ public class TestTabModelDirectory {
      * When used for testing, the TabState class has to be told that Chrome Stable is being used.
      */
     public static final TabStateInfo M18_NTP = new TabStateInfo(
+            false,
             0,
             0,
             "chrome-native://newtab/",
@@ -107,6 +109,7 @@ public class TestTabModelDirectory {
      * When used for testing, the TabState class has to be told that Chrome Stable is being used.
      */
     public static final TabStateInfo M18_GOOGLE_COM = new TabStateInfo(
+            false,
             0,
             1,
             "http://www.google.com/",
@@ -126,6 +129,7 @@ public class TestTabModelDirectory {
             + "A=");
 
     public static final TabStateInfo M26_GOOGLE_COM = new TabStateInfo(
+            false,
             1,
             2,
             "http://www.google.com/",
@@ -144,6 +148,7 @@ public class TestTabModelDirectory {
             + "AAAQAAAgAAAAAAAAAAAQAAABIAAABodHRwOi8vZ29vZ2xlLmNvbS8AAAAAAABIAVIrnDMuAP////8AAA==");
 
     public static final TabStateInfo M26_GOOGLE_CA = new TabStateInfo(
+            false,
             1,
             3,
             "http://www.google.ca/",
@@ -163,6 +168,7 @@ public class TestTabModelDirectory {
             + "MuAP////8AAA==");
 
     public static final TabStateInfo V2_BAIDU = new TabStateInfo(
+            false,
             2,
             4,
             "http://www.baidu.com/",
@@ -176,6 +182,7 @@ public class TestTabModelDirectory {
             + "AAAAAAAAAA");
 
     public static final TabStateInfo V2_DUCK_DUCK_GO = new TabStateInfo(
+            false,
             2,
             5,
             "https://duckduckgo.com/",
@@ -188,6 +195,7 @@ public class TestTabModelDirectory {
             + "52LgAAAAAAyAAAAAEAAAD/////AAAAAAACAAAAAAAAAAAA");
 
     public static final TabStateInfo V2_HAARETZ = new TabStateInfo(
+            false,
             2,
             6,
             "http://www.haaretz.co.il/",
@@ -199,6 +207,7 @@ public class TestTabModelDirectory {
             + "AAAAEAAAD/////AAAAAAACAAAAAAAAAAAA");
 
     public static final TabStateInfo V2_TEXTAREA = new TabStateInfo(
+            false,
             2,
             7,
             "http://textarea.org/",
