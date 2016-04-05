@@ -931,7 +931,7 @@ def _RunPythonTests(args):
     sys.path = sys.path[1:]
 
 
-def _GetAttachedDevices(blacklist_file, test_device, enable_cache):
+def _GetAttachedDevices(blacklist_file, test_device, enable_cache, num_retries):
   """Get all attached devices.
 
   Args:
@@ -947,7 +947,8 @@ def _GetAttachedDevices(blacklist_file, test_device, enable_cache):
                else None)
 
   attached_devices = device_utils.DeviceUtils.HealthyDevices(
-      blacklist, enable_device_files_cache=enable_cache)
+      blacklist, enable_device_files_cache=enable_cache,
+      default_retries=num_retries)
   if test_device:
     test_device = [d for d in attached_devices if d == test_device]
     if not test_device:
@@ -989,7 +990,7 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
 
   def get_devices():
     return _GetAttachedDevices(args.blacklist_file, args.test_device,
-                               args.enable_device_cache)
+                               args.enable_device_cache, args.num_retries)
 
   if command == 'linker':
     return _RunLinkerTests(args, get_devices())

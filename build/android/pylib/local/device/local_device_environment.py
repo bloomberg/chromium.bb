@@ -45,7 +45,8 @@ class LocalDeviceEnvironment(environment.Environment):
   #override
   def SetUp(self):
     available_devices = device_utils.DeviceUtils.HealthyDevices(
-        self._blacklist, enable_device_files_cache=self._enable_device_cache)
+        self._blacklist, enable_device_files_cache=self._enable_device_cache,
+        default_retries=self._max_tries - 1)
     if not available_devices:
       raise device_errors.NoDevicesError
     if self._device_serial:
