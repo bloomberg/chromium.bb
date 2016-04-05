@@ -151,7 +151,7 @@ class ServerApp(object):
     # Avoid special characters in storage object names
     pattern = re.compile(r"[#\?\[\]\*/]")
     while len(self._tasks) > 0:
-      url = self._tasks[0]
+      url = self._tasks[-1]
       local_filename = pattern.sub('_', url)
       for repeat in range(repeat_count):
         print 'Generating trace for URL: %s' % url
@@ -171,7 +171,7 @@ class ServerApp(object):
         self._UploadFile(log_filename, logs_dir + remote_filename)
       # Pop once task is finished, for accurate status tracking.
       self._tasks_lock.acquire()
-      url = self._tasks.popleft()
+      url = self._tasks.pop()
       self._tasks_lock.release()
 
     if len(self._failed_tasks) > 0:
