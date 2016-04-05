@@ -21,7 +21,8 @@
         <div class="list-frame">
           <template is="dom-repeat" items="[[model.subnodes]]">
             <settings-certificate-subentry model="[[item]]"
-                certificate-type="[[certificateType]]">
+                certificate-type="[[certificateType]]"
+                is-last$="[[isLast_(index, model)]]">
             </settings-certificate-subentry>
           </template>
         </div>

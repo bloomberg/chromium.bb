@@ -15,4 +15,13 @@ Polymer({
     /** @type {!settings.CertificateType} */
     certificateType: String,
   },
+
+  /**
+   * @param {number} index
+   * @return {boolean} Whether the given index corresponds to the last sub-node.
+   * @private
+   */
+  isLast_: function(index) {
+    return index == this.model.subnodes.length - 1;
+  },
 });

@@ -31,6 +31,10 @@
       paper-item:hover {
         background-color: var(--settings-hover-color);
       }
+
+      :host([is-last]) .list-item {
+        border-bottom: none;
+      }
     </style>
     <div class="list-item underbar">
       <div class="untrusted" hidden$="[[!model.untrusted]]">
