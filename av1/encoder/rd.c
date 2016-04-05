@@ -290,10 +290,19 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   fill_mode_costs(cpi);
 
   if (!frame_is_intra_only(cm)) {
-    av1_build_nmv_cost_table(
-        x->nmvjointcost,
-        cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
-        cm->allow_high_precision_mv);
+#if CONFIG_REF_MV
+    int nmv_ctx = 0;
+    av1_build_nmv_cost_table(x->nmvjointcost,
+                             cm->allow_high_precision_mv ? x->nmvcost_hp
+                                                         : x->nmvcost,
+                             &cm->fc->nmvc[nmv_ctx],
+                             cm->allow_high_precision_mv);
+#else
+    av1_build_nmv_cost_table(x->nmvjointcost,
+                             cm->allow_high_precision_mv ? x->nmvcost_hp
+                                                         : x->nmvcost,
+                             &cm->fc->nmvc, cm->allow_high_precision_mv);
+#endif
 
 #if CONFIG_REF_MV
     for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {

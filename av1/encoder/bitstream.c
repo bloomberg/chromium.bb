@@ -403,7 +403,9 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
                                 aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
+#if !CONFIG_REF_MV
   const nmv_context *nmvc = &cm->fc->nmvc;
+#endif
   const MACROBLOCK *const x = &cpi->td.mb;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct segmentation *const seg = &cm->seg;
@@ -502,19 +504,33 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif
           write_inter_mode(cm, w, b_mode, mode_ctx);
           if (b_mode == NEWMV) {
-            for (ref = 0; ref < 1 + is_compound; ++ref)
+            for (ref = 0; ref < 1 + is_compound; ++ref) {
+#if CONFIG_REF_MV
+              int nmv_ctx =
+                  av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[ref]],
+                              mbmi_ext->ref_mv_stack[mbmi->ref_frame[ref]]);
+              const nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+#endif
               av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[ref].as_mv,
                              &mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0].as_mv,
                              nmvc, allow_hp);
+            }
           }
         }
       }
     } else {
       if (mode == NEWMV) {
-        for (ref = 0; ref < 1 + is_compound; ++ref)
-          av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv,
+        for (ref = 0; ref < 1 + is_compound; ++ref) {
+#if CONFIG_REF_MV
+              int nmv_ctx =
+                  av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[ref]],
+                              mbmi_ext->ref_mv_stack[mbmi->ref_frame[ref]]);
+              const nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+#endif
+              av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv,
                          &mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0].as_mv,
                          nmvc, allow_hp);
+        }
       }
     }
   }
@@ -1555,7 +1571,11 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
 
     av1_write_nmv_probs(cm, cm->allow_high_precision_mv, &header_bc,
-                         &counts->mv);
+#if CONFIG_REF_MV
+                        counts->mv);
+#else
+                        &counts->mv);
+#endif
     update_ext_tx_probs(cm, &header_bc);
   }
 

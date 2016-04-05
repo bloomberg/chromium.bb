@@ -556,10 +556,21 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   switch (mode) {
     case NEWMV: {
       FRAME_COUNTS *counts = xd->counts;
+#if !CONFIG_REF_MV
       nmv_context_counts *const mv_counts = counts ? &counts->mv : NULL;
+#endif
       for (i = 0; i < 1 + is_compound; ++i) {
+#if CONFIG_REF_MV
+        int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[mbmi->ref_frame[i]],
+                                  xd->ref_mv_stack[mbmi->ref_frame[i]]);
+        nmv_context_counts *const mv_counts =
+            counts ? &counts->mv[nmv_ctx] : NULL;
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc[nmv_ctx],
+                mv_counts, allow_hp);
+#else
         read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc, mv_counts,
                 allow_hp);
+#endif
         ret = ret && is_mv_valid(&mv[i].as_mv);
 #if CONFIG_REF_MV
         pred_mv[i].as_int = ref_mv[i].as_int;
@@ -772,7 +783,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
 
     mi->mbmi.mode = b_mode;
-
+#if CONFIG_REF_MV
+    mbmi->pred_mv[0].as_int = mi->bmi[3].pred_mv[0].as_int;
+    mbmi->pred_mv[1].as_int = mi->bmi[3].pred_mv[1].as_int;
+#endif
     mbmi->mv[0].as_int = mi->bmi[3].as_mv[0].as_int;
     mbmi->mv[1].as_int = mi->bmi[3].as_mv[1].as_int;
   } else {

@@ -73,7 +73,11 @@ typedef struct frame_contexts {
   aom_prob comp_ref_prob[REF_CONTEXTS];
   struct tx_probs tx_probs;
   aom_prob skip_probs[SKIP_CONTEXTS];
+#if CONFIG_REF_MV
+  nmv_context nmvc[NMV_CONTEXTS];
+#else
   nmv_context nmvc;
+#endif
 #if CONFIG_MISC_FIXES
   struct segmentation_probs seg;
 #endif
@@ -108,7 +112,11 @@ typedef struct FRAME_COUNTS {
   unsigned int comp_ref[REF_CONTEXTS][2];
   struct tx_counts tx;
   unsigned int skip[SKIP_CONTEXTS][2];
+#if CONFIG_REF_MV
+  nmv_context_counts mv[NMV_CONTEXTS];
+#else
   nmv_context_counts mv;
+#endif
 #if CONFIG_MISC_FIXES
   struct seg_counts seg;
 #endif
