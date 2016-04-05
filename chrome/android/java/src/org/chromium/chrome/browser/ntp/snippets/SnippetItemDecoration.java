@@ -25,8 +25,8 @@ public class SnippetItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
             RecyclerView.State state) {
+        outRect.setEmpty();
         if (parent.getChildAdapterPosition(view) != parent.getAdapter().getItemCount() - 1) {
-            outRect.setEmpty();
             outRect.bottom = mVerticalSpace;
         }
     }
