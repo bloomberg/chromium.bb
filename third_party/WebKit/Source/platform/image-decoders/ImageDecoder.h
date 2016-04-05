@@ -221,7 +221,7 @@ public:
     // Number of bytes in the decoded frame. Returns 0 if the decoder doesn't
     // have this frame cached (either because it hasn't been decoded, or because
     // it has been cleared).
-    size_t frameBytesAtIndex(size_t) const;
+    virtual size_t frameBytesAtIndex(size_t) const;
 
     ImageOrientation orientation() const { return m_orientation; }
 

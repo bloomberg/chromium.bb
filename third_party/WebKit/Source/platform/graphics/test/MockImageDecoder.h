@@ -32,6 +32,11 @@ namespace blink {
 
 class MockImageDecoderClient {
 public:
+    MockImageDecoderClient()
+        : m_firstFrameForcedToBeEmpty(false)
+    {
+    }
+
     virtual void decoderBeingDestroyed() = 0;
     virtual void decodeRequested() = 0;
     virtual ImageFrame::Status status() = 0;
@@ -46,6 +51,16 @@ public:
     // MockImageDecoder::size(). See the precise implementation of
     // MockImageDecoder::decodedSize() below.
     virtual IntSize decodedSize() const { return IntSize(); }
+
+    void forceFirstFrameToBeEmpty()
+    {
+        m_firstFrameForcedToBeEmpty = true;
+    };
+
+    bool firstFrameForcedToBeEmpty() const { return m_firstFrameForcedToBeEmpty; }
+
+private:
+    bool m_firstFrameForcedToBeEmpty;
 };
 
 class MockImageDecoder : public ImageDecoder {
@@ -91,6 +106,13 @@ public:
     {
         m_client->clearCacheExceptFrameRequested(clearExceptFrame);
         return 0;
+    }
+
+    size_t frameBytesAtIndex(size_t index) const override
+    {
+        if (m_client->firstFrameForcedToBeEmpty() && index == 0)
+            return 0;
+        return ImageDecoder::frameBytesAtIndex(index);
     }
 
 private:
