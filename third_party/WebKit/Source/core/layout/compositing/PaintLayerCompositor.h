@@ -182,7 +182,6 @@ private:
     void updateIfNeededRecursiveInternal();
 
     // GraphicsLayerClient implementation
-    // TODO(wkorman): Fix up needsRepaint implementation as part of reworking scrollbar compositing visual rects.
     bool needsRepaint(const GraphicsLayer&) const { return true; }
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;

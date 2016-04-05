@@ -220,6 +220,11 @@ private:
 
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
 
+    // Paints the scrollbar part associated with the given graphics layer into the given context.
+    void paintScrollableArea(const GraphicsLayer*, GraphicsContext&, const IntRect& interestRect) const;
+    // Returns whether the given layer is part of the scrollable area, if any, associated with this mapping.
+    bool isScrollableAreaLayer(const GraphicsLayer*) const;
+
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const PaintLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
     void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const PaintLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<PaintLayer*>& layersNeedingPaintInvalidation);

@@ -35,7 +35,8 @@ class LayoutScrollbar;
 
 class LayoutScrollbarPart final : public LayoutBlock {
 public:
-    static LayoutScrollbarPart* createAnonymous(Document*, LayoutScrollbar* = nullptr, ScrollbarPart = NoPart);
+    static LayoutScrollbarPart* createAnonymous(Document*, ScrollableArea*,
+        LayoutScrollbar* = nullptr, ScrollbarPart = NoPart);
     ~LayoutScrollbarPart() override;
 
     const char* name() const override { return "LayoutScrollbarPart"; }
@@ -85,7 +86,7 @@ protected:
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
 private:
-    LayoutScrollbarPart(LayoutScrollbar*, ScrollbarPart);
+    LayoutScrollbarPart(ScrollableArea*, LayoutScrollbar*, ScrollbarPart);
 
     void computePreferredLogicalWidths() override;
 
@@ -112,6 +113,7 @@ private:
 
     bool allowsOverflowClip() const override { return false; }
 
+    UntracedMember<ScrollableArea> m_scrollableArea;
     UntracedMember<LayoutScrollbar> m_scrollbar;
     ScrollbarPart m_part;
 };

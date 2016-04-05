@@ -261,8 +261,8 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
     }
 
     LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
-    if (!partLayoutObject && needLayoutObject) {
-        partLayoutObject = LayoutScrollbarPart::createAnonymous(&owningLayoutObject()->document(), this, partType);
+    if (!partLayoutObject && needLayoutObject && m_scrollableArea) {
+        partLayoutObject = LayoutScrollbarPart::createAnonymous(&owningLayoutObject()->document(), m_scrollableArea, this, partType);
         m_parts.set(partType, partLayoutObject);
     } else if (partLayoutObject && !needLayoutObject) {
         m_parts.remove(partType);

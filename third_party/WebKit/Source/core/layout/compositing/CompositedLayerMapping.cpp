@@ -64,7 +64,9 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/CullRect.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
@@ -2309,11 +2311,11 @@ LayoutSize CompositedLayerMapping::subpixelAccumulation() const
 
 bool CompositedLayerMapping::needsRepaint(const GraphicsLayer& graphicsLayer) const
 {
-    // TODO(wkorman): Delegate needsRepaint() for scrollbar-affiliated layers.
-    return m_owningLayer.needsRepaint();
+    return isScrollableAreaLayer(&graphicsLayer) ? true : m_owningLayer.needsRepaint();
 }
 
-void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
+void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context,
+    GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
@@ -2361,21 +2363,51 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     } else if (graphicsLayer == m_squashingLayer.get()) {
         for (size_t i = 0; i < m_squashedLayers.size(); ++i)
             doPaintTask(m_squashedLayers[i], *graphicsLayer, paintLayerFlags, context, interestRect);
-    } else if (graphicsLayer == layerForHorizontalScrollbar()) {
-        paintScrollbar(m_owningLayer.getScrollableArea()->horizontalScrollbar(), context, interestRect);
-    } else if (graphicsLayer == layerForVerticalScrollbar()) {
-        paintScrollbar(m_owningLayer.getScrollableArea()->verticalScrollbar(), context, interestRect);
-    } else if (graphicsLayer == layerForScrollCorner()) {
-        IntPoint scrollCornerAndResizerLocation = m_owningLayer.getScrollableArea()->scrollCornerAndResizerRect().location();
-        CullRect cullRect(enclosingIntRect(interestRect));
-        ScrollableAreaPainter(*m_owningLayer.getScrollableArea()).paintScrollCorner(context, -scrollCornerAndResizerLocation, cullRect);
-        ScrollableAreaPainter(*m_owningLayer.getScrollableArea()).paintResizer(context, -scrollCornerAndResizerLocation, cullRect);
+    } else if (isScrollableAreaLayer(graphicsLayer)) {
+        paintScrollableArea(graphicsLayer, context, interestRect);
     }
     InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, context, LayoutRect(interestRect));
 #if ENABLE(ASSERT)
     if (Page* page = layoutObject()->frame()->page())
         page->setIsPainting(false);
 #endif
+}
+
+void CompositedLayerMapping::paintScrollableArea(const GraphicsLayer* graphicsLayer,
+    GraphicsContext& context, const IntRect& interestRect) const
+{
+    // Note the composited scrollable area painted here is never associated with a frame. For
+    // painting frame ScrollableAreas, see PaintLayerCompositor::paintContents.
+
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar))
+        return;
+
+    FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
+    SkPictureBuilder pictureBuilder(layerBounds, nullptr, &context);
+    PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea();
+    if (graphicsLayer == layerForHorizontalScrollbar()) {
+        paintScrollbar(scrollableArea->horizontalScrollbar(), pictureBuilder.context(), interestRect);
+    } else if (graphicsLayer == layerForVerticalScrollbar()) {
+        paintScrollbar(scrollableArea->verticalScrollbar(), pictureBuilder.context(), interestRect);
+    } else if (graphicsLayer == layerForScrollCorner()) {
+        // Note that scroll corners always paint into local space, whereas scrollbars paint in the space of their containing frame.
+        IntPoint scrollCornerAndResizerLocation = scrollableArea->scrollCornerAndResizerRect().location();
+        CullRect cullRect(enclosingIntRect(interestRect));
+        ScrollableAreaPainter(*scrollableArea).paintScrollCorner(pictureBuilder.context(), -scrollCornerAndResizerLocation, cullRect);
+        ScrollableAreaPainter(*scrollableArea).paintResizer(pictureBuilder.context(), -scrollCornerAndResizerLocation, cullRect);
+    }
+    // Replay the painted scrollbar content with the GraphicsLayer backing as the DisplayItemClient
+    // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
+    // bounds of the involved GraphicsLayer).
+    DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar, layerBounds);
+    pictureBuilder.endRecording()->playback(context.canvas());
+}
+
+bool CompositedLayerMapping::isScrollableAreaLayer(const GraphicsLayer* graphicsLayer) const
+{
+    return graphicsLayer == layerForHorizontalScrollbar()
+        || graphicsLayer == layerForVerticalScrollbar()
+        || graphicsLayer == layerForScrollCorner();
 }
 
 bool CompositedLayerMapping::isTrackingPaintInvalidations() const

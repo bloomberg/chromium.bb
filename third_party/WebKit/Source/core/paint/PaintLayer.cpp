@@ -2822,6 +2822,8 @@ void PaintLayer::markCompositingContainerChainForNeedsRepaint()
         if (layer->compositingState() == PaintsIntoOwnBacking)
             return;
         if (CompositedLayerMapping* groupedMapping = layer->groupedMapping()) {
+            // TODO(wkorman): As we clean up the CompositedLayerMapping needsRepaint logic to
+            // delegate to scrollbars, we may be able to remove the line below as well.
             groupedMapping->owningLayer().setNeedsRepaint();
             return;
         }

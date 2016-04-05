@@ -819,6 +819,9 @@ IntRect PaintLayerCompositor::computeInterestRect(const GraphicsLayer* graphicsL
 
 void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
+    // Note the composited scrollable area painted below is always associated with a frame. For
+    // painting non-frame ScrollableAreas, see CompositedLayerMapping::paintScrollableArea.
+
     const Scrollbar* scrollbar = graphicsLayerToScrollbar(graphicsLayer);
     if (!scrollbar && graphicsLayer != layerForScrollCorner())
         return;

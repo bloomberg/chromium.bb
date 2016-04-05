@@ -35,11 +35,13 @@
 
 namespace blink {
 
-LayoutScrollbarPart::LayoutScrollbarPart(LayoutScrollbar* scrollbar, ScrollbarPart part)
+LayoutScrollbarPart::LayoutScrollbarPart(ScrollableArea* scrollableArea, LayoutScrollbar* scrollbar, ScrollbarPart part)
     : LayoutBlock(nullptr)
+    , m_scrollableArea(scrollableArea)
     , m_scrollbar(scrollbar)
     , m_part(part)
 {
+    ASSERT(m_scrollableArea);
 }
 
 LayoutScrollbarPart::~LayoutScrollbarPart()
@@ -74,9 +76,10 @@ static void recordScrollbarPartStats(Document& document, ScrollbarPart part)
     }
 }
 
-LayoutScrollbarPart* LayoutScrollbarPart::createAnonymous(Document* document, LayoutScrollbar* scrollbar, ScrollbarPart part)
+LayoutScrollbarPart* LayoutScrollbarPart::createAnonymous(Document* document, ScrollableArea* scrollableArea,
+    LayoutScrollbar* scrollbar, ScrollbarPart part)
 {
-    LayoutScrollbarPart* layoutObject = new LayoutScrollbarPart(scrollbar, part);
+    LayoutScrollbarPart* layoutObject = new LayoutScrollbarPart(scrollableArea, scrollbar, part);
     recordScrollbarPartStats(*document, part);
     layoutObject->setDocumentForAnonymous(document);
     return layoutObject;
@@ -211,15 +214,14 @@ void LayoutScrollbarPart::setNeedsPaintInvalidation()
         }
     }
 
-    // This LayoutScrollbarPart belongs to a PaintLayerScrollableArea.
-    toLayoutBox(parent())->getScrollableArea()->setScrollCornerNeedsPaintInvalidation();
+    m_scrollableArea->setScrollCornerNeedsPaintInvalidation();
 }
 
 LayoutRect LayoutScrollbarPart::visualRect() const
 {
     // This returns the combined bounds of all scrollbar parts, which is sufficient for correctness
     // but not as tight as it could be.
-    return m_scrollbar ? m_scrollbar->visualRect() : LayoutRect();
+    return m_scrollableArea->visualRectForScrollbarParts();
 }
 
 } // namespace blink

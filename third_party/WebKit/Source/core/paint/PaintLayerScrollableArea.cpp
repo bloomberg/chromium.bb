@@ -1095,7 +1095,7 @@ void PaintLayerScrollableArea::updateScrollCornerStyle()
     RefPtr<ComputedStyle> corner = box().hasOverflowClip() ? actualLayoutObject.getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdScrollbarCorner), actualLayoutObject.style()) : PassRefPtr<ComputedStyle>(nullptr);
     if (corner) {
         if (!m_scrollCorner) {
-            m_scrollCorner = LayoutScrollbarPart::createAnonymous(&box().document());
+            m_scrollCorner = LayoutScrollbarPart::createAnonymous(&box().document(), this);
             m_scrollCorner->setDangerousOneWayParent(&box());
         }
         m_scrollCorner->setStyleWithWritingModeOfParent(corner.release());
@@ -1223,7 +1223,7 @@ void PaintLayerScrollableArea::updateResizerStyle()
     RefPtr<ComputedStyle> resizer = box().hasOverflowClip() ? actualLayoutObject.getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdResizer), actualLayoutObject.style()) : PassRefPtr<ComputedStyle>(nullptr);
     if (resizer) {
         if (!m_resizer) {
-            m_resizer = LayoutScrollbarPart::createAnonymous(&box().document());
+            m_resizer = LayoutScrollbarPart::createAnonymous(&box().document(), this);
             m_resizer->setDangerousOneWayParent(&box());
         }
         m_resizer->setStyleWithWritingModeOfParent(resizer.release());
