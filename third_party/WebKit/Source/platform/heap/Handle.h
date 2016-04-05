@@ -1005,14 +1005,6 @@ template<typename T, typename U> inline bool operator!=(const Member<T>& a, cons
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Member<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Member<U>& b) { return a.get() != b.get(); }
 
-#if defined(LEAK_SANITIZER)
-#define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
-    static type* name = *(new Persistent<type>(arguments))->registerAsStaticReference()
-#else
-#define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
-    static type* name = *(new Persistent<type>(arguments))
-#endif
-
 template<typename T, bool = IsGarbageCollectedType<T>::value>
 class RawPtrOrMemberTrait {
     STATIC_ONLY(RawPtrOrMemberTrait)
