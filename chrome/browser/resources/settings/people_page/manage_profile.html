@@ -10,7 +10,7 @@
     <style include="settings-shared"></style>
     <div class="settings-box first">
       <paper-input value="{{profileName}}" pattern=".*\S.*" auto-validate
-          on-blur="onProfileNameChanged_">
+          required on-change="onProfileNameChanged_">
       </paper-input>
       <div id="availableIcons">
         <template is="dom-repeat" items="[[availableIconUrls]]">

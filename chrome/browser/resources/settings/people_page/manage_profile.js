@@ -52,6 +52,9 @@ Polymer({
    * @param {!Event} event
    */
   onProfileNameChanged_: function(event) {
+    if (event.target.invalid)
+      return;
+
     settings.SyncPrivateApi.setProfileIconAndName(this.profileIconUrl,
                                                   event.target.value);
   },
