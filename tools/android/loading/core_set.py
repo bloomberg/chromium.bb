@@ -42,7 +42,15 @@ def _PageCore(prefix, graph_set_names, output):
       sack.ConsumeGraph(graph)
       name_graphs.append(graph)
     graph_sets.append(name_graphs)
-  json.dump({'page_core': [l for l in sack.CoreSet(*graph_sets)],
+  core = sack.CoreSet(*graph_sets)
+  json.dump({'page_core': [{'label': b.label,
+                            'name': b.name,
+                            'count': b.num_nodes}
+                           for b in core],
+             'non_core': [{'label': b.label,
+                           'name': b.name,
+                           'count': b.num_nodes}
+                          for b in sack.bags if b not in core],
              'threshold': sack.CORE_THRESHOLD},
             output, sort_keys=True, indent=2)
   output.write('\n')
@@ -80,39 +88,9 @@ def _Spawn(site_list_file, graph_sets, input_dir, output_dir, workers):
                              for s in sites])
 
 
-def _AllCores(prefix, graph_set_names, output, threshold):
-  """Compute all core sets (per-set and overall page core) for a site."""
-  core_sets = []
-  _Progress('Using threshold %s' % threshold)
-  big_sack = resource_sack.GraphSack()
-  graph_sets = []
-  for name in graph_set_names:
-    _Progress('Finding core set for %s' % name)
-    sack = resource_sack.GraphSack()
-    sack.CORE_THRESHOLD = threshold
-    this_set = []
-    for filename in glob.iglob('-'.join([prefix, name, '*.trace'])):
-      _Progress('Reading %s' % filename)
-      trace = loading_trace.LoadingTrace.FromJsonFile(filename)
-      graph = dependency_graph.RequestDependencyGraph(
-          trace.request_track.GetEvents(),
-          request_dependencies_lens.RequestDependencyLens(trace))
-      sack.ConsumeGraph(graph)
-      big_sack.ConsumeGraph(graph)
-      this_set.append(graph)
-    core_sets.append({
-        'set_name': name,
-        'core_set': [l for l in sack.CoreSet()]
-    })
-    graph_sets.append(this_set)
-  json.dump({'core_sets': core_sets,
-             'page_core': [l for l in big_sack.CoreSet(*graph_sets)]},
-            output, sort_keys=True, indent=2)
-
-
 def _ReadCoreSet(filename):
   data = json.load(open(filename))
-  return set(data['page_core'])
+  return set(page['name'] for page in data['page_core'])
 
 
 def _Compare(a_name, b_name, csv):
@@ -172,28 +150,9 @@ if __name__ == '__main__':
                            help='trace file prefix')
   page_core.add_argument('--output', required=True,
                            help='JSON output file name')
-  page_core.set_defaults(
-      executor=lambda args:
-      _PageCore(args.prefix, args.sets.split(','), file(args.output, 'w')))
-
-  all_cores = subparsers.add_parser(
-      'all_cores',
-      help=('compute core and page core sets. Computes the core for each set '
-            'in --sets and then the overall page core using trace files '
-            'of form {--prefix}{set}*.trace. Outputs all the sets as JSON'))
-  all_cores.add_argument('--sets', required=True,
-                         help='sets to combine, comma-separated')
-  all_cores.add_argument('--prefix', required=True,
-                         help='input file prefix')
-  all_cores.add_argument('--output', required=True,
-                         help='JSON output file name')
-  all_cores.add_argument('--threshold',
-                         default=resource_sack.GraphSack.CORE_THRESHOLD,
-                         type=float, help='core set threshold')
-  all_cores.set_defaults(
-      executor=lambda args:
-      _AllCores(args.prefix, args.sets.split(','), file(args.output, 'w'),
-                args.threshold))
+  page_core.set_defaults(executor=lambda args:
+                         _PageCore(args.prefix, args.sets.split(','),
+                                   file(args.output, 'w')))
 
   compare = subparsers.add_parser(
       'compare',

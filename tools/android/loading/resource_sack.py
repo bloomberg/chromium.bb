@@ -47,8 +47,22 @@ class GraphSack(object):
     # Maps graph -> _GraphInfo structures for each graph we've consumed.
     self._graph_info = {}
 
+    # How we generate names.
+    self._name_generator = lambda n: n.request.url
+
     # Our graph, updated after each ConsumeGraph.
     self._graph = None
+
+  def SetNameGenerator(self, generator):
+    """Set the generator we use for names.
+
+    This will define the equivalence class of requests we use to define sacks.
+
+    Args:
+      generator: a function taking a RequestDependencyGraph node and returning a
+        string.
+    """
+    self._name_generator = generator
 
   def ConsumeGraph(self, request_graph):
     """Add a graph and process.
@@ -66,6 +80,10 @@ class GraphSack(object):
     # explicit graph creation from the client.
     self._graph = graph.DirectedGraph(self.bags, self._edges.itervalues())
 
+  def GetBag(self, node):
+    """Find the bag for a node, or None if not found."""
+    return self._name_to_bag.get(self._name_generator(node), None)
+
   def AddNode(self, request_graph, node):
     """Add a node to our collection.
 
@@ -76,7 +94,7 @@ class GraphSack(object):
     Returns:
       The Bag containing the node.
     """
-    sack_name = self._GetSackName(node)
+    sack_name = self._name_generator(node)
     if sack_name not in self._name_to_bag:
       self._name_to_bag[sack_name] = Bag(self, sack_name)
     bag = self._name_to_bag[sack_name]
@@ -107,7 +125,7 @@ class GraphSack(object):
         computed.
 
     Returns:
-      A set of bag labels (as strings) in the core set.
+      A set of bags in the core set.
     """
     if not graph_sets:
       graph_sets = [self._graph_info.keys()]
@@ -151,11 +169,8 @@ class GraphSack(object):
     for b in self.bags:
       count = sum([g in graph_set for g in b.graphs])
       if float(count) / num_graphs > self.CORE_THRESHOLD:
-        core.add(b.label)
+        core.add(b)
     return core
-
-  def _GetSackName(self, node):
-    return self._MakeShortname(node.request.url)
 
   @classmethod
   def _MakeShortname(cls, url):
@@ -173,12 +188,17 @@ class GraphSack(object):
 
 
 class Bag(graph.Node):
-  def __init__(self, sack, label):
+  def __init__(self, sack, name):
     super(Bag, self).__init__()
     self._sack = sack
-    self._label = label
+    self._name = name
+    self._label = GraphSack._MakeShortname(name)
     # Maps a ResourceGraph to its Nodes contained in this Bag.
     self._graphs = defaultdict(set)
+
+  @property
+  def name(self):
+    return self._name
 
   @property
   def label(self):
@@ -191,6 +211,9 @@ class Bag(graph.Node):
   @property
   def num_nodes(self):
     return sum(len(g) for g in self._graphs.itervalues())
+
+  def GraphNodes(self, g):
+    return self._graphs.get(g, set())
 
   def AddNode(self, request_graph, node):
     if node in self._graphs[request_graph]:

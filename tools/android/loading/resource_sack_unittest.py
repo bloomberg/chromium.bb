@@ -72,7 +72,9 @@ class ResourceSackTestCase(unittest.TestCase):
 
   def test_Core(self):
     # We will use a core threshold of 0.5 to make it easier to define
-    # graphs. Resources 0 and 1 are core and others are not.
+    # graphs. Resources 0 and 1 are core and others are not. We check full names
+    # and node counts as we output that for core set analysis. In subsequent
+    # tests we just check labels to make the tests easier to read.
     graphs = [self.SimpleGraph([0, 1, 2]),
               self.SimpleGraph([0, 1, 3]),
               self.SimpleGraph([0, 1, 4]),
@@ -81,7 +83,8 @@ class ResourceSackTestCase(unittest.TestCase):
     sack.CORE_THRESHOLD = 0.5
     for g in graphs:
       sack.ConsumeGraph(g)
-    self.assertEqual(set(['0/', '1/']), sack.CoreSet())
+    self.assertEqual(set([('http://0', 4), ('http://1', 3)]),
+                     set((b.name, b.num_nodes) for b in sack.CoreSet()))
 
   def test_IntersectingCore(self):
     # Graph set A has core set {0, 1} and B {0, 2} so the final core set should
@@ -96,10 +99,13 @@ class ResourceSackTestCase(unittest.TestCase):
     for g in set_A + set_B + set_C:
       sack.ConsumeGraph(g)
     self.assertEqual(set(), sack.CoreSet())
-    self.assertEqual(set(['0/', '1/']), sack.CoreSet(set_A))
-    self.assertEqual(set(['0/', '2/']), sack.CoreSet(set_B))
+    self.assertEqual(set(['0/', '1/']),
+                     set(b.label for b in sack.CoreSet(set_A)))
+    self.assertEqual(set(['0/', '2/']),
+                     set(b.label for b in sack.CoreSet(set_B)))
     self.assertEqual(set(), sack.CoreSet(set_C))
-    self.assertEqual(set(['0/']), sack.CoreSet(set_A, set_B))
+    self.assertEqual(set(['0/']),
+                     set(b.label for b in sack.CoreSet(set_A, set_B)))
     self.assertEqual(set(), sack.CoreSet(set_A, set_B, set_C))
 
   def test_Simililarity(self):
