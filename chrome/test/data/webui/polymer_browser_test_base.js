@@ -91,10 +91,9 @@ PolymerTest.prototype = {
     // Import Polymer and iron-test-helpers before running tests.
     suiteSetup(function() {
       var promises = [];
-      if (typeof Polymer != 'function') {
+      if (!window.Polymer) {
         promises.push(
-            PolymerTest.importHtml(
-                'chrome://resources/polymer/v1_0/polymer/polymer.html'));
+            PolymerTest.importHtml('chrome://resources/html/polymer.html'));
       }
       if (typeof MockInteractions != 'object') {
         // Avoid importing the HTML file because iron-test-helpers assumes it is

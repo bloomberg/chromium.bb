@@ -1431,10 +1431,19 @@ function createElementWithClassName(type, className) {
  * or when no paint happens during the animation). This function sets up
  * a timer and emulate the event if it is not fired when the timer expires.
  * @param {!HTMLElement} el The element to watch for webkitTransitionEnd.
- * @param {number} timeOut The maximum wait time in milliseconds for the
- *     webkitTransitionEnd to happen.
+ * @param {number=} opt_timeOut The maximum wait time in milliseconds for the
+ *     webkitTransitionEnd to happen. If not specified, it is fetched from |el|
+ *     using the transitionDuration style value.
  */
-function ensureTransitionEndEvent(el, timeOut) {
+function ensureTransitionEndEvent(el, opt_timeOut) {
+  if (opt_timeOut === undefined) {
+    var style = getComputedStyle(el);
+    opt_timeOut = parseFloat(style.transitionDuration) * 1000;
+
+    // Give an additional 50ms buffer for the animation to complete.
+    opt_timeOut += 50;
+  }
+
   var fired = false;
   el.addEventListener('webkitTransitionEnd', function f(e) {
     el.removeEventListener('webkitTransitionEnd', f);
@@ -1443,7 +1452,7 @@ function ensureTransitionEndEvent(el, timeOut) {
   window.setTimeout(function() {
     if (!fired)
       cr.dispatchSimpleEvent(el, 'webkitTransitionEnd', true);
-  }, timeOut);
+  }, opt_timeOut);
 }
 
 /**
@@ -1522,369 +1531,6 @@ function elide(original, maxLength) {
 function quoteString(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 };
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-/**
- * @fileoverview Assertion support.
- */
-
-/**
- * Verify |condition| is truthy and return |condition| if so.
- * @template T
- * @param {T} condition A condition to check for truthiness.  Note that this
- *     may be used to test whether a value is defined or not, and we don't want
- *     to force a cast to Boolean.
- * @param {string=} opt_message A message to show on failure.
- * @return {T} A non-null |condition|.
- */
-function assert(condition, opt_message) {
-  if (!condition) {
-    var message = 'Assertion failed';
-    if (opt_message)
-      message = message + ': ' + opt_message;
-    var error = new Error(message);
-    var global = function() { return this; }();
-    if (global.traceAssertionsForTesting)
-      console.warn(error.stack);
-    throw error;
-  }
-  return condition;
-}
-
-/**
- * Call this from places in the code that should never be reached.
- *
- * For example, handling all the values of enum with a switch() like this:
- *
- *   function getValueFromEnum(enum) {
- *     switch (enum) {
- *       case ENUM_FIRST_OF_TWO:
- *         return first
- *       case ENUM_LAST_OF_TWO:
- *         return last;
- *     }
- *     assertNotReached();
- *     return document;
- *   }
- *
- * This code should only be hit in the case of serious programmer error or
- * unexpected input.
- *
- * @param {string=} opt_message A message to show when this is hit.
- */
-function assertNotReached(opt_message) {
-  assert(false, opt_message || 'Unreachable code hit');
-}
-
-/**
- * @param {*} value The value to check.
- * @param {function(new: T, ...)} type A user-defined constructor.
- * @param {string=} opt_message A message to show when this is hit.
- * @return {T}
- * @template T
- */
-function assertInstanceof(value, type, opt_message) {
-  // We don't use assert immediately here so that we avoid constructing an error
-  // message if we don't have to.
-  if (!(value instanceof type)) {
-    assertNotReached(opt_message || 'Value ' + value +
-                     ' is not a[n] ' + (type.name || typeof type));
-  }
-  return value;
-};
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-cr.define('downloads', function() {
-  /**
-   * @param {string} chromeSendName
-   * @return {function(string):void} A chrome.send() callback with curried name.
-   */
-  function chromeSendWithId(chromeSendName) {
-    return function(id) { chrome.send(chromeSendName, [id]); };
-  }
-
-  /** @constructor */
-  function ActionService() {
-    /** @private {Array<string>} */
-    this.searchTerms_ = [];
-  }
-
-  /**
-   * @param {string} s
-   * @return {string} |s| without whitespace at the beginning or end.
-   */
-  function trim(s) { return s.trim(); }
-
-  /**
-   * @param {string|undefined} value
-   * @return {boolean} Whether |value| is truthy.
-   */
-  function truthy(value) { return !!value; }
-
-  /**
-   * @param {string} searchText Input typed by the user into a search box.
-   * @return {Array<string>} A list of terms extracted from |searchText|.
-   */
-  ActionService.splitTerms = function(searchText) {
-    // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
-    return searchText.split(/"([^"]*)"/).map(trim).filter(truthy);
-  };
-
-  ActionService.prototype = {
-    /** @param {string} id ID of the download to cancel. */
-    cancel: chromeSendWithId('cancel'),
-
-    /** Instructs the browser to clear all finished downloads. */
-    clearAll: function() {
-      if (loadTimeData.getBoolean('allowDeletingHistory')) {
-        chrome.send('clearAll');
-        this.search('');
-      }
-    },
-
-    /** @param {string} id ID of the dangerous download to discard. */
-    discardDangerous: chromeSendWithId('discardDangerous'),
-
-    /** @param {string} url URL of a file to download. */
-    download: function(url) {
-      var a = document.createElement('a');
-      a.href = url;
-      a.setAttribute('download', '');
-      a.click();
-    },
-
-    /** @param {string} id ID of the download that the user started dragging. */
-    drag: chromeSendWithId('drag'),
-
-    /** Loads more downloads with the current search terms. */
-    loadMore: function() {
-      chrome.send('getDownloads', this.searchTerms_);
-    },
-
-    /**
-     * @return {boolean} Whether the user is currently searching for downloads
-     *     (i.e. has a non-empty search term).
-     */
-    isSearching: function() {
-      return this.searchTerms_.length > 0;
-    },
-
-    /** Opens the current local destination for downloads. */
-    openDownloadsFolder: chrome.send.bind(chrome, 'openDownloadsFolder'),
-
-    /**
-     * @param {string} id ID of the download to run locally on the user's box.
-     */
-    openFile: chromeSendWithId('openFile'),
-
-    /** @param {string} id ID the of the progressing download to pause. */
-    pause: chromeSendWithId('pause'),
-
-    /** @param {string} id ID of the finished download to remove. */
-    remove: chromeSendWithId('remove'),
-
-    /** @param {string} id ID of the paused download to resume. */
-    resume: chromeSendWithId('resume'),
-
-    /**
-     * @param {string} id ID of the dangerous download to save despite
-     *     warnings.
-     */
-    saveDangerous: chromeSendWithId('saveDangerous'),
-
-    /** @param {string} searchText What to search for. */
-    search: function(searchText) {
-      var searchTerms = ActionService.splitTerms(searchText);
-      var sameTerms = searchTerms.length == this.searchTerms_.length;
-
-      for (var i = 0; sameTerms && i < searchTerms.length; ++i) {
-        if (searchTerms[i] != this.searchTerms_[i])
-          sameTerms = false;
-      }
-
-      if (sameTerms)
-        return;
-
-      this.searchTerms_ = searchTerms;
-      this.loadMore();
-    },
-
-    /**
-     * Shows the local folder a finished download resides in.
-     * @param {string} id ID of the download to show.
-     */
-    show: chromeSendWithId('show'),
-
-    /** Undo download removal. */
-    undo: chrome.send.bind(chrome, 'undo'),
-  };
-
-  cr.addSingletonGetter(ActionService);
-
-  return {ActionService: ActionService};
-});
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-cr.define('downloads', function() {
-  /**
-   * Explains why a download is in DANGEROUS state.
-   * @enum {string}
-   */
-  var DangerType = {
-    NOT_DANGEROUS: 'NOT_DANGEROUS',
-    DANGEROUS_FILE: 'DANGEROUS_FILE',
-    DANGEROUS_URL: 'DANGEROUS_URL',
-    DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
-    UNCOMMON_CONTENT: 'UNCOMMON_CONTENT',
-    DANGEROUS_HOST: 'DANGEROUS_HOST',
-    POTENTIALLY_UNWANTED: 'POTENTIALLY_UNWANTED',
-  };
-
-  /**
-   * The states a download can be in. These correspond to states defined in
-   * DownloadsDOMHandler::CreateDownloadItemValue
-   * @enum {string}
-   */
-  var States = {
-    IN_PROGRESS: 'IN_PROGRESS',
-    CANCELLED: 'CANCELLED',
-    COMPLETE: 'COMPLETE',
-    PAUSED: 'PAUSED',
-    DANGEROUS: 'DANGEROUS',
-    INTERRUPTED: 'INTERRUPTED',
-  };
-
-  return {
-    DangerType: DangerType,
-    States: States,
-  };
-});
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// Action links are elements that are used to perform an in-page navigation or
-// action (e.g. showing a dialog).
-//
-// They look like normal anchor (<a>) tags as their text color is blue. However,
-// they're subtly different as they're not initially underlined (giving users a
-// clue that underlined links navigate while action links don't).
-//
-// Action links look very similar to normal links when hovered (hand cursor,
-// underlined). This gives the user an idea that clicking this link will do
-// something similar to navigation but in the same page.
-//
-// They can be created in JavaScript like this:
-//
-//   var link = document.createElement('a', 'action-link');  // Note second arg.
-//
-// or with a constructor like this:
-//
-//   var link = new ActionLink();
-//
-// They can be used easily from HTML as well, like so:
-//
-//   <a is="action-link">Click me!</a>
-//
-// NOTE: <action-link> and document.createElement('action-link') don't work.
-
-/**
- * @constructor
- * @extends {HTMLAnchorElement}
- */
-var ActionLink = document.registerElement('action-link', {
-  prototype: {
-    __proto__: HTMLAnchorElement.prototype,
-
-    /** @this {ActionLink} */
-    createdCallback: function() {
-      // Action links can start disabled (e.g. <a is="action-link" disabled>).
-      this.tabIndex = this.disabled ? -1 : 0;
-
-      if (!this.hasAttribute('role'))
-        this.setAttribute('role', 'link');
-
-      this.addEventListener('keydown', function(e) {
-        if (!this.disabled && e.keyIdentifier == 'Enter' && !this.href) {
-          // Schedule a click asynchronously because other 'keydown' handlers
-          // may still run later (e.g. document.addEventListener('keydown')).
-          // Specifically options dialogs break when this timeout isn't here.
-          // NOTE: this affects the "trusted" state of the ensuing click. I
-          // haven't found anything that breaks because of this (yet).
-          window.setTimeout(this.click.bind(this), 0);
-        }
-      });
-
-      function preventDefault(e) {
-        e.preventDefault();
-      }
-
-      function removePreventDefault() {
-        document.removeEventListener('selectstart', preventDefault);
-        document.removeEventListener('mouseup', removePreventDefault);
-      }
-
-      this.addEventListener('mousedown', function() {
-        // This handlers strives to match the behavior of <a href="...">.
-
-        // While the mouse is down, prevent text selection from dragging.
-        document.addEventListener('selectstart', preventDefault);
-        document.addEventListener('mouseup', removePreventDefault);
-
-        // If focus started via mouse press, don't show an outline.
-        if (document.activeElement != this)
-          this.classList.add('no-outline');
-      });
-
-      this.addEventListener('blur', function() {
-        this.classList.remove('no-outline');
-      });
-    },
-
-    /** @type {boolean} */
-    set disabled(disabled) {
-      if (disabled)
-        HTMLAnchorElement.prototype.setAttribute.call(this, 'disabled', '');
-      else
-        HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
-      this.tabIndex = disabled ? -1 : 0;
-    },
-    get disabled() {
-      return this.hasAttribute('disabled');
-    },
-
-    /** @override */
-    setAttribute: function(attr, val) {
-      if (attr.toLowerCase() == 'disabled')
-        this.disabled = true;
-      else
-        HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
-    },
-
-    /** @override */
-    removeAttribute: function(attr) {
-      if (attr.toLowerCase() == 'disabled')
-        this.disabled = false;
-      else
-        HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
-    },
-  },
-
-  extends: 'a',
-});
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// <include src="../../../../ui/webui/resources/js/i18n_template_no_process.js">
-
-i18nTemplate.process(document, loadTimeData);
 /**
    * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
    * coordinate the flow of resize events between "resizers" (elements that control the
@@ -2145,6 +1791,13 @@ i18nTemplate.process(document, loadTimeData);
     var SPACE_KEY = /^space(bar)?/;
 
     /**
+     * Matches ESC key.
+     *
+     * Value from: http://w3c.github.io/uievents-key/#key-Escape
+     */
+    var ESC_KEY = /^escape$/;
+
+    /**
      * Transforms the key.
      * @param {string} key The KeyBoardEvent.key
      * @param {Boolean} [noSpecialChars] Limits the transformation to
@@ -2156,6 +1809,8 @@ i18nTemplate.process(document, loadTimeData);
         var lKey = key.toLowerCase();
         if (lKey === ' ' || SPACE_KEY.test(lKey)) {
           validKey = 'space';
+        } else if (ESC_KEY.test(lKey)) {
+          validKey = 'esc';
         } else if (lKey.length == 1) {
           if (!noSpecialChars || KEY_CHAR.test(lKey)) {
             validKey = lKey;
@@ -2199,10 +1854,10 @@ i18nTemplate.process(document, loadTimeData);
           validKey = 'f' + (keyCode - 112);
         } else if (keyCode >= 48 && keyCode <= 57) {
           // top 0-9 keys
-          validKey = String(48 - keyCode);
+          validKey = String(keyCode - 48);
         } else if (keyCode >= 96 && keyCode <= 105) {
           // num pad 0-9
-          validKey = String(96 - keyCode);
+          validKey = String(keyCode - 96);
         } else {
           validKey = KEY_CODE[keyCode];
         }
@@ -2367,6 +2022,13 @@ i18nTemplate.process(document, loadTimeData);
         this._resetKeyEventListeners();
       },
 
+      /**
+       * Returns true if a keyboard event matches `eventString`.
+       *
+       * @param {KeyboardEvent} event
+       * @param {string} eventString
+       * @return {boolean}
+       */
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
         for (var i = 0; i < keyCombos.length; ++i) {
@@ -4099,6 +3761,362 @@ i18nTemplate.process(document, loadTimeData);
   });
 
 })();
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Assertion support.
+ */
+
+/**
+ * Verify |condition| is truthy and return |condition| if so.
+ * @template T
+ * @param {T} condition A condition to check for truthiness.  Note that this
+ *     may be used to test whether a value is defined or not, and we don't want
+ *     to force a cast to Boolean.
+ * @param {string=} opt_message A message to show on failure.
+ * @return {T} A non-null |condition|.
+ */
+function assert(condition, opt_message) {
+  if (!condition) {
+    var message = 'Assertion failed';
+    if (opt_message)
+      message = message + ': ' + opt_message;
+    var error = new Error(message);
+    var global = function() { return this; }();
+    if (global.traceAssertionsForTesting)
+      console.warn(error.stack);
+    throw error;
+  }
+  return condition;
+}
+
+/**
+ * Call this from places in the code that should never be reached.
+ *
+ * For example, handling all the values of enum with a switch() like this:
+ *
+ *   function getValueFromEnum(enum) {
+ *     switch (enum) {
+ *       case ENUM_FIRST_OF_TWO:
+ *         return first
+ *       case ENUM_LAST_OF_TWO:
+ *         return last;
+ *     }
+ *     assertNotReached();
+ *     return document;
+ *   }
+ *
+ * This code should only be hit in the case of serious programmer error or
+ * unexpected input.
+ *
+ * @param {string=} opt_message A message to show when this is hit.
+ */
+function assertNotReached(opt_message) {
+  assert(false, opt_message || 'Unreachable code hit');
+}
+
+/**
+ * @param {*} value The value to check.
+ * @param {function(new: T, ...)} type A user-defined constructor.
+ * @param {string=} opt_message A message to show when this is hit.
+ * @return {T}
+ * @template T
+ */
+function assertInstanceof(value, type, opt_message) {
+  // We don't use assert immediately here so that we avoid constructing an error
+  // message if we don't have to.
+  if (!(value instanceof type)) {
+    assertNotReached(opt_message || 'Value ' + value +
+                     ' is not a[n] ' + (type.name || typeof type));
+  }
+  return value;
+};
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+cr.define('downloads', function() {
+  /**
+   * @param {string} chromeSendName
+   * @return {function(string):void} A chrome.send() callback with curried name.
+   */
+  function chromeSendWithId(chromeSendName) {
+    return function(id) { chrome.send(chromeSendName, [id]); };
+  }
+
+  /** @constructor */
+  function ActionService() {
+    /** @private {Array<string>} */
+    this.searchTerms_ = [];
+  }
+
+  /**
+   * @param {string} s
+   * @return {string} |s| without whitespace at the beginning or end.
+   */
+  function trim(s) { return s.trim(); }
+
+  /**
+   * @param {string|undefined} value
+   * @return {boolean} Whether |value| is truthy.
+   */
+  function truthy(value) { return !!value; }
+
+  /**
+   * @param {string} searchText Input typed by the user into a search box.
+   * @return {Array<string>} A list of terms extracted from |searchText|.
+   */
+  ActionService.splitTerms = function(searchText) {
+    // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
+    return searchText.split(/"([^"]*)"/).map(trim).filter(truthy);
+  };
+
+  ActionService.prototype = {
+    /** @param {string} id ID of the download to cancel. */
+    cancel: chromeSendWithId('cancel'),
+
+    /** Instructs the browser to clear all finished downloads. */
+    clearAll: function() {
+      if (loadTimeData.getBoolean('allowDeletingHistory')) {
+        chrome.send('clearAll');
+        this.search('');
+      }
+    },
+
+    /** @param {string} id ID of the dangerous download to discard. */
+    discardDangerous: chromeSendWithId('discardDangerous'),
+
+    /** @param {string} url URL of a file to download. */
+    download: function(url) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.setAttribute('download', '');
+      a.click();
+    },
+
+    /** @param {string} id ID of the download that the user started dragging. */
+    drag: chromeSendWithId('drag'),
+
+    /** Loads more downloads with the current search terms. */
+    loadMore: function() {
+      chrome.send('getDownloads', this.searchTerms_);
+    },
+
+    /**
+     * @return {boolean} Whether the user is currently searching for downloads
+     *     (i.e. has a non-empty search term).
+     */
+    isSearching: function() {
+      return this.searchTerms_.length > 0;
+    },
+
+    /** Opens the current local destination for downloads. */
+    openDownloadsFolder: chrome.send.bind(chrome, 'openDownloadsFolder'),
+
+    /**
+     * @param {string} id ID of the download to run locally on the user's box.
+     */
+    openFile: chromeSendWithId('openFile'),
+
+    /** @param {string} id ID the of the progressing download to pause. */
+    pause: chromeSendWithId('pause'),
+
+    /** @param {string} id ID of the finished download to remove. */
+    remove: chromeSendWithId('remove'),
+
+    /** @param {string} id ID of the paused download to resume. */
+    resume: chromeSendWithId('resume'),
+
+    /**
+     * @param {string} id ID of the dangerous download to save despite
+     *     warnings.
+     */
+    saveDangerous: chromeSendWithId('saveDangerous'),
+
+    /** @param {string} searchText What to search for. */
+    search: function(searchText) {
+      var searchTerms = ActionService.splitTerms(searchText);
+      var sameTerms = searchTerms.length == this.searchTerms_.length;
+
+      for (var i = 0; sameTerms && i < searchTerms.length; ++i) {
+        if (searchTerms[i] != this.searchTerms_[i])
+          sameTerms = false;
+      }
+
+      if (sameTerms)
+        return;
+
+      this.searchTerms_ = searchTerms;
+      this.loadMore();
+    },
+
+    /**
+     * Shows the local folder a finished download resides in.
+     * @param {string} id ID of the download to show.
+     */
+    show: chromeSendWithId('show'),
+
+    /** Undo download removal. */
+    undo: chrome.send.bind(chrome, 'undo'),
+  };
+
+  cr.addSingletonGetter(ActionService);
+
+  return {ActionService: ActionService};
+});
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+cr.define('downloads', function() {
+  /**
+   * Explains why a download is in DANGEROUS state.
+   * @enum {string}
+   */
+  var DangerType = {
+    NOT_DANGEROUS: 'NOT_DANGEROUS',
+    DANGEROUS_FILE: 'DANGEROUS_FILE',
+    DANGEROUS_URL: 'DANGEROUS_URL',
+    DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
+    UNCOMMON_CONTENT: 'UNCOMMON_CONTENT',
+    DANGEROUS_HOST: 'DANGEROUS_HOST',
+    POTENTIALLY_UNWANTED: 'POTENTIALLY_UNWANTED',
+  };
+
+  /**
+   * The states a download can be in. These correspond to states defined in
+   * DownloadsDOMHandler::CreateDownloadItemValue
+   * @enum {string}
+   */
+  var States = {
+    IN_PROGRESS: 'IN_PROGRESS',
+    CANCELLED: 'CANCELLED',
+    COMPLETE: 'COMPLETE',
+    PAUSED: 'PAUSED',
+    DANGEROUS: 'DANGEROUS',
+    INTERRUPTED: 'INTERRUPTED',
+  };
+
+  return {
+    DangerType: DangerType,
+    States: States,
+  };
+});
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Action links are elements that are used to perform an in-page navigation or
+// action (e.g. showing a dialog).
+//
+// They look like normal anchor (<a>) tags as their text color is blue. However,
+// they're subtly different as they're not initially underlined (giving users a
+// clue that underlined links navigate while action links don't).
+//
+// Action links look very similar to normal links when hovered (hand cursor,
+// underlined). This gives the user an idea that clicking this link will do
+// something similar to navigation but in the same page.
+//
+// They can be created in JavaScript like this:
+//
+//   var link = document.createElement('a', 'action-link');  // Note second arg.
+//
+// or with a constructor like this:
+//
+//   var link = new ActionLink();
+//
+// They can be used easily from HTML as well, like so:
+//
+//   <a is="action-link">Click me!</a>
+//
+// NOTE: <action-link> and document.createElement('action-link') don't work.
+
+/**
+ * @constructor
+ * @extends {HTMLAnchorElement}
+ */
+var ActionLink = document.registerElement('action-link', {
+  prototype: {
+    __proto__: HTMLAnchorElement.prototype,
+
+    /** @this {ActionLink} */
+    createdCallback: function() {
+      // Action links can start disabled (e.g. <a is="action-link" disabled>).
+      this.tabIndex = this.disabled ? -1 : 0;
+
+      if (!this.hasAttribute('role'))
+        this.setAttribute('role', 'link');
+
+      this.addEventListener('keydown', function(e) {
+        if (!this.disabled && e.keyIdentifier == 'Enter' && !this.href) {
+          // Schedule a click asynchronously because other 'keydown' handlers
+          // may still run later (e.g. document.addEventListener('keydown')).
+          // Specifically options dialogs break when this timeout isn't here.
+          // NOTE: this affects the "trusted" state of the ensuing click. I
+          // haven't found anything that breaks because of this (yet).
+          window.setTimeout(this.click.bind(this), 0);
+        }
+      });
+
+      function preventDefault(e) {
+        e.preventDefault();
+      }
+
+      function removePreventDefault() {
+        document.removeEventListener('selectstart', preventDefault);
+        document.removeEventListener('mouseup', removePreventDefault);
+      }
+
+      this.addEventListener('mousedown', function() {
+        // This handlers strives to match the behavior of <a href="...">.
+
+        // While the mouse is down, prevent text selection from dragging.
+        document.addEventListener('selectstart', preventDefault);
+        document.addEventListener('mouseup', removePreventDefault);
+
+        // If focus started via mouse press, don't show an outline.
+        if (document.activeElement != this)
+          this.classList.add('no-outline');
+      });
+
+      this.addEventListener('blur', function() {
+        this.classList.remove('no-outline');
+      });
+    },
+
+    /** @type {boolean} */
+    set disabled(disabled) {
+      if (disabled)
+        HTMLAnchorElement.prototype.setAttribute.call(this, 'disabled', '');
+      else
+        HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
+      this.tabIndex = disabled ? -1 : 0;
+    },
+    get disabled() {
+      return this.hasAttribute('disabled');
+    },
+
+    /** @override */
+    setAttribute: function(attr, val) {
+      if (attr.toLowerCase() == 'disabled')
+        this.disabled = true;
+      else
+        HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
+    },
+
+    /** @override */
+    removeAttribute: function(attr) {
+      if (attr.toLowerCase() == 'disabled')
+        this.disabled = false;
+      else
+        HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
+    },
+  },
+
+  extends: 'a',
+});
 (function() {
 
     // monostate data
@@ -9947,7 +9965,7 @@ It may be desirable to only allow users to enter certain characters. You can use
 `prevent-invalid-input` and `allowed-pattern` attributes together to accomplish this. This feature
 is separate from validation, and `allowed-pattern` does not affect how the input is validated.
 
-    <!-- only allow characters that match [0-9] -->
+    \x3c!-- only allow characters that match [0-9] --\x3e
     <input is="iron-input" prevent-invalid-input allowed-pattern="[0-9]">
 
 @hero hero.svg
@@ -10477,26 +10495,42 @@ var SearchField = Polymer({
     return searchInput ? searchInput.value : '';
   },
 
+  /**
+   * Sets the value of the search field, if it exists.
+   * @param {string} value
+   */
+  setValue: function(value) {
+    var searchInput = this.getSearchInput_();
+    if (searchInput)
+      searchInput.value = value;
+  },
+
   /** @param {SearchFieldDelegate} delegate */
   setDelegate: function(delegate) {
     this.delegate_ = delegate;
   },
 
+  /** @return {Promise<boolean>} */
   showAndFocus: function() {
     this.showingSearch_ = true;
-    this.focus_();
+    return this.focus_();
   },
 
-  /** @private */
+  /**
+   * @return {Promise<boolean>}
+   * @private
+   */
   focus_: function() {
-    this.async(function() {
-      if (!this.showingSearch_)
-        return;
-
-      var searchInput = this.getSearchInput_();
-      if (searchInput)
-        searchInput.focus();
-    });
+    return new Promise(function(resolve) {
+      this.async(function() {
+        if (this.showingSearch_) {
+          var searchInput = this.getSearchInput_();
+          if (searchInput)
+            searchInput.focus();
+        }
+        resolve(this.showingSearch_);
+      });
+    }.bind(this));
   },
 
   /**
@@ -10823,6 +10857,13 @@ cr.define('downloads', function() {
 
   return {Manager: Manager};
 });
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// <include src="../../../../ui/webui/resources/js/i18n_template_no_process.js">
+
+i18nTemplate.process(document, loadTimeData);
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.

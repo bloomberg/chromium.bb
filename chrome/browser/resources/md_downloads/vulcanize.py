@@ -31,10 +31,7 @@ _VULCANIZE_ARGS = [
   '--exclude', 'crisper.js',
 
   # These files are already combined and minified.
-  '--exclude', 'polymer-extracted.js',
-  '--exclude', 'polymer-micro-extracted.js',
-  '--exclude', 'polymer-mini-extracted.js',
-  '--exclude', 'polymer_config.js',
+  '--exclude', 'chrome://resources/html/polymer.html',
   '--exclude', 'web-animations-next-lite.min.js',
 
   # These files are dynamically created by C++.
