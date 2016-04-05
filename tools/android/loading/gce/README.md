@@ -77,6 +77,8 @@ where `urls.json` is a JSON dictionary with the keys:
 *   `emulate_device`: Name of the device to emulate. Optional.
 *   `emulate_network`: Type of network emulation. Optional.
 
+You can follow the progress at `http://<instance-ip>:8080/status`.
+
 ## Stop the app in the cloud
 
 ```shell

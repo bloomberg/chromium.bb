@@ -6,6 +6,7 @@ import json
 import os
 import re
 import threading
+import time
 import subprocess
 
 from gcloud import storage
@@ -21,8 +22,12 @@ class ServerApp(object):
     """|configuration_file| is a path to a file containing JSON as described in
     README.md.
     """
-    self._tasks = []
+    self._tasks = []  # List of remaining tasks, only modified by _thread.
+    self._failed_tasks = []  # Failed tasks, only modified by _thread.
     self._thread = None
+    self._tasks_lock = threading.Lock()  # Protects _tasks and _failed_tasks.
+    self._initial_task_count = -1
+    self._start_time = None
     print 'Initializing credentials'
     self._credentials = GoogleCredentials.get_application_default()
     print 'Reading configuration'
@@ -87,6 +92,7 @@ class ServerApp(object):
   def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
                      log_filename):
     """ Generates a trace using analyze.py
+    Runs on _thread.
 
     Args:
       url: URL as a string.
@@ -115,24 +121,37 @@ class ServerApp(object):
                             stdout = log_file)
     return ret == 0
 
-  def _ProcessTasks(self, repeat_count, emulate_device, emulate_network):
+  def _GetCurrentTaskCount(self):
+    """Returns the number of remaining tasks. Thread safe."""
+    self._tasks_lock.acquire()
+    task_count = len(self._tasks)
+    self._tasks_lock.release()
+    return task_count
+
+  def _ProcessTasks(self, tasks, repeat_count, emulate_device, emulate_network):
     """Iterates over _tasks and runs analyze.py on each of them. Uploads the
     resulting traces to Google Cloud Storage.
+    Runs on _thread.
 
     Args:
+      tasks: The list of URLs to process.
       repeat_count: The number of traces generated for each URL.
       emulate_device: Name of the device to emulate. Empty for no emulation.
       emulate_network: Type of network emulation. Empty for no emulation.
     """
+    # The main thread might be reading the task lists, take the lock to modify.
+    self._tasks_lock.acquire()
+    self._tasks = tasks
+    self._failed_tasks = []
+    self._tasks_lock.release()
     failures_dir = self._base_path_in_bucket + 'failures/'
     traces_dir = self._base_path_in_bucket + 'traces/'
     logs_dir = self._base_path_in_bucket + 'analyze_logs/'
     log_filename = 'analyze.log'
     # Avoid special characters in storage object names
     pattern = re.compile(r"[#\?\[\]\*/]")
-    failed_tasks = []
     while len(self._tasks) > 0:
-      url = self._tasks.pop()
+      url = self._tasks[0]
       local_filename = pattern.sub('_', url)
       for repeat in range(repeat_count):
         print 'Generating trace for URL: %s' % url
@@ -143,15 +162,21 @@ class ServerApp(object):
           self._UploadFile(local_filename, traces_dir + remote_filename)
         else:
           print 'analyze.py failed for URL: %s' % url
-          failed_tasks.append({ "url": url, "repeat": repeat})
+          self._tasks_lock.acquire()
+          self._failed_tasks.append({ "url": url, "repeat": repeat})
+          self._tasks_lock.release()
           if os.path.isfile(local_filename):
             self._UploadFile(local_filename, failures_dir + remote_filename)
         print 'Uploading analyze log'
         self._UploadFile(log_filename, logs_dir + remote_filename)
+      # Pop once task is finished, for accurate status tracking.
+      self._tasks_lock.acquire()
+      url = self._tasks.popleft()
+      self._tasks_lock.release()
 
-    if len(failed_tasks) > 0:
+    if len(self._failed_tasks) > 0:
       print 'Uploading failing URLs'
-      self._UploadString(json.dumps(failed_tasks),
+      self._UploadString(json.dumps(self._failed_tasks, indent=2),
                          failures_dir + 'failures.json')
 
   def _SetTaskList(self, http_body):
@@ -164,29 +189,32 @@ class ServerApp(object):
       A string to be sent back to the client, describing the success status of
       the request.
     """
+    if self._thread is not None and self._thread.is_alive():
+      return 'Error: Already running\n'
+
     load_parameters = json.loads(http_body)
     try:
-      self._tasks = load_parameters['urls']
+      tasks = load_parameters['urls']
     except KeyError:
-      return 'Error: invalid urls'
+      return 'Error: invalid urls\n'
     # Optional parameters.
     try:
       repeat_count = int(load_parameters.get('repeat_count', '1'))
     except ValueError:
-      return 'Error: invalid repeat_count'
+      return 'Error: invalid repeat_count\n'
     emulate_device = load_parameters.get('emulate_device', '')
     emulate_network = load_parameters.get('emulate_network', '')
 
-    if len(self._tasks) == 0:
-      return 'Error: Empty task list'
-    elif self._thread is not None and self._thread.is_alive():
-      return 'Error: Already running'
+    if len(tasks) == 0:
+      return 'Error: Empty task list\n'
     else:
+      self._initial_task_count = len(tasks)
+      self._start_time = time.time()
       self._thread = threading.Thread(
           target = self._ProcessTasks,
-          args = (repeat_count, emulate_device, emulate_network))
+          args = (tasks, repeat_count, emulate_device, emulate_network))
       self._thread.start()
-      return 'Starting generation of ' + str(len(self._tasks)) + 'tasks'
+      return 'Starting generation of %s tasks\n' % str(self._initial_task_count)
 
   def __call__(self, environ, start_response):
     path = environ['PATH_INFO']
@@ -200,7 +228,21 @@ class ServerApp(object):
       body = environ['wsgi.input'].read(body_size)
       data = self._SetTaskList(body)
     elif path == '/test':
-      data = 'hello'
+      data = 'hello\n'
+    elif path == '/status':
+      task_count = self._GetCurrentTaskCount()
+      if task_count == 0:
+        data = 'Idle\n'
+      else:
+        data = 'Remaining tasks: %s / %s\n' % (
+            task_count, self._initial_task_count)
+        elapsed = time.time() - self._start_time
+        data += 'Elapsed time: %s seconds\n' % str(elapsed)
+        self._tasks_lock.acquire()
+        failed_tasks = self._failed_tasks
+        self._tasks_lock.release()
+        data += '%s failed tasks:\n' % len(failed_tasks)
+        data += json.dumps(failed_tasks, indent=2)
     else:
       start_response('404 NOT FOUND', [('Content-Length', '0')])
       return iter([''])
