@@ -128,36 +128,6 @@ class SyncNavigationStateVisitor : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(SyncNavigationStateVisitor);
 };
 
-class ProxyToRenderViewVisitor : public RenderViewVisitor {
- public:
-  explicit ProxyToRenderViewVisitor(test_runner::WebTestProxyBase* proxy)
-      : proxy_(proxy),
-        render_view_(NULL) {
-  }
-  ~ProxyToRenderViewVisitor() override {}
-
-  RenderView* render_view() const { return render_view_; }
-
-  bool Visit(RenderView* render_view) override {
-    BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
-    if (!test_runner) {
-      NOTREACHED();
-      return true;
-    }
-    if (test_runner->proxy() == proxy_) {
-      render_view_ = render_view;
-      return false;
-    }
-    return true;
-  }
-
- private:
-  test_runner::WebTestProxyBase* proxy_;
-  RenderView* render_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyToRenderViewVisitor);
-};
-
 class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
  public:
   explicit UseSynchronousResizeModeVisitor(bool enable) : enable_(enable) {}
@@ -516,11 +486,9 @@ void BlinkTestRunner::SetGeofencingMockPosition(double latitude,
   content::SetGeofencingMockPosition(latitude, longitude);
 }
 
-void BlinkTestRunner::SetFocus(test_runner::WebTestProxyBase* proxy,
-                               bool focus) {
-  ProxyToRenderViewVisitor visitor(proxy);
-  RenderView::ForEach(&visitor);
-  if (!visitor.render_view()) {
+void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
+  RenderView* render_view = RenderView::FromWebView(web_view);
+  if (!render_view) {
     NOTREACHED();
     return;
   }
@@ -530,15 +498,15 @@ void BlinkTestRunner::SetFocus(test_runner::WebTestProxyBase* proxy,
     focused_view_ = NULL;
 
   if (focus) {
-    if (focused_view_ != visitor.render_view()) {
+    if (focused_view_ != render_view) {
       if (focused_view_)
         SetFocusAndActivate(focused_view_, false);
-      SetFocusAndActivate(visitor.render_view(), true);
-      focused_view_ = visitor.render_view();
+      SetFocusAndActivate(render_view, true);
+      focused_view_ = render_view;
     }
   } else {
-    if (focused_view_ == visitor.render_view()) {
-      SetFocusAndActivate(visitor.render_view(), false);
+    if (focused_view_ == render_view) {
+      SetFocusAndActivate(render_view, false);
       focused_view_ = NULL;
     }
   }
@@ -817,9 +785,6 @@ void BlinkTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
 // Public methods - -----------------------------------------------------------
 
 void BlinkTestRunner::Reset(bool for_new_test) {
-  // The proxy_ is always non-NULL, it is set right after construction.
-  proxy_->set_widget(render_view()->GetWebView());
-  proxy_->Reset();
   prefs_.Reset();
   routing_ids_.clear();
   session_histories_.clear();
@@ -972,7 +937,7 @@ void BlinkTestRunner::OnSetTestConfiguration(
   ForceResizeRenderView(
       render_view(),
       WebSize(params.initial_size.width(), params.initial_size.height()));
-  SetFocus(proxy_, true);
+  SetFocus(proxy_->web_view(), true);
 }
 
 void BlinkTestRunner::OnSessionHistory(

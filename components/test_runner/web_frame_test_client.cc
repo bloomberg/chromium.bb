@@ -4,6 +4,7 @@
 
 #include "components/test_runner/web_frame_test_client.h"
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -202,7 +203,12 @@ WebFrameTestClient::WebFrameTestClient(
     : test_runner_(test_runner),
       delegate_(delegate),
       accessibility_controller_(accessibility_controller),
-      event_sender_(event_sender) {}
+      event_sender_(event_sender) {
+  DCHECK(test_runner);
+  DCHECK(delegate_);
+  DCHECK(accessibility_controller_);
+  DCHECK(event_sender_);
+}
 
 WebFrameTestClient::~WebFrameTestClient() {}
 

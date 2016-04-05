@@ -15,6 +15,7 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_frame_test_client.h"
+#include "components/test_runner/web_view_test_client.h"
 
 using namespace blink;
 
@@ -98,15 +99,19 @@ AppBannerClient* WebTestInterfaces::GetAppBannerClient() {
   return interfaces_->GetAppBannerClient();
 }
 
-blink::WebFrameClient* WebTestInterfaces::GetWebFrameTestClient() {
-  if (!web_frame_test_client_) {
-    web_frame_test_client_.reset(new WebFrameTestClient(
+scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient() {
+  return make_scoped_ptr(new WebFrameTestClient(
         interfaces_->GetTestRunner(),
         interfaces_->GetDelegate(),
         interfaces_->GetAccessibilityController(),
         interfaces_->GetEventSender()));
-  }
-  return web_frame_test_client_.get();
+}
+
+scoped_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
+    WebTestProxyBase* web_test_proxy_base) {
+  return make_scoped_ptr(new WebViewTestClient(
+        interfaces_->GetTestRunner(), interfaces_->GetDelegate(),
+        interfaces_->GetEventSender(), web_test_proxy_base));
 }
 
 }  // namespace test_runner

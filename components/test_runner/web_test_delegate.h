@@ -197,7 +197,7 @@ class WebTestDelegate {
   virtual void SetGeofencingMockPosition(double latitude, double longitude) = 0;
 
   // Controls which WebView should be focused.
-  virtual void SetFocus(WebTestProxyBase* proxy, bool focus) = 0;
+  virtual void SetFocus(blink::WebView* web_view, bool focus) = 0;
 
   // Controls whether all cookies should be accepted or writing cookies in a
   // third-party context is blocked.

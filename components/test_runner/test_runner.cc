@@ -1095,7 +1095,7 @@ void TestRunnerBindings::SetPluginsEnabled(bool enabled) {
 
 bool TestRunnerBindings::AnimationScheduled() {
   if (runner_)
-    return runner_->AnimationScheduled();
+    return runner_->GetAnimationScheduled();
   else
     return false;
 }
@@ -1683,6 +1683,8 @@ void TestRunner::Install(WebFrame* frame) {
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
   web_content_settings_->SetDelegate(delegate);
+  if (speech_recognizer_)
+    speech_recognizer_->SetDelegate(delegate);
 }
 
 void TestRunner::SetWebView(WebView* webView, WebTestProxyBase* proxy) {
@@ -1711,6 +1713,7 @@ void TestRunner::Reset() {
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
+  views_with_scheduled_animations_.clear();
   wait_until_external_url_load_ = false;
 
   WebSecurityPolicy::resetOriginAccessWhitelists();
@@ -1870,7 +1873,7 @@ void TestRunner::DumpPixelsAsync(
     return;
   }
 
-  test_runner::DumpPixelsAsync(proxy_->GetWebView(), layout_test_runtime_flags_,
+  test_runner::DumpPixelsAsync(proxy_->web_view(), layout_test_runtime_flags_,
                                delegate_->GetDeviceScaleFactorForTest(),
                                callback);
 }
@@ -2554,6 +2557,14 @@ MockWebUserMediaClient* TestRunner::getMockWebUserMediaClient() {
   return user_media_client_.get();
 }
 
+MockWebSpeechRecognizer* TestRunner::getMockWebSpeechRecognizer() {
+  if (!speech_recognizer_.get()) {
+    speech_recognizer_.reset(new MockWebSpeechRecognizer());
+    speech_recognizer_->SetDelegate(delegate_);
+  }
+  return speech_recognizer_.get();
+}
+
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   blink::WebScreenOrientationType orientation;
 
@@ -2694,7 +2705,7 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 
   layout_test_runtime_flags_.set_accept_languages(accept_languages);
   OnLayoutTestRuntimeFlagsChanged();
-  proxy_->GetWebView()->acceptLanguagesChanged();
+  proxy_->web_view()->acceptLanguagesChanged();
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
@@ -2702,8 +2713,17 @@ void TestRunner::SetPluginsEnabled(bool enabled) {
   delegate_->ApplyPreferences();
 }
 
-bool TestRunner::AnimationScheduled() {
-  return proxy_->AnimationScheduled();
+bool TestRunner::GetAnimationScheduled() const {
+  bool is_animation_scheduled = !views_with_scheduled_animations_.empty();
+  return is_animation_scheduled;
+}
+
+void TestRunner::OnAnimationScheduled(blink::WebView* view) {
+  views_with_scheduled_animations_.insert(view);
+}
+
+void TestRunner::OnAnimationBegun(blink::WebView* view) {
+  views_with_scheduled_animations_.erase(view);
 }
 
 void TestRunner::DumpEditingCallbacks() {
@@ -2933,7 +2953,7 @@ void TestRunner::SetAlwaysAcceptCookies(bool accept) {
 }
 
 void TestRunner::SetWindowIsKey(bool value) {
-  delegate_->SetFocus(proxy_, value);
+  delegate_->SetFocus(proxy_->web_view(), value);
 }
 
 std::string TestRunner::PathToLocalResource(const std::string& path) {
@@ -3041,18 +3061,18 @@ void TestRunner::SimulateWebNotificationClose(const std::string& title,
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,
                                                 double confidence) {
-  proxy_->GetSpeechRecognizerMock()->AddMockResult(
-      WebString::fromUTF8(transcript), confidence);
+  getMockWebSpeechRecognizer()->AddMockResult(WebString::fromUTF8(transcript),
+                                              confidence);
 }
 
 void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
                                                const std::string& message) {
-  proxy_->GetSpeechRecognizerMock()->SetError(WebString::fromUTF8(error),
-                                              WebString::fromUTF8(message));
+  getMockWebSpeechRecognizer()->SetError(WebString::fromUTF8(error),
+                                         WebString::fromUTF8(message));
 }
 
 bool TestRunner::WasMockSpeechRecognitionAborted() {
-  return proxy_->GetSpeechRecognizerMock()->WasAborted();
+  return getMockWebSpeechRecognizer()->WasAborted();
 }
 
 void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
@@ -3104,7 +3124,7 @@ void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
 
 void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
-  DumpPixelsAsync(proxy_->GetWebView(),
+  DumpPixelsAsync(proxy_->web_view(),
                   base::Bind(&TestRunner::CapturePixelsCallback,
                              weak_factory_.GetWeakPtr(), base::Passed(&task)));
 }
@@ -3133,7 +3153,7 @@ void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
   CopyImageAtAndCapturePixels(
-      proxy_->GetWebView(), x, y,
+      proxy_->web_view(), x, y,
       base::Bind(&TestRunner::CapturePixelsCallback, weak_factory_.GetWeakPtr(),
                  base::Passed(&task)));
 }

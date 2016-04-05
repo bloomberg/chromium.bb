@@ -1643,8 +1643,8 @@ void EventSender::ZoomPageIn() {
       interfaces_->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->GetWebView()->setZoomLevel(
-        window_list.at(i)->GetWebView()->zoomLevel() + 1);
+    window_list.at(i)->web_view()->setZoomLevel(
+        window_list.at(i)->web_view()->zoomLevel() + 1);
   }
 }
 
@@ -1653,8 +1653,8 @@ void EventSender::ZoomPageOut() {
       interfaces_->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->GetWebView()->setZoomLevel(
-        window_list.at(i)->GetWebView()->zoomLevel() - 1);
+    window_list.at(i)->web_view()->setZoomLevel(
+        window_list.at(i)->web_view()->zoomLevel() - 1);
   }
 }
 
@@ -1663,8 +1663,8 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
       interfaces_->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->GetWebView()->setZoomLevel(
-        std::log(zoom_factor) / std::log(1.2));
+    window_list.at(i)->web_view()->setZoomLevel(std::log(zoom_factor) /
+                                                std::log(1.2));
   }
 }
 

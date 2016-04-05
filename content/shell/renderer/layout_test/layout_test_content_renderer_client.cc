@@ -56,6 +56,9 @@ void WebTestProxyCreated(RenderView* render_view,
     LayoutTestRenderProcessObserver::GetInstance()->SetTestDelegate(
         test_runner);
   }
+  proxy->set_view_test_client(LayoutTestRenderProcessObserver::GetInstance()
+                                  ->test_interfaces()
+                                  ->CreateWebViewTestClient(proxy));
   proxy->SetInterfaces(
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces());
   test_runner->proxy()->SetDelegate(
@@ -66,7 +69,7 @@ void WebFrameTestProxyCreated(RenderFrame* render_frame,
                               test_runner::WebFrameTestProxyBase* proxy) {
   proxy->set_test_client(LayoutTestRenderProcessObserver::GetInstance()
                              ->test_interfaces()
-                             ->GetWebFrameTestClient());
+                             ->CreateWebFrameTestClient());
 }
 
 }  // namespace
@@ -92,6 +95,10 @@ void LayoutTestContentRendererClient::RenderFrameCreated(
 void LayoutTestContentRendererClient::RenderViewCreated(
     RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
+
+  test_runner::WebTestProxyBase* proxy = GetWebTestProxyBase(render_view);
+  proxy->set_web_widget(render_view->GetWebView());
+  proxy->set_web_view(render_view->GetWebView());
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);

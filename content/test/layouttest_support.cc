@@ -64,11 +64,14 @@ base::LazyInstance<ViewProxyCreationCallback>::Leaky
 base::LazyInstance<FrameProxyCreationCallback>::Leaky
     g_frame_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
 
+using WebTestProxyType = test_runner::WebTestProxy<RenderViewImpl,
+                                                   CompositorDependencies*,
+                                                   const ViewMsg_New_Params&>;
+
 RenderViewImpl* CreateWebTestProxy(CompositorDependencies* compositor_deps,
                                    const ViewMsg_New_Params& params) {
-  typedef test_runner::WebTestProxy<RenderViewImpl, CompositorDependencies*,
-                                    const ViewMsg_New_Params&> ProxyType;
-  ProxyType* render_view_proxy = new ProxyType(compositor_deps, params);
+  WebTestProxyType* render_view_proxy =
+      new WebTestProxyType(compositor_deps, params);
   if (g_view_test_proxy_callback == 0)
     return render_view_proxy;
   g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
@@ -102,6 +105,12 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
 #endif  // OS_WIN
 
 }  // namespace
+
+test_runner::WebTestProxyBase* GetWebTestProxyBase(RenderView* render_view) {
+  WebTestProxyType* render_view_proxy =
+      static_cast<WebTestProxyType*>(render_view);
+  return static_cast<test_runner::WebTestProxyBase*>(render_view_proxy);
+}
 
 void EnableWebTestProxyCreation(
     const ViewProxyCreationCallback& view_proxy_creation_callback,

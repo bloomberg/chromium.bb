@@ -31,6 +31,7 @@ class DictionaryValue;
 namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
+class WebView;
 struct WebRect;
 }
 
@@ -114,7 +115,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetGeofencingMockProvider(bool service_available) override;
   void ClearGeofencingMockProvider() override;
   void SetGeofencingMockPosition(double latitude, double longitude) override;
-  void SetFocus(test_runner::WebTestProxyBase* proxy, bool focus) override;
+  void SetFocus(blink::WebView* web_view, bool focus) override;
   void SetAcceptAllCookies(bool accept) override;
   std::string PathToLocalResource(const std::string& resource) override;
   void SetLocale(const std::string& locale) override;

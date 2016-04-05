@@ -43,6 +43,7 @@ namespace test_runner {
 
 class InvokeCallbackTask;
 class MockScreenOrientationClient;
+class MockWebSpeechRecognizer;
 class MockWebUserMediaClient;
 class TestInterfaces;
 class WebContentSettings;
@@ -86,11 +87,14 @@ class TestRunner : public WebTestRunner,
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
 
-  // Methods used by WebTestProxyBase and WebFrameTestClient.
+  // Methods used by WebViewTestClient and WebFrameTestClient.
+  void OnAnimationScheduled(blink::WebView* view);
+  void OnAnimationBegun(blink::WebView* view);
   std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
   MockWebUserMediaClient* getMockWebUserMediaClient();
+  MockWebSpeechRecognizer* getMockWebSpeechRecognizer();
   bool isPrinting() const;
   bool shouldDumpAsTextWithPixelResults();
   bool shouldDumpAsCustomText() const;
@@ -348,7 +352,9 @@ class TestRunner : public WebTestRunner,
   // Enable or disable plugins.
   void SetPluginsEnabled(bool enabled);
 
-  bool AnimationScheduled();
+  // Returns |true| if an animation has been scheduled in one or more WebViews
+  // participating in the layout test.
+  bool GetAnimationScheduled() const;
 
   ///////////////////////////////////////////////////////////////////////////
   // Methods that modify the state of TestRunner
@@ -808,6 +814,7 @@ class TestRunner : public WebTestRunner,
   bool use_mock_theme_;
 
   scoped_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
+  scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
   scoped_ptr<MockWebUserMediaClient> user_media_client_;
 
   // Number of currently active color choosers.
@@ -815,6 +822,8 @@ class TestRunner : public WebTestRunner,
 
   // Captured drag image.
   blink::WebImage drag_image_;
+
+  std::set<blink::WebView*> views_with_scheduled_animations_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

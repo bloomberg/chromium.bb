@@ -33,6 +33,7 @@ class WebFrameTestClient;
 class WebTestDelegate;
 class WebTestProxyBase;
 class WebTestRunner;
+class WebViewTestClient;
 
 class TEST_RUNNER_EXPORT WebTestInterfaces {
  public:
@@ -66,15 +67,21 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   TestInterfaces* GetTestInterfaces();
 
-  // Gets a borrowed pointer to a WebFrameClient implementation providing
-  // test behavior (i.e. forwarding javascript console output to the test
-  // harness).  The caller should guarantee that the returned pointer
-  // won't be used beyond the lifetime of WebTestInterfaces.
-  blink::WebFrameClient* GetWebFrameTestClient();
+  // Creates a WebFrameClient implementation providing test behavior (i.e.
+  // forwarding javascript console output to the test harness).  The caller
+  // should guarantee that the returned object won't be used beyond the lifetime
+  // of WebTestInterfaces.
+  scoped_ptr<WebFrameTestClient> CreateWebFrameTestClient();
+
+  // Creates a WebViewClient implementation providing test behavior (i.e.
+  // providing a mocked speech recognizer).  The caller should guarantee that
+  // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
+  // and/or the lifetime of |web_test_proxy_base|.
+  scoped_ptr<WebViewTestClient> CreateWebViewTestClient(
+      WebTestProxyBase* web_test_proxy_base);
 
  private:
   scoped_ptr<TestInterfaces> interfaces_;
-  scoped_ptr<WebFrameTestClient> web_frame_test_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestInterfaces);
 };
