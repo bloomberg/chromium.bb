@@ -40,6 +40,7 @@ public abstract class SkipCheck {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected static <T extends Annotation> List<T> getAnnotations(AnnotatedElement element,
             Class<T> annotationClass) {
         AnnotatedElement parent = (element instanceof Method)

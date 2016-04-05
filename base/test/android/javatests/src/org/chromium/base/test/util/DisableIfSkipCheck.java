@@ -43,6 +43,7 @@ public class DisableIfSkipCheck extends SkipCheck {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     private boolean abi(DisableIf.Build v) {
         if (v.supported_abis_includes().isEmpty()) return true;
 
