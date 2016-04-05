@@ -75,7 +75,6 @@
         'web_state/web_state_impl_unittest.mm',
         'web_state/web_view_internal_creation_util_unittest.mm',
         'web_state/wk_web_view_security_util_unittest.mm',
-        'web_view_counter_impl_unittest.mm',
         'webui/crw_web_ui_manager_unittest.mm',
         'webui/crw_web_ui_page_builder_unittest.mm',
         'webui/url_fetcher_block_adapter_unittest.mm',

@@ -15,23 +15,13 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/browsing_data_partition.h"
 #include "ios/web/public/web_client.h"
-#import "ios/web/public/web_view_counter.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/weak_nsobject_counter.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-#import "ios/web/web_view_counter_impl.h"
 
 #if !defined(NDEBUG)
 
 namespace {
-// Returns the counter of all the active WKWebViews.
-// DEPRECATED. Please use web::WebViewCounter instead.
-// TODO(shreyasv): Remove this once all callers have stopped using it.
-// crbug.com/480507
-web::WeakNSObjectCounter& GetActiveWKWebViewCounter() {
-  static web::WeakNSObjectCounter active_wk_web_view_counter;
-  return active_wk_web_view_counter;
-}
 
 // Decides if web views can be created.
 bool gAllowWebViewCreation = NO;
@@ -100,15 +90,6 @@ void PreWKWebViewCreation(BrowserState* browser_state) {
 void PostWKWebViewCreation(WKWebView* web_view, BrowserState* browser_state) {
   DCHECK(web_view);
 
-#if !defined(NDEBUG)
-  GetActiveWKWebViewCounter().Insert(web_view);
-#endif
-
-  WebViewCounterImpl* web_view_counter =
-      WebViewCounterImpl::FromBrowserState(browser_state);
-  DCHECK(web_view_counter);
-  web_view_counter->InsertWKWebView(web_view);
-
   // TODO(stuartmorgan): Figure out how to make this work; two different client
   // methods for the two web view types?
   // web::GetWebClient()->PostWebViewCreation(result);
@@ -168,16 +149,6 @@ WKWebView* CreateWKWebView(CGRect frame,
   result.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
 
   return result;
-}
-
-NSUInteger GetActiveWKWebViewsCount() {
-#if defined(NDEBUG)
-  // This should not be used in release builds.
-  CHECK(0);
-  return 0;
-#else
-  return GetActiveWKWebViewCounter().Size();
-#endif
 }
 
 #if !defined(NDEBUG)

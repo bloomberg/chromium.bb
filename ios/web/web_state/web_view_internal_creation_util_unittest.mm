@@ -120,24 +120,5 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {
             [[web_view2 configuration] processPool]);
 }
 
-#if !defined(NDEBUG)
-
-// Tests that getting a WKWebView from the util methods correctly maintains
-// the global active wkwebview count (which is debug-only).
-TEST_F(WebViewCreationUtilsTest, GetActiveWKWebViewsCount) {
-  base::scoped_nsobject<WKWebView> web_view1(
-      CreateWKWebView(CGRectZero, GetBrowserState()));
-  EXPECT_EQ(1U, GetActiveWKWebViewsCount());
-  base::scoped_nsobject<WKWebView> web_view2(
-      CreateWKWebView(CGRectZero, GetBrowserState()));
-  EXPECT_EQ(2U, GetActiveWKWebViewsCount());
-  web_view2.reset();
-  EXPECT_EQ(1U, GetActiveWKWebViewsCount());
-  web_view1.reset();
-  EXPECT_EQ(0U, GetActiveWKWebViewsCount());
-}
-
-#endif  // defined(NDEBUG)
-
 }  // namespace
 }  // namespace web

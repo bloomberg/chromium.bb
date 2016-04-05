@@ -42,14 +42,6 @@ WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state);
 
-// Returns the total number of WKWebViews that are currently present.
-// NOTE: This only works in Debug builds and should not be used in Release
-// builds.
-// DEPRECATED. Please use web::WebViewCounter instead.
-// TODO(shreyasv): Remove this once all callers have stopped using it.
-// crbug.com/480507
-NSUInteger GetActiveWKWebViewsCount();
-
 #if !defined(NDEBUG)
 // Returns true if the creation of web views using alloc, init has been allowed
 // by the embedder.
