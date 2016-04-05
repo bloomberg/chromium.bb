@@ -52,6 +52,7 @@ bool IsSharedByGroup(int column_id) {
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
+    case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
     case IDS_TASK_MANAGER_CPU_COLUMN:
     case IDS_TASK_MANAGER_NET_COLUMN:
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
@@ -312,6 +313,10 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
       return stringifier_->GetMemoryUsageText(
           observed_task_manager()->GetPhysicalMemoryUsage(tasks_[row]), false);
 
+    case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
+      return stringifier_->GetMemoryUsageText(
+          observed_task_manager()->GetSwappedMemoryUsage(tasks_[row]), false);
+
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
       return stringifier_->GetProcessIdText(
           observed_task_manager()->GetProcessId(tasks_[row]));
@@ -442,6 +447,11 @@ int TaskManagerTableModel::CompareValues(int row1,
       return ValueCompare(
           observed_task_manager()->GetPhysicalMemoryUsage(tasks_[row1]),
           observed_task_manager()->GetPhysicalMemoryUsage(tasks_[row2]));
+
+    case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
+      return ValueCompare(
+          observed_task_manager()->GetSwappedMemoryUsage(tasks_[row1]),
+          observed_task_manager()->GetSwappedMemoryUsage(tasks_[row2]));
 
     case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
       return ValueCompare(
@@ -614,13 +624,16 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
+    case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
       type = REFRESH_TYPE_MEMORY;
       if (table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
-              IDS_TASK_MANAGER_SHARED_MEM_COLUMN)) {
+              IDS_TASK_MANAGER_SHARED_MEM_COLUMN) ||
+          table_view_delegate_->IsColumnVisible(
+              IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN)) {
         new_visibility = true;
       }
       break;

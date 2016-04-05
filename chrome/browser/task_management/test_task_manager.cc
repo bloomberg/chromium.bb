@@ -38,6 +38,10 @@ int64_t TestTaskManager::GetSharedMemoryUsage(TaskId task_id) const {
   return -1;
 }
 
+int64_t TestTaskManager::GetSwappedMemoryUsage(TaskId task_id) const {
+  return -1;
+}
+
 int64_t TestTaskManager::GetGpuMemoryUsage(TaskId task_id,
                                            bool* has_duplicates) const {
   return -1;

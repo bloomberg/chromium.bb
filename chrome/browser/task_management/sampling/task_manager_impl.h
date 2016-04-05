@@ -41,6 +41,7 @@ class TaskManagerImpl :
   int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;
   int64_t GetPrivateMemoryUsage(TaskId task_id) const override;
   int64_t GetSharedMemoryUsage(TaskId task_id) const override;
+  int64_t GetSwappedMemoryUsage(TaskId task_id) const override;
   int64_t GetGpuMemoryUsage(TaskId task_id,
                             bool* has_duplicates) const override;
   int GetIdleWakeupsPerSecond(TaskId task_id) const override;

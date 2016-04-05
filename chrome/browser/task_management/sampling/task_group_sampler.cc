@@ -145,6 +145,9 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
     memory_usage.physical_bytes -=
         static_cast<int64_t>(ws_usage.shareable * 1024);
 #endif
+#if defined(OS_CHROMEOS)
+    memory_usage.swapped_bytes = ws_usage.swapped * 1024;
+#endif
   }
 
   return memory_usage;

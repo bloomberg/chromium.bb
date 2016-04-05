@@ -31,6 +31,12 @@ const TableColumnData kColumns[] = {
     arraysize("800 MiB") * kCharWidth, -1, true, false, false },
   { IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0,
     arraysize("800 MiB") * kCharWidth, -1, true, false, false },
+
+#if defined(OS_CHROMEOS)
+  { IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+    arraysize("800 MiB") * kCharWidth, -1, true, false, false },
+#endif
+
   { IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0,
     arraysize("99.9") * kCharWidth, -1, true, false, true },
   { IDS_TASK_MANAGER_NET_COLUMN, ui::TableColumn::RIGHT, -1, 0,
@@ -98,6 +104,7 @@ const char kSortIsAscendingKey[] = "sort_is_ascending";
   def(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) \
   def(IDS_TASK_MANAGER_SHARED_MEM_COLUMN) \
   def(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) \
+  def(IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN) \
   def(IDS_TASK_MANAGER_CPU_COLUMN) \
   def(IDS_TASK_MANAGER_NET_COLUMN) \
   def(IDS_TASK_MANAGER_PROCESS_ID_COLUMN) \

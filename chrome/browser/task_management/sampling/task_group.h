@@ -70,6 +70,9 @@ class TaskGroup {
   int64_t private_bytes() const { return memory_usage_.private_bytes; }
   int64_t shared_bytes() const { return memory_usage_.shared_bytes; }
   int64_t physical_bytes() const { return memory_usage_.physical_bytes; }
+#if defined(OS_CHROMEOS)
+  int64_t swapped_bytes() const { return memory_usage_.swapped_bytes; }
+#endif
   int64_t gpu_memory() const { return gpu_memory_; }
   bool gpu_memory_has_duplicates() const { return gpu_memory_has_duplicates_; }
   int64_t per_process_network_usage() const {

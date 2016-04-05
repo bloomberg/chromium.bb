@@ -95,6 +95,14 @@ int64_t TaskManagerImpl::GetSharedMemoryUsage(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->shared_bytes();
 }
 
+int64_t TaskManagerImpl::GetSwappedMemoryUsage(TaskId task_id) const {
+#if defined(OS_CHROMEOS)
+  return GetTaskGroupByTaskId(task_id)->swapped_bytes();
+#else
+  return -1;
+#endif
+}
+
 int64_t TaskManagerImpl::GetGpuMemoryUsage(TaskId task_id,
                                            bool* has_duplicates) const {
   const TaskGroup* task_group = GetTaskGroupByTaskId(task_id);
