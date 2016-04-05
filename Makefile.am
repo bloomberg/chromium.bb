@@ -102,7 +102,8 @@ module_LTLIBRARIES += systemd-notify.la
 systemd_notify_la_LDFLAGS = -module -avoid-version
 systemd_notify_la_LIBADD = $(SYSTEMD_DAEMON_LIBS)
 systemd_notify_la_CFLAGS =			\
-	$(SYSTEMD_DAEMON_LIBS)			\
+	$(COMPOSITOR_CFLAGS)			\
+	$(SYSTEMD_DAEMON_CFLAGS)		\
 	$(PIXMAN_CFLAGS)			\
 	$(AM_CFLAGS)
 systemd_notify_la_SOURCES =			\
