@@ -52,7 +52,7 @@ const int kComparisonHeight = 600;
 // Different platforms have slightly different pixel output, due to different
 // graphics implementations. Slightly different pixels (in BGR space) are still
 // counted as a matching pixel by this simple manhattan distance threshold.
-const int kPixelManhattanDistanceTolerance = 20;
+const int kPixelManhattanDistanceTolerance = 25;
 
 std::string RunTestScript(base::StringPiece test_script,
                           content::WebContents* contents,
@@ -190,10 +190,10 @@ bool SnapshotMatches(const base::FilePath& reference, const SkBitmap& bitmap) {
   SkAutoLockPixels lock_image(bitmap);
   int32_t* pixels = static_cast<int32_t*>(bitmap.getPixels());
 
-  int stride = bitmap.rowBytes();
+  bool success = true;
   for (int y = 0; y < kComparisonHeight; ++y) {
     for (int x = 0; x < kComparisonWidth; ++x) {
-      int32_t pixel = pixels[y * stride / sizeof(int32_t) + x];
+      int32_t pixel = pixels[y * bitmap.rowBytes() / sizeof(int32_t) + x];
       int pixel_b = pixel & 0xFF;
       int pixel_g = (pixel >> 8) & 0xFF;
       int pixel_r = (pixel >> 16) & 0xFF;
@@ -210,12 +210,12 @@ bool SnapshotMatches(const base::FilePath& reference, const SkBitmap& bitmap) {
       if (manhattan_distance > kPixelManhattanDistanceTolerance) {
         ADD_FAILURE() << "Pixel test failed on (" << x << ", " << y << "). " <<
             "Pixel manhattan distance: " << manhattan_distance << ".";
-        return false;
+        success = false;
       }
     }
   }
 
-  return true;
+  return success;
 }
 
 // |snapshot_matches| is set to true if the snapshot matches the reference and
