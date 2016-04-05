@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.snippets.SnippetItemDecoration;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -385,6 +386,7 @@ public class NewTabPageView extends FrameLayout
                 }
             });
             initializeSearchBoxRecyclerViewScrollHandling();
+            mRecyclerView.addItemDecoration(new SnippetItemDecoration(getContext()));
         } else {
             initializeSearchBoxScrollHandling();
         }

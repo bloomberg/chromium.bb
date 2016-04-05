@@ -501,6 +501,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticle.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticleViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetHeaderListItem.java",
+  "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetItemDecoration.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsBridge.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsController.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",

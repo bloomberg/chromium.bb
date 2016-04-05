@@ -9,18 +9,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:background="@drawable/bg_find_toolbar_popup">
-
-    <ImageView
-        android:id="@+id/article_thumbnail"
-        android:layout_width="@dimen/snippets_thumbnail_size"
-        android:layout_height="@dimen/snippets_thumbnail_size"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="16dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@null"
-        android:src="@null"/>
+    android:background="@color/snippets_background_color">
 
     <TextView
         android:id="@+id/article_headline"
@@ -57,4 +46,15 @@
         android:ellipsize="end"
         android:textSize="14sp"
         android:textColor="@color/snippets_publisher_name_color" />
+        
+    <ImageView
+        android:id="@+id/article_thumbnail"
+        android:layout_width="@dimen/snippets_thumbnail_size"
+        android:layout_height="@dimen/snippets_thumbnail_size"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="16dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null"
+        android:src="@null"/>
 </RelativeLayout>
