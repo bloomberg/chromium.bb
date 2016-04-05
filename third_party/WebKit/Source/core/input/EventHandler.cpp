@@ -130,6 +130,38 @@ const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::TouchSt
     }
 }
 
+// Convert |event->deltaMode()| to scroll granularity and output as |granularity|.
+bool wheelGranularityToScrollGranularity(const WheelEvent* event, ScrollGranularity* granularity)
+{
+    DCHECK(granularity);
+    switch (event->deltaMode()) {
+    case WheelEvent::DOM_DELTA_PAGE:
+        *granularity = ScrollByPage;
+        return true;
+    case WheelEvent::DOM_DELTA_LINE:
+        *granularity = ScrollByLine;
+        return true;
+    case WheelEvent::DOM_DELTA_PIXEL:
+        *granularity = event->hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
+        return true;
+    default:
+        // Could be other values since the event might come from JavaScript.
+        return false;
+    }
+}
+
+// Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
+// If a mouse event handler changes the input element type to one that has a widget associated,
+// we'd like to EventHandler::handleMousePressEvent to pass the event to the widget and thus the
+// event target node can't still be the shadow node.
+bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& mev)
+{
+    Node* targetNode = mev.innerNode();
+    if (!targetNode || !targetNode->parentNode())
+        return true;
+    return targetNode->isShadowRoot() && isHTMLInputElement(*toShadowRoot(targetNode)->host());
+}
+
 } // namespace
 
 using namespace HTMLNames;
@@ -187,29 +219,6 @@ private:
     bool m_isCursorChange;
     Cursor m_cursor;
 };
-
-static inline ScrollGranularity wheelGranularityToScrollGranularity(WheelEvent* event)
-{
-    unsigned deltaMode = event->deltaMode();
-    if (deltaMode == WheelEvent::DOM_DELTA_PAGE)
-        return ScrollByPage;
-    if (deltaMode == WheelEvent::DOM_DELTA_LINE)
-        return ScrollByLine;
-    ASSERT(deltaMode == WheelEvent::DOM_DELTA_PIXEL);
-    return event->hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
-}
-
-// Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
-// If a mouse event handler changes the input element type to one that has a widget associated,
-// we'd like to EventHandler::handleMousePressEvent to pass the event to the widget and thus the
-// event target node can't still be the shadow node.
-static inline bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& mev)
-{
-    Node* targetNode = mev.innerNode();
-    if (!targetNode || !targetNode->parentNode())
-        return true;
-    return targetNode->isShadowRoot() && isHTMLInputElement(*toShadowRoot(targetNode)->host());
-}
 
 void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
     std::deque<int>& scrollChain)
@@ -1860,7 +1869,9 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     if (!wheelEvent->canScroll())
         return;
 
-    ScrollGranularity granularity = wheelGranularityToScrollGranularity(wheelEvent);
+    ScrollGranularity granularity;
+    if (!wheelGranularityToScrollGranularity(wheelEvent, &granularity))
+        return;
     Node* node = nullptr;
 
     // Diagonal movement on a MacBook pro is an example of a 2-dimensional
