@@ -364,80 +364,46 @@ void PrintSupportedDevices() {
   // status code. iOS Simluator handles things a bit differently depending on
   // the version, so first determine the iOS version being used.
   BOOL badEntryFound = NO;
-  NSString* versionString =
-      [[[session sessionConfig] simulatedSystemRoot] sdkVersion];
-  NSInteger majorVersion = [[[versionString componentsSeparatedByString:@"."]
-      objectAtIndex:0] intValue];
-  if (majorVersion <= 6) {
-    // In iOS 6 and before, logging from the simulated apps went to the main
-    // system logs, so use ASL to check if the simulated app exited abnormally
-    // by looking for system log messages from launchd that refer to the
-    // simulated app's PID. Limit query to messages in the last minute since
-    // PIDs are cyclical.
-    aslmsg query = asl_new(ASL_TYPE_QUERY);
-    asl_set_query(query, ASL_KEY_SENDER, "launchd",
-                  ASL_QUERY_OP_EQUAL | ASL_QUERY_OP_SUBSTRING);
-    char session_id[20];
-    if (snprintf(session_id, 20, "%d", [session simulatedApplicationPID]) < 0) {
-      LogError(@"Failed to get [session simulatedApplicationPID]");
-      exit(kExitFailure);
-    }
-    asl_set_query(query, ASL_KEY_REF_PID, session_id, ASL_QUERY_OP_EQUAL);
-    asl_set_query(query, ASL_KEY_TIME, "-1m", ASL_QUERY_OP_GREATER_EQUAL);
 
-    // Log any messages found, and take note of any messages that may indicate
-    // the app crashed or did not exit cleanly.
-    aslresponse response = asl_search(NULL, query);
-    aslmsg entry;
-    while ((entry = aslresponse_next(response)) != NULL) {
-      const char* message = asl_get(entry, ASL_KEY_MSG);
-      LogWarning(@"Console message: %s", message);
-      // Some messages are harmless, so don't trigger a failure for them.
-      if (strstr(message, "The following job tried to hijack the service"))
-        continue;
-      badEntryFound = YES;
-    }
-  } else {
-    // Otherwise, the iOS Simulator's system logging is sandboxed, so parse the
-    // sandboxed system.log file for known errors.
-    NSString* path;
-    NSString* dataPath = session.sessionConfig.device.dataPath;
-    path =
-        [dataPath stringByAppendingPathComponent:@"Library/Logs/system.log"];
-    NSFileManager* fileManager = [NSFileManager defaultManager];
-    if ([fileManager fileExistsAtPath:path]) {
-      NSString* content =
-          [NSString stringWithContentsOfFile:path
-                                    encoding:NSUTF8StringEncoding
-                                       error:NULL];
-      NSArray* lines = [content componentsSeparatedByCharactersInSet:
-          [NSCharacterSet newlineCharacterSet]];
-      NSString* simulatedAppPID =
-          [NSString stringWithFormat:@"%d", session.simulatedApplicationPID];
-      NSArray* kErrorStrings = @[
-        @"Service exited with abnormal code:",
-        @"Service exited due to signal:",
-      ];
-      for (NSString* line in lines) {
-        if ([line rangeOfString:simulatedAppPID].location != NSNotFound) {
-          for (NSString* errorString in kErrorStrings) {
-            if ([line rangeOfString:errorString].location != NSNotFound) {
-              LogWarning(@"Console message: %@", line);
-              badEntryFound = YES;
-              break;
-            }
-          }
-          if (badEntryFound) {
+  // The iOS Simulator's system logging is sandboxed, so parse the sandboxed
+  // system.log file for known errors.
+  NSString* path;
+  NSString* dataPath = session.sessionConfig.device.dataPath;
+  path =
+      [dataPath stringByAppendingPathComponent:@"Library/Logs/system.log"];
+  NSFileManager* fileManager = [NSFileManager defaultManager];
+  if ([fileManager fileExistsAtPath:path]) {
+    NSString* content =
+        [NSString stringWithContentsOfFile:path
+                                  encoding:NSUTF8StringEncoding
+                                     error:NULL];
+    NSArray* lines = [content componentsSeparatedByCharactersInSet:
+        [NSCharacterSet newlineCharacterSet]];
+    NSString* simulatedAppPID =
+        [NSString stringWithFormat:@"%d", session.simulatedApplicationPID];
+    NSArray* kErrorStrings = @[
+      @"Service exited with abnormal code:",
+      @"Service exited due to signal:",
+    ];
+    for (NSString* line in lines) {
+      if ([line rangeOfString:simulatedAppPID].location != NSNotFound) {
+        for (NSString* errorString in kErrorStrings) {
+          if ([line rangeOfString:errorString].location != NSNotFound) {
+            LogWarning(@"Console message: %@", line);
+            badEntryFound = YES;
             break;
           }
         }
+        if (badEntryFound) {
+          break;
+        }
       }
-      // Remove the log file so subsequent invocations of iossim won't be
-      // looking at stale logs.
-      remove([path fileSystemRepresentation]);
-    } else {
-        LogWarning(@"Unable to find system log at '%@'.", path);
     }
+    // Remove the log file so subsequent invocations of iossim won't be
+    // looking at stale logs.
+    remove([path fileSystemRepresentation]);
+  } else {
+      LogWarning(@"Unable to find system log at '%@'.", path);
   }
 
   // If the query returned any nasty-looking results, iossim should exit with
