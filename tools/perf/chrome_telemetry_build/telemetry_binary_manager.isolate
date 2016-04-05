@@ -3,16 +3,6 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="win"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/crash_service<(EXECUTABLE_SUFFIX)',
-          '../../../components/crash/content/tools/generate_breakpad_symbols.py',
-        ],
-      },
-    }],
-  ],
-  'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [

@@ -3259,14 +3259,10 @@
                 '../breakpad/breakpad.gyp:dump_syms#host',
               ],
             }],
-            ['OS=="mac"', {
+            ['OS=="mac" or OS=="win"', {
               'dependencies': [
+                # TODO(kbr): port this dependency to GN.
                 '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
-              ],
-            }],
-            ['OS=="win"', {
-              'dependencies': [
-                'chrome.gyp:crash_service',
               ],
             }],
           ],

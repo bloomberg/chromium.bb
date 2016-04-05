@@ -23,5 +23,12 @@
         ],
       },
     }],
+    ['OS=="win"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/crashpad_database_util<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
   ],
 }

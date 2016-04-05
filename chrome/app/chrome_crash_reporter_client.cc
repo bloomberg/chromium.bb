@@ -282,11 +282,6 @@ base::FilePath ChromeCrashReporterClient::GetReporterLogFilename() {
 
 bool ChromeCrashReporterClient::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
-#if defined(OS_WIN)
-  // TODO(scottmg): Consider supporting --user-data-dir. See
-  // https://crbug.com/565446.
-  return chrome::GetDefaultCrashDumpLocation(crash_dir);
-#else
   // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
   // location to write breakpad crash dumps can be set.
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -294,9 +289,24 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
     base::FilePath crash_dumps_dir_path =
         base::FilePath::FromUTF8Unsafe(alternate_crash_dump_location);
+
+#if defined(OS_WIN)
+    // If this environment variable exists, then for the time being,
+    // short-circuit how it's handled on Windows. Honoring this
+    // variable is required in order to symbolize stack traces in
+    // Telemetry based tests: http://crbug.com/561763.
+    *crash_dir = crash_dumps_dir_path;
+    return true;
+#else
     PathService::Override(chrome::DIR_CRASH_DUMPS, crash_dumps_dir_path);
+#endif
   }
 
+#if defined(OS_WIN)
+  // TODO(scottmg): Consider supporting --user-data-dir. See
+  // https://crbug.com/565446.
+  return chrome::GetDefaultCrashDumpLocation(crash_dir);
+#else
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 #endif
 }

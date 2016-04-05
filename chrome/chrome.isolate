@@ -121,6 +121,23 @@
         ],
       },
     }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/chrome.exe.pdb',
+        ],
+      },
+    }],
+    ['OS=="win" and component=="shared_library" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/base.dll.pdb',
+          '<(PRODUCT_DIR)/blink_platform.dll.pdb',
+          '<(PRODUCT_DIR)/blink_web.dll.pdb',
+          '<(PRODUCT_DIR)/content.dll.pdb',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../base/base.isolate',

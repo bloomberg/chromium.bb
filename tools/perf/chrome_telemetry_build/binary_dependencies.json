@@ -1,22 +1,24 @@
 {
   "config_type": "BaseConfig",
   "dependencies": {
-    "crash_service": {
-      "file_info": {
-        "win_AMD64": {
-          "local_paths": [
-            "../../../out/Debug/crash_service.exe",
-            "../../../out/Release/crash_service.exe"
-          ]
-        }
-      }
-    },
    "crashpad_database_util": {
       "file_info": {
         "mac_x86_64": {
           "local_paths": [
             "../../../out/Debug/crashpad_database_util",
             "../../../out/Release/crashpad_database_util"
+          ]
+        },
+        "win_AMD64": {
+          "local_paths": [
+            "../../../out/Debug/crashpad_database_util.exe",
+            "../../../out/Release/crashpad_database_util.exe"
+          ]
+        },
+        "win_x86": {
+          "local_paths": [
+            "../../../out/Debug/crashpad_database_util.exe",
+            "../../../out/Release/crashpad_database_util.exe"
           ]
         }
       }
