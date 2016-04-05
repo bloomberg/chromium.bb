@@ -278,8 +278,8 @@ public class SdchTest extends CronetTestBase {
 
     // Returns whether a file contains a particular string.
     private boolean fileContainsString(String filename, String content) throws IOException {
-        BufferedReader reader = new BufferedReader(
-                new FileReader(CronetTestFramework.getTestStorage(getContext()) + "/" + filename));
+        BufferedReader reader = new BufferedReader(new FileReader(
+                CronetTestFramework.getTestStorage(getContext()) + "/prefs/" + filename));
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.contains(content)) {

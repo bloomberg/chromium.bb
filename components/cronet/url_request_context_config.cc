@@ -25,6 +25,8 @@ namespace cronet {
 
 namespace {
 
+// Name of disk cache directory.
+const char kDiskCacheDirectoryName[] = "disk_cache";
 // TODO(xunjieli): Refactor constants in io_thread.cc.
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicConnectionOptions[] = "connection_options";
@@ -276,7 +278,9 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
     if (http_cache == DISK && !storage_path.empty()) {
       cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
-      cache_params.path = base::FilePath(storage_path);
+      cache_params.path =
+          base::FilePath(storage_path)
+              .Append(FILE_PATH_LITERAL(kDiskCacheDirectoryName));
     } else {
       cache_params.type =
           net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;

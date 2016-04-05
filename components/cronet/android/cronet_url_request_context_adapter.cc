@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <map>
 #include <utility>
 
@@ -57,6 +58,14 @@
 namespace {
 
 const char kHttpServerProperties[] = "net.http_server_properties";
+// Current version of disk storage.
+const int32_t kStorageVersion = 1;
+// Version number used when the version of disk storage is unknown.
+const uint32_t kStorageVersionUnknown = 0;
+// Name of preference directory.
+const char kPrefsDirectoryName[] = "prefs";
+// Name of preference file.
+const char kPrefsFileName[] = "local_prefs.json";
 
 // Connects the HttpServerPropertiesManager's storage to the prefs.
 class PrefServiceAdapter
@@ -277,6 +286,59 @@ std::string ConvertNullableJavaStringToUTF8(JNIEnv* env,
   return str;
 }
 
+bool IsCurrentVersion(const base::FilePath& version_filepath) {
+  if (!base::PathExists(version_filepath))
+    return false;
+  base::File version_file(version_filepath,
+                          base::File::FLAG_OPEN | base::File::FLAG_READ);
+  uint32_t version = kStorageVersionUnknown;
+  int bytes_read =
+      version_file.Read(0, reinterpret_cast<char*>(&version), sizeof(version));
+  if (bytes_read != sizeof(version)) {
+    DLOG(WARNING) << "Cannot read from version file.";
+    return false;
+  }
+  return version == kStorageVersion;
+}
+
+// TODO(xunjieli): Handle failures.
+void InitializeStorageDirectory(const base::FilePath& dir) {
+  // Checks version file and clear old storage.
+  base::FilePath version_filepath = dir.Append("version");
+  if (IsCurrentVersion(version_filepath)) {
+    // The version is up-to-date, so there is nothing to do.
+    return;
+  }
+  // Delete old directory recursively and create a new directory.
+  // base::DeleteFile returns true if the directory does not exist, so it is
+  // fine if there is nothing on disk.
+  if (!(base::DeleteFile(dir, true) && base::CreateDirectory(dir))) {
+    DLOG(WARNING) << "Cannot purge directory.";
+    return;
+  }
+  base::File new_version_file(version_filepath, base::File::FLAG_CREATE_ALWAYS |
+                                                    base::File::FLAG_WRITE);
+
+  if (!new_version_file.IsValid()) {
+    DLOG(WARNING) << "Cannot create a version file.";
+    return;
+  }
+
+  DCHECK(new_version_file.created());
+  uint32_t new_version = kStorageVersion;
+  int bytes_written = new_version_file.Write(
+      0, reinterpret_cast<char*>(&new_version), sizeof(new_version));
+  if (bytes_written != sizeof(new_version)) {
+    DLOG(WARNING) << "Cannot write to version file.";
+    return;
+  }
+  base::FilePath prefs_dir = dir.Append(FILE_PATH_LITERAL(kPrefsDirectoryName));
+  if (!base::CreateDirectory(prefs_dir)) {
+    DLOG(WARNING) << "Cannot create prefs directory";
+    return;
+  }
+}
+
 }  // namespace
 
 namespace cronet {
@@ -448,13 +510,18 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   context_builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
           std::move(proxy_config_service_), net_log_.get()));
+
   config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get(),
                                             GetFileThread()->task_runner());
 
   // Set up pref file if storage path is specified.
   if (!config->storage_path.empty()) {
-    base::FilePath filepath(config->storage_path);
-    filepath = filepath.Append(FILE_PATH_LITERAL("local_prefs.json"));
+    base::FilePath storage_path(config->storage_path);
+    // Make sure storage directory has correct version.
+    InitializeStorageDirectory(storage_path);
+    base::FilePath filepath =
+        storage_path.Append(FILE_PATH_LITERAL(kPrefsDirectoryName))
+            .Append(FILE_PATH_LITERAL(kPrefsFileName));
     json_pref_store_ = new JsonPrefStore(
         filepath, GetFileThread()->task_runner(), scoped_ptr<PrefFilter>());
     context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
