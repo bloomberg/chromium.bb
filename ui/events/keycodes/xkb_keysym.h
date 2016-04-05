@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_KEYCODES_XKEYSYMS_H_
-#define UI_EVENTS_KEYCODES_XKEYSYMS_H_
+#ifndef UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
+#define UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
 
 // This file provides definitions of the xkbcommon keysym type (xkb_keysym_t)
 // and values (XKB_KEY_...) for both xkbcommon and traditional X11.
 
-#if defined(USE_X11)
+#if defined(USE_XKBCOMMON)
+
+#include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
+
+#else  // !defined(USE_XKBCOMMON)
 
 #define XK_3270  // For XK_3270_BackTab in particular.
 #include <X11/X.h>
@@ -16,7 +21,7 @@
 #include <X11/Sunkeysym.h>
 #include <X11/XF86keysym.h>
 
-using xkb_keysym_t = KeySym;
+using xkb_keysym_t = uint32_t;
 
 #define XKB_KEY_3270_Duplicate                    XK_3270_Duplicate
 #define XKB_KEY_3270_FieldMark                    XK_3270_FieldMark
@@ -525,10 +530,7 @@ using xkb_keysym_t = KeySym;
 #define XKB_KEY_XF86TouchpadOff                   XF86XK_TouchpadOff
 #define XKB_KEY_XF86AudioMicMute                  XF86XK_AudioMicMute
 
-#else  // not defined(USE_X11)
-#include <xkbcommon/xkbcommon.h>
-#include <xkbcommon/xkbcommon-keysyms.h>
 #endif
 
-#endif  // UI_EVENTS_KEYCODES_XKEYSYMS_H_
+#endif  // UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
 
