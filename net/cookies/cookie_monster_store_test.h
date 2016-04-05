@@ -22,6 +22,8 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 
+class GURL;
+
 namespace base {
 class Time;
 }
@@ -166,12 +168,13 @@ class MockCookieMonsterDelegate : public CookieMonsterDelegate {
 };
 
 // Helper to build a single CanonicalCookie.
-CanonicalCookie BuildCanonicalCookie(const std::string& key,
-                                     const std::string& cookie_line,
-                                     const base::Time& creation_time);
+scoped_ptr<CanonicalCookie> BuildCanonicalCookie(
+    const GURL& url,
+    const std::string& cookie_line,
+    const base::Time& creation_time);
 
 // Helper to build a list of CanonicalCookie*s.
-void AddCookieToList(const std::string& key,
+void AddCookieToList(const GURL& url,
                      const std::string& cookie_line,
                      const base::Time& creation_time,
                      std::vector<CanonicalCookie*>* out_list);

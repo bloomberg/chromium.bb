@@ -289,8 +289,7 @@ TEST_F(CookieMonsterTest, TestImport) {
   int64_t time_tick(base::Time::Now().ToInternalValue());
 
   for (int domain_num = 0; domain_num < 300; domain_num++) {
-    std::string domain_name(base::StringPrintf(".Domain_%d.com", domain_num));
-    std::string gurl("www" + domain_name);
+    GURL gurl(base::StringPrintf("http://www.Domain_%d.com", domain_num));
     for (int cookie_num = 0; cookie_num < 50; cookie_num++) {
       std::string cookie_line(
           base::StringPrintf("Cookie_%d=1; Path=/", cookie_num));

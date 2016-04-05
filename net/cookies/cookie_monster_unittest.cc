@@ -719,10 +719,10 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   }
 
   // Defines a cookie to be returned from PersistentCookieStore::Load
-  void DeclareLoadedCookie(const std::string& key,
+  void DeclareLoadedCookie(const GURL& url,
                            const std::string& cookie_line,
                            const base::Time& creation_time) {
-    AddCookieToList(key, cookie_line, creation_time, &loaded_cookies_);
+    AddCookieToList(url, cookie_line, creation_time, &loaded_cookies_);
   }
 
   // Runs the message loop, waiting until PersistentCookieStore::Load is called.
@@ -810,7 +810,7 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
 };
 
 TEST_F(DeferredCookieTaskTest, DeferredGetCookies) {
-  DeclareLoadedCookie(http_www_google_.host(),
+  DeclareLoadedCookie(http_www_google_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
@@ -941,7 +941,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
-  DeclareLoadedCookie(http_www_google_.host(),
+  DeclareLoadedCookie(http_www_google_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
@@ -963,7 +963,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
-  DeclareLoadedCookie(http_www_google_.host(),
+  DeclareLoadedCookie(http_www_google_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
@@ -989,7 +989,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
-  DeclareLoadedCookie(http_www_google_.host(),
+  DeclareLoadedCookie(http_www_google_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
@@ -1073,18 +1073,18 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCreatedBetweenCookies) {
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteCanonicalCookie) {
   std::vector<CanonicalCookie*> cookies;
-  CanonicalCookie cookie = BuildCanonicalCookie(
-      http_www_google_.host(), "X=1; path=/", base::Time::Now());
+  scoped_ptr<CanonicalCookie> cookie = BuildCanonicalCookie(
+      http_www_google_.url(), "X=1; path=/", base::Time::Now());
 
   MockDeleteCallback delete_cookie_callback;
 
-  BeginWith(DeleteCanonicalCookieAction(&cookie_monster(), cookie,
+  BeginWith(DeleteCanonicalCookieAction(&cookie_monster(), *cookie,
                                         &delete_cookie_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(delete_cookie_callback, Invoke(0))
-      .WillOnce(DeleteCanonicalCookieAction(&cookie_monster(), cookie,
+      .WillOnce(DeleteCanonicalCookieAction(&cookie_monster(), *cookie,
                                             &delete_cookie_callback));
   base::RunLoop loop;
   EXPECT_CALL(delete_cookie_callback, Invoke(0)).WillOnce(QuitRunLoop(&loop));
@@ -1114,7 +1114,7 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteSessionCookies) {
 // the backing store and that new tasks received while the queued tasks are
 // being dispatched go to the end of the queue.
 TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
-  DeclareLoadedCookie(http_www_google_.host(),
+  DeclareLoadedCookie(http_www_google_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
@@ -1464,20 +1464,20 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies) {
   // dates. We expect only the most recent one to be preserved following
   // the import.
 
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now() + TimeDelta::FromDays(3), &initial_cookies);
 
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "X=2; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now() + TimeDelta::FromDays(1), &initial_cookies);
 
   // ===> This one is the WINNER (biggest creation time).  <====
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "X=3; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now() + TimeDelta::FromDays(4), &initial_cookies);
 
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "X=4; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now(), &initial_cookies);
 
@@ -1485,16 +1485,16 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies) {
   // dates. We expect only the most recent one to be preserved the import.
 
   // ===> This one is the WINNER (biggest creation time).  <====
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "X=a1; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now() + TimeDelta::FromDays(9), &initial_cookies);
 
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "X=a2; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now() + TimeDelta::FromDays(2), &initial_cookies);
 
   // Insert 1 cookie with name "Y" on path "/".
-  AddCookieToList("www.google.com",
+  AddCookieToList(GURL("http://www.google.com"),
                   "Y=a; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                   Time::Now() + TimeDelta::FromDays(10), &initial_cookies);
 
@@ -1536,15 +1536,23 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCreationTimes) {
   // two cookies remaining, but which two (other than that there should
   // be one from each set) will be random.
   std::vector<CanonicalCookie*> initial_cookies;
-  AddCookieToList("www.google.com", "X=1; path=/", now, &initial_cookies);
-  AddCookieToList("www.google.com", "X=2; path=/", now, &initial_cookies);
-  AddCookieToList("www.google.com", "X=3; path=/", now, &initial_cookies);
-  AddCookieToList("www.google.com", "X=4; path=/", now, &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "X=1; path=/", now,
+                  &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "X=2; path=/", now,
+                  &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "X=3; path=/", now,
+                  &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "X=4; path=/", now,
+                  &initial_cookies);
 
-  AddCookieToList("www.google.com", "Y=1; path=/", earlier, &initial_cookies);
-  AddCookieToList("www.google.com", "Y=2; path=/", earlier, &initial_cookies);
-  AddCookieToList("www.google.com", "Y=3; path=/", earlier, &initial_cookies);
-  AddCookieToList("www.google.com", "Y=4; path=/", earlier, &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "Y=1; path=/", earlier,
+                  &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "Y=2; path=/", earlier,
+                  &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "Y=3; path=/", earlier,
+                  &initial_cookies);
+  AddCookieToList(GURL("http://www.google.com"), "Y=4; path=/", earlier,
+                  &initial_cookies);
 
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, initial_cookies);
@@ -2589,7 +2597,7 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
 
   std::vector<CanonicalCookie*> initial_cookies;
 
-  AddCookieToList(domain, "foo=bar; path=" + path, now1, &initial_cookies);
+  AddCookieToList(url, "foo=bar; path=" + path, now1, &initial_cookies);
 
   // We have to manually build this cookie because it contains a control
   // character, and our cookie line parser rejects control characters.
@@ -2601,7 +2609,7 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
       CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   initial_cookies.push_back(cc);
 
-  AddCookieToList(domain, "hello=world; path=" + path, now3, &initial_cookies);
+  AddCookieToList(url, "hello=world; path=" + path, now3, &initial_cookies);
 
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, initial_cookies);

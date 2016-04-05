@@ -17,6 +17,7 @@
 #include "url/gurl.h"
 
 namespace net {
+
 LoadedCallbackTask::LoadedCallbackTask(LoadedCallback loaded_callback,
                                        std::vector<CanonicalCookie*> cookies)
     : loaded_callback_(loaded_callback), cookies_(cookies) {
@@ -122,9 +123,10 @@ void MockCookieMonsterDelegate::OnCookieChanged(
 MockCookieMonsterDelegate::~MockCookieMonsterDelegate() {
 }
 
-CanonicalCookie BuildCanonicalCookie(const std::string& key,
-                                     const std::string& cookie_line,
-                                     const base::Time& creation_time) {
+scoped_ptr<CanonicalCookie> BuildCanonicalCookie(
+    const GURL& url,
+    const std::string& cookie_line,
+    const base::Time& creation_time) {
   // Parse the cookie line.
   ParsedCookie pc(cookie_line);
   EXPECT_TRUE(pc.IsValid());
@@ -139,18 +141,18 @@ CanonicalCookie BuildCanonicalCookie(const std::string& key,
                                   : base::Time();
   std::string cookie_path = pc.Path();
 
-  return CanonicalCookie(GURL(), pc.Name(), pc.Value(), key, cookie_path,
-                         creation_time, cookie_expires, creation_time,
-                         pc.IsSecure(), pc.IsHttpOnly(), pc.SameSite(),
-                         pc.Priority());
+  return CanonicalCookie::Create(url, pc.Name(), pc.Value(), url.host(),
+                                 cookie_path, creation_time, cookie_expires,
+                                 pc.IsSecure(), pc.IsHttpOnly(), pc.SameSite(),
+                                 false, pc.Priority());
 }
 
-void AddCookieToList(const std::string& key,
+void AddCookieToList(const GURL& url,
                      const std::string& cookie_line,
                      const base::Time& creation_time,
                      std::vector<CanonicalCookie*>* out_list) {
-  scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(
-      BuildCanonicalCookie(key, cookie_line, creation_time)));
+  scoped_ptr<CanonicalCookie> cookie(
+      BuildCanonicalCookie(url, cookie_line, creation_time));
 
   out_list->push_back(cookie.release());
 }
