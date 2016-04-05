@@ -42,9 +42,11 @@ class Arguments;
 namespace test_runner {
 
 class InvokeCallbackTask;
+class MockCredentialManagerClient;
 class MockScreenOrientationClient;
 class MockWebSpeechRecognizer;
 class MockWebUserMediaClient;
+class SpellCheckClient;
 class TestInterfaces;
 class WebContentSettings;
 class WebTestDelegate;
@@ -86,6 +88,7 @@ class TestRunner : public WebTestRunner,
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
+  void InitializeWebViewWithMocks(blink::WebView* web_view) override;
 
   // Methods used by WebViewTestClient and WebFrameTestClient.
   void OnAnimationScheduled(blink::WebView* view);
@@ -813,9 +816,11 @@ class TestRunner : public WebTestRunner,
   } pointer_lock_planned_result_;
   bool use_mock_theme_;
 
+  scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
   scoped_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
   scoped_ptr<MockWebUserMediaClient> user_media_client_;
+  scoped_ptr<SpellCheckClient> spellcheck_;
 
   // Number of currently active color choosers.
   int chooser_count_;

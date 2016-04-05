@@ -81,8 +81,7 @@ WebTestProxyBase::WebTestProxyBase()
     : test_interfaces_(nullptr),
       delegate_(nullptr),
       web_view_(nullptr),
-      web_widget_(nullptr),
-      spellcheck_(new SpellCheckClient(this)) {}
+      web_widget_(nullptr) {}
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->WindowClosed(this);
@@ -95,11 +94,6 @@ void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
 
 void WebTestProxyBase::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
-  spellcheck_->SetDelegate(delegate);
-}
-
-blink::WebSpellCheckClient* WebTestProxyBase::GetSpellCheckClient() const {
-  return spellcheck_.get();
 }
 
 std::string WebTestProxyBase::DumpBackForwardLists() {
@@ -139,20 +133,6 @@ void WebTestProxyBase::GetScreenOrientationForTesting(
   // Override screen orientation information with mock data.
   screen_info.orientationType = mock_client->CurrentOrientationType();
   screen_info.orientationAngle = mock_client->CurrentOrientationAngle();
-}
-
-MockCredentialManagerClient*
-WebTestProxyBase::GetCredentialManagerClientMock() {
-  if (!credential_manager_client_.get())
-    credential_manager_client_.reset(new MockCredentialManagerClient());
-  return credential_manager_client_.get();
-}
-
-void WebTestProxyBase::PostSpellCheckEvent(const blink::WebString& event_name) {
-  if (test_interfaces_->GetTestRunner()->shouldDumpSpellCheckCallbacks()) {
-    delegate_->PrintMessage(std::string("SpellCheckEvent: ") +
-                            event_name.utf8().data() + "\n");
-  }
 }
 
 }  // namespace test_runner

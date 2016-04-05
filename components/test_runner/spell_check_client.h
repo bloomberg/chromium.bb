@@ -10,16 +10,23 @@
 #include "base/macros.h"
 #include "components/test_runner/mock_spell_check.h"
 #include "components/test_runner/web_task.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
+
+namespace blink {
+class WebTextCheckingCompletion;
+struct WebTextCheckingResult;
+}  // namespace blink
 
 namespace test_runner {
 
+class TestRunner;
 class WebTestDelegate;
-class WebTestProxyBase;
 
 class SpellCheckClient : public blink::WebSpellCheckClient {
  public:
-  explicit SpellCheckClient(WebTestProxyBase* web_test_proxy);
+  explicit SpellCheckClient(TestRunner* test_runner);
   virtual ~SpellCheckClient();
 
   void SetDelegate(WebTestDelegate* delegate);
@@ -54,9 +61,8 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
 
   WebTaskList task_list_;
 
+  TestRunner* test_runner_;
   WebTestDelegate* delegate_;
-
-  WebTestProxyBase* web_test_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };

@@ -21,6 +21,7 @@
 #include "components/test_runner/mock_web_speech_recognizer.h"
 #include "components/test_runner/mock_web_user_media_client.h"
 #include "components/test_runner/pixel_dump.h"
+#include "components/test_runner/spell_check_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_content_settings.h"
@@ -1670,7 +1671,9 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       delegate_(nullptr),
       web_view_(nullptr),
       web_content_settings_(new WebContentSettings()),
+      credential_manager_client_(new MockCredentialManagerClient),
       mock_screen_orientation_client_(new MockScreenOrientationClient),
+      spellcheck_(new SpellCheckClient(this)),
       chooser_count_(0),
       weak_factory_(this) {}
 
@@ -1683,6 +1686,7 @@ void TestRunner::Install(WebFrame* frame) {
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
   web_content_settings_->SetDelegate(delegate);
+  spellcheck_->SetDelegate(delegate);
   if (speech_recognizer_)
     speech_recognizer_->SetDelegate(delegate);
 }
@@ -1947,6 +1951,11 @@ bool TestRunner::shouldDumpResourceResponseMIMETypes() const {
 
 WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
   return web_content_settings_.get();
+}
+
+void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
+  web_view->setSpellCheckClient(spellcheck_.get());
+  web_view->setCredentialManagerClient(credential_manager_client_.get());
 }
 
 bool TestRunner::shouldDumpStatusCallbacks() const {
@@ -3079,15 +3088,13 @@ void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
                                                   const std::string& name,
                                                   const std::string& avatar,
                                                   const std::string& password) {
-  proxy_->GetCredentialManagerClientMock()->SetResponse(
-      new WebPasswordCredential(WebString::fromUTF8(id),
-                                WebString::fromUTF8(password),
-                                WebString::fromUTF8(name),
-                                WebURL(GURL(avatar))));
+  credential_manager_client_->SetResponse(new WebPasswordCredential(
+      WebString::fromUTF8(id), WebString::fromUTF8(password),
+      WebString::fromUTF8(name), WebURL(GURL(avatar))));
 }
 
 void TestRunner::AddMockCredentialManagerError(const std::string& error) {
-  proxy_->GetCredentialManagerClientMock()->SetError(error);
+  credential_manager_client_->SetError(error);
 }
 
 void TestRunner::AddWebPageOverlay() {

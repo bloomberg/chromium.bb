@@ -72,6 +72,13 @@ class WebTestRunner {
   // Returns true if WebTestProxy::capturePixels should be invoked after
   // capturing text results.
   virtual bool ShouldGeneratePixelResults() = 0;
+
+  // Sets various interfaces consumed by WebView to implementations providing
+  // test behavior.  This method covers interfaces that are not exposed via
+  // WebViewClient (and are covered by WebViewTestClient) - for example this
+  // method covers blink::WebCredentialManagerClient and
+  // blink::WebSpellCheckClient.
+  virtual void InitializeWebViewWithMocks(blink::WebView* web_view) = 0;
 };
 
 }  // namespace test_runner

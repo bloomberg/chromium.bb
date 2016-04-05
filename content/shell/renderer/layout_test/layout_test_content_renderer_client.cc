@@ -11,6 +11,7 @@
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_test_runner.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -102,11 +103,12 @@ void LayoutTestContentRendererClient::RenderViewCreated(
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
-  render_view->GetWebView()->setSpellCheckClient(
-      test_runner->proxy()->GetSpellCheckClient());
 
-  render_view->GetWebView()->setCredentialManagerClient(
-      test_runner->proxy()->GetCredentialManagerClientMock());
+  LayoutTestRenderProcessObserver::GetInstance()
+      ->test_interfaces()
+      ->TestRunner()
+      ->InitializeWebViewWithMocks(render_view->GetWebView());
+
   test_runner::WebTestDelegate* delegate =
       LayoutTestRenderProcessObserver::GetInstance()->test_delegate();
   if (delegate == static_cast<test_runner::WebTestDelegate*>(test_runner))

@@ -31,7 +31,6 @@ class WebDragData;
 class WebFileChooserCompletion;
 class WebImage;
 class WebLocalFrame;
-class WebSpellCheckClient;
 class WebString;
 class WebView;
 class WebWidget;
@@ -42,8 +41,6 @@ struct WebWindowFeatures;
 
 namespace test_runner {
 
-class MockCredentialManagerClient;
-class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestInterfaces;
@@ -78,16 +75,11 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   void SetInterfaces(WebTestInterfaces* interfaces);
   void SetDelegate(WebTestDelegate* delegate);
 
-  blink::WebSpellCheckClient* GetSpellCheckClient() const;
-
   std::string DumpBackForwardLists();
 
   void LayoutAndPaintAsyncThen(const base::Closure& callback);
 
   void GetScreenOrientationForTesting(blink::WebScreenInfo&);
-  MockCredentialManagerClient* GetCredentialManagerClientMock();
-
-  void PostSpellCheckEvent(const blink::WebString& event_name);
 
  protected:
   WebTestProxyBase();
@@ -101,9 +93,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   blink::WebView* web_view_;
   blink::WebWidget* web_widget_;
   scoped_ptr<WebViewTestClient> view_test_client_;
-
-  scoped_ptr<SpellCheckClient> spellcheck_;
-  scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };

@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "components/test_runner/mock_grammar_check.h"
+#include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "components/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
@@ -35,9 +36,10 @@ class HostMethodTask : public WebMethodTask<SpellCheckClient> {
 
 }  // namespace
 
-SpellCheckClient::SpellCheckClient(WebTestProxyBase* web_test_proxy)
-    : last_requested_text_checking_completion_(0),
-      web_test_proxy_(web_test_proxy) {
+SpellCheckClient::SpellCheckClient(TestRunner* test_runner)
+    : last_requested_text_checking_completion_(nullptr),
+      test_runner_(test_runner) {
+  DCHECK(test_runner);
 }
 
 SpellCheckClient::~SpellCheckClient() {
@@ -140,7 +142,8 @@ void SpellCheckClient::FinishLastTextCheck() {
   last_requested_text_checking_completion_->didFinishCheckingText(results);
   last_requested_text_checking_completion_ = 0;
 
-  web_test_proxy_->PostSpellCheckEvent(blink::WebString("FinishLastTextCheck"));
+  if (test_runner_->shouldDumpSpellCheckCallbacks())
+    delegate_->PrintMessage("SpellCheckEvent: FinishLastTextCheck\n");
 }
 
 }  // namespace test_runner
