@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/connection_type_histograms.h"
@@ -602,10 +603,14 @@ int HttpStreamFactoryImpl::Job::OnHostResolution(
 }
 
 void HttpStreamFactoryImpl::Job::OnIOComplete(int result) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
+               "HttpStreamFactoryImpl::Job::OnIOComplete");
   RunLoop(result);
 }
 
 int HttpStreamFactoryImpl::Job::RunLoop(int result) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
+               "HttpStreamFactoryImpl::Job::RunLoop");
   result = DoLoop(result);
 
   if (result == ERR_IO_PENDING)
@@ -1750,6 +1755,8 @@ int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::
                                      int certificate_error_code,
                                      bool is_secure,
                                      base::WeakPtr<SpdySession>* spdy_session) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
+               "HttpStreamFactoryImpl::Job::CreateAvailableSessionFromSocket");
   *spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(
       key, std::move(connection), net_log, certificate_error_code, is_secure);
   return CheckAlternativeServiceValidityForOrigin(*spdy_session);

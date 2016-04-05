@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -240,6 +241,8 @@ NetworkQualityEstimator::~NetworkQualityEstimator() {
 }
 
 void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
+               "NetworkQualityEstimator::NotifyHeadersReceived");
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!RequestProvidesUsefulObservations(request))
@@ -291,6 +294,8 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
 
 void NetworkQualityEstimator::NotifyRequestCompleted(
     const URLRequest& request) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
+               "NetworkQualityEstimator::NotifyRequestCompleted");
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!RequestProvidesUsefulObservations(request))

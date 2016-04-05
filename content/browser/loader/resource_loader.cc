@@ -252,6 +252,8 @@ void ResourceLoader::ClearLoginDelegate() {
 void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
                                         const net::RedirectInfo& redirect_info,
                                         bool* defer) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "ResourceLoader::OnReceivedRedirect");
   DCHECK_EQ(request_.get(), unused);
 
   DVLOG(1) << "OnReceivedRedirect: " << request_->url().spec();
@@ -337,6 +339,8 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
 
 void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
                                           bool* defer) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "ResourceLoader::OnBeforeNetworkStart");
   DCHECK_EQ(request_.get(), unused);
 
   // Give the handler a chance to delay the URLRequest from using the network.
@@ -349,6 +353,8 @@ void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
 }
 
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "ResourceLoader::OnResponseStarted");
   DCHECK_EQ(request_.get(), unused);
 
   DVLOG(1) << "OnResponseStarted: " << request_->url().spec();
@@ -370,6 +376,8 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 }
 
 void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "ResourceLoader::OnReadCompleted");
   DCHECK_EQ(request_.get(), unused);
   DVLOG(1) << "OnReadCompleted: \"" << request_->url().spec() << "\""
            << " bytes_read = " << bytes_read;

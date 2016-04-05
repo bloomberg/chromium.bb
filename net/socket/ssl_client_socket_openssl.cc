@@ -30,6 +30,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/auto_cbb.h"
 #include "crypto/ec_private_key.h"
@@ -1457,6 +1458,7 @@ void SSLClientSocketOpenSSL::OnSendComplete(int result) {
 }
 
 void SSLClientSocketOpenSSL::OnRecvComplete(int result) {
+  TRACE_EVENT0("net", "SSLClientSocketOpenSSL::OnRecvComplete");
   if (next_handshake_state_ == STATE_HANDSHAKE) {
     // In handshake phase.
     OnHandshakeIOComplete(result);
@@ -1474,6 +1476,7 @@ void SSLClientSocketOpenSSL::OnRecvComplete(int result) {
 }
 
 int SSLClientSocketOpenSSL::DoHandshakeLoop(int last_io_result) {
+  TRACE_EVENT0("net", "SSLClientSocketOpenSSL::DoHandshakeLoop");
   int rv = last_io_result;
   do {
     // Default to STATE_NONE for next state.

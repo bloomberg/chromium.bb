@@ -63,6 +63,7 @@ void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
 }
 
 void CRLSetFetcher::DoInitialLoadFromDisk() {
+  TRACE_EVENT0("net", "CRLSetFetcher::DoInitialLoadFromDisk");
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   LoadFromDisk(GetCRLSetFilePath(), &crl_set_);
@@ -85,13 +86,13 @@ void CRLSetFetcher::DoInitialLoadFromDisk() {
 
 void CRLSetFetcher::LoadFromDisk(base::FilePath path,
                                  scoped_refptr<net::CRLSet>* out_crl_set) {
-  TRACE_EVENT0("CRLSetFetcher", "LoadFromDisk");
+  TRACE_EVENT0("net", "CRLSetFetcher::LoadFromDisk");
 
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::string crl_set_bytes;
   {
-    TRACE_EVENT0("CRLSetFetcher", "ReadFileToString");
+    TRACE_EVENT0("net", "CRLSetFetcher::ReadFileToString");
     if (!base::ReadFileToString(path, &crl_set_bytes))
       return;
   }

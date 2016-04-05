@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -115,6 +116,7 @@ int TransportConnectJobHelper::DoResolveHost(RequestPriority priority,
 int TransportConnectJobHelper::DoResolveHostComplete(
     int result,
     const BoundNetLog& net_log) {
+  TRACE_EVENT0("net", "TransportConnectJobHelper::DoResolveHostComplete");
   connect_timing_->dns_end = base::TimeTicks::Now();
   // Overwrite connection start time, since for connections that do not go
   // through proxies, |connect_start| should not include dns lookup time.

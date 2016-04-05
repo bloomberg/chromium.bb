@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/http/http_network_session.h"
@@ -88,6 +89,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const BoundNetLog& net_log,
     int certificate_error_code,
     bool is_secure) {
+  TRACE_EVENT0("net", "SpdySessionPool::CreateAvailableSessionFromSocket");
   DCHECK_GE(default_protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(default_protocol_, kProtoSPDYMaximumVersion);
 

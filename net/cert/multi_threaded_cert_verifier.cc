@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
@@ -234,6 +235,7 @@ void DoVerifyOnWorkerThread(const scoped_refptr<CertVerifyProc>& verify_proc,
                             const CertificateList& additional_trust_anchors,
                             int* error,
                             CertVerifyResult* result) {
+  TRACE_EVENT0("net", "DoVerifyOnWorkerThread");
   *error = verify_proc->Verify(cert.get(), hostname, ocsp_response, flags,
                                crl_set.get(), additional_trust_anchors, result);
 
@@ -359,6 +361,7 @@ class CertVerifierJob {
 
   void OnJobCompleted(
       scoped_ptr<MultiThreadedCertVerifier::CachedResult> verify_result) {
+    TRACE_EVENT0("net", "CertVerifierJob::OnJobCompleted");
     scoped_ptr<CertVerifierJob> keep_alive = cert_verifier_->RemoveJob(this);
 
     LogMetrics(*verify_result);
