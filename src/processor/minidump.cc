@@ -1930,9 +1930,8 @@ string MinidumpModule::debug_file() const {
       file = reinterpret_cast<const char*>(cv_record_20->pdb_file_name);
     } else if (cv_record_signature_ == MD_CVINFOELF_SIGNATURE) {
       // It's actually an MDCVInfoELF structure.
-      const MDCVInfoELF* cv_record_elf =
-          reinterpret_cast<const MDCVInfoELF*>(&(*cv_record_)[0]);
-      assert(cv_record_elf->cv_signature == MD_CVINFOELF_SIGNATURE);
+      assert(reinterpret_cast<const MDCVInfoELF*>(&(*cv_record_)[0])->
+          cv_signature == MD_CVINFOELF_SIGNATURE);
 
       // For MDCVInfoELF, the debug file is the code file.
       file = *name_;
