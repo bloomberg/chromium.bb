@@ -230,11 +230,9 @@ void CompareSnapshotToReference(const base::FilePath& reference,
 
   *snapshot_matches = SnapshotMatches(reference, bitmap);
 
-  // When rebaselining the pixel test, the test will fail, and we will
-  // overwrite the reference file. On the next try through, the test will then
-  // pass, since we just overwrote the reference file. A bit wonky.
-  if (!(*snapshot_matches) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  // When rebaselining the pixel test, the test may fail. However, the
+  // reference file will still be overwritten.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRebaselinePixelTests)) {
     SkBitmap clipped_bitmap;
     bitmap.extractSubset(&clipped_bitmap,
