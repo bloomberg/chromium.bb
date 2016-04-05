@@ -307,7 +307,12 @@ void PointerEventManager::sendTouchCancelPointerEvent(RawPtr<EventTarget> prpTar
         getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
         pointerEvent.get());
 
-    setNodeUnderPointer(pointerEvent, nullptr);
+    releasePointerCapture(pointerEvent->pointerId());
+
+    // Sending the leave/out events and lostpointercapture
+    // because the next touch event will have a different id. So delayed
+    // sending of lostpointercapture won't work here.
+    processCaptureAndPositionOfPointerEvent(pointerEvent, nullptr);
 
     removePointer(pointerEvent);
 }
@@ -332,9 +337,19 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
         getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
         pointerEvent.get());
 
+    // Setting the implicit capture for touch
+    if (touchPoint.state() == PlatformTouchPoint::TouchPressed)
+        setPointerCapture(pointerEvent->pointerId(), target);
+
     if (touchPoint.state() == PlatformTouchPoint::TouchReleased
         || touchPoint.state() == PlatformTouchPoint::TouchCancelled) {
-        setNodeUnderPointer(pointerEvent, nullptr);
+        releasePointerCapture(pointerEvent->pointerId());
+
+        // Sending the leave/out events and lostpointercapture
+        // because the next touch event will have a different id. So delayed
+        // sending of lostpointercapture won't work here.
+        processCaptureAndPositionOfPointerEvent(pointerEvent, nullptr);
+
         removePointer(pointerEvent);
     }
 
@@ -401,6 +416,8 @@ void PointerEventManager::clear()
     m_preventMouseEventForPointerTypeMouse = false;
     m_pointerEventFactory.clear();
     m_nodeUnderPointer.clear();
+    m_pointerCaptureTarget.clear();
+    m_pendingPointerCaptureTarget.clear();
 }
 
 void PointerEventManager::processCaptureAndPositionOfPointerEvent(
@@ -564,6 +581,12 @@ void PointerEventManager::releasePointerCapture(int pointerId)
 bool PointerEventManager::isActive(const int pointerId)
 {
     return m_pointerEventFactory.isActive(pointerId);
+}
+
+WebPointerProperties::PointerType PointerEventManager::getPointerEventType(
+    const int pointerId)
+{
+    return m_pointerEventFactory.getPointerType(pointerId);
 }
 
 DEFINE_TRACE(PointerEventManager)

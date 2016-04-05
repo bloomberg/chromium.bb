@@ -66,6 +66,7 @@ public:
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
     bool isActive(const int);
+    WebPointerProperties::PointerType getPointerEventType(const int);
 
 private:
     typedef HeapHashMap<int, Member<EventTarget>> PointerCapturingMap;
