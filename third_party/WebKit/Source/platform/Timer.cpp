@@ -47,7 +47,7 @@ TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
     , m_repeatInterval(0)
     , m_cancellableTimerTask(nullptr)
     , m_webTaskRunner(webTaskRunner)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_thread(currentThread())
 #endif
 {
