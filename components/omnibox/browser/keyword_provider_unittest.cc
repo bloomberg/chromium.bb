@@ -376,12 +376,12 @@ TEST_F(KeywordProviderTest, URL) {
 TEST_F(KeywordProviderTest, Contents) {
   const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
   TestData<base::string16> contents_cases[] = {
-    // No query input -> substitute "<enter query>" into contents.
+    // No query input -> substitute "<Type search term>" into contents.
     { ASCIIToUTF16("z"), 1,
-      { { ASCIIToUTF16("Search z for <enter query>"), true },
+      { { ASCIIToUTF16("<Type search term>"), true },
         kEmptyMatch, kEmptyMatch } },
     { ASCIIToUTF16("z    \t"), 1,
-      { { ASCIIToUTF16("Search z for <enter query>"), true },
+      { { ASCIIToUTF16("<Type search term>"), true },
         kEmptyMatch, kEmptyMatch } },
 
     // Exact keyword matches with remaining text should return nothing.
@@ -395,21 +395,25 @@ TEST_F(KeywordProviderTest, Contents) {
     // chrome/browser/extensions/api/omnibox/omnibox_apitest.cc's
     // in OmniboxApiTest's Basic test.
 
-    // Substitution should work with various locations of the "%s".
+    // There are two keywords that start with "aaa".  Suggestions will be
+    // disambiguated by the description.  We do not test the description value
+    // here because KeywordProvider doesn't set descriptions; these are
+    // populated later by AutocompleteController.
     { ASCIIToUTF16("aaa"), 2,
-      { { ASCIIToUTF16("Search aaaa for <enter query>"), false },
-        { ASCIIToUTF16("Search aaaaa for <enter query>"), false },
+      { { ASCIIToUTF16("<Type search term>"), false },
+        { ASCIIToUTF16("<Type search term>"), false },
         kEmptyMatch} },
+    // When there is a search string, simply display it.
     { ASCIIToUTF16("www.w w"), 2,
-      { { ASCIIToUTF16("Search www for w"), false },
-        { ASCIIToUTF16("Search weasel for w"), false },
+      { { ASCIIToUTF16("w"), false },
+        { ASCIIToUTF16("w"), false },
         kEmptyMatch } },
     // Also, check that tokenization only collapses whitespace between first
     // tokens and contents are not escaped or unescaped.
     { ASCIIToUTF16("a   1 2+ 3"), 3,
-      { { ASCIIToUTF16("Search aa for 1 2+ 3"), false },
-        { ASCIIToUTF16("Search ab for 1 2+ 3"), false },
-        { ASCIIToUTF16("Search aaaa for 1 2+ 3"), false } } },
+      { { ASCIIToUTF16("1 2+ 3"), false },
+        { ASCIIToUTF16("1 2+ 3"), false },
+        { ASCIIToUTF16("1 2+ 3"), false } } },
   };
 
   SetUpClientAndKeywordProvider();

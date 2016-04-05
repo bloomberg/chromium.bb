@@ -451,8 +451,6 @@ void KeywordProvider::FillInURLAndContents(
   DCHECK(!element->short_name().empty());
   const TemplateURLRef& element_ref = element->url_ref();
   DCHECK(element_ref.IsValid(GetTemplateURLService()->search_terms_data()));
-  int message_id = (element->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) ?
-      IDS_EXTENSION_KEYWORD_COMMAND : IDS_KEYWORD_SEARCH;
   if (remaining_input.empty()) {
     // Allow extension keyword providers to accept empty string input. This is
     // useful to allow extensions to do something in the case where no input is
@@ -462,13 +460,12 @@ void KeywordProvider::FillInURLAndContents(
         (element->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
       // No query input; return a generic, no-destination placeholder.
       match->contents.assign(
-          l10n_util::GetStringFUTF16(message_id,
-              element->AdjustedShortNameForLocaleDirection(),
-              l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE)));
+          l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));
       match->contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::DIM));
     } else {
-      // Keyword that has no replacement text (aka a shorthand for a URL).
+      // Keyword or extension that has no replacement text (aka a shorthand for
+      // a URL).
       match->destination_url = GURL(element->url());
       match->contents.assign(element->short_name());
       AutocompleteMatch::ClassifyLocationInString(0, match->contents.length(),
@@ -487,15 +484,9 @@ void KeywordProvider::FillInURLAndContents(
         element == GetTemplateURLService()->GetDefaultSearchProvider();
     match->destination_url = GURL(element_ref.ReplaceSearchTerms(
         search_terms_args, GetTemplateURLService()->search_terms_data()));
-    std::vector<size_t> content_param_offsets;
-    match->contents.assign(l10n_util::GetStringFUTF16(message_id,
-                                                      element->short_name(),
-                                                      remaining_input,
-                                                      &content_param_offsets));
-    DCHECK_EQ(2U, content_param_offsets.size());
-    AutocompleteMatch::ClassifyLocationInString(content_param_offsets[1],
-        remaining_input.length(), match->contents.length(),
-        ACMatchClassification::NONE, &match->contents_class);
+    match->contents = remaining_input;
+    match->contents_class.push_back(
+        ACMatchClassification(0, ACMatchClassification::NONE));
   }
 }
 
