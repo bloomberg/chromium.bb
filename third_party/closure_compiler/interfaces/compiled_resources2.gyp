@@ -28,5 +28,9 @@
       'target_name': 'settings_private_interface',
       'includes': ['../include_js.gypi'],
     },
+    {
+      'target_name': 'system_display_interface',
+      'includes': ['../include_js.gypi'],
+    },
   ],
 }

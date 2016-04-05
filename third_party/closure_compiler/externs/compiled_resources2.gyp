@@ -77,6 +77,10 @@
       'includes': ['../include_js.gypi'],
     },
     {
+      'target_name': 'system_display',
+      'includes': ['../include_js.gypi'],
+    },
+    {
       'target_name': 'system_private',
       'includes': ['../include_js.gypi'],
     },

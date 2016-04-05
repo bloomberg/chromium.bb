@@ -367,10 +367,18 @@
     "dependencies": ["permission:system.cpu"],
     "contexts": ["blessed_extension"]
   },
-  "system.display": {
+  "system.display": [{
     "dependencies": ["permission:system.display"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "system.memory": {
     "dependencies": ["permission:system.memory"],
     "contexts": ["blessed_extension"]
