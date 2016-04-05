@@ -11,11 +11,18 @@
 
 using BrowserNonClientFrameViewBrowserTest = ExtensionBrowserTest;
 
+// Test is Flaky on Windows see crbug.com/600201.
+#if defined(OS_WIN)
+#define MAYBE_InactiveSeparatorColor FLAKY_InactiveSeparatorColor
+#else
+#define MAYBE_InactiveSeparatorColor InactiveSeparatorColor
+#endif
+
 // Tests that the color returned by
 // BrowserNonClientFrameView::GetToolbarTopSeparatorColor() tracks the window
 // actiavtion state.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
-                       InactiveSeparatorColor) {
+                       MAYBE_InactiveSeparatorColor) {
   // In the default theme, the active and inactive separator colors may be the
   // same.  Install a custom theme where they are different.
   InstallExtension(test_data_dir_.AppendASCII("theme"), 1);
