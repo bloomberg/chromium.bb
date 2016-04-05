@@ -45,6 +45,7 @@ namespace blink {
 using protocol::Maybe;
 
 struct ScriptBreakpoint;
+class InspectedContext;
 class V8DebuggerAgentImpl;
 class V8RuntimeAgentImpl;
 
@@ -109,6 +110,10 @@ public:
     PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
     PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
 
+    using ContextByIdMap = protocol::HashMap<int, OwnPtr<InspectedContext>>;
+    void discardInspectedContext(int contextGroupId, int contextId);
+    const ContextByIdMap* contextGroup(int contextGroupId);
+
 private:
     void enable();
     void disable();
@@ -138,6 +143,8 @@ private:
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
+    using ContextsByGroupMap = protocol::HashMap<int, OwnPtr<ContextByIdMap>>;
+    ContextsByGroupMap m_contexts;
     using DebuggerAgentsMap = protocol::HashMap<int, V8DebuggerAgentImpl*>;
     DebuggerAgentsMap m_debuggerAgentsMap;
     using RuntimeAgentsMap = protocol::HashMap<int, V8RuntimeAgentImpl*>;

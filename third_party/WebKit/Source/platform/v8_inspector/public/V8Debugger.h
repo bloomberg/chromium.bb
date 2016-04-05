@@ -40,6 +40,7 @@ public:
 
     virtual void contextCreated(const V8ContextInfo&) = 0;
     virtual void contextDestroyed(v8::Local<v8::Context>) = 0;
+    // TODO(dgozman): remove this one.
     virtual void resetContextGroup(int contextGroupId) = 0;
 
     static v8::Local<v8::Symbol> scopeExtensionSymbol(v8::Isolate*);

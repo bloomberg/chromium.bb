@@ -33,20 +33,19 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
+#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 
-PassOwnPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger)
+PassOwnPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger, V8InspectorConnectionImpl* connection)
 {
-    return adoptPtr(new InjectedScriptHost(debugger));
+    return adoptPtr(new InjectedScriptHost(debugger, connection));
 }
 
-InjectedScriptHost::InjectedScriptHost(V8DebuggerImpl* debugger)
+InjectedScriptHost::InjectedScriptHost(V8DebuggerImpl* debugger, V8InspectorConnectionImpl* connection)
     : m_debugger(debugger)
-    , m_debuggerAgent(nullptr)
-    , m_inspectCallback(nullptr)
-    , m_clearConsoleCallback(nullptr)
+    , m_connection(connection)
 {
 }
 
@@ -54,38 +53,26 @@ InjectedScriptHost::~InjectedScriptHost()
 {
 }
 
-void InjectedScriptHost::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback)
-{
-    m_clearConsoleCallback = callback;
-}
-
-void InjectedScriptHost::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback> callback)
-{
-    m_inspectCallback = callback;
-}
-
 void InjectedScriptHost::disconnect()
 {
     m_debugger = nullptr;
-    m_debuggerAgent = nullptr;
-    m_inspectCallback = nullptr;
-    m_clearConsoleCallback = nullptr;
+    m_connection = nullptr;
     m_inspectedObjects.clear();
 }
 
 void InjectedScriptHost::inspectImpl(PassOwnPtr<protocol::Value> object, PassOwnPtr<protocol::Value> hints)
 {
-    if (m_inspectCallback) {
+    if (m_connection && m_connection->inspectCallback()) {
         protocol::ErrorSupport errors;
         OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object.get(), &errors);
-        (*m_inspectCallback)(remoteObject.release(), protocol::DictionaryValue::cast(hints));
+        (*m_connection->inspectCallback())(remoteObject.release(), protocol::DictionaryValue::cast(hints));
     }
 }
 
 void InjectedScriptHost::clearConsoleMessages()
 {
-    if (m_clearConsoleCallback)
-        (*m_clearConsoleCallback)();
+    if (m_connection && m_connection->clearConsoleCallback())
+        (*m_connection->clearConsoleCallback())();
 }
 
 void InjectedScriptHost::addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable> object)
@@ -109,14 +96,14 @@ V8RuntimeAgent::Inspectable* InjectedScriptHost::inspectedObject(unsigned num)
 
 void InjectedScriptHost::debugFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
-    if (m_debuggerAgent)
-        m_debuggerAgent->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
+    if (m_connection && m_connection->debuggerAgent())
+        m_connection->debuggerAgent()->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::undebugFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
-    if (m_debuggerAgent)
-        m_debuggerAgent->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
+    if (m_connection && m_connection->debuggerAgent())
+        m_connection->debuggerAgent()->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::monitorFunction(const String16& scriptId, int lineNumber, int columnNumber, const String16& functionName)
@@ -128,14 +115,14 @@ void InjectedScriptHost::monitorFunction(const String16& scriptId, int lineNumbe
     else
         builder.append(functionName);
     builder.append(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
-    if (m_debuggerAgent)
-        m_debuggerAgent->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource, builder.toString());
+    if (m_connection && m_connection->debuggerAgent())
+        m_connection->debuggerAgent()->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource, builder.toString());
 }
 
 void InjectedScriptHost::unmonitorFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
-    if (m_debuggerAgent)
-        m_debuggerAgent->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource);
+    if (m_connection && m_connection->debuggerAgent())
+        m_connection->debuggerAgent()->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource);
 }
 
 } // namespace blink

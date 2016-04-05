@@ -38,9 +38,9 @@
 
 namespace blink {
 
+class V8InspectorConnectionImpl;
 class V8EventListenerInfo;
 class V8DebuggerImpl;
-class V8DebuggerAgentImpl;
 
 namespace protocol {
 class DictionaryValue;
@@ -53,12 +53,8 @@ class DictionaryValue;
 
 class InjectedScriptHost {
 public:
-    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*);
+    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*, V8InspectorConnectionImpl*);
     ~InjectedScriptHost();
-
-    void setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback>);
-    void setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback>);
-    void setDebuggerAgent(V8DebuggerAgentImpl* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
 
     void disconnect();
 
@@ -81,10 +77,10 @@ public:
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
 
 private:
-    InjectedScriptHost(V8DebuggerImpl*);
+    InjectedScriptHost(V8DebuggerImpl*, V8InspectorConnectionImpl*);
 
     V8DebuggerImpl* m_debugger;
-    V8DebuggerAgentImpl* m_debuggerAgent;
+    V8InspectorConnectionImpl* m_connection;
     OwnPtr<V8RuntimeAgent::InspectCallback> m_inspectCallback;
     OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
     protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;

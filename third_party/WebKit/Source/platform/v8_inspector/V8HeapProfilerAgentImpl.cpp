@@ -5,8 +5,8 @@
 #include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
 
 #include "platform/v8_inspector/InjectedScript.h"
-#include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
@@ -56,10 +56,10 @@ public:
         if (!contextId)
             return "";
         ErrorString errorString;
-        InjectedScript* injectedScript = m_runtimeAgent->getInjectedScriptManager()->findInjectedScript(&errorString, contextId);
+        InjectedScript* injectedScript = m_runtimeAgent->connection()->findInjectedScript(&errorString, contextId);
         if (!injectedScript)
             return "";
-        String16 name = injectedScript->origin();
+        String16 name = injectedScript->context()->origin();
         size_t length = name.length();
         if (m_offset + length + 1 >= m_strings.size())
             return "";

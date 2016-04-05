@@ -38,9 +38,10 @@
 namespace blink {
 
 class InjectedScript;
-class InjectedScriptManager;
+class InspectedContext;
 class RemoteObjectIdBase;
 class V8DebuggerImpl;
+class V8InspectorConnectionImpl;
 
 namespace protocol {
 class DictionaryValue;
@@ -114,16 +115,14 @@ public:
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
-    InjectedScriptManager* getInjectedScriptManager() { return m_injectedScriptManager.get(); }
-    int contextGroupId() { return m_contextGroupId; }
+    V8InspectorConnectionImpl* connection() { return m_connection.get(); }
 
     void reset();
-    void reportExecutionContextCreated(const V8ContextInfo&);
-    void reportExecutionContextDestroyed(v8::Local<v8::Context>);
+    void reportExecutionContextCreated(InspectedContext*);
+    void reportExecutionContextDestroyed(InspectedContext*);
 
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
-    int ensureDefaultContextAvailable(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) override;
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
     void disposeObjectGroup(const String16&) override;
@@ -133,10 +132,10 @@ public:
 private:
     v8::MaybeLocal<v8::Value> evaluateInternal(InjectedScript*, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension);
 
-    int m_contextGroupId;
+    // TODO(dgozman): reverse ownership.
+    OwnPtr<V8InspectorConnectionImpl> m_connection;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;
-    OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;
     protocol::HashMap<String16, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;

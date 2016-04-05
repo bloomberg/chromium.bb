@@ -8,12 +8,12 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
-#include "platform/v8_inspector/InjectedScriptHost.h"
-#include "platform/v8_inspector/InjectedScriptManager.h"
+#include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8AsyncCallTracker.h"
+#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
@@ -156,13 +156,12 @@ static PassOwnPtr<protocol::Debugger::Location> buildProtocolLocation(const Stri
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(V8RuntimeAgent* runtimeAgent)
 {
     V8RuntimeAgentImpl* runtimeAgentImpl = static_cast<V8RuntimeAgentImpl*>(runtimeAgent);
-    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->getInjectedScriptManager(), runtimeAgentImpl->debugger(), runtimeAgentImpl->contextGroupId()));
+    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->connection(), runtimeAgentImpl->debugger()));
 }
 
-V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, int contextGroupId)
-    : m_injectedScriptManager(injectedScriptManager)
-    , m_debugger(debugger)
-    , m_contextGroupId(contextGroupId)
+V8DebuggerAgentImpl::V8DebuggerAgentImpl(V8InspectorConnectionImpl* connection, V8DebuggerImpl* debugger)
+    : m_debugger(debugger)
+    , m_connection(connection)
     , m_enabled(false)
     , m_state(nullptr)
     , m_frontend(nullptr)
@@ -184,8 +183,7 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_currentAsyncOperationId(unknownAsyncOperationId)
     , m_pendingTraceAsyncOperationCompleted(false)
 {
-    ASSERT(contextGroupId);
-    m_injectedScriptManager->injectedScriptHost()->setDebuggerAgent(this);
+    m_connection->setDebuggerAgent(this);
 
     // FIXME: remove once InjectedScriptManager moves to v8.
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
@@ -194,6 +192,7 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
 
 V8DebuggerAgentImpl::~V8DebuggerAgentImpl()
 {
+    m_connection->setDebuggerAgent(nullptr);
 }
 
 bool V8DebuggerAgentImpl::checkEnabled(ErrorString* errorString)
@@ -209,7 +208,7 @@ void V8DebuggerAgentImpl::enable()
     // debugger().addListener may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
     m_enabled = true;
-    debugger().addDebuggerAgent(m_contextGroupId, this);
+    debugger().addDebuggerAgent(m_connection->contextGroupId(), this);
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
 }
@@ -238,7 +237,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
 
-    debugger().removeDebuggerAgent(m_contextGroupId);
+    debugger().removeDebuggerAgent(m_connection->contextGroupId());
     m_pausedContext.Reset();
     JavaScriptCallFrames emptyCallFrames;
     m_pausedCallFrames.swap(emptyCallFrames);
@@ -635,12 +634,12 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
     if (!remoteId)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> localContext = injectedScript->context();
+    v8::Local<v8::Context> localContext = injectedScript->context()->context();
 
     v8::TryCatch tryCatch(m_isolate);
 
@@ -683,12 +682,12 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, functionId);
     if (!remoteId)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Local<v8::Context> context = injectedScript->context()->context();
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Value> value;
@@ -716,7 +715,7 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
 
     if (!scopes.IsEmpty()) {
         protocol::ErrorSupport errorSupport;
-        OwnPtr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(injectedScript->context(), scopes).get(), &errorSupport);
+        OwnPtr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(context, scopes).get(), &errorSupport);
         if (hasInternalError(errorString, errorSupport.hasErrors()))
             return;
         functionDetails->setScopeChain(scopeChain.release());
@@ -732,12 +731,12 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
     if (!remoteId)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Local<v8::Context> context = injectedScript->context()->context();
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Object> object;
@@ -772,12 +771,12 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
     if (!remoteId)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Local<v8::Context> context = injectedScript->context()->context();
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Value> value;
@@ -804,7 +803,7 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     if (!injectedScript->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(injectedScript->isolate(), "value"), groupName))
         return;
     protocol::ErrorSupport errors;
-    OwnPtr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(injectedScript->context(), entriesArray).get(), &errors);
+    OwnPtr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(context, entriesArray).get(), &errors);
     if (hasInternalError(errorString, !entries))
         return;
     *outEntries = entries.release();
@@ -874,7 +873,7 @@ void V8DebuggerAgentImpl::resume(ErrorString* errorString)
         return;
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
-    m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
+    m_connection->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().continueProgram();
 }
 
@@ -890,7 +889,7 @@ void V8DebuggerAgentImpl::stepOver(ErrorString* errorString)
     }
     m_scheduledDebuggerStep = StepOver;
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
-    m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
+    m_connection->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepOverStatement();
 }
 
@@ -900,7 +899,7 @@ void V8DebuggerAgentImpl::stepInto(ErrorString* errorString)
         return;
     m_scheduledDebuggerStep = StepInto;
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
-    m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
+    m_connection->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepIntoStatement();
 }
 
@@ -912,7 +911,7 @@ void V8DebuggerAgentImpl::stepOut(ErrorString* errorString)
     m_skipNextDebuggerStepOut = false;
     m_recursionLevelForStepOut = 1;
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
-    m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
+    m_connection->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepOutOfFunction();
 }
 
@@ -960,7 +959,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
     if (!remoteId)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
@@ -988,7 +987,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     v8::MaybeLocal<v8::Value> maybeResultValue = m_pausedCallFrames[frameOrdinal].get()->evaluate(toV8String(injectedScript->isolate(), expression));
 
     // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
@@ -1016,7 +1015,7 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
     if (!remoteId)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
 
@@ -1233,7 +1232,8 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
 {
     if (m_pausedContext.IsEmpty() || !m_pausedCallFrames.size())
         return Array<CallFrame>::create();
-    InjectedScript* topFrameInjectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedContext.Get(m_isolate));
+    ErrorString ignored;
+    InjectedScript* topFrameInjectedScript = m_connection->findInjectedScript(&ignored, V8Debugger::contextId(m_pausedContext.Get(m_isolate)));
     if (!topFrameInjectedScript) {
         // Context has been reported as removed while on pause.
         return Array<CallFrame>::create();
@@ -1241,7 +1241,7 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
 
     v8::Isolate* isolate = topFrameInjectedScript->isolate();
     v8::HandleScope handles(isolate);
-    v8::Local<v8::Context> context = topFrameInjectedScript->context();
+    v8::Local<v8::Context> context = topFrameInjectedScript->context()->context();
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Array> objects = v8::Array::New(isolate);
@@ -1253,13 +1253,11 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
             return Array<CallFrame>::create();
 
         int contextId = currentCallFrame->contextId();
-        ErrorString ignoredErrorString;
-        InjectedScript* injectedScript = contextId ? m_injectedScriptManager->findInjectedScript(&ignoredErrorString, contextId) : nullptr;
+        InjectedScript* injectedScript = contextId ? m_connection->findInjectedScript(&ignored, contextId) : nullptr;
         if (!injectedScript)
             injectedScript = topFrameInjectedScript;
 
-        String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->contextId(), frameOrdinal);
-
+        String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->context()->contextId(), frameOrdinal);
         if (hasInternalError(errorString, !details->Set(context, toV8StringInternalized(isolate, "callFrameId"), toV8String(isolate, callFrameId)).FromMaybe(false)))
             return Array<CallFrame>::create();
 
@@ -1399,7 +1397,8 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     v8::HandleScope handles(m_isolate);
 
     if (!exception.IsEmpty()) {
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
+        ErrorString ignored;
+        InjectedScript* injectedScript = m_connection->findInjectedScript(&ignored, V8Debugger::contextId(context));
         if (injectedScript) {
             m_breakReason = isPromiseRejection ? protocol::Debugger::Paused::ReasonEnum::PromiseRejection : protocol::Debugger::Paused::ReasonEnum::Exception;
             ErrorString errorString;

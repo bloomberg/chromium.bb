@@ -182,42 +182,4 @@ bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> c
     return window && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), window, DoNotReportSecurityError);
 }
 
-void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVector& contexts)
-{
-    LocalFrame* root = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
-    if (!root)
-        return;
-
-    // Only report existing contexts if the page did commit load, otherwise we may
-    // unintentionally initialize contexts in the frames which may trigger some listeners
-    // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
-    if (!root->loader().stateMachine()->committedFirstRealDocumentLoad())
-        return;
-
-    RawPtr<InspectedFrames> inspectedFrames = InspectedFrames::create(root);
-
-    Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
-    for (LocalFrame* frame : *inspectedFrames) {
-        if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
-            continue;
-        String frameId = IdentifiersFactory::frameId(frame);
-
-        // Ensure execution context is created.
-        // If initializeMainWorld returns true, then is registered by didCreateScriptContext
-        if (!frame->script().initializeMainWorld()) {
-            ScriptState* scriptState = ScriptState::forMainWorld(frame);
-            contexts.append(V8ContextInfo(scriptState->context(), contextGroupId, true, "", "", frameId));
-        }
-        frame->script().collectIsolatedContexts(isolatedContexts);
-        if (isolatedContexts.isEmpty())
-            continue;
-        for (const auto& pair : isolatedContexts) {
-            String originString = pair.second ? pair.second->toRawString() : "";
-            ScriptState* scriptState = pair.first;
-            contexts.append(V8ContextInfo(scriptState->context(), contextGroupId, false, originString, scriptState->world().isolatedWorldHumanReadableName(), frameId));
-        }
-        isolatedContexts.clear();
-    }
-}
-
 } // namespace blink

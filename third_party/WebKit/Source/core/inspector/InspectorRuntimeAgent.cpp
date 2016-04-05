@@ -111,7 +111,7 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
         executionContextId = optExecutionContextId.fromJust();
     } else {
         v8::HandleScope handles(defaultScriptState()->isolate());
-        executionContextId = m_v8RuntimeAgent->ensureDefaultContextAvailable(defaultScriptState()->context());
+        executionContextId = V8Debugger::contextId(defaultScriptState()->context());
     }
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))

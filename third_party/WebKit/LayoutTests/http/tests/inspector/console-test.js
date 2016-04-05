@@ -3,8 +3,21 @@ var initialize_ConsoleTest = function() {
 InspectorTest.preloadModule("source_frame");
 InspectorTest.preloadPanel("console");
 
-InspectorTest.evaluateInConsole = function(code, callback)
+InspectorTest.selectMainExecutionContext = function()
 {
+    var executionContexts = InspectorTest.mainTarget.runtimeModel.executionContexts();
+    for (var context of executionContexts) {
+        if (context.isDefault) {
+            WebInspector.context.setFlavor(WebInspector.ExecutionContext, context);
+            return;
+        }
+    }
+}
+
+InspectorTest.evaluateInConsole = function(code, callback, dontForceMainContext)
+{
+    if (!dontForceMainContext)
+        InspectorTest.selectMainExecutionContext();
     callback = InspectorTest.safeWrap(callback);
 
     var consoleView = WebInspector.ConsoleView.instance();
@@ -27,7 +40,7 @@ InspectorTest.addConsoleViewSniffer = function(override, opt_sticky)
     InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_consoleMessageAddedForTest", sniffer, opt_sticky);
 }
 
-InspectorTest.evaluateInConsoleAndDump = function(code, callback)
+InspectorTest.evaluateInConsoleAndDump = function(code, callback, dontForceMainContext)
 {
     callback = InspectorTest.safeWrap(callback);
 
@@ -37,7 +50,7 @@ InspectorTest.evaluateInConsoleAndDump = function(code, callback)
         InspectorTest.addResult(code + " = " + text);
         callback(text);
     }
-    InspectorTest.evaluateInConsole(code, mycallback);
+    InspectorTest.evaluateInConsole(code, mycallback, dontForceMainContext);
 }
 
 InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessage)

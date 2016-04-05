@@ -33,8 +33,10 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/Atomics.h"
 #include "platform/v8_inspector/DebuggerScript.h"
+#include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
+#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -785,16 +787,34 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
     v8::Context::Scope contextScope(info.context);
     info.context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(m_isolate, debugData));
 
+    if (!m_contexts.contains(info.contextGroupId))
+        m_contexts.set(info.contextGroupId, adoptPtr(new ContextByIdMap()));
+    ASSERT(!m_contexts.get(info.contextGroupId)->contains(contextId));
+
+    OwnPtr<InspectedContext> contextOwner = adoptPtr(new InspectedContext(this, info, contextId));
+    InspectedContext* inspectedContext = contextOwner.get();
+    m_contexts.get(info.contextGroupId)->set(contextId, contextOwner.release());
+
     V8RuntimeAgentImpl* agent = getRuntimeAgentForContext(info.context);
     if (agent)
-        agent->reportExecutionContextCreated(info);
+        agent->reportExecutionContextCreated(inspectedContext);
 }
 
 void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
 {
+    int contextId = V8Debugger::contextId(context);
+    int contextGroupId = getGroupId(context);
+    if (!m_contexts.contains(contextGroupId) || !m_contexts.get(contextGroupId)->contains(contextId))
+        return;
+
+    InspectedContext* inspectedContext = m_contexts.get(contextGroupId)->get(contextId);
     V8RuntimeAgentImpl* agent = getRuntimeAgentForContext(context);
     if (agent)
-        agent->reportExecutionContextDestroyed(context);
+        agent->reportExecutionContextDestroyed(inspectedContext);
+
+    m_contexts.get(contextGroupId)->remove(contextId);
+    if (m_contexts.get(contextGroupId)->isEmpty())
+        m_contexts.remove(contextGroupId);
 }
 
 void V8DebuggerImpl::resetContextGroup(int contextGroupId)
@@ -805,6 +825,8 @@ void V8DebuggerImpl::resetContextGroup(int contextGroupId)
     V8RuntimeAgentImpl* runtimeAgent = m_runtimeAgentsMap.get(contextGroupId);
     if (runtimeAgent)
         runtimeAgent->reset();
+    if (m_contexts.contains(contextGroupId))
+        m_contexts.remove(contextGroupId);
 }
 
 PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
@@ -818,6 +840,20 @@ v8::Local<v8::Context> V8DebuggerImpl::regexContext()
     if (m_regexContext.IsEmpty())
         m_regexContext.Reset(m_isolate, v8::Context::New(m_isolate));
     return m_regexContext.Get(m_isolate);
+}
+
+void V8DebuggerImpl::discardInspectedContext(int contextGroupId, int contextId)
+{
+    if (!m_contexts.contains(contextGroupId) || !m_contexts.get(contextGroupId)->contains(contextId))
+        return;
+    m_contexts.get(contextGroupId)->remove(contextId);
+}
+
+const V8DebuggerImpl::ContextByIdMap* V8DebuggerImpl::contextGroup(int contextGroupId)
+{
+    if (!m_contexts.contains(contextGroupId))
+        return nullptr;
+    return m_contexts.get(contextGroupId);
 }
 
 } // namespace blink

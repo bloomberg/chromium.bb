@@ -53,7 +53,6 @@ public:
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
-    void contextsToReport(int contextGroupId, V8ContextInfoVector&) override;
 
 private:
     WorkerThread* m_workerThread;

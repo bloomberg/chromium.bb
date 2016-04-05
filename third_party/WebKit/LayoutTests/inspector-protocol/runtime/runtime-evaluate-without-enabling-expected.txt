@@ -1,0 +1,10 @@
+Tests that default execution context accessed without enabling Runtime domain gets properly cleaned up on reload.
+Page reloaded.
+{
+    error : {
+        code : -32000
+        message : Inspected frame has gone
+    }
+    id : 0
+}
+

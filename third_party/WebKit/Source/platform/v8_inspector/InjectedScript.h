@@ -31,14 +31,17 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
-#include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
+#include "platform/v8_inspector/InspectedContext.h"
+#include "wtf/PassOwnPtr.h"
+
 #include <v8.h>
 
 namespace blink {
 
-class InjectedScriptManager;
+class InjectedScriptHost;
 class RemoteObjectId;
 class V8FunctionCall;
 
@@ -46,11 +49,12 @@ namespace protocol {
 class DictionaryValue;
 }
 
-
 using protocol::Maybe;
 
 class InjectedScript final {
+    PROTOCOL_DISALLOW_COPY(InjectedScript);
 public:
+    static PassOwnPtr<InjectedScript> create(InspectedContext*, InjectedScriptHost*);
     ~InjectedScript();
 
     void getProperties(ErrorString*, v8::Local<v8::Object>, const String16& groupName, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
@@ -67,13 +71,9 @@ public:
     void releaseObjectGroup(const String16&);
 
     void setCustomObjectFormatterEnabled(bool);
-    int contextId() { return m_contextId; }
-    String16 origin() const { return m_origin; }
-    void setOrigin(const String16& origin) { m_origin = origin; }
 
-    v8::Isolate* isolate() { return m_isolate; }
-    v8::Local<v8::Context> context() const;
-    void dispose();
+    InspectedContext* context() const { return m_context; }
+    v8::Isolate* isolate() const;
     bool canAccessInspectedWindow() const;
 
     bool setLastEvaluationResult(ErrorString*, v8::Local<v8::Value>);
@@ -106,8 +106,7 @@ public:
     };
 
 private:
-    friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
-    InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>, int contextId);
+    InjectedScript(InspectedContext*, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>);
 
     v8::Local<v8::Value> v8Value() const;
     v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
@@ -116,13 +115,9 @@ private:
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
     v8::MaybeLocal<v8::Object> callFunctionReturnObject(ErrorString*, V8FunctionCall&) const;
 
-    InjectedScriptManager* m_manager;
-    v8::Isolate* m_isolate;
-    v8::Global<v8::Context> m_context;
+    InspectedContext* m_context;
     v8::Global<v8::Value> m_value;
     OwnPtr<InjectedScriptNative> m_native;
-    int m_contextId;
-    String16 m_origin;
 };
 
 } // namespace blink

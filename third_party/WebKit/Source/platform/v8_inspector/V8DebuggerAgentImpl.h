@@ -14,10 +14,10 @@
 
 namespace blink {
 
-class InjectedScriptManager;
 class JavaScriptCallFrame;
 class PromiseTracker;
 class V8AsyncCallTracker;
+class V8InspectorConnectionImpl;
 class V8StackTraceImpl;
 
 namespace protocol {
@@ -43,7 +43,7 @@ public:
         MonitorCommandBreakpointSource
     };
 
-    V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, int contextGroupId);
+    V8DebuggerAgentImpl(V8InspectorConnectionImpl*, V8DebuggerImpl*);
     ~V8DebuggerAgentImpl() override;
 
     void setInspectorState(protocol::DictionaryValue*) override;
@@ -212,9 +212,8 @@ private:
         StepOut
     };
 
-    InjectedScriptManager* m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
-    int m_contextGroupId;
+    V8InspectorConnectionImpl* m_connection;
     bool m_enabled;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Debugger* m_frontend;

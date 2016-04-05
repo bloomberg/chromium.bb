@@ -75,7 +75,6 @@ private:
     void muteWarningsAndDeprecations() override;
     void unmuteWarningsAndDeprecations() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
-    void contextsToReport(int contextGroupId, V8ContextInfoVector&) override;
 
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     OwnPtr<InspectorTaskRunner> m_taskRunner;

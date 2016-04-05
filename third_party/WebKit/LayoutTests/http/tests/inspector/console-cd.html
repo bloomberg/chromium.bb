@@ -8,7 +8,7 @@
 function test()
 {
     InspectorTest.changeExecutionContext("myIFrame");
-    InspectorTest.evaluateInConsoleAndDump("foo", finish);
+    InspectorTest.evaluateInConsoleAndDump("foo", finish, true);
     function finish()
     {
         InspectorTest.completeTest();
