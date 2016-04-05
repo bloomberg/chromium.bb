@@ -6,7 +6,6 @@ import("//build/config/linux/pkg_config.gni")
 import("//ui/ozone/ozone.gni")
 
 declare_args() {
-  use_mesa_platform_null = false
   use_drm_atomic = false
 }
 

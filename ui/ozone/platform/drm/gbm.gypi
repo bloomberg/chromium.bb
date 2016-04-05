@@ -13,7 +13,6 @@
     'internal_ozone_platforms': [
       'gbm',
     ],
-    'use_mesa_platform_null%': 0,
     'use_drm_atomic%': 0,
   },
   'targets': [
