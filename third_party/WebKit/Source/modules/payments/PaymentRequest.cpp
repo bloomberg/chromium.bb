@@ -27,11 +27,22 @@
 
 namespace mojo {
 
+using blink::mojom::wtf::CurrencyAmount;
+using blink::mojom::wtf::CurrencyAmountPtr;
+using blink::mojom::wtf::PaymentDetails;
+using blink::mojom::wtf::PaymentDetailsPtr;
+using blink::mojom::wtf::PaymentItem;
+using blink::mojom::wtf::PaymentItemPtr;
+using blink::mojom::wtf::PaymentOptions;
+using blink::mojom::wtf::PaymentOptionsPtr;
+using blink::mojom::wtf::ShippingOption;
+using blink::mojom::wtf::ShippingOptionPtr;
+
 template <>
-struct TypeConverter<mojom::wtf::CurrencyAmountPtr, blink::CurrencyAmount> {
-    static mojom::wtf::CurrencyAmountPtr Convert(const blink::CurrencyAmount& input)
+struct TypeConverter<CurrencyAmountPtr, blink::CurrencyAmount> {
+    static CurrencyAmountPtr Convert(const blink::CurrencyAmount& input)
     {
-        mojom::wtf::CurrencyAmountPtr output = mojom::wtf::CurrencyAmount::New();
+        CurrencyAmountPtr output = CurrencyAmount::New();
         output->currency_code = input.currencyCode();
         output->value = input.value();
         return output;
@@ -39,48 +50,48 @@ struct TypeConverter<mojom::wtf::CurrencyAmountPtr, blink::CurrencyAmount> {
 };
 
 template <>
-struct TypeConverter<mojom::wtf::PaymentItemPtr, blink::PaymentItem> {
-    static mojom::wtf::PaymentItemPtr Convert(const blink::PaymentItem& input)
+struct TypeConverter<PaymentItemPtr, blink::PaymentItem> {
+    static PaymentItemPtr Convert(const blink::PaymentItem& input)
     {
-        mojom::wtf::PaymentItemPtr output = mojom::wtf::PaymentItem::New();
+        PaymentItemPtr output = PaymentItem::New();
         output->id = input.id();
         output->label = input.label();
-        output->amount = mojom::wtf::CurrencyAmount::From(input.amount());
+        output->amount = CurrencyAmount::From(input.amount());
         return output;
     }
 };
 
 template <>
-struct TypeConverter<mojom::wtf::ShippingOptionPtr, blink::ShippingOption> {
-    static mojom::wtf::ShippingOptionPtr Convert(const blink::ShippingOption& input)
+struct TypeConverter<ShippingOptionPtr, blink::ShippingOption> {
+    static ShippingOptionPtr Convert(const blink::ShippingOption& input)
     {
-        mojom::wtf::ShippingOptionPtr output = mojom::wtf::ShippingOption::New();
+        ShippingOptionPtr output = ShippingOption::New();
         output->id = input.id();
         output->label = input.label();
-        output->amount = mojom::wtf::CurrencyAmount::From(input.amount());
+        output->amount = CurrencyAmount::From(input.amount());
         return output;
     }
 };
 
 template <>
-struct TypeConverter<mojom::wtf::PaymentDetailsPtr, blink::PaymentDetails> {
-    static mojom::wtf::PaymentDetailsPtr Convert(const blink::PaymentDetails& input)
+struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
+    static PaymentDetailsPtr Convert(const blink::PaymentDetails& input)
     {
-        mojom::wtf::PaymentDetailsPtr output = mojom::wtf::PaymentDetails::New();
-        output->items = mojo::WTFArray<mojom::wtf::PaymentItemPtr>::From(input.items());
+        PaymentDetailsPtr output = PaymentDetails::New();
+        output->items = mojo::WTFArray<PaymentItemPtr>::From(input.items());
         if (input.hasShippingOptions())
-            output->shipping_options = mojo::WTFArray<mojom::wtf::ShippingOptionPtr>::From(input.shippingOptions());
+            output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::From(input.shippingOptions());
         else
-            output->shipping_options = mojo::WTFArray<mojom::wtf::ShippingOptionPtr>::New(0);
+            output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::New(0);
         return output;
     }
 };
 
 template <>
-struct TypeConverter<mojom::wtf::PaymentOptionsPtr, blink::PaymentOptions> {
-    static mojom::wtf::PaymentOptionsPtr Convert(const blink::PaymentOptions& input)
+struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
+    static PaymentOptionsPtr Convert(const blink::PaymentOptions& input)
     {
-        mojom::wtf::PaymentOptionsPtr output = mojom::wtf::PaymentOptions::New();
+        PaymentOptionsPtr output = PaymentOptions::New();
         output->request_shipping = input.requestShipping();
         return output;
     }
