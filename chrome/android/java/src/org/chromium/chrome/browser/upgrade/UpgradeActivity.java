@@ -28,7 +28,7 @@ public class UpgradeActivity extends AppCompatActivity {
     public static final String EXTRA_INTENT_TO_REFIRE =
             "org.chromium.chrome.browser.upgrade.INTENT_TO_REFIRE";
 
-    private static final long MIN_MS_TO_DISPLAY_ACTIVITY = 1000;
+    private static final long MIN_MS_TO_DISPLAY_ACTIVITY = 3000;
     private static final long INVALID_TIMESTAMP = -1;
 
     private final Handler mHandler;

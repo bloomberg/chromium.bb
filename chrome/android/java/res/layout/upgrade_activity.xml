@@ -3,50 +3,49 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- Adapted from webapp_splash_screen_large.xml.
-     Actual layout pending UX review. -->
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/webapp_splash_screen_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginBottom="@dimen/webapp_splash_offset" >
-
-    <ImageView
-        android:id="@+id/logo_view"
-        android:layout_width="@dimen/signin_image_carousel_width"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:contentDescription="@null"
-        android:src="@drawable/fre_product_logo" />
-
-    <LinearLayout
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/webapp_splash_large_title_margin_bottom"
-        android:gravity="center"
-        android:orientation="horizontal" >
+        android:layout_gravity="center" >
 
-        <ProgressBar
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginEnd="12dp"
-            android:layout_weight="0" />
-
-        <TextView
-            android:id="@+id/message_view"
+        <!-- In case the image's dimensions ever change, cap it at 130dp.  The spec says to set a
+             minimum width of 80dp, as well, but I don't know it makes sense to do that here: if the
+             resource is swapped out for a smaller one, we'll end up with a blurry scaled up icon.
+        -->
+        <ImageView
+            android:id="@+id/logo_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:text="@string/updating_chrome"
-            android:textSize="20sp"
-            android:textColor="@color/default_text_color"
-            android:gravity="center"
-            android:fontFamily="sans-serif"
-            android:maxLines="1" />
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:maxWidth="130dp"
+            android:scaleType="centerInside"
+            android:contentDescription="@null"
+            android:src="@drawable/fre_product_logo" />
 
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/logo_view"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
 
-</RelativeLayout>
+            <ProgressBar
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <TextView
+                android:id="@+id/message_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/updating_chrome"
+                android:textSize="16sp"
+                android:textColor="@color/default_text_color" />
+
+        </LinearLayout>
+    </RelativeLayout>
+</merge>
