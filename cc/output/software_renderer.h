@@ -17,7 +17,6 @@ class RendererClient;
 class ResourceProvider;
 class SoftwareOutputDevice;
 
-class CheckerboardDrawQuad;
 class DebugBorderDrawQuad;
 class PictureDrawQuad;
 class RenderPassDrawQuad;
@@ -74,8 +73,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void SetClipRect(const gfx::Rect& rect);
   bool IsSoftwareResource(ResourceId resource_id) const;
 
-  void DrawCheckerboardQuad(const DrawingFrame* frame,
-                            const CheckerboardDrawQuad* quad);
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const DrawingFrame* frame,
