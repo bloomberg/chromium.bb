@@ -451,8 +451,15 @@ MemoryPressureLevel ReturnSpecifiedPressure(
 
 }  // namespace
 
+// ChildProcessNotification is disabled on Chrome OS. crbug.com/588172.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ChildProcessNotifications DISABLED_ChildProcessNotifications
+#else
+#define MAYBE_ChildProcessNotifications ChildProcessNotifications
+#endif
+
 // Ensure that memory pressure notifications are forwarded to child processes.
-TEST_F(TabManagerTest, ChildProcessNotifications) {
+TEST_F(TabManagerTest, MAYBE_ChildProcessNotifications) {
   TabManager tm;
 
   // Set up the tab strip.

@@ -661,8 +661,12 @@ void TabManager::OnMemoryPressure(
   // NOTE: This mechanism relies on having a MemoryPressureMonitor
   // implementation that supports "CurrentPressureLevel". This is true on all
   // platforms on which TabManager is used.
+#if !defined(OS_CHROMEOS)
+  // Running GC under memory pressure can cause thrashing. Disable it on
+  // ChromeOS until the thrashing is fixed. crbug.com/588172.
   if (!under_memory_pressure_)
     DoChildProcessDispatch();
+#endif
 }
 
 bool TabManager::IsMediaTab(WebContents* contents) const {
