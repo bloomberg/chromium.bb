@@ -34,23 +34,6 @@ class JSWindowIDManagerTest : public PlatformTest {
   web::ScopedTestingWebClient web_client_;
 };
 
-// Tests that reinjection of window ID JS results in a different window ID.
-// TODO(ios): This test only works for the current implementation using
-// UIWebView. CRWTestJSInjectionReceiver should be re-written to eliminate
-// web view specificity (crbug.com/486840).
-TEST_F(JSWindowIDManagerTest, WindowIDReinjection) {
-  EXPECT_TRUE(manager_.get());
-  [manager_ inject];
-  NSString* windowID = [manager_ windowId];
-  EXPECT_EQ(32U, [windowID length]);
-  // Reset the __gCrWeb object to enable reinjection.
-  web::EvaluateJavaScriptAsString(manager_, @"__gCrWeb = undefined;");
-  // Inject a second time to check that the ID is different.
-  [manager_ inject];
-  NSString* windowID2 = [manager_ windowId];
-  EXPECT_FALSE([windowID isEqualToString:windowID2]);
-}
-
 // Tests that window ID injection by a second manager results in a different
 // window ID.
 TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {

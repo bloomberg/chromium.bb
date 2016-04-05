@@ -23,15 +23,6 @@ namespace {
 // A test fixture for testing the page_script_util methods.
 typedef WebTest PageScriptUtilTest;
 
-// Tests that UIWebView early page script is a valid script that injects global
-// __gCrWeb object.
-TEST_F(PageScriptUtilTest, UIWebViewEarlyPageScript) {
-  base::scoped_nsobject<UIWebView> web_view([[UIWebView alloc] init]);
-  EvaluateJavaScriptAsString(web_view, GetEarlyPageScript(UI_WEB_VIEW_TYPE));
-  EXPECT_NSEQ(@"object",
-              EvaluateJavaScriptAsString(web_view, @"typeof __gCrWeb"));
-}
-
 // Tests that WKWebView early page script is a valid script that injects global
 // __gCrWeb object.
 TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
@@ -39,15 +30,6 @@ TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
       CreateWKWebView(CGRectZero, GetBrowserState()));
   EvaluateJavaScript(web_view, GetEarlyPageScript(WK_WEB_VIEW_TYPE));
   EXPECT_NSEQ(@"object", EvaluateJavaScript(web_view, @"typeof __gCrWeb"));
-}
-
-// Tests that embedder's UIWebView script is included into early script.
-TEST_F(PageScriptUtilTest, UIEmbedderScript) {
-  GetWebClient()->SetEarlyPageScript(@"__gCrEmbedder = {};", UI_WEB_VIEW_TYPE);
-  base::scoped_nsobject<UIWebView> web_view([[UIWebView alloc] init]);
-  EvaluateJavaScriptAsString(web_view, GetEarlyPageScript(UI_WEB_VIEW_TYPE));
-  EXPECT_NSEQ(@"object",
-              EvaluateJavaScriptAsString(web_view, @"typeof __gCrEmbedder"));
 }
 
 // Tests that embedder's WKWebView script is included into early script.

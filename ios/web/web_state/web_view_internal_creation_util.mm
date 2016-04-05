@@ -8,51 +8,11 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/web/alloc_with_zone_interceptor.h"
-#include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/browser_state.h"
-#import "ios/web/public/browsing_data_partition.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-
-#if !defined(NDEBUG)
-
-namespace {
-
-// Decides if web views can be created.
-bool gAllowWebViewCreation = NO;
-
-// Decides if web views are associated with an ActiveStateManager which is
-// active.
-bool gWebViewsNeedActiveStateManager = NO;
-
-}  // namespace
-
-@interface WKWebView (CRWAdditions)
-@end
-
-@implementation WKWebView (CRWAdditions)
-
-+ (void)load {
-  id (^allocator)(Class klass, NSZone* zone) = ^id(Class klass, NSZone* zone) {
-    if (web::IsWebViewAllocInitAllowed()) {
-      return NSAllocateObject(klass, 0, zone);
-    }
-    // You have hit this because you are trying to create a WKWebView directly.
-    // Please use one of the web::CreateWKWKWebView methods that vend a
-    // WKWebView instead.
-    NOTREACHED();
-    return nil;
-  };
-  web::AddAllocWithZoneMethod([WKWebView class], allocator);
-}
-
-@end
-
-#endif  // !defined(NDEBUG)
 
 namespace web {
 
@@ -77,21 +37,6 @@ void PreWKWebViewCreation(BrowserState* browser_state) {
   DCHECK(browser_state);
   DCHECK(GetWebClient());
   GetWebClient()->PreWebViewCreation();
-
-#if !defined(NDEBUG)
-  if (IsWebViewAllocInitAllowed() && gWebViewsNeedActiveStateManager) {
-    DCHECK(BrowserState::GetActiveStateManager(browser_state)->IsActive());
-  }
-#endif
-}
-
-// Called after the WKWebView |web_view| is created.
-void PostWKWebViewCreation(WKWebView* web_view, BrowserState* browser_state) {
-  DCHECK(web_view);
-
-  // TODO(stuartmorgan): Figure out how to make this work; two different client
-  // methods for the two web view types?
-  // web::GetWebClient()->PostWebViewCreation(result);
 }
 
 }  // namespace
@@ -132,16 +77,8 @@ WKWebView* CreateWKWebView(CGRect frame,
   VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
   PreWKWebViewCreation(browser_state);
-#if !defined(NDEBUG)
-  bool previous_allow_web_view_creation_value = gAllowWebViewCreation;
-  gAllowWebViewCreation = true;
-#endif
   WKWebView* result =
       [[WKWebView alloc] initWithFrame:frame configuration:configuration];
-#if !defined(NDEBUG)
-  gAllowWebViewCreation = previous_allow_web_view_creation_value;
-#endif
-  PostWKWebViewCreation(result, browser_state);
 
   // By default the web view uses a very sluggish scroll speed. Set it to a more
   // reasonable value.
@@ -149,20 +86,5 @@ WKWebView* CreateWKWebView(CGRect frame,
 
   return result;
 }
-
-#if !defined(NDEBUG)
-bool IsWebViewAllocInitAllowed() {
-  static dispatch_once_t once_token = 0;
-  dispatch_once(&once_token, ^{
-    DCHECK(GetWebClient());
-    gAllowWebViewCreation = GetWebClient()->AllowWebViewAllocInit();
-    if (!gAllowWebViewCreation) {
-      gWebViewsNeedActiveStateManager =
-          GetWebClient()->WebViewsNeedActiveStateManager();
-    }
-  });
-  return gAllowWebViewCreation;
-}
-#endif
 
 }  // namespace web
