@@ -197,6 +197,15 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 
 void ChromeContentUtilityClient::RegisterMojoServices(
     content::ServiceRegistry* registry) {
+  // When the utility process is running with elevated privileges, we need to
+  // filter messages so that only a whitelist of IPCs can run. In Mojo, there's
+  // no way of filtering individual messages. Instead, we can avoid adding
+  // non-whitelisted Mojo services to the ServiceRegistry.
+  // TODO(amistry): Use a whitelist once the whistlisted IPCs have been
+  // converted to Mojo.
+  if (filter_messages_)
+    return;
+
 #if !defined(OS_ANDROID)
   registry->AddService<net::interfaces::ProxyResolverFactory>(
       base::Bind(CreateProxyResolverFactory));
