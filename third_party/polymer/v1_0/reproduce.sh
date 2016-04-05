@@ -97,6 +97,11 @@ if [[ ! -z "${new}${deleted}" ]]; then
   echo
 fi
 
+echo 'Creating a summary of components...'
 python create_components_summary.py > components_summary.txt
 
+echo 'Creating GYP files for interfaces and externs...'
 ./generate_gyp.sh
+
+echo 'Vulcanizing dependent UIs (i.e. downloads)...'
+python ../../../chrome/browser/resources/md_downloads/vulcanize.py
