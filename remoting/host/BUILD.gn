@@ -868,7 +868,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       }
     }
 
-    if (is_chrome_branded && enable_me2me_host && !is_chromeos) {
+    if (is_chrome_branded && enable_me2me_host && is_linux && !is_chromeos) {
       # TODO(GYP): add support for archive_chromoting_tests variable?
 
       import("//build/config/zip.gni")
