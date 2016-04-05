@@ -22,6 +22,7 @@ import zlib
 
 import devil_chromium
 from devil.utils import cmd_helper
+from pylib import constants
 from pylib.constants import host_paths
 
 _GRIT_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'tools', 'grit')
@@ -199,7 +200,7 @@ def IsPakFileName(file_name):
   return file_name.endswith('.pak') or file_name.endswith('.lpak')
 
 
-def PrintPakAnalysis(apk_filename, min_pak_resource_size, build_type):
+def PrintPakAnalysis(apk_filename, min_pak_resource_size):
   """Print sizes of all resources in all pak files in |apk_filename|."""
   print
   print 'Analyzing pak files in %s...' % apk_filename
@@ -263,7 +264,7 @@ def PrintPakAnalysis(apk_filename, min_pak_resource_size, build_type):
       total_resource_size)
   print
 
-  resource_id_name_map = _GetResourceIdNameMap(build_type)
+  resource_id_name_map = _GetResourceIdNameMap()
 
   # Output the table of details about all resources across pak files.
   print
@@ -278,9 +279,9 @@ def PrintPakAnalysis(apk_filename, min_pak_resource_size, build_type):
           100.0 * resource_size_map[i] / total_resource_size)
 
 
-def _GetResourceIdNameMap(build_type):
+def _GetResourceIdNameMap():
   """Returns a map of {resource_id: resource_name}."""
-  out_dir = os.path.join(host_paths.DIR_SOURCE_ROOT, 'out', build_type)
+  out_dir = constants.GetOutDirectory()
   assert os.path.isdir(out_dir), 'Failed to locate out dir at %s' % out_dir
   print 'Looking at resources in: %s' % out_dir
 
@@ -365,6 +366,9 @@ Pass any number of files to graph their sizes. Any files with the extension
                            help='Minimum byte size of displayed pak resources.')
   option_parser.add_option('--build_type', dest='build_type', default='Debug',
                            help='Sets the build type, default is Debug.')
+  option_parser.add_option('--chromium-output-directory',
+                           help='Location of the build artifacts. '
+                                'Takes precidence over --build_type.')
   option_parser.add_option('--chartjson', action="store_true",
                            help='Sets output mode to chartjson.')
   option_parser.add_option('--output-dir', default='.',
@@ -374,6 +378,11 @@ Pass any number of files to graph their sizes. Any files with the extension
   options, args = option_parser.parse_args(argv)
   files = args[1:]
   chartjson = _BASE_CHART.copy() if options.chartjson else None
+
+  constants.SetBuildType(options.build_type)
+  if options.chromium_output_directory:
+    constants.SetOutputDirectory(options.chromium_output_directory)
+  constants.CheckOutputDirectory()
 
   # For backward compatibilty with buildbot scripts, treat --so-path as just
   # another file to print the size of. We don't need it for anything special any
@@ -395,7 +404,7 @@ Pass any number of files to graph their sizes. Any files with the extension
   for f in files:
     if f.endswith('.apk'):
       PrintApkAnalysis(f, chartjson=chartjson)
-      PrintPakAnalysis(f, options.min_pak_resource_size, options.build_type)
+      PrintPakAnalysis(f, options.min_pak_resource_size)
 
   if chartjson:
     results_path = os.path.join(options.output_dir, 'results-chart.json')
