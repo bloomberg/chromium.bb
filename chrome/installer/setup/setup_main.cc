@@ -403,9 +403,6 @@ installer::InstallStatus RenameChromeExecutables(
                                     temp_path.path().value(),
                                     WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
-  // old_chrome.exe is still in use in most cases, so ignore failures here.
-  install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())->
-      set_ignore_failure(true);
 
   // Add work items to delete the "opv", "cpv", and "cmd" values from all
   // products we're operating on (which including the multi-install binaries).
@@ -429,6 +426,12 @@ installer::InstallStatus RenameChromeExecutables(
                                             KEY_WOW64_32KEY,
                                             google_update::kRegRenameCmdField);
   }
+  // old_chrome.exe is still in use in most cases, so ignore failures here.
+  // Make sure this is the last item in the list because it cannot be rolled
+  // back.
+  install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())->
+      set_ignore_failure(true);
+
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {
     LOG(ERROR) << "Renaming of executables failed. Rolling back any changes.";
