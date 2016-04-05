@@ -1267,6 +1267,10 @@
       'testing/UnitTestHelpers.h',
       'testing/WebLayerTreeViewImplForTesting.cpp',
       'testing/WebLayerTreeViewImplForTesting.h',
+      'testing/weburl_loader_mock.cc',
+      'testing/weburl_loader_mock.h',
+      'testing/weburl_loader_mock_factory_impl.cc',
+      'testing/weburl_loader_mock_factory_impl.h',
     ],
     'conditions': [
       ['OS=="win"',

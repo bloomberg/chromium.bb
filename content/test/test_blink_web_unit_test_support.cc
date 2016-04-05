@@ -22,7 +22,6 @@
 #include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
-#include "content/test/weburl_loader_mock_factory.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "storage/browser/database/vfs_backend.h"
@@ -34,6 +33,7 @@
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
@@ -92,7 +92,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-  url_loader_factory_.reset(new WebURLLoaderMockFactory());
+  url_loader_factory_ = blink::WebURLLoaderMockFactory::create();
   mock_clipboard_.reset(new MockWebClipboardImpl());
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -191,7 +191,7 @@ blink::WebMimeRegistry* TestBlinkWebUnitTestSupport::mimeRegistry() {
 }
 
 blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
-  return url_loader_factory_->CreateURLLoader(
+  return url_loader_factory_->createURLLoader(
       BlinkPlatformImpl::createURLLoader());
 }
 
@@ -308,32 +308,33 @@ void TestBlinkWebUnitTestSupport::registerMockedURL(
     const blink::WebURL& url,
     const blink::WebURLResponse& response,
     const blink::WebString& file_path) {
-  url_loader_factory_->RegisterURL(url, response, file_path);
+  url_loader_factory_->registerURL(url, response, file_path);
 }
 
 void TestBlinkWebUnitTestSupport::registerMockedErrorURL(
     const blink::WebURL& url,
     const blink::WebURLResponse& response,
     const blink::WebURLError& error) {
-  url_loader_factory_->RegisterErrorURL(url, response, error);
+  url_loader_factory_->registerErrorURL(url, response, error);
 }
 
 void TestBlinkWebUnitTestSupport::unregisterMockedURL(
     const blink::WebURL& url) {
-  url_loader_factory_->UnregisterURL(url);
+  url_loader_factory_->unregisterURL(url);
 }
 
 void TestBlinkWebUnitTestSupport::unregisterAllMockedURLs() {
-  url_loader_factory_->UnregisterAllURLs();
+  url_loader_factory_->unregisterAllURLs();
+  blink::WebCache::clear();
 }
 
 void TestBlinkWebUnitTestSupport::serveAsynchronousMockedRequests() {
-  url_loader_factory_->ServeAsynchronousRequests();
+  url_loader_factory_->serveAsynchronousRequests();
 }
 
 void TestBlinkWebUnitTestSupport::setLoaderDelegate(
     blink::WebURLLoaderTestDelegate* delegate) {
-  url_loader_factory_->set_delegate(delegate);
+  url_loader_factory_->setLoaderDelegate(delegate);
 }
 
 blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {

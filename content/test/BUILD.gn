@@ -40,6 +40,7 @@ source_set("test_support") {
     "//content/public/browser",
     "//content/public/common",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:test_support",
   ]
   deps = [
     ":browsertest_base",

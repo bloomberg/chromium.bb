@@ -4,7 +4,6 @@
 
 #include "content/test/web_gesture_curve_mock.h"
 
-#include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 

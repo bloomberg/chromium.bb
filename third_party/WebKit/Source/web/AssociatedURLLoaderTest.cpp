@@ -474,7 +474,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
 {
     KURL url = toKURL("http://www.test.com/RedirectCrossOriginFailure.html");
     char redirect[] = "http://www.other.com/RedirectCrossOriginFailure.html";  // Cross-origin
-    KURL redirectURL;
+    KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
     request.initialize();

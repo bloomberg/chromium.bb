@@ -38,6 +38,7 @@ class WebURL;
 class WebURLResponse;
 struct WebURLError;
 
+// TODO(kinuko): Deprecate this.
 class WebUnitTestSupport {
 public:
     virtual void registerMockedURL(const WebURL&, const WebURLResponse&, const WebString& filePath) { }

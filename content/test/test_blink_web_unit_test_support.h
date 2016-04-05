@@ -15,7 +15,7 @@
 #include "content/child/webfileutilities_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
-#include "content/test/weburl_loader_mock_factory.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderMockFactory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 
 namespace base {
@@ -74,6 +74,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   blink::WebUnitTestSupport* unitTestSupport() override;
 
   // WebUnitTestSupport implementation
+  // TODO(kinuko): Remove these methods.
   void registerMockedURL(const blink::WebURL& url,
                          const blink::WebURLResponse& response,
                          const blink::WebString& filePath) override;
@@ -95,7 +96,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   scoped_ptr<MockWebClipboardImpl> mock_clipboard_;
   WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;
-  scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
+  scoped_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
   scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
   scoped_ptr<blink::WebThread> web_thread_;

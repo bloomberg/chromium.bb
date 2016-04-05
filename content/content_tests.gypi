@@ -178,10 +178,6 @@
       'test/web_contents_observer_sanity_checker.h',
       'test/web_gesture_curve_mock.cc',
       'test/web_gesture_curve_mock.h',
-      'test/weburl_loader_mock.cc',
-      'test/weburl_loader_mock.h',
-      'test/weburl_loader_mock_factory.cc',
-      'test/weburl_loader_mock_factory.h',
     ],
     'content_browsertests_sources': [
       'app/mojo/mojo_browsertest.cc',
@@ -871,6 +867,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/public/blink.gyp:blink',
+        '../third_party/WebKit/public/blink.gyp:blink_test_support',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
