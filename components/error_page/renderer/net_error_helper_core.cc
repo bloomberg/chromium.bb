@@ -888,11 +888,11 @@ blink::WebURLError NetErrorHelperCore::GetUpdatedError(
   return updated_error;
 }
 
-void NetErrorHelperCore::Reload(bool ignore_cache) {
+void NetErrorHelperCore::Reload(bool bypass_cache) {
   if (!committed_error_page_info_) {
     return;
   }
-  delegate_->ReloadPage(ignore_cache);
+  delegate_->ReloadPage(bypass_cache);
 }
 
 bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {

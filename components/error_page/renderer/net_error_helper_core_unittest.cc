@@ -424,9 +424,9 @@ class NetErrorHelperCoreTest : public testing::Test,
     request_body_.clear();
   }
 
-  void ReloadPage(bool ignore_cache) override {
+  void ReloadPage(bool bypass_cache) override {
     reload_count_++;
-    if (ignore_cache)
+    if (bypass_cache)
       reload_bypassing_cache_count_++;
   }
 

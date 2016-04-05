@@ -727,10 +727,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_HideTransitionElements,
 IPC_MESSAGE_ROUTED1(FrameMsg_ShowTransitionElements,
                     std::string /* css_selector */)
 
-// Tells the renderer to reload the frame, optionally ignoring the cache while
+// Tells the renderer to reload the frame, optionally bypassing the cache while
 // doing so.
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
-                    bool /* ignore_cache */)
+                    bool /* bypass_cache */)
 
 // Notifies the color chooser client that the user selected a color.
 IPC_MESSAGE_ROUTED2(FrameMsg_DidChooseColorResponse, unsigned, SkColor)

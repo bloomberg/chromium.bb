@@ -105,7 +105,7 @@ class NetErrorHelper
   void CancelFetchNavigationCorrections() override;
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override;
-  void ReloadPage(bool ignore_cache) override;
+  void ReloadPage(bool bypass_cache) override;
   void LoadPageFromCache(const GURL& page_url) override;
   void DiagnoseError(const GURL& page_url) override;
   void ShowOfflinePages() override;

@@ -296,7 +296,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* outer_contents_frame) override;
   void Stop() override;
   WebContents* Clone() override;
-  void ReloadFocusedFrame(bool ignore_cache) override;
+  void ReloadFocusedFrame(bool bypass_cache) override;
   void Undo() override;
   void Redo() override;
   void Cut() override;

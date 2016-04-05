@@ -2101,10 +2101,8 @@ void RenderFrameImpl::OnPostMessageEvent(
   frame_->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
-void RenderFrameImpl::OnReload(bool ignore_cache) {
-  // TODO(crbug.com/599364): Rename |ignore_cache| or change it to enum.
-  // Eventually we may remove FrameMsg_Reload, and use FrameMsg_Navigate.
-  frame_->reload(ignore_cache ? WebFrameLoadType::ReloadBypassingCache
+void RenderFrameImpl::OnReload(bool bypass_cache) {
+  frame_->reload(bypass_cache ? WebFrameLoadType::ReloadBypassingCache
                               : WebFrameLoadType::Reload);
 }
 
@@ -5302,9 +5300,9 @@ void RenderFrameImpl::NavigateInternal(
   // corresponds to a back/forward navigation event. Update the parameters
   // depending on the navigation type.
   if (is_reload) {
-    bool ignore_cache = (common_params.navigation_type ==
+    bool bypass_cache = (common_params.navigation_type ==
                          FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE);
-    load_type = ignore_cache ? WebFrameLoadType::ReloadBypassingCache
+    load_type = bypass_cache ? WebFrameLoadType::ReloadBypassingCache
                              : WebFrameLoadType::Reload;
 
     if (!browser_side_navigation) {

@@ -418,7 +418,7 @@ class WebContents : public PageNavigator,
   virtual WebContents* Clone() = 0;
 
   // Reloads the focused frame.
-  virtual void ReloadFocusedFrame(bool ignore_cache) = 0;
+  virtual void ReloadFocusedFrame(bool bypass_cache) = 0;
 
   // Reloads all the Lo-Fi images in this WebContents. Ignores the cache and
   // reloads from the network.

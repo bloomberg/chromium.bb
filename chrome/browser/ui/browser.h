@@ -820,7 +820,7 @@ class Browser : public TabStripModelObserver,
                          DetachType type);
 
   // Shared code between Reload() and ReloadBypassingCache().
-  void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
+  void ReloadInternal(WindowOpenDisposition disposition, bool bypass_cache);
 
   // Returns true if the Browser window supports a location bar. Having support
   // for the location bar does not mean it will be visible.

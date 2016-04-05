@@ -214,7 +214,7 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
 
 void ReloadInternal(Browser* browser,
                     WindowOpenDisposition disposition,
-                    bool ignore_cache) {
+                    bool bypass_cache) {
   // As this is caused by a user action, give the focus to the page.
   //
   // Also notify RenderViewHostDelegate of the user gesture; this is
@@ -226,10 +226,10 @@ void ReloadInternal(Browser* browser,
 
   DevToolsWindow* devtools =
       DevToolsWindow::GetInstanceForInspectedWebContents(new_tab);
-  if (devtools && devtools->ReloadInspectedWebContents(ignore_cache))
+  if (devtools && devtools->ReloadInspectedWebContents(bypass_cache))
     return;
 
-  if (ignore_cache)
+  if (bypass_cache)
     new_tab->GetController().ReloadBypassingCache(true);
   else
     new_tab->GetController().Reload(true);

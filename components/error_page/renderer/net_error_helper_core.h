@@ -105,7 +105,7 @@ class NetErrorHelperCore {
         const std::string& tracking_request_body) = 0;
 
     // Starts a reload of the page in the observed frame.
-    virtual void ReloadPage(bool ignore_cache) = 0;
+    virtual void ReloadPage(bool bypass_cache) = 0;
 
     // Load the original page from cache.
     virtual void LoadPageFromCache(const GURL& page_url) = 0;
@@ -232,7 +232,7 @@ class NetErrorHelperCore {
 
   blink::WebURLError GetUpdatedError(const blink::WebURLError& error) const;
 
-  void Reload(bool ignore_cache);
+  void Reload(bool bypass_cache);
   bool MaybeStartAutoReloadTimer();
   void StartAutoReloadTimer();
   void AutoReloadTimerFired();
