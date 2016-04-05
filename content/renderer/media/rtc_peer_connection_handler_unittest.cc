@@ -294,16 +294,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
     if (!video_track_label.empty()) {
-      webrtc::VideoTrackSourceInterface* source = NULL;
-      scoped_refptr<webrtc::VideoTrackInterface> video_track(
-          mock_dependency_factory_->CreateLocalVideoTrack(
-              video_track_label, source));
-      stream->AddTrack(video_track.get());
+      stream->AddTrack(MockWebRtcVideoTrack::Create(video_track_label).get());
     }
     if (!audio_track_label.empty()) {
-      scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-          WebRtcLocalAudioTrackAdapter::Create(audio_track_label, NULL));
-      stream->AddTrack(audio_track.get());
+      stream->AddTrack(MockWebRtcAudioTrack::Create(audio_track_label).get());
     }
     mock_peer_connection_->AddRemoteStream(stream.get());
     return stream;
@@ -800,14 +794,14 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             video_tracks[0].source().getReadyState());
 
-  remote_stream->GetAudioTracks()[0]->set_state(
-      webrtc::MediaStreamTrackInterface::kEnded);
+  static_cast<MockWebRtcAudioTrack*>(remote_stream->GetAudioTracks()[0].get())
+      ->SetEnded();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             audio_tracks[0].source().getReadyState());
 
-  remote_stream->GetVideoTracks()[0]->set_state(
-      webrtc::MediaStreamTrackInterface::kEnded);
+  static_cast<MockWebRtcVideoTrack*>(remote_stream->GetVideoTracks()[0].get())
+      ->SetEnded();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             video_tracks[0].source().getReadyState());

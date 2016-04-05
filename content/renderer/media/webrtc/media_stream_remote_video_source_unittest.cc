@@ -89,8 +89,7 @@ class MediaStreamRemoteVideoSourceTest
   }
 
   void StopWebRtcTrack() {
-    static_cast<MockWebRtcVideoTrack*>(webrtc_video_track_.get())->set_state(
-        webrtc::MediaStreamTrackInterface::kEnded);
+    static_cast<MockWebRtcVideoTrack*>(webrtc_video_track_.get())->SetEnded();
   }
 
   const blink::WebMediaStreamSource& webkit_source() const {

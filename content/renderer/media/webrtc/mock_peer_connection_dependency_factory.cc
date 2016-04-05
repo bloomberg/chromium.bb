@@ -180,16 +180,76 @@ bool MockAudioSource::remote() const {
   return remote_;
 }
 
+scoped_refptr<MockWebRtcAudioTrack> MockWebRtcAudioTrack::Create(
+    const std::string& id) {
+  return new rtc::RefCountedObject<MockWebRtcAudioTrack>(id);
+}
+
+MockWebRtcAudioTrack::MockWebRtcAudioTrack(const std::string& id)
+    : id_(id),
+      enabled_(true),
+      state_(webrtc::MediaStreamTrackInterface::kLive) {}
+
+MockWebRtcAudioTrack::~MockWebRtcAudioTrack() {}
+
+std::string MockWebRtcAudioTrack::kind() const {
+  return kAudioKind;
+}
+
+webrtc::AudioSourceInterface* MockWebRtcAudioTrack::GetSource() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::string MockWebRtcAudioTrack::id() const {
+  return id_;
+}
+
+bool MockWebRtcAudioTrack::enabled() const {
+  return enabled_;
+}
+
+MockWebRtcVideoTrack::TrackState MockWebRtcAudioTrack::state() const {
+  return state_;
+}
+
+bool MockWebRtcAudioTrack::set_enabled(bool enable) {
+  enabled_ = enable;
+  return true;
+}
+
+void MockWebRtcAudioTrack::RegisterObserver(ObserverInterface* observer) {
+  DCHECK(observers_.find(observer) == observers_.end());
+  observers_.insert(observer);
+}
+
+void MockWebRtcAudioTrack::UnregisterObserver(ObserverInterface* observer) {
+  DCHECK(observers_.find(observer) != observers_.end());
+  observers_.erase(observer);
+}
+
+void MockWebRtcAudioTrack::SetEnded() {
+  DCHECK_EQ(webrtc::MediaStreamTrackInterface::kLive, state_);
+  state_ = webrtc::MediaStreamTrackInterface::kEnded;
+  for (auto& o : observers_)
+    o->OnChanged();
+}
+
 MockWebRtcVideoTrack::MockWebRtcVideoTrack(
     const std::string& id,
     webrtc::VideoTrackSourceInterface* source)
-    : enabled_(false),
-      id_(id),
-      state_(MediaStreamTrackInterface::kLive),
+    : id_(id),
       source_(source),
+      enabled_(true),
+      state_(webrtc::MediaStreamTrackInterface::kLive),
       sink_(NULL) {}
 
 MockWebRtcVideoTrack::~MockWebRtcVideoTrack() {}
+
+scoped_refptr<MockWebRtcVideoTrack> MockWebRtcVideoTrack::Create(
+    const std::string& id) {
+  return new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, nullptr);
+}
 
 void MockWebRtcVideoTrack::AddOrUpdateSink(
     rtc::VideoSinkInterface<cricket::VideoFrame>* sink,
@@ -204,9 +264,12 @@ void MockWebRtcVideoTrack::RemoveSink(
   sink_ = NULL;
 }
 
+VideoTrackSourceInterface* MockWebRtcVideoTrack::GetSource() const {
+  return source_.get();
+}
+
 std::string MockWebRtcVideoTrack::kind() const {
-  NOTIMPLEMENTED();
-  return std::string();
+  return kVideoKind;
 }
 
 std::string MockWebRtcVideoTrack::id() const { return id_; }
@@ -222,13 +285,6 @@ bool MockWebRtcVideoTrack::set_enabled(bool enable) {
   return true;
 }
 
-bool MockWebRtcVideoTrack::set_state(TrackState new_state) {
-  state_ = new_state;
-  for (auto& o : observers_)
-    o->OnChanged();
-  return true;
-}
-
 void MockWebRtcVideoTrack::RegisterObserver(ObserverInterface* observer) {
   DCHECK(observers_.find(observer) == observers_.end());
   observers_.insert(observer);
@@ -239,8 +295,11 @@ void MockWebRtcVideoTrack::UnregisterObserver(ObserverInterface* observer) {
   observers_.erase(observer);
 }
 
-VideoTrackSourceInterface* MockWebRtcVideoTrack::GetSource() const {
-  return source_.get();
+void MockWebRtcVideoTrack::SetEnded() {
+  DCHECK_EQ(webrtc::MediaStreamTrackInterface::kLive, state_);
+  state_ = webrtc::MediaStreamTrackInterface::kEnded;
+  for (auto& o : observers_)
+    o->OnChanged();
 }
 
 class MockSessionDescription : public SessionDescriptionInterface {

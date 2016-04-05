@@ -13,11 +13,10 @@
 #include "base/macros.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
-#include "third_party/webrtc/media/base/videosinkinterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
 
-class WebAudioCapturerSource;
 typedef std::set<webrtc::ObserverInterface*> ObserverSet;
 
 class MockAudioSource : public webrtc::AudioSourceInterface {
@@ -29,11 +28,6 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   MediaSourceInterface::SourceState state() const override;
   bool remote() const override;
 
-  // Changes the state of the source to live and notifies the observer.
-  void SetLive();
-  // Changes the state of the source to ended and notifies the observer.
-  void SetEnded();
-
  protected:
   ~MockAudioSource() override;
 
@@ -43,31 +37,66 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   MediaSourceInterface::SourceState state_;
 };
 
+class MockWebRtcAudioTrack : public webrtc::AudioTrackInterface {
+ public:
+  static scoped_refptr<MockWebRtcAudioTrack> Create(const std::string& id);
+
+  void AddSink(webrtc::AudioTrackSinkInterface* sink) override {}
+  void RemoveSink(webrtc::AudioTrackSinkInterface* sink) override {}
+  webrtc::AudioSourceInterface* GetSource() const override;
+
+  std::string kind() const override;
+  std::string id() const override;
+  bool enabled() const override;
+  webrtc::MediaStreamTrackInterface::TrackState state() const override;
+  bool set_enabled(bool enable) override;
+
+  void RegisterObserver(webrtc::ObserverInterface* observer) override;
+  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
+
+  void SetEnded();
+
+ protected:
+  MockWebRtcAudioTrack(const std::string& id);
+  ~MockWebRtcAudioTrack() override;
+
+ private:
+  std::string id_;
+  scoped_refptr<webrtc::VideoTrackSourceInterface> source_;
+  bool enabled_;
+  TrackState state_;
+  ObserverSet observers_;
+};
+
 class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
  public:
+  static scoped_refptr<MockWebRtcVideoTrack> Create(const std::string& id);
   MockWebRtcVideoTrack(const std::string& id,
                        webrtc::VideoTrackSourceInterface* source);
   void AddOrUpdateSink(rtc::VideoSinkInterface<cricket::VideoFrame>* sink,
                        const rtc::VideoSinkWants& wants) override;
   void RemoveSink(rtc::VideoSinkInterface<cricket::VideoFrame>* sink) override;
+  webrtc::VideoTrackSourceInterface* GetSource() const override;
+
   std::string kind() const override;
   std::string id() const override;
   bool enabled() const override;
-  TrackState state() const override;
+  webrtc::MediaStreamTrackInterface::TrackState state() const override;
   bool set_enabled(bool enable) override;
-  bool set_state(TrackState new_state) override;
+
   void RegisterObserver(webrtc::ObserverInterface* observer) override;
   void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  webrtc::VideoTrackSourceInterface* GetSource() const override;
+
+  void SetEnded();
 
  protected:
   ~MockWebRtcVideoTrack() override;
 
  private:
-  bool enabled_;
   std::string id_;
-  TrackState state_;
   scoped_refptr<webrtc::VideoTrackSourceInterface> source_;
+  bool enabled_;
+  TrackState state_;
   ObserverSet observers_;
   rtc::VideoSinkInterface<cricket::VideoFrame>* sink_;
 };
