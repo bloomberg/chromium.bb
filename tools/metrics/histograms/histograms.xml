@@ -35372,6 +35372,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.AnyCrashesDaily" units="count per day">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of crashes (user, kernel, and unclean shutdowns) during the previous
+    day, or the most recent day the device was in use.  Reported at most once a
+    day.
+  </summary>
+</histogram>
+
+<histogram name="Platform.AnyCrashesWeekly" units="count per week">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of crashes (user, kernel, and unclean shutdowns) during the previous
+    epoch-week, or the most recent epoch-week the device was in use.  Reported
+    at most once a week.  Epoch-weeks divide the time in 7-day intervals
+    starting at the UNIX epoch.
+  </summary>
+</histogram>
+
 <histogram name="Platform.AsvGroup">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -35439,6 +35460,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Generic event of interest from Chrome OS.  Intended mainly to help assess
     the frequency of rare error conditions.
+  </summary>
+</histogram>
+
+<histogram name="Platform.CumulativeCpuTime" units="seconds">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Total CPU time accumulated since the last version update.  Reported at most
+    once a day.
+  </summary>
+</histogram>
+
+<histogram name="Platform.CumulativeUseTime" units="seconds">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Total use time (device ON and not asleep) since last version update.
+    Reported at most once a day.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DailyUseTime" units="seconds">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Total use time (device ON and not asleep) in the previous day, or the most
+    recent day the device was in use.  Reported at most once a day.
   </summary>
 </histogram>
 
@@ -35550,6 +35598,61 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.KernelCrashesDaily" units="count per day">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of kernel crashes during the previous day, or the most recent day the
+    device was in use.  Reported at most once a day.
+  </summary>
+</histogram>
+
+<histogram name="Platform.KernelCrashesPerActiveYear" units="count per year">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of kernel crashes since the last OS update, normalized as number of
+    crashes per year of active use (active use = device is ON and not asleep).
+    Reported daily.
+  </summary>
+</histogram>
+
+<histogram name="Platform.KernelCrashesPerCpuYear" units="count per CPU year">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of kernel crashes since the last OS update, normalized as number
+    crashes per year of CPU time.  Reported daily.
+  </summary>
+</histogram>
+
+<histogram name="Platform.KernelCrashesSinceUpdate" units="count">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of kernel crashes since the last OS update, reported daily.
+  </summary>
+</histogram>
+
+<histogram name="Platform.KernelCrashesWeekly" units="count per week">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Count of kernel crashes during the previous epoch-week, or the most recent
+    epoch-week the device was in use.  Reported at most once a week. Epoch-weeks
+    divide the time in 7-day intervals starting at the UNIX epoch.
+  </summary>
+</histogram>
+
+<histogram name="Platform.KernelCrashInterval" units="seconds">
+  <owner>semenzato@chromium.org</owner>
+  <owner>bsimonnet@chromium.org</owner>
+  <summary>
+    Time elapsed between the last two kernel crashes.  Sent after every kernel
+    crash.
+  </summary>
+</histogram>
+
 <histogram name="Platform.KernelWarningHashes">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -35560,7 +35663,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     produced by this code: while (*string) hash = (hash &lt;&lt; 5) + hash +
     *string++;  Separately each warning is also collected (with its hash) via
     the crash reporter, but only its first occurrence in each boot session.
-    Contact semenzato@ for further info.
   </summary>
 </histogram>
 
