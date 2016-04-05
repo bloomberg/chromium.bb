@@ -288,9 +288,8 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const base::Callback<bool(void)>& make_context_current,
-    const base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>&
-        bind_image)
+    const MakeContextCurrentCallback& make_context_current,
+    const BindImageCallback& bind_image)
     : make_context_current_(make_context_current),
       bind_image_(bind_image),
       client_(nullptr),
@@ -1060,7 +1059,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   }
 
   bind_image_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
-                  gl_image);
+                  gl_image, true);
 
   // Assign the new image(s) to the the picture info.
   picture_info->gl_image = gl_image;

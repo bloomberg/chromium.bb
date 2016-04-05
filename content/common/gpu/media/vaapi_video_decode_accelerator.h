@@ -55,9 +55,8 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   class VaapiDecodeSurface;
 
   VaapiVideoDecodeAccelerator(
-      const base::Callback<bool(void)>& make_context_current,
-      const base::Callback<
-          void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>& bind_image);
+      const MakeContextCurrentCallback& make_context_current,
+      const BindImageCallback& bind_image);
   ~VaapiVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -182,7 +181,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
 
 
   // Client-provided GL state.
-  base::Callback<bool(void)> make_context_current_;
+  MakeContextCurrentCallback make_context_current_;
 
   // VAVDA state.
   enum State {
@@ -306,8 +305,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
 
   // Binds the provided GLImage to a givenr client texture ID & texture target
   // combination in GLES.
-  base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>
-      bind_image_;
+  BindImageCallback bind_image_;
 
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<VaapiVideoDecodeAccelerator> weak_this_factory_;
