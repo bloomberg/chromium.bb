@@ -127,10 +127,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
     int chromeCommandId = [BrowserWindowUtils getCommandId:event];
 
     // Check for Cmd+A and Cmd+V events that could come from a password field.
-    bool isTextEditingCommand =
-        (event.modifiers & blink::WebInputEvent::MetaKey) &&
-        (event.windowsKeyCode == ui::VKEY_A ||
-         event.windowsKeyCode == ui::VKEY_V);
+    BOOL isTextEditingCommand = [BrowserWindowUtils isTextEditingEvent:event];
 
     // Only handle close window Chrome accelerators and text editing ones.
     if (chromeCommandId == IDC_CLOSE_WINDOW || chromeCommandId == IDC_EXIT ||

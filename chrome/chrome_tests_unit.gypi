@@ -1202,6 +1202,7 @@
       'browser/ui/cocoa/browser_window_cocoa_unittest.mm',
       'browser/ui/cocoa/browser_window_controller_unittest.mm',
       'browser/ui/cocoa/browser_window_layout_unittest.mm',
+      'browser/ui/cocoa/browser_window_utils_unittest.mm',
       'browser/ui/cocoa/bubble_view_unittest.mm',
       'browser/ui/cocoa/chrome_browser_window_unittest.mm',
       'browser/ui/cocoa/clickhold_button_cell_unittest.mm',

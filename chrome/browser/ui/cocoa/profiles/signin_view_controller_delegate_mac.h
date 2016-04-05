@@ -62,6 +62,10 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
  private:
   void PerformClose() override;
 
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+
   ~SigninViewControllerDelegateMac() override;
 
   scoped_ptr<ConstrainedWindowMac> constrained_window_;

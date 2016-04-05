@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using content::NativeWebKeyboardEvent;
 
@@ -37,6 +38,15 @@ CGFloat GetPatternVerticalOffsetWithTabStrip(bool tabStripVisible) {
     return NO;
   DCHECK(event.os_event != NULL);
   return YES;
+}
+
++ (BOOL)isTextEditingEvent:(const content::NativeWebKeyboardEvent&)event {
+  return (event.modifiers & blink::WebInputEvent::MetaKey) &&
+         (event.windowsKeyCode == ui::VKEY_A ||
+          event.windowsKeyCode == ui::VKEY_V ||
+          event.windowsKeyCode == ui::VKEY_C ||
+          event.windowsKeyCode == ui::VKEY_X ||
+          event.windowsKeyCode == ui::VKEY_Z);
 }
 
 + (int)getCommandId:(const NativeWebKeyboardEvent&)event {

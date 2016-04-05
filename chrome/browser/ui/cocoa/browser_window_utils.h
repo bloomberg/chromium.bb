@@ -20,6 +20,9 @@ struct NativeWebKeyboardEvent;
 // Returns YES if keyboard event should be handled.
 + (BOOL)shouldHandleKeyboardEvent:(const content::NativeWebKeyboardEvent&)event;
 
+// Returns YES if keyboard event is a text editing command such as Copy or Paste
++ (BOOL)isTextEditingEvent:(const content::NativeWebKeyboardEvent&)event;
+
 // Determines the command associated with the keyboard event.
 // Returns -1 if no command found.
 + (int)getCommandId:(const content::NativeWebKeyboardEvent&)event;

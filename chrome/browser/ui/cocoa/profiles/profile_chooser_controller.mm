@@ -300,10 +300,7 @@ void GaiaWebContentsDelegate::HandleKeyboardEvent(
 
   int chrome_command_id = [BrowserWindowUtils getCommandId:event];
 
-  bool is_text_editing_command =
-      (event.modifiers & blink::WebInputEvent::MetaKey) &&
-      (event.windowsKeyCode == ui::VKEY_A ||
-       event.windowsKeyCode == ui::VKEY_V);
+  bool is_text_editing_command = [BrowserWindowUtils isTextEditingEvent:event];
 
   // TODO(guohui): maybe should add an accelerator for the back button.
   if (chrome_command_id == IDC_CLOSE_WINDOW || chrome_command_id == IDC_EXIT ||

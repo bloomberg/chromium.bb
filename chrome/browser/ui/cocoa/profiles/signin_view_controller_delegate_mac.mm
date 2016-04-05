@@ -6,15 +6,18 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -114,6 +117,19 @@ SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
 
 void SigninViewControllerDelegateMac::PerformClose() {
   constrained_window_->CloseWebContentsModalDialog();
+}
+
+void SigninViewControllerDelegateMac::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  int chrome_command_id = [BrowserWindowUtils getCommandId:event];
+  bool can_handle_command = [BrowserWindowUtils isTextEditingEvent:event] ||
+                            chrome_command_id == IDC_CLOSE_WINDOW ||
+                            chrome_command_id == IDC_EXIT;
+  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event] &&
+      can_handle_command) {
+    [[NSApp mainMenu] performKeyEquivalent:event.os_event];
+  }
 }
 
 // static
