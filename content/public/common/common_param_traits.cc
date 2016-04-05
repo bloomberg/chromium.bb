@@ -83,15 +83,13 @@ void ParamTraits<net::IPEndPoint>::Write(base::Pickle* m, const param_type& p) {
 bool ParamTraits<net::IPEndPoint>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         param_type* p) {
-  net::IPAddressNumber address;
+  net::IPAddress address;
   uint16_t port;
   if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
     return false;
-  if (address.size() &&
-      address.size() != net::kIPv4AddressSize &&
-      address.size() != net::kIPv6AddressSize) {
+  if (!address.empty() && !address.IsValid())
     return false;
-  }
+
   *p = net::IPEndPoint(address, port);
   return true;
 }
