@@ -218,7 +218,7 @@ WebUSB status=experimental
 WebVR depends_on=GeometryInterfaces, status=test
 WebVTTRegions status=experimental
 V8IdleTasks
-VisibilityChangeOnUnload status=test
+VisibilityChangeOnUnload status=experimental
 XSLT status=stable
 smil status=stable
 ScrollCustomization
