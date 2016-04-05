@@ -636,7 +636,7 @@ private:
         if (checkDepthAndIndex(&depth, tokens) != OK)
             return false;
 
-        if (tokens.peek().type() == LeftParenthesisToken) {
+        if (tokens.peek().type() == LeftParenthesisToken || tokens.peek().functionId() == CSSValueCalc) {
             CSSParserTokenRange innerRange = tokens.consumeBlock();
             tokens.consumeWhitespace();
             innerRange.consumeWhitespace();
