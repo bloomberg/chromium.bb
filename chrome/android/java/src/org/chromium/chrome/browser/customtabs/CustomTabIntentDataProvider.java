@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -83,6 +84,8 @@ public class CustomTabIntentDataProvider {
     private CustomButtonParams mToolbarButton;
     private List<CustomButtonParams> mBottombarButtons = new ArrayList<>(2);
     private RemoteViews mRemoteViews;
+    private int[] mClickableViewIds;
+    private PendingIntent mRemoteViewsPendingIntent;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
 
@@ -141,7 +144,11 @@ public class CustomTabIntentDataProvider {
         mShowShareItem = IntentUtils.safeGetBooleanExtra(intent,
                 CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, false);
         mRemoteViews = IntentUtils.safeGetParcelableExtra(intent,
-                CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS);
+                CustomTabsIntent.EXTRA_REMOTEVIEWS);
+        mClickableViewIds = IntentUtils.safeGetIntArrayExtra(intent,
+                CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
+        mRemoteViewsPendingIntent = IntentUtils.safeGetParcelableExtra(intent,
+                CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
     }
 
     /**
@@ -287,6 +294,20 @@ public class CustomTabIntentDataProvider {
      */
     public RemoteViews getBottomBarRemoteViews() {
         return mRemoteViews;
+    }
+
+    /**
+     * @return A array of {@link View} ids, of which the onClick event is handled by the custom tab.
+     */
+    public int[] getClickableViewIDs() {
+        return mClickableViewIds.clone();
+    }
+
+    /**
+     * @return The {@link PendingIntent} that is sent when the user clicks on the remote view.
+     */
+    public PendingIntent getRemoteViewsPendingIntent() {
+        return mRemoteViewsPendingIntent;
     }
 
     /**

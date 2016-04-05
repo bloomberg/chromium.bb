@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.ActivityManager;
 import android.app.Application;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -398,8 +399,6 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
 
     @Override
     public boolean updateVisuals(final ICustomTabsCallback callback, Bundle bundle) {
-        final RemoteViews remoteViews = IntentUtils.safeGetParcelable(bundle,
-                CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS);
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         boolean result = true;
@@ -423,13 +422,19 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                 }
             }
         }
-        if (remoteViews != null) {
+        if (bundle.containsKey(CustomTabsIntent.EXTRA_REMOTEVIEWS)) {
+            final RemoteViews remoteViews = IntentUtils.safeGetParcelable(bundle,
+                    CustomTabsIntent.EXTRA_REMOTEVIEWS);
+            final int[] clickableIDs = IntentUtils.safeGetIntArray(bundle,
+                    CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
+            final PendingIntent pendingIntent = IntentUtils.safeGetParcelable(bundle,
+                    CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
             try {
                 result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         return CustomTabActivity.updateRemoteViews(callback.asBinder(),
-                                remoteViews);
+                                remoteViews, clickableIDs, pendingIntent);
                     }
                 });
             } catch (ExecutionException e) {

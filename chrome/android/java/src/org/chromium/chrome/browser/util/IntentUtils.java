@@ -67,6 +67,32 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link Intent#getIntArrayExtra(String)} but doesn't throw exceptions.
+     */
+    public static int[] safeGetIntArrayExtra(Intent intent, String name) {
+        try {
+            return intent.getIntArrayExtra(name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "getIntArrayExtra failed on intent " + intent);
+            return null;
+        }
+    }
+
+    /**
+     * Just like {@link Bundle#getIntArray(String)} but doesn't throw exceptions.
+     */
+    public static int[] safeGetIntArray(Bundle bundle, String name) {
+        try {
+            return bundle.getIntArray(name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "getIntArray failed on bundle " + bundle);
+            return null;
+        }
+    }
+
+    /**
      * Just like {@link Intent#getLongExtra(String, long)} but doesn't throw exceptions.
      */
     public static long safeGetLongExtra(Intent intent, String name, long defaultValue) {

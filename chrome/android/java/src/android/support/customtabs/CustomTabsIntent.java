@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import java.lang.reflect.InvocationTargetException;
@@ -167,8 +168,37 @@ public class CustomTabsIntent {
      * is set, the other secondary toolbar configurations will be overriden. The height of the
      * {@link RemoteViews} should not exceed 56dp.
      */
-    public static final String EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS =
-            "android.support.customtabs.extra.EXTRA_SECONDARY_TOOLBAR_REMOTEVIEWS";
+    public static final String EXTRA_REMOTEVIEWS =
+            "android.support.customtabs.extra.EXTRA_REMOTEVIEWS";
+
+    /**
+     * Extra that specifies an array of {@link View} ids. When these {@link View}s are clicked, a
+     * {@link PendingIntent} will be sent, carrying the current url of the custom tab.
+     * <p>
+     * Note Custom Tabs will override the default onClick behavior of the listed {@link View}s. If
+     * you do not care about the current url, you can safely ignore this extra and use
+     * {@link RemoteViews#setOnClickPendingIntent(int, PendingIntent)} instead.
+     */
+    public static final String EXTRA_REMOTEVIEWS_VIEW_IDS =
+            "android.support.customtabs.extra.EXTRA_REMOTEVIEWS_VIEW_IDS";
+
+    /**
+     * Extra that specifies the {@link PendingIntent} to be sent when the user clicks on the
+     * {@link View}s that is listed by {@link #EXTRA_REMOTEVIEWS_CLICKED_ID}.
+     * <p>
+     * Note when this {@link PendingIntent} is triggered, it will have the current url as data
+     * field, also the id of the clicked {@link View}, specified by
+     * {@link #EXTRA_REMOTEVIEWS_CLICKED_ID}.
+     */
+    public static final String EXTRA_REMOTEVIEWS_PENDINGINTENT =
+            "android.support.customtabs.extra.EXTRA_REMOTEVIEWS_PENDINGINTENT";
+
+    /**
+     * Extra that specifies which {@link View} has been clicked. This extra will be put to the
+     * {@link PendingIntent} sent from Custom Tabs when a view in the {@link RemoteViews} is clicked
+     */
+    public static final String EXTRA_REMOTEVIEWS_CLICKED_ID =
+            "android.support.customtabs.extra.EXTRA_REMOTEVIEWS_CLICKED_ID";
 
     /**
      * Convenience method to create a VIEW intent without a session for the given package.

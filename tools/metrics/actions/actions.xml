@@ -2582,6 +2582,18 @@ should be able to be added at any place in this file.
   <description>Please enter the description of the metric.</description>
 </action>
 
+<action name="CustomTabsRemoteViewsShown">
+  <owner>ianwen@chromium.org</owner>
+  <description>A RemoteViews based bottom bar was shown.</description>
+</action>
+
+<action name="CustomTabsRemoteViewsUpdated">
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    A RemoteViews based bottom bar was updated through service API.
+  </description>
+</action>
+
 <action name="Cut">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

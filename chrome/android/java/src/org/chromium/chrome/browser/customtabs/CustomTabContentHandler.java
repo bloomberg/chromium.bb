@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.IBinder;
@@ -48,5 +49,6 @@ public interface CustomTabContentHandler {
      * Updates the {@link RemoteViews} shown on the secondary toolbar.
      * @return Whether this update is successful.
      */
-    boolean updateRemoteViews(RemoteViews rv);
+    boolean updateRemoteViews(RemoteViews remoteViews, int[] clickableIDs,
+            PendingIntent pendingIntent);
 }
