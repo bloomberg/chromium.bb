@@ -636,6 +636,11 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::getReadyState() const {
   return ready_state_;
 }
 
+blink::WebString WebMediaPlayerImpl::getErrorMessage() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return blink::WebString::fromUTF8(media_log_->GetLastErrorMessage());
+}
+
 blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

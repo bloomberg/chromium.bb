@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/render_media_log.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -51,12 +53,31 @@ void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
   {
     base::AutoLock auto_lock(lock_);
 
-    // Keep track of the latest buffered extents properties to avoid sending
-    // thousands of events over IPC. See http://crbug.com/352585 for details.
-    if (event->type == media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED)
-      last_buffered_extents_changed_event_.swap(event);
-    else
-      queued_media_events_.push_back(*event);
+    switch (event->type) {
+      case media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED:
+        // Keep track of the latest buffered extents properties to avoid sending
+        // thousands of events over IPC. See http://crbug.com/352585 for
+        // details.
+        last_buffered_extents_changed_event_.swap(event);
+        // SendQueuedMediaEvents() will enqueue the most recent event of this
+        // kind, if any, prior to sending the event batch.
+        break;
+
+      // Hold onto the most recent PIPELINE_ERROR and MEDIA_LOG_ERROR_ENTRY for
+      // use in GetLastErrorMessage().
+      case media::MediaLogEvent::PIPELINE_ERROR:
+        queued_media_events_.push_back(*event);
+        last_pipeline_error_.swap(event);
+        break;
+      case media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY:
+        queued_media_events_.push_back(*event);
+        last_media_error_log_entry_.swap(event);
+        break;
+
+      // Just enqueue all other event types for throttled transmission.
+      default:
+        queued_media_events_.push_back(*event);
+    }
 
     if (ipc_send_pending_)
       return;
@@ -80,6 +101,21 @@ void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
   }
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&RenderMediaLog::SendQueuedMediaEvents, this));
+}
+
+std::string RenderMediaLog::GetLastErrorMessage() {
+  base::AutoLock auto_lock(lock_);
+
+  // Return the conditional concatenation of the last pipeline error and the
+  // last media error log.
+  std::stringstream result;
+  if (last_pipeline_error_) {
+    result << MediaEventToLogString(*last_pipeline_error_)
+           << (last_media_error_log_entry_ ? ", " : "");
+  }
+  if (last_media_error_log_entry_)
+    result << MediaEventToLogString(*last_media_error_log_entry_);
+  return result.str();
 }
 
 void RenderMediaLog::SendQueuedMediaEvents() {

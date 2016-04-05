@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
 #define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -22,6 +23,9 @@ namespace content {
 // RenderMediaLog is an implementation of MediaLog that forwards events to the
 // browser process, throttling as necessary.
 //
+// It also caches the last error events to support renderer-side reporting to
+// entities like HTMLMediaElement and devtools console.
+//
 // To minimize the number of events sent over the wire, only the latest event
 // added is sent for high frequency events (e.g., BUFFERED_EXTENTS_CHANGED).
 //
@@ -32,6 +36,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
 
   // MediaLog implementation.
   void AddEvent(scoped_ptr<media::MediaLogEvent> event) override;
+  std::string GetLastErrorMessage() override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
@@ -47,11 +52,10 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // |lock_| serializes access to |tick_clock_|, |last_ipc_send_time_|,
-  // |queued_media_events_|, |ipc_send_pending_| and
-  // |last_buffered_extents_changed_event_|. It allows any render process thread
-  // to AddEvent(), while preserving their sequence for throttled send on
-  // |task_runner_|.
+  // |lock_| protects access to all of the following member variables.  It
+  // allows any render process thread to AddEvent(), while preserving their
+  // sequence for throttled send on |task_runner_| and coherent retrieval by
+  // GetLastErrorMessage().
   mutable base::Lock lock_;
   scoped_ptr<base::TickClock> tick_clock_;
   base::TimeTicks last_ipc_send_time_;
@@ -62,6 +66,12 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
 
   // Limits the number buffered extents changed events we send over IPC to one.
   scoped_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
+
+  // Holds a copy of the most recent MEDIA_ERROR_LOG_ENTRY, if any.
+  scoped_ptr<media::MediaLogEvent> last_media_error_log_entry_;
+
+  // Holds a copy of the most recent PIPELINE_ERROR, if any.
+  scoped_ptr<media::MediaLogEvent> last_pipeline_error_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
 };

@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -60,6 +61,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   ReadyState getReadyState() const override {
     return ReadyStateHaveNothing;
   }
+  blink::WebString getErrorMessage() override { return blink::WebString(); }
   bool didLoadingProgress() override { return true; }
   bool hasSingleSecurityOrigin() const override { return true; }
   bool didPassCORSAccessCheck() const override { return true; }

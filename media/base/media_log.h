@@ -44,6 +44,9 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   // with it.
   virtual void AddEvent(scoped_ptr<MediaLogEvent> event);
 
+  // Retrieve an error message, if any.
+  virtual std::string GetLastErrorMessage();
+
   // Helper methods to create events and their parameters.
   scoped_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
   scoped_ptr<MediaLogEvent> CreateBooleanEvent(

@@ -150,6 +150,10 @@ MediaLog::~MediaLog() {}
 
 void MediaLog::AddEvent(scoped_ptr<MediaLogEvent> event) {}
 
+std::string MediaLog::GetLastErrorMessage() {
+  return "";
+}
+
 scoped_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {
   scoped_ptr<MediaLogEvent> event(new MediaLogEvent);
   event->id = id_;

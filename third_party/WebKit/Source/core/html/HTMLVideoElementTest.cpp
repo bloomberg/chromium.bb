@@ -40,6 +40,7 @@ public:
     double currentTime() const override { return 0.0; };
     NetworkState getNetworkState() const override { return NetworkStateEmpty; };
     ReadyState getReadyState() const override { return ReadyStateHaveNothing; };
+    WebString getErrorMessage() override { return WebString(); };
     bool didLoadingProgress() override { return false; };
     bool hasSingleSecurityOrigin() const override { return true; };
     bool didPassCORSAccessCheck() const override { return true; };

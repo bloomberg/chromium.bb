@@ -619,6 +619,10 @@ WebMediaPlayer::ReadyState WebMediaPlayerAndroid::getReadyState() const {
   return ready_state_;
 }
 
+blink::WebString WebMediaPlayerAndroid::getErrorMessage() {
+  return blink::WebString::fromUTF8(media_log_->GetLastErrorMessage());
+}
+
 blink::WebTimeRanges WebMediaPlayerAndroid::buffered() const {
   if (media_source_delegate_)
     return media_source_delegate_->Buffered();

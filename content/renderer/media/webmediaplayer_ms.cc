@@ -299,6 +299,10 @@ blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::getReadyState() const {
   return ready_state_;
 }
 
+blink::WebString WebMediaPlayerMS::getErrorMessage() {
+  return blink::WebString::fromUTF8(media_log_->GetLastErrorMessage());
+}
+
 blink::WebTimeRanges WebMediaPlayerMS::buffered() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return buffered_;

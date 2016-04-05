@@ -167,6 +167,8 @@ class WebMediaPlayerAndroid
   blink::WebMediaPlayer::NetworkState getNetworkState() const override;
   blink::WebMediaPlayer::ReadyState getReadyState() const override;
 
+  blink::WebString getErrorMessage() override;
+
   bool hasSingleSecurityOrigin() const override;
   bool didPassCORSAccessCheck() const override;
 

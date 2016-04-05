@@ -127,6 +127,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   blink::WebMediaPlayer::NetworkState getNetworkState() const override;
   blink::WebMediaPlayer::ReadyState getReadyState() const override;
 
+  blink::WebString getErrorMessage() override;
   bool didLoadingProgress() override;
 
   bool hasSingleSecurityOrigin() const override;

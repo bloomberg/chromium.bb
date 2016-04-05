@@ -152,6 +152,7 @@ public:
     virtual NetworkState getNetworkState() const = 0;
     virtual ReadyState getReadyState() const = 0;
 
+    virtual WebString getErrorMessage() = 0;
     virtual bool didLoadingProgress() = 0;
 
     virtual bool hasSingleSecurityOrigin() const = 0;
