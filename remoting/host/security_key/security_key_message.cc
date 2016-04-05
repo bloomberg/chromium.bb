@@ -4,7 +4,13 @@
 
 #include "remoting/host/security_key/security_key_message.h"
 
+#include <cstdint>
+#include <string>
+#include <utility>
+
+#include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace {
 
@@ -47,6 +53,16 @@ RemoteSecurityKeyMessageType SecurityKeyMessage::MessageTypeFromValue(
       LOG(ERROR) << "Unknown message type passed in: " << value;
       return RemoteSecurityKeyMessageType::INVALID;
   }
+}
+
+scoped_ptr<SecurityKeyMessage> SecurityKeyMessage::CreateMessageForTest(
+    RemoteSecurityKeyMessageType type,
+    const std::string& payload) {
+  scoped_ptr<SecurityKeyMessage> message(new SecurityKeyMessage());
+  message->type_ = type;
+  message->payload_ = payload;
+
+  return message;
 }
 
 bool SecurityKeyMessage::ParseMessage(const std::string& message_data) {

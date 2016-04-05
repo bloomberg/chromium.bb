@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_channel.h"
@@ -18,11 +19,16 @@ namespace remoting {
 
 FakeRemoteSecurityKeyIpcClient::FakeRemoteSecurityKeyIpcClient(
     const base::Closure& channel_event_callback)
-    : channel_event_callback_(channel_event_callback) {
+    : channel_event_callback_(channel_event_callback), weak_factory_(this) {
   DCHECK(!channel_event_callback_.is_null());
 }
 
 FakeRemoteSecurityKeyIpcClient::~FakeRemoteSecurityKeyIpcClient() {}
+
+base::WeakPtr<FakeRemoteSecurityKeyIpcClient>
+FakeRemoteSecurityKeyIpcClient::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
 
 bool FakeRemoteSecurityKeyIpcClient::WaitForSecurityKeyIpcServerChannel() {
   return wait_for_ipc_channel_return_value_;

@@ -116,6 +116,12 @@ class SecurityKeyMessage final {
   // value passed in if it is valid, otherwise INVALID is returned.
   static RemoteSecurityKeyMessageType MessageTypeFromValue(int value);
 
+  // Creates a message from the passed in values, no validation is done as this
+  // method is only expected to be called from test code.
+  static scoped_ptr<SecurityKeyMessage> CreateMessageForTest(
+      RemoteSecurityKeyMessageType type,
+      const std::string& payload);
+
   // Parses |message_data| and initializes the internal members.  Returns true
   // if |message_data| was parsed and the instance was initialized successfully.
   bool ParseMessage(const std::string& message_data);

@@ -225,6 +225,8 @@
       'host/security_key/remote_security_key_ipc_server.h',
       'host/security_key/remote_security_key_ipc_server_impl.cc',
       'host/security_key/remote_security_key_ipc_server_impl.h',
+      'host/security_key/remote_security_key_message_handler.cc',
+      'host/security_key/remote_security_key_message_handler.h',
       'host/security_key/remote_security_key_message_reader.h',
       'host/security_key/remote_security_key_message_reader_impl.cc',
       'host/security_key/remote_security_key_message_reader_impl.h',

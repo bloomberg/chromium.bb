@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/host/security_key/remote_security_key_ipc_client.h"
 
 namespace IPC {
@@ -44,6 +45,8 @@ class FakeRemoteSecurityKeyIpcClient : public RemoteSecurityKeyIpcClient {
   // Override of SendSecurityKeyRequest() interface method for tests which use
   // an IPC channel for testing.
   void SendSecurityKeyRequestViaIpc(const std::string& request_payload);
+
+  base::WeakPtr<FakeRemoteSecurityKeyIpcClient> AsWeakPtr();
 
   const std::string& last_message_received() const {
     return last_message_received_;
@@ -98,6 +101,8 @@ class FakeRemoteSecurityKeyIpcClient : public RemoteSecurityKeyIpcClient {
 
   // Value returned by SendSecurityKeyRequest() method.
   std::string security_key_response_payload_;
+
+  base::WeakPtrFactory<FakeRemoteSecurityKeyIpcClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRemoteSecurityKeyIpcClient);
 };

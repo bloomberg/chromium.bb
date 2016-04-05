@@ -304,6 +304,7 @@
         'host/security_key/gnubby_extension_session_unittest.cc',
         'host/security_key/remote_security_key_ipc_client_unittest.cc',
         'host/security_key/remote_security_key_ipc_server_unittest.cc',
+        'host/security_key/remote_security_key_message_handler_unittest.cc',
         'host/security_key/remote_security_key_message_reader_impl_unittest.cc',
         'host/security_key/remote_security_key_message_writer_impl_unittest.cc',
         'host/server_log_entry_host_unittest.cc',
