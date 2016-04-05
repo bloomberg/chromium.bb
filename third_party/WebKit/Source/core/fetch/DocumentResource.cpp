@@ -30,7 +30,7 @@
 
 namespace blink {
 
-RawPtr<DocumentResource> DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
+DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
@@ -90,7 +90,7 @@ bool DocumentResource::mimeTypeAllowed() const
         || mimeType == "application/xhtml+xml";
 }
 
-RawPtr<Document> DocumentResource::createDocument(const KURL& url)
+Document* DocumentResource::createDocument(const KURL& url)
 {
     switch (getType()) {
     case SVGDocument:

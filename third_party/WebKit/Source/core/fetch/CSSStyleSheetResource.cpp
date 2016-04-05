@@ -37,14 +37,14 @@
 
 namespace blink {
 
-RawPtr<CSSStyleSheetResource> CSSStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+CSSStyleSheetResource* CSSStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextStyle);
     return toCSSStyleSheetResource(fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
 }
 
-RawPtr<CSSStyleSheetResource> CSSStyleSheetResource::createForTest(const ResourceRequest& request, const String& charset)
+CSSStyleSheetResource* CSSStyleSheetResource::createForTest(const ResourceRequest& request, const String& charset)
 {
     return new CSSStyleSheetResource(request, ResourceLoaderOptions(), charset);
 }
@@ -150,7 +150,7 @@ bool CSSStyleSheetResource::canUseSheet(MIMETypeCheck mimeTypeCheck) const
     return contentType.isEmpty() || equalIgnoringCase(contentType, "text/css") || equalIgnoringCase(contentType, "application/x-unknown-content-type");
 }
 
-RawPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)
+StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)
 {
     if (!m_parsedStyleSheetCache)
         return nullptr;
@@ -172,7 +172,7 @@ RawPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const 
     return m_parsedStyleSheetCache;
 }
 
-void CSSStyleSheetResource::saveParsedStyleSheet(RawPtr<StyleSheetContents> sheet)
+void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet)
 {
     ASSERT(sheet && sheet->isCacheable());
 

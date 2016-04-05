@@ -44,7 +44,7 @@ class MemoryCacheTest : public ::testing::Test {
 public:
     class FakeDecodedResource : public Resource {
     public:
-        static RawPtr<FakeDecodedResource> create(const ResourceRequest& request, Type type)
+        static FakeDecodedResource* create(const ResourceRequest& request, Type type)
         {
             return new FakeDecodedResource(request, type, ResourceLoaderOptions());
         }
@@ -69,7 +69,7 @@ public:
 
     class FakeResource : public Resource {
     public:
-        static RawPtr<FakeResource> create(const ResourceRequest& request, Type type)
+        static FakeResource* create(const ResourceRequest& request, Type type)
         {
             return new FakeResource(request, type, ResourceLoaderOptions());
         }
@@ -123,13 +123,13 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
     const size_t resourceSize1 = sizeMax / 16;
     const size_t resourceSize2 = sizeMax / 20;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
-    RawPtr<FakeResource> cachedResource =
+    FakeResource* cachedResource =
         FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
     cachedResource->fakeEncodedSize(resourceSize1);
 
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
-    memoryCache()->add(cachedResource.get());
+    memoryCache()->add(cachedResource);
     ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
 
@@ -180,21 +180,21 @@ static void TestDeadResourceEviction(Resource* resource1, Resource* resource2)
 
 TEST_F(MemoryCacheTest, DeadResourceEviction_Basic)
 {
-    RawPtr<Resource> resource1 =
+    Resource* resource1 =
         Resource::create(ResourceRequest("http://test/resource1"), Resource::Raw);
-    RawPtr<Resource> resource2 =
+    Resource* resource2 =
         Resource::create(ResourceRequest("http://test/resource2"), Resource::Raw);
-    TestDeadResourceEviction(resource1.get(), resource2.get());
+    TestDeadResourceEviction(resource1, resource2);
 }
 
 TEST_F(MemoryCacheTest, DeadResourceEviction_MultipleResourceMaps)
 {
-    RawPtr<Resource> resource1 =
+    Resource* resource1 =
         Resource::create(ResourceRequest("http://test/resource1"), Resource::Raw);
-    RawPtr<Resource> resource2 =
+    Resource* resource2 =
         Resource::create(ResourceRequest("http://test/resource2"), Resource::Raw);
     resource2->setCacheIdentifier("foo");
-    TestDeadResourceEviction(resource1.get(), resource2.get());
+    TestDeadResourceEviction(resource1, resource2);
 }
 
 static void runTask1(Resource* live, Resource* dead)
@@ -241,7 +241,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     cachedLiveResource->appendData(data, 4u);
     cachedLiveResource->finish();
 
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, RawPtr<Resource>(cachedLiveResource), RawPtr<Resource>(cachedDeadResource)));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, cachedLiveResource, cachedDeadResource));
     Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask2, cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
 }
@@ -250,41 +250,41 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
 // is deferred to the end of the task.
 TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_Basic)
 {
-    RawPtr<Resource> cachedDeadResource =
+    Resource* cachedDeadResource =
         Resource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
-    RawPtr<Resource> cachedLiveResource =
+    Resource* cachedLiveResource =
         FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-    TestLiveResourceEvictionAtEndOfTask(cachedDeadResource.get(), cachedLiveResource.get());
+    TestLiveResourceEvictionAtEndOfTask(cachedDeadResource, cachedLiveResource);
 }
 
 TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps)
 {
     {
-        RawPtr<Resource> cachedDeadResource =
+        Resource* cachedDeadResource =
             Resource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
         cachedDeadResource->setCacheIdentifier("foo");
-        RawPtr<Resource> cachedLiveResource =
+        Resource* cachedLiveResource =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-        TestLiveResourceEvictionAtEndOfTask(cachedDeadResource.get(), cachedLiveResource.get());
+        TestLiveResourceEvictionAtEndOfTask(cachedDeadResource, cachedLiveResource);
         memoryCache()->evictResources();
     }
     {
-        RawPtr<Resource> cachedDeadResource =
+        Resource* cachedDeadResource =
             Resource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
-        RawPtr<Resource> cachedLiveResource =
+        Resource* cachedLiveResource =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
         cachedLiveResource->setCacheIdentifier("foo");
-        TestLiveResourceEvictionAtEndOfTask(cachedDeadResource.get(), cachedLiveResource.get());
+        TestLiveResourceEvictionAtEndOfTask(cachedDeadResource, cachedLiveResource);
         memoryCache()->evictResources();
     }
     {
-        RawPtr<Resource> cachedDeadResource =
+        Resource* cachedDeadResource =
             Resource::create(ResourceRequest("hhtp://test/resource"), Resource::Raw);
         cachedDeadResource->setCacheIdentifier("foo");
-        RawPtr<Resource> cachedLiveResource =
+        Resource* cachedLiveResource =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
         cachedLiveResource->setCacheIdentifier("bar");
-        TestLiveResourceEvictionAtEndOfTask(cachedDeadResource.get(), cachedLiveResource.get());
+        TestLiveResourceEvictionAtEndOfTask(cachedDeadResource, cachedLiveResource);
         memoryCache()->evictResources();
     }
 }
@@ -336,94 +336,94 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2)
 
 TEST_F(MemoryCacheTest, ClientRemoval_Basic)
 {
-    RawPtr<Resource> resource1 =
+    Resource* resource1 =
         FakeDecodedResource::create(ResourceRequest("http://foo.com"), Resource::Raw);
-    RawPtr<Resource> resource2 =
+    Resource* resource2 =
         FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-    TestClientRemoval(resource1.get(), resource2.get());
+    TestClientRemoval(resource1, resource2);
 }
 
 TEST_F(MemoryCacheTest, ClientRemoval_MultipleResourceMaps)
 {
     {
-        RawPtr<Resource> resource1 =
+        Resource* resource1 =
             FakeDecodedResource::create(ResourceRequest("http://foo.com"), Resource::Raw);
         resource1->setCacheIdentifier("foo");
-        RawPtr<Resource> resource2 =
+        Resource* resource2 =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-        TestClientRemoval(resource1.get(), resource2.get());
+        TestClientRemoval(resource1, resource2);
         memoryCache()->evictResources();
     }
     {
-        RawPtr<Resource> resource1 =
+        Resource* resource1 =
             FakeDecodedResource::create(ResourceRequest("http://foo.com"), Resource::Raw);
-        RawPtr<Resource> resource2 =
+        Resource* resource2 =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
         resource2->setCacheIdentifier("foo");
-        TestClientRemoval(resource1.get(), resource2.get());
+        TestClientRemoval(resource1, resource2);
         memoryCache()->evictResources();
     }
     {
-        RawPtr<Resource> resource1 =
+        Resource* resource1 =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
         resource1->setCacheIdentifier("foo");
-        RawPtr<Resource> resource2 =
+        Resource* resource2 =
             FakeDecodedResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
         resource2->setCacheIdentifier("bar");
-        TestClientRemoval(resource1.get(), resource2.get());
+        TestClientRemoval(resource1, resource2);
         memoryCache()->evictResources();
     }
 }
 
 TEST_F(MemoryCacheTest, RemoveDuringRevalidation)
 {
-    RawPtr<FakeResource> resource1 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->add(resource1.get());
+    FakeResource* resource1 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
+    memoryCache()->add(resource1);
 
-    RawPtr<FakeResource> resource2 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->remove(resource1.get());
-    memoryCache()->add(resource2.get());
-    EXPECT_TRUE(memoryCache()->contains(resource2.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource1.get()));
+    FakeResource* resource2 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
+    memoryCache()->remove(resource1);
+    memoryCache()->add(resource2);
+    EXPECT_TRUE(memoryCache()->contains(resource2));
+    EXPECT_FALSE(memoryCache()->contains(resource1));
 
-    RawPtr<FakeResource> resource3 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->remove(resource2.get());
-    memoryCache()->add(resource3.get());
-    EXPECT_TRUE(memoryCache()->contains(resource3.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
+    FakeResource* resource3 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
+    memoryCache()->remove(resource2);
+    memoryCache()->add(resource3);
+    EXPECT_TRUE(memoryCache()->contains(resource3));
+    EXPECT_FALSE(memoryCache()->contains(resource2));
 }
 
 TEST_F(MemoryCacheTest, ResourceMapIsolation)
 {
-    RawPtr<FakeResource> resource1 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->add(resource1.get());
+    FakeResource* resource1 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
+    memoryCache()->add(resource1);
 
-    RawPtr<FakeResource> resource2 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
+    FakeResource* resource2 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
     resource2->setCacheIdentifier("foo");
-    memoryCache()->add(resource2.get());
-    EXPECT_TRUE(memoryCache()->contains(resource1.get()));
-    EXPECT_TRUE(memoryCache()->contains(resource2.get()));
+    memoryCache()->add(resource2);
+    EXPECT_TRUE(memoryCache()->contains(resource1));
+    EXPECT_TRUE(memoryCache()->contains(resource2));
 
     const KURL url = KURL(ParsedURLString, "http://test/resource");
-    EXPECT_EQ(resource1.get(), memoryCache()->resourceForURL(url));
-    EXPECT_EQ(resource1.get(), memoryCache()->resourceForURL(url, memoryCache()->defaultCacheIdentifier()));
-    EXPECT_EQ(resource2.get(), memoryCache()->resourceForURL(url, "foo"));
+    EXPECT_EQ(resource1, memoryCache()->resourceForURL(url));
+    EXPECT_EQ(resource1, memoryCache()->resourceForURL(url, memoryCache()->defaultCacheIdentifier()));
+    EXPECT_EQ(resource2, memoryCache()->resourceForURL(url, "foo"));
     EXPECT_EQ(0, memoryCache()->resourceForURL(KURL()));
 
-    RawPtr<FakeResource> resource3 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
+    FakeResource* resource3 = FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
     resource3->setCacheIdentifier("foo");
-    memoryCache()->remove(resource2.get());
-    memoryCache()->add(resource3.get());
-    EXPECT_TRUE(memoryCache()->contains(resource1.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
-    EXPECT_TRUE(memoryCache()->contains(resource3.get()));
+    memoryCache()->remove(resource2);
+    memoryCache()->add(resource3);
+    EXPECT_TRUE(memoryCache()->contains(resource1));
+    EXPECT_FALSE(memoryCache()->contains(resource2));
+    EXPECT_TRUE(memoryCache()->contains(resource3));
 
     HeapVector<Member<Resource>> resources = memoryCache()->resourcesForURL(url);
     EXPECT_EQ(2u, resources.size());
 
     memoryCache()->evictResources();
-    EXPECT_FALSE(memoryCache()->contains(resource1.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource3.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource1));
+    EXPECT_FALSE(memoryCache()->contains(resource3));
 }
 
 } // namespace blink

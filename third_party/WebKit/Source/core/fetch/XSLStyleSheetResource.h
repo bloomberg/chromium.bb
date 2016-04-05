@@ -35,8 +35,8 @@ class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
 public:
-    static RawPtr<XSLStyleSheetResource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static RawPtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
+    static XSLStyleSheetResource* fetchSynchronously(FetchRequest&, ResourceFetcher*);
+    static XSLStyleSheetResource* fetch(FetchRequest&, ResourceFetcher*);
 
     const String& sheet() const { return m_sheet; }
 
@@ -48,7 +48,7 @@ protected:
         XSLStyleSheetResourceFactory()
             : ResourceFactory(Resource::XSLStyleSheet) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new XSLStyleSheetResource(request, options, charset);
         }

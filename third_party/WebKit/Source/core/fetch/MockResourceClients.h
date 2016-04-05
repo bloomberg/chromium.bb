@@ -40,7 +40,7 @@ namespace blink {
 
 class MockResourceClient : public ResourceClient {
 public:
-    explicit MockResourceClient(const RawPtr<Resource>);
+    explicit MockResourceClient(Resource*);
     ~MockResourceClient() override;
 
     void notifyFinished(Resource*) override;
@@ -57,7 +57,7 @@ protected:
 
 class MockImageResourceClient final : public MockResourceClient, public ImageResourceObserver {
 public:
-    explicit MockImageResourceClient(const RawPtr<ImageResource>);
+    explicit MockImageResourceClient(ImageResource*);
     ~MockImageResourceClient() override;
 
     void imageNotifyFinished(ImageResource*) override;

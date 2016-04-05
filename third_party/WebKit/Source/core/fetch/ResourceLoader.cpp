@@ -328,7 +328,6 @@ void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t 
     m_state = ConnectionStateFinishedLoading;
     WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().getString().latin1().data());
 
-    RawPtr<Resource> protectResource(m_resource.get());
     m_resource->setLoadFinishTime(finishTime);
     didFinishLoadingOnePart(finishTime, encodedDataLength);
     if (m_state == ConnectionStateReleased)
@@ -349,7 +348,6 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     m_state = ConnectionStateFailed;
     WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().getString().latin1().data());
 
-    RawPtr<Resource> protectResource(m_resource.get());
     m_resource->setResourceError(error);
 
     if (!m_notifiedLoadComplete) {
@@ -381,7 +379,6 @@ void ResourceLoader::requestSynchronously(ResourceRequest& request)
         return;
     }
 
-    RawPtr<Resource> protectResource(m_resource.get());
     WrappedResourceRequest requestIn(request);
     WebURLResponse responseOut;
     responseOut.initialize();

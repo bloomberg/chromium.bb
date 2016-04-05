@@ -95,7 +95,7 @@ static inline bool shouldUpdateHeaderAfterRevalidation(const AtomicString& heade
 
 class Resource::CacheHandler : public CachedMetadataHandler {
 public:
-    static RawPtr<CacheHandler> create(Resource* resource)
+    static CacheHandler* create(Resource* resource)
     {
         return new CacheHandler(resource);
     }
@@ -558,7 +558,7 @@ void Resource::clearCachedMetadata(CachedMetadataHandler::CacheType cacheType)
         Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), 0, 0);
 }
 
-RawPtr<Resource> Resource::asWeakPtr()
+Resource* Resource::asWeakPtr()
 {
 #if ENABLE(OILPAN)
     return this;
@@ -701,7 +701,6 @@ void Resource::removeClient(ResourceClient* client)
 void Resource::didRemoveClientOrObserver()
 {
     if (!hasClientsOrObservers()) {
-        RawPtr<Resource> protect(this);
         memoryCache()->makeDead(this);
         allClientsAndObserversRemoved();
 
@@ -736,7 +735,6 @@ void Resource::cancelTimerFired(Timer<Resource>* timer)
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
     if (hasClientsOrObservers() || !m_loader)
         return;
-    RawPtr<Resource> protect(this);
     m_loader->cancelIfNotFinishing();
     memoryCache()->remove(this);
 }

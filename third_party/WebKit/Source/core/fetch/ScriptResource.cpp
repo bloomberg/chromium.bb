@@ -36,14 +36,14 @@
 
 namespace blink {
 
-RawPtr<ScriptResource> ScriptResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+ScriptResource* ScriptResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
-    RawPtr<ScriptResource> resource = toScriptResource(fetcher->requestResource(request, ScriptResourceFactory()));
+    ScriptResource* resource = toScriptResource(fetcher->requestResource(request, ScriptResourceFactory()));
     if (resource && !request.integrityMetadata().isEmpty())
         resource->setIntegrityMetadata(request.integrityMetadata());
-    return resource.release();
+    return resource;
 }
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)

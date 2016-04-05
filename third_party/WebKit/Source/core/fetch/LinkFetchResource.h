@@ -18,7 +18,7 @@ class LinkFetchResource final : public Resource {
 public:
     using ClientType = ResourceClient;
 
-    static RawPtr<Resource> fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
+    static Resource* fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
     ~LinkFetchResource() override;
 
 private:
@@ -27,7 +27,7 @@ private:
         LinkResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new LinkFetchResource(request, type(), options);
         }

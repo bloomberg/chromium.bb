@@ -42,8 +42,8 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
 public:
     enum class MIMETypeCheck { Strict, Lax };
 
-    static RawPtr<CSSStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
-    static RawPtr<CSSStyleSheetResource> createForTest(const ResourceRequest&, const String& charset);
+    static CSSStyleSheetResource* fetch(FetchRequest&, ResourceFetcher*);
+    static CSSStyleSheetResource* createForTest(const ResourceRequest&, const String& charset);
 
     ~CSSStyleSheetResource() override;
     DECLARE_VIRTUAL_TRACE();
@@ -52,8 +52,8 @@ public:
 
     void didAddClient(ResourceClient*) override;
 
-    RawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
-    void saveParsedStyleSheet(RawPtr<StyleSheetContents>);
+    StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext&);
+    void saveParsedStyleSheet(StyleSheetContents*);
 
 protected:
     bool isSafeToUnlock() const override;
@@ -66,7 +66,7 @@ private:
         CSSStyleSheetResourceFactory()
             : ResourceFactory(Resource::CSSStyleSheet) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new CSSStyleSheetResource(request, options, charset);
         }

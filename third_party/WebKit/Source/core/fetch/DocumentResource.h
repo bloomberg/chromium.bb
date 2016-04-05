@@ -37,7 +37,7 @@ class CORE_EXPORT DocumentResource final : public Resource {
 public:
     using ClientType = ResourceClient;
 
-    static RawPtr<DocumentResource> fetchSVGDocument(FetchRequest&, ResourceFetcher*);
+    static DocumentResource* fetchSVGDocument(FetchRequest&, ResourceFetcher*);
     ~DocumentResource() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -53,7 +53,7 @@ private:
         SVGDocumentResourceFactory()
             : ResourceFactory(Resource::SVGDocument) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new DocumentResource(request, Resource::SVGDocument, options);
         }
@@ -61,14 +61,13 @@ private:
     DocumentResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
     bool mimeTypeAllowed() const;
-    RawPtr<Document> createDocument(const KURL&);
+    Document* createDocument(const KURL&);
 
     Member<Document> m_document;
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 
-DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->getType() == Resource::SVGDocument, resource.getType() == Resource::SVGDocument); \
-inline DocumentResource* toDocumentResource(const RawPtr<Resource>& ptr) { return toDocumentResource(ptr.get()); }
+DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->getType() == Resource::SVGDocument, resource.getType() == Resource::SVGDocument);
 
 class CORE_EXPORT DocumentResourceClient : public ResourceClient {
 public:

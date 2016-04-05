@@ -55,10 +55,10 @@ public:
 class CORE_EXPORT ScriptResource final : public TextResource {
 public:
     using ClientType = ScriptResourceClient;
-    static RawPtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
+    static ScriptResource* fetch(FetchRequest&, ResourceFetcher*);
 
     // Public for testing
-    static RawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)
+    static ScriptResource* create(const ResourceRequest& request, const String& charset)
     {
         return new ScriptResource(request, ResourceLoaderOptions(), charset);
     }
@@ -89,7 +89,7 @@ private:
         ScriptResourceFactory()
             : ResourceFactory(Resource::Script) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new ScriptResource(request, options, charset);
         }

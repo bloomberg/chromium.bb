@@ -47,7 +47,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ResourceRequest jpegRequest;
     jpegRequest.setHTTPAccept("image/jpeg");
 
-    RawPtr<RawResource> jpegResource(RawResource::create(jpegRequest, Resource::Raw));
+    RawResource* jpegResource(RawResource::create(jpegRequest, Resource::Raw));
 
     ResourceRequest pngRequest;
     pngRequest.setHTTPAccept("image/png");
@@ -111,14 +111,14 @@ private:
 
 TEST(RawResourceTest, RevalidationSucceeded)
 {
-    RawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    Resource* resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     resource->responseReceived(response, nullptr);
     const char data[5] = "abcd";
     resource->appendData(data, 4);
     resource->finish();
-    memoryCache()->add(resource.get());
+    memoryCache()->add(resource);
 
     // Simulate a successful revalidation.
     resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
@@ -132,8 +132,8 @@ TEST(RawResourceTest, RevalidationSucceeded)
     EXPECT_FALSE(resource->isCacheValidator());
     EXPECT_EQ(200, resource->response().httpStatusCode());
     EXPECT_EQ(4u, resource->resourceBuffer()->size());
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource.get());
-    memoryCache()->remove(resource.get());
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource);
+    memoryCache()->remove(resource);
 
     resource->removeClient(client.get());
     EXPECT_FALSE(resource->hasClientsOrObservers());
@@ -143,12 +143,12 @@ TEST(RawResourceTest, RevalidationSucceeded)
 
 TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 {
-    RawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    Resource* resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     resource->responseReceived(response, nullptr);
     resource->finish();
-    memoryCache()->add(resource.get());
+    memoryCache()->add(resource);
 
     // Simulate a successful revalidation.
     resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
@@ -162,8 +162,8 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     EXPECT_FALSE(resource->isCacheValidator());
     EXPECT_EQ(200, resource->response().httpStatusCode());
     EXPECT_EQ(nullptr, resource->resourceBuffer());
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource.get());
-    memoryCache()->remove(resource.get());
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource);
+    memoryCache()->remove(resource);
 
     resource->removeClient(client.get());
     EXPECT_FALSE(resource->hasClientsOrObservers());
@@ -173,7 +173,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 
 TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
 {
-    RawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    Resource* resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     response.addHTTPHeaderField("keep-alive", "keep-alive value");
@@ -184,7 +184,7 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
     response.addHTTPHeaderField("x-custom", "custom value");
     resource->responseReceived(response, nullptr);
     resource->finish();
-    memoryCache()->add(resource.get());
+    memoryCache()->add(resource);
 
     // Simulate a successful revalidation.
     resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
@@ -226,7 +226,7 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
     EXPECT_EQ("proxy-connection value", resource->response().httpHeaderField("proxy-connection"));
     EXPECT_EQ("updated", resource->response().httpHeaderField("x-custom"));
 
-    memoryCache()->remove(resource.get());
+    memoryCache()->remove(resource);
 
     resource->removeClient(client.get());
     EXPECT_FALSE(resource->hasClientsOrObservers());
@@ -236,7 +236,7 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
 
 TEST(RawResourceTest, AddClientDuringCallback)
 {
-    RawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    Resource* raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
 
     // Create a non-null response.
     ResourceResponse response = raw->response();
@@ -246,7 +246,7 @@ TEST(RawResourceTest, AddClientDuringCallback)
     EXPECT_FALSE(raw->response().isNull());
 
     OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());
-    OwnPtr<AddingClient> addingClient = adoptPtr(new AddingClient(dummyClient.get(), raw.get()));
+    OwnPtr<AddingClient> addingClient = adoptPtr(new AddingClient(dummyClient.get(), raw));
     raw->addClient(addingClient.get());
     testing::runPendingTasks();
     raw->removeClient(addingClient.get());
@@ -275,7 +275,7 @@ private:
 
 TEST(RawResourceTest, RemoveClientDuringCallback)
 {
-    RawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    Resource* raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
 
     // Create a non-null response.
     ResourceResponse response = raw->response();

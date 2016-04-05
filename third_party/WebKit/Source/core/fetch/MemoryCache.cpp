@@ -773,7 +773,7 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         printf("\n\nList %d: ", i);
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
-            RawPtr<Resource> currentResource = current->m_resource;
+            Resource* currentResource = current->m_resource;
             if (includeLive || !currentResource->hasClientsOrObservers())
                 printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers(), currentResource->isPurgeable());
 

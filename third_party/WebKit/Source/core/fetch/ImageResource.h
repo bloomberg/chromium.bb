@@ -49,15 +49,15 @@ class CORE_EXPORT ImageResource final : public Resource, public ImageObserver, p
 public:
     using ClientType = ResourceClient;
 
-    static RawPtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
+    static ImageResource* fetch(FetchRequest&, ResourceFetcher*);
 
-    static RawPtr<ImageResource> create(blink::Image* image)
+    static ImageResource* create(blink::Image* image)
     {
         return new ImageResource(image, ResourceLoaderOptions());
     }
 
     // Exposed for testing
-    static RawPtr<ImageResource> create(const ResourceRequest& request, blink::Image* image)
+    static ImageResource* create(const ResourceRequest& request, blink::Image* image)
     {
         return new ImageResource(request, image, ResourceLoaderOptions());
     }
@@ -143,7 +143,7 @@ private:
         ImageResourceFactory()
             : ResourceFactory(Resource::Image) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String&) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String&) const override
         {
             return new ImageResource(request, options);
         }

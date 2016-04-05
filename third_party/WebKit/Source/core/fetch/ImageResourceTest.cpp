@@ -87,7 +87,7 @@ TEST(ImageResourceTest, MultipartImage)
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
-    RawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
     cachedImage->load(fetcher);
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
@@ -151,11 +151,11 @@ TEST(ImageResourceTest, CancelOnDetach)
     ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
 
     // Emulate starting a real load.
-    RawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
 
     cachedImage->load(fetcher);
-    memoryCache()->add(cachedImage.get());
+    memoryCache()->add(cachedImage);
 
     MockImageResourceClient client(cachedImage);
     EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
@@ -175,7 +175,7 @@ TEST(ImageResourceTest, CancelOnDetach)
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 {
-    RawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(), nullptr);
     cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
@@ -208,7 +208,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 
 TEST(ImageResourceTest, UpdateBitmapImages)
 {
-    RawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(), nullptr);
     cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
@@ -230,7 +230,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
 {
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
-    RawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);

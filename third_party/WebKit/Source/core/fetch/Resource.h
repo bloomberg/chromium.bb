@@ -85,7 +85,7 @@ public:
     };
 
     // Exposed for testing.
-    static RawPtr<Resource> create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
+    static Resource* create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
     {
         return new Resource(request, type, options);
     }
@@ -246,7 +246,7 @@ public:
     static const char* resourceTypeName(Type);
 
     // TODO(japhet): Remove once oilpan ships, it doesn't need the WeakPtr.
-    RawPtr<Resource> asWeakPtr();
+    Resource* asWeakPtr();
 
 protected:
     Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
@@ -367,7 +367,7 @@ private:
 class ResourceFactory {
     STACK_ALLOCATED();
 public:
-    virtual RawPtr<Resource> create(const ResourceRequest&, const ResourceLoaderOptions&, const String&) const = 0;
+    virtual Resource* create(const ResourceRequest&, const ResourceLoaderOptions&, const String&) const = 0;
     Resource::Type type() const { return m_type; }
 
 protected:
@@ -377,8 +377,7 @@ protected:
 };
 
 #define DEFINE_RESOURCE_TYPE_CASTS(typeName) \
-    DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->getType() == Resource::typeName, resource.getType() == Resource::typeName); \
-    inline typeName##Resource* to##typeName##Resource(const RawPtr<Resource>& ptr) { return to##typeName##Resource(ptr.get()); }
+    DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->getType() == Resource::typeName, resource.getType() == Resource::typeName);
 
 } // namespace blink
 

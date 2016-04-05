@@ -39,16 +39,16 @@ class CORE_EXPORT RawResource final : public Resource {
 public:
     using ClientType = RawResourceClient;
 
-    static RawPtr<Resource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static RawPtr<RawResource> fetch(FetchRequest&, ResourceFetcher*);
-    static RawPtr<RawResource> fetchMainResource(FetchRequest&, ResourceFetcher*, const SubstituteData&);
-    static RawPtr<RawResource> fetchImport(FetchRequest&, ResourceFetcher*);
-    static RawPtr<RawResource> fetchMedia(FetchRequest&, ResourceFetcher*);
-    static RawPtr<RawResource> fetchTextTrack(FetchRequest&, ResourceFetcher*);
-    static RawPtr<RawResource> fetchManifest(FetchRequest&, ResourceFetcher*);
+    static Resource* fetchSynchronously(FetchRequest&, ResourceFetcher*);
+    static RawResource* fetch(FetchRequest&, ResourceFetcher*);
+    static RawResource* fetchMainResource(FetchRequest&, ResourceFetcher*, const SubstituteData&);
+    static RawResource* fetchImport(FetchRequest&, ResourceFetcher*);
+    static RawResource* fetchMedia(FetchRequest&, ResourceFetcher*);
+    static RawResource* fetchTextTrack(FetchRequest&, ResourceFetcher*);
+    static RawResource* fetchManifest(FetchRequest&, ResourceFetcher*);
 
     // Exposed for testing
-    static RawPtr<RawResource> create(const ResourceRequest& request, Type type)
+    static RawResource* create(const ResourceRequest& request, Type type)
     {
         return new RawResource(request, type, ResourceLoaderOptions());
     }
@@ -66,7 +66,7 @@ private:
         RawResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new RawResource(request, m_type, options);
         }
@@ -94,10 +94,10 @@ inline bool isRawResource(const Resource& resource)
     return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::Manifest || type == Resource::ImportResource;
 }
 #endif
-inline RawPtr<RawResource> toRawResource(const RawPtr<Resource>& resource)
+inline RawResource* toRawResource(Resource* resource)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!resource || isRawResource(*resource.get()));
-    return static_cast<RawResource*>(resource.get());
+    ASSERT_WITH_SECURITY_IMPLICATION(!resource || isRawResource(*resource));
+    return static_cast<RawResource*>(resource);
 }
 
 class CORE_EXPORT RawResourceClient : public ResourceClient {

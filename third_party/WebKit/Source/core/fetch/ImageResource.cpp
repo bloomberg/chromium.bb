@@ -43,7 +43,7 @@ namespace blink {
 
 using ImageResourceObserverWalker = ResourceClientOrObserverWalker<ImageResourceObserver, ImageResourceObserver>;
 
-RawPtr<ImageResource> ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+ImageResource* ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     if (request.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
         request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);

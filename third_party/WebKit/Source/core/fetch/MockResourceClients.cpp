@@ -9,8 +9,8 @@
 
 namespace blink {
 
-MockResourceClient::MockResourceClient(RawPtr<Resource> resource)
-    : m_resource(resource.get())
+MockResourceClient::MockResourceClient(Resource* resource)
+    : m_resource(resource)
     , m_notifyFinishedCalled(false)
 {
     m_resource->addClient(this);
@@ -33,7 +33,7 @@ void MockResourceClient::removeAsClient()
     m_resource = nullptr;
 }
 
-MockImageResourceClient::MockImageResourceClient(RawPtr<ImageResource> resource)
+MockImageResourceClient::MockImageResourceClient(ImageResource* resource)
     : MockResourceClient(resource)
     , m_imageChangedCount(0)
     , m_imageNotifyFinishedCount(0)

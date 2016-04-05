@@ -20,7 +20,7 @@ namespace {
 
 class UnlockableResource : public Resource {
 public:
-    static RawPtr<UnlockableResource> create(const KURL& url)
+    static UnlockableResource* create(const KURL& url)
     {
         return new UnlockableResource(ResourceRequest(url), Resource::Raw);
     }
@@ -65,7 +65,7 @@ ResourceResponse createTestResourceResponse()
 void createTestResourceAndSetCachedMetadata(const ResourceResponse& response)
 {
     const char testData[] = "test data";
-    RawPtr<Resource> resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
+    Resource* resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
     resource->setResponse(response);
     resource->cacheHandler()->setCachedMetadata(100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
     return;
@@ -93,8 +93,8 @@ TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedVia
 TEST(ResourceTest, LockFailureNoCrash)
 {
     ResourceResponse response(createTestResourceResponse());
-    RawPtr<UnlockableResource> resource = UnlockableResource::create(response.url());
-    memoryCache()->add(resource.get());
+    UnlockableResource* resource = UnlockableResource::create(response.url());
+    memoryCache()->add(resource);
     resource->setResponse(response);
 
     // A Resource won't be put in DiscardableMemory unless it is at least 16KiB.

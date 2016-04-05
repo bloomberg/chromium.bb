@@ -49,7 +49,7 @@ public:
 protected:
     ResourceOwner();
 
-    void setResource(const RawPtr<ResourceType>&);
+    void setResource(ResourceType*);
     void clearResource() { setResource(nullptr); }
 
 private:
@@ -73,14 +73,14 @@ inline ResourceOwner<R, C>::~ResourceOwner()
 }
 
 template<class R, class C>
-inline void ResourceOwner<R, C>::setResource(const RawPtr<R>& newResource)
+inline void ResourceOwner<R, C>::setResource(R* newResource)
 {
     if (newResource == m_resource)
         return;
 
     // Some ResourceClient implementations reenter this so
     // we need to prevent double removal.
-    if (RawPtr<ResourceType> oldResource = m_resource.release())
+    if (ResourceType* oldResource = m_resource.release())
         oldResource->removeClient(this);
 
     if (newResource) {

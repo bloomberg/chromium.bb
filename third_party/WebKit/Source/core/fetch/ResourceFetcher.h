@@ -73,7 +73,7 @@ public:
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
 
-    RawPtr<Resource> requestResource(FetchRequest&, const ResourceFactory&, const SubstituteData& = SubstituteData());
+    Resource* requestResource(FetchRequest&, const ResourceFactory&, const SubstituteData& = SubstituteData());
 
     Resource* cachedResource(const KURL&) const;
 
@@ -154,10 +154,10 @@ private:
     explicit ResourceFetcher(FetchContext*);
 
     void initializeRevalidation(const FetchRequest&, Resource*);
-    RawPtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
+    Resource* createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
 
-    RawPtr<Resource> resourceForStaticData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
+    Resource* resourceForStaticData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
 
     // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };

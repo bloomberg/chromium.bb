@@ -44,7 +44,7 @@ class FontResource final : public Resource {
 public:
     using ClientType = FontResourceClient;
 
-    static RawPtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
+    static FontResource* fetch(FetchRequest&, ResourceFetcher*);
     ~FontResource() override;
 
     void load(ResourceFetcher*) override;
@@ -74,7 +74,7 @@ private:
         FontResourceFactory()
             : ResourceFactory(Resource::Font) { }
 
-        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
             return new FontResource(request, options);
         }
