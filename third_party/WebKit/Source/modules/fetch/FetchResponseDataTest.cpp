@@ -143,6 +143,15 @@ TEST_F(FetchResponseDataTest, OpaqueFilter)
     EXPECT_FALSE(opaqueResponseData->headerList()->has("cache-control"));
 }
 
+TEST_F(FetchResponseDataTest, OpaqueRedirectFilter)
+{
+    FetchResponseData* internalResponse = createInternalResponse();
+    FetchResponseData* opaqueResponseData = internalResponse->createOpaqueRedirectFilteredResponse();
+
+    EXPECT_EQ(opaqueResponseData->headerList()->size(), 0u);
+    EXPECT_EQ(opaqueResponseData->url(), internalResponse->url());
+}
+
 TEST_F(FetchResponseDataTest, OpaqueFilterOnResponseWithAccessControlExposeHeaders)
 {
     FetchResponseData* internalResponse = createInternalResponse();

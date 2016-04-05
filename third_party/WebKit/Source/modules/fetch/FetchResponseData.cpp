@@ -116,8 +116,11 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse()
 FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
 {
     // "An opaque filtered response is a filtered response whose type is
-    // |opaque|, status is 0, status message is the empty byte sequence, header
-    // list is an empty list, and body is null."
+    // 'opaque', url list is the empty list, status is 0, status message is the
+    // empty byte sequence, header list is the empty list, body is null, and
+    // cache state is 'none'."
+    //
+    // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
     FetchResponseData* response = new FetchResponseData(OpaqueType, 0, "");
     response->m_internalResponse = this;
     return response;
@@ -125,11 +128,13 @@ FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
 
 FetchResponseData* FetchResponseData::createOpaqueRedirectFilteredResponse()
 {
-    // "An opaque-redirect filtered response is a filtered response whose type
-    // is |opaqueredirect|, status is 0, status message is the empty byte
-    // sequence, header list is the empty list, body is null, and cache state is
-    // |none|.
+    // "An opaque filtered response is a filtered response whose type is
+    // 'opaqueredirect', status is 0, status message is the empty byte sequence,
+    // header list is the empty list, body is null, and cache state is 'none'."
+    //
+    // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
     FetchResponseData* response = new FetchResponseData(OpaqueRedirectType, 0, "");
+    response->m_url = m_url;
     response->m_internalResponse = this;
     return response;
 }

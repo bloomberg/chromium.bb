@@ -171,7 +171,7 @@ promise_test(function(t) {
       .then(function(response) {
           assert_equals(response.status, 0);
           assert_equals(response.type, 'opaqueredirect');
-          assert_equals(response.url, '');
+          assert_equals(response.url, request.url);
         });
   }, 'Manual redirect fetch returns opaque redirect response');
 
