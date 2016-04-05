@@ -119,6 +119,7 @@ public:
     static void increaseTotalAllocatedSpace(size_t delta) { atomicAdd(&s_totalAllocatedSpace, static_cast<long>(delta)); }
     static void decreaseTotalAllocatedSpace(size_t delta) { atomicSubtract(&s_totalAllocatedSpace, static_cast<long>(delta)); }
     static size_t totalAllocatedSpace() { return acquireLoad(&s_totalAllocatedSpace); }
+    static void resetHeapCounters();
 
 private:
     static bool s_isLowEndDevice;

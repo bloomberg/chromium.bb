@@ -112,6 +112,12 @@ void ProcessHeap::init()
     s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
 }
 
+void ProcessHeap::resetHeapCounters()
+{
+    s_totalAllocatedObjectSize = 0;
+    s_totalMarkedObjectSize = 0;
+}
+
 void Heap::init()
 {
     ThreadState::init();
@@ -688,6 +694,7 @@ void Heap::resetHeapCounters()
 
     Heap::reportMemoryUsageForTracing();
 
+    ProcessHeap::resetHeapCounters();
     Heap::heapStats().reset();
     for (ThreadState* state : ThreadState::attachedThreads())
         state->resetHeapCounters();
