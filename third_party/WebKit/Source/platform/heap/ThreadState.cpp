@@ -1050,20 +1050,14 @@ void ThreadState::preSweep()
 #if defined(ADDRESS_SANITIZER)
 void ThreadState::poisonAllHeaps()
 {
-    // TODO(Oilpan): enable the poisoning always.
-#if ENABLE(OILPAN)
-    // ..along with poisoning all unmarked objects in the other arenas.
+    // Poisoning all unmarked objects in the other arenas.
     for (int i = 1; i < BlinkGC::NumberOfArenas; i++)
         m_arenas[i]->poisonArena();
-#endif
 }
 
 void ThreadState::poisonEagerArena()
 {
-    // TODO(Oilpan): enable the poisoning always.
-#if ENABLE(OILPAN)
     m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonArena();
-#endif
 }
 #endif
 

@@ -466,7 +466,7 @@ public:                                           \
     }
 
 #define IS_EAGERLY_FINALIZED() (pageFromObject(this)->arena()->arenaIndex() == BlinkGC::EagerSweepArenaIndex)
-#if ENABLE(ASSERT) && ENABLE(OILPAN)
+#if ENABLE(ASSERT)
 class VerifyEagerFinalization {
     DISALLOW_NEW();
 public:

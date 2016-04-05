@@ -1405,9 +1405,6 @@ public:
 
     virtual ~SuperClass()
     {
-#if !ENABLE(OILPAN)
-        m_pointsBack->setBackPointer(0);
-#endif
         --s_aliveCount;
     }
 
