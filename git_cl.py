@@ -2128,6 +2128,11 @@ def hasSheBang(fname):
     return f.read(2).startswith('#!')
 
 
+# TODO(bpastene) Remove once a cleaner fix to crbug.com/600473 presents itself.
+def DownloadHooks(*args, **kwargs):
+  pass
+
+
 def DownloadGerritHook(force):
   """Download and install Gerrit commit-msg hook.
 
