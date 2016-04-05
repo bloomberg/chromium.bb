@@ -117,9 +117,11 @@ class MEDIA_EXPORT MimeUtil {
   // |is_ambiguous| is true if |codec_id| did not have enough information to
   // unambiguously determine the proper Codec enum value. If |is_ambiguous|
   // is true |codec| contains the best guess for the intended Codec enum value.
+  // |is_encrypted| means the codec will be used with encrypted blocks.
   bool StringToCodec(const std::string& codec_id,
                      Codec* codec,
-                     bool* is_ambiguous) const;
+                     bool* is_ambiguous,
+                     bool is_encrypted) const;
 
   // Returns true if |codec| is supported when contained in
   // |mime_type_lower_case|. Note: This method will always return false for

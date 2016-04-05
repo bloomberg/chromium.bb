@@ -216,7 +216,7 @@ SupportsType MimeUtil::AreSupportedCodecs(
   for (size_t i = 0; i < codecs.size(); ++i) {
     bool is_ambiguous = true;
     Codec codec = INVALID_CODEC;
-    if (!StringToCodec(codecs[i], &codec, &is_ambiguous))
+    if (!StringToCodec(codecs[i], &codec, &is_ambiguous, is_encrypted))
       return IsNotSupported;
 
     if (!IsCodecSupported(codec, mime_type_lower_case, is_encrypted) ||
@@ -341,7 +341,7 @@ void MimeUtil::AddContainerWithCodecs(const std::string& mime_type,
     DCHECK(!codec_string.empty()) << codecs_list;
     Codec codec = INVALID_CODEC;
     bool is_ambiguous = true;
-    CHECK(StringToCodec(codec_string, &codec, &is_ambiguous));
+    CHECK(StringToCodec(codec_string, &codec, &is_ambiguous, false));
     DCHECK(!is_ambiguous) << codec_string;
     codecs.insert(codec);
   }
@@ -555,7 +555,8 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
 
 bool MimeUtil::StringToCodec(const std::string& codec_id,
                              Codec* codec,
-                             bool* is_ambiguous) const {
+                             bool* is_ambiguous,
+                             bool is_encrypted) const {
   StringToCodecMappings::const_iterator itr =
       string_to_codec_map_.find(codec_id);
   if (itr != string_to_codec_map_.end()) {
@@ -578,10 +579,28 @@ bool MimeUtil::StringToCodec(const std::string& codec_id,
   uint8_t level_idc = 0;
   if (ParseAVCCodecId(codec_id, &profile, &level_idc)) {
     *codec = MimeUtil::H264;
-    *is_ambiguous =
-        (profile != H264PROFILE_BASELINE && profile != H264PROFILE_MAIN &&
-         profile != H264PROFILE_HIGH) ||
-        !IsValidH264Level(level_idc);
+    switch (profile) {
+// HIGH10PROFILE is supported through fallback to the ffmpeg decoder
+// which is not available on Android, or if FFMPEG is not used.
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
+      case H264PROFILE_HIGH10PROFILE:
+        if (is_encrypted) {
+          // FFmpeg is not generally used for encrypted videos, so we do not
+          // know whether 10-bit is supported.
+          *is_ambiguous = true;
+          break;
+        }
+// Fall through.
+#endif
+
+      case H264PROFILE_BASELINE:
+      case H264PROFILE_MAIN:
+      case H264PROFILE_HIGH:
+        *is_ambiguous = !IsValidH264Level(level_idc);
+        break;
+      default:
+        *is_ambiguous = true;
+    }
     return true;
   }
 

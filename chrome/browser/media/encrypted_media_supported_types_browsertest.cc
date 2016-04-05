@@ -56,6 +56,7 @@ const char kSuccessResult[] = "success";
 const char kUnsupportedResult[] = "Unsupported keySystem";
 const char kNoMatchResult[] =
     "None of the requested configurations were supported.";
+const char kUnexpectedResult[] = "unexpected result";
 
 #define EXPECT_SUCCESS(test) EXPECT_EQ(kSuccessResult, test)
 #define EXPECT_UNKNOWN_KEYSYSTEM(test) EXPECT_EQ(kUnsupportedResult, test)
@@ -109,8 +110,11 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
     audio_mp4_codecs_.push_back("mp4a.40.2");
 
-    video_mp4_codecs_.push_back("avc1.4D400C");
-    video_mp4_codecs_.push_back("avc3.64001F");
+    video_mp4_codecs_.push_back("avc1.42001E");  // Baseline profile.
+    video_mp4_codecs_.push_back("avc1.4D000C");  // Main profile.
+    video_mp4_codecs_.push_back("avc3.64001F");  // High profile.
+
+    video_mp4_hi10p_codecs_.push_back("avc1.6E001E");  // Hi10P profile
 
     // Extended codecs are used, so make sure generic ones fail. These will be
     // tested against all initDataTypes as they should always fail to be
@@ -133,6 +137,9 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   const CodecVector& video_webm_codecs() const { return video_webm_codecs_; }
   const CodecVector& audio_mp4_codecs() const { return audio_mp4_codecs_; }
   const CodecVector& video_mp4_codecs() const { return video_mp4_codecs_; }
+  const CodecVector& video_mp4_hi10p_codecs() const {
+    return video_mp4_hi10p_codecs_;
+  }
   const CodecVector& invalid_codecs() const { return invalid_codecs_; }
 
   // Update the command line to load |adapter_name| for
@@ -194,6 +201,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
                                         base::ASCIIToUTF16(kSuccessResult));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnsupportedResult));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kNoMatchResult));
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnexpectedResult));
     EXPECT_TRUE(content::ExecuteScript(contents, command));
     base::string16 result = title_watcher.WaitAndGetTitle();
     return base::UTF16ToASCII(result);
@@ -251,6 +259,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   CodecVector video_webm_codecs_;
   CodecVector audio_mp4_codecs_;
   CodecVector video_mp4_codecs_;
+  CodecVector video_mp4_hi10p_codecs_;
   CodecVector invalid_codecs_;
 
   bool is_pepper_cdm_registered_;
@@ -405,6 +414,16 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Video_MP4) {
   EXPECT_PROPRIETARY(AreCodecsSupportedByKeySystem(
       kVideoMP4MimeType, video_mp4_codecs(), kClearKey));
 
+  // High 10-bit Profile is supported when using ClearKey if
+  // it is supported for clear content on this platform.
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
+  EXPECT_PROPRIETARY(AreCodecsSupportedByKeySystem(
+      kVideoMP4MimeType, video_mp4_hi10p_codecs(), kClearKey));
+#else
+  EXPECT_NO_MATCh(AreCodecsSupportedByKeySystem(
+      kVideoMP4MimeType, video_mp4_hi10p_codecs(), kClearKey));
+#endif
+
   // Non-video MP4 codecs.
   EXPECT_NO_MATCH(AreCodecsSupportedByKeySystem(
       kVideoMP4MimeType, audio_mp4_codecs(), kClearKey));
@@ -526,6 +545,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
   EXPECT_ECK_PROPRIETARY(AreCodecsSupportedByKeySystem(
       kVideoMP4MimeType, video_mp4_codecs(), kExternalClearKey));
 
+  // High 10-bit Profile is not supported when using ExternalClearKey.
+  EXPECT_ECK_NO_MATCH(AreCodecsSupportedByKeySystem(
+      kVideoMP4MimeType, video_mp4_hi10p_codecs(), kExternalClearKey));
+
   // Non-video MP4 codecs.
   EXPECT_ECK_NO_MATCH(AreCodecsSupportedByKeySystem(
       kVideoMP4MimeType, audio_mp4_codecs(), kExternalClearKey));
@@ -613,6 +636,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
   // Valid video types.
   EXPECT_WV_PROPRIETARY(AreCodecsSupportedByKeySystem(
       kVideoMP4MimeType, video_mp4_codecs(), kWidevine));
+
+  // High 10-bit Profile is not supported when using Widevine.
+  EXPECT_WV_NO_MATCH(AreCodecsSupportedByKeySystem(
+      kVideoMP4MimeType, video_mp4_hi10p_codecs(), kWidevine));
 
   // Non-video MP4 codecs.
   EXPECT_WV_NO_MATCH(AreCodecsSupportedByKeySystem(

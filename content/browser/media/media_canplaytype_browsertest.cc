@@ -69,6 +69,15 @@ const char* kMp2tsAc3Eac3Probably = kPropProbably;
 const char* kMp2tsAc3Eac3Probably = kNot;
 #endif
 
+// High 10-bit profile is only available when we can use ffmpeg to decode H.264.
+// Even though FFmpeg is used on Android, we only use platform decoders for
+// H.264
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
+const char* kHi10pProbably = kPropProbably;
+#else
+const char* kHi10pProbably = kMaybe;
+#endif
+
 namespace content {
 
 class MediaCanPlayTypeTest : public MediaBrowserTest {
@@ -956,6 +965,21 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc1Variants) {
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.64E0FF\"'"));
 
   //
+  // High 10-bit Profile (110 == 0x6E).
+  //  The first two digits after the dot must be 6E. The third and fourth digits
+  //  contain constraint_set_flags and must be valid hex. The last two digits
+  //  should be any valid H.264 level. If the level value is invalid the result
+  //  will be kMaybe.
+  //
+  EXPECT_EQ(kHi10pProbably, CanPlay("'video/mp4; codecs=\"avc1.6E001E\"'"));
+  EXPECT_EQ(kPropProbably,  CanPlay("'video/mp4; codecs=\"avc1.6E400A\"'"));
+  EXPECT_EQ(kPropProbably,  CanPlay("'video/mp4; codecs=\"avc1.6E800A\"'"));
+  EXPECT_EQ(kPropProbably,  CanPlay("'video/mp4; codecs=\"avc1.6EE00A\"'"));
+  EXPECT_EQ(kNot,           CanPlay("'video/mp4; codecs=\"avc1.6EG01E\"'"));
+  EXPECT_EQ(kNot,           CanPlay("'video/mp4; codecs=\"avc1.6E000G\"'"));
+  EXPECT_EQ(kPropMaybe,     CanPlay("'video/mp4; codecs=\"avc1.6EE0FF\"'"));
+
+  //
   //  Other profiles are not known to be supported.
   //
 
@@ -1044,6 +1068,21 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc3Variants) {
   EXPECT_EQ(kNot,          CanPlay("'video/mp4; codecs=\"avc3.64G01E\"'"));
   EXPECT_EQ(kNot,          CanPlay("'video/mp4; codecs=\"avc3.64000G\"'"));
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc3.64E0FF\"'"));
+
+  //
+  // High 10-bit Profile (110 == 0x6E).
+  //  The first two digits after the dot must be 6E. The third and fourth digits
+  //  contain constraint_set_flags and must be valid hex. The last two digits
+  //  should be any valid H.264 level. If the level value is invalid the result
+  //  will be kMaybe.
+  //
+  EXPECT_EQ(kHi10pProbably, CanPlay("'video/mp4; codecs=\"avc3.6E001E\"'"));
+  EXPECT_EQ(kPropProbably,  CanPlay("'video/mp4; codecs=\"avc3.6E400A\"'"));
+  EXPECT_EQ(kPropProbably,  CanPlay("'video/mp4; codecs=\"avc3.6E800A\"'"));
+  EXPECT_EQ(kPropProbably,  CanPlay("'video/mp4; codecs=\"avc3.6EE00A\"'"));
+  EXPECT_EQ(kNot,           CanPlay("'video/mp4; codecs=\"avc3.6EG01E\"'"));
+  EXPECT_EQ(kNot,           CanPlay("'video/mp4; codecs=\"avc3.6E000G\"'"));
+  EXPECT_EQ(kPropMaybe,     CanPlay("'video/mp4; codecs=\"avc3.6EE0FF\"'"));
 
   //
   //  Other profiles are not known to be supported.
