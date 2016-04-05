@@ -4,6 +4,8 @@
 
 package org.chromium.mojo.bindings;
 
+import android.annotation.SuppressLint;
+
 import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
@@ -15,6 +17,7 @@ import java.util.concurrent.Executor;
 /**
  * Implementation of {@link Router}.
  */
+@SuppressLint("UseSparseArrays")  // https://crbug.com/600699
 public class RouterImpl implements Router {
 
     /**
