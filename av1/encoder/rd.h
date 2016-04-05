@@ -154,6 +154,10 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const struct AV1_COMP *cpi,
 
 void av1_init_me_luts(void);
 
+#if CONFIG_REF_MV
+void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame);
+#endif
+
 void av1_get_entropy_contexts(BLOCK_SIZE bsize, TX_SIZE tx_size,
                                const struct macroblockd_plane *pd,
                                ENTROPY_CONTEXT t_above[16],

@@ -195,10 +195,17 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   step_param = mv_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
+#if CONFIG_REF_MV
+  x->mvcost = x->mv_cost_stack[0];
+  x->nmvjointcost = x->nmv_vec_cost[0];
+  x->mvsadcost = x->mvcost;
+  x->nmvjointsadcost = x->nmvjointcost;
+#endif
+
   // Ignore mv costing by sending NULL pointer instead of cost arrays
   av1_hex_search(x, &best_ref_mv1_full, step_param, sadpb, 1,
-                  cond_cost_list(cpi, cost_list), &cpi->fn_ptr[BLOCK_16X16], 0,
-                  &best_ref_mv1, ref_mv);
+                 cond_cost_list(cpi, cost_list), &cpi->fn_ptr[BLOCK_16X16], 0,
+                 &best_ref_mv1, ref_mv);
 
   // Ignore mv costing by sending NULL pointer instead of cost array
   bestsme = cpi->find_fractional_mv_step(

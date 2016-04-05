@@ -98,12 +98,21 @@ struct macroblock {
   unsigned int pred_sse[MAX_REF_FRAMES];
   int pred_mv_sad[MAX_REF_FRAMES];
 
+#if CONFIG_REF_MV
+  int *nmvjointcost;
+  int nmv_vec_cost[NMV_CONTEXTS][MV_JOINTS];
+  int *nmvcost[NMV_CONTEXTS][2];
+  int *nmvcost_hp[NMV_CONTEXTS][2];
+  int **mv_cost_stack[NMV_CONTEXTS];
+  int *nmvjointsadcost;
+#else
   int nmvjointcost[MV_JOINTS];
   int *nmvcost[2];
   int *nmvcost_hp[2];
+  int nmvjointsadcost[MV_JOINTS];
+#endif
   int **mvcost;
 
-  int nmvjointsadcost[MV_JOINTS];
   int *nmvsadcost[2];
   int *nmvsadcost_hp[2];
   int **mvsadcost;
