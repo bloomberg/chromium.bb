@@ -187,8 +187,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
     : SnapToPixelLayoutManager(shelf->GetNativeView()->parent()),
       root_window_(shelf->GetNativeView()->GetRootWindow()),
       updating_bounds_(false),
-      auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
-      alignment_(SHELF_ALIGNMENT_BOTTOM),
       shelf_(shelf),
       workspace_controller_(NULL),
       window_overlaps_shelf_(false),
@@ -217,16 +215,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
       session_state_delegate()->RemoveSessionStateObserver(this);
 }
 
-void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-  if (auto_hide_behavior_ == behavior)
-    return;
-  auto_hide_behavior_ = behavior;
-  UpdateVisibilityState();
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    OnAutoHideBehaviorChanged(root_window_,
-                                              auto_hide_behavior_));
-}
-
 void ShelfLayoutManager::PrepareForShutdown() {
   // Clear all event filters, otherwise sometimes those filters may catch
   // synthesized mouse event and cause crashes during the shutdown.
@@ -247,30 +235,6 @@ bool ShelfLayoutManager::IsVisible() const {
         state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN));
 }
 
-void ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
-  if (alignment_ == alignment)
-    return;
-
-  alignment_ = alignment;
-  // The shelf will itself move to the bottom while locked or obscured by user
-  // login. If a request is sent to move while being obscured, we postpone the
-  // move until the user session is resumed.
-  if (!IsAlignmentLocked()) {
-    shelf_->SetAlignment(alignment);
-    LayoutShelf();
-    Shell::GetInstance()->OnShelfAlignmentChanged(
-        shelf_->GetNativeWindow()->GetRootWindow());
-  }
-}
-
-ShelfAlignment ShelfLayoutManager::GetAlignment() const {
-  // When the screen is locked or a user gets added, the shelf is forced into
-  // bottom alignment.
-  if (IsAlignmentLocked())
-    return SHELF_ALIGNMENT_BOTTOM;
-  return alignment_;
-}
-
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   gfx::Rect rect(ScreenUtil::GetDisplayBoundsInParent(shelf_->GetNativeView()));
   return SelectValueForShelfAlignment(
@@ -281,11 +245,11 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
 }
 
 void ShelfLayoutManager::LayoutShelf() {
-  TargetBounds target_bounds;
-  CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, false, NULL);
-
   if (shelf_->shelf()) {
+    TargetBounds target_bounds;
+    CalculateTargetBounds(state_, &target_bounds);
+    UpdateBoundsAndOpacity(target_bounds, false, NULL);
+
     // Update insets in ShelfWindowTargeter when shelf bounds change.
     FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                       WillChangeVisibilityState(visibility_state()));
@@ -293,7 +257,7 @@ void ShelfLayoutManager::LayoutShelf() {
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
-  switch(auto_hide_behavior_) {
+  switch (auto_hide_behavior()) {
     case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
       return SHELF_AUTO_HIDE;
     case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
@@ -306,8 +270,8 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 
 void ShelfLayoutManager::UpdateVisibilityState() {
   // Bail out early when there is no |workspace_controller_|, which happens
-  // during shutdown after PrepareForShutdown.
-  if (!workspace_controller_)
+  // during shutdown after PrepareForShutdown. Also bail before a shelf exists.
+  if (!workspace_controller_ || !shelf_->shelf())
     return;
 
   if (state_.is_screen_locked || state_.is_adding_user_screen) {
@@ -467,7 +431,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   // |gesture_drag_status_| to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto
   // hide state to |gesture_drag_auto_hide_state_|.
   gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-  if (auto_hide_behavior_ != new_auto_hide_behavior)
+  if (auto_hide_behavior() != new_auto_hide_behavior)
     SetAutoHideBehavior(new_auto_hide_behavior);
   else
     UpdateVisibilityState();
@@ -511,6 +475,15 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateShelfVisibilityAfterLoginUIChange();
 }
 
+void ShelfLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
+  LayoutShelf();
+}
+
+void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
+    aura::Window* root_window) {
+  UpdateVisibilityState();
+}
+
 void ShelfLayoutManager::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -520,6 +493,25 @@ void ShelfLayoutManager::OnWindowActivated(
 
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
   return GetAlignment() == SHELF_ALIGNMENT_BOTTOM;
+}
+
+bool ShelfLayoutManager::IsAlignmentLocked() const {
+  if (state_.is_screen_locked)
+    return true;
+  // The session state becomes active at the start of transitioning to a user
+  // session, however the session is considered blocked until the full UI is
+  // ready. Exit early to allow for proper layout.
+  SessionStateDelegate* session_state_delegate =
+      Shell::GetInstance()->session_state_delegate();
+  if (session_state_delegate->GetSessionState() ==
+      SessionStateDelegate::SESSION_STATE_ACTIVE) {
+    return false;
+  }
+  if (session_state_delegate->IsUserSessionBlocked() ||
+      state_.is_adding_user_screen) {
+    return true;
+  }
+  return false;
 }
 
 void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
@@ -1125,30 +1117,11 @@ void ShelfLayoutManager::SessionStateChanged(
 }
 
 void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
-  shelf_->SetAlignment(GetAlignment());
   UpdateVisibilityState();
   LayoutShelf();
+  // The shelf alignment may have changed when it was unlocked.
   Shell::GetInstance()->OnShelfAlignmentChanged(
       shelf_->GetNativeWindow()->GetRootWindow());
-}
-
-bool ShelfLayoutManager::IsAlignmentLocked() const {
-  if (state_.is_screen_locked)
-    return true;
-  // The session state becomes active at the start of transitioning to a user
-  // session, however the session is considered blocked until the full UI is
-  // ready. Exit early to allow for proper layout.
-  SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
-  if (session_state_delegate->GetSessionState() ==
-      SessionStateDelegate::SESSION_STATE_ACTIVE) {
-    return false;
-  }
-  if (session_state_delegate->IsUserSessionBlocked() ||
-      state_.is_adding_user_screen) {
-    return true;
-  }
-  return false;
 }
 
 }  // namespace ash

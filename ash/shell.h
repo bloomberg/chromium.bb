@@ -470,6 +470,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Called when the alignment for a shelf changes.
   void OnShelfAlignmentChanged(aura::Window* root_window);
 
+  // Called when the auto-hide behavior for a shelf changes.
+  void OnShelfAutoHideBehaviorChanged(aura::Window* root_window);
+
   // Notifies |observers_| when entering or exiting fullscreen mode in
   // |root_window|.
   void NotifyFullscreenStateChange(bool is_fullscreen,

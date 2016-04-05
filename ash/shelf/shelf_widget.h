@@ -32,12 +32,11 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
               WorkspaceController* workspace_controller);
   ~ShelfWidget() override;
 
-  // Returns if shelf alignment option is enabled, and the user is able
-  // to adjust the alignment (guest and supervised mode users cannot for
-  // example).
+  // Returns if shelf alignment option is enabled, and the user is able to
+  // adjust the alignment (guest and supervised mode users cannot for example).
   static bool ShelfAlignmentAllowed();
 
-  void SetAlignment(ShelfAlignment alignmnet);
+  void OnShelfAlignmentChanged();
   ShelfAlignment GetAlignment() const;
 
   // Sets the shelf's background type.

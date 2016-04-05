@@ -40,10 +40,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_watcher.h"
@@ -511,30 +511,31 @@ void Shell::UpdateShelfVisibility() {
 
 void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
                                      aura::Window* root_window) {
-  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
-  shelf_widget->shelf_layout_manager()->SetAutoHideBehavior(behavior);
+  Shelf::ForWindow(root_window)->SetAutoHideBehavior(behavior);
 }
 
 ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
     aura::Window* root_window) const {
-  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
-  return shelf_widget->shelf_layout_manager()->auto_hide_behavior();
+  return Shelf::ForWindow(root_window)->GetAutoHideBehavior();
 }
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
                               aura::Window* root_window) {
-  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
-  shelf_widget->shelf_layout_manager()->SetAlignment(alignment);
+  Shelf::ForWindow(root_window)->SetAlignment(alignment);
 }
 
 ShelfAlignment Shell::GetShelfAlignment(const aura::Window* root_window) const {
-  ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
-  return shelf_widget->shelf_layout_manager()->GetAlignment();
+  return Shelf::ForWindow(root_window)->GetAlignment();
 }
 
 void Shell::OnShelfAlignmentChanged(aura::Window* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnShelfAlignmentChanged(root_window));
+}
+
+void Shell::OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, observers_,
+                    OnShelfAutoHideBehaviorChanged(root_window));
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
@@ -587,7 +588,6 @@ SystemTray* Shell::GetPrimarySystemTray() {
 
 ShelfDelegate* Shell::GetShelfDelegate() {
   if (!shelf_delegate_) {
-    shelf_model_.reset(new ShelfModel);
     // Creates ShelfItemDelegateManager before ShelfDelegate.
     shelf_item_delegate_manager_.reset(
         new ShelfItemDelegateManager(shelf_model_.get()));
@@ -642,6 +642,7 @@ Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
     : target_root_window_(nullptr),
       scoped_target_root_window_(nullptr),
       delegate_(delegate),
+      shelf_model_(new ShelfModel),
       window_positioner_(new WindowPositioner),
       activation_client_(nullptr),
 #if defined(OS_CHROMEOS)

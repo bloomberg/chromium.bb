@@ -28,10 +28,6 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
   // Called when the auto hide state is changed.
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
 
-  // Called when the auto hide behavior is changed.
-  virtual void OnAutoHideBehaviorChanged(aura::Window* root_window,
-                                         ShelfAutoHideBehavior new_behavior) {}
-
   // Called when shelf background animation is started.
   virtual void OnBackgroundUpdated(
       ShelfBackgroundType background_type,

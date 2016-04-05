@@ -130,6 +130,14 @@ void ShelfDelegateMus::OnShelfDestroyed(Shelf* shelf) {
   NOTIMPLEMENTED();
 }
 
+void ShelfDelegateMus::OnShelfAlignmentChanged(Shelf* shelf) {
+  NOTIMPLEMENTED();
+}
+
+void ShelfDelegateMus::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {
+  NOTIMPLEMENTED();
+}
+
 ShelfID ShelfDelegateMus::GetShelfIDForAppID(const std::string& app_id) {
   NOTIMPLEMENTED();
   return 0;

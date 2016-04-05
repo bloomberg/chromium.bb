@@ -42,15 +42,15 @@ const char Shelf::kNativeViewName[] = "ShelfView";
 Shelf::Shelf(ShelfModel* shelf_model,
              ShelfDelegate* shelf_delegate,
              ShelfWidget* shelf_widget)
-    : shelf_view_(NULL),
-      alignment_(shelf_widget->GetAlignment()),
+    : shelf_view_(nullptr),
+      alignment_(SHELF_ALIGNMENT_BOTTOM),
+      auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
       delegate_(shelf_delegate),
       shelf_widget_(shelf_widget) {
   shelf_view_ = new ShelfView(shelf_model, delegate_, this);
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
   shelf_widget_->GetNativeView()->SetName(kNativeViewName);
-  delegate_->OnShelfCreated(this);
 }
 
 Shelf::~Shelf() {
@@ -65,25 +65,44 @@ Shelf* Shelf::ForPrimaryDisplay() {
 // static
 Shelf* Shelf::ForWindow(const aura::Window* window) {
   ShelfWidget* shelf_widget = RootWindowController::ForWindow(window)->shelf();
-  return shelf_widget ? shelf_widget->shelf() : NULL;
+  return shelf_widget ? shelf_widget->shelf() : nullptr;
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {
+  if (alignment_ == alignment)
+    return;
+
   alignment_ = alignment;
   shelf_view_->OnShelfAlignmentChanged();
+  shelf_widget_->OnShelfAlignmentChanged();
+  delegate_->OnShelfAlignmentChanged(this);
+  Shell::GetInstance()->OnShelfAlignmentChanged(
+      shelf_widget_->GetNativeWindow()->GetRootWindow());
   // ShelfLayoutManager will resize the shelf.
+}
+
+ShelfAlignment Shelf::GetAlignment() const {
+  // Bottom alignment is forced when the screen is locked or a user gets added.
+  bool locked = shelf_widget_->shelf_layout_manager()->IsAlignmentLocked();
+  return locked ? SHELF_ALIGNMENT_BOTTOM : alignment_;
 }
 
 bool Shelf::IsHorizontalAlignment() const {
   return alignment_ == SHELF_ALIGNMENT_BOTTOM;
 }
 
-void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-  shelf_widget_->shelf_layout_manager()->SetAutoHideBehavior(behavior);
+void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
+  if (auto_hide_behavior_ == auto_hide_behavior)
+    return;
+
+  auto_hide_behavior_ = auto_hide_behavior;
+  delegate_->OnShelfAutoHideBehaviorChanged(this);
+  Shell::GetInstance()->OnShelfAutoHideBehaviorChanged(
+      shelf_widget_->GetNativeWindow()->GetRootWindow());
 }
 
 ShelfAutoHideBehavior Shelf::GetAutoHideBehavior() const {
-  return shelf_widget_->shelf_layout_manager()->auto_hide_behavior();
+  return auto_hide_behavior_;
 }
 
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(

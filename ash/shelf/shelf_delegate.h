@@ -25,6 +25,12 @@ class ASH_EXPORT ShelfDelegate {
   // exists.
   virtual void OnShelfDestroyed(Shelf* shelf) = 0;
 
+  // Called when |shelf|'s alignment changes.
+  virtual void OnShelfAlignmentChanged(Shelf* shelf) = 0;
+
+  // Called when |shelf|'s auto-hide behavior changes.
+  virtual void OnShelfAutoHideBehaviorChanged(Shelf* shelf) = 0;
+
   // Get the shelf ID from an application ID.
   virtual ShelfID GetShelfIDForAppID(const std::string& app_id) = 0;
 

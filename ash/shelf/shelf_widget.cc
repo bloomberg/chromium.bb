@@ -722,18 +722,17 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
       return false;
   }
 
-  DCHECK(false);
+  NOTREACHED();
   return false;
 }
 
 ShelfAlignment ShelfWidget::GetAlignment() const {
-  return shelf_layout_manager_->GetAlignment();
+  // TODO(msw): This should not be called before |shelf_| is created.
+  return shelf_ ? shelf_->GetAlignment() : SHELF_ALIGNMENT_BOTTOM;
 }
 
-void ShelfWidget::SetAlignment(ShelfAlignment alignment) {
-  if (shelf_)
-    shelf_->SetAlignment(alignment);
-  status_area_widget_->SetShelfAlignment(alignment);
+void ShelfWidget::OnShelfAlignmentChanged() {
+  status_area_widget_->SetShelfAlignment(GetAlignment());
   delegate_view_->SchedulePaint();
 }
 
@@ -755,13 +754,10 @@ void ShelfWidget::CreateShelf() {
     return;
 
   Shell* shell = Shell::GetInstance();
-  // This needs to be called before shelf_model().
-  ShelfDelegate* shelf_delegate = shell->GetShelfDelegate();
-  if (!shelf_delegate)
-    return;  // Not ready to create Shelf.
+  ShelfDelegate* delegate = shell->GetShelfDelegate();
+  shelf_.reset(new Shelf(shell->shelf_model(), delegate, this));
+  delegate->OnShelfCreated(shelf_.get());
 
-  shelf_.reset(
-      new Shelf(shell->shelf_model(), shell->GetShelfDelegate(), this));
   SetFocusCycler(shell->focus_cycler());
 
   // Inform the root window controller.

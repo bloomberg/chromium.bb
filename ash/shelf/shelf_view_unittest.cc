@@ -250,6 +250,10 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
 
   void OnShelfDestroyed(Shelf* shelf) override {}
 
+  void OnShelfAlignmentChanged(Shelf* shelf) override {}
+
+  void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override {}
+
   ShelfID GetShelfIDForAppID(const std::string& app_id) override {
     ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));

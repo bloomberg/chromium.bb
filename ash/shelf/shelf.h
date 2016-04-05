@@ -57,11 +57,19 @@ class ASH_EXPORT Shelf {
   static Shelf* ForWindow(const aura::Window* window);
 
   void SetAlignment(ShelfAlignment alignment);
-  ShelfAlignment alignment() const { return alignment_; }
+  ShelfAlignment GetAlignment() const;
   bool IsHorizontalAlignment() const;
 
+  // TODO(msw): Remove this accessor, kept temporarily to simplify changes.
+  ShelfAlignment alignment() const { return GetAlignment(); }
+
   // Sets the ShelfAutoHideBehavior. See enum description for details.
-  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
+  void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior);
+  ShelfAutoHideBehavior auto_hide_behavior() const {
+    return auto_hide_behavior_;
+  }
+
+  // TODO(msw): Remove this accessor, kept temporarily to simplify changes.
   ShelfAutoHideBehavior GetAutoHideBehavior() const;
 
   // A helper functions that chooses values specific to a shelf alignment.
@@ -140,6 +148,7 @@ class ASH_EXPORT Shelf {
   ShelfView* shelf_view_;
 
   ShelfAlignment alignment_;
+  ShelfAutoHideBehavior auto_hide_behavior_;
 
   ShelfDelegate* delegate_;
 

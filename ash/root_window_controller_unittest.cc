@@ -664,13 +664,6 @@ typedef test::NoSessionAshTestBase NoSessionRootWindowControllerTest;
 
 // Make sure that an event handler exists for entire display area.
 TEST_F(NoSessionRootWindowControllerTest, Event) {
-  // Hide the shelf since it might otherwise get an event target.
-  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-  ShelfLayoutManager* shelf_layout_manager =
-      controller->GetShelfLayoutManager();
-  shelf_layout_manager->SetAutoHideBehavior(
-      ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
-
   aura::Window* root = Shell::GetPrimaryRootWindow();
   const gfx::Size size = root->bounds().size();
   aura::Window* event_target = root->GetEventHandlerForPoint(gfx::Point(0, 0));
