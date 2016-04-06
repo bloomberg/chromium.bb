@@ -7,24 +7,53 @@
 import logging
 import sys
 
+import common_util
 import graph
 import request_track
 
 
 class RequestNode(graph.Node):
-  def __init__(self, request):
+  def __init__(self, request=None):
     super(RequestNode, self).__init__()
     self.request = request
-    self.cost = request.Cost()
+    self.cost = request.Cost() if request else None # Deserialization.
+
+  def ToJsonDict(self):
+    json_dict = super(RequestNode, self).ToJsonDict()
+    json_dict.update({'request': self.request.ToJsonDict()})
+    return json_dict
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    result = super(RequestNode, cls).FromJsonDict(json_dict)
+    result.request = request_track.Request.FromJsonDict(json_dict['request'])
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, result, ['cost'])
 
 
 class Edge(graph.Edge):
-  def __init__(self, from_node, to_node, reason):
+  def __init__(self, from_node, to_node, reason=None):
     super(Edge, self).__init__(from_node, to_node)
+    self.reason = reason
+    self.cost = None
+    self.is_timing = None
+    if from_node is None: # Deserialization.
+      return
     self.reason = reason
     self.cost = request_track.TimeBetween(
         self.from_node.request, self.to_node.request, self.reason)
     self.is_timing = False
+
+  def ToJsonDict(self):
+    result = {}
+    return common_util.SerializeAttributesToJsonDict(
+        result, self, ['reason', 'cost', 'is_timing'])
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    result = cls(None, None, None)
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, result, ['reason', 'cost', 'is_timing'])
 
 
 class RequestDependencyGraph(object):
@@ -45,6 +74,12 @@ class RequestDependencyGraph(object):
       node_class: (subclass of RequestNode)
       edge_class: (subclass of Edge)
     """
+    self._requests = None
+    self._first_request_node = None
+    self._deps_graph = None
+    self._nodes_by_id = None
+    if requests is None: # Deserialization.
+      return
     assert issubclass(node_class, RequestNode)
     assert issubclass(edge_class, Edge)
     self._requests = requests
@@ -175,3 +210,22 @@ class RequestDependencyGraph(object):
         self._deps_graph.UpdateEdge(
             current, edges_by_end_time[end_mark].to_node,
             current.to_node)
+
+  def ToJsonDict(self):
+    result = {'graph': self.graph.ToJsonDict()}
+    result['requests'] = [r.ToJsonDict() for r in self._requests]
+    return result
+
+  @classmethod
+  def FromJsonDict(cls, json_dict, node_class, edge_class):
+    result = cls(None, None)
+    graph_dict = json_dict['graph']
+    g = graph.DirectedGraph.FromJsonDict(graph_dict, node_class, edge_class)
+    result._requests = [request_track.Request.FromJsonDict(r)
+                        for r in json_dict['requests']]
+    result._nodes_by_id = {node.request.request_id: node
+                           for node in g.Nodes()}
+    result._first_request_node = result._nodes_by_id[
+        result._requests[0].request_id]
+    result._deps_graph = g
+    return result

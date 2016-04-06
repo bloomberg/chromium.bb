@@ -16,13 +16,15 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     super(RequestDependencyGraphTestCase, self).setUp()
     self.trace = TestRequests.CreateLoadingTrace()
 
-  def testUpdateRequestCost(self):
+  def testUpdateRequestCost(self, serialize=False):
     requests = self.trace.request_track.GetEvents()
     requests[0].timing = request_track.TimingFromDict(
         {'requestTime': 12, 'loadingFinished': 10})
     dependencies_lens = request_dependencies_lens.RequestDependencyLens(
         self.trace)
     g = dependency_graph.RequestDependencyGraph(requests, dependencies_lens)
+    if serialize:
+      g = self._SerializeDeserialize(g)
     self.assertEqual(10, g.Cost())
     request_id = requests[0].request_id
     g.UpdateRequestsCost({request_id: 100})
@@ -30,7 +32,7 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     g.UpdateRequestsCost({'unrelated_id': 1000})
     self.assertEqual(100, g.Cost())
 
-  def testCost(self):
+  def testCost(self, serialize=False):
     requests = self.trace.request_track.GetEvents()
     for (index, request) in enumerate(requests):
       request.timing = request_track.TimingFromDict(
@@ -39,6 +41,8 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     dependencies_lens = request_dependencies_lens.RequestDependencyLens(
         self.trace)
     g = dependency_graph.RequestDependencyGraph(requests, dependencies_lens)
+    if serialize:
+      g = self._SerializeDeserialize(g)
     # First redirect -> Second redirect -> Redirected Request -> Request ->
     # JS Request 2
     self.assertEqual(7010, g.Cost())
@@ -50,7 +54,7 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     g.UpdateRequestsCost({TestRequests.SECOND_REDIRECT_REQUEST.request_id: 0})
     self.assertEqual(6990, g.Cost())
 
-  def testHandleTimingDependencies(self):
+  def testHandleTimingDependencies(self, serialize=False):
     # Timing adds node 1 as a parent to 2 but not 3.
     requests = [
         test_utils.MakeRequest(0, 'null', 100, 110, 110,
@@ -65,6 +69,8 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
         test_utils.MakeRequest(5, 2, 122, 126, 126)]
 
     g = self._GraphFromRequests(requests)
+    if serialize:
+      g = self._SerializeDeserialize(g)
     self.assertSetEqual(
         self._Successors(g, requests[0]), set([requests[1], requests[3]]))
     self.assertSetEqual(
@@ -106,7 +112,7 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     self.assertSetEqual(self._Successors(g, requests[5]), set())
     self.assertSetEqual(self._Successors(g, requests[6]), set([requests[3]]))
 
-  def testHandleTimingDependenciesImages(self):
+  def testHandleTimingDependenciesImages(self, serialize=False):
     # If we're all image types, then we shouldn't split by timing.
     requests = [test_utils.MakeRequest(0, 'null', 100, 110, 110),
                 test_utils.MakeRequest(1, 0, 115, 120, 120),
@@ -117,6 +123,8 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     for r in requests:
       r.response_headers['Content-Type'] = 'image/gif'
     g = self._GraphFromRequests(requests)
+    if serialize:
+      g = self._SerializeDeserialize(g)
     self.assertSetEqual(self._Successors(g, requests[0]),
                         set([requests[1], requests[2], requests[3]]))
     self.assertSetEqual(self._Successors(g, requests[1]), set())
@@ -125,6 +133,19 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     self.assertSetEqual(self._Successors(g, requests[3]), set())
     self.assertSetEqual(self._Successors(g, requests[4]), set())
     self.assertSetEqual(self._Successors(g, requests[5]), set())
+
+  def testSerializeDeserialize(self):
+    # Redo the tests, with a graph that has been serialized / deserialized.
+    self.testUpdateRequestCost(True)
+    self.testCost(True)
+    self.testHandleTimingDependencies(True)
+    self.testHandleTimingDependenciesImages(True)
+
+  @classmethod
+  def _SerializeDeserialize(cls, g):
+    json_dict = g.ToJsonDict()
+    return dependency_graph.RequestDependencyGraph.FromJsonDict(
+        json_dict, dependency_graph.RequestNode, dependency_graph.Edge)
 
   @classmethod
   def _GraphFromRequests(cls, requests):

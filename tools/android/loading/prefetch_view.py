@@ -8,47 +8,103 @@ For example, this can be used to evaluate NoState Prefetch
 (https://goo.gl/B3nRUR).
 
 When executed as a script, takes a trace as a command-line arguments and shows
-how many requests were prefetched.
+statistics about it.
 """
 
 import itertools
 import operator
 
+import common_util
 import dependency_graph
+import graph
 import loading_trace
 import user_satisfied_lens
 import request_dependencies_lens
 import request_track
 
 
-class PrefetchSimulationView(object):
+class RequestNode(dependency_graph.RequestNode):
   """Simulates the effect of prefetching resources discoverable by the preload
   scanner.
   """
+  _ATTRS = ['preloaded', 'before']
+  def __init__(self, request=None):
+    super(RequestNode, self).__init__(request)
+    self.preloaded = False
+    self.before = False
+
+  def ToJsonDict(self):
+    result = super(RequestNode, self).ToJsonDict()
+    return common_util.SerializeAttributesToJsonDict(result, self, self._ATTRS)
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    result = super(RequestNode, cls).FromJsonDict(json_dict)
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, result, cls._ATTRS)
+
+
+class PrefetchSimulationView(object):
+  """Simulates the effect of prefetch."""
   def __init__(self, trace, dependencies_lens, user_lens):
-    """Initializes an instance of PrefetchSimulationView.
+    self.postload_msec = None
+    self.graph = None
+    if trace is None:
+      return
+    requests = trace.request_track.GetEvents()
+    critical_requests_ids = user_lens.CriticalRequests()
+    self.postload_msec = user_lens.PostloadTimeMsec()
+    self.graph = dependency_graph.RequestDependencyGraph(
+        requests, dependencies_lens, node_class=RequestNode)
+    preloaded_requests = [r.request_id for r in self._PreloadedRequests(
+        requests[0], dependencies_lens, trace)]
+    self._AnnotateNodes(self.graph.graph.Nodes(), preloaded_requests,
+                        critical_requests_ids)
+
+  def Cost(self):
+    """Returns the cost of the graph, restricted to the critical requests."""
+    pruned_graph = self._PrunedGraph()
+    return pruned_graph.Cost() + self.postload_msec
+
+  def UpdateNodeCosts(self, node_to_cost):
+    """Updates the cost of nodes, according to |node_to_cost|.
 
     Args:
-      trace: (LoadingTrace) a loading trace.
-      dependencies_lens: (RequestDependencyLens) request dependencies.
-      user_lens: (UserSatisfiedLens) Lens used to compute costs.
+      node_to_cost: (Callable) RequestNode -> float. Callable returning the cost
+                    of a node.
     """
-    self.trace = trace
-    self.dependencies_lens = dependencies_lens
-    self._resource_events = self.trace.tracing_track.Filter(
-        categories=set([u'blink.net']))
-    assert len(self._resource_events.GetEvents()) > 0,\
-            'Was the "blink.net" category enabled at trace collection time?"'
-    self._user_lens = user_lens
-    request_ids = self._user_lens.CriticalRequests()
-    all_requests = self.trace.request_track.GetEvents()
-    self._first_request_node = all_requests[0].request_id
-    requests = [r for r in all_requests if r.request_id in request_ids]
-    self.graph = dependency_graph.RequestDependencyGraph(
-        requests, self.dependencies_lens)
+    pruned_graph = self._PrunedGraph()
+    for node in pruned_graph.Nodes():
+      node.cost = node_to_cost(node)
 
-  def ParserDiscoverableRequests(self, request, recurse=False):
-    """Returns a list of requests discovered by the parser from a given request.
+  def ToJsonDict(self):
+    """Returns a dict representing this instance."""
+    result = {'graph': self.graph.ToJsonDict()}
+    return common_util.SerializeAttributesToJsonDict(
+        result, self, ['postload_msec'])
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    """Returns an instance of PrefetchSimulationView from a dict dumped by
+    ToJSonDict().
+    """
+    result = cls(None, None, None)
+    result.graph = dependency_graph.RequestDependencyGraph.FromJsonDict(
+        json_dict['graph'], RequestNode, dependency_graph.Edge)
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, result, ['postload_msec'])
+
+  @classmethod
+  def _AnnotateNodes(cls, nodes, preloaded_requests_ids,
+                     critical_requests_ids,):
+    for node in nodes:
+      node.preloaded = node.request.request_id in preloaded_requests_ids
+      node.before = node.request.request_id in critical_requests_ids
+
+  @classmethod
+  def _ParserDiscoverableRequests(
+      cls, dependencies_lens, request, recurse=False):
+    """Returns a list of requests IDs dicovered by the parser.
 
     Args:
       request: (Request) Root request.
@@ -59,18 +115,20 @@ class PrefetchSimulationView(object):
     # TODO(lizeb): handle the recursive case.
     assert not recurse
     discoverable_requests = [request]
-    first_request = self.dependencies_lens.GetRedirectChain(request)[-1]
-    deps = self.dependencies_lens.GetRequestDependencies()
+    first_request = dependencies_lens.GetRedirectChain(request)[-1]
+    deps = dependencies_lens.GetRequestDependencies()
     for (first, second, reason) in deps:
       if first.request_id == first_request.request_id and reason == 'parser':
         discoverable_requests.append(second)
     return discoverable_requests
 
-  def ExpandRedirectChains(self, requests):
+  @classmethod
+  def _ExpandRedirectChains(cls, requests, dependencies_lens):
     return list(itertools.chain.from_iterable(
-        [self.dependencies_lens.GetRedirectChain(r) for r in requests]))
+        [dependencies_lens.GetRedirectChain(r) for r in requests]))
 
-  def PreloadedRequests(self, request):
+  @classmethod
+  def _PreloadedRequests(cls, request, dependencies_lens, trace):
     """Returns the requests that have been preloaded from a given request.
 
     This list is the set of request that are:
@@ -84,51 +142,48 @@ class PrefetchSimulationView(object):
 
     Returns:
       A list of Request. Does not include the root request. This list is a
-      subset of the one returned by ParserDiscoverableRequests().
+      subset of the one returned by _ParserDiscoverableRequests().
     """
     # Preload step events are emitted in ResourceFetcher::preloadStarted().
+    resource_events = trace.tracing_track.Filter(
+        categories=set([u'blink.net']))
     preload_step_events = filter(
         lambda e:  e.args.get('step') == 'Preload',
-        self._resource_events.GetEvents())
+        resource_events.GetEvents())
     preloaded_urls = set()
     for preload_step_event in preload_step_events:
-      preload_event = self._resource_events.EventFromStep(preload_step_event)
+      preload_event = resource_events.EventFromStep(preload_step_event)
       if preload_event:
         preloaded_urls.add(preload_event.args['url'])
-    parser_requests = self.ParserDiscoverableRequests(request)
+    parser_requests = cls._ParserDiscoverableRequests(
+        dependencies_lens, request)
     preloaded_root_requests = filter(
         lambda r: r.url in preloaded_urls, parser_requests)
     # We can actually fetch the whole redirect chain.
     return [request] + list(itertools.chain.from_iterable(
-        [self.dependencies_lens.GetRedirectChain(r)
+        [dependencies_lens.GetRedirectChain(r)
          for r in preloaded_root_requests]))
 
+  def _PrunedGraph(self):
+    roots = self.graph.graph.RootNodes()
+    nodes = self.graph.graph.ReachableNodes(
+        roots, should_stop=lambda n: not n.before)
+    return graph.DirectedGraph(nodes, self.graph.graph.Edges())
 
-def _PrintSummary(prefetch_view, user_lens):
-  requests = prefetch_view.trace.request_track.GetEvents()
-  first_request = prefetch_view.trace.request_track.GetEvents()[0]
-  parser_requests = prefetch_view.ExpandRedirectChains(
-      prefetch_view.ParserDiscoverableRequests(first_request))
-  preloaded_requests = prefetch_view.ExpandRedirectChains(
-      prefetch_view.PreloadedRequests(first_request))
-  print '%d requests, %d parser from the main request, %d preloaded' % (
-      len(requests), len(parser_requests), len(preloaded_requests))
-  print 'Time to user satisfaction: %.02fms' % (
-      prefetch_view.graph.Cost() + user_lens.PostloadTimeMsec())
 
-  print 'With 0-cost prefetched resources...'
-  new_costs = {r.request_id: 0. for r in preloaded_requests}
-  prefetch_view.graph.UpdateRequestsCost(new_costs)
-  print 'Time to user satisfaction: %.02fms' % (
-      prefetch_view.graph.Cost() + user_lens.PostloadTimeMsec())
+def _PrintSumamry(trace, dependencies_lens, user_lens):
+  prefetch_view = PrefetchSimulationView(trace, dependencies_lens, user_lens)
+  print 'Time to First Contentful Paint = %.02fms' % prefetch_view.Cost()
+  print 'Set costs of prefetched requests to 0.'
+  prefetch_view.UpdateNodeCosts(lambda n: 0 if n.preloaded else n.cost)
+  print 'Time to First Contentful Paint = %.02fms' % prefetch_view.Cost()
 
 
 def main(filename):
   trace = loading_trace.LoadingTrace.FromJsonFile(filename)
   dependencies_lens = request_dependencies_lens.RequestDependencyLens(trace)
   user_lens = user_satisfied_lens.FirstContentfulPaintLens(trace)
-  prefetch_view = PrefetchSimulationView(trace, dependencies_lens, user_lens)
-  _PrintSummary(prefetch_view, user_lens)
+  _PrintSumamry(trace, dependencies_lens, user_lens)
 
 
 if __name__ == '__main__':

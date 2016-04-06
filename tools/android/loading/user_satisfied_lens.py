@@ -10,6 +10,8 @@ FirstSignificantPaintLens.
 import logging
 import operator
 
+import common_util
+
 
 class _UserSatisfiedLens(object):
   """A base class for all user satisfaction metrics.
@@ -19,6 +21,9 @@ class _UserSatisfiedLens(object):
   event. Subclasses need only provide the time computation. The base class will
   use that to construct the request ids.
   """
+  _ATTRS = ['_satisfied_msec', '_event_msec', '_postload_msec',
+            '_critical_request_ids']
+
   def __init__(self, trace):
     """Initialize the lens.
 
@@ -27,6 +32,10 @@ class _UserSatisfiedLens(object):
     """
     self._satisfied_msec = None
     self._event_msec = None
+    self._postload_msec = None
+    self._critical_request_ids = None
+    if trace is None:
+      return
     self._CalculateTimes(trace.tracing_track)
     critical_requests = self._RequestsBefore(
         trace.request_track, self._satisfied_msec)
@@ -56,6 +65,15 @@ class _UserSatisfiedLens(object):
       Postload time in milliseconds.
     """
     return self._postload_msec
+
+  def ToJsonDict(self):
+    return common_util.SerializeAttributesToJsonDict({}, self, self._ATTRS)
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    result = cls(None)
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, result, cls._ATTRS)
 
   def _CalculateTimes(self, tracing_track):
     """Subclasses should implement to set _satisfied_msec and _event_msec."""

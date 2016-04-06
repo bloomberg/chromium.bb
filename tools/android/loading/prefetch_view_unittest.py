@@ -4,7 +4,7 @@
 
 import unittest
 
-import prefetch_view
+from prefetch_view import PrefetchSimulationView
 import request_dependencies_lens
 from request_dependencies_lens_unittest import TestRequests
 import request_track
@@ -20,13 +20,13 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
     self.assertListEqual(
         [TestRequests.FIRST_REDIRECT_REQUEST,
          TestRequests.SECOND_REDIRECT_REQUEST, TestRequests.REDIRECTED_REQUEST],
-        self.prefetch_view.ExpandRedirectChains(
-            [TestRequests.FIRST_REDIRECT_REQUEST]))
+        PrefetchSimulationView._ExpandRedirectChains(
+            [TestRequests.FIRST_REDIRECT_REQUEST], self.dependencies_lens))
 
   def testParserDiscoverableRequests(self):
     first_request = TestRequests.FIRST_REDIRECT_REQUEST
-    discovered_requests = self.prefetch_view.ParserDiscoverableRequests(
-        first_request)
+    discovered_requests = PrefetchSimulationView._ParserDiscoverableRequests(
+        self.dependencies_lens, first_request)
     self.assertListEqual(
         [TestRequests.FIRST_REDIRECT_REQUEST,
          TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_OTHER_FRAME,
@@ -34,7 +34,8 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
 
   def testPreloadedRequests(self):
     first_request = TestRequests.FIRST_REDIRECT_REQUEST
-    preloaded_requests = self.prefetch_view.PreloadedRequests(first_request)
+    preloaded_requests = PrefetchSimulationView._PreloadedRequests(
+        first_request, self.dependencies_lens, self.trace)
     self.assertListEqual([first_request], preloaded_requests)
     self._SetUp(
         [{'args': {'url': 'http://bla.com/nyancat.js'},
@@ -43,10 +44,36 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
          {'args': {'step': 'Preload'}, 'cat': 'blink.net',
           'id': '0xaf9f14fa9dd6c314', 'name': 'Resource', 'ph': 'T',
           'ts': 12, 'pid': 12, 'tid': 12}])
-    preloaded_requests = self.prefetch_view.PreloadedRequests(first_request)
+    preloaded_requests = PrefetchSimulationView._PreloadedRequests(
+        first_request, self.dependencies_lens, self.trace)
     self.assertListEqual([TestRequests.FIRST_REDIRECT_REQUEST,
          TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_OTHER_FRAME,
          TestRequests.JS_REQUEST_UNRELATED_FRAME], preloaded_requests)
+
+  def testCost(self):
+    self.assertEqual(40 + 12, self.prefetch_view.Cost())
+
+  def testUpdateNodeCosts(self):
+    self.prefetch_view.UpdateNodeCosts(lambda _: 100)
+    self.assertEqual(500 + 40 + 12, self.prefetch_view.Cost())
+
+  def testUpdateNodeCostsPartial(self):
+    self.prefetch_view.UpdateNodeCosts(
+        lambda n: 100 if (n.request.request_id
+                          == TestRequests.REDIRECTED_REQUEST.request_id) else 0)
+    self.assertEqual(100 + 40 + 12, self.prefetch_view.Cost())
+
+  def testToFromJsonDict(self):
+    self.assertEqual(40 + 12, self.prefetch_view.Cost())
+    json_dict = self.prefetch_view.ToJsonDict()
+    new_view = PrefetchSimulationView.FromJsonDict(json_dict)
+    self.assertEqual(40 + 12, new_view.Cost())
+    # Updated Costs.
+    self.prefetch_view.UpdateNodeCosts(lambda _: 100)
+    self.assertEqual(500 + 40 + 12, self.prefetch_view.Cost())
+    json_dict = self.prefetch_view.ToJsonDict()
+    new_view = PrefetchSimulationView.FromJsonDict(json_dict)
+    self.assertEqual(500 + 40 + 12, new_view.Cost())
 
   def _SetUp(self, added_trace_events=None):
     trace_events = [
@@ -54,11 +81,14 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
     if added_trace_events is not None:
       trace_events += added_trace_events
     self.trace = TestRequests.CreateLoadingTrace(trace_events)
-    dependencies_lens = request_dependencies_lens.RequestDependencyLens(
+    self.dependencies_lens = request_dependencies_lens.RequestDependencyLens(
         self.trace)
     self.user_satisfied_lens = test_utils.MockUserSatisfiedLens(self.trace)
-    self.prefetch_view = prefetch_view.PrefetchSimulationView(
-        self.trace, dependencies_lens, self.user_satisfied_lens)
+    self.user_satisfied_lens._postload_msec = 12
+    self.prefetch_view = PrefetchSimulationView(
+        self.trace, self.dependencies_lens, self.user_satisfied_lens)
+    for e in self.prefetch_view.graph.graph.Edges():
+      e.cost = 10
 
 
 if __name__ == '__main__':

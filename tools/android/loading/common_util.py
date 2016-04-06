@@ -24,3 +24,40 @@ def PollFor(condition, condition_name, interval=5):
     if result:
       return result
     time.sleep(interval)
+
+
+def SerializeAttributesToJsonDict(json_dict, instance, attributes):
+  """Adds the |attributes| from |instance| to a |json_dict|.
+
+  Args:
+    json_dict: (dict) Dict to update.
+    instance: (object) instance to take the values from.
+    attributes: ([str]) List of attributes to serialize.
+
+  Returns:
+    json_dict
+  """
+  json_dict.update({attr: getattr(instance, attr) for attr in attributes})
+  return json_dict
+
+
+def DeserializeAttributesFromJsonDict(json_dict, instance, attributes):
+  """Sets a list of |attributes| in |instance| according to their value in
+    |json_dict|.
+
+  Args:
+    json_dict: (dict) Dict containing values dumped by
+               SerializeAttributesToJsonDict.
+    instance: (object) instance to modify.
+    attributes: ([str]) List of attributes to set.
+
+  Raises:
+    AttributeError if one of the attribute doesn't exist in |instance|.
+
+  Returns:
+    instance
+  """
+  for attr in attributes:
+    getattr(instance, attr) # To raise AttributeError if attr doesn't exist.
+    setattr(instance, attr, json_dict[attr])
+  return instance

@@ -6,6 +6,8 @@
 
 import collections
 
+import common_util
+
 
 class Node(object):
   """A node in a Graph.
@@ -15,6 +17,14 @@ class Node(object):
   def __init__(self):
     """Create a new node."""
     self.cost = 0
+
+  def ToJsonDict(self):
+    return common_util.SerializeAttributesToJsonDict({}, self, ['cost'])
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, cls(), ['cost'])
 
 
 class Edge(object):
@@ -30,6 +40,16 @@ class Edge(object):
     self.to_node = to_node
     self.cost = 0
 
+  def ToJsonDict(self):
+    return common_util.SerializeAttributesToJsonDict(
+        {}, self, ['from_node', 'to_node', 'cost'])
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    result = cls(None, None)
+    return common_util.DeserializeAttributesFromJsonDict(
+        json_dict, result, ['from_node', 'to_node', 'cost'])
+
 
 class DirectedGraph(object):
   """Directed graph.
@@ -37,6 +57,10 @@ class DirectedGraph(object):
   A graph is identified by a list of nodes and a list of edges. It does not need
   to be acyclic, but then some methods will fail.
   """
+  __GRAPH_NODE_INDEX = '__graph_node_index'
+  __TO_NODE_INDEX = '__to_node_index'
+  __FROM_NODE_INDEX = '__from_node_index'
+
   def __init__(self, nodes, edges):
     """Builds a graph from a set of node and edges.
 
@@ -185,3 +209,40 @@ class DirectedGraph(object):
             else costliest_node, predecessors)
         path_list.insert(0, node)
     return max_cost
+
+  def ToJsonDict(self):
+    node_dicts = []
+    node_to_index = {node: index for (index, node) in enumerate(self._nodes)}
+    for (node, index) in node_to_index.items():
+      node_dict = node.ToJsonDict()
+      assert self.__GRAPH_NODE_INDEX not in node_dict
+      node_dict.update({self.__GRAPH_NODE_INDEX: index})
+      node_dicts.append(node_dict)
+    edge_dicts = []
+    for edge in self._edges:
+      edge_dict = edge.ToJsonDict()
+      assert self.__TO_NODE_INDEX not in edge_dict
+      assert self.__FROM_NODE_INDEX not in edge_dict
+      edge_dict.update({self.__TO_NODE_INDEX: node_to_index[edge.to_node],
+                        self.__FROM_NODE_INDEX: node_to_index[edge.from_node]})
+      edge_dicts.append(edge_dict)
+    return {'nodes': node_dicts, 'edges': edge_dicts}
+
+  @classmethod
+  def FromJsonDict(cls, json_dict, node_class, edge_class):
+    """Returns an instance from a dict.
+
+    Note that the classes of the nodes and edges need to be specified here.
+    This is done to reduce the likelihood of error.
+    """
+    index_to_node = {
+        node_dict[cls.__GRAPH_NODE_INDEX]: node_class.FromJsonDict(node_dict)
+        for node_dict in json_dict['nodes']}
+    edges = []
+    for edge_dict in json_dict['edges']:
+      edge = edge_class.FromJsonDict(edge_dict)
+      edge.from_node = index_to_node[edge_dict[cls.__FROM_NODE_INDEX]]
+      edge.to_node = index_to_node[edge_dict[cls.__TO_NODE_INDEX]]
+      edges.append(edge)
+    result = DirectedGraph(index_to_node.values(), edges)
+    return result
