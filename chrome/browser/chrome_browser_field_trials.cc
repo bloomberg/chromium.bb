@@ -33,12 +33,12 @@ void InstantiatePersistentHistograms() {
     // Create persistent/shared memory and allow histograms to be stored in it.
     // Memory that is not actualy used won't be physically mapped by the system.
     // BrowserMetrics usage peaked around 95% of 2MiB as of 2016-02-20.
-    base::PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+    base::GlobalHistogramAllocator::CreateWithLocalMemory(
         3 << 20,     // 3 MiB
         0x935DDD43,  // SHA1(BrowserMetrics)
         kAllocatorName);
-    base::PersistentHistogramAllocator::GetGlobalAllocator()
-        ->CreateTrackingHistograms(kAllocatorName);
+    base::GlobalHistogramAllocator::Get()->CreateTrackingHistograms(
+        kAllocatorName);
   }
 }
 

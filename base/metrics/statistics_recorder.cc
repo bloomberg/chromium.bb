@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -288,6 +289,14 @@ HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
   base::AutoLock auto_lock(*lock_);
   if (histograms_ == NULL)
     return NULL;
+
+  // Import histograms from known persistent storage. Histograms could have
+  // been added by other processes and they must be fetched and recognized
+  // locally. If the persistent memory segment is not shared between processes,
+  // this call does nothing.
+  GlobalHistogramAllocator* allocator = GlobalHistogramAllocator::Get();
+  if (allocator)
+    allocator->ImportHistogramsToStatisticsRecorder();
 
   HistogramMap::iterator it = histograms_->find(HashMetricName(name));
   if (histograms_->end() == it)

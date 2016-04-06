@@ -60,17 +60,16 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
     // By getting the results-histogram before any persistent allocator
     // is attached, that histogram is guaranteed not to be stored in
     // any persistent memory segment (which simplifies some tests).
-    PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
+    GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
 
-    PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+    GlobalHistogramAllocator::CreateWithLocalMemory(
         kAllocatorMemorySize, 0, "SparseHistogramAllocatorTest");
-    allocator_ =
-        PersistentHistogramAllocator::GetGlobalAllocator()->memory_allocator();
+    allocator_ = GlobalHistogramAllocator::Get()->memory_allocator();
   }
 
   void DestroyPersistentMemoryAllocator() {
     allocator_ = nullptr;
-    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+    GlobalHistogramAllocator::ReleaseForTesting();
   }
 
   std::unique_ptr<SparseHistogram> NewSparseHistogram(const std::string& name) {
@@ -80,7 +79,6 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
   const bool use_persistent_histogram_allocator_;
 
   StatisticsRecorder* statistics_recorder_;
-  std::unique_ptr<char[]> allocator_memory_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
  private:

@@ -32,7 +32,7 @@ class StatisticsRecorderTest : public testing::Test {
 
   void TearDown() override {
     UninitializeStatisticsRecorder();
-    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+    GlobalHistogramAllocator::ReleaseForTesting();
   }
 
   void InitializeStatisticsRecorder() {
@@ -326,8 +326,7 @@ TEST_F(StatisticsRecorderTest, ToJSON) {
 TEST_F(StatisticsRecorderTest, IterationTest) {
   StatisticsRecorder::Histograms registered_histograms;
   LOCAL_HISTOGRAM_COUNTS("TestHistogram.IterationTest1", 30);
-  PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
-      64 << 10 /* 64 KiB */, 0, "");
+  GlobalHistogramAllocator::CreateWithLocalMemory(64 << 10 /* 64 KiB */, 0, "");
   LOCAL_HISTOGRAM_COUNTS("TestHistogram.IterationTest2", 30);
 
   StatisticsRecorder::HistogramIterator i1 = StatisticsRecorder::begin(true);

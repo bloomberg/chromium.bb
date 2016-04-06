@@ -747,7 +747,7 @@ void MetricsService::CloseCurrentLog() {
   // If a persistent allocator is in use, update its internal histograms (such
   // as how much memory is being used) before reporting.
   base::PersistentHistogramAllocator* allocator =
-      base::PersistentHistogramAllocator::GetGlobalAllocator();
+      base::GlobalHistogramAllocator::Get();
   if (allocator)
     allocator->UpdateTrackingHistograms();
 

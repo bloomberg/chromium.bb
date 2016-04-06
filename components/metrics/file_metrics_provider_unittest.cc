@@ -103,9 +103,9 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
 
   {
     // Get this first so it isn't created inside the persistent allocator.
-    base::PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
+    base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
 
-    base::PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+    base::GlobalHistogramAllocator::CreateWithLocalMemory(
         64 << 10, 0, kMetricsName);
     base::HistogramBase* foo =
         base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
@@ -115,7 +115,7 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
     bar->Add(84);
 
     scoped_ptr<base::PersistentHistogramAllocator> histogram_allocator =
-        base::PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+        base::GlobalHistogramAllocator::ReleaseForTesting();
     base::PersistentMemoryAllocator* allocator =
         histogram_allocator->memory_allocator();
     base::File writer(metrics_file(),

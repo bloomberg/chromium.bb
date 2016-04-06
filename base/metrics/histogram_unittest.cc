@@ -68,17 +68,16 @@ class HistogramTest : public testing::TestWithParam<bool> {
     // By getting the results-histogram before any persistent allocator
     // is attached, that histogram is guaranteed not to be stored in
     // any persistent memory segment (which simplifies some tests).
-    PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
+    GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
 
-    PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+    GlobalHistogramAllocator::CreateWithLocalMemory(
         kAllocatorMemorySize, 0, "HistogramAllocatorTest");
-    allocator_ =
-        PersistentHistogramAllocator::GetGlobalAllocator()->memory_allocator();
+    allocator_ = GlobalHistogramAllocator::Get()->memory_allocator();
   }
 
   void DestroyPersistentHistogramAllocator() {
     allocator_ = nullptr;
-    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+    GlobalHistogramAllocator::ReleaseForTesting();
   }
 
   const bool use_persistent_histogram_allocator_;

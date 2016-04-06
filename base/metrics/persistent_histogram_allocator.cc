@@ -41,10 +41,10 @@ enum : uint32_t {
 // The current globally-active persistent allocator for all new histograms.
 // The object held here will obviously not be destructed at process exit
 // but that's best since PersistentMemoryAllocator objects (that underlie
-// PersistentHistogramAllocator objects) are explicitly forbidden from doing
+// GlobalHistogramAllocator objects) are explicitly forbidden from doing
 // anything essential at exit anyway due to the fact that they depend on data
 // managed elsewhere and which could be destructed first.
-PersistentHistogramAllocator* g_allocator;
+GlobalHistogramAllocator* g_allocator;
 
 // Take an array of range boundaries and create a proper BucketRanges object
 // which is returned to the caller. A return of nullptr indicates that the
@@ -172,103 +172,6 @@ void PersistentHistogramAllocator::RecordCreateHistogramResult(
   HistogramBase* result_histogram = GetCreateHistogramResultHistogram();
   if (result_histogram)
     result_histogram->Add(result);
-}
-
-// static
-void PersistentHistogramAllocator::SetGlobalAllocator(
-    std::unique_ptr<PersistentHistogramAllocator> allocator) {
-  // Releasing or changing an allocator is extremely dangerous because it
-  // likely has histograms stored within it. If the backing memory is also
-  // also released, future accesses to those histograms will seg-fault.
-  CHECK(!g_allocator);
-  g_allocator = allocator.release();
-
-  size_t existing = StatisticsRecorder::GetHistogramCount();
-  DLOG_IF(WARNING, existing)
-      << existing
-      << " histograms were created before persistence was enabled.";
-}
-
-// static
-PersistentHistogramAllocator*
-PersistentHistogramAllocator::GetGlobalAllocator() {
-  return g_allocator;
-}
-
-// static
-std::unique_ptr<PersistentHistogramAllocator>
-PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting() {
-  PersistentHistogramAllocator* histogram_allocator = g_allocator;
-  if (!histogram_allocator)
-    return nullptr;
-  PersistentMemoryAllocator* memory_allocator =
-      histogram_allocator->memory_allocator();
-
-  // Before releasing the memory, it's necessary to have the Statistics-
-  // Recorder forget about the histograms contained therein; otherwise,
-  // some operations will try to access them and the released memory.
-  PersistentMemoryAllocator::Iterator iter;
-  PersistentMemoryAllocator::Reference ref;
-  uint32_t type_id;
-  memory_allocator->CreateIterator(&iter);
-  while ((ref = memory_allocator->GetNextIterable(&iter, &type_id)) != 0) {
-    if (type_id == kTypeIdHistogram) {
-      PersistentHistogramData* histogram_data =
-          memory_allocator->GetAsObject<PersistentHistogramData>(
-              ref, kTypeIdHistogram);
-      DCHECK(histogram_data);
-      StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
-
-      // If a test breaks here then a memory region containing a histogram
-      // actively used by this code is being released back to the test.
-      // If that memory segment were to be deleted, future calls to create
-      // persistent histograms would crash. To avoid this, have the test call
-      // the method GetCreateHistogramResultHistogram() *before* setting
-      // the (temporary) memory allocator via SetGlobalAllocator() so that
-      // histogram is instead allocated from the process heap.
-      DCHECK_NE(kResultHistogram, histogram_data->name);
-    }
-  }
-
-  g_allocator = nullptr;
-  return WrapUnique(histogram_allocator);
-};
-
-// static
-void PersistentHistogramAllocator::CreateGlobalAllocatorOnPersistentMemory(
-    void* base,
-    size_t size,
-    size_t page_size,
-    uint64_t id,
-    StringPiece name) {
-  SetGlobalAllocator(WrapUnique(new PersistentHistogramAllocator(
-      WrapUnique(new PersistentMemoryAllocator(base, size, page_size, id,
-                                                     name, false)))));
-}
-
-// static
-void PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
-    size_t size,
-    uint64_t id,
-    StringPiece name) {
-  SetGlobalAllocator(WrapUnique(new PersistentHistogramAllocator(
-      WrapUnique(new LocalPersistentMemoryAllocator(size, id, name)))));
-}
-
-// static
-void PersistentHistogramAllocator::CreateGlobalAllocatorOnSharedMemory(
-    size_t size,
-    const SharedMemoryHandle& handle) {
-  std::unique_ptr<SharedMemory> shm(
-      new SharedMemory(handle, /*readonly=*/false));
-  if (!shm->Map(size)) {
-    NOTREACHED();
-    return;
-  }
-
-  SetGlobalAllocator(WrapUnique(new PersistentHistogramAllocator(
-      WrapUnique(new SharedPersistentMemoryAllocator(
-          std::move(shm), 0, StringPiece(), /*readonly=*/false)))));
 }
 
 // static
@@ -532,7 +435,8 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
 
     // By storing the reference within the allocator to this histogram, the
     // next import (which will happen before the next histogram creation)
-    // will know to skip it. See also the comment in ImportGlobalHistograms().
+    // will know to skip it.
+    // See also the comment in ImportHistogramsToStatisticsRecorder().
     subtle::NoBarrier_Store(&last_created_, histogram_ref);
     return histogram;
   }
@@ -552,39 +456,143 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
   return nullptr;
 }
 
+GlobalHistogramAllocator::~GlobalHistogramAllocator() {}
+
 // static
-void PersistentHistogramAllocator::ImportGlobalHistograms() {
-  // The lock protects against concurrent access to the iterator and is created
-  // in a thread-safe manner when needed.
-  static base::LazyInstance<base::Lock>::Leaky lock = LAZY_INSTANCE_INITIALIZER;
+void GlobalHistogramAllocator::CreateWithPersistentMemory(
+    void* base,
+    size_t size,
+    size_t page_size,
+    uint64_t id,
+    StringPiece name) {
+  Set(WrapUnique(new GlobalHistogramAllocator(
+      WrapUnique(new PersistentMemoryAllocator(
+          base, size, page_size, id, name, false)))));
+}
 
-  if (g_allocator) {
-    // TODO(bcwhite): Investigate a lock-free, thread-safe iterator.
-    base::AutoLock auto_lock(lock.Get());
+// static
+void GlobalHistogramAllocator::CreateWithLocalMemory(
+    size_t size,
+    uint64_t id,
+    StringPiece name) {
+  Set(WrapUnique(new GlobalHistogramAllocator(
+      WrapUnique(new LocalPersistentMemoryAllocator(size, id, name)))));
+}
 
-    // Each call resumes from where it last left off so a persistant iterator
-    // is needed. This class has a constructor so even the definition has to
-    // be protected by the lock in order to be thread-safe.
-    static Iterator iter;
-    if (iter.is_clear())
-      g_allocator->CreateIterator(&iter);
+// static
+void GlobalHistogramAllocator::CreateWithSharedMemory(
+    std::unique_ptr<SharedMemory> memory,
+    size_t size,
+    uint64_t id,
+    StringPiece name) {
+  if (!memory->memory() && !memory->Map(size))
+    NOTREACHED();
 
-    // Skip the import if it's the histogram that was last created. Should a
-    // race condition cause the "last created" to be overwritten before it
-    // is recognized here then the histogram will be created and be ignored
-    // when it is detected as a duplicate by the statistics-recorder. This
-    // simple check reduces the time of creating persistent histograms by
-    // about 40%.
-    Reference last_created =
-        subtle::NoBarrier_Load(&g_allocator->last_created_);
+  if (memory->memory()) {
+    DCHECK_LE(memory->mapped_size(), size);
+    Set(WrapUnique(new GlobalHistogramAllocator(
+        WrapUnique(new SharedPersistentMemoryAllocator(
+            std::move(memory), 0, StringPiece(), /*readonly=*/false)))));
+  }
+}
 
-    while (true) {
-      std::unique_ptr<HistogramBase> histogram =
-          g_allocator->GetNextHistogramWithIgnore(&iter, last_created);
-      if (!histogram)
-        break;
-      StatisticsRecorder::RegisterOrDeleteDuplicate(histogram.release());
+// static
+void GlobalHistogramAllocator::CreateWithSharedMemoryHandle(
+    const SharedMemoryHandle& handle,
+    size_t size) {
+  std::unique_ptr<SharedMemory> shm(
+      new SharedMemory(handle, /*readonly=*/false));
+  if (!shm->Map(size)) {
+    NOTREACHED();
+    return;
+  }
+
+  Set(WrapUnique(new GlobalHistogramAllocator(
+      WrapUnique(new SharedPersistentMemoryAllocator(
+          std::move(shm), 0, StringPiece(), /*readonly=*/false)))));
+}
+
+// static
+void GlobalHistogramAllocator::Set(
+    std::unique_ptr<GlobalHistogramAllocator> allocator) {
+  // Releasing or changing an allocator is extremely dangerous because it
+  // likely has histograms stored within it. If the backing memory is also
+  // also released, future accesses to those histograms will seg-fault.
+  CHECK(!g_allocator);
+  g_allocator = allocator.release();
+  size_t existing = StatisticsRecorder::GetHistogramCount();
+
+  DLOG_IF(WARNING, existing)
+      << existing << " histograms were created before persistence was enabled.";
+}
+
+// static
+GlobalHistogramAllocator* GlobalHistogramAllocator::Get() {
+  return g_allocator;
+}
+
+// static
+std::unique_ptr<GlobalHistogramAllocator>
+GlobalHistogramAllocator::ReleaseForTesting() {
+  GlobalHistogramAllocator* histogram_allocator = g_allocator;
+  if (!histogram_allocator)
+    return nullptr;
+  PersistentMemoryAllocator* memory_allocator =
+      histogram_allocator->memory_allocator();
+
+  // Before releasing the memory, it's necessary to have the Statistics-
+  // Recorder forget about the histograms contained therein; otherwise,
+  // some operations will try to access them and the released memory.
+  PersistentMemoryAllocator::Iterator iter;
+  PersistentMemoryAllocator::Reference ref;
+  uint32_t type_id;
+  memory_allocator->CreateIterator(&iter);
+  while ((ref = memory_allocator->GetNextIterable(&iter, &type_id)) != 0) {
+    if (type_id == kTypeIdHistogram) {
+      PersistentHistogramData* histogram_data =
+          memory_allocator->GetAsObject<PersistentHistogramData>(
+              ref, kTypeIdHistogram);
+      DCHECK(histogram_data);
+      StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
+
+      // If a test breaks here then a memory region containing a histogram
+      // actively used by this code is being released back to the test.
+      // If that memory segment were to be deleted, future calls to create
+      // persistent histograms would crash. To avoid this, have the test call
+      // the method GetCreateHistogramResultHistogram() *before* setting
+      // the (temporary) memory allocator via SetGlobalAllocator() so that
+      // histogram is instead allocated from the process heap.
+      DCHECK_NE(kResultHistogram, histogram_data->name);
     }
+  }
+
+  g_allocator = nullptr;
+  return WrapUnique(histogram_allocator);
+};
+
+GlobalHistogramAllocator::GlobalHistogramAllocator(
+    std::unique_ptr<PersistentMemoryAllocator> memory)
+    : PersistentHistogramAllocator(std::move(memory)) {
+  CreateIterator(&import_iterator_);
+}
+
+void GlobalHistogramAllocator::ImportHistogramsToStatisticsRecorder() {
+  // Skip the import if it's the histogram that was last created. Should a
+  // race condition cause the "last created" to be overwritten before it
+  // is recognized here then the histogram will be created and be ignored
+  // when it is detected as a duplicate by the statistics-recorder. This
+  // simple check reduces the time of creating persistent histograms by
+  // about 40%.
+  Reference record_to_ignore = last_created();
+
+  // There is no lock on this because it's expected to be called only by
+  // the StatisticsRecorder which has its own lock.
+  while (true) {
+    std::unique_ptr<HistogramBase> histogram =
+        GetNextHistogramWithIgnore(&import_iterator_, record_to_ignore);
+    if (!histogram)
+      break;
+    StatisticsRecorder::RegisterOrDeleteDuplicate(histogram.release());
   }
 }
 

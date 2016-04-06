@@ -15,12 +15,12 @@
 namespace installer {
 
 void BeginPersistentHistogramStorage() {
-  base::PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+  base::GlobalHistogramAllocator::CreateWithLocalMemory(
       1 << 20,  // 1 MiB
       0,        // No identifier.
       installer::kSetupHistogramAllocatorName);
-  base::PersistentHistogramAllocator::GetGlobalAllocator()
-      ->CreateTrackingHistograms(installer::kSetupHistogramAllocatorName);
+  base::GlobalHistogramAllocator::Get()->CreateTrackingHistograms(
+      installer::kSetupHistogramAllocatorName);
 
   // This can't be enabled until after the allocator is configured because
   // there is no other reporting out of setup other than persistent memory.
@@ -29,7 +29,7 @@ void BeginPersistentHistogramStorage() {
 
 void EndPersistentHistogramStorage(const base::FilePath& target_path) {
   base::PersistentHistogramAllocator* allocator =
-      base::PersistentHistogramAllocator::GetGlobalAllocator();
+      base::GlobalHistogramAllocator::Get();
   allocator->UpdateTrackingHistograms();
 
   // For atomicity, first write to a temporary file and then rename it.

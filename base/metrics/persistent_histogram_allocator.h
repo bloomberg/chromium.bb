@@ -41,7 +41,7 @@ class BASE_EXPORT PersistentHistogramAllocator {
   // Allocator object of which it takes ownership.
   PersistentHistogramAllocator(
       std::unique_ptr<PersistentMemoryAllocator> memory);
-  ~PersistentHistogramAllocator();
+  virtual ~PersistentHistogramAllocator();
 
   // Direct access to underlying memory allocator. If the segment is shared
   // across threads or processes, reading data through these values does
@@ -101,15 +101,8 @@ class BASE_EXPORT PersistentHistogramAllocator {
   void CreateTrackingHistograms(StringPiece name);
   void UpdateTrackingHistograms();
 
-  // Manage a PersistentHistogramAllocator for globally storing histograms in
-  // a space that can be persisted or shared between processes. There is only
-  // ever one allocator for all such histograms created by a single process.
-  // This takes ownership of the object and should be called as soon as
-  // possible during startup to capture as many histograms as possible and
-  // while operating single-threaded so there are no race-conditions.
-  static void SetGlobalAllocator(
-      std::unique_ptr<PersistentHistogramAllocator> allocator);
-  static PersistentHistogramAllocator* GetGlobalAllocator();
+  // Histogram containing creation results. Visible for testing.
+  static HistogramBase* GetCreateHistogramResultHistogram();
 
   // This access to the persistent allocator is only for testing; it extracts
   // the current allocator completely. This allows easy creation of histograms
@@ -118,32 +111,21 @@ class BASE_EXPORT PersistentHistogramAllocator {
   static std::unique_ptr<PersistentHistogramAllocator>
   ReleaseGlobalAllocatorForTesting();
 
-  // These helper methods perform SetGlobalAllocator() calls with allocators
-  // of the specified type and parameters.
-  static void CreateGlobalAllocatorOnPersistentMemory(
-      void* base,
-      size_t size,
-      size_t page_size,
-      uint64_t id,
-      StringPiece name);
-  static void CreateGlobalAllocatorOnLocalMemory(
-      size_t size,
-      uint64_t id,
-      StringPiece name);
-  static void CreateGlobalAllocatorOnSharedMemory(
-      size_t size,
-      const SharedMemoryHandle& handle);
+ protected:
+  // The structure used to hold histogram data in persistent memory. It is
+  // defined and used entirely within the .cc file.
+  struct PersistentHistogramData;
 
-  // Import new histograms from the global PersistentHistogramAllocator. It's
-  // possible for other processes to create histograms in the active memory
-  // segment; this adds those to the internal list of known histograms to
-  // avoid creating duplicates that would have to be merged during reporting.
-  // Every call to this method resumes from the last entry it saw; it costs
-  // nothing if nothing new has been added.
-  static void ImportGlobalHistograms();
+  // Gets the reference of the last histogram created, used to avoid
+  // trying to import what was just created.
+  PersistentHistogramAllocator::Reference last_created() {
+    return subtle::NoBarrier_Load(&last_created_);
+  }
 
-  // Histogram containing creation results. Visible for testing.
-  static HistogramBase* GetCreateHistogramResultHistogram();
+  // Gets the next histogram in persistent data based on iterator while
+  // ignoring a particular reference if it is found.
+  std::unique_ptr<HistogramBase> GetNextHistogramWithIgnore(Iterator* iter,
+                                                            Reference ignore);
 
  private:
   // Enumerate possible creation results for reporting.
@@ -182,15 +164,6 @@ class BASE_EXPORT PersistentHistogramAllocator {
     CREATE_HISTOGRAM_MAX
   };
 
-  // The structure used to hold histogram data in persistent memory. It is
-  // defined and used entirely within the .cc file.
-  struct PersistentHistogramData;
-
-  // Get the next histogram in persistent data based on iterator while
-  // ignoring a particular reference if it is found.
-  std::unique_ptr<HistogramBase> GetNextHistogramWithIgnore(Iterator* iter,
-                                                            Reference ignore);
-
   // Create a histogram based on saved (persistent) information about it.
   std::unique_ptr<HistogramBase> CreateHistogram(
       PersistentHistogramData* histogram_data_ptr);
@@ -203,9 +176,85 @@ class BASE_EXPORT PersistentHistogramAllocator {
 
   // A reference to the last-created histogram in the allocator, used to avoid
   // trying to import what was just created.
-  subtle::AtomicWord last_created_ = 0;
+  // TODO(bcwhite): Change this to std::atomic<PMA::Reference> when available.
+  subtle::Atomic32 last_created_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentHistogramAllocator);
+};
+
+
+// A special case of the PersistentHistogramAllocator that operates on a
+// global scale, collecting histograms created through standard macros and
+// the FactoryGet() method.
+class BASE_EXPORT GlobalHistogramAllocator
+    : public PersistentHistogramAllocator {
+ public:
+  ~GlobalHistogramAllocator() override;
+
+  // Create a global allocator using the passed-in memory |base|, |size|, and
+  // other parameters. Ownership of the memory segment remains with the caller.
+  static void CreateWithPersistentMemory(void* base,
+                                         size_t size,
+                                         size_t page_size,
+                                         uint64_t id,
+                                         StringPiece name);
+
+  // Create a global allocator using an internal block of memory of the
+  // specified |size| taken from the heap.
+  static void CreateWithLocalMemory(size_t size, uint64_t id, StringPiece name);
+
+  // Create a global allocator using a block of shared |memory| of the
+  // specified |size|. The allocator takes ownership of the shared memory
+  // and releases it upon destruction, though the memory will continue to
+  // live if other processes have access to it.
+  static void CreateWithSharedMemory(std::unique_ptr<SharedMemory> memory,
+                                     size_t size,
+                                     uint64_t id,
+                                     StringPiece name);
+
+  // Create a global allocator using a block of shared memory accessed
+  // through the given |handle| and |size|. The allocator takes ownership
+  // of the handle and closes it upon destruction, though the memory will
+  // continue to live if other processes have access to it.
+  static void CreateWithSharedMemoryHandle(const SharedMemoryHandle& handle,
+                                           size_t size);
+
+  // Sets a GlobalHistogramAllocator for globally storing histograms in
+  // a space that can be persisted or shared between processes. There is only
+  // ever one allocator for all such histograms created by a single process.
+  // This takes ownership of the object and should be called as soon as
+  // possible during startup to capture as many histograms as possible and
+  // while operating single-threaded so there are no race-conditions.
+  static void Set(std::unique_ptr<GlobalHistogramAllocator> allocator);
+
+  // Gets a pointer to the global histogram allocator.
+  static GlobalHistogramAllocator* Get();
+
+  // This access to the persistent allocator is only for testing; it extracts
+  // the current allocator completely. This allows easy creation of histograms
+  // within persistent memory segments which can then be extracted and used
+  // in other ways.
+  static std::unique_ptr<GlobalHistogramAllocator> ReleaseForTesting();
+
+ private:
+  friend class StatisticsRecorder;
+
+  explicit GlobalHistogramAllocator(
+      std::unique_ptr<PersistentMemoryAllocator> memory);
+
+  // Import new histograms from the global histogram allocator. It's possible
+  // for other processes to create histograms in the active memory segment;
+  // this adds those to the internal list of known histograms to avoid creating
+  // duplicates that would have to be merged during reporting. Every call to
+  // this method resumes from the last entry it saw; it costs nothing if
+  // nothing new has been added.
+  void ImportHistogramsToStatisticsRecorder();
+
+  // Import always continues from where it left off, making use of a single
+  // iterator to continue the work.
+  Iterator import_iterator_;
+
+  DISALLOW_COPY_AND_ASSIGN(GlobalHistogramAllocator);
 };
 
 }  // namespace base

@@ -25,19 +25,18 @@ class PersistentHistogramAllocatorTest : public testing::Test {
   void CreatePersistentHistogramAllocator() {
     allocator_memory_.reset(new char[kAllocatorMemorySize]);
 
-    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+    GlobalHistogramAllocator::ReleaseForTesting();
     memset(allocator_memory_.get(), 0, kAllocatorMemorySize);
-    PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
-    PersistentHistogramAllocator::CreateGlobalAllocatorOnPersistentMemory(
+    GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
+    GlobalHistogramAllocator::CreateWithPersistentMemory(
         allocator_memory_.get(), kAllocatorMemorySize, 0, 0,
         "PersistentHistogramAllocatorTest");
-    allocator_ =
-        PersistentHistogramAllocator::GetGlobalAllocator()->memory_allocator();
+    allocator_ = GlobalHistogramAllocator::Get()->memory_allocator();
   }
 
   void DestroyPersistentHistogramAllocator() {
     allocator_ = nullptr;
-    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+    GlobalHistogramAllocator::ReleaseForTesting();
   }
 
   std::unique_ptr<char[]> allocator_memory_;
