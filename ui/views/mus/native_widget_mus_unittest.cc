@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
@@ -122,6 +123,14 @@ TEST_F(NativeWidgetMusTest, ChangeAppIcon) {
   SkBitmap icon = window->GetSharedProperty<SkBitmap>(
       mus::mojom::WindowManager::kWindowAppIcon_Property);
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap2, icon));
+}
+
+TEST_F(NativeWidgetMusTest, ValidLayerTree) {
+  scoped_ptr<Widget> widget(CreateWidget(nullptr));
+  View* content = new View;
+  content->SetPaintToLayer(true);
+  widget->GetContentsView()->AddChildView(content);
+  EXPECT_TRUE(widget->GetNativeWindow()->layer()->Contains(content->layer()));
 }
 
 }  // namespace

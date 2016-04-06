@@ -472,11 +472,11 @@ Widget* NativeWidgetMus::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetMus::GetCompositor() const {
-  return window_tree_host_->window()->layer()->GetCompositor();
+  return window_tree_host_->compositor();
 }
 
 const ui::Layer* NativeWidgetMus::GetLayer() const {
-  return window_tree_host_ ? window_tree_host_->window()->layer() : nullptr;
+  return content_ ? content_->layer() : nullptr;
 }
 
 void NativeWidgetMus::ReorderNativeViews() {
