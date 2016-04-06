@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/view_messages.h"
@@ -125,12 +124,10 @@ ViewMsg_SystemColorsChanged* CreateSystemColorsChangedMessage() {
           switches::kSingleProcess)) {
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
 
-    if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)]) {
-      [center addObserver:self
-                 selector:@selector(behaviorPrefsChanged:)
-                     name:NSPreferredScrollerStyleDidChangeNotification
-                   object:nil];
-    }
+    [center addObserver:self
+               selector:@selector(behaviorPrefsChanged:)
+                   name:NSPreferredScrollerStyleDidChangeNotification
+                 object:nil];
 
     [center addObserver:self
                selector:@selector(systemColorsChanged:)
@@ -182,8 +179,6 @@ ThemeHelperMac* ThemeHelperMac::GetInstance() {
 
 // static
 blink::ScrollerStyle ThemeHelperMac::GetPreferredScrollerStyle() {
-  if (![NSScroller respondsToSelector:@selector(preferredScrollerStyle)])
-    return blink::ScrollerStyleLegacy;
   return static_cast<blink::ScrollerStyle>([NSScroller preferredScrollerStyle]);
 }
 

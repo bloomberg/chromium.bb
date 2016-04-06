@@ -211,7 +211,6 @@ void ScrollbarThemeMac::preferencesChanged(float initialButtonDelay, float autos
     updateButtonPlacement(buttonPlacement);
     gInitialButtonDelay = initialButtonDelay;
     gAutoscrollButtonDelay = autoscrollButtonDelay;
-    bool sendScrollerStyleNotification = gPreferredScrollerStyle != preferredScrollerStyle;
     gPreferredScrollerStyle = preferredScrollerStyle;
     if (redraw && !scrollbarSet().isEmpty()) {
         ScrollbarSet::iterator end = scrollbarSet().end();
@@ -219,12 +218,6 @@ void ScrollbarThemeMac::preferencesChanged(float initialButtonDelay, float autos
             (*it)->styleChanged();
             (*it)->invalidate();
         }
-    }
-    if (sendScrollerStyleNotification) {
-        [[NSNotificationCenter defaultCenter]
-            postNotificationName:@"NSPreferredScrollerStyleDidChangeNotification"
-                          object:nil
-                        userInfo:@{ @"NSScrollerStyle" : @(gPreferredScrollerStyle) }];
     }
 }
 

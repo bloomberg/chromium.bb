@@ -24,9 +24,6 @@ NSString* const NSWindowDidChangeBackingPropertiesNotification =
 NSString* const CBAdvertisementDataServiceDataKey = @"kCBAdvDataServiceData";
 
 NSString* const CBAdvertisementDataServiceUUIDsKey = @"kCBAdvDataServiceUUIDs";
-
-NSString* const NSPreferredScrollerStyleDidChangeNotification =
-    @"NSPreferredScrollerStyleDidChangeNotification";
 #endif  // MAC_OS_X_VERSION_10_7
 
 #if !defined(MAC_OS_X_VERSION_10_9) || \

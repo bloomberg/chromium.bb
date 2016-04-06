@@ -4,7 +4,8 @@
 
 #import "ui/base/test/scoped_preferred_scroller_style_mac.h"
 
-#import "base/mac/sdk_forward_declarations.h"
+#import <AppKit/AppKit.h>
+
 #import "base/mac/scoped_objc_class_swizzler.h"
 
 using base::mac::ScopedObjCClassSwizzler;
@@ -54,9 +55,6 @@ namespace test {
 
 ScopedPreferredScrollerStyle::ScopedPreferredScrollerStyle(bool overlay)
     : overlay_(overlay) {
-  if (![NSScroller respondsToSelector:@selector(preferredScrollerStyle)])
-    return;
-
   NSInteger previous_style = [NSScroller preferredScrollerStyle];
   Class style_class = overlay_
                           ? [FakeNSScrollerPreferredStyleOverlayDonor class]
@@ -70,9 +68,6 @@ ScopedPreferredScrollerStyle::ScopedPreferredScrollerStyle(bool overlay)
 }
 
 ScopedPreferredScrollerStyle::~ScopedPreferredScrollerStyle() {
-  if (!swizzler_)
-    return;  // Handle 10.6, which wouldn't have swizzled anything.
-
   swizzler_.reset();
 
   if ([NSScroller preferredScrollerStyle] != GetScrollerStyle(overlay_))
