@@ -49,6 +49,8 @@ namespace extension_web_request_api_helpers {
 
 namespace {
 
+// Multiple ResourceTypes may map to the same string, but the converse is not
+// possible.
 static const char* kResourceTypeStrings[] = {
   "main_frame",
   "sub_frame",
@@ -88,6 +90,9 @@ static ResourceType kResourceTypeValues[] = {
 };
 
 const size_t kResourceTypeValuesLength = arraysize(kResourceTypeValues);
+
+static_assert(kResourceTypeStringsLength == kResourceTypeValuesLength,
+              "Sizes of string lists and ResourceType lists should be equal");
 
 typedef std::vector<linked_ptr<net::ParsedCookie> > ParsedResponseCookies;
 
@@ -1308,15 +1313,15 @@ const char* ResourceTypeToString(ResourceType type) {
 }
 
 bool ParseResourceType(const std::string& type_str,
-                       ResourceType* type) {
-  const char** iter =
-      std::find(kResourceTypeStrings,
-                kResourceTypeStrings + kResourceTypeStringsLength,
-                type_str);
-  if (iter == (kResourceTypeStrings + kResourceTypeStringsLength))
-    return false;
-  *type = kResourceTypeValues[iter - kResourceTypeStrings];
-  return true;
+                       std::vector<ResourceType>* types) {
+  bool found = false;
+  for (size_t i = 0; i < kResourceTypeStringsLength; ++i) {
+    if (type_str == kResourceTypeStrings[i]) {
+      found = true;
+      types->push_back(kResourceTypeValues[i]);
+    }
+  }
+  return found;
 }
 
 }  // namespace extension_web_request_api_helpers

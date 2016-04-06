@@ -527,12 +527,10 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
         std::string type_str;
-        content::ResourceType type;
         if (!types_value->GetString(i, &type_str) ||
-            !helpers::ParseResourceType(type_str, &type)) {
+            !helpers::ParseResourceType(type_str, &types)) {
           return false;
         }
-        types.push_back(type);
       }
     } else if (it.key() == "tabId") {
       if (!it.value().GetAsInteger(&tab_id))

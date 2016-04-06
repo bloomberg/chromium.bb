@@ -349,11 +349,11 @@ bool IsRelevantResourceType(content::ResourceType type);
 // by the web request API.
 const char* ResourceTypeToString(content::ResourceType type);
 
-// Stores a |content::ResourceType| representation in |type| if |type_str| is
+// Stores a |content::ResourceType| representation in |types| if |type_str| is
 // a resource type handled by the web request API. Returns true in case of
 // success.
 bool ParseResourceType(const std::string& type_str,
-                       content::ResourceType* type);
+                       std::vector<content::ResourceType>* types);
 
 }  // namespace extension_web_request_api_helpers
 

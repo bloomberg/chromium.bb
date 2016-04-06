@@ -98,7 +98,7 @@ function expect(data, order, filter, extraInfoSpec) {
     eventsCaptured = chrome.test.callbackAdded();
   }
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
-  frameIdMap = {"-1": -1};
+  frameIdMap = {"-1": -1, "0": 0};
   removeListeners();
   resetDeclarativeRules();
   initListeners(filter || {urls: ["<all_urls>"]}, extraInfoSpec || []);

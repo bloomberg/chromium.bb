@@ -157,14 +157,12 @@ WebRequestConditionAttributeResourceType::Create(
   passed_types.reserve(number_types);
   for (size_t i = 0; i < number_types; ++i) {
     std::string resource_type_string;
-    ResourceType type = content::RESOURCE_TYPE_LAST_TYPE;
     if (!value_as_list->GetString(i, &resource_type_string) ||
-        !helpers::ParseResourceType(resource_type_string, &type)) {
+        !helpers::ParseResourceType(resource_type_string, &passed_types)) {
       *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                               keys::kResourceTypeKey);
       return scoped_refptr<const WebRequestConditionAttribute>(NULL);
     }
-    passed_types.push_back(type);
   }
 
   return scoped_refptr<const WebRequestConditionAttribute>(
