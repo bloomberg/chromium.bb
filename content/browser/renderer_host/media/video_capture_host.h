@@ -127,6 +127,10 @@ class CONTENT_EXPORT VideoCaptureHost
                        media::VideoCaptureSessionId session_id,
                        const media::VideoCaptureParams& params);
 
+  // IPC message: Requests that the video capture send a frame "soon" (e.g., to
+  // resolve picture loss or quality issues).
+  void OnRequestRefreshFrame(int device_id);
+
   // IPC message: Called when a renderer is finished using a buffer. Notifies
   // the controller.
   void OnRendererFinishedWithBuffer(int device_id,

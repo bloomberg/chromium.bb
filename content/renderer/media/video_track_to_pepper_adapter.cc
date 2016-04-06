@@ -40,13 +40,13 @@ class PpFrameReceiver : public MediaStreamVideoSink {
     DCHECK((reader_ && !reader) || (!reader_ && reader))
         << " |reader| = " << reader << ", |reader_| = " << reader_;
     if (reader) {
-      AddToVideoTrack(this,
-                      media::BindToCurrentLoop(
-                          base::Bind(&PpFrameReceiver::OnVideoFrame,
-                                     weak_factory_.GetWeakPtr())),
-                      track_);
+      MediaStreamVideoSink::ConnectToTrack(
+          track_,
+          media::BindToCurrentLoop(
+              base::Bind(&PpFrameReceiver::OnVideoFrame,
+                         weak_factory_.GetWeakPtr())));
     } else {
-      RemoveFromVideoTrack(this, track_);
+      MediaStreamVideoSink::DisconnectFromTrack();
       weak_factory_.InvalidateWeakPtrs();
     }
     reader_ = reader;

@@ -73,6 +73,10 @@ class CONTENT_EXPORT VideoCaptureImplManager {
       const VideoCaptureStateUpdateCB& state_update_cb,
       const VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
+  // Requests that the video capturer send a frame "soon" (e.g., to resolve
+  // picture loss or quality issues).
+  void RequestRefreshFrame(media::VideoCaptureSessionId id);
+
   // Get supported formats supported by the device for the given session
   // ID. |callback| will be called on the IO thread.
   void GetDeviceSupportedFormats(media::VideoCaptureSessionId id,

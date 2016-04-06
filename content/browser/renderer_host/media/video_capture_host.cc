@@ -147,6 +147,8 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Start, OnStartCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Pause, OnPauseCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, OnResumeCapture)
+    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_RequestRefreshFrame,
+                        OnRequestRefreshFrame)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Stop, OnStopCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
                         OnRendererFinishedWithBuffer)
@@ -259,6 +261,22 @@ void VideoCaptureHost::OnResumeCapture(
   if (it->second) {
     media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
         session_id, params, it->second.get(), controller_id, this);
+  }
+}
+
+void VideoCaptureHost::OnRequestRefreshFrame(int device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "VideoCaptureHost::OnRequestRefreshFrame, device_id "
+           << device_id;
+
+  VideoCaptureControllerID controller_id(device_id);
+  EntryMap::iterator it = entries_.find(controller_id);
+  if (it == entries_.end())
+    return;
+
+  if (VideoCaptureController* controller = it->second.get()) {
+    media_stream_manager_->video_capture_manager()
+        ->RequestRefreshFrameForClient(controller);
   }
 }
 

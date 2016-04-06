@@ -394,15 +394,14 @@ VideoTrackRecorder::VideoTrackRecorder(
   DCHECK(track_.getExtraData());
 
   // StartFrameEncode() will be called on Render IO thread.
-  AddToVideoTrack(this,
-                  base::Bind(&VideoTrackRecorder::VpxEncoder::StartFrameEncode,
-                             encoder_),
-                  track_);
+  MediaStreamVideoSink::ConnectToTrack(
+      track_,
+      base::Bind(&VideoTrackRecorder::VpxEncoder::StartFrameEncode, encoder_));
 }
 
 VideoTrackRecorder::~VideoTrackRecorder() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  RemoveFromVideoTrack(this, track_);
+  MediaStreamVideoSink::DisconnectFromTrack();
   track_.reset();
 }
 

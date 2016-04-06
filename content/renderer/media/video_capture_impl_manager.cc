@@ -96,6 +96,19 @@ base::Closure VideoCaptureImplManager::StartCapture(
                     weak_factory_.GetWeakPtr(), client_id, id);
 }
 
+void VideoCaptureImplManager::RequestRefreshFrame(
+    media::VideoCaptureSessionId id) {
+  DCHECK(render_main_task_runner_->BelongsToCurrentThread());
+  const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  DCHECK(it != devices_.end());
+  VideoCaptureImpl* const impl = it->second.second;
+  ChildProcess::current()->io_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureImpl::RequestRefreshFrame,
+                 base::Unretained(impl)));
+}
+
+
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId id,
     const VideoCaptureDeviceFormatsCB& callback) {

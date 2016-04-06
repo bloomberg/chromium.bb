@@ -47,6 +47,11 @@ bool CONTENT_EXPORT GetConstraintValueAsDouble(
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
 
+bool CONTENT_EXPORT GetConstraintMinAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    double* value);
+
 bool CONTENT_EXPORT GetConstraintMaxAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,

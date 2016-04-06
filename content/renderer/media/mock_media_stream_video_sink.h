@@ -19,6 +19,19 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   MockMediaStreamVideoSink();
   ~MockMediaStreamVideoSink() override;
 
+  void ConnectToTrack(const blink::WebMediaStreamTrack& track) {
+    MediaStreamVideoSink::ConnectToTrack(track, GetDeliverFrameCB());
+  }
+
+  void ConnectToTrackWithCallback(const blink::WebMediaStreamTrack& track,
+                                  const VideoCaptureDeliverFrameCB& callback) {
+    MediaStreamVideoSink::ConnectToTrack(track, callback);
+  }
+
+  void DisconnectFromTrack() {
+    MediaStreamVideoSink::DisconnectFromTrack();
+  }
+
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
   void OnEnabledChanged(bool enabled) override;

@@ -4,29 +4,34 @@
 
 #include "content/public/renderer/media_stream_video_sink.h"
 
-#include "base/logging.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace content {
 
-void MediaStreamVideoSink::AddToVideoTrack(
-    MediaStreamVideoSink* sink,
-    const VideoCaptureDeliverFrameCB& callback,
-    const blink::WebMediaStreamTrack& track) {
-  DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track.source().getType());
-  MediaStreamVideoTrack* const video_track =
-      static_cast<MediaStreamVideoTrack*>(track.getExtraData());
-  video_track->AddSink(sink, callback);
+MediaStreamVideoSink::MediaStreamVideoSink() : MediaStreamSink() {}
+
+MediaStreamVideoSink::~MediaStreamVideoSink() {
+  // Ensure this sink has disconnected from the track.
+  DisconnectFromTrack();
 }
 
-void MediaStreamVideoSink::RemoveFromVideoTrack(
-    MediaStreamVideoSink* sink,
-    const blink::WebMediaStreamTrack& track) {
-  DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track.source().getType());
+void MediaStreamVideoSink::ConnectToTrack(
+    const blink::WebMediaStreamTrack& track,
+    const VideoCaptureDeliverFrameCB& callback) {
+  DCHECK(connected_track_.isNull());
+  connected_track_ = track;
   MediaStreamVideoTrack* const video_track =
-      static_cast<MediaStreamVideoTrack*>(track.getExtraData());
-  video_track->RemoveSink(sink);
+      MediaStreamVideoTrack::GetVideoTrack(connected_track_);
+  DCHECK(video_track);
+  video_track->AddSink(this, callback);
+}
+
+void MediaStreamVideoSink::DisconnectFromTrack() {
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(connected_track_);
+  if (video_track)
+    video_track->RemoveSink(this);
+  connected_track_.reset();
 }
 
 }  // namespace content

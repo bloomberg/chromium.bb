@@ -335,6 +335,17 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
         metadata_(metadata),
         got_frame_cb_(got_frame_cb) {}
 
+  void ConnectToTrack(const blink::WebMediaStreamTrack& track) {
+    MediaStreamVideoSink::ConnectToTrack(
+        track,
+        base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
+                   base::Unretained(this)));
+  }
+
+  void DisconnectFromTrack() {
+    MediaStreamVideoSink::DisconnectFromTrack();
+  }
+
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks capture_time) {
     *capture_time_ = capture_time;
@@ -377,17 +388,14 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   FakeMediaStreamVideoSink fake_sink(
       &capture_time, &metadata,
       media::BindToCurrentLoop(run_loop.QuitClosure()));
-  FakeMediaStreamVideoSink::AddToVideoTrack(
-      &fake_sink, base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
-                             base::Unretained(&fake_sink)),
-      track);
+  fake_sink.ConnectToTrack(track);
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
   child_process_->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
-  FakeMediaStreamVideoSink::RemoveFromVideoTrack(&fake_sink, track);
+  fake_sink.DisconnectFromTrack();
   EXPECT_EQ(reference_capture_time, capture_time);
   double metadata_value;
   EXPECT_TRUE(metadata.GetDouble(media::VideoFrameMetadata::FRAME_RATE,

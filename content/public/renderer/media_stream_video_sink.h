@@ -13,37 +13,46 @@
 #include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_sink.h"
 #include "media/base/video_capturer_source.h"
-
-namespace blink {
-class WebMediaStreamTrack;
-}
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace content {
 
 // MediaStreamVideoSink is an interface used for receiving video frames from a
-// Video Stream Track or a Video Source.
+// Video Stream Track or a Video Source. It should be extended by embedders,
+// which connect/disconnect the sink implementation to a track to start/stop the
+// flow of video frames.
+//
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // All methods calls will be done from the main render thread.
 class CONTENT_EXPORT MediaStreamVideoSink : public MediaStreamSink {
- public:
-  // An implementation of MediaStreamVideoSink should call AddToVideoTrack when
+ protected:
+  MediaStreamVideoSink();
+  ~MediaStreamVideoSink() override;
+
+  // An implementation of MediaStreamVideoSink should call ConnectToTrack when
   // it is ready to receive data from a video track. Before the implementation
-  // is destroyed, RemoveFromVideoTrack must be called.
+  // is destroyed, DisconnectFromTrack must be called. This MediaStreamVideoSink
+  // base class holds a reference to the WebMediaStreamTrack until
+  // DisconnectFromTrack is called.
   //
   // Calls to these methods must be done on the main render thread.
   // Note that |callback| for frame delivery happens on the IO thread.
   //
-  // Calling RemoveFromVideoTrack also not stop frame delivery through the
-  // callback immediately because it may happen on another thread.
-  // The added callback will be reset on the render thread.
-  static void AddToVideoTrack(MediaStreamVideoSink* sink,
-                              const VideoCaptureDeliverFrameCB& callback,
-                              const blink::WebMediaStreamTrack& track);
-  static void RemoveFromVideoTrack(MediaStreamVideoSink* sink,
-                                   const blink::WebMediaStreamTrack& track);
+  // Warning: Calling DisconnectFromTrack does not immediately stop frame
+  // delivery through the |callback|, since frames are being delivered on a
+  // different thread.
+  void ConnectToTrack(const blink::WebMediaStreamTrack& track,
+                      const VideoCaptureDeliverFrameCB& callback);
+  void DisconnectFromTrack();
 
- protected:
-  ~MediaStreamVideoSink() override {}
+  // Returns the currently-connected track, or a null instance otherwise.
+  const blink::WebMediaStreamTrack& connected_track() const {
+    return connected_track_;
+  }
+
+ private:
+  // Set by ConnectToTrack() and cleared by DisconnectFromTrack().
+  blink::WebMediaStreamTrack connected_track_;
 };
 
 

@@ -73,6 +73,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Stop capturing. |client_id| is the identifier used to call StartCapture.
   void StopCapture(int client_id);
 
+  // Requests that the video capturer send a frame "soon" (e.g., to resolve
+  // picture loss or quality issues).
+  void RequestRefreshFrame();
+
   // Get capturing formats supported by this device.
   // |callback| will be invoked with the results.
   void GetDeviceSupportedFormats(const VideoCaptureDeviceFormatsCB& callback);

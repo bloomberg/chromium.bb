@@ -217,6 +217,11 @@ void VideoCaptureImpl::StopCapture(int client_id) {
   }
 }
 
+void VideoCaptureImpl::RequestRefreshFrame() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  Send(new VideoCaptureHostMsg_RequestRefreshFrame(device_id_));
+}
+
 void VideoCaptureImpl::GetDeviceSupportedFormats(
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());

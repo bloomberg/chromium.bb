@@ -210,6 +210,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   void StartCapture(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override;
+  void RequestRefreshFrame() override;
   void StopCapture() override;
 
  private:
@@ -308,6 +309,15 @@ void LocalVideoCapturerSource::StartCapture(
                                weak_factory_.GetWeakPtr())),
       new_frame_callback);
 }
+
+void LocalVideoCapturerSource::RequestRefreshFrame() {
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (stop_capture_cb_.is_null())
+    return;  // Do not request frames if the source is stopped.
+  manager_->RequestRefreshFrame(session_id_);
+}
+
 
 void LocalVideoCapturerSource::StopCapture() {
   DVLOG(3) << __FUNCTION__;

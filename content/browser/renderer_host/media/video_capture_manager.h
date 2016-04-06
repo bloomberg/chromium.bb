@@ -116,6 +116,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       VideoCaptureControllerID client_id,
       VideoCaptureControllerEventHandler* client_handler);
 
+  // Called by VideoCaptureHost to request a refresh frame from the video
+  // capture device.
+  void RequestRefreshFrameForClient(VideoCaptureController* controller);
+
   // Retrieves all capture supported formats for a particular device. Returns
   // false if the |capture_session_id| is not found. The supported formats are
   // cached during device(s) enumeration, and depending on the underlying

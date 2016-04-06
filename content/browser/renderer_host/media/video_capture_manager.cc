@@ -678,6 +678,24 @@ void VideoCaptureManager::ResumeCaptureForClient(
   controller->ResumeClient(client_id, client_handler);
 }
 
+void VideoCaptureManager::RequestRefreshFrameForClient(
+    VideoCaptureController* controller) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (DeviceEntry* entry = GetDeviceEntryForController(controller)) {
+    if (media::VideoCaptureDevice* device = entry->video_capture_device()) {
+      device_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&media::VideoCaptureDevice::RequestRefreshFrame,
+                     // Unretained is safe to use here because |device| would be
+                     // null if it was scheduled for shutdown and destruction,
+                     // and because this task is guaranteed to run before the
+                     // task that destroys the |device|.
+                     base::Unretained(device)));
+    }
+  }
+}
+
 bool VideoCaptureManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId capture_session_id,
     media::VideoCaptureFormats* supported_formats) {

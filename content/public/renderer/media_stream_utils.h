@@ -54,6 +54,11 @@ CONTENT_EXPORT bool AddAudioTrackToMediaStream(
 CONTENT_EXPORT const media::VideoCaptureFormat* GetCurrentVideoTrackFormat(
     const blink::WebMediaStreamTrack& video_track);
 
+// Requests that a refresh frame be sent "soon" (e.g., to resolve picture loss
+// or quality issues).
+CONTENT_EXPORT void RequestRefreshFrameFromVideoTrack(
+    const blink::WebMediaStreamTrack& video_track);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_UTILS_H_

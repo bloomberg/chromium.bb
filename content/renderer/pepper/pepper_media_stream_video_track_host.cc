@@ -229,7 +229,6 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
     const blink::WebMediaStreamTrack& track)
     : PepperMediaStreamTrackHostBase(host, instance, resource),
       track_(track),
-      connected_(false),
       number_of_buffers_(kDefaultNumberOfBuffers),
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
@@ -245,7 +244,6 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
     PP_Instance instance,
     PP_Resource resource)
     : PepperMediaStreamTrackHostBase(host, instance, resource),
-      connected_(false),
       number_of_buffers_(kDefaultNumberOfBuffers),
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
@@ -307,11 +305,8 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
 }
 
 void PepperMediaStreamVideoTrackHost::OnClose() {
-  if (connected_) {
-    MediaStreamVideoSink::RemoveFromVideoTrack(this, track_);
-    weak_factory_.InvalidateWeakPtrs();
-    connected_ = false;
-  }
+  MediaStreamVideoSink::DisconnectFromTrack();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 int32_t PepperMediaStreamVideoTrackHost::OnHostMsgEnqueueBuffer(
@@ -447,16 +442,14 @@ void PepperMediaStreamVideoTrackHost::StopSourceImpl() {
 }
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
-  if (!connected_) {
-    MediaStreamVideoSink::AddToVideoTrack(
-        this,
-        media::BindToCurrentLoop(
-            base::Bind(
-                &PepperMediaStreamVideoTrackHost::OnVideoFrame,
-                weak_factory_.GetWeakPtr())),
-        track_);
-    connected_ = true;
-  }
+  if (!MediaStreamVideoSink::connected_track().isNull())
+    return;
+  MediaStreamVideoSink::ConnectToTrack(
+      track_,
+      media::BindToCurrentLoop(
+          base::Bind(
+              &PepperMediaStreamVideoTrackHost::OnVideoFrame,
+              weak_factory_.GetWeakPtr())));
 }
 
 int32_t PepperMediaStreamVideoTrackHost::OnResourceMessageReceived(

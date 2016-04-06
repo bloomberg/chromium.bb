@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_TRACK_ADAPTER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
@@ -41,14 +42,22 @@ class MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
   void OnEnabledChanged(bool enabled) override;
 
  private:
+  // Helper to request a refresh frame from the source. Called via the callback
+  // passed to WebRtcVideoSourceAdapter.
+  void RequestRefreshFrame();
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<webrtc::VideoTrackInterface> video_track_;
-  blink::WebMediaStreamTrack web_track_;
 
   class WebRtcVideoSourceAdapter;
   scoped_refptr<WebRtcVideoSourceAdapter> source_adapter_;
+
+  // Provides WebRtcVideoSourceAdapter a weak reference to
+  // MediaStreamVideoWebRtcSink in order to allow it to request refresh frames.
+  // See comments in media_stream_video_webrtc_sink.cc.
+  base::WeakPtrFactory<MediaStreamVideoWebRtcSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoWebRtcSink);
 };

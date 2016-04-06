@@ -9,18 +9,23 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
+#include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"
@@ -48,6 +53,14 @@ const char kCodecNameH264[] = "H264";
 
 // To convert from kilobits per second to bits to per second.
 const int kBitrateMultiplier = 1000;
+
+// The maximum number of milliseconds that should elapse since the last video
+// frame was received from the video source, before requesting refresh frames.
+const int kRefreshIntervalMilliseconds = 250;
+
+// The maximum number of refresh video frames to request/receive.  After this
+// limit (60 * 250ms = 15 seconds), refresh frame requests will stop being made.
+const int kMaxConsecutiveRefreshFrames = 60;
 
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
@@ -301,11 +314,17 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
 }  // namespace
 
 // This class receives MediaStreamTrack events and video frames from a
-// MediaStreamTrack.
+// MediaStreamVideoTrack.  It also includes a timer to request refresh frames
+// when the capturer halts (e.g., a screen capturer stops delivering frames
+// because the screen is not being updated).  When a halt is detected, refresh
+// frames will be requested at regular intervals for a short period of time.
+// This provides the video encoder, downstream, several copies of the last frame
+// so that it may clear up lossy encoding artifacts.
 //
 // Threading: Video frames are received on the IO thread and then
-// forwarded to media::cast::VideoFrameInput through a static method.
-// Member variables of this class are only accessed on the render thread.
+// forwarded to media::cast::VideoFrameInput.  The inner class, Deliverer,
+// handles this.  Otherwise, all methods and member variables of the outer class
+// must only be accessed on the render thread.
 class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                       public content::MediaStreamVideoSink {
  public:
@@ -313,66 +332,130 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // |error_callback| is called if video formats don't match.
   CastVideoSink(const blink::WebMediaStreamTrack& track,
                 const CastRtpStream::ErrorCallback& error_callback)
-      : track_(track),
-        sink_added_(false),
-        error_callback_(error_callback) {}
+      : track_(track), deliverer_(new Deliverer(error_callback)),
+        consecutive_refresh_count_(0),
+        expecting_a_refresh_frame_(false) {}
 
   ~CastVideoSink() override {
-    if (sink_added_)
-      RemoveFromVideoTrack(this, track_);
-  }
-
-  // This static method is used to forward video frames to |frame_input|.
-  static void OnVideoFrame(
-      // These parameters are already bound when callback is created.
-      const CastRtpStream::ErrorCallback& error_callback,
-      const scoped_refptr<media::cast::VideoFrameInput> frame_input,
-      // These parameters are passed for each frame.
-      const scoped_refptr<media::VideoFrame>& video_frame,
-      base::TimeTicks estimated_capture_time) {
-    const base::TimeTicks timestamp = estimated_capture_time.is_null()
-                                          ? base::TimeTicks::Now()
-                                          : estimated_capture_time;
-
-    if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
-          video_frame->format() == media::PIXEL_FORMAT_YV12 ||
-          video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
-      NOTREACHED();
-      return;
-    }
-    scoped_refptr<media::VideoFrame> frame = video_frame;
-    // Drop alpha channel since we do not support it yet.
-    if (frame->format() == media::PIXEL_FORMAT_YV12A)
-      frame = media::WrapAsI420VideoFrame(video_frame);
-
-    // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
-    TRACE_EVENT_INSTANT2(
-        "cast_perf_test", "MediaStreamVideoSink::OnVideoFrame",
-        TRACE_EVENT_SCOPE_THREAD,
-        "timestamp",  timestamp.ToInternalValue(),
-        "time_delta", frame->timestamp().ToInternalValue());
-    frame_input->InsertRawVideoFrame(frame, timestamp);
+    MediaStreamVideoSink::DisconnectFromTrack();
   }
 
   // Attach this sink to a video track represented by |track_|.
   // Data received from the track will be submitted to |frame_input|.
   void AddToTrack(
       const scoped_refptr<media::cast::VideoFrameInput>& frame_input) {
-    DCHECK(!sink_added_);
-    sink_added_ = true;
-    AddToVideoTrack(
-        this,
-        base::Bind(
-            &CastVideoSink::OnVideoFrame,
-            error_callback_,
-            frame_input),
-        track_);
+    DCHECK(deliverer_);
+    deliverer_->WillConnectToTrack(AsWeakPtr(), frame_input);
+    refresh_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kRefreshIntervalMilliseconds),
+        base::Bind(&CastVideoSink::OnRefreshTimerFired,
+                   base::Unretained(this)));
+    MediaStreamVideoSink::ConnectToTrack(track_,
+                                         base::Bind(&Deliverer::OnVideoFrame,
+                                                    deliverer_));
   }
 
  private:
-  blink::WebMediaStreamTrack track_;
-  bool sink_added_;
-  CastRtpStream::ErrorCallback error_callback_;
+  class Deliverer : public base::RefCountedThreadSafe<Deliverer> {
+   public:
+    explicit Deliverer(const CastRtpStream::ErrorCallback& error_callback)
+        : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+          error_callback_(error_callback) {}
+
+    void WillConnectToTrack(
+        base::WeakPtr<CastVideoSink> sink,
+        scoped_refptr<media::cast::VideoFrameInput> frame_input) {
+      DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+      sink_ = sink;
+      frame_input_ = std::move(frame_input);
+    }
+
+    void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                      base::TimeTicks estimated_capture_time) {
+      main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&CastVideoSink::DidReceiveFrame, sink_));
+
+      const base::TimeTicks timestamp = estimated_capture_time.is_null()
+                                            ? base::TimeTicks::Now()
+                                            : estimated_capture_time;
+
+      if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
+            video_frame->format() == media::PIXEL_FORMAT_YV12 ||
+            video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
+        error_callback_.Run("Incompatible video frame format.");
+        return;
+      }
+      scoped_refptr<media::VideoFrame> frame = video_frame;
+      // Drop alpha channel since we do not support it yet.
+      if (frame->format() == media::PIXEL_FORMAT_YV12A)
+        frame = media::WrapAsI420VideoFrame(video_frame);
+
+      // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+      TRACE_EVENT_INSTANT2(
+          "cast_perf_test", "MediaStreamVideoSink::OnVideoFrame",
+          TRACE_EVENT_SCOPE_THREAD,
+          "timestamp",  timestamp.ToInternalValue(),
+          "time_delta", frame->timestamp().ToInternalValue());
+      frame_input_->InsertRawVideoFrame(frame, timestamp);
+    }
+
+   private:
+    friend class base::RefCountedThreadSafe<Deliverer>;
+    ~Deliverer() {}
+
+    const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+    const CastRtpStream::ErrorCallback error_callback_;
+
+    // These are set on the main thread after construction, and before the first
+    // call to OnVideoFrame() on the IO thread.  |sink_| may be passed around on
+    // any thread, but must only be dereferenced on the main renderer thread.
+    base::WeakPtr<CastVideoSink> sink_;
+    scoped_refptr<media::cast::VideoFrameInput> frame_input_;
+
+    DISALLOW_COPY_AND_ASSIGN(Deliverer);
+  };
+
+ private:
+  void OnRefreshTimerFired() {
+    ++consecutive_refresh_count_;
+    if (consecutive_refresh_count_ >= kMaxConsecutiveRefreshFrames)
+      refresh_timer_.Stop();  // Stop timer until receiving a non-refresh frame.
+
+    DVLOG(1) << "CastVideoSink is requesting another refresh frame "
+                "(consecutive count=" << consecutive_refresh_count_ << ").";
+    expecting_a_refresh_frame_ = true;
+    content::RequestRefreshFrameFromVideoTrack(connected_track());
+  }
+
+  void DidReceiveFrame() {
+    if (expecting_a_refresh_frame_) {
+      // There is uncertainty as to whether the video frame was in response to a
+      // refresh request.  However, if it was not, more video frames will soon
+      // follow, and before the refresh timer can fire again.  Thus, the
+      // behavior resulting from this logic will be correct.
+      expecting_a_refresh_frame_ = false;
+    } else {
+      consecutive_refresh_count_ = 0;
+      // The following re-starts the timer, scheduling it to fire at
+      // kRefreshIntervalMilliseconds from now.
+      refresh_timer_.Reset();
+    }
+  }
+
+  const blink::WebMediaStreamTrack track_;
+  const scoped_refptr<Deliverer> deliverer_;
+
+  // Requests refresh frames at a constant rate while the source is paused, up
+  // to a consecutive maximum.
+  base::RepeatingTimer refresh_timer_;
+
+  // Counter for the number of consecutive "refresh frames" requested.
+  int consecutive_refresh_count_;
+
+  // Set to true when a request for a refresh frame has been made.  This is
+  // cleared once the next frame is received.
+  bool expecting_a_refresh_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
 };

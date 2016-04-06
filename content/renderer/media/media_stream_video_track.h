@@ -49,8 +49,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
       bool enabled);
   ~MediaStreamVideoTrack() override;
 
+  // MediaStreamTrack overrides.
   void SetEnabled(bool enabled) override;
-
   void Stop() override;
 
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);

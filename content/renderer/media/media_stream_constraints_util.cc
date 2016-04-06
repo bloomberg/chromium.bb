@@ -107,11 +107,18 @@ bool GetConstraintValueAsDouble(
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
+bool GetConstraintMinAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    double* value) {
+  return ScanConstraintsForMinValue(constraints, picker, value);
+}
+
 bool GetConstraintMaxAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value) {
-  return ScanConstraintsForExactValue(constraints, picker, value);
+  return ScanConstraintsForMaxValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsString(

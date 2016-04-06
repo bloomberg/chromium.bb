@@ -94,9 +94,6 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
 
   blink::WebMediaStreamTrack track_;
 
-  // True if it has been added to |blink::WebMediaStreamTrack| as a sink.
-  bool connected_;
-
   // Number of buffers.
   int32_t number_of_buffers_;
 

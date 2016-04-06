@@ -212,6 +212,10 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 // static
 MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
      const blink::WebMediaStreamTrack& track) {
+  if (track.isNull() ||
+      track.source().getType() != blink::WebMediaStreamSource::TypeVideo) {
+    return nullptr;
+  }
   return static_cast<MediaStreamVideoTrack*>(track.getExtraData());
 }
 

@@ -30,9 +30,9 @@ namespace content {
 // MediaStreamVideoRendererSink is a VideoFrameProvider designed for rendering
 // Video MediaStreamTracks [1], MediaStreamVideoRendererSink implements
 // MediaStreamVideoSink in order to render video frames provided from a
-// MediaStreamVideoTrack, to which it AddToVideoTrack()s itself when the
-// VideoFrameProvider is Start()ed and RemoveFromVideoTrack()s itself when the
-// latter is Stop()ed.
+// MediaStreamVideoTrack, to which it connects itself when the
+// VideoFrameProvider is Start()ed, and disconnects itself when the latter is
+// Stop()ed.
 //
 // [1] http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 //

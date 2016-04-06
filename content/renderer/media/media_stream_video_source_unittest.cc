@@ -122,15 +122,14 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
                                   30);
 
     MockMediaStreamVideoSink sink;
-    MediaStreamVideoSink::AddToVideoTrack(
-        &sink, sink.GetDeliverFrameCB(), track);
+    sink.ConnectToTrack(track);
     DeliverVideoFrameAndWaitForRenderer(capture_width, capture_height, &sink);
     EXPECT_EQ(1, sink.number_of_frames());
 
     // Expect the delivered frame to be cropped.
     EXPECT_EQ(expected_height, sink.frame_size().height());
     EXPECT_EQ(expected_width, sink.frame_size().width());
-    MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+    sink.DisconnectFromTrack();
   }
 
   void DeliverVideoFrameAndWaitForRenderer(int width, int height,
@@ -177,13 +176,11 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     blink::WebMediaStreamTrack track2 = CreateTrack("dummy", constraints2);
 
     MockMediaStreamVideoSink sink1;
-    MediaStreamVideoSink::AddToVideoTrack(&sink1, sink1.GetDeliverFrameCB(),
-                                          track1);
+    sink1.ConnectToTrack(track1);
     EXPECT_EQ(0, sink1.number_of_frames());
 
     MockMediaStreamVideoSink sink2;
-    MediaStreamVideoSink::AddToVideoTrack(&sink2, sink2.GetDeliverFrameCB(),
-                                          track2);
+    sink2.ConnectToTrack(track2);
     EXPECT_EQ(0, sink2.number_of_frames());
 
     DeliverVideoFrameAndWaitForTwoRenderers(capture_width,
@@ -199,8 +196,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     EXPECT_EQ(expected_width2, sink2.frame_size().width());
     EXPECT_EQ(expected_height2, sink2.frame_size().height());
 
-    MediaStreamVideoSink::RemoveFromVideoTrack(&sink1, track1);
-    MediaStreamVideoSink::RemoveFromVideoTrack(&sink2, track2);
+    sink1.DisconnectFromTrack();
+    sink2.DisconnectFromTrack();
   }
 
   void SetSourceSupportedFormats(const media::VideoCaptureFormats& formats) {
@@ -658,8 +655,7 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
                                 640, 480, 30);
 
   MockMediaStreamVideoSink sink;
-  MediaStreamVideoSink::AddToVideoTrack(
-      &sink, sink.GetDeliverFrameCB(), track);
+  sink.ConnectToTrack(track);
   EXPECT_EQ(0, sink.number_of_frames());
   DeliverVideoFrameAndWaitForRenderer(320, 240, &sink);
   EXPECT_EQ(1, sink.number_of_frames());
@@ -682,7 +678,7 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   EXPECT_EQ(800, sink.frame_size().width());
   EXPECT_EQ(700, sink.frame_size().height());
 
-  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+  sink.DisconnectFromTrack();
 }
 
 TEST_F(MediaStreamVideoSourceTest, IsConstraintSupported) {
@@ -724,8 +720,7 @@ TEST_F(MediaStreamVideoSourceTest, Use0FpsSupportedFormat) {
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
 
   MockMediaStreamVideoSink sink;
-  MediaStreamVideoSink::AddToVideoTrack(
-      &sink, sink.GetDeliverFrameCB(), track);
+  sink.ConnectToTrack(track);
   EXPECT_EQ(0, sink.number_of_frames());
   DeliverVideoFrameAndWaitForRenderer(320, 240, &sink);
   EXPECT_EQ(1, sink.number_of_frames());
@@ -733,7 +728,7 @@ TEST_F(MediaStreamVideoSourceTest, Use0FpsSupportedFormat) {
   // max requested.
   EXPECT_EQ(320, sink.frame_size().width());
   EXPECT_EQ(240, sink.frame_size().height());
-  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+  sink.DisconnectFromTrack();
 }
 
 // Test that a source producing no frames change the source ReadyState to muted.
@@ -754,7 +749,7 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
       CreateTrackAndStartSource(factory.CreateWebMediaConstraints(), 640, 480,
                                 media::limits::kMaxFramesPerSecond - 1);
   MockMediaStreamVideoSink sink;
-  MediaStreamVideoSink::AddToVideoTrack(&sink, sink.GetDeliverFrameCB(), track);
+  sink.ConnectToTrack(track);
   EXPECT_EQ(track.source().getReadyState(),
             blink::WebMediaStreamSource::ReadyStateLive);
 
@@ -780,7 +775,7 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   EXPECT_EQ(track.source().getReadyState(),
             blink::WebMediaStreamSource::ReadyStateLive);
 
-  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+  sink.DisconnectFromTrack();
 }
 
 }  // namespace content
