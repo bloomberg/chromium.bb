@@ -1,0 +1,52 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function startAnimation()
+{
+    node.animate([{ width: "1000px" }, { width: "2000px" }], 1000);
+}
+
+function rafWidth(resolve, reject)
+{
+    function frameCallback()
+    {
+        resolve(node.offsetWidth);
+    }
+
+    if (window.testRunner)
+        testRunner.layoutAndPaintAsyncThen(frameCallback);
+}
+
+function test()
+{
+    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
+    InspectorTest.sendCommand("Animation.enable", {});
+    InspectorTest.evaluateInPage("startAnimation()", function() {});
+
+    function onStarted(response)
+    {
+        InspectorTest.log("Animation started");
+        seekAnimation(response.params.animation.id);
+    }
+
+    function seekAnimation(id)
+    {
+        InspectorTest.sendCommand("Animation.seekAnimations", { animations: [ id ], currentTime: 2000 }, logWidth);
+    }
+
+    function logWidth()
+    {
+        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(function(result) {
+            InspectorTest.log(result);
+            InspectorTest.completeTest();
+        });
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    <div id="node" style="background-color: red; height: 100px; width: 100px"></div>
+</body>
+</html>

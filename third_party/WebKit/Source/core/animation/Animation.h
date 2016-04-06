@@ -178,6 +178,9 @@ public:
         return animation1->sequenceNumber() < animation2->sequenceNumber();
     }
 
+    bool effectSuppressed() const { return m_effectSuppressed; }
+    void setEffectSuppressed(bool);
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -300,6 +303,8 @@ private:
 
     bool m_currentTimePending;
     bool m_stateIsBeingUpdated;
+
+    bool m_effectSuppressed;
 };
 
 } // namespace blink

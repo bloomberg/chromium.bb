@@ -219,7 +219,8 @@ void KeyframeEffect::updateChildrenAndEffects() const
 {
     if (!m_model)
         return;
-    if (isInEffect())
+    ASSERT(animation());
+    if (isInEffect() && !animation()->effectSuppressed())
         const_cast<KeyframeEffect*>(this)->applyEffects();
     else if (m_sampledEffect)
         const_cast<KeyframeEffect*>(this)->clearEffects();

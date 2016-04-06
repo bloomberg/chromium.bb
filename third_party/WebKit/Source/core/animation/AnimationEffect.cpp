@@ -135,7 +135,7 @@ ComputedTimingProperties AnimationEffect::computedTiming()
 
 void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReason reason) const
 {
-    bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
+    bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime))) || (animation() && animation()->effectSuppressed());
     m_needsUpdate = false;
     m_lastUpdateTime = inheritedTime;
 

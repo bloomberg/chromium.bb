@@ -97,6 +97,7 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
     , m_compositorGroup(0)
     , m_currentTimePending(false)
     , m_stateIsBeingUpdated(false)
+    , m_effectSuppressed(false)
 {
     if (m_content) {
         if (m_content->animation()) {
@@ -716,7 +717,7 @@ void Animation::setOutdated()
 
 bool Animation::canStartAnimationOnCompositor() const
 {
-    if (m_isCompositedAnimationDisabledForTesting)
+    if (m_isCompositedAnimationDisabledForTesting  || effectSuppressed())
         return false;
 
     // FIXME: Timeline playback rates should be compositable
@@ -1068,6 +1069,13 @@ void Animation::pauseForTesting(double pauseTime)
         toKeyframeEffect(m_content.get())->pauseAnimationForTestingOnCompositor(currentTimeInternal());
     m_isPausedForTesting = true;
     pause();
+}
+
+void Animation::setEffectSuppressed(bool suppressed)
+{
+    m_effectSuppressed = suppressed;
+    if (suppressed)
+        cancelAnimationOnCompositor();
 }
 
 void Animation::disableCompositedAnimationForTesting()

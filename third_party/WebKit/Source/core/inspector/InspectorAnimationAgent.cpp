@@ -284,6 +284,8 @@ blink::Animation* InspectorAnimationAgent::animationClone(blink::Animation* anim
         m_idToAnimation.set(String::number(clone->sequenceNumber()), clone);
         clone->play();
         clone->setStartTime(animation->startTime());
+
+        animation->setEffectSuppressed(true);
     }
     return m_idToAnimationClone.get(id);
 }
@@ -310,6 +312,9 @@ void InspectorAnimationAgent::releaseAnimations(ErrorString* errorString, PassOw
 {
     for (size_t i = 0; i < animationIds->length(); ++i) {
         String animationId = animationIds->get(i);
+        blink::Animation* animation = m_idToAnimation.get(animationId);
+        if (animation)
+            animation->setEffectSuppressed(false);
         blink::Animation* clone = m_idToAnimationClone.get(animationId);
         if (clone)
             clone->cancel();
