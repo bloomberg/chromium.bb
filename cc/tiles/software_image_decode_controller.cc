@@ -267,7 +267,7 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   //       it yet (or failed to decode it).
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
-  DCHECK(CanHandleImage(key));
+  DCHECK(CanHandleImage(key)) << key.ToString();
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "SoftwareImageDecodeController::UnrefImage", "key",
                key.ToString());
@@ -427,7 +427,8 @@ SoftwareImageDecodeController::DecodeImageInternal(
   ImageKey original_size_key =
       ImageKey::FromDrawImage(original_size_draw_image);
   // Sanity checks.
-  DCHECK(original_size_key.can_use_original_decode());
+  DCHECK(original_size_key.can_use_original_decode())
+      << original_size_key.ToString();
   DCHECK(full_image_rect.size() == original_size_key.target_size());
 
   auto decoded_draw_image = GetDecodedImageForDrawInternal(
@@ -439,11 +440,11 @@ SoftwareImageDecodeController::DecodeImageInternal(
 
   SkPixmap decoded_pixmap;
   bool result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
-  DCHECK(result);
+  DCHECK(result) << key.ToString();
   if (key.src_rect() != full_image_rect) {
     result = decoded_pixmap.extractSubset(&decoded_pixmap,
                                           gfx::RectToSkIRect(key.src_rect()));
-    DCHECK(result);
+    DCHECK(result) << key.ToString();
   }
 
   // Now we have a decoded_pixmap which represents the src_rect at the
@@ -471,7 +472,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
         "SoftwareImageDecodeController::DecodeImageInternal - scale pixels");
     bool result =
         decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
-    DCHECK(result);
+    DCHECK(result) << key.ToString();
   }
 
   // Release the original sized decode. Any other intermediate result to release
