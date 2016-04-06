@@ -76,6 +76,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   fd_map.push_back(std::make_pair(write_pipe_read_fd.get(), STDIN_FILENO));
 
   base::LaunchOptions options;
+  options.current_directory = command_line.GetProgram().DirName();
   options.fds_to_remap = &fd_map;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

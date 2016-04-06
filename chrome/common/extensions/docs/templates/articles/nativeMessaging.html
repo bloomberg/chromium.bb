@@ -48,7 +48,10 @@ following fields:
     <td><code>path</code></td>
     <td>Path to the native messaging host binary. On Linux and OSX the path must
     be absolute. On Windows it can be relative to the directory in which the
-    manifest file is located.</td>
+    manifest file is located. The host process is started with the current
+    directory set to the directory that contains the host binary. For example if
+    this parameter is set to <code>C:\Application\nm_host.exe</code> then it
+    will be started with current directory <code>C:\Application\</code>.</td>
   </tr>
   <tr>
     <td><code>type</code></td>

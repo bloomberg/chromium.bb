@@ -38,6 +38,14 @@ def Main():
     elif caller_url == None:
       caller_url = arg
 
+  # Verify that the process was started in the correct directory.
+  cwd = os.getcwd()
+  script_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+  if cwd.lower() != script_path.lower():
+    sys.stderr.write('Native messaging host started in a wrong directory.')
+    return 1
+
+  # Verify that --parent-window parameter is correct.
   if platform.system() == 'Windows' and parent_window:
     import win32gui
     if not win32gui.IsWindow(parent_window):
