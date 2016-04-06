@@ -269,15 +269,16 @@ bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
 
 bool WindowTree::SetFocus(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
-  // TODO(beng): consider shifting non-policy drawn check logic to VTH's
-  //             FocusController.
-  // TODO(sky): this doesn't work to clear focus. That is because if window is
-  // null, then |host| is null and we fail.
-  Display* display = GetDisplay(window);
-  if (!window || !display || !window->IsDrawn() || !window->can_focus() ||
-      !access_policy_->CanSetFocus(window)) {
+  ServerWindow* currently_focused = window_server_->GetFocusedWindow();
+  if (!currently_focused && !window)
     return false;
-  }
+
+  Display* display = GetDisplay(window);
+  if (window && (!display || !window->can_focus() || !window->IsDrawn()))
+    return false;
+
+  if (!access_policy_->CanSetFocus(window))
+    return false;
 
   Operation op(this, window_server_, OperationType::SET_FOCUS);
   window_server_->SetFocusedWindow(window);
@@ -673,8 +674,9 @@ ClientWindowId WindowTree::ClientWindowIdForWindow(
 }
 
 bool WindowTree::IsValidIdForNewWindow(const ClientWindowId& id) const {
+  // Reserve 0 to indicate a null window.
   return client_id_to_window_id_map_.count(id) == 0u &&
-         access_policy_->IsValidIdForNewWindow(id);
+         access_policy_->IsValidIdForNewWindow(id) && id != ClientWindowId();
 }
 
 WindowId WindowTree::GenerateNewWindowId() {

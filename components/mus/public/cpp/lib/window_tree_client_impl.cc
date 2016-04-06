@@ -524,6 +524,13 @@ Window* WindowTreeClientImpl::GetFocusedWindow() {
   return focused_window_;
 }
 
+void WindowTreeClientImpl::ClearFocus() {
+  if (!focused_window_)
+    return;
+
+  SetFocus(nullptr);
+}
+
 Window* WindowTreeClientImpl::NewWindow(
     const Window::SharedProperties* properties) {
   return NewWindowImpl(NewWindowType::CHILD, properties);

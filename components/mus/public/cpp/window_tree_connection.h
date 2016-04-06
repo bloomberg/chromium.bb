@@ -77,6 +77,9 @@ class WindowTreeConnection {
   // is focused.
   virtual Window* GetFocusedWindow() = 0;
 
+  // Sets focus to null. This does nothing if focus is currently null.
+  virtual void ClearFocus() = 0;
+
   // Creates and returns a new Window (which is owned by the window server).
   // Windows are initially hidden, use SetVisible(true) to show.
   Window* NewWindow() { return NewWindow(nullptr); }

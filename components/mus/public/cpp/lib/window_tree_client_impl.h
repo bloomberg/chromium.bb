@@ -163,6 +163,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   const std::set<Window*>& GetRoots() override;
   Window* GetWindowById(Id id) override;
   Window* GetFocusedWindow() override;
+  void ClearFocus() override;
   Window* NewWindow(const Window::SharedProperties* properties) override;
   Window* NewTopLevelWindow(
       const Window::SharedProperties* properties) override;

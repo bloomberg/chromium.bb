@@ -240,12 +240,15 @@ void WindowServer::OnFirstWindowManagerFactorySet() {
 void WindowServer::SetFocusedWindow(ServerWindow* window) {
   // TODO(sky): this should fail if there is modal dialog active and |window|
   // is outside that.
-  Display* focused_display = nullptr;
-  for (Display* display : display_manager_->displays()) {
-    if (display->GetFocusedWindow()) {
-      focused_display = display;
-      break;
-    }
+  ServerWindow* currently_focused = GetFocusedWindow();
+  Display* focused_display =
+      currently_focused
+          ? display_manager_->GetDisplayContaining(currently_focused)
+          : nullptr;
+  if (!window) {
+    if (focused_display)
+      focused_display->SetFocusedWindow(nullptr);
+    return;
   }
   Display* display = display_manager_->GetDisplayContaining(window);
   DCHECK(display);  // It's assumed callers do validation before calling this.
@@ -257,6 +260,15 @@ void WindowServer::SetFocusedWindow(ServerWindow* window) {
       focused_display) {
     focused_display->SetFocusedWindow(nullptr);
   }
+}
+
+ServerWindow* WindowServer::GetFocusedWindow() {
+  for (Display* display : display_manager_->displays()) {
+    ServerWindow* focused_window = display->GetFocusedWindow();
+    if (focused_window)
+      return focused_window;
+  }
+  return nullptr;
 }
 
 uint32_t WindowServer::GenerateWindowManagerChangeId(

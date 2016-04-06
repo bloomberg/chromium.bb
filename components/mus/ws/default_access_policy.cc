@@ -129,7 +129,7 @@ bool DefaultAccessPolicy::CanSetCapture(const ServerWindow* window) const {
 }
 
 bool DefaultAccessPolicy::CanSetFocus(const ServerWindow* window) const {
-  return WasCreatedByThisConnection(window) ||
+  return !window || WasCreatedByThisConnection(window) ||
          delegate_->HasRootForAccessPolicy(window);
 }
 

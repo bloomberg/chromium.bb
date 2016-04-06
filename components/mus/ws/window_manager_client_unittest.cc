@@ -758,6 +758,44 @@ TEST_F(WindowServerTest, Focus) {
   }
 }
 
+TEST_F(WindowServerTest, ClearFocus) {
+  Window* window1 = window_manager()->NewWindow();
+  window1->SetVisible(true);
+  GetFirstWMRoot()->AddChild(window1);
+
+  WindowTreeConnection* embedded = Embed(window1).connection;
+  ASSERT_NE(nullptr, embedded);
+  Window* window11 = embedded->NewWindow();
+  window11->SetVisible(true);
+  GetFirstRoot(embedded)->AddChild(window11);
+
+  // Focus the embed root in |embedded|.
+  Window* embedded_root = GetFirstRoot(embedded);
+  {
+    FocusChangeObserver observer(embedded_root);
+    observer.set_quit_on_change(false);
+    embedded_root->SetFocus();
+    ASSERT_TRUE(embedded_root->HasFocus());
+    ASSERT_NE(nullptr, observer.last_gained_focus());
+    EXPECT_EQ(embedded_root->id(), observer.last_gained_focus()->id());
+
+    // |embedded_root| is the same as |window1|, make sure |window1| got
+    // focus too.
+    ASSERT_TRUE(WaitForWindowToHaveFocus(window1));
+  }
+
+  {
+    FocusChangeObserver observer(window1);
+    embedded->ClearFocus();
+    ASSERT_FALSE(embedded_root->HasFocus());
+    EXPECT_FALSE(embedded->GetFocusedWindow());
+
+    ASSERT_TRUE(WindowServerTestBase::DoRunLoopWithTimeout());
+    EXPECT_FALSE(window1->HasFocus());
+    EXPECT_FALSE(window_manager()->GetFocusedWindow());
+  }
+}
+
 TEST_F(WindowServerTest, FocusNonFocusableWindow) {
   Window* window = window_manager()->NewWindow();
   window->SetVisible(true);

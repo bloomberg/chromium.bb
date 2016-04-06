@@ -134,8 +134,8 @@ class WindowServer : public ServerWindowDelegate,
     return &window_manager_factory_registry_;
   }
 
-  // Sets focus to the specified window.
   void SetFocusedWindow(ServerWindow* window);
+  ServerWindow* GetFocusedWindow();
 
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies

@@ -196,7 +196,7 @@ class Window {
   void SetCapture();
   void ReleaseCapture();
 
-  // Focus.
+  // Focus. See WindowTreeConnection::ClearFocus() to reset focus.
   void SetFocus();
   bool HasFocus() const;
   void SetCanFocus(bool can_focus);

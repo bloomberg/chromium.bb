@@ -690,12 +690,14 @@ void NativeWidgetMus::Activate() {
 }
 
 void NativeWidgetMus::Deactivate() {
-  // NOTIMPLEMENTED();
+  if (IsActive())
+    window_->connection()->ClearFocus();
 }
 
 bool NativeWidgetMus::IsActive() const {
-  // NOTIMPLEMENTED();
-  return true;
+  mus::Window* focused =
+      window_ ? window_->connection()->GetFocusedWindow() : nullptr;
+  return focused && window_->Contains(focused);
 }
 
 void NativeWidgetMus::SetAlwaysOnTop(bool always_on_top) {
@@ -807,7 +809,12 @@ bool NativeWidgetMus::IsMouseEventsEnabled() const {
 }
 
 void NativeWidgetMus::ClearNativeFocus() {
-  // NOTIMPLEMENTED();
+  if (!IsActive())
+    return;
+  mus::Window* focused =
+      window_ ? window_->connection()->GetFocusedWindow() : nullptr;
+  if (focused && window_->Contains(focused) && focused != window_)
+    window_->SetFocus();
 }
 
 gfx::Rect NativeWidgetMus::GetWorkAreaBoundsInScreen() const {
