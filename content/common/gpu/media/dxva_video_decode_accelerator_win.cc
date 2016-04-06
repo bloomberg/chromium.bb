@@ -848,8 +848,8 @@ DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
 DXVAVideoDecodeAccelerator::PendingSampleInfo::~PendingSampleInfo() {}
 
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
-    const base::Callback<bool(void)>& make_context_current,
-    gfx::GLContext* gl_context,
+    const GetGLContextCallback& get_gl_context_cb,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
     bool enable_accelerated_vpx_decode)
     : client_(NULL),
       dev_manager_reset_token_(0),
@@ -859,14 +859,14 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       pictures_requested_(false),
       inputs_before_decode_(0),
       sent_drain_message_(false),
-      make_context_current_(make_context_current),
+      get_gl_context_cb_(get_gl_context_cb),
+      make_context_current_cb_(make_context_current_cb),
       codec_(media::kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
       use_dx11_(false),
       use_keyed_mutex_(false),
       dx11_video_format_converter_media_type_needs_init_(true),
-      gl_context_(gl_context),
       using_angle_device_(false),
       enable_accelerated_vpx_decode_(enable_accelerated_vpx_decode),
       weak_this_factory_(this) {
@@ -881,6 +881,11 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
 
 bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
+  if (get_gl_context_cb_.is_null() || make_context_current_cb_.is_null()) {
+    NOTREACHED() << "GL callbacks are required for this VDA";
+    return false;
+  }
+
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
@@ -1248,7 +1253,7 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
                                 base::Unretained(this)));
     }
   } else {
-    RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+    RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
                                  "Failed to make context current",
                                  PLATFORM_FAILURE, );
     it->second->ResetReuseFence();
@@ -1270,7 +1275,7 @@ void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
   DCHECK(picture_buffer->waiting_to_reuse());
 
   gfx::GLFence* fence = picture_buffer->reuse_fence();
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
                                "Failed to make context current",
                                PLATFORM_FAILURE, );
   if (count <= kMaxIterationsForANGLEReuseFlush && !fence->HasCompleted()) {
@@ -1364,7 +1369,9 @@ void DXVAVideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
-bool DXVAVideoDecodeAccelerator::CanDecodeOnIOThread() {
+bool DXVAVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
+    const base::WeakPtr<Client>& decode_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
   return false;
 }
 
@@ -1697,15 +1704,16 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     DVLOG(1) << "Failed to set Low latency mode on decoder. Error: " << hr;
   }
 
+  auto gl_context = get_gl_context_cb_.Run();
+  RETURN_ON_FAILURE(gl_context, "Couldn't get GL context", false);
+
   // The decoder should use DX11 iff
   // 1. The underlying H/W decoder supports it.
   // 2. We have a pointer to the MFCreateDXGIDeviceManager function needed for
   //    this. This should always be true for Windows 8+.
   // 3. ANGLE is using DX11.
-  DCHECK(gl_context_);
   if (create_dxgi_device_manager_ &&
-      (gl_context_->GetGLRenderer().find("Direct3D11") !=
-           std::string::npos)) {
+      (gl_context->GetGLRenderer().find("Direct3D11") != std::string::npos)) {
     UINT32 dx11_aware = 0;
     attributes->GetUINT32(MF_SA_D3D11_AWARE, &dx11_aware);
     use_dx11_ = !!dx11_aware;
@@ -1907,8 +1915,9 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
   if (!output_picture_buffers_.size())
     return;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
-      "Failed to make context current", PLATFORM_FAILURE,);
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
 
   OutputBuffers::iterator index;
 
@@ -2004,7 +2013,7 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
     return;
 
   // Best effort to make the GL context current.
-  make_context_current_.Run();
+  make_context_current_cb_.Run();
 
   decoder_thread_.Stop();
   weak_this_factory_.InvalidateWeakPtrs();
@@ -2297,8 +2306,9 @@ void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
 }
 
 void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
-    "Failed to make context current", PLATFORM_FAILURE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
 
   OutputBuffers::iterator index;
 
@@ -2320,8 +2330,9 @@ void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
 
 void DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer(
     int32_t picture_buffer_id) {
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
-    "Failed to make context current", PLATFORM_FAILURE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
 
   OutputBuffers::iterator it = stale_output_picture_buffers_.find(
       picture_buffer_id);
@@ -2437,8 +2448,9 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   if (picture_buffer->available())
     return;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
-      "Failed to make context current", PLATFORM_FAILURE,);
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
 
   DCHECK(!output_picture_buffers_.empty());
 

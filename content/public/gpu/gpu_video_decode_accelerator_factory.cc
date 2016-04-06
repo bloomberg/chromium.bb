@@ -1,0 +1,68 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
+#include "content/public/gpu/gpu_video_decode_accelerator_factory.h"
+
+namespace content {
+
+GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() {}
+
+// static
+scoped_ptr<GpuVideoDecodeAcceleratorFactory>
+GpuVideoDecodeAcceleratorFactory::Create(
+    const GetGLContextCallback& get_gl_context_cb,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb) {
+  auto gvdafactory_impl = GpuVideoDecodeAcceleratorFactoryImpl::Create(
+      get_gl_context_cb, make_context_current_cb, bind_image_cb);
+  if (!gvdafactory_impl)
+    return nullptr;
+
+  return make_scoped_ptr(
+      new GpuVideoDecodeAcceleratorFactory(std::move(gvdafactory_impl)));
+}
+
+// static
+scoped_ptr<GpuVideoDecodeAcceleratorFactory>
+GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
+    const GetGLContextCallback& get_gl_context_cb,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    const GetGLES2DecoderCallback& get_gles2_decoder_cb) {
+  auto gvdafactory_impl =
+      GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
+          get_gl_context_cb, make_context_current_cb, bind_image_cb,
+          get_gles2_decoder_cb);
+  if (!gvdafactory_impl)
+    return nullptr;
+
+  return make_scoped_ptr(
+      new GpuVideoDecodeAcceleratorFactory(std::move(gvdafactory_impl)));
+}
+
+// static
+gpu::VideoDecodeAcceleratorCapabilities
+GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
+    const gpu::GpuPreferences& gpu_preferences) {
+  return GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
+      gpu_preferences);
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAcceleratorFactory::CreateVDA(
+    media::VideoDecodeAccelerator::Client* client,
+    const media::VideoDecodeAccelerator::Config& config,
+    const gpu::GpuPreferences& gpu_preferences) {
+  if (!gvdafactory_impl_)
+    return nullptr;
+
+  return gvdafactory_impl_->CreateVDA(client, config, gpu_preferences);
+}
+
+GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
+    scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl)
+    : gvdafactory_impl_(std::move(gvdafactory_impl)) {}
+
+}  // namespace content

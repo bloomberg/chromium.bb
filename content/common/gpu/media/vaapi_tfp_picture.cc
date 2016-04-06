@@ -14,18 +14,18 @@ namespace content {
 
 VaapiTFPPicture::VaapiTFPPicture(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    const base::Callback<bool(void)> make_context_current,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
     int32_t picture_buffer_id,
     uint32_t texture_id,
     const gfx::Size& size)
     : VaapiPicture(picture_buffer_id, texture_id, size),
       vaapi_wrapper_(vaapi_wrapper),
-      make_context_current_(make_context_current),
+      make_context_current_cb_(make_context_current_cb),
       x_display_(gfx::GetXDisplay()),
       x_pixmap_(0) {}
 
 VaapiTFPPicture::~VaapiTFPPicture() {
-  if (glx_image_.get() && make_context_current_.Run()) {
+  if (glx_image_.get() && make_context_current_cb_.Run()) {
     glx_image_->ReleaseTexImage(GL_TEXTURE_2D);
     glx_image_->Destroy(true);
     DCHECK_EQ(glGetError(), static_cast<GLenum>(GL_NO_ERROR));
@@ -36,7 +36,7 @@ VaapiTFPPicture::~VaapiTFPPicture() {
 }
 
 bool VaapiTFPPicture::Initialize() {
-  if (!make_context_current_.Run())
+  if (!make_context_current_cb_.Run())
     return false;
 
   XWindowAttributes win_attr;

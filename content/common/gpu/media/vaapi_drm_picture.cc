@@ -27,16 +27,16 @@ namespace content {
 
 VaapiDrmPicture::VaapiDrmPicture(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    const base::Callback<bool(void)>& make_context_current,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
     int32_t picture_buffer_id,
     uint32_t texture_id,
     const gfx::Size& size)
     : VaapiPicture(picture_buffer_id, texture_id, size),
       vaapi_wrapper_(vaapi_wrapper),
-      make_context_current_(make_context_current) {}
+      make_context_current_cb_(make_context_current_cb) {}
 
 VaapiDrmPicture::~VaapiDrmPicture() {
-  if (gl_image_ && make_context_current_.Run()) {
+  if (gl_image_ && make_context_current_cb_.Run()) {
     gl_image_->ReleaseTexImage(GL_TEXTURE_EXTERNAL_OES);
     gl_image_->Destroy(true);
 
@@ -67,7 +67,7 @@ bool VaapiDrmPicture::Initialize() {
   pixmap_->SetProcessingCallback(
       base::Bind(&VaapiWrapper::ProcessPixmap, vaapi_wrapper_));
 
-  if (!make_context_current_.Run())
+  if (!make_context_current_cb_.Run())
     return false;
 
   gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,

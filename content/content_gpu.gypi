@@ -23,6 +23,8 @@
     'gpu/in_process_gpu_thread.cc',
     'gpu/in_process_gpu_thread.h',
     'public/gpu/content_gpu_client.h',
+    'public/gpu/gpu_video_decode_accelerator_factory.cc',
+    'public/gpu/gpu_video_decode_accelerator_factory.h',
   ],
   'include_dirs': [
     '..',
