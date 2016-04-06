@@ -334,12 +334,29 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
             wpDocument.querySelector('#wallpaper-grid').classList.add('small');
             if (wpDocument.querySelector('.check'))
               wpDocument.querySelector('.check').style.visibility = 'hidden';
+            wpDocument.querySelector('#checkbox').classList.remove('checked');
+            wpDocument.querySelector('#categories-list').disabled = false;
+            wpDocument.querySelector('#wallpaper-grid').disabled = false;
           });
         } else {
           wpDocument.querySelector('#wallpaper-set-by-message').textContent =
               '';
           wpDocument.querySelector('#wallpaper-grid').classList.remove('small');
-          wpDocument.querySelector('.check').style.visibility = 'visible';
+          Constants.WallpaperSyncStorage.get(
+              Constants.AccessSyncSurpriseMeEnabledKey, function(item) {
+            var enable = item[Constants.AccessSyncSurpriseMeEnabledKey];
+            if (enable) {
+              wpDocument.querySelector('#checkbox').classList.add('checked');
+              if (wpDocument.querySelector('.check'))
+                wpDocument.querySelector('.check').style.visibility = 'hidden';
+            } else {
+              wpDocument.querySelector('#checkbox').classList.remove('checked');
+              if (wpDocument.querySelector('.check'))
+                wpDocument.querySelector('.check').style.visibility = 'visible';
+            }
+            wpDocument.querySelector('#categories-list').disabled = enable;
+            wpDocument.querySelector('#wallpaper-grid').disabled = enable;
+          });
         }
       };
 
