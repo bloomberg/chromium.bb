@@ -134,19 +134,10 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
 
     ASSERT(parentState.m_didUpdateForChildren);
 
-    EPosition position = currentObject.styleRef().position();
-
     if (currentObject.isPaintInvalidationContainer()) {
         m_paintInvalidationContainer = toLayoutBoxModelObject(&currentObject);
-        if (currentObject.styleRef().isStackingContext()) {
+        if (currentObject.styleRef().isStackingContext())
             m_paintInvalidationContainerForStackedContents = toLayoutBoxModelObject(&currentObject);
-            // Adjust cached offsets for absolute-position to be relative to this new paintInvalidationContainer.
-            if (m_cachedOffsetsForAbsolutePositionEnabled && m_cachedOffsetsEnabled) {
-                m_paintOffsetForAbsolutePosition -= m_paintOffset;
-                if (m_clippedForAbsolutePosition)
-                    m_clipRectForAbsolutePosition.move(-m_paintOffset);
-            }
-        }
     } else if (currentObject.isLayoutView()) {
         // m_paintInvalidationContainerForStackedContents is only for stacked descendants in its own frame,
         // because it doesn't establish stacking context for stacked contents in sub-frames.
@@ -194,31 +185,52 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
         m_forcedSubtreeInvalidationWithinContainer = false;
         m_forcedSubtreeInvalidationRectUpdateWithinContainer = false;
 
+        if (currentObject == m_paintInvalidationContainerForStackedContents
+            && currentObject != m_containerForAbsolutePosition
+            && m_cachedOffsetsForAbsolutePositionEnabled
+            && m_cachedOffsetsEnabled) {
+            // The current object is the new paintInvalidationContainer for absolute-position descendants but is not their container.
+            // Call updateForCurrentObject() before resetting m_paintOffset to get paint offset of the current object
+            // from the original paintInvalidationContainerForStackingContents, then use this paint offset to adjust
+            // m_paintOffsetForAbsolutePosition.
+            updateForCurrentObject(parentState);
+            m_paintOffsetForAbsolutePosition -= m_paintOffset;
+            if (m_clippedForAbsolutePosition)
+                m_clipRectForAbsolutePosition.move(-m_paintOffset);
+        }
+
         m_clipped = false; // Will be updated in updateForChildren().
         m_paintOffset = LayoutSize();
         return;
     }
 
+    updateForCurrentObject(parentState);
+}
+
+void PaintInvalidationState::updateForCurrentObject(const PaintInvalidationState& parentState)
+{
     if (!m_cachedOffsetsEnabled)
         return;
 
-    if (currentObject.isLayoutView()) {
-        ASSERT(&parentState.m_currentObject == toLayoutView(currentObject).frame()->ownerLayoutObject());
+    if (m_currentObject.isLayoutView()) {
+        ASSERT(&parentState.m_currentObject == toLayoutView(m_currentObject).frame()->ownerLayoutObject());
         m_paintOffset += toLayoutBox(parentState.m_currentObject).contentBoxOffset();
         // a LayoutView paints with a defined size but a pixel-rounded offset.
         m_paintOffset = LayoutSize(roundedIntSize(m_paintOffset));
         return;
     }
 
+    EPosition position = m_currentObject.styleRef().position();
+
     if (position == FixedPosition) {
-        if (m_paintInvalidationContainer != currentObject.view() && m_paintInvalidationContainer->view() == currentObject.view()) {
+        if (m_paintInvalidationContainer != m_currentObject.view() && m_paintInvalidationContainer->view() == m_currentObject.view()) {
             // TODO(crbug.com/598762): localToAncestorPoint() is incorrect for fixed-position when paintInvalidationContainer
             // is under the containing LayoutView.
             m_cachedOffsetsEnabled = false;
             return;
         }
         // Use slow path to get the offset of the fixed-position, and enable fast path for descendants.
-        FloatPoint fixedOffset = currentObject.localToAncestorPoint(FloatPoint(), m_paintInvalidationContainer, TraverseDocumentBoundaries);
+        FloatPoint fixedOffset = m_currentObject.localToAncestorPoint(FloatPoint(), m_paintInvalidationContainer, TraverseDocumentBoundaries);
         m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
         // In the above way to get paint offset, we can't get accurate clip rect, so just assume no clip.
         // Clip on fixed-position is rare, in case that paintInvalidationContainer crosses frame boundary
@@ -242,11 +254,11 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
             m_paintOffset += toLayoutInline(container).offsetForInFlowPositionedInline(toLayoutBox(m_currentObject));
     }
 
-    if (currentObject.isBox())
-        m_paintOffset += toLayoutBox(currentObject).locationOffset();
+    if (m_currentObject.isBox())
+        m_paintOffset += toLayoutBox(m_currentObject).locationOffset();
 
-    if (currentObject.isInFlowPositioned() && currentObject.hasLayer())
-        m_paintOffset += toLayoutBoxModelObject(currentObject).layer()->offsetForInFlowPosition();
+    if (m_currentObject.isInFlowPositioned() && m_currentObject.hasLayer())
+        m_paintOffset += toLayoutBoxModelObject(m_currentObject).layer()->offsetForInFlowPosition();
 }
 
 void PaintInvalidationState::updateForChildren()
@@ -399,7 +411,7 @@ static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const
     }
 }
 
-void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(LayoutRect& rect) const
+void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(LayoutRect& rect) const
 {
     ASSERT(!m_didUpdateForChildren);
 
@@ -420,6 +432,11 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(LayoutRect& 
     } else {
         slowMapToVisualRectInAncestorSpace(m_currentObject, *m_paintInvalidationContainer, rect);
     }
+}
+
+void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(LayoutRect& rect) const
+{
+    mapLocalRectToPaintInvalidationContainer(rect);
 
     if (m_paintInvalidationContainer->layer()->groupedMapping())
         PaintLayer::mapRectInPaintInvalidationContainerToBacking(*m_paintInvalidationContainer, rect);

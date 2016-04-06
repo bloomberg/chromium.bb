@@ -5,6 +5,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInvalidationState.h"
+#include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -35,10 +36,10 @@ protected:
 
         const PaintInvalidationState& paintInvalidationState = *paintInvalidationStates.last();
         ASSERT_EQ(paintInvalidationState.m_currentObject, object);
-        ASSERT_EQ(paintInvalidationState.paintInvalidationContainer(), paintInvalidationContainer);
+        ASSERT_EQ(&paintInvalidationState.paintInvalidationContainer(), &paintInvalidationContainer);
 
         LayoutRect r = rect;
-        paintInvalidationState.mapLocalRectToPaintInvalidationBacking(r);
+        paintInvalidationState.mapLocalRectToPaintInvalidationContainer(r);
         EXPECT_EQ(expectedRect, r);
     }
 };
@@ -234,6 +235,7 @@ TEST_F(VisualRectMappingTest, ContainerOverflowClip)
     EXPECT_EQ(LayoutUnit(0), container->scrollLeft());
     container->setScrollTop(LayoutUnit(7));
     container->setScrollLeft(LayoutUnit(8));
+    document().view()->updateAllLifecyclePhases();
 
     LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
     LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
@@ -291,6 +293,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowClip)
     EXPECT_EQ(LayoutUnit(150), container->scrollLeft());
     container->setScrollTop(LayoutUnit(7));
     container->setScrollLeft(LayoutUnit(142)); // Scroll to the right by 8 pixels.
+    document().view()->updateAllLifecyclePhases();
 
     LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
     LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
@@ -336,6 +339,78 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowClip)
     // border-widths because of layout error.
     EXPECT_EQ(LayoutRect(282, 111, 110, 120), rect);
     checkPaintInvalidationStateRectMapping(rect, containerOverflowRect, *container, layoutView(), layoutView());
+}
+
+TEST_F(VisualRectMappingTest, DifferentPaintInvalidaitionContainerForAbsolutePosition)
+{
+    enableCompositing();
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    setBodyInnerHTML(
+        "<div id='stacking-context' style='opacity: 0.9; background: blue; will-change: transform'>"
+        "    <div id='scroller' style='overflow: scroll; width: 80px; height: 80px'>"
+        "        <div id='absolute' style='position: absolute; top: 111px; left: 222px; width: 50px; height: 50px; background: green'></div>"
+        "        <div id='normal-flow' style='width: 2000px; height: 2000px; background: yellow'></div>"
+        "    </div>"
+        "</div>");
+
+    LayoutBlock* scroller = toLayoutBlock(getLayoutObjectByElementId("scroller"));
+    scroller->setScrollTop(LayoutUnit(77));
+    scroller->setScrollLeft(LayoutUnit(88));
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock* normalFlow = toLayoutBlock(getLayoutObjectByElementId("normal-flow"));
+    EXPECT_EQ(scroller, &normalFlow->containerForPaintInvalidation());
+
+    LayoutRect normalFlowOverflowRect = normalFlow->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), normalFlowOverflowRect);
+    LayoutRect rect = normalFlowOverflowRect;
+    EXPECT_TRUE(normalFlow->mapToVisualRectInAncestorSpace(scroller, rect));
+    EXPECT_EQ(LayoutRect(-88, -77, 2000, 2000), rect);
+    checkPaintInvalidationStateRectMapping(rect, normalFlowOverflowRect, *normalFlow, layoutView(), *scroller);
+
+    LayoutBlock* stackingContext = toLayoutBlock(getLayoutObjectByElementId("stacking-context"));
+    LayoutBlock* absolute = toLayoutBlock(getLayoutObjectByElementId("absolute"));
+    EXPECT_EQ(stackingContext, &absolute->containerForPaintInvalidation());
+    EXPECT_EQ(stackingContext, absolute->container());
+
+    LayoutRect absoluteOverflowRect = absolute->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(0, 0, 50, 50), absoluteOverflowRect);
+    rect = absoluteOverflowRect;
+    EXPECT_TRUE(absolute->mapToVisualRectInAncestorSpace(stackingContext, rect));
+    EXPECT_EQ(LayoutRect(222, 111, 50, 50), rect);
+    checkPaintInvalidationStateRectMapping(rect, absoluteOverflowRect, *absolute, layoutView(), *stackingContext);
+}
+
+TEST_F(VisualRectMappingTest, ContainerOfAbsoluteAbovePaintInvalidationContainer)
+{
+    enableCompositing();
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    setBodyInnerHTML(
+        "<div id='container' style='position: absolute; top: 88px; left: 99px'>"
+        "    <div style='height: 222px'></div>"
+        // This div makes stacking-context composited.
+        "    <div style='position: absolute; width: 1px; height: 1px; background:yellow; will-change: transform'></div>"
+        // This stacking context is paintInvalidationContainer of the absolute child, but not a container of it.
+        "    <div id='stacking-context' style='opacity: 0.9'>"
+        "        <div id='absolute' style='position: absolute; top: 50px; left: 50px; width: 50px; height: 50px; background: green'></div>"
+        "    </div>"
+        "</div>");
+
+    LayoutBlock* stackingContext = toLayoutBlock(getLayoutObjectByElementId("stacking-context"));
+    LayoutBlock* absolute = toLayoutBlock(getLayoutObjectByElementId("absolute"));
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
+    EXPECT_EQ(stackingContext, &absolute->containerForPaintInvalidation());
+    EXPECT_EQ(container, absolute->container());
+
+    LayoutRect absoluteOverflowRect = absolute->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(0, 0, 50, 50), absoluteOverflowRect);
+    LayoutRect rect = absoluteOverflowRect;
+    EXPECT_TRUE(absolute->mapToVisualRectInAncestorSpace(stackingContext, rect));
+    // -172 = top(50) - y_offset_of_stacking_context(222)
+    EXPECT_EQ(LayoutRect(50, -172, 50, 50), rect);
+    checkPaintInvalidationStateRectMapping(rect, absoluteOverflowRect, *absolute, layoutView(), *stackingContext);
 }
 
 } // namespace blink

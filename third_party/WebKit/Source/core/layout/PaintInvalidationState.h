@@ -84,6 +84,9 @@ public:
 private:
     friend class VisualRectMappingTest;
 
+    void mapLocalRectToPaintInvalidationContainer(LayoutRect&) const;
+
+    void updateForCurrentObject(const PaintInvalidationState& parentState);
     void updateForNormalChildren();
 
     LayoutRect computePaintInvalidationRectInBackingForSVG() const;
