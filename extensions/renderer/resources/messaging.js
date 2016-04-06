@@ -339,7 +339,13 @@
       // Save a reference so that we don't re-entrantly call responseCallback.
       var sendResponse = responseCallback;
       responseCallback = null;
-      sendResponse(response);
+      if (arguments.length === 0) {
+        // According to the documentation of chrome.runtime.sendMessage, the
+        // callback is invoked without any arguments when an error occurs.
+        sendResponse();
+      } else {
+        sendResponse(response);
+      }
     }
 
 
