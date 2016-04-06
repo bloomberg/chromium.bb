@@ -141,22 +141,18 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Mac AMD failures
     self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
-        'rgb-rgb-unsigned_byte.html',
+        'tex-2d-rgb-rgb-unsigned_byte.html',
         ['mac', ('amd', 0x679e)], bug=589930)
     self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
-        'rgba-rgba-unsigned_byte.html',
+        'tex-2d-rgba-rgba-unsigned_byte.html',
         ['mac', ('amd', 0x679e)], bug=589930)
 
     # Mac Intel failures
     self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
-        'rgb-rgb-unsigned_byte.html',
+        'tex-2d-rgb-rgb-unsigned_byte.html',
         ['mac', 'intel'], bug=589930)
     self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
-        'rgba-rgba-unsigned_byte.html',
+        'tex-2d-rgba-rgba-unsigned_byte.html',
         ['mac', 'intel'], bug=589930)
 
     # Linux failures
@@ -166,8 +162,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
                ['linux', 'nvidia'], bug=524144)
     self.Flaky('conformance/textures/image/' +
-               'tex-image-and-sub-image-2d-with-image-' +
-               'rgb-rgb-unsigned_byte.html',
+               'tex-2d-rgb-rgb-unsigned_byte.html',
                ['linux', 'nvidia'], bug=596622)
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
@@ -233,28 +228,27 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['android'], bug=478572)
-    self.Fail('conformance/textures/image/tex-image-and-sub-image-2d-' +
-              'with-image-rgb-rgb-unsigned_byte.html',
+    self.Fail('conformance/textures/image/tex-2d-rgb-rgb-unsigned_byte.html',
         ['android'], bug=586183)
     # The following tests timed out on android, so skip them for now.
     self.Skip('conformance/textures/image_bitmap_from_video/*',
         ['android'], bug=585108)
     # The following WebView crashes are causing problems with further
     # tests in the suite, so skip them for now.
-    self.Skip('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgb-rgb-unsigned_byte.html',
+    self.Skip('conformance/textures/video/' +
+        'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Skip('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgb-rgb-unsigned_short_5_6_5.html',
+    self.Skip('conformance/textures/video/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Skip('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_byte.html',
+    self.Skip('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_byte.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Skip('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_short_4_4_4_4.html',
+    self.Skip('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Skip('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_short_5_5_5_1.html',
+    self.Skip('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
         ['android', 'android-webview-shell'], bug=352645)
     self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-webview-shell'], bug=352645)
@@ -294,24 +288,24 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
     self.Fail('conformance/textures/image_bitmap_from_image_bitmap/*',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=598262)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgb-rgb-unsigned_byte.html',
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', 'android-content-shell',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_byte.html',
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_byte.html',
         ['android', 'android-content-shell',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgb-rgb-unsigned_short_5_6_5.html',
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['android', 'android-content-shell',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_short_4_4_4_4.html',
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['android', 'android-content-shell',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_short_5_5_5_1.html',
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
         ['android', 'android-content-shell',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     # bindBufferBadArgs is causing the GPU thread to crash, taking
