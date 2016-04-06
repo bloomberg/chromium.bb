@@ -59,9 +59,4 @@ void WorkerRuntimeAgent::enable(ErrorString* errorString)
     InspectorRuntimeAgent::enable(errorString);
 }
 
-ScriptState* WorkerRuntimeAgent::defaultScriptState()
-{
-    return m_workerGlobalScope->scriptController()->getScriptState();
-}
-
 } // namespace blink

@@ -51,7 +51,7 @@ public:
 
 private:
     WorkerRuntimeAgent(V8Debugger*, WorkerGlobalScope*, InspectorRuntimeAgent::Client*, int contextGroupId);
-    ScriptState* defaultScriptState() override;
+
     Member<WorkerGlobalScope> m_workerGlobalScope;
 };
 

@@ -76,11 +76,4 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
     InspectorRuntimeAgent::disable(errorString);
 }
 
-ScriptState* PageRuntimeAgent::defaultScriptState()
-{
-    ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedFrames->root());
-    ASSERT(scriptState);
-    return scriptState;
-}
-
 } // namespace blink

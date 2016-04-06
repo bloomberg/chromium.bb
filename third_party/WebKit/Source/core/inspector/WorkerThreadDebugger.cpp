@@ -60,7 +60,7 @@ WorkerThreadDebugger::~WorkerThreadDebugger()
 
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
+    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
 }
 
 void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context)

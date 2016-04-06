@@ -91,11 +91,27 @@ void V8RuntimeAgentImpl::evaluate(
     Maybe<bool>* wasThrown,
     Maybe<ExceptionDetails>* exceptionDetails)
 {
-    if (!executionContextId.isJust()) {
-        *errorString = "Cannot find default execution context";
-        return;
+    int contextId;
+    if (executionContextId.isJust()) {
+        contextId = executionContextId.fromJust();
+    } else {
+        InspectedContext* mainInGroup = nullptr;
+        if (const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_connection->contextGroupId())) {
+            for (auto& idContext : *contexts) {
+                if (idContext.second->isMainInGroup()) {
+                    mainInGroup = idContext.second;
+                    break;
+                }
+            }
+        }
+        if (!mainInGroup) {
+            *errorString = "Cannot find default execution context";
+            return;
+        }
+        contextId = mainInGroup->contextId();
     }
-    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, executionContextId.fromJust());
+
+    InjectedScript* injectedScript = m_connection->findInjectedScript(errorString, contextId);
     if (!injectedScript)
         return;
 
@@ -118,7 +134,7 @@ void V8RuntimeAgentImpl::evaluate(
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), expression));
     // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_connection->findInjectedScript(errorString, executionContextId.fromJust());
+    injectedScript = m_connection->findInjectedScript(errorString, contextId);
     if (!injectedScript)
         return;
 

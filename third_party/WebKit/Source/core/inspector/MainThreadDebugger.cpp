@@ -101,9 +101,10 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    if (frame->localFrameRoot() == frame && world.isMainWorld())
+    bool isMainContext = frame->localFrameRoot() == frame && world.isMainWorld();
+    if (isMainContext)
         debugger()->resetContextGroup(contextGroupId(frame));
-    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
+    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), isMainContext, world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)

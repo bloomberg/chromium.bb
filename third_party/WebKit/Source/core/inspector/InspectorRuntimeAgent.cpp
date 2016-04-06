@@ -94,7 +94,7 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
     const Maybe<String16>& objectGroup,
     const Maybe<bool>& includeCommandLineAPI,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
-    const Maybe<int>& optExecutionContextId,
+    const Maybe<int>& executionContextId,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
     const Maybe<bool>& userGesture,
@@ -105,13 +105,6 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
     Optional<UserGestureIndicator> userGestureIndicator;
     if (userGesture.fromMaybe(false))
         userGestureIndicator.emplace(DefinitelyProcessingNewUserGesture);
-    int executionContextId;
-    if (optExecutionContextId.isJust()) {
-        executionContextId = optExecutionContextId.fromJust();
-    } else {
-        v8::HandleScope handles(defaultScriptState()->isolate());
-        executionContextId = V8Debugger::contextId(defaultScriptState()->context());
-    }
     m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, userGesture, result, wasThrown, exceptionDetails);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }

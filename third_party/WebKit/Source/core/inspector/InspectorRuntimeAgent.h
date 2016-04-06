@@ -88,7 +88,6 @@ public:
 
 protected:
     InspectorRuntimeAgent(V8Debugger*, Client*, int contextGroupId);
-    virtual ScriptState* defaultScriptState() = 0;
 
     bool m_enabled;
     OwnPtr<V8RuntimeAgent> m_v8RuntimeAgent;

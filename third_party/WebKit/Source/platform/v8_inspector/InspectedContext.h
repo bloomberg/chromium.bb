@@ -24,6 +24,7 @@ public:
 
     v8::Local<v8::Context> context() const;
     int contextId() const { return m_contextId; }
+    bool isMainInGroup() const { return m_isMainInGroup; }
     bool isDefault() const { return m_isDefault; }
     String16 origin() const { return m_origin; }
     String16 humanReadableName() const { return m_humanReadableName; }
@@ -48,6 +49,7 @@ private:
     v8::Global<v8::Context> m_context;
     int m_contextId;
     int m_contextGroupId;
+    bool m_isMainInGroup;
     bool m_isDefault;
     const String16 m_origin;
     const String16 m_humanReadableName;
