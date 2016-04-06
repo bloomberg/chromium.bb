@@ -97,7 +97,17 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
 
 static EphemeralRange expandToParagraphBoundary(const EphemeralRange& range)
 {
-    return EphemeralRange(startOfParagraph(createVisiblePosition(range.startPosition())).deepEquivalent(), endOfParagraph(createVisiblePosition(range.endPosition())).deepEquivalent());
+    const VisiblePosition& start = createVisiblePosition(range.startPosition());
+    DCHECK(start.isNotNull()) << range.startPosition();
+    const VisiblePosition& paragraphStart = startOfParagraph(start);
+    DCHECK(paragraphStart.isNotNull()) << range.startPosition();
+
+    const VisiblePosition& end = createVisiblePosition(range.endPosition());
+    DCHECK(end.isNotNull()) << range.endPosition();
+    const VisiblePosition& paragraphEnd = endOfParagraph(end);
+    DCHECK(paragraphEnd.isNotNull()) << range.endPosition();
+
+    return EphemeralRange(paragraphStart.deepEquivalent(), paragraphEnd.deepEquivalent());
 }
 
 TextCheckingParagraph::TextCheckingParagraph(const EphemeralRange& checkingRange)
