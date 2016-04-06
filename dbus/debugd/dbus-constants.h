@@ -17,6 +17,7 @@ const char kGetInterfaces[] = "GetInterfaces";
 const char kGetModemStatus[] = "GetModemStatus";
 const char kGetNetworkStatus[] = "GetNetworkStatus";
 const char kGetPerfOutput[] = "GetPerfOutput";
+const char kGetPerfOutputFd[] = "GetPerfOutputFd";
 const char kGetRoutes[] = "GetRoutes";
 const char kGetWiMaxStatus[] = "GetWiMaxStatus";
 const char kSetDebugMode[] = "SetDebugMode";
