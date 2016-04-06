@@ -90,13 +90,13 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
       fillColor = [NSColor colorWithCalibratedWhite:0 alpha:0.08];
       break;
     case ToolbarButtonImageBackgroundStyle::HOVER_THEMED:
-      fillColor = [NSColor colorWithCalibratedWhite:1 alpha:0.08];
+      fillColor = [NSColor colorWithCalibratedWhite:1 alpha:0.12];
       break;
     case ToolbarButtonImageBackgroundStyle::PRESSED:
       fillColor = [NSColor colorWithCalibratedWhite:0 alpha:0.12];
       break;
     case ToolbarButtonImageBackgroundStyle::PRESSED_THEMED:
-      fillColor = [NSColor colorWithCalibratedWhite:1 alpha:0.12];
+      fillColor = [NSColor colorWithCalibratedWhite:1 alpha:0.16];
       break;
   }
 
