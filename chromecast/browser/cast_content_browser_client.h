@@ -67,6 +67,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       media::VideoPlaneController* video_plane_controller);
 
 #if !defined(OS_ANDROID)
+  // Returns the task runner that must be used for media IO.
+  scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
+
   // Creates a MediaPipelineDevice (CMA backend) for media playback, called
   // once per media player instance.
   virtual scoped_ptr<media::MediaPipelineBackend> CreateMediaPipelineBackend(
@@ -160,9 +163,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
  protected:
   CastContentBrowserClient();
-
-  // Returns the task runner that must be used for media IO.
-  scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
   URLRequestContextFactory* url_request_context_factory() const {
     return url_request_context_factory_.get();

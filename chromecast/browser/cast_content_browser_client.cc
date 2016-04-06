@@ -50,9 +50,8 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#include "chromecast/browser/media/cast_mojo_media_application.h"
 #include "chromecast/browser/media/cast_mojo_media_client.h"
-// nogncheck because of conditional dependency.
-#include "media/mojo/services/mojo_media_application.h"  // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
 #if defined(OS_ANDROID)
@@ -69,12 +68,12 @@ namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
     CastContentBrowserClient* browser_client) {
-  scoped_ptr<::media::MojoMediaClient> mojo_media_client(
+  scoped_ptr<media::CastMojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
                      base::Unretained(browser_client))));
-  return scoped_ptr<mojo::ShellClient>(
-      new ::media::MojoMediaApplication(std::move(mojo_media_client)));
+  return scoped_ptr<mojo::ShellClient>(new media::CastMojoMediaApplication(
+      std::move(mojo_media_client), browser_client->GetMediaTaskRunner()));
 }
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 }  // namespace
@@ -106,6 +105,12 @@ scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
 }
 
 #if !defined(OS_ANDROID)
+scoped_refptr<base::SingleThreadTaskRunner>
+CastContentBrowserClient::GetMediaTaskRunner() {
+  DCHECK(cast_browser_main_parts_);
+  return cast_browser_main_parts_->GetMediaTaskRunner();
+}
+
 scoped_ptr<media::MediaPipelineBackend>
 CastContentBrowserClient::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
@@ -161,12 +166,6 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
                     url_request_context_factory_->GetSystemGetter())),
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-CastContentBrowserClient::GetMediaTaskRunner() {
-  DCHECK(cast_browser_main_parts_);
-  return cast_browser_main_parts_->GetMediaTaskRunner();
 }
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(
