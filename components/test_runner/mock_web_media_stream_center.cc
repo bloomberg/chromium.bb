@@ -40,8 +40,7 @@ class MockWebAudioDestinationConsumer
 
 MockWebMediaStreamCenter::MockWebMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client,
-    TestInterfaces* interfaces)
-    : interfaces_(interfaces) {
+    TestInterfaces* interfaces) {
 }
 
 MockWebMediaStreamCenter::~MockWebMediaStreamCenter() {

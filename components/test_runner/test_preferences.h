@@ -23,7 +23,6 @@ struct TEST_RUNNER_EXPORT TestPreferences {
     bool allow_display_of_insecure_content;
     bool allow_file_access_from_file_urls;
     bool allow_running_of_insecure_content;
-    bool author_and_user_styles_enabled;
     blink::WebString default_text_encoding_name;
     bool experimental_webgl_enabled;
     bool experimental_css_grid_layout_enabled;

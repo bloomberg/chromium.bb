@@ -42,7 +42,6 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
 
  private:
   WebTaskList task_list_;
-  TestInterfaces* interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaStreamCenter);
 };

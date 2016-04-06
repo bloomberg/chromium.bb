@@ -127,8 +127,6 @@ class SourcesRequestTask : public WebMethodTask<MockWebUserMediaClient> {
 };
 
 class MockExtraData : public WebMediaStream::ExtraData {
- public:
-  int foo;
 };
 
 MockWebUserMediaClient::MockWebUserMediaClient(WebTestDelegate* delegate)
