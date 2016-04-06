@@ -51,6 +51,20 @@ Polymer({
   },
 
   /**
+   * Sets the password in the current password dialog if the loginPair matches.
+   * @param {!chrome.passwordsPrivate.LoginPair} loginPair
+   * @param {!string} password
+   */
+  setPassword: function(loginPair, password) {
+    var passwordDialog = this.$.passwordEditDialog;
+    if (passwordDialog.item && passwordDialog.item.loginPair &&
+        passwordDialog.item.loginPair.originUrl == loginPair.originUrl &&
+        passwordDialog.item.loginPair.username == loginPair.username) {
+      passwordDialog.password = password;
+    }
+  },
+
+  /**
    * Shows the edit password dialog.
    * @private
    */

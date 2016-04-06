@@ -112,14 +112,28 @@ SettingsPasswordSectionBrowserTest.prototype = {
     passwordsSection.savedPasswords = passwordList;
     passwordsSection.passwordExceptions = exceptionList;
     document.body.appendChild(passwordsSection);
-    this.flush_(passwordsSection);
+    this.flushPasswordSection_(passwordsSection);
     return passwordsSection;
+  },
+
+  /**
+   * Helper method used to create a password editing dialog.
+   * @param {!chrome.passwordsPrivate.PasswordUiEntry} passwordItem
+   * @return {!Object}
+   * @private
+   */
+  createPasswordDialog_: function(passwordItem) {
+    var passwordDialog = document.createElement('password-edit-dialog');
+    passwordDialog.item = passwordItem;
+    document.body.appendChild(passwordDialog);
+    Polymer.dom.flush();
+    return passwordDialog;
   },
 
   /**
    * Helper method used to test for a url in a list of passwords.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
-   * @param {!String} url The URL that is being searched for.
+   * @param {!string} url The URL that is being searched for.
    */
   listContainsUrl(passwordList, url) {
     for (var i = 0; i < passwordList.length; ++i) {
@@ -134,7 +148,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
    * @param {!Object} passwordsSection
    * @private
    */
-  flush_: function(passwordsSection) {
+  flushPasswordSection_: function(passwordsSection) {
     passwordsSection.$.passwordList.notifyResize();
     passwordsSection.$.passwordExceptionsList.notifyResize();
     Polymer.dom.flush();
@@ -186,7 +200,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           passwordList);
       // Simulate 'longwebsite.com' being removed from the list.
       passwordsSection.splice('savedPasswords', 1, 1);
-      self.flush_(passwordsSection);
+      self.flushPasswordSection_(passwordsSection);
 
       assertFalse(self.listContainsUrl(passwordsSection.savedPasswords,
                                        'longwebsite.com'));
@@ -218,8 +232,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var index = 0;
 
       var clickRemoveButton = function() {
-        passwords[index].querySelector('#passwordMenu').click();
-        passwordsSection.$.menuRemovePassword.click();
+        MockInteractions.tap(passwords[index].querySelector('#passwordMenu'));
+        MockInteractions.tap(passwordsSection.$.menuRemovePassword);
       };
 
       // Listen for the remove event. If this event isn't received, the test
@@ -288,7 +302,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       passwordsSection.splice('passwordExceptions', 1, 1);
       assertEquals(-1, passwordsSection.passwordExceptions.indexOf('mail.com'));
       assertEquals(-1, exceptionList.indexOf('mail.com'));
-      self.flush_(passwordsSection);
+      self.flushPasswordSection_(passwordsSection);
 
       self.validateExceptionList_(
           self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),
@@ -316,7 +330,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var index = 0;
 
       var clickRemoveButton = function() {
-        exceptions[index].querySelector('#removeExceptionButton').click();
+        MockInteractions.tap(
+            exceptions[index].querySelector('#removeExceptionButton'));
       };
 
       // Listen for the remove event. If this event isn't received, the test
@@ -335,6 +350,84 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       // Start removing.
       clickRemoveButton();
+    });
+
+    test('usePasswordDialogTwice', function() {
+      var BLANK_PASSWORD = '       ';
+      var item = self.createPasswordItem_('google.com', 'homer',
+                                          BLANK_PASSWORD.length);
+      var passwordDialog = self.createPasswordDialog_(item);
+
+      passwordDialog.open();
+      Polymer.dom.flush();
+
+      assertEquals(item.loginPair.originUrl,
+                   passwordDialog.$.websiteInput.value);
+      assertEquals(item.loginPair.username,
+                   passwordDialog.$.usernameInput.value);
+      assertEquals(BLANK_PASSWORD,
+                   passwordDialog.$.passwordInput.value);
+      // Password should NOT be visible.
+      assertEquals('password',
+                   passwordDialog.$.passwordInput.type);
+
+      passwordDialog.close();
+      Polymer.dom.flush();
+
+      var blankPassword2 = ' '.repeat(17);
+      var item2 = self.createPasswordItem_('drive.google.com', 'marge',
+                                           blankPassword2.length);
+
+      passwordDialog.item = item2;
+      passwordDialog.open();
+      Polymer.dom.flush();
+
+      assertEquals(item2.loginPair.originUrl,
+                   passwordDialog.$.websiteInput.value);
+      assertEquals(item2.loginPair.username,
+                   passwordDialog.$.usernameInput.value);
+      assertEquals(blankPassword2,
+                   passwordDialog.$.passwordInput.value);
+      // Password should NOT be visible.
+      assertEquals('password',
+                   passwordDialog.$.passwordInput.type);
+    });
+
+    test('showSavedPassword', function() {
+      var PASSWORD = 'bAn@n@5';
+      var item = self.createPasswordItem_('goo.gl', 'bart', PASSWORD.length);
+      var passwordDialog = self.createPasswordDialog_(item);
+
+      passwordDialog.open();
+      Polymer.dom.flush();
+
+      passwordDialog.password = PASSWORD;
+      passwordDialog.showPassword = true;
+
+      Polymer.dom.flush();
+
+      assertEquals(PASSWORD,
+                   passwordDialog.$.passwordInput.value);
+      // Password should be visible.
+      assertEquals('text',
+                   passwordDialog.$.passwordInput.type);
+    });
+
+    // Test will timeout if event is not received.
+    test('onShowSavedPassword', function(done) {
+      var item = self.createPasswordItem_('goo.gl', 'bart', 1);
+      var passwordDialog = self.createPasswordDialog_(item);
+
+      passwordDialog.open();
+      Polymer.dom.flush();
+
+      passwordDialog.addEventListener('show-password', function(event) {
+        assertEquals(item.loginPair.originUrl, event.detail.originUrl);
+        assertEquals(item.loginPair.username, event.detail.username);
+        done();
+      });
+
+      MockInteractions.tap(passwordDialog.$.showPasswordButton);
     });
   });
 

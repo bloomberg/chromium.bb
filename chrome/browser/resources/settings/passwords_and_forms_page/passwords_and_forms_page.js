@@ -19,6 +19,9 @@ PasswordManager.PasswordUiEntry;
 /** @typedef {chrome.passwordsPrivate.LoginPair} */
 PasswordManager.LoginPair;
 
+/** @typedef {chrome.passwordsPrivate.PlaintextPasswordEventParameters} */
+PasswordManager.PlaintextPasswordEvent;
+
 PasswordManager.prototype = {
   /**
    * Register a callback for when the list of passwords is updated.
@@ -47,6 +50,19 @@ PasswordManager.prototype = {
    *     list. No-op if |exception| is not in the list.
    */
   removePasswordException: assertNotReached,
+
+  /**
+   * Register a callback for when a password is requested.
+   * @param {function(!Array<!PasswordManager.LoginPair>):void} callback
+   */
+  onPlaintextPasswordRequestedCallback: assertNotReached,
+
+  /**
+   * Should request the saved password for a given login pair.
+   * @param {!PasswordManager.LoginPair} loginPair The saved password that
+   *     should be retrieved.
+   */
+  requestPlaintextPassword: assertNotReached,
 };
 
 /**
@@ -79,6 +95,16 @@ PasswordManagerImpl.prototype = {
   /** @override */
   removePasswordException: function(exception) {
     chrome.passwordsPrivate.removePasswordException(exception);
+  },
+
+  /** @override */
+  onPlaintextPasswordRequestedCallback: function(callback) {
+    chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(callback);
+  },
+
+  /** @override */
+  requestPlaintextPassword: function(loginPair) {
+    chrome.passwordsPrivate.requestPlaintextPassword(loginPair);
   },
 };
 
@@ -128,6 +154,7 @@ Polymer({
   listeners: {
     'remove-password-exception': 'removePasswordException_',
     'remove-saved-password': 'removeSavedPassword_',
+    'show-password': 'showPassword_',
   },
 
   /** @override */
@@ -139,6 +166,9 @@ Polymer({
     }.bind(this));
     this.passwordManager_.onExceptionListChangedCallback(function(list) {
       this.passwordExceptions = list;
+    }.bind(this));
+    this.passwordManager_.onPlaintextPasswordRequestedCallback(function(e) {
+      this.$$('#passwordSection').setPassword(e.loginPair, e.plaintextPassword);
     }.bind(this));
   },
 
@@ -172,6 +202,15 @@ Polymer({
         this.getPref('profile.password_manager_enabled').value) {
       this.$.pages.setSubpageChain(['manage-passwords']);
     }
+  },
+
+  /**
+   * Listens for the show-password event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  showPassword_: function(event) {
+    this.passwordManager_.requestPlaintextPassword(event.detail);
   },
 });
 })();
