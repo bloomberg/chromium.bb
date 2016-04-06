@@ -34,6 +34,7 @@
 #include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/version.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/server/http_server.h"
@@ -43,12 +44,25 @@
 
 namespace {
 
-const char kLocalHostAddress[] = "127.0.0.1";
 const int kBufferSize = 100 * 1024 * 1024;  // 100 MB
 
 typedef base::Callback<
     void(const net::HttpServerRequestInfo&, const HttpResponseSenderFunc&)>
     HttpRequestHandlerFunc;
+
+int ListenOnIPv4(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
+  std::string binding_ip = net::IPAddress::IPv4Localhost().ToString();
+  if (allow_remote)
+    binding_ip = net::IPAddress::IPv4AllZeros().ToString();
+  return socket->ListenWithAddressAndPort(binding_ip, port, 1);
+}
+
+int ListenOnIPv6(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
+  std::string binding_ip = net::IPAddress::IPv6Localhost().ToString();
+  if (allow_remote)
+    binding_ip = net::IPAddress::IPv6AllZeros().ToString();
+  return socket->ListenWithAddressAndPort(binding_ip, port, 1);
+}
 
 class HttpServer : public net::HttpServer::Delegate {
  public:
@@ -59,12 +73,15 @@ class HttpServer : public net::HttpServer::Delegate {
   ~HttpServer() override {}
 
   bool Start(uint16_t port, bool allow_remote) {
-    std::string binding_ip = kLocalHostAddress;
-    if (allow_remote)
-      binding_ip = "0.0.0.0";
     scoped_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
-    server_socket->ListenWithAddressAndPort(binding_ip, port, 1);
+    if (ListenOnIPv4(server_socket.get(), port, allow_remote) != net::OK) {
+      // If we fail to listen on IPv4, try using an IPv6 address. This will work
+      // on an IPv6-only host, but we will be IPv4-only on dual-stack hosts.
+      // TODO(samuong): change this to listen on both IPv4 and IPv6.
+      if (ListenOnIPv6(server_socket.get(), port, allow_remote) != net::OK)
+        return false;
+    }
     server_.reset(new net::HttpServer(std::move(server_socket), this));
     net::IPEndPoint address;
     return server_->GetLocalAddress(&address) == net::OK;
@@ -121,7 +138,7 @@ void HandleRequestOnCmdThread(
     const HttpResponseSenderFunc& send_response_func) {
   if (!whitelisted_ips.empty()) {
     std::string peer_address = request.peer.ToStringWithoutPort();
-    if (peer_address != kLocalHostAddress &&
+    if (peer_address != net::IPAddress::IPv4Localhost().ToString() &&
         std::find(whitelisted_ips.begin(), whitelisted_ips.end(),
                   peer_address) == whitelisted_ips.end()) {
       LOG(WARNING) << "unauthorized access from " << request.peer.ToString();

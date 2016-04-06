@@ -12,7 +12,7 @@ class URLRequestContextGetter;
 class NetAddress {
  public:
   NetAddress();  // Creates an invalid address.
-  explicit NetAddress(int port);  // Host is set to 127.0.0.1.
+  explicit NetAddress(int port);  // Host is set to localhost.
   NetAddress(const std::string& host, int port);
   ~NetAddress();
 
