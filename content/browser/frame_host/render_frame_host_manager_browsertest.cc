@@ -2360,8 +2360,17 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
 // Ensure that we don't crash the renderer in CreateRenderView if a proxy goes
 // away between swapout and the next navigation.  See https://crbug.com/581912.
+// Dr.Memory reports a use-after-free in this test, thus it may be flaky on
+// Windows. See https://crbug.com/600957.
+#if defined(OS_WIN)
+#define MAYBE_CreateRenderViewAfterProcessKillAndClosedProxy \
+    DISABLED_CreateRenderViewAfterProcessKillAndClosedProxy
+#else
+#define MAYBE_CreateRenderViewAfterProcessKillAndClosedProxy \
+    CreateRenderViewAfterProcessKillAndClosedProxy
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       CreateRenderViewAfterProcessKillAndClosedProxy) {
+                       MAYBE_CreateRenderViewAfterProcessKillAndClosedProxy) {
   StartEmbeddedServer();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
