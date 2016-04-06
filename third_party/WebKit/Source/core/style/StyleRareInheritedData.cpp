@@ -40,12 +40,8 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     Color colors[5];
     void* ownPtrs[1];
     AtomicString atomicStrings[3];
-#if ENABLE(OILPAN)
     void* refPtrs[1];
     Persistent<void*> persistentHandles[2];
-#else
-    void* refPtrs[3];
-#endif
     Length lengths[1];
     float secondFloat;
     unsigned m_bitfields[2];

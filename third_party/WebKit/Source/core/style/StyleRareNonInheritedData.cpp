@@ -42,12 +42,8 @@ public:
 
     void* dataRefs[10];
     void* ownPtrs[4];
-#if ENABLE(OILPAN)
     Persistent<void*> persistentHandles[2];
     void* refPtrs[2];
-#else
-    void* refPtrs[4];
-#endif
 
     FillLayer fillLayers;
     NinePieceImage ninePieces;
@@ -213,15 +209,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
 
 StyleRareNonInheritedData::~StyleRareNonInheritedData()
 {
-#if !ENABLE(OILPAN)
-    const FilterOperations& filterOperations = m_filter->m_operations;
-    for (unsigned i = 0; i < filterOperations.size(); ++i)
-        ReferenceFilterBuilder::clearDocumentResourceReference(filterOperations.at(i));
-
-    const FilterOperations& backdropFilterOperations = m_backdropFilter->m_operations;
-    for (unsigned i = 0; i < backdropFilterOperations.size(); ++i)
-        ReferenceFilterBuilder::clearDocumentResourceReference(backdropFilterOperations.at(i));
-#endif
 }
 
 bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) const

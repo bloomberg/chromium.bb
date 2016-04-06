@@ -38,16 +38,11 @@ StyleFetchedImage::StyleFetchedImage(ImageResource* image, Document* document, c
 {
     m_isImageResource = true;
     m_image->addClient(this);
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 StyleFetchedImage::~StyleFetchedImage()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void StyleFetchedImage::dispose()

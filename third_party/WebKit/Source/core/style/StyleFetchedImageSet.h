@@ -54,10 +54,6 @@ public:
     // meaningful enough or not.
     WrappedImagePtr data() const override;
 
-#if !ENABLE(OILPAN)
-    void clearImageSetValue() { m_imageSetValue = nullptr; }
-#endif
-
     bool canRender() const override;
     bool isLoaded() const override;
     bool errorOccurred() const override;
