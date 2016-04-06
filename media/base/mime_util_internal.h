@@ -95,7 +95,7 @@ class MEDIA_EXPORT MimeUtil {
 
   // Adds |mime_type| with the specified codecs to |media_format_map_|.
   void AddContainerWithCodecs(const std::string& mime_type,
-                              const std::string& codecs_list,
+                              const CodecSet& codecs_list,
                               bool is_proprietary_mime_type);
 
   // Returns IsSupported if all codec IDs in |codecs| are unambiguous and are

@@ -252,42 +252,63 @@ void MimeUtil::InitializeMimeTypeMaps() {
 // Each call to AddContainerWithCodecs() contains a media type
 // (https://en.wikipedia.org/wiki/Media_type) and corresponding media codec(s)
 // supported by these types/containers.
-//
-// Strings used as the |codecs_list| only need one valid unambiguous variant for
-// each supported MimeUtil::Codec enum value. Each codec string is parsed and
-// mapped to corresponding MimeUtil::Codec value. See https://crbug.com/461009.
+// TODO(ddorwin): Replace insert() calls with initializer_list when allowed.
 void MimeUtil::AddSupportedMediaFormats() {
-  const std::string ogg_audio_codecs = "opus,vorbis";
-  std::string ogg_video_codecs;
+  CodecSet implicit_codec;
+  CodecSet wav_codecs;
+  wav_codecs.insert(PCM);
+
+  CodecSet ogg_audio_codecs;
+  ogg_audio_codecs.insert(OPUS);
+  ogg_audio_codecs.insert(VORBIS);
+  CodecSet ogg_video_codecs;
 #if !defined(OS_ANDROID)
-  ogg_video_codecs = "theora";
+  ogg_video_codecs.insert(THEORA);
 #endif  // !defined(OS_ANDROID)
-  std::string ogg_codecs = ogg_audio_codecs;
-  if (!ogg_video_codecs.empty())
-    ogg_codecs += "," + ogg_video_codecs;
+  CodecSet ogg_codecs(ogg_audio_codecs);
+  ogg_codecs.insert(ogg_video_codecs.begin(), ogg_video_codecs.end());
+
+  CodecSet webm_audio_codecs;
+  webm_audio_codecs.insert(OPUS);
+  webm_audio_codecs.insert(VORBIS);
+  CodecSet webm_video_codecs;
+  webm_video_codecs.insert(VP8);
+  webm_video_codecs.insert(VP9);
+  CodecSet webm_codecs(webm_audio_codecs);
+  webm_codecs.insert(webm_video_codecs.begin(), webm_video_codecs.end());
 
 #if defined(USE_PROPRIETARY_CODECS)
-  const std::string aac = "mp4a.66,mp4a.40.2";  // MPEG-2 and MPEG-4 AAC.
-  const std::string mp3 = "mp4a.69";
-  const std::string avc = "avc1.42E00A";
+  CodecSet mp3_codecs;
+  mp3_codecs.insert(MP3);
 
-  const std::string avc_and_aac = avc + "," + aac;
-  std::string mp4_audio_codecs = aac + "," + mp3;
+  CodecSet aac;
+  aac.insert(MPEG2_AAC);
+  aac.insert(MPEG4_AAC);
+
+  CodecSet avc_and_aac(aac);
+  avc_and_aac.insert(H264);
+
+  CodecSet mp4_audio_codecs(aac);
+  mp4_audio_codecs.insert(MP3);
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-  mp4_audio_codecs += ",ac-3,ec-3";  // AC-3 and E-AC-3.
+  mp4_audio_codecs.insert(AC3);
+  mp4_audio_codecs.insert(EAC3);
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 
-  std::string mp4_video_codecs = avc;
+  CodecSet mp4_video_codecs;
+  mp4_video_codecs.insert(H264);
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  mp4_video_codecs += ",hev1.1.6.L93.B0";
+  mp4_video_codecs.insert(HEVC_MAIN);
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  const std::string mp4_codecs = mp4_video_codecs + "," + mp4_audio_codecs;
+  CodecSet mp4_codecs(mp4_audio_codecs);
+  mp4_codecs.insert(mp4_video_codecs.begin(), mp4_video_codecs.end());
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
-  AddContainerWithCodecs("audio/wav", "1", false);
-  AddContainerWithCodecs("audio/x-wav", "1", false);
-  AddContainerWithCodecs("audio/webm", "opus,vorbis", false);
-  AddContainerWithCodecs("video/webm", "opus,vorbis,vp8,vp9", false);
+  AddContainerWithCodecs("audio/wav", wav_codecs, false);
+  AddContainerWithCodecs("audio/x-wav", wav_codecs, false);
+  AddContainerWithCodecs("audio/webm", webm_audio_codecs, false);
+  DCHECK(!webm_video_codecs.empty());
+  AddContainerWithCodecs("video/webm", webm_codecs, false);
   AddContainerWithCodecs("audio/ogg", ogg_audio_codecs, false);
   // video/ogg is only supported if an appropriate video codec is supported.
   // Note: This assumes such codecs cannot be later excluded.
@@ -297,10 +318,10 @@ void MimeUtil::AddSupportedMediaFormats() {
   AddContainerWithCodecs("application/ogg", ogg_codecs, false);
 
 #if defined(USE_PROPRIETARY_CODECS)
-  AddContainerWithCodecs("audio/mpeg", "mp3", true);
-  AddContainerWithCodecs("audio/mp3", "", true);
-  AddContainerWithCodecs("audio/x-mp3", "", true);
-  AddContainerWithCodecs("audio/aac", "", true);  // AAC / ADTS
+  AddContainerWithCodecs("audio/mpeg", mp3_codecs, true);  // Allow "mp3".
+  AddContainerWithCodecs("audio/mp3", implicit_codec, true);
+  AddContainerWithCodecs("audio/x-mp3", implicit_codec, true);
+  AddContainerWithCodecs("audio/aac", implicit_codec, true);  // AAC / ADTS.
   AddContainerWithCodecs("audio/mp4", mp4_audio_codecs, true);
   DCHECK(!mp4_video_codecs.empty());
   AddContainerWithCodecs("video/mp4", mp4_codecs, true);
@@ -317,34 +338,20 @@ void MimeUtil::AddSupportedMediaFormats() {
 #if defined(OS_ANDROID)
   // HTTP Live Streaming (HLS).
   // TODO(ddorwin): Is any MP3 codec string variant included in real queries?
-  const std::string hls_codecs = avc_and_aac + "," + mp3;
+  CodecSet hls_codecs(avc_and_aac);
+  hls_codecs.insert(MP3);
   AddContainerWithCodecs("application/x-mpegurl", hls_codecs, true);
   AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs, true);
 #endif  // defined(OS_ANDROID)
 #endif  // defined(USE_PROPRIETARY_CODECS)
 }
 
-// TODO(ddorwin): Replace |codecs_list| with a vector of MimeUtil::Codec values.
-// See https://crbug.com/461009.
 void MimeUtil::AddContainerWithCodecs(const std::string& mime_type,
-                                      const std::string& codecs_list,
+                                      const CodecSet& codecs,
                                       bool is_proprietary_mime_type) {
 #if !defined(USE_PROPRIETARY_CODECS)
   DCHECK(!is_proprietary_mime_type);
 #endif
-
-  std::vector<std::string> codec_strings;
-  ParseCodecString(codecs_list, &codec_strings, false);
-
-  CodecSet codecs;
-  for (const auto& codec_string : codec_strings) {
-    DCHECK(!codec_string.empty()) << codecs_list;
-    Codec codec = INVALID_CODEC;
-    bool is_ambiguous = true;
-    CHECK(StringToCodec(codec_string, &codec, &is_ambiguous, false));
-    DCHECK(!is_ambiguous) << codec_string;
-    codecs.insert(codec);
-  }
 
   media_format_map_[mime_type] = codecs;
 
