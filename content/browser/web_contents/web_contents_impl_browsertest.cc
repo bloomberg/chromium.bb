@@ -11,6 +11,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -859,6 +861,142 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   cross_site_delayer.ResumeNavigation();
   cross_site_delayer.WaitForNavigationFinished();
   EXPECT_TRUE(shell()->web_contents()->IsLoading());
+}
+
+namespace {
+
+class TestJavaScriptDialogManager : public JavaScriptDialogManager,
+                                    public WebContentsDelegate {
+ public:
+  TestJavaScriptDialogManager() : message_loop_runner_(new MessageLoopRunner) {}
+  ~TestJavaScriptDialogManager() override {}
+
+  void Wait() {
+    message_loop_runner_->Run();
+    message_loop_runner_ = new MessageLoopRunner;
+  }
+
+  std::string last_message() { return last_message_; }
+
+  // WebContentsDelegate
+
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override {
+    return this;
+  }
+
+  // JavaScriptDialogManager
+
+  void RunJavaScriptDialog(WebContents* web_contents,
+                           const GURL& origin_url,
+                           JavaScriptMessageType javascript_message_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           const DialogClosedCallback& callback,
+                           bool* did_suppress_message) override {
+    last_message_ = base::UTF16ToUTF8(message_text);
+    *did_suppress_message = true;
+
+    message_loop_runner_->Quit();
+  };
+
+  void RunBeforeUnloadDialog(WebContents* web_contents,
+                             bool is_reload,
+                             const DialogClosedCallback& callback) override {}
+
+  bool HandleJavaScriptDialog(WebContents* web_contents,
+                              bool accept,
+                              const base::string16* prompt_override) override {
+    return true;
+  }
+
+  void CancelActiveAndPendingDialogs(WebContents* web_contents) override {}
+
+  void ResetDialogState(WebContents* web_contents) override {}
+
+ private:
+  std::string last_message_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       JavaScriptDialogsInMainAndSubframes) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  FrameTreeNode* root = wc->GetFrameTree()->root();
+  ASSERT_EQ(0U, root->child_count());
+
+  std::string script =
+      "var iframe = document.createElement('iframe');"
+      "document.body.appendChild(iframe);";
+  EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* frame = root->child_at(0);
+  ASSERT_NE(nullptr, frame);
+
+  url::Replacements<char> clear_port;
+  clear_port.ClearPort();
+
+  // A dialog from the main frame.
+  std::string alert_location = "alert(document.location)";
+  EXPECT_TRUE(
+      content::ExecuteScript(root->current_frame_host(), alert_location));
+  dialog_manager.Wait();
+  EXPECT_EQ(GURL("http://a.com/title1.html"),
+            GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
+
+  // A dialog from the subframe.
+  EXPECT_TRUE(
+      content::ExecuteScript(frame->current_frame_host(), alert_location));
+  dialog_manager.Wait();
+  EXPECT_EQ("about:blank", dialog_manager.last_message());
+
+  // Dialogs do not work with out-of-process iframes yet.
+  // http://crbug.com/453893
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    wc->SetDelegate(nullptr);
+    wc->SetJavaScriptDialogManagerForTesting(nullptr);
+    return;  // :(
+  }
+
+  // Navigate cross-domain.
+  NavigateFrameToURL(frame,
+                     embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  // A dialog from the subframe.
+  EXPECT_TRUE(
+      content::ExecuteScript(frame->current_frame_host(), alert_location));
+  dialog_manager.Wait();
+  EXPECT_EQ(GURL("http://b.com/title2.html"),
+            GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
+
+  // A dialog from the main frame.
+  EXPECT_TRUE(
+      content::ExecuteScript(root->current_frame_host(), alert_location));
+  dialog_manager.Wait();
+  EXPECT_EQ(GURL("http://a.com/title1.html"),
+            GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 }  // namespace content

@@ -3392,6 +3392,8 @@ TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
   DeleteContents();
 }
 
+namespace {
+
 class TestJavaScriptDialogManager : public JavaScriptDialogManager {
  public:
   TestJavaScriptDialogManager() {}
@@ -3431,22 +3433,23 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager {
   DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
 
+}  // namespace
+
 TEST_F(WebContentsImplTest, ResetJavaScriptDialogOnUserNavigate) {
-  scoped_ptr<TestJavaScriptDialogManager> delegate(
-      new TestJavaScriptDialogManager());
-  contents()->SetJavaScriptDialogManagerForTesting(delegate.get());
+  TestJavaScriptDialogManager dialog_manager;
+  contents()->SetJavaScriptDialogManagerForTesting(&dialog_manager);
 
   // A user-initiated navigation.
   contents()->TestDidNavigate(contents()->GetMainFrame(), 1, 0, true,
                               GURL("about:whatever"),
                               ui::PAGE_TRANSITION_TYPED);
-  EXPECT_EQ(1u, delegate->reset_count());
+  EXPECT_EQ(1u, dialog_manager.reset_count());
 
   // An automatic navigation.
   contents()->GetMainFrame()->SendNavigateWithModificationCallback(
       2, 0, true, GURL(url::kAboutBlankURL), base::Bind(SetAsNonUserGesture));
 
-  EXPECT_EQ(1u, delegate->reset_count());
+  EXPECT_EQ(1u, dialog_manager.reset_count());
 
   contents()->SetJavaScriptDialogManagerForTesting(nullptr);
 }

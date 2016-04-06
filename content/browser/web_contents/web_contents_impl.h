@@ -745,6 +745,8 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrossSiteIframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessAccessibilityBrowserTest,
                            CrossSiteIframeAccessibility);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           JavaScriptDialogsInMainAndSubframes);
 
   // So InterstitialPageImpl can access SetIsLoading.
   friend class InterstitialPageImpl;
