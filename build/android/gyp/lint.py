@@ -22,8 +22,8 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
                 manifest_path, result_path, product_dir, sources, jar_path,
-                cache_dir, resource_dir=None, can_fail_build=False,
-                silent=False):
+                cache_dir, resource_dir=None, classpath=None,
+                can_fail_build=False, silent=False):
 
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
@@ -79,6 +79,7 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
 
   # Need to include all sources when a resource_dir is set so that resources are
   # not marked as unused.
+  # TODO(agrieve): Figure out how IDEs do incremental linting.
   if not resource_dir and changes.AddedOrModifiedOnly():
     changed_paths = set(changes.IterChangedPaths())
     sources = [s for s in sources if s in changed_paths]
@@ -91,11 +92,16 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
         '--xml', _RelativizePath(result_path),
     ]
     if jar_path:
+      # --classpath is just for .class files for this one target.
       cmd.extend(['--classpath', _RelativizePath(jar_path)])
     if processed_config_path:
       cmd.extend(['--config', _RelativizePath(processed_config_path)])
     if resource_dir:
       cmd.extend(['--resources', _RelativizePath(resource_dir)])
+    if classpath:
+      # --libraries is the classpath (excluding active target).
+      cp = ':'.join(_RelativizePath(p) for p in classpath)
+      cmd.extend(['--libraries', cp])
 
     # There may be multiple source files with the same basename (but in
     # different directories). It is difficult to determine what part of the path
@@ -235,6 +241,8 @@ def main():
                       help='Paths to java files.')
   parser.add_argument('--manifest-path',
                       help='Path to AndroidManifest.xml')
+  parser.add_argument('--classpath', default=[], action='append',
+                      help='GYP-list of classpath .jar files')
   parser.add_argument('--processed-config-path',
                       help='Path to processed lint suppressions file.')
   parser.add_argument('--resource-dir',
@@ -246,7 +254,7 @@ def main():
   parser.add_argument('--stamp',
                       help='Path to touch on success.')
 
-  args = parser.parse_args()
+  args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
   if args.enable:
     sources = []
@@ -275,6 +283,10 @@ def main():
       input_paths.extend(build_utils.FindInDirectory(args.resource_dir, '*'))
     if sources:
       input_paths.extend(sources)
+    classpath = []
+    for gyp_list in args.classpath:
+      classpath.extend(build_utils.ParseGypList(gyp_list))
+    input_paths.extend(classpath)
 
     input_strings = []
     if args.processed_config_path:
@@ -291,13 +303,15 @@ def main():
                                     args.jar_path,
                                     args.cache_dir,
                                     resource_dir=args.resource_dir,
+                                    classpath=classpath,
                                     can_fail_build=args.can_fail_build,
                                     silent=args.silent),
         args,
         input_paths=input_paths,
         input_strings=input_strings,
         output_paths=output_paths,
-        pass_changes=True)
+        pass_changes=True,
+        depfile_deps=classpath)
 
 
 if __name__ == '__main__':

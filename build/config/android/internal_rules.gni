@@ -80,13 +80,20 @@ template("android_lint") {
         "--silent",
       ]
     } else {
-      inputs += [ invoker.jar_path ] + invoker.java_files
+      inputs += invoker.java_files
+      inputs += [
+        invoker.jar_path,
+        invoker.build_config,
+      ]
       deps += [ "//build/android:prepare_android_lint_cache" ]
       _rebased_java_files = rebase_path(invoker.java_files, root_build_dir)
+      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
       args += [
         "--jar-path",
         rebase_path(invoker.jar_path, root_build_dir),
         "--java-files=$_rebased_java_files",
+        "--classpath=['$rebased_android_sdk_jar']",
+        "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
       ]
     }
   }
@@ -148,10 +155,6 @@ template("proguard") {
 }
 
 template("findbugs") {
-  jar_path = invoker.jar_path
-
-  build_config = invoker.build_config
-
   action(target_name) {
     forward_variables_from(invoker,
                            [
@@ -160,32 +163,33 @@ template("findbugs") {
                            ])
     script = "//build/android/findbugs_diff.py"
     depfile = "$target_gen_dir/$target_name.d"
-    result_path = "$target_gen_dir/$target_name/result.xml"
-    exclusions_file = "//build/android/findbugs_filter/findbugs_exclude.xml"
+    _result_path = "$target_gen_dir/$target_name/result.xml"
+    _exclusions_file = "//build/android/findbugs_filter/findbugs_exclude.xml"
 
-    rebased_build_config = rebase_path(build_config, root_build_dir)
+    _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
 
     inputs = [
       "//build/android/pylib/utils/findbugs.py",
-      exclusions_file,
-      jar_path,
+      _exclusions_file,
+      invoker.jar_path,
+      invoker.build_config,
     ]
 
     outputs = [
       depfile,
-      result_path,
+      _result_path,
     ]
 
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
       "--exclude",
-      rebase_path(exclusions_file, root_build_dir),
+      rebase_path(_exclusions_file, root_build_dir),
       "--auxclasspath-gyp",
-      "@FileArg($rebased_build_config:javac:classpath)",
+      "@FileArg($_rebased_build_config:javac:classpath)",
       "--output-file",
-      rebase_path(result_path, root_build_dir),
-      rebase_path(jar_path, root_build_dir),
+      rebase_path(_result_path, root_build_dir),
+      rebase_path(invoker.jar_path, root_build_dir),
     ]
 
     if (findbugs_verbose) {
@@ -1728,11 +1732,10 @@ template("java_library_impl") {
       _final_datadeps += [ ":${_template_name}__lint" ]
       android_lint("${_template_name}__lint") {
         android_manifest = _android_manifest
+        build_config = _build_config
         jar_path = _jar_path
         java_files = _java_files
-        deps = [
-          ":$_compile_java_target",
-        ]
+        deps = build_config_deps + [ ":$_compile_java_target" ]
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
@@ -1743,9 +1746,7 @@ template("java_library_impl") {
         findbugs("${_template_name}__findbugs") {
           build_config = _build_config
           jar_path = _jar_path
-          deps = [
-            ":$_compile_java_target",
-          ]
+          deps = build_config_deps + [ ":$_compile_java_target" ]
         }
       }
     }

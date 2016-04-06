@@ -71,7 +71,9 @@ Still reading?
   </issue>
   <issue id="InconsistentLayout" severity="ignore"/>
   <issue id="InflateParams" severity="ignore"/>
+  <issue id="LongLogTag" severity="ignore"/>
   <issue id="MissingApplicationIcon" severity="ignore"/>
+  <issue id="MissingPermission" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
