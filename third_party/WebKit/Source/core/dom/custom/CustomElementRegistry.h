@@ -37,7 +37,6 @@
 #include "core/dom/custom/CustomElementDescriptorHash.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 

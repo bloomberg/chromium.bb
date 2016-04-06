@@ -9,9 +9,6 @@
 #include "core/dom/DOMMatrix.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

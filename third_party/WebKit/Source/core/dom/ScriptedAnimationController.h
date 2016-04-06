@@ -29,8 +29,6 @@
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringImpl.h"

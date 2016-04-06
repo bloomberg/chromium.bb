@@ -36,9 +36,6 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/CustomElementUpgradeCandidateMap.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

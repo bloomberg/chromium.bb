@@ -36,7 +36,6 @@
 #include "wtf/DoublyLinkedList.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 

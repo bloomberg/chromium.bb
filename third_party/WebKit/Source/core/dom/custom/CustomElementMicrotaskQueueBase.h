@@ -7,11 +7,6 @@
 
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

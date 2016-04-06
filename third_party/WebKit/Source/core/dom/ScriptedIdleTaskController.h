@@ -9,8 +9,6 @@
 #include "core/dom/IdleDeadline.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

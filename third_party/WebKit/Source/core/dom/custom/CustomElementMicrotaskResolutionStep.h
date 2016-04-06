@@ -34,9 +34,6 @@
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

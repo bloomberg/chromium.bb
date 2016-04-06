@@ -33,9 +33,6 @@
 
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/custom/CustomElementProcessingStep.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

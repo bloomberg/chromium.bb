@@ -9,8 +9,6 @@
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

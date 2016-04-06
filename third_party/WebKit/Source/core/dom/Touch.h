@@ -35,9 +35,6 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

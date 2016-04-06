@@ -34,10 +34,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

@@ -32,7 +32,6 @@
 #define PresentationAttributeStyle_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

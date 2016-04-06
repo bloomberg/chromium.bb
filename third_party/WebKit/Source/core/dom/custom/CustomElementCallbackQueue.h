@@ -34,10 +34,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementProcessingStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

@@ -29,7 +29,6 @@
 #include "core/html/CollectionItemsCache.h"
 #include "core/html/CollectionType.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -35,9 +35,6 @@
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 

@@ -30,8 +30,6 @@
 #define StaticNodeList_h
 
 #include "core/dom/NodeList.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

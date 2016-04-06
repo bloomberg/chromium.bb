@@ -31,8 +31,6 @@
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
@@ -42,6 +40,7 @@ class ScriptSourceCode;
 
 // A container for an external script which may be loaded and executed.
 //
+// TODO(kochi): The comment below is from pre-oilpan age and may not be correct now.
 // A RefPtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.

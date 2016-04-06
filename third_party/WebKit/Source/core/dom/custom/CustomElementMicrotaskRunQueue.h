@@ -6,7 +6,6 @@
 #define CustomElementMicrotaskRunQueue_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/WeakPtr.h"
 
 namespace blink {

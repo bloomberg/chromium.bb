@@ -41,7 +41,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGUnknownElement.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

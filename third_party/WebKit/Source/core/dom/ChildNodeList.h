@@ -28,7 +28,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeList.h"
 #include "core/html/CollectionIndexCache.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

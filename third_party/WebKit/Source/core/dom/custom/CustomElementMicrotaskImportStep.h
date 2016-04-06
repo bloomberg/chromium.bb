@@ -33,10 +33,6 @@
 
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 
 namespace blink {

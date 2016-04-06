@@ -29,9 +29,6 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 

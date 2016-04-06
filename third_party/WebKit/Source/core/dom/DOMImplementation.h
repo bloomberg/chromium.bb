@@ -26,7 +26,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

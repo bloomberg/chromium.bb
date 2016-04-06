@@ -29,7 +29,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

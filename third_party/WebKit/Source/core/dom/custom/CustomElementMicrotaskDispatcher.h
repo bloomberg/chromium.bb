@@ -7,7 +7,6 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

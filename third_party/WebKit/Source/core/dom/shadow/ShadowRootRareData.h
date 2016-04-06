@@ -33,7 +33,6 @@
 
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLSlotElement.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
