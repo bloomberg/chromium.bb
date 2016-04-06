@@ -215,7 +215,8 @@ class CONTENT_EXPORT GpuChannel
                              int32_t route_id,
                              bool* succeeded);
   void OnDestroyCommandBuffer(int32_t route_id);
-
+  void OnGetDriverBugWorkArounds(
+      std::vector<std::string>* gpu_driver_bug_workarounds);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they

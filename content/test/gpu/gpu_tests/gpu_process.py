@@ -16,6 +16,14 @@ test_harness_script = r"""
   }
 
   window.domAutomationController = domAutomationController;
+
+  function GetDriverBugWorkarounds() {
+    var query_result = document.querySelector('.workarounds-list');
+    var browser_list = []
+    for (var i=0; i < query_result.childElementCount; i++)
+      browser_list.push(query_result.children[i].textContent);
+    return browser_list;
+  };
 """
 
 class GpuProcessValidator(gpu_test_base.ValidatorBase):

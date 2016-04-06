@@ -760,6 +760,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_GetDriverBugWorkArounds,
+                        OnGetDriverBugWorkArounds)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -976,6 +978,23 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   }
 
   RemoveRoute(route_id);
+}
+
+void GpuChannel::OnGetDriverBugWorkArounds(
+    std::vector<std::string>* gpu_driver_bug_workarounds) {
+  // TODO(j.isorce): http://crbug.com/599964 Do the extraction of workarounds in
+  // the GpuChannelManager constructor. Currently it is done in the FeatureInfo
+  // constructor. There is no need to extract them from the command-line every
+  // time a new FeatureInfo is created (i.e. per ContextGroup) since parsing
+  // result is a constant.
+  scoped_refptr<gpu::gles2::FeatureInfo> feature_info =
+      new gpu::gles2::FeatureInfo;
+  gpu_driver_bug_workarounds->clear();
+#define GPU_OP(type, name)              \
+  if (feature_info->workarounds().name) \
+    gpu_driver_bug_workarounds->push_back(#name);
+  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
 }
 
 void GpuChannel::CacheShader(const std::string& key,
