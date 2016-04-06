@@ -18,37 +18,46 @@ namespace leveldb {
 class Iterator;
 }  // namespace leveldb
 
+// Manages a lazy connection to a leveldb database. "lazy" means that the
+// leveldb database will be opened, when necessary, when any *public* method is
+// called. Derived classes are responsible for calling EnsureDbIsOpen() before
+// calling any other *protected* method.
 class LazyLevelDb {
  public:
-  // Create a new database iterator. This iterator *must* be deleted before
+  // Creates a new database iterator. This iterator *must* be deleted before
   // this database is closed.
-  scoped_ptr<leveldb::Iterator> CreateIterator(
-      const leveldb::ReadOptions& read_options);
+  ValueStore::Status CreateIterator(const leveldb::ReadOptions& read_options,
+                                    scoped_ptr<leveldb::Iterator>* iterator);
 
-  // Convert a leveldb::Status to a ValueStore::Status. Will also sanitize path
+  // Converts a leveldb::Status to a ValueStore::Status. Will also sanitize path
   // to eliminate user data path.
   ValueStore::Status ToValueStoreError(const leveldb::Status& status);
+
+  // Deletes a value (identified by |key|) from the database.
+  ValueStore::Status Delete(const std::string& key);
 
  protected:
   LazyLevelDb(const std::string& uma_client_name, const base::FilePath& path);
   ~LazyLevelDb();
 
-  // Close, if necessary, and delete the database directory.
+  // Closes, if necessary, and deletes the database directory.
   bool DeleteDbFile();
 
-  // Fix the |key| or database. If |key| is not null and the database is open
+  // Fixes the |key| or database. If |key| is not null and the database is open
   // then the key will be deleted. Otherwise the database will be repaired, and
   // failing that will be deleted.
   ValueStore::BackingStoreRestoreStatus FixCorruption(const std::string* key);
 
-  // Delete a value (identified by |key|) from the database.
-  leveldb::Status Delete(const std::string& key);
-
-  // Read a value from the database.
+  // Reads a |key| from the database, and populates |value| with the result. If
+  // the specified value does not exist in the database then an "OK" status will
+  // be returned and value will be unchanged. Caller must ensure the database is
+  // open before calling this method.
   ValueStore::Status Read(const std::string& key,
                           scoped_ptr<base::Value>* value);
 
-  // Ensure that the database is open.
+  // Opens the underlying database if not yet open. If the open fails due to
+  // corruption will attempt to repair the database. Failing that, will attempt
+  // to delete the database. Will only attempt a single recovery.
   ValueStore::Status EnsureDbIsOpen();
 
   const std::string& open_histogram_name() const {

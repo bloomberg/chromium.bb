@@ -789,6 +789,8 @@
       'browser/value_store/lazy_leveldb.h',
       'browser/value_store/legacy_value_store_factory.cc',
       'browser/value_store/legacy_value_store_factory.h',
+      'browser/value_store/leveldb_scoped_database.cc',
+      'browser/value_store/leveldb_scoped_database.h',
       'browser/value_store/leveldb_value_store.cc',
       'browser/value_store/leveldb_value_store.h',
       'browser/value_store/test_value_store_factory.cc',

@@ -48,6 +48,15 @@ ValueStore::StatusCode LevelDbToValueStoreStatusCode(
   return ValueStore::OTHER_ERROR;
 }
 
+leveldb::Status DeleteValue(leveldb::DB* db, const std::string& key) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  leveldb::WriteBatch batch;
+  batch.Delete(key);
+
+  return db->Write(leveldb::WriteOptions(), &batch);
+}
+
 }  // namespace
 
 LazyLevelDb::LazyLevelDb(const std::string& uma_client_name,
@@ -106,14 +115,14 @@ ValueStore::Status LazyLevelDb::Read(const std::string& key,
   return ValueStore::Status();
 }
 
-leveldb::Status LazyLevelDb::Delete(const std::string& key) {
+ValueStore::Status LazyLevelDb::Delete(const std::string& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(db_.get());
 
-  leveldb::WriteBatch batch;
-  batch.Delete(key);
+  ValueStore::Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return status;
 
-  return db_->Write(leveldb::WriteOptions(), &batch);
+  return ToValueStoreError(DeleteValue(db_.get(), key));
 }
 
 ValueStore::BackingStoreRestoreStatus LazyLevelDb::LogRestoreStatus(
@@ -146,7 +155,7 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   leveldb::Status s;
   if (key && db_) {
-    s = Delete(*key);
+    s = DeleteValue(db_.get(), *key);
     // Deleting involves writing to the log, so it's possible to have a
     // perfectly OK database but still have a delete fail.
     if (s.ok())
@@ -191,7 +200,7 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
     db_unrecoverable_ = true;
 
   if (s.ok() && key) {
-    s = Delete(*key);
+    s = DeleteValue(db_.get(), *key);
     if (s.ok()) {
       restore_status = ValueStore::VALUE_RESTORE_DELETE_SUCCESS;
     } else if (s.IsIOError()) {
@@ -263,9 +272,12 @@ bool LazyLevelDb::DeleteDbFile() {
   return true;
 }
 
-scoped_ptr<leveldb::Iterator> LazyLevelDb::CreateIterator(
-    const leveldb::ReadOptions& read_options) {
-  if (!EnsureDbIsOpen().ok())
-    return nullptr;
-  return make_scoped_ptr(db_->NewIterator(read_options));
+ValueStore::Status LazyLevelDb::CreateIterator(
+    const leveldb::ReadOptions& read_options,
+    scoped_ptr<leveldb::Iterator>* iterator) {
+  ValueStore::Status status = EnsureDbIsOpen();
+  if (!status.ok())
+    return status;
+  *iterator = make_scoped_ptr(db_->NewIterator(read_options));
+  return ValueStore::Status();
 }

@@ -25,6 +25,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
+using base::StringPiece;
 using content::BrowserThread;
 
 namespace {
@@ -67,21 +68,7 @@ size_t LeveldbValueStore::GetBytesInUse() {
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  Status status = EnsureDbIsOpen();
-  if (!status.ok())
-    return MakeReadResult(status);
-
-  scoped_ptr<base::Value> setting;
-  status.Merge(Read(key, &setting));
-  if (!status.ok())
-    return MakeReadResult(status);
-
-  base::DictionaryValue* settings = new base::DictionaryValue();
-  if (setting)
-    settings->SetWithoutPathExpansion(key, setting.release());
-  return MakeReadResult(make_scoped_ptr(settings), status);
+  return Get(std::vector<std::string>(1, key));
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get(
@@ -120,7 +107,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
     scoped_ptr<base::Value> value =
-        json_reader.ReadToValue(it->value().ToString());
+        json_reader.Read(StringPiece(it->value().data(), it->value().size()));
     if (!value) {
       return MakeReadResult(
           Status(CORRUPTION, Delete(key).ok() ? VALUE_RESTORE_DELETE_SUCCESS
@@ -128,11 +115,6 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
                  kInvalidJson));
     }
     settings->SetWithoutPathExpansion(key, std::move(value));
-  }
-
-  if (it->status().IsNotFound()) {
-    NOTREACHED() << "IsNotFound() but iterating over all keys?!";
-    return MakeReadResult(std::move(settings), status);
   }
 
   if (!it->status().ok()) {
