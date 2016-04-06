@@ -7,17 +7,12 @@
     '../../build/win_precompile.gypi',
   ],
   'variables': {
-    'conditions': [
-      ['OS=="linux" and chromeos==1', {
-        # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
-        # anyways. However, we want to have control of the version of harfbuzz
-        # we use, so don't use system harfbuzz unless we are building for
-        # chrome os, where we have the system harfbuzz under control.
-        'use_system_harfbuzz%': '<!(python ../../build/check_return_value.py <(pkg-config) --atleast-version=1.31.0 pangoft2)',
-      }, {
-        'use_system_harfbuzz': 0,
-      }],
-    ],
+    # Blink uses a cutting-edge version of Harfbuzz; most Linux distros do not
+    # contain a new enough version of the code to work correctly. However,
+    # ChromeOS chroots (i.e, real ChromeOS builds for devices) do contain a
+    # new enough version of the library, and so this variable exists so that
+    # ChromeOS can build against the system lib and keep binary sizes smaller.
+    'use_system_harfbuzz%': 0,
   },
   'conditions': [
     ['use_system_harfbuzz==0', {

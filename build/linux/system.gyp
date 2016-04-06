@@ -1190,29 +1190,29 @@
             ['_toolset=="target"', {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(<(pkg-config) --cflags pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --cflags pangocairo)',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(<(pkg-config) --libs-only-L --libs-only-other pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other pangocairo)',
                 ],
                 'libraries': [
-                  '<!@(<(pkg-config) --libs-only-l pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --libs-only-l pangocairo)',
                 ],
               },
             }, {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(<(pkg-config) --cflags pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --cflags pangocairo)',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(<(pkg-config) --libs-only-L --libs-only-other pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other pangocairo)',
                 ],
                 'libraries': [
-                  '<!@(<(pkg-config) --libs-only-l pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --libs-only-l pangocairo)',
                 ],
               },
             }],
