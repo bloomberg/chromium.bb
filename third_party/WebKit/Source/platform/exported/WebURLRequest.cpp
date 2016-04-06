@@ -208,12 +208,28 @@ void WebURLRequest::visitHTTPHeaderFields(WebHTTPHeaderVisitor* visitor) const
 
 WebHTTPBody WebURLRequest::httpBody() const
 {
+    // TODO(mkwst): This is wrong, as it means that we're producing the body
+    // before any ServiceWorker has a chance to operate, which means we're
+    // revealing data to the SW that we ought to be hiding. Baby steps.
+    // https://crbug.com/599597
+    if (m_private->m_resourceRequest->attachedCredential())
+        return WebHTTPBody(m_private->m_resourceRequest->attachedCredential());
     return WebHTTPBody(m_private->m_resourceRequest->httpBody());
 }
 
 void WebURLRequest::setHTTPBody(const WebHTTPBody& httpBody)
 {
     m_private->m_resourceRequest->setHTTPBody(httpBody);
+}
+
+WebHTTPBody WebURLRequest::attachedCredential() const
+{
+    return WebHTTPBody(m_private->m_resourceRequest->attachedCredential());
+}
+
+void WebURLRequest::setAttachedCredential(const WebHTTPBody& attachedCredential)
+{
+    m_private->m_resourceRequest->setAttachedCredential(attachedCredential);
 }
 
 bool WebURLRequest::reportUploadProgress() const

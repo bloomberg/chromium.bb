@@ -154,6 +154,9 @@ public:
     EncodedFormData* httpBody() const;
     void setHTTPBody(PassRefPtr<EncodedFormData>);
 
+    EncodedFormData* attachedCredential() const;
+    void setAttachedCredential(PassRefPtr<EncodedFormData>);
+
     bool allowStoredCredentials() const;
     void setAllowStoredCredentials(bool allowCredentials);
 
@@ -262,6 +265,7 @@ private:
     AtomicString m_httpMethod;
     HTTPHeaderMap m_httpHeaderFields;
     RefPtr<EncodedFormData> m_httpBody;
+    RefPtr<EncodedFormData> m_attachedCredential;
     bool m_allowStoredCredentials : 1;
     bool m_reportUploadProgress : 1;
     bool m_reportRawHeaders : 1;
@@ -310,6 +314,7 @@ public:
     String m_httpMethod;
     OwnPtr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
     RefPtr<EncodedFormData> m_httpBody;
+    RefPtr<EncodedFormData> m_attachedCredential;
     bool m_allowStoredCredentials;
     bool m_reportUploadProgress;
     bool m_hasUserGesture;

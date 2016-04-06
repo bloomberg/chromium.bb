@@ -6,6 +6,7 @@
 #define FetchRequestData_h
 
 #include "platform/heap/Handle.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -21,6 +22,7 @@ namespace blink {
 class BodyStreamBuffer;
 class ExecutionContext;
 class FetchHeaderList;
+class PasswordCredential;
 class SecurityOrigin;
 class WebServiceWorkerRequest;
 
@@ -56,7 +58,7 @@ public:
     void setReferrerPolicy(ReferrerPolicy p) { m_referrer.referrerPolicy = p; }
     void setMode(WebURLRequest::FetchRequestMode mode) { m_mode = mode; }
     WebURLRequest::FetchRequestMode mode() const { return m_mode; }
-    void setCredentials(WebURLRequest::FetchCredentialsMode credentials) { m_credentials = credentials; }
+    void setCredentials(WebURLRequest::FetchCredentialsMode);
     WebURLRequest::FetchCredentialsMode credentials() const { return m_credentials; }
     void setRedirect(WebURLRequest::FetchRedirectMode redirect) { m_redirect = redirect; }
     WebURLRequest::FetchRedirectMode redirect() const { return m_redirect; }
@@ -71,6 +73,8 @@ public:
     void setMIMEType(const String& type) { m_mimeType = type; }
     String integrity() const { return m_integrity; }
     void setIntegrity(const String& integrity) { m_integrity = integrity; }
+    PassRefPtr<EncodedFormData> attachedCredential() const { return m_attachedCredential; }
+    void setAttachedCredential(PassRefPtr<EncodedFormData> attachedCredential) { m_attachedCredential = attachedCredential; }
 
     // We use these strings instead of "no-referrer" and "client" in the spec.
     static AtomicString noReferrerString() { return AtomicString(); }
@@ -107,6 +111,7 @@ private:
     Member<BodyStreamBuffer> m_buffer;
     String m_mimeType;
     String m_integrity;
+    RefPtr<EncodedFormData> m_attachedCredential;
 };
 
 } // namespace blink

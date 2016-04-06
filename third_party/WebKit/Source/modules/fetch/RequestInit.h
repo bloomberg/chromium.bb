@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -34,11 +35,10 @@ public:
     String credentials;
     String redirect;
     String integrity;
+    RefPtr<EncodedFormData> attachedCredential;
     // True if any members in RequestInit are set and hence the referrer member
     // should be used in the Request constructor.
     bool areAnyMembersSet;
-    // True if the RequestInit |body| was created from a 'PasswordCredential' object.
-    bool isCredentialRequest;
 };
 
 } // namespace blink

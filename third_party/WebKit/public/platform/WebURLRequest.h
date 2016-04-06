@@ -124,7 +124,8 @@ public:
     enum FetchCredentialsMode {
         FetchCredentialsModeOmit,
         FetchCredentialsModeSameOrigin,
-        FetchCredentialsModeInclude
+        FetchCredentialsModeInclude,
+        FetchCredentialsModePassword
     };
 
     enum FetchRedirectMode {
@@ -209,6 +210,9 @@ public:
 
     BLINK_PLATFORM_EXPORT WebHTTPBody httpBody() const;
     BLINK_PLATFORM_EXPORT void setHTTPBody(const WebHTTPBody&);
+
+    BLINK_PLATFORM_EXPORT WebHTTPBody attachedCredential() const;
+    BLINK_PLATFORM_EXPORT void setAttachedCredential(const WebHTTPBody&);
 
     // Controls whether upload progress events are generated when a request
     // has a body.

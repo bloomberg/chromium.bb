@@ -13,6 +13,7 @@
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
@@ -20,6 +21,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class EncodedFormData;
 class RequestInit;
 class WebServiceWorkerRequest;
 
@@ -60,6 +62,7 @@ public:
     bool hasBody() const;
     BodyStreamBuffer* bodyBuffer() override { return m_request->buffer(); }
     const BodyStreamBuffer* bodyBuffer() const override { return m_request->buffer(); }
+    PassRefPtr<EncodedFormData> attachedCredential() const { return m_request->attachedCredential(); }
 
     void stop() override;
 

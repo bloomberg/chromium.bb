@@ -15,7 +15,6 @@
 #include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
-#include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/Headers.h"
@@ -27,7 +26,6 @@ namespace blink {
 
 RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, ExceptionState& exceptionState)
     : areAnyMembersSet(false)
-    , isCredentialRequest(false)
 {
     areAnyMembersSet |= DictionaryHelper::get(options, "method", method);
     areAnyMembersSet |= DictionaryHelper::get(options, "headers", headers);
@@ -41,7 +39,6 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         }
     }
     areAnyMembersSet |= DictionaryHelper::get(options, "mode", mode);
-    areAnyMembersSet |= DictionaryHelper::get(options, "credentials", credentials);
     areAnyMembersSet |= DictionaryHelper::get(options, "redirect", redirect);
     AtomicString referrerString;
     bool isReferrerStringSet = DictionaryHelper::get(options, "referrer", referrerString);
@@ -51,6 +48,10 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     v8::Local<v8::Value> v8Body;
     bool isBodySet = DictionaryHelper::get(options, "body", v8Body);
     areAnyMembersSet |= isBodySet;
+
+    v8::Local<v8::Value> v8Credential;
+    bool isCredentialSet = DictionaryHelper::get(options, "credentials", v8Credential);
+    areAnyMembersSet |= isCredentialSet;
 
     if (areAnyMembersSet) {
         // A part of the Request constructor algorithm is performed here. See
@@ -64,9 +65,26 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
             referrer.referrer = referrerString;
     }
 
-    if (!isBodySet || v8Body->IsUndefined() || v8Body->IsNull())
-        return;
     v8::Isolate* isolate = toIsolate(context);
+    if (isCredentialSet) {
+        if (V8PasswordCredential::hasInstance(v8Credential, isolate)) {
+            // TODO(mkwst): According to the spec, we'd serialize this once we touch the network. We're
+            // serializing it here, ahead of time, because lifetime issues around ResourceRequest make
+            // it pretty difficult to pass a PasswordCredential around at the platform level, and the
+            // hop between the browser and renderer processes to deal with service workers is equally
+            // painful. There should be no developer-visible difference in behavior with this option,
+            // except that the `Content-Type` header will be set early. That seems reasonable.
+            PasswordCredential* credential = V8PasswordCredential::toImpl(v8::Local<v8::Object>::Cast(v8Credential));
+            attachedCredential = credential->encodeFormData(contentType);
+            credentials = "password";
+        } else if (v8Credential->IsString()) {
+            credentials = toUSVString(isolate, v8Credential, exceptionState);
+        }
+    }
+
+    if (isCredentialSet || !isBodySet || v8Body->IsUndefined() || v8Body->IsNull())
+        return;
+
     if (v8Body->IsArrayBuffer()) {
         body = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Body)));
     } else if (v8Body->IsArrayBufferView()) {
@@ -85,14 +103,6 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeFormData();
         contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
         body = FetchFormDataConsumerHandle::create(context, formData.release());
-    } else if (V8PasswordCredential::hasInstance(v8Body, isolate)) {
-        // See https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-4
-        // and https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-3
-        isCredentialRequest = true;
-        PasswordCredential* credential = V8PasswordCredential::toImpl(v8::Local<v8::Object>::Cast(v8Body));
-
-        RefPtr<EncodedFormData> encodedData = credential->encodeFormData(contentType);
-        body = FetchFormDataConsumerHandle::create(context, encodedData.release());
     } else if (v8Body->IsString()) {
         contentType = "text/plain;charset=UTF-8";
         body = FetchFormDataConsumerHandle::create(toUSVString(isolate, v8Body, exceptionState));

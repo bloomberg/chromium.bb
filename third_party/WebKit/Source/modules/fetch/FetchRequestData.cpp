@@ -8,6 +8,7 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/streams/ReadableStream.h"
+#include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/DataConsumerTee.h"
@@ -60,6 +61,7 @@ FetchRequestData* FetchRequestData::cloneExceptBody()
     request->m_responseTainting = m_responseTainting;
     request->m_mimeType = m_mimeType;
     request->m_integrity = m_integrity;
+    request->m_attachedCredential = m_attachedCredential;
     return request;
 }
 
@@ -102,6 +104,14 @@ FetchRequestData::FetchRequestData()
     , m_redirect(WebURLRequest::FetchRedirectModeFollow)
     , m_responseTainting(BasicTainting)
 {
+}
+
+
+void FetchRequestData::setCredentials(WebURLRequest::FetchCredentialsMode credentials)
+{
+    m_credentials = credentials;
+    if (m_credentials != WebURLRequest::FetchCredentialsModePassword)
+        m_attachedCredential.clear();
 }
 
 DEFINE_TRACE(FetchRequestData)

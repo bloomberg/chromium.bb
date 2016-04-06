@@ -42,6 +42,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState,
     request->setReferrer(original->referrer());
     request->setMode(original->mode());
     request->setCredentials(original->credentials());
+    request->setAttachedCredential(original->attachedCredential());
     request->setRedirect(original->redirect());
     request->setIntegrity(original->integrity());
     // FIXME: Set cache mode.
@@ -216,6 +217,14 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         request->setCredentials(WebURLRequest::FetchCredentialsModeSameOrigin);
     } else if (init.credentials == "include") {
         request->setCredentials(WebURLRequest::FetchCredentialsModeInclude);
+    } else if (init.credentials == "password") {
+        if (!init.attachedCredential.get()) {
+            exceptionState.throwTypeError("Cannot construct a Request with a credential mode of 'password' without a PasswordCredential.");
+            return nullptr;
+        }
+        request->setCredentials(WebURLRequest::FetchCredentialsModePassword);
+        request->setAttachedCredential(init.attachedCredential);
+        request->setRedirect(WebURLRequest::FetchRedirectModeManual);
     } else {
         if (!inputRequest)
             request->setCredentials(WebURLRequest::FetchCredentialsModeOmit);
@@ -305,9 +314,21 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // "If either |init|'s body member is present or |temporaryBody| is
     // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
-    if (init.body || temporaryBody) {
+    if (init.body || temporaryBody || request->credentials() == WebURLRequest::FetchCredentialsModePassword) {
         if (request->method() == HTTPNames::GET || request->method() == HTTPNames::HEAD) {
             exceptionState.throwTypeError("Request with GET/HEAD method cannot have body.");
+            return nullptr;
+        }
+    }
+
+    // TODO(mkwst): See the comment in RequestInit about serializing the attached credential
+    // prior to hitting the Service Worker machinery.
+    if (request->credentials() == WebURLRequest::FetchCredentialsModePassword) {
+        r->getHeaders()->append(HTTPNames::Content_Type, init.contentType, exceptionState);
+
+        // TODO(mkwst): This should be a registrable-domain match.
+        if (!origin->canRequest(r->url())) {
+            exceptionState.throwTypeError("Credentials may only be submitted to same-origin endpoints.");
             return nullptr;
         }
     }
@@ -333,22 +354,6 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // "Set |r|'s request's body to |temporaryBody|.
     if (temporaryBody)
         r->m_request->setBuffer(temporaryBody);
-
-    // https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-3
-    // "If |init|'s body member is a 'Credential' object:"
-    if (init.isCredentialRequest) {
-        // "1. If |r|'s url is not the same as |r|'s client’s origin, throw a TypeError."
-        if (!origin->canRequest(r->url())) {
-            exceptionState.throwTypeError("Credentials may only be submitted to same-origin endpoints.");
-            return nullptr;
-        }
-        // "2. Set |r|'s redirect mode to "error"."
-        r->m_request->setRedirect(WebURLRequest::FetchRedirectModeError);
-        // "3. Set |r|'s skip-service-worker flag."
-        // TODO(mkwst): Set this flag.
-        // "4. Set |r|'s opaque flag."
-        r->setOpaque();
-    }
 
     // "Set |r|'s MIME type to the result of extracting a MIME type from |r|'s
     // request's header list."
@@ -560,6 +565,8 @@ String Request::credentials() const
         return "same-origin";
     case WebURLRequest::FetchCredentialsModeInclude:
         return "include";
+    case WebURLRequest::FetchCredentialsModePassword:
+        return "password";
     }
     ASSERT_NOT_REACHED();
     return "";

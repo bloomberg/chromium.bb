@@ -25,9 +25,11 @@
 
 #include "bindings/core/v8/DictionaryHelperForBindings.h"
 #include "bindings/modules/v8/V8Headers.h"
+#include "bindings/modules/v8/V8PasswordCredential.h"
 
 namespace blink {
 
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Headers>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<PasswordCredential>& value);
 
 } // namespace blink

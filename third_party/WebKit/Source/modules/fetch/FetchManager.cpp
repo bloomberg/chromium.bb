@@ -565,9 +565,10 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     }
 
     if (m_request->method() != HTTPNames::GET && m_request->method() != HTTPNames::HEAD) {
-        if (m_request->buffer()) {
+        if (m_request->buffer())
             request.setHTTPBody(m_request->buffer()->drainAsFormData());
-        }
+        if (m_request->attachedCredential())
+            request.setAttachedCredential(m_request->attachedCredential());
     }
     request.setFetchRedirectMode(m_request->redirect());
     request.setUseStreamOnResponse(true);

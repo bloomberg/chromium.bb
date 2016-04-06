@@ -61,10 +61,6 @@ public:
         ActiveDOMObject::trace(visitor);
     }
 
-    // https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-2
-    void setOpaque() { m_opaque = true; }
-    bool opaque() const { return m_opaque; }
-
 private:
     ReadableByteStream* body();
     virtual String mimeType() const = 0;
@@ -74,8 +70,6 @@ private:
     // an empty ScriptPromise if the consumption may proceed, and a
     // ScriptPromise rejected with a TypeError if it ought to be blocked.
     ScriptPromise rejectInvalidConsumption(ScriptState*);
-
-    bool m_opaque;
 };
 
 } // namespace blink

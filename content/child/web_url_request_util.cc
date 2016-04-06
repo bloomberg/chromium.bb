@@ -312,6 +312,8 @@ STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
                    WebURLRequest::FetchCredentialsModeSameOrigin);
 STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_INCLUDE,
                    WebURLRequest::FetchCredentialsModeInclude);
+STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_PASSWORD,
+                   WebURLRequest::FetchCredentialsModePassword);
 
 FetchCredentialsMode GetFetchCredentialsModeForWebURLRequest(
     const blink::WebURLRequest& request) {

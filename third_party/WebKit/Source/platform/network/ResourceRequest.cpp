@@ -51,6 +51,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     m_httpHeaderFields.adopt(data->m_httpHeaders.release());
 
     setHTTPBody(data->m_httpBody);
+    setAttachedCredential(data->m_attachedCredential);
     setAllowStoredCredentials(data->m_allowStoredCredentials);
     setReportUploadProgress(data->m_reportUploadProgress);
     setHasUserGesture(data->m_hasUserGesture);
@@ -91,6 +92,8 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
 
     if (m_httpBody)
         data->m_httpBody = m_httpBody->deepCopy();
+    if (m_attachedCredential)
+        data->m_attachedCredential = m_attachedCredential->deepCopy();
     data->m_allowStoredCredentials = m_allowStoredCredentials;
     data->m_reportUploadProgress = m_reportUploadProgress;
     data->m_hasUserGesture = m_hasUserGesture;
@@ -281,6 +284,16 @@ EncodedFormData* ResourceRequest::httpBody() const
 void ResourceRequest::setHTTPBody(PassRefPtr<EncodedFormData> httpBody)
 {
     m_httpBody = httpBody;
+}
+
+EncodedFormData* ResourceRequest::attachedCredential() const
+{
+    return m_attachedCredential.get();
+}
+
+void ResourceRequest::setAttachedCredential(PassRefPtr<EncodedFormData> attachedCredential)
+{
+    m_attachedCredential = attachedCredential;
 }
 
 bool ResourceRequest::allowStoredCredentials() const

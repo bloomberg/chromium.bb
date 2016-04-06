@@ -290,15 +290,12 @@ bool Body::hasPendingActivity() const
 Body::Body(ExecutionContext* context)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
-    , m_opaque(false)
 {
     suspendIfNeeded();
 }
 
 ScriptPromise Body::rejectInvalidConsumption(ScriptState* scriptState)
 {
-    if (m_opaque)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
     if (isBodyLocked() || bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
     return ScriptPromise();
