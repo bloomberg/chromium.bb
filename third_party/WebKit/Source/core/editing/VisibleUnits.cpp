@@ -2268,7 +2268,7 @@ static bool inRenderedText(const PositionTemplate<Strategy>& position)
         }
         if (box->containsCaretOffset(textOffset)) {
             // Return false for offsets inside composed characters.
-            return textOffset == 0 || textOffset == uncheckedNextOffset(anchorNode, uncheckedPreviousOffset(anchorNode, textOffset));
+            return textOffset == 0 || textOffset == nextGraphemeBoundaryOf(anchorNode, previousGraphemeBoundaryOf(anchorNode, textOffset));
         }
     }
 
@@ -2851,7 +2851,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
                 continue;
             }
 
-            offset = box->isLeftToRightDirection() ? uncheckedPreviousOffset(lineLayoutItem.node(), offset) : uncheckedNextOffset(lineLayoutItem.node(), offset);
+            offset = box->isLeftToRightDirection() ? previousGraphemeBoundaryOf(lineLayoutItem.node(), offset) : nextGraphemeBoundaryOf(lineLayoutItem.node(), offset);
 
             int caretMinOffset = box->caretMinOffset();
             int caretMaxOffset = box->caretMaxOffset();
@@ -3026,7 +3026,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
                 continue;
             }
 
-            offset = box->isLeftToRightDirection() ? uncheckedNextOffset(layoutObject->node(), offset) : uncheckedPreviousOffset(layoutObject->node(), offset);
+            offset = box->isLeftToRightDirection() ? nextGraphemeBoundaryOf(layoutObject->node(), offset) : previousGraphemeBoundaryOf(layoutObject->node(), offset);
 
             int caretMinOffset = box->caretMinOffset();
             int caretMaxOffset = box->caretMaxOffset();

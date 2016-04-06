@@ -158,7 +158,7 @@ void PositionIteratorAlgorithm<Strategy>::increment()
         // In this case |anchor| is a leaf(E,F,C,G or H) and
         // |m_offsetInAnchor| is not on the end of |anchor|.
         // Then just increment |m_offsetInAnchor|.
-        m_offsetInAnchor = uncheckedNextOffset(m_anchorNode, m_offsetInAnchor);
+        m_offsetInAnchor = nextGraphemeBoundaryOf(m_anchorNode, m_offsetInAnchor);
     } else {
         // Case #3. This is the next of Case #2 or #3.
         // Position is the end of |anchor|.
@@ -264,7 +264,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
             // In this case |anchor| is a leaf(E,F,C,G or H) and
             // |m_offsetInAnchor| is not on the beginning of |anchor|.
             // Then just decrement |m_offsetInAnchor|.
-            m_offsetInAnchor = uncheckedPreviousOffset(m_anchorNode, m_offsetInAnchor);
+            m_offsetInAnchor = previousGraphemeBoundaryOf(m_anchorNode, m_offsetInAnchor);
             return;
         } else {
             // Case #3-b. This is a reverse of increment()::Case#1.

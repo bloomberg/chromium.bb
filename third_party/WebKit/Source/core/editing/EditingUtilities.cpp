@@ -569,7 +569,7 @@ int findNextBoundaryOffset(const String& str, int current)
     return current + machine.finalizeAndGetBoundaryOffset();
 }
 
-int uncheckedPreviousOffset(const Node* node, int current)
+int previousGraphemeBoundaryOf(const Node* node, int current)
 {
     if (!node->isTextNode())
         return current - 1;
@@ -583,7 +583,7 @@ int uncheckedPreviousOffset(const Node* node, int current)
     return result == TextBreakDone ? current - 1 : result;
 }
 
-static int uncheckedPreviousOffsetForBackwardDeletion(const Node* node, int current)
+static int previousBackwardDeletionOffsetOf(const Node* node, int current)
 {
     DCHECK_GE(current, 0);
     if (current <= 1)
@@ -596,7 +596,7 @@ static int uncheckedPreviousOffsetForBackwardDeletion(const Node* node, int curr
     return findNextBoundaryOffset<BackspaceStateMachine>(text, current);
 }
 
-int uncheckedNextOffset(const Node* node, int current)
+int nextGraphemeBoundaryOf(const Node* node, int current)
 {
     if (!node->isTextNode())
         return current + 1;
@@ -635,9 +635,10 @@ PositionTemplate<Strategy> previousPositionOfAlgorithm(const PositionTemplate<St
         case PositionMoveType::CodeUnit:
             return PositionTemplate<Strategy>(node, offset - 1);
         case PositionMoveType::CodePoint:
-            return PositionTemplate<Strategy>(node, uncheckedPreviousOffset(node, offset));
+            // TODO(nona): Move to PositionMoveType::GraphemeBoundary case.
+            return PositionTemplate<Strategy>(node, previousGraphemeBoundaryOf(node, offset));
         case PositionMoveType::BackwardDeletion:
-            return PositionTemplate<Strategy>(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
+            return PositionTemplate<Strategy>(node, previousBackwardDeletionOffsetOf(node, offset));
         }
     }
 
@@ -684,7 +685,9 @@ PositionTemplate<Strategy> nextPositionOfAlgorithm(const PositionTemplate<Strate
         //      is correct.
         //   2) The new offset is a bogus offset like (<br>, 1), and there is no
         //      child. Going from 0 to 1 is correct.
-        return PositionTemplate<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::CodePoint) ? uncheckedNextOffset(node, offset) : offset + 1);
+        // TODO(nona): Call nextGraphemeBoundaryOf if
+        //             moveType == PositionMoveType::GraphemeBoundary
+        return PositionTemplate<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::CodePoint) ? nextGraphemeBoundaryOf(node, offset) : offset + 1);
     }
 
     if (ContainerNode* parent = Strategy::parent(*node))

@@ -213,8 +213,8 @@ CORE_EXPORT Position nextPositionOf(const Position&, PositionMoveType);
 CORE_EXPORT PositionInFlatTree previousPositionOf(const PositionInFlatTree&, PositionMoveType);
 CORE_EXPORT PositionInFlatTree nextPositionOf(const PositionInFlatTree&, PositionMoveType);
 
-CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
-CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
+CORE_EXPORT int previousGraphemeBoundaryOf(const Node*, int current);
+CORE_EXPORT int nextGraphemeBoundaryOf(const Node*, int current);
 
 // comparision functions on Position
 
