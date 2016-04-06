@@ -12,14 +12,14 @@
     <div class="settings-box block first">
       <settings-radio-group id="onStartupRadioGroup"
           pref="{{prefs.session.restore_on_startup}}">
-        <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
-            i18n-content="onStartupOpenNewTab">
+        <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]">
+          $i18n{onStartupOpenNewTab}
         </paper-radio-button>
-        <paper-radio-button name="[[prefValues_.CONTINUE]]"
-            i18n-content="onStartupContinue">
+        <paper-radio-button name="[[prefValues_.CONTINUE]]">
+          $i18n{onStartupContinue}
         </paper-radio-button>
-        <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]"
-            i18n-content="onStartupOpenSpecific">
+        <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]">
+          $i18n{onStartupOpenSpecific}
         </paper-radio-button>
       </settings-radio-group>
     </div>

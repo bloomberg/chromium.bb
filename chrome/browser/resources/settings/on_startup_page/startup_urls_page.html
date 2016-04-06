@@ -30,28 +30,27 @@
           <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
         </div>
       </template>
-      <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_"
-          i18n-content="onStartupAddNewPage">
+      <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_">
+        $i18n{onStartupAddNewPage}
       </div>
-      <div class="list-item list-button" on-tap="onUseCurrentPagesTap_"
-          i18n-content="onStartupUseCurrent">
+      <div class="list-item list-button" on-tap="onUseCurrentPagesTap_">
+        $i18n{onStartupUseCurrent}
       </div>
     </div>
 
     <settings-dialog id="addUrlDialog">
-      <div class="title" i18n-content="onStartupAddNewPage"></div>
+      <div class="title">$i18n{onStartupAddNewPage}</div>
       <div class="body">
         <paper-input class="flex" always-float-label id="newUrl"
-            i18n-values="label:onStartupSiteUrl" value="{{newUrl_}}">
+            label="$i18n{onStartupSiteUrl}" value="{{newUrl_}}">
         </paper-input>
       </div>
       <div class="button-container">
         <div class="action-buttons">
           <paper-button class="cancel-button" on-tap="onCancelTap_"
-              id="cancel" i18n-content="cancel"></paper-button>
+              id="cancel">$i18n{cancel}</paper-button>
           <paper-button id="add" class="action-button" on-tap="onAddTap_"
-              i18n-content="add" disabled="[[!isNewUrlValid_]]">
-          </paper-button>
+              disabled="[[!isNewUrlValid_]]">$i18n{add}</paper-button>
         </div>
       </div>
     </settings-dialog>
