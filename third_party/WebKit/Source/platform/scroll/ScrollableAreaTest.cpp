@@ -9,6 +9,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/testing/FakeGraphicsLayer.h"
+#include "platform/testing/FakeGraphicsLayerClient.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -148,20 +149,12 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     Heap::collectAllGarbage();
 }
 
-class MockGraphicsLayerClient : public GraphicsLayerClient {
-public:
-    bool needsRepaint(const GraphicsLayer&) const { return true; }
-    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const { return IntRect(); }
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override { }
-    String debugName(const GraphicsLayer*) const override { return String(); }
-    bool isTrackingPaintInvalidations() const override { return true; }
-};
-
 TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
 {
     ScrollbarTheme::setMockScrollbarsEnabled(true);
     MockScrollableArea* scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
-    MockGraphicsLayerClient graphicsLayerClient;
+    FakeGraphicsLayerClient graphicsLayerClient;
+    graphicsLayerClient.setIsTrackingPaintInvalidations(true);
     FakeGraphicsLayer graphicsLayer(&graphicsLayerClient);
     graphicsLayer.setDrawsContent(true);
     graphicsLayer.setSize(FloatSize(111, 222));
@@ -224,7 +217,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint)
 
     // Composited scrollbars only need repainting when parts become invalid
     // (e.g. if the track changes appearance when the thumb reaches the end).
-    MockGraphicsLayerClient graphicsLayerClient;
+    FakeGraphicsLayerClient graphicsLayerClient;
+    graphicsLayerClient.setIsTrackingPaintInvalidations(true);
     FakeGraphicsLayer layerForHorizontalScrollbar(&graphicsLayerClient);
     layerForHorizontalScrollbar.setDrawsContent(true);
     layerForHorizontalScrollbar.setSize(FloatSize(10, 10));

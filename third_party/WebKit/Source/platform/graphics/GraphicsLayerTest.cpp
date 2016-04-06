@@ -32,6 +32,7 @@
 #include "platform/graphics/CompositorFactory.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/testing/FakeGraphicsLayer.h"
+#include "platform/testing/FakeGraphicsLayerClient.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
@@ -46,18 +47,6 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
-
-namespace {
-
-class MockGraphicsLayerClient : public GraphicsLayerClient {
-public:
-    bool needsRepaint(const GraphicsLayer&) const { return true; }
-    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const { return IntRect(); }
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override { }
-    String debugName(const GraphicsLayer*) const override { return String(); }
-};
-
-} // anonymous namespace
 
 class GraphicsLayerTest : public testing::Test {
 public:
@@ -95,7 +84,7 @@ protected:
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
-    MockGraphicsLayerClient m_client;
+    FakeGraphicsLayerClient m_client;
 };
 
 class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {

@@ -26,6 +26,7 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayer.h"
+#include "platform/testing/FakeGraphicsLayerClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -34,14 +35,6 @@
 namespace blink {
 
 namespace {
-
-class MockGraphicsLayerClient : public GraphicsLayerClient {
-public:
-    bool needsRepaint(const GraphicsLayer&) const { return true; }
-    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const { return IntRect(); }
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override { }
-    String debugName(const GraphicsLayer*) const override { return String(); }
-};
 
 class TestImage : public Image {
 public:
@@ -101,7 +94,7 @@ private:
 
 TEST(ImageLayerChromiumTest, imageLayerContentReset)
 {
-    MockGraphicsLayerClient client;
+    FakeGraphicsLayerClient client;
     OwnPtr<FakeGraphicsLayer> graphicsLayer = adoptPtr(new FakeGraphicsLayer(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
@@ -123,7 +116,7 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset)
 
 TEST(ImageLayerChromiumTest, opaqueImages)
 {
-    MockGraphicsLayerClient client;
+    FakeGraphicsLayerClient client;
     OwnPtr<FakeGraphicsLayer> graphicsLayer = adoptPtr(new FakeGraphicsLayer(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
