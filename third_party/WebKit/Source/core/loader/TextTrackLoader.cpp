@@ -56,11 +56,11 @@ void TextTrackLoader::cueLoadTimerFired(Timer<TextTrackLoader>* timer)
 
     if (m_newCuesAvailable) {
         m_newCuesAvailable = false;
-        m_client.newCuesAvailable(this);
+        m_client->newCuesAvailable(this);
     }
 
     if (m_state >= Finished)
-        m_client.cueLoadingCompleted(this, m_state == Failed);
+        m_client->cueLoadingCompleted(this, m_state == Failed);
 }
 
 void TextTrackLoader::cancelLoad()
@@ -133,7 +133,7 @@ void TextTrackLoader::newCuesParsed()
 
 void TextTrackLoader::newRegionsParsed()
 {
-    m_client.newRegionsAvailable(this);
+    m_client->newRegionsAvailable(this);
 }
 
 void TextTrackLoader::fileFailedToParse()
@@ -164,6 +164,7 @@ void TextTrackLoader::getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions
 
 DEFINE_TRACE(TextTrackLoader)
 {
+    visitor->trace(m_client);
     visitor->trace(m_cueParser);
     visitor->trace(m_document);
     ResourceOwner<RawResource>::trace(visitor);
