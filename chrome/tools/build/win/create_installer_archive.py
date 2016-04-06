@@ -16,6 +16,7 @@ import ConfigParser
 import glob
 import optparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -422,14 +423,52 @@ def CopyIfChanged(src, target_dir):
     shutil.copyfile(src, dest)
 
 
+# Taken and modified from:
+# third_party\WebKit\Tools\Scripts\webkitpy\layout_tests\port\factory.py
+def _read_configuration_from_gn(build_dir):
+  """Return the configuration to used based on args.gn, if possible."""
+  path = os.path.join(build_dir, 'args.gn')
+  if not os.path.exists(path):
+    path = os.path.join(build_dir, 'toolchain.ninja')
+    if not os.path.exists(path):
+      # This does not appear to be a GN-based build directory, so we don't
+      # know how to interpret it.
+      return None
+
+    # toolchain.ninja exists, but args.gn does not; this can happen when
+    # `gn gen` is run with no --args.
+    return 'Debug'
+
+  args = open(path).read()
+  for l in args.splitlines():
+    # See the original of this function and then gn documentation for why this
+    # regular expression is correct:
+    # https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md#GN-build-language-grammar
+    m = re.match('^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', l)
+    if m:
+      return 'Release'
+
+  # if is_debug is set to anything other than false, or if it
+  # does not exist at all, we should use the default value (True).
+  return 'Debug'
+
+
 # Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
 # of VS installed to make sure we have the correct CRT version, unused DLLs
 # should not conflict with the others anyways.
 def CopyVisualStudioRuntimeDLLs(target_arch, build_dir):
   is_debug = os.path.basename(build_dir).startswith('Debug')
   if not is_debug and not os.path.basename(build_dir).startswith('Release'):
-    print ("Warning: could not determine build configuration from "
-           "output directory, assuming Release build.")
+    gn_type = _read_configuration_from_gn(build_dir)
+    if gn_type == 'Debug':
+      is_debug = True
+    elif gn_type == 'Release':
+      is_debug = False
+    else:
+      print ("Warning: could not determine build configuration from "
+             "output directory or args.gn, assuming Release build. If "
+             "setup.exe fails to launch, please check that your build "
+             "configuration is Release.")
 
   crt_dlls = []
   sys_dll_dir = None
