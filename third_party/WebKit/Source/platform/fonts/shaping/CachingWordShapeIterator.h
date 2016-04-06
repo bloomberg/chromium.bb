@@ -154,7 +154,7 @@ private:
             if (!m_textRun.is8Bit()) {
                 UChar32 nextChar;
                 U16_GET(m_textRun.characters16(), 0, i, length, nextChar);
-                if (Character::isCJKIdeographOrSymbol(nextChar))
+                if (Character::isCJKIdeographOrSymbolBase(nextChar))
                     return i;
             }
         }

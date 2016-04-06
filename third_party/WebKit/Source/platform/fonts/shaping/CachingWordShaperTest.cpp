@@ -463,6 +463,24 @@ TEST_F(CachingWordShaperTest, SegmentCJKSmallFormVariants)
     ASSERT_FALSE(iterator.next(&wordResult));
 }
 
+TEST_F(CachingWordShaperTest, SegmentHangulToneMark)
+{
+    const UChar str[] = {
+        0xC740, // HANGUL SYLLABLE EUN
+        0x302E, // HANGUL SINGLE DOT TONE MARK
+        0x0
+    };
+    TextRun textRun(str, 2);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
 TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList)
 {
     const UChar str[] = {

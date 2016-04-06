@@ -73,9 +73,11 @@ static const UChar32 isCJKIdeographOrSymbolRanges[] = {
     0x270A, 0x270D,
     // Ideographic Description Characters, with CJK Symbols and Punctuation,
     // excluding 0x3030.
+    // Exclude Hangul Tone Marks (0x302E .. 0x302F) because Hangul is not Han
+    // and no other Hangul are included.
     // Then Hiragana 0x3040 .. 0x309F, Katakana 0x30A0 .. 0x30FF, Bopomofo
     // 0x3100 .. 0x312F
-    0x2FF0, 0x302F,
+    0x2FF0, 0x302D,
     0x3031, 0x312F,
     // More Bopomofo and Bopomofo Extended 0x31A0 .. 0x31BF
     0x3190, 0x31BF,

@@ -63,6 +63,11 @@ public:
     }
 
     static bool isCJKIdeographOrSymbol(UChar32);
+    static bool isCJKIdeographOrSymbolBase(UChar32 c)
+    {
+        return isCJKIdeographOrSymbol(c)
+            && !(U_GET_GC_MASK(c) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK));
+    }
 
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
     static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
