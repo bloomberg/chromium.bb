@@ -4051,6 +4051,7 @@
             'layout/PaginationTest.cpp',
             'layout/PaintContainmentTest.cpp',
             'layout/ScrollAnchorTest.cpp',
+            'layout/VisualRectMappingTest.cpp',
             'layout/compositing/CompositedLayerMappingTest.cpp',
             'layout/shapes/BoxShapeTest.cpp',
             'layout/svg/LayoutSVGRootTest.cpp',

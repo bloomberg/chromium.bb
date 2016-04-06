@@ -217,6 +217,7 @@ const int showTreeCharacterOffset = 39;
 // See the individual getters below for more details about what each width is.
 class CORE_EXPORT LayoutObject : public ImageResourceObserver, public DisplayItemClient {
     friend class LayoutObjectChildList;
+    friend class VisualRectMappingTest;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
 public:
     // Anonymous objects should pass the document as their node, and they will then automatically be

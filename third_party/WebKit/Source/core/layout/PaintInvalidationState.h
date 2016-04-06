@@ -5,6 +5,7 @@
 #ifndef PaintInvalidationState_h
 #define PaintInvalidationState_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Allocator.h"
@@ -35,7 +36,7 @@ enum VisualRectFlags {
 //
 // See Source/core/paint/README.md ### PaintInvalidationState for more details.
 
-class PaintInvalidationState {
+class CORE_EXPORT PaintInvalidationState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
@@ -81,13 +82,13 @@ public:
 #endif
 
 private:
+    friend class VisualRectMappingTest;
+
     void updateForNormalChildren();
 
     LayoutRect computePaintInvalidationRectInBackingForSVG() const;
 
     void addClipRectRelativeToPaintOffset(const LayoutRect& localClipRect);
-
-    friend class ForceHorriblySlowRectMapping;
 
     const LayoutObject& m_currentObject;
 
@@ -108,7 +109,7 @@ private:
 
     // Whether m_paintOffset[XXX] and m_clipRect[XXX] are valid and can be used
     // to map a rect from space of the current object to space of paintInvalidationContainer.
-    mutable bool m_cachedOffsetsEnabled;
+    bool m_cachedOffsetsEnabled;
     bool m_cachedOffsetsForAbsolutePositionEnabled;
 
     // The following two fields are never null. Declare them as pointers because we need some
