@@ -25,7 +25,9 @@ def build(out_dir, extra_options=''):
 
 def install(release_arg):
   return run('build/android/adb_install_apk.py ' + release_arg + \
-             ' --apk=CronetTest.apk')
+             ' --apk=CronetTest.apk') or \
+             run('build/android/adb_install_apk.py ' + release_arg + \
+             ' --apk=ChromiumNetTestSupport.apk')
 
 
 def test(release_arg, extra_options):
