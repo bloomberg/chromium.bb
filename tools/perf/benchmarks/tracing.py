@@ -7,8 +7,10 @@ from core import perf_benchmark
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
+from telemetry import benchmark
 
 
+@benchmark.Disabled('android')
 class TracingWithDebugOverhead(perf_benchmark.PerfBenchmark):
 
   page_set = page_sets.Top10PageSet
