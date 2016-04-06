@@ -258,6 +258,7 @@ java_cpp_template("resource_id_javagen") {
 # GYP: //chrome/chrome_tests.gypi:chrome_junit_tests
 junit_binary("chrome_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/chrome/browser/ShortcutHelperTest.java",
     "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
     "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionCallableTest.java",
     "junit/src/org/chromium/chrome/browser/bookmarks/BookmarkModelUnitTest.java",

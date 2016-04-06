@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -57,7 +59,7 @@ std::string AppBannerDataFetcherAndroid::GetAppIdentifier() {
       ? AppBannerDataFetcher::GetAppIdentifier() : native_app_package_;
 }
 
-void AppBannerDataFetcherAndroid::FetchWebappSplashScreenImage(
+base::Closure AppBannerDataFetcherAndroid::FetchWebappSplashScreenImageCallback(
     const std::string& webapp_id) {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
@@ -66,13 +68,9 @@ void AppBannerDataFetcherAndroid::FetchWebappSplashScreenImage(
       web_app_data().icons, ideal_splash_image_size_in_dp_,
       minimum_splash_image_size_in_dp_);
 
-  ShortcutHelper::FetchSplashScreenImage(
-      web_contents,
-      image_url,
-      ideal_splash_image_size_in_dp_,
-      minimum_splash_image_size_in_dp_,
-      webapp_id,
-      web_app_data().start_url.spec());
+  return base::Bind(&ShortcutHelper::FetchSplashScreenImage,
+      web_contents, image_url, ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_, webapp_id);
 }
 
 void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,

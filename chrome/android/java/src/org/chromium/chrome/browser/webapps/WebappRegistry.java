@@ -38,34 +38,82 @@ public class WebappRegistry {
     static final long WEBAPP_UNOPENED_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(13L * 7L);
 
     /**
-     * Called when a retrieval of the stored web apps occurs.
+     * Called when a retrieval of the set of stored web app IDs occurs.
      */
     public interface FetchCallback {
-        public void onWebappIdsRetrieved(Set<String> readObject);
+        void onWebappIdsRetrieved(Set<String> readObject);
     }
 
     /**
-     * Registers the existence of a web app and creates the SharedPreference for it.
+     * Called when a retrieval of the stored WebappDataStorage occurs. The storage parameter will
+     * be null if the web app queried for was not in the registry.
+     */
+    public interface FetchWebappDataStorageCallback {
+        void onWebappDataStorageRetrieved(WebappDataStorage storage);
+    }
+
+    /**
+     * Registers the existence of a web app, creates the SharedPreference for it, and runs the
+     * supplied callback (if not null) on the UI thread with the resulting WebappDataStorage object.
      * @param context  Context to open the registry with.
      * @param webappId The id of the web app to register.
+     * @param callback The callback to run with the WebappDataStorage argument.
+     * @return The storage object for the web app.
      */
     public static void registerWebapp(final Context context, final String webappId,
-            final String scope) {
-        new AsyncTask<Void, Void, Void>() {
+            final FetchWebappDataStorageCallback callback) {
+        new AsyncTask<Void, Void, WebappDataStorage>() {
             @Override
-            protected final Void doInBackground(Void... nothing) {
+            protected final WebappDataStorage doInBackground(Void... nothing) {
                 SharedPreferences preferences = openSharedPreferences(context);
+                // The set returned by getRegisteredWebappIds must be treated as immutable, so we
+                // make a copy to edit and save.
                 Set<String> webapps = new HashSet<String>(getRegisteredWebappIds(preferences));
                 boolean added = webapps.add(webappId);
                 assert added;
 
-                // Update the last used time, so we can guarantee that a web app which appears in
-                // the registry will have a last used time != WebappDataStorage.LAST_USED_INVALID.
-                WebappDataStorage storage = new WebappDataStorage(context, webappId);
-                storage.setScope(scope);
-                storage.updateLastUsedTime();
                 preferences.edit().putStringSet(KEY_WEBAPP_SET, webapps).apply();
+
+                // Create the WebappDataStorage and update the last used time, so we can guarantee
+                // that a web app which appears in the registry will have a
+                // last used time != WebappDataStorage.LAST_USED_INVALID.
+                WebappDataStorage storage = new WebappDataStorage(context, webappId);
+                storage.updateLastUsedTime();
+                return storage;
+            }
+
+            @Override
+            protected final void onPostExecute(WebappDataStorage storage) {
+                if (callback != null) callback.onWebappDataStorageRetrieved(storage);
+            }
+        }.execute();
+    }
+
+    /**
+     * Runs the callback, supplying the WebappDataStorage object for webappId, or null if the web
+     * app has not been registered.
+     * @param context  Context to open the registry with.
+     * @param webappId The id of the web app to register.
+     * @return The storage object for the web app, or null if webappId is not registered.
+     */
+    public static void getWebappDataStorage(final Context context, final String webappId,
+            final FetchWebappDataStorageCallback callback) {
+        new AsyncTask<Void, Void, WebappDataStorage>() {
+            @Override
+            protected final WebappDataStorage doInBackground(Void... nothing) {
+                SharedPreferences preferences = openSharedPreferences(context);
+                if (getRegisteredWebappIds(preferences).contains(webappId)) {
+                    WebappDataStorage storage = WebappDataStorage.open(context, webappId);
+                    storage.updateLastUsedTime();
+                    return storage;
+                }
                 return null;
+            }
+
+            @Override
+            protected final void onPostExecute(WebappDataStorage storage) {
+                assert callback != null;
+                callback.onWebappDataStorageRetrieved(storage);
             }
         }.execute();
     }
@@ -85,6 +133,7 @@ public class WebappRegistry {
 
             @Override
             protected final void onPostExecute(Set<String> result) {
+                assert callback != null;
                 callback.onWebappIdsRetrieved(result);
             }
         }.execute();
@@ -161,7 +210,7 @@ public class WebappRegistry {
     }
 
     /**
-     * Deletes the scope and sets the last used time to 0 for all web apps.
+     * Deletes the URL and scope, and sets the last used time to 0 for all web apps.
      */
     @VisibleForTesting
     static void clearWebappHistory(final Context context, final Runnable callback) {

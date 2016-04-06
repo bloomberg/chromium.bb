@@ -243,7 +243,10 @@ public class WebappInfo {
     public void setWebappIntentExtras(Intent intent) {
         intent.putExtra(ShortcutHelper.EXTRA_ID, id());
         intent.putExtra(ShortcutHelper.EXTRA_URL, uri().toString());
+        intent.putExtra(ShortcutHelper.EXTRA_SCOPE,
+                ShortcutHelper.getScopeFromUrl(uri().toString()));
         intent.putExtra(ShortcutHelper.EXTRA_ICON, encodedIcon());
+        intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name());
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName());
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation());

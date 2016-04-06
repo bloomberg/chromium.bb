@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,11 +23,18 @@ class ShortcutHelper {
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);
 
-  // Adds a shortcut to the launcher using a SkBitmap.
-  // Must be called on the IO thread.
-  static void AddShortcutInBackgroundWithSkBitmap(const ShortcutInfo& info,
-                                                  const std::string& webapp_id,
-                                                  const SkBitmap& icon_bitmap);
+  // Adds a shortcut to the launcher using a SkBitmap. If the shortcut is for
+  // a standalone-capable site, |splash_image_callback| will be invoked once the
+  // Java-side operation has completed. This is necessary as Java will
+  // asynchronously create and populate a WebappDataStorage object for
+  // standalone-capable sites. This must exist before the splash image can be
+  // stored.
+  // Must not be called on the UI thread.
+  static void AddShortcutInBackgroundWithSkBitmap(
+      const ShortcutInfo& info,
+      const std::string& webapp_id,
+      const SkBitmap& icon_bitmap,
+      const base::Closure& splash_image_callback);
 
   // Returns the ideal size for an icon representing a web app.
   static int GetIdealHomescreenIconSizeInDp();
@@ -43,21 +51,22 @@ class ShortcutHelper {
   static int GetMinimumSplashImageSizeInDp();
 
   // Fetches the splash screen image and stores it inside the WebappDataStorage
-  // of the webapp.
+  // of the webapp. The WebappDataStorage object *must* have been previously
+  // created by |AddShortcutInBackgroundWithSkBitmap|; this method should be
+  // passed as a closure to that method.
   static void FetchSplashScreenImage(content::WebContents* web_contents,
                                      const GURL& image_url,
                                      const int ideal_splash_image_size_in_dp,
                                      const int minimum_splash_image_size_in_dp,
-                                     const std::string& webapp_id,
-                                     const std::string& webapp_scope);
+                                     const std::string& webapp_id);
 
-  // Stores the data of the webapp which is not placed inside the shortcut.
-  static void StoreWebappData(const std::string& webapp_id,
-                              const std::string& webapp_url,
-                              const SkBitmap& splash_image);
+  // Stores the webapp splash screen in the WebappDataStorage associated with
+  // |webapp_id|.
+  static void StoreWebappSplashImage(const std::string& webapp_id,
+                                     const SkBitmap& splash_image);
 
-  // Modify the given icon to matche the launcher requirements, then returns the
-  // new icon. It might generate an entirely new icon, in which case,
+  // Returns the given icon, modified to match the launcher requirements.
+  // This method may generate an entirely new icon; if this is the case,
   // |is_generated| will be set to |true|.
   static SkBitmap FinalizeLauncherIcon(const SkBitmap& icon,
                                        const GURL& url,

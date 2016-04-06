@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 #define CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
@@ -62,9 +63,9 @@ class AddToHomescreenDataFetcher
                              int minimum_splash_image_size_in_dp,
                              Observer* observer);
 
-  // Called to fetch the splash screen image to be stored for the webapp with
-  // the specified |id|.
-  void FetchSplashScreenImage(const std::string& id);
+  // Returns a callback which fetches the splash screen image to be stored for
+  // the webapp with the specified |id|.
+  base::Closure FetchSplashScreenImageCallback(const std::string& id);
 
   // IPC message received when the initialization is finished.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);

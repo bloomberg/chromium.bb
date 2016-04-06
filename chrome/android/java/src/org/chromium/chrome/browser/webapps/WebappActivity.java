@@ -252,20 +252,28 @@ public class WebappActivity extends FullScreenActivity {
                 ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
                 : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
 
-        // The scope may have been purged by the user clearing their history. It is
-        // needed to be able to launch a webapp from a notification. Make sure that the
-        // scope exists by restoring it on webapp launch; this method will no-op if the
-        // scope does exist as it should not be possible to overwrite any set scope.
-        WebappDataStorage.setScope(this, mWebappInfo.id(), mWebappInfo.uri().toString());
-
-        // Retrieve the splash image if it exists.
-        WebappDataStorage.open(this, mWebappInfo.id()).getSplashScreenImage(
-                new WebappDataStorage.FetchCallback<Bitmap>() {
+        final Intent intent = getIntent();
+        WebappRegistry.getWebappDataStorage(this, mWebappInfo.id(),
+                new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
-                    public void onDataRetrieved(Bitmap splashImage) {
-                        initializeSplashScreenWidgets(backgroundColor, splashImage);
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        if (storage == null) return;
+
+                        // The information in the WebappDataStorage may have been purged by the
+                        // user clearing their history or not launching the web app recently.
+                        // Restore the data if necessary from the intent.
+                        storage.updateFromShortcutIntent(intent);
+
+                        // Retrieve the splash image if it exists.
+                        storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
+                            @Override
+                            public void onDataRetrieved(Bitmap splashImage) {
+                                initializeSplashScreenWidgets(backgroundColor, splashImage);
+                            }
+                        });
                     }
-                });
+                }
+        );
     }
 
     private void initializeSplashScreenWidgets(int backgroundColor, Bitmap splashImage) {

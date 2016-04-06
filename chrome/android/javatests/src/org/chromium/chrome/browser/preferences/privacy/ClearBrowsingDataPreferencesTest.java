@@ -13,6 +13,7 @@ import android.text.SpannableString;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -37,6 +38,21 @@ public class ClearBrowsingDataPreferencesTest
 
     private boolean mCallbackCalled;
 
+    private class CallbackCriteria extends Criteria {
+        public CallbackCriteria() {
+            mCallbackCalled = false;
+        }
+
+        @Override
+        public boolean isSatisfied() {
+            if (mCallbackCalled) {
+                mCallbackCalled = false;
+                return true;
+            }
+            return false;
+        }
+    }
+
     public ClearBrowsingDataPreferencesTest() {
         super(ChromeActivity.class);
     }
@@ -52,7 +68,7 @@ public class ClearBrowsingDataPreferencesTest
      */
     @MediumTest
     public void testClearingSiteDataClearsWebapps() throws Exception {
-        WebappRegistry.registerWebapp(getActivity(), "first", "https://www.google.com");
+        WebappRegistry.registerWebapp(getActivity(), "first", null);
         WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
@@ -60,13 +76,7 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCallbackCalled;
-            }
-        });
-        mCallbackCalled = false;
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
         final Preferences preferences =
@@ -99,12 +109,7 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCallbackCalled;
-            }
-        });
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
     }
 
     /**
@@ -113,7 +118,19 @@ public class ClearBrowsingDataPreferencesTest
      */
     @MediumTest
     public void testClearingHistoryClearsWebappScopesAndLaunchTimes() throws Exception {
-        WebappRegistry.registerWebapp(getActivity(), "first", "https://www.google.com");
+        WebappRegistry.registerWebapp(getActivity(), "first",
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        storage.updateFromShortcutIntent(ShortcutHelper.createWebappShortcutIntent(
+                                    "id", "action", "url", "scope", "name", "shortName", null,
+                                    ShortcutHelper.WEBAPP_SHORTCUT_VERSION, 0, 0, 0, false));
+                        mCallbackCalled = true;
+                    }
+                }
+        );
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
+
         WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
@@ -121,13 +138,7 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCallbackCalled;
-            }
-        });
-        mCallbackCalled = false;
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
         final Preferences preferences =
@@ -161,15 +172,9 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCallbackCalled;
-            }
-        });
-        mCallbackCalled = false;
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
 
-        // Scope should be empty.
+        // URL and scope should be empty.
         WebappDataStorage.getScope(getActivity(), "first",
                 new WebappDataStorage.FetchCallback<String>() {
                     @Override
@@ -179,13 +184,18 @@ public class ClearBrowsingDataPreferencesTest
                     }
                 }
         );
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCallbackCalled;
-            }
-        });
-        mCallbackCalled = false;
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
+
+        WebappDataStorage.getURL(getActivity(), "first",
+                new WebappDataStorage.FetchCallback<String>() {
+                    @Override
+                    public void onDataRetrieved(String readObject) {
+                        assertEquals(readObject, "");
+                        mCallbackCalled = true;
+                    }
+                }
+        );
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // The last used time should be 0.
         WebappDataStorage.getLastUsedTime(getActivity(), "first",
@@ -198,12 +208,7 @@ public class ClearBrowsingDataPreferencesTest
                     }
                 }
         );
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCallbackCalled;
-            }
-        });
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
     }
 
     /**

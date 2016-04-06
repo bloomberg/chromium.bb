@@ -8,9 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -57,6 +59,32 @@ public class WebappRegistryTest {
         }
     }
 
+    private class FetchStorageCallback implements WebappRegistry.FetchWebappDataStorageCallback {
+        Intent mShortcutIntent;
+
+        FetchStorageCallback(Intent shortcutIntent) {
+            mCallbackCalled = false;
+            mShortcutIntent = shortcutIntent;
+        }
+
+        @Override
+        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+            mCallbackCalled = true;
+            storage.updateFromShortcutIntent(mShortcutIntent);
+        }
+    }
+
+    private class CallbackRunner implements Runnable {
+        public CallbackRunner() {
+            mCallbackCalled = false;
+        }
+
+        @Override
+        public void run() {
+            mCallbackCalled = true;
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         mSharedPreferences = Robolectric.application
@@ -77,7 +105,7 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappRegistrationAddsToSharedPrefs() throws Exception {
-        WebappRegistry.registerWebapp(Robolectric.application, "test", "https://www.google.com");
+        WebappRegistry.registerWebapp(Robolectric.application, "test", null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -88,11 +116,10 @@ public class WebappRegistryTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testWebappRegistrationUpdatesLastUsedAndSCOPE() throws Exception {
+    public void testWebappRegistrationUpdatesLastUsed() throws Exception {
         long before = System.currentTimeMillis();
-        final String scope = "http://drive.google.com";
 
-        WebappRegistry.registerWebapp(Robolectric.application, "test", scope);
+        WebappRegistry.registerWebapp(Robolectric.application, "test", null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         long after = System.currentTimeMillis();
 
@@ -100,10 +127,7 @@ public class WebappRegistryTest {
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
         long actual = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
                 WebappDataStorage.LAST_USED_INVALID);
-        String webAppScope = webAppPrefs.getString(WebappDataStorage.KEY_SCOPE,
-                WebappDataStorage.SCOPE_INVALID);
         assertTrue("Timestamp is out of range", before <= actual && actual <= after);
-        assertEquals(scope, webAppScope);
     }
 
     @Test
@@ -130,7 +154,7 @@ public class WebappRegistryTest {
         assertTrue(mCallbackCalled);
         mCallbackCalled = false;
 
-        WebappRegistry.registerWebapp(Robolectric.application, "second", "https://www.google.com");
+        WebappRegistry.registerWebapp(Robolectric.application, "second", null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         // A copy of the expected set needs to be made as the SharedPreferences is using the copy
@@ -149,12 +173,7 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testUnregisterRunsCallback() throws Exception {
-        WebappRegistry.unregisterAllWebapps(Robolectric.application, new Runnable() {
-            @Override
-            public void run() {
-                mCallbackCalled = true;
-            }
-        });
+        WebappRegistry.unregisterAllWebapps(Robolectric.application, new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
@@ -166,12 +185,7 @@ public class WebappRegistryTest {
     public void testUnregisterClearsRegistry() throws Exception {
         addWebappsToRegistry("test");
 
-        WebappRegistry.unregisterAllWebapps(Robolectric.application, new Runnable() {
-            @Override
-            public void run() {
-                mCallbackCalled = true;
-            }
-        });
+        WebappRegistry.unregisterAllWebapps(Robolectric.application, new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
@@ -293,12 +307,7 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testClearWebappHistoryRunsCallback() throws Exception {
-        WebappRegistry.clearWebappHistory(Robolectric.application, new Runnable() {
-            @Override
-            public void run() {
-                mCallbackCalled = true;
-            }
-        });
+        WebappRegistry.clearWebappHistory(Robolectric.application, new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
@@ -308,26 +317,31 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testClearWebappHistory() throws Exception {
-        final String webappScope1 =  "https://www.google.com";
-        final String webappScope2 =  "https://drive.google.com";
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp1", webappScope1);
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp2", webappScope2);
+        final String webapp1Url = "https://www.google.com";
+        final String webapp2Url = "https://drive.google.com";
+        Intent shortcutIntent1 = createShortcutIntent(webapp1Url);
+        Intent shortcutIntent2 = createShortcutIntent(webapp2Url);
+
+        WebappRegistry.registerWebapp(Robolectric.application, "webapp1",
+                new FetchStorageCallback(shortcutIntent1));
         BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(mCallbackCalled);
+
+        WebappRegistry.registerWebapp(Robolectric.application, "webapp2",
+                new FetchStorageCallback(shortcutIntent2));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(mCallbackCalled);
 
         SharedPreferences webapp1Prefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp1", Context.MODE_PRIVATE);
         SharedPreferences webapp2Prefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp2", Context.MODE_PRIVATE);
 
-        WebappRegistry.clearWebappHistory(Robolectric.application, new Runnable() {
-            @Override
-            public void run() {
-                mCallbackCalled = true;
-            }
-        });
+        WebappRegistry.clearWebappHistory(Robolectric.application, new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
-
         assertTrue(mCallbackCalled);
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -344,50 +358,90 @@ public class WebappRegistryTest {
                 WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
         assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
 
-        // Verify that the scope for both web apps is WebappDataStorage.SCOPE_INVALID.
+        // Verify that the URL and scope for both web apps is WebappDataStorage.URL_INVALID.
         String actualScope = webapp1Prefs.getString(
-                WebappDataStorage.KEY_SCOPE, WebappDataStorage.SCOPE_INVALID);
-        assertEquals(WebappDataStorage.SCOPE_INVALID, actualScope);
+                WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
+        assertEquals(WebappDataStorage.URL_INVALID, actualScope);
+        String actualUrl = webapp1Prefs.getString(
+                WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
+        assertEquals(WebappDataStorage.URL_INVALID, actualUrl);
         actualScope = webapp2Prefs.getString(
-                WebappDataStorage.KEY_SCOPE, WebappDataStorage.SCOPE_INVALID);
-        assertEquals(WebappDataStorage.SCOPE_INVALID, actualScope);
+                WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
+        assertEquals(WebappDataStorage.URL_INVALID, actualScope);
+        actualUrl = webapp2Prefs.getString(
+                WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
+        assertEquals(WebappDataStorage.URL_INVALID, actualUrl);
     }
 
     @Test
     @Feature({"Webapp"})
-    public void testOpenAfterClearWebappHistory() throws Exception {
-        final String webappScope =  "https://www.google.com";
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp", webappScope);
+    public void testGetAfterClearWebappHistory() throws Exception {
+        WebappRegistry.registerWebapp(Robolectric.application, "webapp", null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         SharedPreferences webappPrefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
-
-        WebappRegistry.clearWebappHistory(Robolectric.application, new Runnable() {
-            @Override
-            public void run() {
-                mCallbackCalled = true;
-            }
-        });
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-
-        // Open the webapp up and set the scope.
-        WebappDataStorage.open(Robolectric.application, "webapp");
-        WebappDataStorage.setScope(Robolectric.application, "webapp", webappScope);
+        WebappRegistry.clearWebappHistory(Robolectric.application, new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
         assertTrue(mCallbackCalled);
 
-        // Verify that the last used time is valid and the scope is updated.
+        // Open the webapp up to set the last used time.
+        WebappRegistry.getWebappDataStorage(Robolectric.application, "webapp",
+                new FetchStorageCallback(null));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(mCallbackCalled);
+
+        // Verify that the last used time is valid.
         long actualLastUsed = webappPrefs.getLong(
                 WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_INVALID);
         assertTrue(WebappDataStorage.LAST_USED_INVALID != actualLastUsed);
         assertTrue(WebappDataStorage.LAST_USED_UNSET != actualLastUsed);
-        String actualScope = webappPrefs.getString(
-                WebappDataStorage.KEY_SCOPE, WebappDataStorage.SCOPE_INVALID);
-        assertEquals(webappScope, actualScope);
     }
 
+    @Test
+    @Feature({"Webapp"})
+    public void testUpdateAfterClearWebappHistory() throws Exception {
+        final String webappUrl =  "http://www.google.com";
+        final Intent shortcutIntent = createShortcutIntent(webappUrl);
+        WebappRegistry.registerWebapp(Robolectric.application, "webapp",
+                new FetchStorageCallback(shortcutIntent));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(mCallbackCalled);
+
+        SharedPreferences webappPrefs = Robolectric.application.getSharedPreferences(
+                WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
+
+        // Verify that the URL and scope match the original in the intent.
+        String actualURL = webappPrefs.getString(
+                WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
+        assertEquals(webappUrl, actualURL);
+        String actualScope = webappPrefs.getString(
+                WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
+        assertEquals(webappUrl, actualScope);
+
+        WebappRegistry.clearWebappHistory(Robolectric.application, new CallbackRunner());
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(mCallbackCalled);
+
+        // Update the webapp from the intent again.
+        WebappRegistry.getWebappDataStorage(Robolectric.application, "webapp",
+                new FetchStorageCallback(shortcutIntent));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(mCallbackCalled);
+
+        // Verify that the URL and scope match the original in the intent.
+        actualURL = webappPrefs.getString(
+                WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
+        assertEquals(webappUrl, actualURL);
+        actualScope = webappPrefs.getString(
+                WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
+        assertEquals(webappUrl, actualScope);
+    }
 
     private Set<String> addWebappsToRegistry(String... webapps) {
         final Set<String> expected = new HashSet<String>(Arrays.asList(webapps));
@@ -400,5 +454,10 @@ public class WebappRegistryTest {
     private Set<String> getRegisteredWebapps() {
         return mSharedPreferences.getStringSet(
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+    }
+
+    private Intent createShortcutIntent(String url) {
+        return ShortcutHelper.createWebappShortcutIntent("id", "action", url, url, "name",
+                "shortName", null, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, 0, 0, 0, false);
     }
 }

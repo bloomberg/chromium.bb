@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_DATA_FETCHER_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 
@@ -30,8 +31,10 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
                         const base::android::JavaRef<jobject>& app_data,
                         const GURL& image_url);
 
-  // Fetches the splash screen image and stores it in the WebappDataStorage.
-  void FetchWebappSplashScreenImage(const std::string& webapp_id);
+  // Returns a callback which fetches the splash screen image and stores it in
+  // WebappDataStorage.
+  base::Closure FetchWebappSplashScreenImageCallback(
+      const std::string& webapp_id);
 
  protected:
   ~AppBannerDataFetcherAndroid() override;

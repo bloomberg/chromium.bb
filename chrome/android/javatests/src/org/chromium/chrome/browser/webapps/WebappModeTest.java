@@ -56,20 +56,17 @@ public class WebappModeTest extends MultiActivityTestBase {
             + "content='width=device-width initial-scale=0.5, maximum-scale=0.5'></head>"
             + "<body bgcolor='#011684'>Webapp 1</body></html>");
     private static final String WEBAPP_1_TITLE = "Web app #1";
-    private static final String WEBAPP_1_ORIGIN = "https://www.google.com";
 
     private static final String WEBAPP_2_ID = "webapp_id_2";
     private static final String WEBAPP_2_URL =
             UrlUtils.encodeHtmlDataUri("<html><body bgcolor='#840116'>Webapp 2</body></html>");
     private static final String WEBAPP_2_TITLE = "Web app #2";
-    private static final String WEBAPP_2_ORIGIN = "http://google.com";
 
     private static final String WEBAPP_ICON = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXB"
             + "IWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wQIFB4cxOfiSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
             + "ggR0lNUFeBDhcAAAAMSURBVAjXY2AUawEAALcAnI/TkI8AAAAASUVORK5CYII=";
 
-    private void fireWebappIntent(String id, String url, String title, String icon,
-            boolean addMac) throws Exception {
+    private Intent createIntent(String id, String url, String title, String icon, boolean addMac) {
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setPackage(getInstrumentation().getTargetContext().getPackageName());
@@ -87,6 +84,13 @@ public class WebappModeTest extends MultiActivityTestBase {
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         webappInfo.setWebappIntentExtras(intent);
 
+        return intent;
+    }
+
+    private void fireWebappIntent(String id, String url, String title, String icon,
+            boolean addMac) throws Exception {
+        Intent intent = createIntent(id, url, title, icon, addMac);
+
         getInstrumentation().getTargetContext().startActivity(intent);
         getInstrumentation().waitForIdleSync();
         ApplicationTestUtils.waitUntilChromeInForeground();
@@ -97,12 +101,26 @@ public class WebappModeTest extends MultiActivityTestBase {
         super.setUp();
 
         // Register the webapps so when the data storage is opened, the test doesn't crash. There is
-        // no race condition with the retrival as AsyncTasks are run sequentially on the background
+        // no race condition with the retrieval as AsyncTasks are run sequentially on the background
         // thread.
         WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_1_ID,
-                WEBAPP_1_ORIGIN);
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        storage.updateFromShortcutIntent(createIntent(
+                                WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                    }
+                }
+        );
         WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_2_ID,
-                WEBAPP_2_ORIGIN);
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        storage.updateFromShortcutIntent(createIntent(
+                                WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                    }
+                }
+        );
     }
 
     /**

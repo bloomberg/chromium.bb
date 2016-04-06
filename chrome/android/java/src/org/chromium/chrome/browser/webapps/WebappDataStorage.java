@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -12,63 +13,66 @@ import android.os.AsyncTask;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.util.Map;
 
 /**
  * Stores data about an installed web app. Uses SharedPreferences to persist the data to disk.
- * Before this class is used, the web app must be registered in {@link WebappRegistry}.
- *
- * EXAMPLE USAGE:
- *
- * (1) UPDATING/RETRIEVING THE ICON (web app MUST have been registered in WebappRegistry)
- * WebappDataStorage storage = WebappDataStorage.open(context, id);
- * storage.updateSplashScreenImage(bitmap);
- * storage.getSplashScreenImage(callback);
+ * This class must only be accessed via {@link WebappRegistry}, which is used to register and keep
+ * track of web app data known to Chrome.
  */
 public class WebappDataStorage {
 
     static final String SHARED_PREFS_FILE_PREFIX = "webapp_";
     static final String KEY_SPLASH_ICON = "splash_icon";
     static final String KEY_LAST_USED = "last_used";
+    static final String KEY_URL = "url";
     static final String KEY_SCOPE = "scope";
+    static final String KEY_ICON = "icon";
+    static final String KEY_NAME = "name";
+    static final String KEY_SHORT_NAME = "short_name";
+    static final String KEY_ORIENTATION = "orientation";
+    static final String KEY_THEME_COLOR = "theme_color";
+    static final String KEY_BACKGROUND_COLOR = "background_color";
+    static final String KEY_SOURCE = "source";
+    static final String KEY_ACTION = "action";
+    static final String KEY_IS_ICON_GENERATED = "is_icon_generated";
+    static final String KEY_VERSION = "version";
 
-    // Unset/invalid constants for last used times and scopes. 0 is used as the null last
+    // Unset/invalid constants for last used times and URLs. 0 is used as the null last
     // used time as WebappRegistry assumes that this is always a valid timestamp.
     static final long LAST_USED_UNSET = 0;
     static final long LAST_USED_INVALID = -1;
-    static final String SCOPE_INVALID = "";
+    static final String URL_INVALID = "";
+    static final int VERSION_INVALID = 0;
 
     private static Factory sFactory = new Factory();
 
+    private final String mId;
     private final SharedPreferences mPreferences;
 
     /**
-     * Opens an instance of WebappDataStorage for the web app specified.
+     * Opens an instance of WebappDataStorage for the web app specified. Must not be run on the UI
+     * thread.
      * @param context  The context to open the SharedPreferences.
      * @param webappId The ID of the web app which is being opened.
      */
-    public static WebappDataStorage open(final Context context, final String webappId) {
+    static WebappDataStorage open(final Context context, final String webappId) {
         final WebappDataStorage storage = sFactory.create(context, webappId);
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected final Void doInBackground(Void... nothing) {
-                if (storage.getLastUsedTime() == LAST_USED_INVALID) {
-                    // If the last used time is invalid then assert that there is no data
-                    // in the WebappDataStorage which needs to be cleaned up.
-                    assert storage.getAllData().isEmpty();
-                } else {
-                    storage.updateLastUsedTime();
-                }
-                return null;
-            }
-        }.execute();
+        if (storage.getLastUsedTime() == LAST_USED_INVALID) {
+            // If the last used time is invalid then ensure that there is no data in the
+            // WebappDataStorage which needs to be cleaned up.
+            assert storage.getAllData().isEmpty();
+        }
         return storage;
     }
 
     /**
-     * Asynchronously retrieves the time which this WebappDataStorage was last
-     * opened using {@link WebappDataStorage#open(Context, String)}.
+     * Asynchronously retrieves the time which this WebappDataStorage was last opened. Used in
+     * testing.
      * @param context  The context to read the SharedPreferences file.
      * @param webappId The ID of the web app the used time is being read for.
      * @param callback Called when the last used time has been retrieved.
@@ -87,6 +91,7 @@ public class WebappDataStorage {
 
             @Override
             protected final void onPostExecute(Long lastUsed) {
+                assert callback != null;
                 callback.onDataRetrieved(lastUsed);
             }
         }.execute();
@@ -94,7 +99,7 @@ public class WebappDataStorage {
 
     /**
      * Asynchronously retrieves the scope stored in this WebappDataStorage. The scope is the URL
-     * over which the webapp data is applied to.
+     * over which the web app data is applied to. Used in testing.
      * @param context  The context to read the SharedPreferences file.
      * @param webappId The ID of the web app the used time is being read for.
      * @param callback Called when the scope has been retrieved.
@@ -105,32 +110,36 @@ public class WebappDataStorage {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected final String doInBackground(Void... nothing) {
-                return new WebappDataStorage(context.getApplicationContext(), webappId)
-                        .getScope();
+                return new WebappDataStorage(context.getApplicationContext(), webappId).getScope();
             }
 
             @Override
             protected final void onPostExecute(String scope) {
+                assert callback != null;
                 callback.onDataRetrieved(scope);
             }
         }.execute();
     }
 
     /**
-     * Asynchronously sets the scope stored in this WebappDataStorage. Does nothing if there
-     * is already a scope stored; since webapps added to homescreen cannot change the scope which
-     * they launch, it is not intended that a WebappDataStorage will be able to change the scope
-     * once it is set.
+     * Asynchronously retrieves the URL stored in this WebappDataStorage. Used in testing.
      * @param context  The context to read the SharedPreferences file.
      * @param webappId The ID of the web app the used time is being read for.
-     * @param scope The scope to set for the web app.
+     * @param callback Called when the URL has been retrieved.
      */
-    public static void setScope(final Context context, final String webappId, final String scope) {
-        new AsyncTask<Void, Void, Void>() {
+    @VisibleForTesting
+    public static void getURL(final Context context, final String webappId,
+            final FetchCallback<String> callback) {
+        new AsyncTask<Void, Void, String>() {
             @Override
-            protected final Void doInBackground(Void... nothing) {
-                new WebappDataStorage(context.getApplicationContext(), webappId).setScope(scope);
-                return null;
+            protected final String doInBackground(Void... nothing) {
+                return new WebappDataStorage(context.getApplicationContext(), webappId).getURL();
+            }
+
+            @Override
+            protected final void onPostExecute(String url) {
+                assert callback != null;
+                callback.onDataRetrieved(url);
             }
         }.execute();
     }
@@ -147,18 +156,18 @@ public class WebappDataStorage {
     }
 
     /**
-     * Deletes the scope and sets last used time to 0 this web app in SharedPreferences.
+     * Deletes the URL and scope, and sets last used time to 0 in SharedPreferences.
      * This does not remove the stored splash screen image (if any) for the app.
      * @param context  The context to read the SharedPreferences file.
-     * @param webappId The ID of the web app being deleted.
+     * @param webappId The ID of the web app for which history is being cleared.
      */
     static void clearHistory(final Context context, final String webappId) {
         // The last used time is set to 0 to ensure that a valid value is always present.
-        // If the webapp is not launched prior to the next cleanup, then its remaining data will be
+        // If the web app is not launched prior to the next cleanup, then its remaining data will be
         // removed. Otherwise, the next launch will update the last used time.
         assert !ThreadUtils.runningOnUiThread();
-        openSharedPreferences(context, webappId)
-                .edit().putLong(KEY_LAST_USED, LAST_USED_UNSET).remove(KEY_SCOPE).apply();
+        openSharedPreferences(context, webappId).edit()
+                .putLong(KEY_LAST_USED, LAST_USED_UNSET).remove(KEY_URL).remove(KEY_SCOPE).apply();
     }
 
     /**
@@ -175,14 +184,14 @@ public class WebappDataStorage {
     }
 
     protected WebappDataStorage(Context context, String webappId) {
+        mId = webappId;
         mPreferences = openSharedPreferences(context, webappId);
     }
 
-    /*
-     * Asynchronously retrieves the splash screen image associated with the
-     * current web app.
+    /**
+     * Asynchronously retrieves the splash screen image associated with the current web app.
      * @param callback Called when the splash screen image has been retrieved.
-     *                 May be null if no image was found.
+     *                 The bitmap result may be null if no image was found.
      */
     public void getSplashScreenImage(final FetchCallback<Bitmap> callback) {
         new AsyncTask<Void, Void, Bitmap>() {
@@ -194,45 +203,131 @@ public class WebappDataStorage {
 
             @Override
             protected final void onPostExecute(Bitmap result) {
+                assert callback != null;
                 callback.onDataRetrieved(result);
             }
         }.execute();
     }
 
-    /*
+    /**
      * Update the information associated with the web app with the specified data.
      * @param splashScreenImage The image which should be shown on the splash screen of the web app.
      */
     public void updateSplashScreenImage(final Bitmap splashScreenImage) {
+        // Use an AsyncTask as this method is invoked on the UI thread from the callbacks leading to
+        // ShortcutHelper.storeWebappSplashImage.
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
-                mPreferences.edit()
-                        .putString(KEY_SPLASH_ICON,
-                                ShortcutHelper.encodeBitmapAsString(splashScreenImage))
-                        .apply();
+                String bitmap = ShortcutHelper.encodeBitmapAsString(splashScreenImage);
+                mPreferences.edit().putString(KEY_SPLASH_ICON, bitmap).apply();
                 return null;
             }
         }.execute();
     }
 
     /**
-     * Updates the scope stored in this object. Does nothing if there is already a scope stored.
-     * @param scope the scope to store.
+     * Creates and returns a web app launch intent from the data stored in this object. Must not be
+     * called on the UI thread as a Bitmap is decoded from a String (a potentially expensive
+     * operation).
+     * @return The web app launch intent.
      */
-    void setScope(String scope) {
+    public Intent createWebappLaunchIntent() {
         assert !ThreadUtils.runningOnUiThread();
-        if (mPreferences.getString(KEY_SCOPE, SCOPE_INVALID).equals(SCOPE_INVALID)) {
-            mPreferences.edit().putString(KEY_SCOPE, scope).apply();
-        }
+        // Assume that all of the data is invalid if the version isn't set, so return a null intent.
+        int version = mPreferences.getInt(KEY_VERSION, VERSION_INVALID);
+        if (version == VERSION_INVALID) return null;
+
+        return ShortcutHelper.createWebappShortcutIntent(mId,
+                mPreferences.getString(KEY_ACTION, null),
+                mPreferences.getString(KEY_URL, null),
+                mPreferences.getString(KEY_SCOPE, null),
+                mPreferences.getString(KEY_NAME, null),
+                mPreferences.getString(KEY_SHORT_NAME, null),
+                ShortcutHelper.decodeBitmapFromString(
+                        mPreferences.getString(KEY_ICON, null)), version,
+                mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
+                mPreferences.getLong(KEY_THEME_COLOR,
+                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
+                mPreferences.getLong(KEY_BACKGROUND_COLOR,
+                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
+                mPreferences.getBoolean(KEY_IS_ICON_GENERATED, false));
     }
 
     /**
-     * Returns the scope stored in this object, or "" if it is not stored.
+     * Updates the data stored in this object to match that in the supplied intent.
+     * @param shortcutIntent The intent to pull web app data from.
+     */
+    public void updateFromShortcutIntent(Intent shortcutIntent) {
+        if (shortcutIntent == null) return;
+
+        SharedPreferences.Editor editor = mPreferences.edit();
+        boolean updated = false;
+
+        // The URL and scope may have been deleted by the user clearing their history. Check whether
+        // they are present, and update if necessary.
+        String url = mPreferences.getString(KEY_URL, URL_INVALID);
+        if (url.equals(URL_INVALID)) {
+            url = IntentUtils.safeGetStringExtra(shortcutIntent, ShortcutHelper.EXTRA_URL);
+            editor.putString(KEY_URL, url);
+            updated = true;
+        }
+
+        if (mPreferences.getString(KEY_SCOPE, URL_INVALID).equals(URL_INVALID)) {
+            String scope = IntentUtils.safeGetStringExtra(
+                    shortcutIntent, ShortcutHelper.EXTRA_SCOPE);
+            if (scope == null) {
+                scope = ShortcutHelper.getScopeFromUrl(url);
+            }
+            editor.putString(KEY_SCOPE, scope);
+            updated = true;
+        }
+
+        // For all other fields, assume that if the version key is present and equal to
+        // ShortcutHelper.WEBAPP_SHORTCUT_VERSION, then all fields are present and do not need to be
+        // updated. All fields except for the last used time, scope, and URL are either set or
+        // cleared together.
+        if (mPreferences.getInt(KEY_VERSION, VERSION_INVALID)
+                != ShortcutHelper.WEBAPP_SHORTCUT_VERSION) {
+            editor.putString(KEY_NAME, IntentUtils.safeGetStringExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_NAME));
+            editor.putString(KEY_SHORT_NAME, IntentUtils.safeGetStringExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_SHORT_NAME));
+            editor.putString(KEY_ICON, IntentUtils.safeGetStringExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_ICON));
+            editor.putInt(KEY_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
+            editor.putInt(KEY_ORIENTATION, IntentUtils.safeGetIntExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_ORIENTATION,
+                        ScreenOrientationValues.DEFAULT));
+            editor.putLong(KEY_THEME_COLOR, IntentUtils.safeGetLongExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_THEME_COLOR,
+                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
+            editor.putLong(KEY_BACKGROUND_COLOR, IntentUtils.safeGetLongExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_BACKGROUND_COLOR,
+                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
+            editor.putBoolean(KEY_IS_ICON_GENERATED, IntentUtils.safeGetBooleanExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_IS_ICON_GENERATED, false));
+            editor.putString(KEY_ACTION, shortcutIntent.getAction());
+            editor.putInt(KEY_SOURCE, IntentUtils.safeGetIntExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_SOURCE,
+                        ShortcutSource.UNKNOWN));
+            updated = true;
+        }
+        if (updated) editor.apply();
+    }
+
+    /**
+     * Returns the scope stored in this object, or URL_INVALID if it is not stored.
      */
     String getScope() {
-        assert !ThreadUtils.runningOnUiThread();
-        return mPreferences.getString(KEY_SCOPE, SCOPE_INVALID);
+        return mPreferences.getString(KEY_SCOPE, URL_INVALID);
+    }
+
+    /**
+     * Returns the URL stored in this object, or URL_INVALID if it is not stored.
+     */
+    String getURL() {
+        return mPreferences.getString(KEY_URL, URL_INVALID);
     }
 
     /**
@@ -240,7 +335,6 @@ public class WebappDataStorage {
      * @param lastUsedTime the new last used time.
      */
     void updateLastUsedTime() {
-        assert !ThreadUtils.runningOnUiThread();
         mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).apply();
     }
 
@@ -248,7 +342,6 @@ public class WebappDataStorage {
      * Returns the last used time of this object, or -1 if it is not stored.
      */
     long getLastUsedTime() {
-        assert !ThreadUtils.runningOnUiThread();
         return mPreferences.getLong(KEY_LAST_USED, LAST_USED_INVALID);
     }
 

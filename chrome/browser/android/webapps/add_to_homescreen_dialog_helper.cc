@@ -121,14 +121,10 @@ void AddToHomescreenDialogHelper::AddShortcut(const ShortcutInfo& info,
 
   const std::string& uid = base::GenerateGUID();
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
-                 info,
-                 uid,
-                 icon));
-
-  data_fetcher_->FetchSplashScreenImage(uid);
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap, info,
+                 uid, icon,
+                 data_fetcher_->FetchSplashScreenImageCallback(uid)));
 }
 
 bool AddToHomescreenDialogHelper::RegisterAddToHomescreenDialogHelper(

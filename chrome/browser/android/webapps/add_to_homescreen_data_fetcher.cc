@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/webapps/add_to_homescreen_data_fetcher.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -163,15 +165,11 @@ AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {
   DCHECK(!weak_observer_);
 }
 
-void AddToHomescreenDataFetcher::FetchSplashScreenImage(
+base::Closure AddToHomescreenDataFetcher::FetchSplashScreenImageCallback(
     const std::string& webapp_id) {
-  ShortcutHelper::FetchSplashScreenImage(
-      web_contents(),
-      splash_screen_url_,
-      ideal_splash_image_size_in_dp_,
-      minimum_splash_image_size_in_dp_,
-      webapp_id,
-      shortcut_info_.url.spec());
+  return base::Bind(&ShortcutHelper::FetchSplashScreenImage, web_contents(),
+                    splash_screen_url_, ideal_splash_image_size_in_dp_,
+                    minimum_splash_image_size_in_dp_, webapp_id);
 }
 
 void AddToHomescreenDataFetcher::FetchFavicon() {
