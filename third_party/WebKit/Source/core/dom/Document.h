@@ -792,6 +792,7 @@ public:
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
     HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : nullptr; }
+    HTMLScriptElement* currentScriptForBinding() const;
     void pushCurrentScript(RawPtr<HTMLScriptElement>);
     void popCurrentScript();
 

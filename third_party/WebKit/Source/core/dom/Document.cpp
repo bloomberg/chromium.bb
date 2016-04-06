@@ -4650,6 +4650,13 @@ KURL Document::openSearchDescriptionURL()
     return KURL();
 }
 
+HTMLScriptElement* Document::currentScriptForBinding() const
+{
+    if (HTMLScriptElement* script = currentScript())
+        return script->isInV1ShadowTree() ? nullptr : script;
+    return nullptr;
+}
+
 void Document::pushCurrentScript(RawPtr<HTMLScriptElement> newCurrentScript)
 {
     ASSERT(newCurrentScript);

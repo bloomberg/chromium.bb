@@ -110,7 +110,7 @@ interface Document : Node {
     [SameObject] readonly attribute HTMLCollection forms;
     [SameObject] readonly attribute HTMLCollection scripts;
     [PerWorldBindings] NodeList getElementsByName(DOMString elementName);
-    readonly attribute HTMLScriptElement? currentScript;
+    [ImplementedAs=currentScriptForBinding] readonly attribute HTMLScriptElement? currentScript;
 
     // dynamic markup insertion
     // FIXME: There are two open() methods in the spec.
