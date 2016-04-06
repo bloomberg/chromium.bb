@@ -174,6 +174,8 @@ class ShellSurface : public SurfaceDelegate,
   void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
+  class ScopedConfigure;
+
   // Surface state associated with each configure request.
   struct Config {
     uint32_t serial;
@@ -219,6 +221,7 @@ class ShellSurface : public SurfaceDelegate,
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
   ConfigureCallback configure_callback_;
+  ScopedConfigure* scoped_configure_;
   bool ignore_window_bounds_changes_;
   gfx::Point origin_;
   gfx::Vector2d pending_origin_offset_;

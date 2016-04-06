@@ -104,6 +104,50 @@ class ShellSurfaceWidget : public views::Widget {
 
 }  // namespace
 
+// Helper class used to coalesce a number of changes into one "configure"
+// callback. Callbacks are suppressed while an instance of this class is
+// instantiated and instead called when the instance is destroyed.
+// If |force_configure_| is true ShellSurface::Configure() will be called
+// even if no changes to shell surface took place during the lifetime of the
+// ScopedConfigure instance.
+class ShellSurface::ScopedConfigure {
+ public:
+  ScopedConfigure(ShellSurface* shell_surface, bool force_configure);
+  ~ScopedConfigure();
+
+  void set_needs_configure() { needs_configure_ = true; }
+
+ private:
+  ShellSurface* const shell_surface_;
+  const bool force_configure_;
+  bool needs_configure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedConfigure);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, ScopedConfigure:
+
+ShellSurface::ScopedConfigure::ScopedConfigure(ShellSurface* shell_surface,
+                                               bool force_configure)
+    : shell_surface_(shell_surface),
+      force_configure_(force_configure),
+      needs_configure_(false) {
+  // ScopedConfigure instances cannot be nested.
+  DCHECK(!shell_surface_->scoped_configure_);
+  shell_surface_->scoped_configure_ = this;
+}
+
+ShellSurface::ScopedConfigure::~ScopedConfigure() {
+  DCHECK_EQ(shell_surface_->scoped_configure_, this);
+  shell_surface_->scoped_configure_ = nullptr;
+  if (needs_configure_ || force_configure_)
+    shell_surface_->Configure();
+  // ScopedConfigure instance might have suppressed a widget bounds update.
+  if (shell_surface_->widget_)
+    shell_surface_->UpdateWidgetBounds();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, public:
 
@@ -119,6 +163,7 @@ ShellSurface::ShellSurface(Surface* surface,
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       initial_bounds_(initial_bounds),
       activatable_(activatable),
+      scoped_configure_(nullptr),
       ignore_window_bounds_changes_(false),
       resize_component_(HTCAPTION),
       pending_resize_component_(HTCAPTION) {
@@ -135,6 +180,7 @@ ShellSurface::ShellSurface(Surface* surface)
     : ShellSurface(surface, nullptr, gfx::Rect(), true) {}
 
 ShellSurface::~ShellSurface() {
+  DCHECK(!scoped_configure_);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   if (surface_) {
     surface_->SetSurfaceDelegate(nullptr);
@@ -174,6 +220,9 @@ void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
     if (config.serial == serial)
       break;
   }
+
+  if (widget_)
+    UpdateWidgetBounds();
 }
 
 void ShellSurface::SetParent(ShellSurface* parent) {
@@ -199,12 +248,9 @@ void ShellSurface::Maximize() {
   if (!widget_)
     CreateShellSurfaceWidget();
 
-  // Ask client to configure its surface if already maximized.
-  if (widget_->IsMaximized()) {
-    Configure();
-    return;
-  }
-
+  // Note: This will ask client to configure its surface even if already
+  // maximized.
+  ScopedConfigure scoped_configure(this, true);
   widget_->Maximize();
 }
 
@@ -214,12 +260,9 @@ void ShellSurface::Restore() {
   if (!widget_)
     return;
 
-  // Ask client to configure its surface if already restored.
-  if (!widget_->IsMaximized()) {
-    Configure();
-    return;
-  }
-
+  // Note: This will ask client to configure its surface even if not already
+  // maximized.
+  ScopedConfigure scoped_configure(this, true);
   widget_->Restore();
 }
 
@@ -229,12 +272,9 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   if (!widget_)
     CreateShellSurfaceWidget();
 
-  // Ask client to configure its surface if fullscreen state is not changing.
-  if (widget_->IsFullscreen() == fullscreen) {
-    Configure();
-    return;
-  }
-
+  // Note: This will ask client to configure its surface even if fullscreen
+  // state doesn't change.
+  ScopedConfigure scoped_configure(this, true);
   widget_->SetFullscreen(fullscreen);
 }
 
@@ -476,6 +516,8 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
     surface_->SetBounds(
         gfx::Rect(GetSurfaceOrigin(), surface_->layer()->size()));
+
+    Configure();
   }
 }
 
@@ -548,17 +590,16 @@ void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
       aura::Window::ConvertPointToTarget(widget_->GetNativeWindow(),
                                          widget_->GetNativeWindow()->parent(),
                                          &location);
+      ScopedConfigure scoped_configure(this, false);
       resizer_->Drag(location, event->flags());
       event->StopPropagation();
-      // Ask client to configure its surface for the new size.
-      if (IsResizing())
-        Configure();
-
       break;
     }
-    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_RELEASED: {
+      ScopedConfigure scoped_configure(this, false);
       EndDrag(false /* revert */);
       break;
+    }
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_MOUSE_ENTERED:
@@ -628,6 +669,12 @@ void ShellSurface::CreateShellSurfaceWidget() {
 
 void ShellSurface::Configure() {
   DCHECK(widget_);
+
+  // Delay configure callback if |scoped_configure_| is set.
+  if (scoped_configure_) {
+    scoped_configure_->set_needs_configure();
+    return;
+  }
 
   gfx::Vector2d origin_offset = pending_origin_config_offset_;
   pending_origin_config_offset_ = gfx::Vector2d();
@@ -801,6 +848,10 @@ void ShellSurface::UpdateWidgetBounds() {
 
   // Return early if the shell is currently managing the bounds of the widget.
   if (widget_->IsMaximized() || widget_->IsFullscreen() || IsResizing())
+    return;
+
+  // Return early if there is pending configure requests.
+  if (!pending_configs_.empty() || scoped_configure_)
     return;
 
   gfx::Rect visible_bounds = GetVisibleBounds();
