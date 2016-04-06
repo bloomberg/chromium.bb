@@ -331,7 +331,7 @@ void DataTransfer::declareAndWriteDragImage(Element* element, const KURL& url, c
     m_dataObject->setData(mimeTypeTextHTML, createMarkup(element, IncludeNode, ResolveAllURLs));
 }
 
-void DataTransfer::writeURL(const KURL& url, const String& title)
+void DataTransfer::writeURL(Node* node, const KURL& url, const String& title)
 {
     if (!m_dataObject)
         return;
@@ -343,7 +343,7 @@ void DataTransfer::writeURL(const KURL& url, const String& title)
     m_dataObject->setData(mimeTypeTextPlain, url.getString());
 
     // The URL can also be used as an HTML fragment.
-    m_dataObject->setHTMLAndBaseURL(urlToMarkup(url, title), url);
+    m_dataObject->setHTMLAndBaseURL(createMarkup(node, IncludeNode, ResolveAllURLs), url);
 }
 
 void DataTransfer::writeSelection(const FrameSelection& selection)

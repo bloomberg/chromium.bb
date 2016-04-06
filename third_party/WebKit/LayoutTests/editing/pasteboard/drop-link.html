@@ -57,6 +57,9 @@ function dragLink(srcId, targetId)
 
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseUp();
+
+    // Clear id on the cloned link created from the drag and drop.
+    document.querySelector("a[id]").removeAttribute('id');
 }
 
 function verifier() {
@@ -92,11 +95,11 @@ function verifyLink(linkId, linkNumber)
         log("Link is " + anchors[linkNumber].href);
         var passed = true;
         if (anchors[linkNumber].href != originalTarget) {
-            log("Failure! Link targets differ");
+            log("Failure! Expected target: " + anchors[linkNumber].href + ", actual target: " + originalTarget);
             passed = false;
         }
         if (anchors[linkNumber].innerText != originalText) {
-            log("Failure! Link texts differ");
+            log("Failure! Expected text: " + anchors[linkNumber].innerText + ", actual text: " + originalText);
             passed = false;
         }
     }

@@ -754,7 +754,7 @@ bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& 
             return false;
         // Simplify whitespace so the title put on the clipboard resembles what the user sees
         // on the web page. This includes replacing newlines with spaces.
-        dataTransfer->writeURL(linkURL, hitTestResult.textContent().simplifyWhiteSpace());
+        dataTransfer->writeURL(node, linkURL, hitTestResult.textContent().simplifyWhiteSpace());
     }
     // FIXME: For DHTML/draggable element drags, write element markup to clipboard.
     return true;

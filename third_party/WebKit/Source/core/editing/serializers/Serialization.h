@@ -42,7 +42,6 @@ class Document;
 class DocumentFragment;
 class Element;
 class ExceptionState;
-class KURL;
 class Node;
 class Range;
 class StylePropertySet;
@@ -70,7 +69,6 @@ CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsol
 CORE_EXPORT String createMarkup(const Position& start, const Position& end, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 CORE_EXPORT String createMarkup(const PositionInFlatTree& start, const PositionInFlatTree& end, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 
-String urlToMarkup(const KURL&, const String& title);
 void mergeWithNextTextNode(Text*, ExceptionState&);
 
 bool propertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);

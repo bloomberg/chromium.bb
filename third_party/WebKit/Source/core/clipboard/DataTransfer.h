@@ -88,7 +88,7 @@ public:
 
     PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, LocalFrame*) const;
     void declareAndWriteDragImage(Element*, const KURL&, const String& title);
-    void writeURL(const KURL&, const String&);
+    void writeURL(Node*, const KURL&, const String&);
     void writeSelection(const FrameSelection&);
 
     void setAccessPolicy(DataTransferAccessPolicy);

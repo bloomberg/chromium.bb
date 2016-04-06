@@ -17,5 +17,5 @@ text/html: <img id="imageTest" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEU
 Test ID: linkTest
 text/plain: http://www.example.com/
 text/url: 
-text/html: <a href="http://www.example.com/">Link</a>
+text/html: <a id="linkTest" href="http://www.example.com/" ondragstart="dragStartTest(event)">Link</a>
 

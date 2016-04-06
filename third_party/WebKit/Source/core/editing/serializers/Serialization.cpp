@@ -513,17 +513,6 @@ RawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, c
     return fragment.release();
 }
 
-String urlToMarkup(const KURL& url, const String& title)
-{
-    StringBuilder markup;
-    markup.appendLiteral("<a href=\"");
-    markup.append(url.getString());
-    markup.appendLiteral("\">");
-    MarkupFormatter::appendCharactersReplacingEntities(markup, title, 0, title.length(), EntityMaskInPCDATA);
-    markup.appendLiteral("</a>");
-    return markup.toString();
-}
-
 RawPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& exceptionState)
 {
     ASSERT(contextElement);
