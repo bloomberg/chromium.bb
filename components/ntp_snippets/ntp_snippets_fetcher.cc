@@ -10,9 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_tracker.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -26,10 +24,8 @@ using net::URLRequestStatus;
 
 namespace ntp_snippets {
 
-const char kApiScope[] = "https://www.googleapis.com/auth/webhistory";
-const char kContentSnippetsServer[] =
-    "https://chromereader-pa.googleapis.com/v1/fetch";
-const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
+const char kContentSnippetsServerFormat[] =
+    "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
 
 const char kRequestParameterFormat[] =
     "{"
@@ -55,20 +51,14 @@ const char kHostRestrictFormat[] =
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    SigninManagerBase* signin_manager,
-    OAuth2TokenService* token_service,
-    scoped_refptr<URLRequestContextGetter> url_request_context_getter)
-    : OAuth2TokenService::Consumer("NTP_snippets"),
-      file_task_runner_(file_task_runner),
+    scoped_refptr<URLRequestContextGetter> url_request_context_getter,
+    bool is_stable_channel)
+    : file_task_runner_(file_task_runner),
       url_request_context_getter_(url_request_context_getter),
-      signin_manager_(signin_manager),
-      token_service_(token_service),
-      waiting_for_refresh_token_(false),
+      is_stable_channel_(is_stable_channel),
       weak_ptr_factory_(this) {}
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {
-  if (waiting_for_refresh_token_)
-    token_service_->RemoveObserver(this);
 }
 
 scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
@@ -78,45 +68,20 @@ NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
 
 void NTPSnippetsFetcher::FetchSnippets(const std::vector<std::string>& hosts) {
   // TODO(treib): What to do if there's already a pending request?
-  hosts_ = hosts;
-  if (signin_manager_->IsAuthenticated()) {
-    StartTokenRequest();
-  } else {
-    if (!waiting_for_refresh_token_) {
-      // Wait until we get a refresh token.
-      waiting_for_refresh_token_ = true;
-      token_service_->AddObserver(this);
-    }
-  }
-}
-
-void NTPSnippetsFetcher::StartTokenRequest() {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kApiScope);
-  oauth_request_ = token_service_->StartRequest(
-      signin_manager_->GetAuthenticatedAccountId(), scopes, this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OAuth2TokenService::Consumer overrides
-void NTPSnippetsFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  oauth_request_.reset();
-  url_fetcher_ =
-      URLFetcher::Create(GURL(kContentSnippetsServer), URLFetcher::POST, this);
+  const std::string& key = is_stable_channel_
+                               ? google_apis::GetAPIKey()
+                               : google_apis::GetNonStableAPIKey();
+  std::string url =
+      base::StringPrintf(kContentSnippetsServerFormat, key.c_str());
+  url_fetcher_ = URLFetcher::Create(GURL(url), URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(url_request_context_getter_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
   HttpRequestHeaders headers;
-  headers.SetHeader("Authorization",
-                    base::StringPrintf(kAuthorizationRequestHeaderFormat,
-                                       access_token.c_str()));
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   url_fetcher_->SetExtraRequestHeaders(headers.ToString());
   std::string host_restricts;
-  for (const std::string& host : hosts_)
+  for (const std::string& host : hosts)
     host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
   url_fetcher_->SetUploadData("application/json",
                               base::StringPrintf(kRequestParameterFormat,
@@ -127,22 +92,6 @@ void NTPSnippetsFetcher::OnGetTokenSuccess(
   // Try to make fetching the files bit more robust even with poor connection.
   url_fetcher_->SetMaxRetriesOn5xx(3);
   url_fetcher_->Start();
-}
-
-void NTPSnippetsFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  oauth_request_.reset();
-  DLOG(ERROR) << "Unable to get token: " << error.ToString();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OAuth2TokenService::Observer overrides
-void NTPSnippetsFetcher::OnRefreshTokenAvailable(
-    const std::string& account_id) {
-  token_service_->RemoveObserver(this);
-  waiting_for_refresh_token_ = false;
-  StartTokenRequest();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

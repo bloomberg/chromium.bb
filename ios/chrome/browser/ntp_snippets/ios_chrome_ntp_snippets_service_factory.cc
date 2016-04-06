@@ -11,13 +11,11 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -63,8 +61,6 @@ IOSChromeNTPSnippetsServiceFactory::IOSChromeNTPSnippetsServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "NTPSnippetsService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(OAuth2TokenServiceFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(SuggestionsServiceFactory::GetInstance());
 }
 
@@ -76,10 +72,6 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
   DCHECK(!browser_state->IsOffTheRecord());
-  SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
-  OAuth2TokenService* token_service =
-      OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       browser_state->GetRequestContext();
   SuggestionsService* suggestions_service =
@@ -96,7 +88,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       chrome_browser_state->GetPrefs(), suggestions_service, task_runner,
       GetApplicationContext()->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
-          task_runner, (SigninManagerBase*)signin_manager, token_service,
-          request_context)),
+          task_runner, request_context,
+          GetChannel() == version_info::Channel::STABLE)),
       base::Bind(&ParseJson)));
 }

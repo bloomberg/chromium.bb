@@ -8,15 +8,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "components/safe_json/safe_json_parser.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -46,8 +44,6 @@ NTPSnippetsServiceFactory::NTPSnippetsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "NTPSnippetsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SuggestionsServiceFactory::GetInstance());
 }
 
@@ -56,10 +52,6 @@ NTPSnippetsServiceFactory::~NTPSnippetsServiceFactory() {}
 KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       context->GetRequestContext();
   SuggestionsService* suggestions_service =
@@ -80,6 +72,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
       profile->GetPrefs(), suggestions_service, task_runner,
       g_browser_process->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
-          task_runner, signin_manager, token_service, request_context)),
+          task_runner, request_context,
+          chrome::GetChannel() == version_info::Channel::STABLE)),
       base::Bind(&safe_json::SafeJsonParser::Parse));
 }

@@ -13,10 +13,6 @@
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,9 +105,7 @@ class SnippetObserver : public NTPSnippetsServiceObserver {
 class NTPSnippetsServiceTest : public testing::Test {
  public:
   NTPSnippetsServiceTest()
-      : pref_service_(new TestingPrefServiceSimple()),
-        signin_client_(new TestSigninClient(nullptr)),
-        account_tracker_(new AccountTrackerService()) {}
+      : pref_service_(new TestingPrefServiceSimple()) {}
   ~NTPSnippetsServiceTest() override {}
 
   void SetUp() override {
@@ -125,16 +119,11 @@ class NTPSnippetsServiceTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(task_runner.get());
-    FakeSigninManagerBase* signin_manager =  new FakeSigninManagerBase(
-        signin_client_.get(), account_tracker_.get());
-    FakeProfileOAuth2TokenService* token_service =
-        new FakeProfileOAuth2TokenService();
 
     service_.reset(new NTPSnippetsService(
         pref_service_.get(), nullptr, task_runner, std::string("fr"), nullptr,
-        make_scoped_ptr(
-            new NTPSnippetsFetcher(task_runner, signin_manager, token_service,
-                                   std::move(request_context_getter))),
+        make_scoped_ptr(new NTPSnippetsFetcher(
+            task_runner, std::move(request_context_getter), true)),
         base::Bind(&ParseJson)));
   }
 
@@ -154,8 +143,6 @@ class NTPSnippetsServiceTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<TestSigninClient> signin_client_;
-  scoped_ptr<AccountTrackerService> account_tracker_;
   scoped_ptr<NTPSnippetsService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);

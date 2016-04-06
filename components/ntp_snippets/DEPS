@@ -6,5 +6,5 @@ include_rules = [
   "+net/base",
   "+net/http",
   "+net/url_request",
-  "+google_apis/gaia",
+  "+google_apis",
 ]
