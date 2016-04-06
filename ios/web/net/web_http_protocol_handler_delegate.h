@@ -8,7 +8,13 @@
 #include "base/memory/ref_counted.h"
 #import "ios/net/crn_http_protocol_handler.h"
 
+@class NSURLRequest;
+
 namespace web {
+
+// Returns whether the request should be allowed for rendering into a special
+// UIWebView that allows static file content.
+bool IsStaticFileRequest(NSURLRequest* request);
 
 // Web-specific implementation of net::HTTPProtocolHandlerDelegate.
 class WebHTTPProtocolHandlerDelegate : public net::HTTPProtocolHandlerDelegate {

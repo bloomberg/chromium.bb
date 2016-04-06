@@ -239,8 +239,6 @@
         'web_state/ui/crw_context_menu_provider.h',
         'web_state/ui/crw_context_menu_provider.mm',
         'web_state/ui/crw_generic_content_view.mm',
-        'web_state/ui/crw_static_file_web_view.h',
-        'web_state/ui/crw_static_file_web_view.mm',
         'web_state/ui/crw_swipe_recognizer_provider.h',
         'web_state/ui/crw_touch_tracking_recognizer.h',
         'web_state/ui/crw_touch_tracking_recognizer.mm',

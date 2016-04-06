@@ -15,6 +15,7 @@
 #include "ios/web/public/web_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 namespace web {
 
@@ -117,6 +118,42 @@ TEST_F(WebHTTPProtocolHandlerDelegateTest, IsRequestSupportedMalformed) {
   ASSERT_TRUE([[request URL] scheme]);
   ASSERT_FALSE([[[request URL] scheme] length]);
   EXPECT_FALSE(delegate_->IsRequestSupported(request));
+}
+
+// Tests that requests for images are considered as static file requests,
+// regardless of the user agent.
+TEST_F(WebHTTPProtocolHandlerDelegateTest, TestIsStaticImageRequestTrue) {
+  // Empty dictionary so User-Agent check fails.
+  NSDictionary* headers = @{};
+  NSURL* url = [NSURL URLWithString:@"file:///show/this.png"];
+  id mock_request = [OCMockObject mockForClass:[NSURLRequest class]];
+  [[[mock_request stub] andReturn:headers] allHTTPHeaderFields];
+  [[[mock_request stub] andReturn:url] URL];
+  EXPECT_TRUE(IsStaticFileRequest(mock_request));
+}
+
+// Tests that requests for files are considered as static file requests if they
+// have the static file user agent.
+TEST_F(WebHTTPProtocolHandlerDelegateTest, TestIsStaticFileRequestTrue) {
+  NSDictionary* headers =
+      @{ @"User-Agent" : @"UIWebViewForStaticFileContent foo" };
+  NSURL* url = [NSURL URLWithString:@"file:///some/random/url.html"];
+  id mock_request = [OCMockObject mockForClass:[NSURLRequest class]];
+  [[[mock_request stub] andReturn:headers] allHTTPHeaderFields];
+  [[[mock_request stub] andReturn:url] URL];
+  EXPECT_TRUE(IsStaticFileRequest(mock_request));
+}
+
+// Tests that arbitrary files cannot be retrieved by a web view for
+// static file content.
+TEST_F(WebHTTPProtocolHandlerDelegateTest, TestIsStaticFileRequestFalse) {
+  // Empty dictionary so User-Agent check fails.
+  NSDictionary* headers = @{};
+  NSURL* url = [NSURL URLWithString:@"file:///steal/this/file.html"];
+  id mock_request = [OCMockObject mockForClass:[NSURLRequest class]];
+  [[[mock_request stub] andReturn:headers] allHTTPHeaderFields];
+  [[[mock_request stub] andReturn:url] URL];
+  EXPECT_FALSE(IsStaticFileRequest(mock_request));
 }
 
 }  // namespace web

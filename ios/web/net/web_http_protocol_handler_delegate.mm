@@ -4,9 +4,10 @@
 
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
 
+#import <Foundation/Foundation.h>
+
 #import "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
-#import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -26,6 +27,19 @@ bool IsAppSpecificScheme(NSURL* url) {
 
 namespace web {
 
+bool IsStaticFileRequest(NSURLRequest* request) {
+  NSString* user_agent = [request allHTTPHeaderFields][@"User-Agent"];
+  if (user_agent) {
+    return [user_agent hasPrefix:@"UIWebViewForStaticFileContent"];
+  }
+
+  // If a request originated from another file:/// page, the User-Agent
+  // is not available. In this case, check that the request is for image
+  // resources only.
+  NSString* suffix = [[request URL] pathExtension];
+  return [@[ @"png", @"jpg", @"jpeg" ] containsObject:[suffix lowercaseString]];
+}
+
 WebHTTPProtocolHandlerDelegate::WebHTTPProtocolHandlerDelegate(
     net::URLRequestContextGetter* default_getter)
     : default_getter_(default_getter) {
@@ -44,8 +58,7 @@ bool WebHTTPProtocolHandlerDelegate::CanHandleRequest(NSURLRequest* request) {
 }
 
 bool WebHTTPProtocolHandlerDelegate::IsRequestSupported(NSURLRequest* request) {
-  return web::UrlHasWebScheme([request URL]) ||
-         [CRWStaticFileWebView isStaticFileRequest:request] ||
+  return web::UrlHasWebScheme([request URL]) || IsStaticFileRequest(request) ||
          (IsAppSpecificScheme([request URL]) &&
           IsAppSpecificScheme([request mainDocumentURL]));
 }

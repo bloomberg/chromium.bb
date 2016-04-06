@@ -16,7 +16,6 @@
 #include "ios/web/public/test/test_web_thread.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_test.h"
-#import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest_mac.h"
