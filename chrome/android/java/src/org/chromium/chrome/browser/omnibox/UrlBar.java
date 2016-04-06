@@ -870,18 +870,22 @@ public class UrlBar extends VerticallyFixedEditText {
             if (getText().getSpanStart(mAutocompleteSpan) < 0) {
                 mAutocompleteSpan.clearSpan();
             } else {
-                Editable editableText = getEditableText();
-                CharSequence previousUserText = mAutocompleteSpan.mUserText;
-                CharSequence previousAutocompleteText = mAutocompleteSpan.mAutocompleteText;
-                if (editableText.length()
-                        < (previousUserText.length() + previousAutocompleteText.length())) {
-                    mAutocompleteSpan.clearSpan();
-                } else if (TextUtils.indexOf(getText(), previousUserText) != 0
-                        || TextUtils.indexOf(getText(), previousAutocompleteText)
-                        != previousUserText.length()) {
-                    mAutocompleteSpan.clearSpan();
-                }
+                clearAutocompleteSpanIfInvalid();
             }
+        }
+    }
+
+    private void clearAutocompleteSpanIfInvalid() {
+        Editable editableText = getEditableText();
+        CharSequence previousUserText = mAutocompleteSpan.mUserText;
+        CharSequence previousAutocompleteText = mAutocompleteSpan.mAutocompleteText;
+        if (editableText.length()
+                != (previousUserText.length() + previousAutocompleteText.length())) {
+            mAutocompleteSpan.clearSpan();
+        } else if (TextUtils.indexOf(getText(), previousUserText) != 0
+                || TextUtils.indexOf(getText(),
+                        previousAutocompleteText, previousUserText.length()) != 0) {
+            mAutocompleteSpan.clearSpan();
         }
     }
 
@@ -1008,7 +1012,14 @@ public class UrlBar extends VerticallyFixedEditText {
                     return true;
                 }
             }
-            return super.commitText(text, newCursorPosition);
+
+            boolean retVal = super.commitText(text, newCursorPosition);
+
+            // Ensure the autocomplete span is removed if it is no longer valid after committing the
+            // text.
+            if (getText().getSpanStart(mAutocompleteSpan) >= 0) clearAutocompleteSpanIfInvalid();
+
+            return retVal;
         }
 
         @Override

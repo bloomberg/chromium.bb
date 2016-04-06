@@ -477,6 +477,38 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     @SmallTest
+    @Feature("Omnibox")
+    public void testAutocompleteSpanClearedOnNonMatchingCommitText() throws InterruptedException {
+        startMainActivityOnBlankPage();
+
+        stubLocationBarAutocomplete();
+
+        final UrlBar urlBar = getUrlBar();
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
+
+        setTextAndVerifyNoAutocomplete(urlBar, "a");
+        setAutocomplete(urlBar, "a", "mazon.com");
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.mInputConnection.beginBatchEdit();
+                urlBar.mInputConnection.commitText("l", 1);
+                urlBar.mInputConnection.setComposingText("", 1);
+                urlBar.mInputConnection.endBatchEdit();
+            }
+        });
+
+        CriteriaHelper.pollUiThread(Criteria.equals("al", new Callable<String>() {
+            @Override
+            public String call() {
+                return urlBar.getText().toString();
+            }
+        }));
+    }
+
+    @SmallTest
     @Feature({"Omnibox"})
     public void testAutocompleteUpdatedOnDefocus() throws InterruptedException {
         startMainActivityOnBlankPage();
