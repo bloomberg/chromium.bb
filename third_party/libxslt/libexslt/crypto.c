@@ -457,7 +457,8 @@ exsltCryptoGcryptRc4Decrypt (xmlXPathParserContextPtr ctxt,
  * @ctxt: an XPath parser context
  * @nargs: the number of arguments
  *
- * Helper function which checks for and returns first string argument and its length
+ * Helper function which checks for and returns first string argument and its
+ * length in bytes.
  */
 static int
 exsltCryptoPopString (xmlXPathParserContextPtr ctxt, int nargs,
@@ -471,7 +472,7 @@ exsltCryptoPopString (xmlXPathParserContextPtr ctxt, int nargs,
     }
 
     *str = xmlXPathPopString (ctxt);
-    str_len = xmlUTF8Strlen (*str);
+    str_len = xmlStrlen (*str);
 
     if (str_len == 0) {
 	xmlXPathReturnEmptyString (ctxt);
@@ -591,7 +592,7 @@ exsltCryptoSha1Function (xmlXPathParserContextPtr ctxt, int nargs) {
 static void
 exsltCryptoRc4EncryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 
-    int key_len = 0, key_size = 0;
+    int key_len = 0;
     int str_len = 0, bin_len = 0, hex_len = 0;
     xmlChar *key = NULL, *str = NULL, *padkey = NULL;
     xmlChar *bin = NULL, *hex = NULL;
@@ -604,7 +605,7 @@ exsltCryptoRc4EncryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     tctxt = xsltXPathGetTransformContext(ctxt);
 
     str = xmlXPathPopString (ctxt);
-    str_len = xmlUTF8Strlen (str);
+    str_len = xmlStrlen (str);
 
     if (str_len == 0) {
 	xmlXPathReturnEmptyString (ctxt);
@@ -613,7 +614,7 @@ exsltCryptoRc4EncryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     key = xmlXPathPopString (ctxt);
-    key_len = xmlUTF8Strlen (key);
+    key_len = xmlStrlen (key);
 
     if (key_len == 0) {
 	xmlXPathReturnEmptyString (ctxt);
@@ -632,15 +633,14 @@ exsltCryptoRc4EncryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
     memset(padkey, 0, RC4_KEY_LENGTH + 1);
 
-    key_size = xmlUTF8Strsize (key, key_len);
-    if ((key_size > RC4_KEY_LENGTH) || (key_size < 0)) {
+    if ((key_len > RC4_KEY_LENGTH) || (key_len < 0)) {
 	xsltTransformError(tctxt, NULL, tctxt->inst,
 	    "exsltCryptoRc4EncryptFunction: key size too long or key broken\n");
 	tctxt->state = XSLT_STATE_STOPPED;
 	xmlXPathReturnEmptyString (ctxt);
 	goto done;
     }
-    memcpy (padkey, key, key_size);
+    memcpy (padkey, key, key_len);
 
 /* encrypt it */
     bin_len = str_len;
@@ -689,7 +689,7 @@ done:
 static void
 exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 
-    int key_len = 0, key_size = 0;
+    int key_len = 0;
     int str_len = 0, bin_len = 0, ret_len = 0;
     xmlChar *key = NULL, *str = NULL, *padkey = NULL, *bin =
 	NULL, *ret = NULL;
@@ -702,7 +702,7 @@ exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     tctxt = xsltXPathGetTransformContext(ctxt);
 
     str = xmlXPathPopString (ctxt);
-    str_len = xmlUTF8Strlen (str);
+    str_len = xmlStrlen (str);
 
     if (str_len == 0) {
 	xmlXPathReturnEmptyString (ctxt);
@@ -711,7 +711,7 @@ exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     key = xmlXPathPopString (ctxt);
-    key_len = xmlUTF8Strlen (key);
+    key_len = xmlStrlen (key);
 
     if (key_len == 0) {
 	xmlXPathReturnEmptyString (ctxt);
@@ -729,15 +729,14 @@ exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	goto done;
     }
     memset(padkey, 0, RC4_KEY_LENGTH + 1);
-    key_size = xmlUTF8Strsize (key, key_len);
-    if ((key_size > RC4_KEY_LENGTH) || (key_size < 0)) {
+    if ((key_len > RC4_KEY_LENGTH) || (key_len < 0)) {
 	xsltTransformError(tctxt, NULL, tctxt->inst,
 	    "exsltCryptoRc4EncryptFunction: key size too long or key broken\n");
 	tctxt->state = XSLT_STATE_STOPPED;
 	xmlXPathReturnEmptyString (ctxt);
 	goto done;
     }
-    memcpy (padkey, key, key_size);
+    memcpy (padkey, key, key_len);
 
 /* decode hex to binary */
     bin_len = str_len;

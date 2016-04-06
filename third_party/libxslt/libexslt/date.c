@@ -667,6 +667,11 @@ exsltDateCreateDate (exsltDateType type)
     }
     memset (ret, 0, sizeof(exsltDateVal));
 
+    if (type != XS_DURATION) {
+        ret->value.date.mon = 1;
+        ret->value.date.day = 1;
+    }
+
     if (type != EXSLT_UNKNOWN)
         ret->type = type;
 
@@ -1395,10 +1400,10 @@ _exsltDateTruncateDate (exsltDateValPtr dt, exsltDateType type)
     }
 
     if ((type & XS_GDAY) != XS_GDAY)
-        dt->value.date.day = 0;
+        dt->value.date.day = 1;
 
     if ((type & XS_GMONTH) != XS_GMONTH)
-        dt->value.date.mon = 0;
+        dt->value.date.mon = 1;
 
     if ((type & XS_GYEAR) != XS_GYEAR)
         dt->value.date.year = 0;
@@ -1473,17 +1478,9 @@ _exsltDateAdd (exsltDateValPtr dt, exsltDateValPtr dur)
     d = &(dt->value.date);
     u = &(dur->value.dur);
 
-    /* normalization */
-    if (d->mon == 0)
-        d->mon = 1;
-
     /* normalize for time zone offset */
     u->sec -= (d->tzo * 60);	/* changed from + to - (bug 153000) */
     d->tzo = 0;
-
-    /* normalization */
-    if (d->day == 0)
-        d->day = 1;
 
     /* month */
     carry  = d->mon + u->mon;

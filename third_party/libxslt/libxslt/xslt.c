@@ -5382,7 +5382,6 @@ xsltParseStylesheetTemplate(xsltStylesheetPtr style, xmlNodePtr template) {
     prop = xmlGetNsProp(template, (const xmlChar *)"name", NULL);
     if (prop != NULL) {
         const xmlChar *URI;
-	xsltTemplatePtr cur;
 
 	/*
 	* TODO: Don't use xsltGetQNameURI().
@@ -5405,19 +5404,6 @@ xsltParseStylesheetTemplate(xsltStylesheetPtr style, xmlNodePtr template) {
 		ret->nameURI = xmlDictLookup(style->dict, BAD_CAST URI, -1);
 	    else
 		ret->nameURI = NULL;
-	    cur = ret->next;
-	    while (cur != NULL) {
-	        if ((URI != NULL && xmlStrEqual(cur->name, ret->name) &&
-				xmlStrEqual(cur->nameURI, URI) ) ||
-		    (URI == NULL && cur->nameURI == NULL &&
-				xmlStrEqual(cur->name, ret->name))) {
-		    xsltTransformError(NULL, style, template,
-		        "xsl:template: error duplicate name '%s'\n", ret->name);
-		    style->errors++;
-		    goto error;
-		}
-		cur = cur->next;
-	    }
 	}
     }
 

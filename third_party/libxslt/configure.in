@@ -196,21 +196,21 @@ typedef locale_t xsltLocale;
 #endif
 ]],[[
     xsltLocale locale;
-    const char *src[[2]] = { "\xc3\x84rger", "Zeppelin" };
-    char *dst[[2]];
+    const char *src[2] = { "\xc3\x84rger", "Zeppelin" };
+    char *dst[2];
     size_t len, r;
     int i;
 
     locale = newlocale(LC_COLLATE_MASK, "en_US.utf8", NULL);
     if (locale == NULL) exit(1);
     for (i=0; i<2; ++i) {
-        len = strxfrm_l(NULL, src[[i]], 0, locale) + 1;
-        dst[[i]] = malloc(len);
-        if(dst[[i]] == NULL) exit(1);
-        r = strxfrm_l(dst[[i]], src[[i]], len, locale);
+        len = strxfrm_l(NULL, src[i], 0, locale) + 1;
+        dst[i] = malloc(len);
+        if(dst[i] == NULL) exit(1);
+        r = strxfrm_l(dst[i], src[i], len, locale);
         if(r >= len) exit(1);
     }
-    if (strcmp(dst[[0]], dst[[1]]) >= 0) exit(1);
+    if (strcmp(dst[0], dst[1]) >= 0) exit(1);
 
     exit(0);
     return(0);
@@ -378,6 +378,7 @@ AC_SUBST(PYTHON_LIBS)
 
 AC_ARG_WITH(crypto, [  --with-crypto           Add crypto support to exslt (on)])
 WITH_CRYPTO=0
+CRYPTO_TESTDIR=
 if test "$with_crypto" = "no" ; then
     echo Disabling crypto support
     LIBGCRYPT_CFLAGS=""
@@ -389,9 +390,10 @@ case $host in
     dnl TODO: to implement --with-crypto=foo to allow switch between
     dnl crypto libraries
     WITH_CRYPTO=1
+    CRYPTO_TESTDIR=crypto
     ;;
   *)
-    AC_PATH_PROG(LIBGCRYPT_CONFIG, libgcrypt-config, no)
+    AC_PATH_TOOL(LIBGCRYPT_CONFIG, libgcrypt-config, no)
     if test "$LIBGCRYPT_CONFIG" != "no" ; then
       LIBGCRYPT_VERSION=`$LIBGCRYPT_CONFIG --version`
       if test VERSION_TO_NUMBER(echo $LIBGCRYPT_VERSION) -lt VERSION_TO_NUMBER(echo "1.1.42")
@@ -404,7 +406,8 @@ case $host in
         LIBGCRYPT_LIBS=`$LIBGCRYPT_CONFIG $libgcrypt_config_args --libs`
         AC_DEFINE(HAVE_GCRYPT, 1, [Define if gcrypt library is available.])
         echo 'Crypto extensions will be available.'
-		WITH_CRYPTO=1
+        WITH_CRYPTO=1
+        CRYPTO_TESTDIR=crypto
       fi
     else
       LIBGCRYPT_CFLAGS=""
@@ -414,6 +417,7 @@ case $host in
 esac
 fi
 AC_SUBST(WITH_CRYPTO)
+AC_SUBST(CRYPTO_TESTDIR)
 AC_SUBST(LIBGCRYPT_CFLAGS)
 AC_SUBST(LIBGCRYPT_LIBS)
 
@@ -427,7 +431,7 @@ if [[ "${LOGNAME}" = "veillard" -a "`pwd`" = "/u/veillard/XSLT" ]] || \
     then
 	with_mem_debug="yes"
     fi
-    CFLAGS="-Wall -g -O -ansi -pedantic -W -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wformat -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline "
+    CFLAGS="-Wall -g -O -ansi -pedantic -W -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wformat=2 -Wmissing-format-attribute -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline "
 fi
 
 AC_ARG_WITH(debug, [  --with-debug            Add the debugging code (on)])
@@ -503,9 +507,9 @@ AC_SUBST(LIBXML_REQUIRED_VERSION)
 AC_MSG_CHECKING(for libxml libraries >= $LIBXML_REQUIRED_VERSION) 
 if test "x$LIBXML_CONFIG_PREFIX" != "x"
 then
-	XML_CONFIG=${LIBXML_CONFIG_PREFIX}/bin/xml2-config
+	AC_PATH_TOOL([XML_CONFIG], [xml2-config], [false], [${LIBXML_CONFIG_PREFIX}/bin])
 else
-	XML_CONFIG=xml2-config
+	AC_PATH_TOOL([XML_CONFIG], [xml2-config], [false])
 fi
 
 dnl
@@ -521,7 +525,7 @@ if test "${GCC}" != "yes" ; then
                ;;
     esac
 else
-    CFLAGS="${CFLAGS} -Wall"
+    CFLAGS="${CFLAGS} -Wall -Wformat=2 -Wmissing-format-attribute"
     case "${host}" in
           alpha*-*-linux* )
 	       CFLAGS="${CFLAGS} -mieee"
@@ -614,9 +618,16 @@ AM_CONDITIONAL(WITH_MODULES, test "$WITH_MODULES" = "1")
 dnl
 dnl setup default module path
 dnl
-module_prefix=$prefix
-test "x$module_prefix" = xNONE && module_prefix=$ac_default_prefix
-LIBXSLT_DEFAULT_PLUGINS_PATH="$module_prefix/lib/libxslt-plugins"
+expanded_libdir=$(
+    test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+    test "x$exec_prefix" = xNONE && exec_prefix="$prefix"
+    while test "$libdir_old" != "$libdir"; do
+      libdir_old="$libdir"
+      eval libdir="$libdir"
+    done
+    echo "$libdir"
+)
+LIBXSLT_DEFAULT_PLUGINS_PATH="$expanded_libdir/libxslt-plugins"
 AC_SUBST(LIBXSLT_DEFAULT_PLUGINS_PATH)
 
 WIN32_EXTRA_LIBADD=
@@ -709,6 +720,7 @@ tests/exslt/sets/Makefile
 tests/exslt/strings/Makefile
 tests/exslt/date/Makefile
 tests/exslt/dynamic/Makefile
+tests/exslt/crypto/Makefile
 tests/plugins/Makefile
 doc/Makefile
 xslt-config

@@ -351,8 +351,8 @@ exsltStrDecodeUriFunction (xmlXPathParserContextPtr ctxt, int nargs) {
  */
 static void
 exsltStrPaddingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
-    int number, str_len = 0;
-    xmlChar *str = NULL, *ret = NULL, *tmp;
+    int number, str_len = 0, str_size = 0;
+    xmlChar *str = NULL, *ret = NULL;
 
     if ((nargs < 1) || (nargs > 2)) {
 	xmlXPathSetArityError(ctxt);
@@ -362,11 +362,13 @@ exsltStrPaddingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     if (nargs == 2) {
 	str = xmlXPathPopString(ctxt);
 	str_len = xmlUTF8Strlen(str);
+	str_size = xmlStrlen(str);
     }
     if (str_len == 0) {
 	if (str != NULL) xmlFree(str);
 	str = xmlStrdup((const xmlChar *) " ");
 	str_len = 1;
+	str_size = 1;
     }
 
     number = (int) xmlXPathPopNumber(ctxt);
@@ -378,13 +380,13 @@ exsltStrPaddingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     while (number >= str_len) {
-	ret = xmlStrncat(ret, str, str_len);
+	ret = xmlStrncat(ret, str, str_size);
 	number -= str_len;
     }
-    tmp = xmlUTF8Strndup (str, number);
-    ret = xmlStrcat(ret, tmp);
-    if (tmp != NULL)
-	xmlFree (tmp);
+    if (number > 0) {
+	str_size = xmlUTF8Strsize(str, number);
+	ret = xmlStrncat(ret, str, str_size);
+    }
 
     xmlXPathReturnString(ctxt, ret);
 
@@ -445,7 +447,7 @@ exsltStrAlignFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	} else {
 	    int str_s;
 
-	    str_s = xmlStrlen (str);
+	    str_s = xmlUTF8Strsize(padding, str_l);
 	    ret = xmlStrdup (str);
 	    ret = xmlStrcat (ret, padding + str_s);
 	}
@@ -838,11 +840,7 @@ exsltStrXpathCtxtRegister (xmlXPathContextPtr ctxt, const xmlChar *prefix)
         && !xmlXPathRegisterFuncNS(ctxt,
                                    (const xmlChar *) "concat",
                                    (const xmlChar *) EXSLT_STRINGS_NAMESPACE,
-                                   exsltStrConcatFunction)
-        && !xmlXPathRegisterFuncNS(ctxt,
-                                   (const xmlChar *) "replace",
-                                   (const xmlChar *) EXSLT_STRINGS_NAMESPACE,
-                                   exsltStrReplaceFunction)) {
+                                   exsltStrConcatFunction)) {
         return 0;
     }
     return -1;

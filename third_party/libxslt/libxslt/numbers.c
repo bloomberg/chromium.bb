@@ -237,6 +237,9 @@ xsltNumberFormatAlpha(xmlBufferPtr buffer,
     char *alpha_list;
     double alpha_size = (double)(sizeof(alpha_upper_list) - 1);
 
+    if (number < 1.0)
+        return;
+
     /* Build buffer from back */
     pointer = &temp_string[sizeof(temp_string)];
     *(--pointer) = 0;
@@ -246,7 +249,7 @@ xsltNumberFormatAlpha(xmlBufferPtr buffer,
 	number--;
 	*(--pointer) = alpha_list[((int)fmod(number, alpha_size))];
 	number /= alpha_size;
-	if (fabs(number) < 1.0)
+	if (number < 1.0)
 	    break; /* for */
     }
     xmlBufferCCat(buffer, pointer);
@@ -532,13 +535,48 @@ xsltNumberFormatInsertNumbers(xsltNumberDataPtr data,
 }
 
 static int
+xsltTestCompMatchCount(xsltTransformContextPtr context,
+                       xmlNodePtr node,
+                       xsltCompMatchPtr countPat,
+                       xmlNodePtr cur)
+{
+    if (countPat != NULL) {
+        return xsltTestCompMatchList(context, node, countPat);
+    }
+    else {
+        /*
+         * 7.7 Numbering
+         *
+         * If count attribute is not specified, then it defaults to the
+         * pattern that matches any node with the same node type as the
+         * current node and, if the current node has an expanded-name, with
+         * the same expanded-name as the current node.
+         */
+        if (node->type != cur->type)
+            return 0;
+        if (node->type == XML_NAMESPACE_DECL)
+            /*
+             * Namespace nodes have no preceding siblings and no parents
+             * that are namespace nodes. This means that node == cur.
+             */
+            return 1;
+        /* TODO: Skip node types without expanded names like text nodes. */
+        if (!xmlStrEqual(node->name, cur->name))
+            return 0;
+        if (node->ns == cur->ns)
+            return 1;
+        if ((node->ns == NULL) || (cur->ns == NULL))
+            return 0;
+        return (xmlStrEqual(node->ns->href, cur->ns->href));
+    }
+}
+
+static int
 xsltNumberFormatGetAnyLevel(xsltTransformContextPtr context,
 			    xmlNodePtr node,
 			    xsltCompMatchPtr countPat,
 			    xsltCompMatchPtr fromPat,
-			    double *array,
-			    xmlDocPtr doc,
-			    xmlNodePtr elem)
+			    double *array)
 {
     int amount = 0;
     int cnt = 0;
@@ -564,21 +602,8 @@ xsltNumberFormatGetAnyLevel(xsltTransformContextPtr context,
 
     while (cur != NULL) {
 	/* process current node */
-	if (countPat == NULL) {
-	    if ((node->type == cur->type) &&
-		/* FIXME: must use expanded-name instead of local name */
-		xmlStrEqual(node->name, cur->name)) {
-		    if ((node->ns == cur->ns) ||
-		        ((node->ns != NULL) &&
-			 (cur->ns != NULL) &&
-		         (xmlStrEqual(node->ns->href,
-		             cur->ns->href) )))
-		        cnt++;
-	    }
-	} else {
-	    if (xsltTestCompMatchList(context, cur, countPat))
-		cnt++;
-	}
+	if (xsltTestCompMatchCount(context, cur, countPat, node))
+	    cnt++;
 	if ((fromPat != NULL) &&
 	    xsltTestCompMatchList(context, cur, fromPat)) {
 	    break; /* while */
@@ -615,9 +640,7 @@ xsltNumberFormatGetMultipleLevel(xsltTransformContextPtr context,
 				 xsltCompMatchPtr countPat,
 				 xsltCompMatchPtr fromPat,
 				 double *array,
-				 int max,
-				 xmlDocPtr doc,
-				 xmlNodePtr elem)
+				 int max)
 {
     int amount = 0;
     int cnt;
@@ -637,30 +660,18 @@ xsltNumberFormatGetMultipleLevel(xsltTransformContextPtr context,
 		xsltTestCompMatchList(context, ancestor, fromPat))
 		break; /* for */
 
-	    if ((countPat == NULL && node->type == ancestor->type &&
-		xmlStrEqual(node->name, ancestor->name)) ||
-		xsltTestCompMatchList(context, ancestor, countPat)) {
+	    if (xsltTestCompMatchCount(context, ancestor, countPat, node)) {
 		/* count(preceding-sibling::*) */
-		cnt = 0;
-		for (preceding = ancestor;
+		cnt = 1;
+		for (preceding =
+                        xmlXPathNextPrecedingSibling(parser, ancestor);
 		     preceding != NULL;
 		     preceding =
 		        xmlXPathNextPrecedingSibling(parser, preceding)) {
-		    if (countPat == NULL) {
-			if ((preceding->type == ancestor->type) &&
-			    xmlStrEqual(preceding->name, ancestor->name)){
-			    if ((preceding->ns == ancestor->ns) ||
-			        ((preceding->ns != NULL) &&
-				 (ancestor->ns != NULL) &&
-			         (xmlStrEqual(preceding->ns->href,
-			             ancestor->ns->href) )))
-			        cnt++;
-			}
-		    } else {
-			if (xsltTestCompMatchList(context, preceding,
-				                  countPat))
-			    cnt++;
-		    }
+
+	            if (xsltTestCompMatchCount(context, preceding, countPat,
+                                               node))
+			cnt++;
 		}
 		array[amount++] = (double)cnt;
 		if (amount >= max)
@@ -717,23 +728,28 @@ xsltNumberFormat(xsltTransformContextPtr ctxt,
     int amount, i;
     double number;
     xsltFormat tokens;
-    int tempformat = 0;
 
-    if ((data->format == NULL) && (data->has_format != 0)) {
-	data->format = xsltEvalAttrValueTemplate(ctxt, data->node,
+    if (data->format != NULL) {
+        xsltNumberFormatTokenize(data->format, &tokens);
+    }
+    else {
+        xmlChar *format;
+
+	/* The format needs to be recomputed each time */
+        if (data->has_format == 0)
+            return;
+	format = xsltEvalAttrValueTemplate(ctxt, data->node,
 					     (const xmlChar *) "format",
 					     XSLT_NAMESPACE);
-	tempformat = 1;
-    }
-    if (data->format == NULL) {
-	return;
+        if (format == NULL)
+            return;
+        xsltNumberFormatTokenize(format, &tokens);
+	xmlFree(format);
     }
 
     output = xmlBufferCreate();
     if (output == NULL)
 	goto XSLT_NUMBER_FORMAT_END;
-
-    xsltNumberFormatTokenize(data->format, &tokens);
 
     /*
      * Evaluate the XPath expression to find the value(s)
@@ -759,9 +775,7 @@ xsltNumberFormat(xsltTransformContextPtr ctxt,
 						      data->countPat,
 						      data->fromPat,
 						      &number,
-						      1,
-						      data->doc,
-						      data->node);
+						      1);
 	    if (amount == 1) {
 		xsltNumberFormatInsertNumbers(data,
 					      &number,
@@ -777,9 +791,7 @@ xsltNumberFormat(xsltTransformContextPtr ctxt,
 						      data->countPat,
 						      data->fromPat,
 						      numarray,
-						      max,
-						      data->doc,
-						      data->node);
+						      max);
 	    if (amount > 0) {
 		xsltNumberFormatInsertNumbers(data,
 					      numarray,
@@ -792,9 +804,7 @@ xsltNumberFormat(xsltTransformContextPtr ctxt,
 						 node,
 						 data->countPat,
 						 data->fromPat,
-						 &number,
-						 data->doc,
-						 data->node);
+						 &number);
 	    if (amount > 0) {
 		xsltNumberFormatInsertNumbers(data,
 					      &number,
@@ -807,6 +817,9 @@ xsltNumberFormat(xsltTransformContextPtr ctxt,
     /* Insert number as text node */
     xsltCopyTextString(ctxt, ctxt->insert, xmlBufferContent(output), 0);
 
+    xmlBufferFree(output);
+
+XSLT_NUMBER_FORMAT_END:
     if (tokens.start != NULL)
 	xmlFree(tokens.start);
     if (tokens.end != NULL)
@@ -815,14 +828,6 @@ xsltNumberFormat(xsltTransformContextPtr ctxt,
 	if (tokens.tokens[i].separator != NULL)
 	    xmlFree(tokens.tokens[i].separator);
     }
-
-XSLT_NUMBER_FORMAT_END:
-    if (tempformat == 1) {
-	/* The format need to be recomputed each time */
-	data->format = NULL;
-    }
-    if (output != NULL)
-	xmlBufferFree(output);
 }
 
 static int

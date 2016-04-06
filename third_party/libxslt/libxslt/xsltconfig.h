@@ -41,7 +41,7 @@ extern "C" {
  *
  * extra version information, used to show a CVS compilation
  */
-#define	LIBXSLT_VERSION_EXTRA "-GITv1.1.27-16-g9382efe"
+#define	LIBXSLT_VERSION_EXTRA ""
 
 /**
  * WITH_XSLT_DEBUG:
@@ -50,7 +50,7 @@ extern "C" {
  * is insignifiant and being able to run xsltpoc -v is useful. On
  * by default unless --without-debug is passed to configure
  */
-#if 1
+#if 0
 #define WITH_XSLT_DEBUG
 #endif
 
@@ -104,7 +104,7 @@ extern "C" {
  * is insignifiant.
  * On by default unless --without-debugger is passed to configure
  */
-#if 1
+#if 0
 #ifndef WITH_DEBUGGER
 #define WITH_DEBUGGER
 #endif
@@ -116,11 +116,11 @@ extern "C" {
  * Whether module support is configured into libxslt
  * Note: no default module path for win32 platforms
  */
-#if 1
+#if 0
 #ifndef WITH_MODULES
 #define WITH_MODULES
 #endif
-#define LIBXSLT_DEFAULT_PLUGINS_PATH() "/usr/lib/libxslt-plugins"
+#define LIBXSLT_DEFAULT_PLUGINS_PATH() "/usr/local/lib/libxslt-plugins"
 #endif
 
 /**
@@ -150,6 +150,17 @@ extern "C" {
 #endif
 #else
 #define ATTRIBUTE_UNUSED
+#endif
+
+/**
+ * LIBXSLT_ATTR_FORMAT:
+ *
+ * This macro is used to indicate to GCC the parameters are printf-like
+ */
+#ifdef __GNUC__
+#define LIBXSLT_ATTR_FORMAT(fmt,args) __attribute__((__format__(__printf__,fmt,args)))
+#else
+#define LIBXSLT_ATTR_FORMAT(fmt,args)
 #endif
 
 /**

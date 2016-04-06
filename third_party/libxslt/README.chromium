@@ -1,6 +1,6 @@
 Name: libxslt
 URL: http://xmlsoft.org/XSLT
-Version: 1.1.28
+Version: 891681e3e948f31732229f53cb6db7215f740fc7
 Security Critical: yes
 License: MIT
 License File: Copyright
@@ -12,20 +12,25 @@ libxslt from libxml.org.
 Modifications:
 
 - GetFileAttributes -> GetFileAttributesA in libxslt\security.c
-- Cherry-pick
-    https://git.gnome.org/browse/libxslt/commit/?id=7cb08dacadf7e1cf88ee2f45815251b61bffcde6
-  to fix http://crbug.com/530587.
 
+- Apply patch contributed here:
+  https://bugs.chromium.org/p/chromium/issues/detail?id=583171#c17
 
 To import a new version:
 
-On Linux, get the latest tar via libxml.org.
-
-Extract and replace libxslt/ with libxslt-X.Y.Z/
+On Linux, get the latest tar via libxml.org and extract and replace
+libxslt/ with libxslt-X.Y.Z/ or clone git://git.gnome.org/libxslt
+remove .gitignore and archive it.
 
 mkdir linux && cd linux
 ../configure --without-debug --without-mem-debug --without-debugger --without-plugins --with-libxml-src=../../libxml/linux/ 
+
 Patch to not define HAVE_CLOCK_GETTIME.
+
+Disable both branches of locale support in libxslt/xsltconfig.h. This
+file is shared between all platforms and there is no common locale
+support. In particular, Android supports neither xlocale nor,
+unsurprisingly, Win32 locales.
 
 Do the same on Mac and copy the mac/config.h to Linux.
 

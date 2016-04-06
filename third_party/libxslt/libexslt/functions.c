@@ -112,6 +112,8 @@ exsltFuncRegisterImportFunc (exsltFuncFunctionData *data,
     func = (exsltFuncFunctionData*)xmlHashLookup2(ch->hash, URI, name);
     if (func == NULL) {		/* Not yet present - copy it in */
 	func = exsltFuncNewFunctionData();
+        if (func == NULL)
+            return;
 	memcpy(func, data, sizeof(exsltFuncFunctionData));
 	if (xmlHashAddEntry2(ch->hash, URI, name, func) < 0) {
 	    xsltGenericError(xsltGenericErrorContext,
@@ -301,6 +303,14 @@ exsltFuncFunctionFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     func = (exsltFuncFunctionData*) xmlHashLookup2 (data->funcs,
 						    ctxt->context->functionURI,
 						    ctxt->context->function);
+    if (func == NULL) {
+        /* Should never happen */
+        xsltGenericError(xsltGenericErrorContext,
+                         "{%s}%s: not found\n",
+                         ctxt->context->functionURI, ctxt->context->function);
+        ctxt->error = XPATH_UNKNOWN_FUNC_ERROR;
+        return;
+    }
 
     /*
      * params handling
@@ -494,6 +504,10 @@ exsltFuncFunctionComp (xsltStylesheetPtr style, xmlNodePtr inst) {
      * Create function data
      */
     func = exsltFuncNewFunctionData();
+    if (func == NULL) {
+        xmlFree(name);
+        return;
+    }
     func->content = inst->children;
     while (IS_XSLT_ELEM(func->content) &&
 	   IS_XSLT_NAME(func->content, "param")) {

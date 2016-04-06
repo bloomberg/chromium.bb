@@ -1622,7 +1622,7 @@ xsltRegisterExtModuleElement(const xmlChar * name, const xmlChar * URI,
                              xsltPreComputeFunction precomp,
                              xsltTransformFunction transform)
 {
-    int ret;
+    int ret = 0;
 
     xsltExtElementPtr ext;
 
@@ -1648,7 +1648,7 @@ xsltRegisterExtModuleElement(const xmlChar * name, const xmlChar * URI,
 done:
     xmlMutexUnlock(xsltExtMutex);
 
-    return (0);
+    return (ret);
 }
 
 /**
