@@ -20,8 +20,7 @@ namespace engine {
 
 class BlimpContentRendererClient : public content::ContentRendererClient {
  public:
-  BlimpContentRendererClient(scoped_ptr<BlimpImageSerializationProcessor>
-                                 image_serialization_processor);
+  BlimpContentRendererClient();
   ~BlimpContentRendererClient() override;
 
   // content::ContentRendererClient implementation.
@@ -33,7 +32,7 @@ class BlimpContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
 
   // Provides the functionality to serialize images in SkPicture.
-  scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor_;
+  scoped_ptr<cc::ImageSerializationProcessor> image_serialization_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentRendererClient);
 };

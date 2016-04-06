@@ -5,20 +5,34 @@
 #include "blimp/engine/app/blimp_content_renderer_client.h"
 
 #include "blimp/common/compositor/blimp_image_serialization_processor.h"
+#include "blimp/engine/mojo/blob_channel.mojom.h"
+#include "blimp/engine/renderer/engine_image_serialization_processor.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
+#include "content/public/common/service_registry.h"
+#include "content/public/renderer/render_thread.h"
 
 namespace blimp {
 namespace engine {
+namespace {
 
-BlimpContentRendererClient::BlimpContentRendererClient(
-    scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor)
-    : image_serialization_processor_(std::move(image_serialization_processor)) {
+mojom::BlobChannelPtr GetConnectedBlobChannel() {
+  mojom::BlobChannelPtr blob_channel_ptr;
+  content::RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
+      mojo::GetProxy(&blob_channel_ptr));
+  DCHECK(blob_channel_ptr);
+  return blob_channel_ptr;
 }
+
+}  // namespace
+
+BlimpContentRendererClient::BlimpContentRendererClient() {}
 
 BlimpContentRendererClient::~BlimpContentRendererClient() {}
 
 void BlimpContentRendererClient::RenderThreadStarted() {
   web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
+  image_serialization_processor_.reset(
+      new EngineImageSerializationProcessor(GetConnectedBlobChannel()));
 }
 
 cc::ImageSerializationProcessor*

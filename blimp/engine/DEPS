@@ -5,6 +5,7 @@ include_rules = [
   "+components/version_info",
   "+components/web_cache/renderer",
   "+content/public",
+  "+mojo/public",
   "+net",
   "+third_party/blimp_fonts",
   "+third_party/khronos/GLES2/gl2.h",

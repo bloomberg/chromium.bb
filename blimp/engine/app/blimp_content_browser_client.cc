@@ -6,6 +6,8 @@
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/common/blimp_browser_context.h"
+#include "blimp/engine/mojo/blob_channel_service.h"
+#include "content/public/common/service_registry.h"
 
 namespace blimp {
 namespace engine {
@@ -47,6 +49,12 @@ void BlimpContentBrowserClient::OverrideWebkitPrefs(
 
 BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
   return blimp_browser_main_parts_->GetBrowserContext();
+}
+
+void BlimpContentBrowserClient::RegisterRenderProcessMojoServices(
+    content::ServiceRegistry* registry) {
+  registry->AddService<mojom::BlobChannel>(
+      base::Bind(&BlobChannelService::Create));
 }
 
 }  // namespace engine

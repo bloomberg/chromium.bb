@@ -9,9 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/blimp_content_renderer_client.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace blimp {
@@ -72,11 +72,7 @@ BlimpContentMainDelegate::CreateContentBrowserClient() {
 content::ContentRendererClient*
 BlimpContentMainDelegate::CreateContentRendererClient() {
   DCHECK(!renderer_client_);
-  scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor =
-      make_scoped_ptr(new BlimpImageSerializationProcessor(
-          BlimpImageSerializationProcessor::Mode::SERIALIZATION));
-  renderer_client_.reset(
-      new BlimpContentRendererClient(std::move(image_serialization_processor)));
+  renderer_client_.reset(new BlimpContentRendererClient);
   return renderer_client_.get();
 }
 

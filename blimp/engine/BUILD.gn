@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -72,7 +73,9 @@ source_set("app") {
 
   deps = [
     ":app_ui",
+    ":blob_channel",
     ":common",
+    ":renderer",
     ":session",
     "//base",
     "//blimp/common/proto",
@@ -146,6 +149,23 @@ source_set("feature") {
   ]
 }
 
+source_set("renderer") {
+  sources = [
+    "renderer/engine_image_serialization_processor.cc",
+    "renderer/engine_image_serialization_processor.h",
+  ]
+
+  deps = [
+    ":blob_channel_mojo",
+    "//base",
+    "//cc",
+    "//skia",
+    "//third_party/libwebp",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+}
+
 source_set("session") {
   sources = [
     "session/blimp_engine_session.cc",
@@ -160,6 +180,23 @@ source_set("session") {
     "//blimp/net:blimp_net",
     "//content",
     "//net",
+  ]
+}
+
+# Implements the browser portions of the Mojo bridge to BlobChannel.
+source_set("blob_channel") {
+  sources = [
+    "mojo/blob_channel_service.cc",
+    "mojo/blob_channel_service.h",
+  ]
+  deps = [
+    ":blob_channel_mojo",
+  ]
+}
+
+mojom("blob_channel_mojo") {
+  sources = [
+    "mojo/blob_channel.mojom",
   ]
 }
 

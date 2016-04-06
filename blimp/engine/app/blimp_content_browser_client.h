@@ -28,6 +28,8 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
       content::URLRequestInterceptorScopedVector request_interceptors) override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
+  void RegisterRenderProcessMojoServices(
+      content::ServiceRegistry* registry) override;
 
   BlimpBrowserContext* GetBrowserContext();
 
