@@ -404,7 +404,7 @@ void FindLayersThatNeedUpdates(LayerImpl* layer,
     bool layer_is_drawn =
         effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
 
-    if (layer_impl->parent() &&
+    if (!IsRootLayer(layer_impl) &&
         LayerShouldBeSkipped(layer_impl, layer_is_drawn, transform_tree))
       continue;
 

@@ -1346,21 +1346,42 @@ TEST_F(LayerTreeHostCommonTest,
   filters.Append(FilterOperation::CreateBlurFilter(1.5f));
   render_surface1->SetBackgroundFilters(filters);
 
-  LayerImplList render_surface_layer_list;
-  parent->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
-  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      parent, parent->bounds(), &render_surface_layer_list,
-      parent->layer_tree_impl()->current_render_surface_list_id());
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
+  {
+    LayerImplList render_surface_layer_list;
+    parent->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        parent, parent->bounds(), &render_surface_layer_list,
+        parent->layer_tree_impl()->current_render_surface_list_id());
+    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    EXPECT_EQ(2U, render_surface_layer_list.size());
+  }
   // The layer is fully transparent, but has a background filter, so it
-  // shouldn't be skipped.
+  // shouldn't be skipped and should be drawn.
   ASSERT_TRUE(parent->render_surface());
   EXPECT_EQ(1U, parent->render_surface()->layer_list().size());
-  EXPECT_EQ(2U, render_surface_layer_list.size());
   EXPECT_EQ(gfx::RectF(0, 0, 10, 10),
             parent->render_surface()->DrawableContentRect());
+  EffectTree& effect_tree =
+      parent->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(render_surface1->effect_tree_index());
+  EXPECT_TRUE(node->data.is_drawn);
+
+  // When parent is transparent, the layer should not be drawn.
+  parent->OnOpacityAnimated(0.f);
+  render_surface1->OnOpacityAnimated(1.f);
+  {
+    LayerImplList render_surface_layer_list;
+    parent->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        parent, parent->bounds(), &render_surface_layer_list,
+        parent->layer_tree_impl()->current_render_surface_list_id());
+    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  }
+
+  node = effect_tree.Node(render_surface1->effect_tree_index());
+  EXPECT_FALSE(node->data.is_drawn);
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
