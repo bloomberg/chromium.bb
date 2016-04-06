@@ -64,7 +64,7 @@ inline Dest bit_cast(const Source& source) {
   static_assert(sizeof(Dest) == sizeof(Source),
                 "bit_cast requires source and destination to be the same size");
 
-#if ((defined(__GLIBCXX__) && (__GLIBCXX__ >= 20150422)) || \
+#if (__GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 1) || \
      defined(_LIBCPP_VERSION))
   // GCC 5.1 contains the first libstdc++ with is_trivially_copyable.
   // Assume libc++ Just Works: is_trivially_copyable added on May 13th 2011.
