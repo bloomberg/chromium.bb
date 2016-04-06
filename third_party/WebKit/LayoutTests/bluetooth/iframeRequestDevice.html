@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/bluetooth-helpers.js"></script>
+<script src="../resources/bluetooth/bluetooth-helpers.js"></script>
 <body>
   <script>
   "use strict";
@@ -40,7 +40,7 @@
       .then(() => {
         for (let i = 0; i < numIframes; i++) {
           let iframe = document.createElement('iframe');
-          iframe.src = 'resources/requestDevice-in-iframe.html';
+          iframe.src = '../resources/bluetooth/requestDevice-in-iframe.html';
           document.body.appendChild(iframe);
         }
       });
