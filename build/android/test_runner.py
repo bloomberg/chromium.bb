@@ -320,7 +320,8 @@ def AddJavaTestOptions(argument_group):
   """Adds the Java test options to |option_parser|."""
 
   argument_group.add_argument(
-      '-f', '--test-filter', dest='test_filter',
+      '-f', '--test-filter', '--gtest_filter', '--gtest-filter',
+      dest='test_filter',
       help=('Test filter (if not fully qualified, will run all matches).'))
   argument_group.add_argument(
       '--repeat', dest='repeat', type=int, default=0,
