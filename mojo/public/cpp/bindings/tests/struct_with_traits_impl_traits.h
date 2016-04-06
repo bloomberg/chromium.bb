@@ -38,6 +38,10 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   static base::StringPiece f_string(const test::StructWithTraitsImpl& value) {
     return value.get_string();
   }
+
+  static base::StringPiece f_string2(const test::StructWithTraitsImpl& value) {
+    return value.get_string();
+  }
 };
 
 }  // namespace mojo

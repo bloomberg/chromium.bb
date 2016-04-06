@@ -15,7 +15,7 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
   out->set_uint32(r.f_uint32());
   out->set_uint64(r.f_uint64());
   out->set_string(r.f_string().as_string());
-  return true;
+  return r.f_string() == r.f_string2();
 }
 
 }  // namespace mojo

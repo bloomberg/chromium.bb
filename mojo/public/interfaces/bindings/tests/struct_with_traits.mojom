@@ -9,6 +9,7 @@ struct StructWithTraits {
   uint32 f_uint32;
   uint64 f_uint64;
   string f_string;
+  string f_string2;
 };
 
 interface TraitsTestService {

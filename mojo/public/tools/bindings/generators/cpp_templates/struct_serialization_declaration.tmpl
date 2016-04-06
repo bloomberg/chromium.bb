@@ -100,9 +100,11 @@ struct {{struct.name}}_SerializerTraits_ {
         break;
 {%-   endif %}
 {%-   if pf.field.kind|is_string_kind %}
-      size += mojo::internal::String_Data::Traits::GetStorageSize(
-          static_cast<uint32_t>(mojo::StructTraits<{{struct.name}}, NativeType>
-              ::{{pf.field.name}}(input).size()));
+      size += mojo::internal::Align(
+          mojo::internal::String_Data::Traits::GetStorageSize(
+              static_cast<uint32_t>(
+                  mojo::StructTraits<{{struct.name}}, NativeType>
+                      ::{{pf.field.name}}(input).size())));
 {%-   elif pf.field.kind|is_object_kind %}
       NOTREACHED() << "Unsupported field type for StructTraits: "
                    << "{{pf.field.name}}";

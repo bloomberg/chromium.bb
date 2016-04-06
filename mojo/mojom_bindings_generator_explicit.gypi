@@ -61,9 +61,6 @@
       ],
       'inputs': [
         '<@(mojom_files)',
-        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/cpp_templates.zip',
-        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/java_templates.zip',
-        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/js_templates.zip',
       ],
       'outputs': [ '<(stamp_filename)' ],
     },
@@ -82,6 +79,9 @@
         '<@(mojom_bindings_generator_sources)',
         '<@(mojom_files)',
         '<(stamp_filename)',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/cpp_templates.zip',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/java_templates.zip',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/js_templates.zip',
       ],
       'outputs': [
         '<@(mojom_generated_outputs)',
