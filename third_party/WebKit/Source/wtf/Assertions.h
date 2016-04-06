@@ -51,12 +51,14 @@
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code
 // testing this macro has included this header.
 #ifndef ENABLE_ASSERT
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON() && !defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
+/* ASSERT* will currently crash the process if enabled, so which is not
+   the desired behaviour if DCHECK_IS_DUMP_WITHOUT_CRASH. */
+#define ENABLE_ASSERT 1
+#else
 /* Disable ASSERT* macros in release mode by default. */
 #define ENABLE_ASSERT 0
-#else
-#define ENABLE_ASSERT 1
-#endif /* defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON) */
+#endif /* DCHECK_IS_ON() */
 #endif
 
 #ifndef ASSERT_MSG_DISABLED
