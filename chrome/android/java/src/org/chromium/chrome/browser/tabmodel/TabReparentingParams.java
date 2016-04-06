@@ -57,7 +57,7 @@ public class TabReparentingParams implements AsyncTabParams {
      * Carry out any remaining finalization to be done after the tab is reparented.
      */
     public void finalizeTabReparenting() {
-        mFinalizeCallback.run();
+        if (mFinalizeCallback != null) mFinalizeCallback.run();
     }
 
     @Override

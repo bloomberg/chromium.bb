@@ -1851,6 +1851,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_MENU_UPDATE_SUMMARY_NEW_FEATURES" desc="Summary string for update menu item explaining that new features are available. [CHAR-LIMIT=30]">
         Get the latest features
       </message>
+      <message name="IDS_MENU_MOVE_TO_OTHER_WINDOW" desc="Menu item for moving the current tab into the other window. [CHAR-LIMIT=27]">
+        Move to other window
+      </message>
       <message name="IDS_MENU_NEW_TAB" desc="Menu item for opening a new tab. [CHAR-LIMIT=27]">
         New tab
       </message>

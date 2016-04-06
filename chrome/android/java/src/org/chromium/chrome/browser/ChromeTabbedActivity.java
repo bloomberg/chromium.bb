@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
@@ -78,6 +79,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoS
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -86,6 +88,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -1007,7 +1010,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public boolean onMenuOrKeyboardAction(final int id, boolean fromMenu) {
         final Tab currentTab = getActivityTab();
-        if (id == R.id.new_tab_menu_id) {
+        if (id == R.id.move_to_other_window_menu_id) {
+            if (currentTab != null) moveTabToOtherWindow(currentTab);
+        } else if (id == R.id.new_tab_menu_id) {
             Tab launchedTab = getTabCreator(false).launchUrl(
                     UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
             RecordUserAction.record("MobileMenuNewTab");
@@ -1081,6 +1086,27 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.Activity.ChromeTabbedActivity.SystemBackAction",
                 action, BACK_PRESSED_COUNT);
+    }
+
+    private void moveTabToOtherWindow(Tab tab) {
+        getCurrentTabModel().removeTab(tab);
+        tab.getContentViewCore().updateWindowAndroid(null);
+        tab.attachTabContentManager(null);
+
+        Class<? extends Activity> targetActivity =
+                MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(this);
+        if (targetActivity == null) return;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(tab.getUrl()));
+        intent.setClass(this, targetActivity);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+
+        AsyncTabParamsManager.add(tab.getId(),
+                new TabReparentingParams(tab, intent, null));
+
+        startActivity(intent);
     }
 
     @Override

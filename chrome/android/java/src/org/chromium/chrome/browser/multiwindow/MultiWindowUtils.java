@@ -27,6 +27,10 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MultiWindowUtils {
 
+    // TODO(twellington): replace this with Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT once we're building
+    //                    against N.
+    public static final int FLAG_ACTIVITY_LAUNCH_ADJACENT = 0x00001000;
+
     private static AtomicReference<MultiWindowUtils> sInstance =
             new AtomicReference<MultiWindowUtils>();
 

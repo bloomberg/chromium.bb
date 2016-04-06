@@ -103,10 +103,7 @@ public class TabDelegate extends TabCreator {
         if (targetActivity == null) return;
         intent.setClass(activity, targetActivity);
 
-        // TODO(newt): use Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT once we're building against N.
-        final int flagActivityLaunchAdjacent = 0x00001000;
-        intent.addFlags(flagActivityLaunchAdjacent);
-
+        intent.addFlags(MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
         IntentHandler.addTrustedIntentExtras(intent, activity);
         activity.startActivity(intent);
     }
