@@ -16,8 +16,6 @@
 
 using base::IntToString;
 using base::StringPiece;
-using base::hash_map;
-using base::hash_set;
 using std::make_pair;
 using std::map;
 using std::max;

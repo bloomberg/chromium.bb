@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -22,7 +21,6 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
 
-using base::hash_set;
 using base::StringPiece;
 using std::make_pair;
 using std::map;

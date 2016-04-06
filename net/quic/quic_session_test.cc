@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/containers/hash_tables.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,7 +30,6 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::hash_map;
 using std::set;
 using std::string;
 using std::vector;

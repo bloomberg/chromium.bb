@@ -38,8 +38,6 @@
 
 using base::StringPiece;
 using base::StringPrintf;
-using base::hash_map;
-using base::hash_set;
 using std::list;
 using std::make_pair;
 using std::max;

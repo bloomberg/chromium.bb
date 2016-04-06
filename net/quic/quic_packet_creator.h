@@ -23,8 +23,6 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
-using base::hash_map;
-
 namespace net {
 namespace test {
 class QuicPacketCreatorPeer;
