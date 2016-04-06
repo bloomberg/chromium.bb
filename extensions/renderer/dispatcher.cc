@@ -719,10 +719,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair("webViewExperimental", IDR_WEB_VIEW_EXPERIMENTAL_JS));
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-    resources.push_back(std::make_pair("webViewIframe",
-                                       IDR_WEB_VIEW_IFRAME_JS));
-  }
   resources.push_back(
       std::make_pair(mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS));
   resources.push_back(
@@ -1579,6 +1575,10 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   Feature::Context context_type = context->context_type();
   ModuleSystem* module_system = context->module_system();
 
+  // Only set if |context| is capable of running guests in OOPIF. Used to
+  // require additional module overrides.
+  bool guest_view_required = false;
+
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
@@ -1588,6 +1588,8 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     module_system->Require("extensionOptions");
     module_system->Require("extensionOptionsAttributes");
+
+    guest_view_required = true;
   }
 
   // Require ExtensionView.
@@ -1607,9 +1609,13 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
       module_system->Require("webViewExperimental");
     }
 
-    if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-      module_system->Require("webViewIframe");
-    }
+    guest_view_required = true;
+  }
+
+  if (guest_view_required &&
+      content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+    module_system->Require("guestViewIframe");
+    module_system->Require("guestViewIframeContainer");
   }
 
   // The "guestViewDeny" module must always be loaded last. It registers
