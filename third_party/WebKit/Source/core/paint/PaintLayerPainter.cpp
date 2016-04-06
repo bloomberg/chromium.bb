@@ -461,9 +461,25 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
         ancestorBackgroundClipRect = m_paintLayer.clipper().backgroundClipRect(clipRectsContext);
     }
 
+    LayoutObject* object = m_paintLayer.layoutObject();
+    LayoutView* view = object->view();
+    bool isFixedPosObjectInPagedMedia = object->style()->position() == FixedPosition && object->container() == view && view->pageLogicalHeight();
     PaintLayer* paginationLayer = m_paintLayer.enclosingPaginationLayer();
     PaintLayerFragments fragments;
-    if (paginationLayer) {
+    if (isFixedPosObjectInPagedMedia) {
+        // "For paged media, boxes with fixed positions are repeated on every page."
+        // - https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
+        ASSERT(view->firstChild() && view->firstChild()->isLayoutBlock());
+        int pages = toLayoutBlock(view->firstChild())->logicalHeight() / view->pageLogicalHeight();
+        LayoutPoint paginationOffset;
+        for (int i = 0; i <= pages; i++) {
+            PaintLayerFragment fragment;
+            fragment.backgroundRect = paintingInfo.paintDirtyRect;
+            fragment.paginationOffset = paginationOffset;
+            fragments.append(fragment);
+            paginationOffset += LayoutPoint(0, view->pageLogicalHeight());
+        }
+    } else if (paginationLayer) {
         // FIXME: This is a mess. Look closely at this code and the code in Layer and fix any
         // issues in it & refactor to make it obvious from code structure what it does and that it's
         // correct.
@@ -493,7 +509,10 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
         Optional<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
             ClipRect clipRectForFragment(ancestorBackgroundClipRect);
-            clipRectForFragment.moveBy(fragment.paginationOffset);
+            // A fixed-position object is repeated on every page, but if it is clipped by an ancestor layer then
+            // the repetitions are clipped out.
+            if (!isFixedPosObjectInPagedMedia)
+                clipRectForFragment.moveBy(fragment.paginationOffset);
             clipRectForFragment.intersect(fragment.backgroundRect);
             if (clipRectForFragment.isEmpty())
                 continue;
