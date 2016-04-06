@@ -560,8 +560,29 @@ scoped_refptr<UsbDevice> UsbDeviceHandleImpl::GetDevice() const {
 
 void UsbDeviceHandleImpl::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_)
-    device_->Close(this);
+  if (!device_)
+    return;
+
+  // Cancel all the transfers, their callbacks will be called some time later.
+  for (Transfer* transfer : transfers_)
+    transfer->Cancel();
+
+  // Release all remaining interfaces once their transfers have completed.
+  // This loop must ensure that what may be the final reference is released on
+  // the right thread.
+  for (auto& map_entry : claimed_interfaces_) {
+    InterfaceClaimer* interface_claimer = map_entry.second.get();
+    interface_claimer->AddRef();
+    map_entry.second = nullptr;
+    blocking_task_runner_->ReleaseSoon(FROM_HERE, interface_claimer);
+  }
+
+  device_->HandleClosed(this);
+  device_ = nullptr;
+
+  // The device handle cannot be closed here. When libusb_cancel_transfer is
+  // finished the last references to this device will be released and the
+  // destructor will close the handle.
 }
 
 void UsbDeviceHandleImpl::SetConfiguration(int configuration_value,
@@ -779,6 +800,8 @@ UsbDeviceHandleImpl::UsbDeviceHandleImpl(
 }
 
 UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
+  DCHECK(!device_) << "UsbDeviceHandle must be closed before it is destroyed.";
+
   // This class is RefCountedThreadSafe and so the destructor may be called on
   // any thread. libusb is not safe to reentrancy so be sure not to try to close
   // the device from inside a transfer completion callback.
@@ -1101,32 +1124,6 @@ void UsbDeviceHandleImpl::TransferComplete(Transfer* transfer,
   // libusb_free_transfer races with libusb_submit_transfer and only work-
   // around is to make sure to call them on the same thread.
   blocking_task_runner_->DeleteSoon(FROM_HERE, transfer);
-}
-
-void UsbDeviceHandleImpl::InternalClose() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!device_)
-    return;
-
-  // Cancel all the transfers.
-  for (Transfer* transfer : transfers_) {
-    // The callback will be called some time later.
-    transfer->Cancel();
-  }
-
-  // Release all remaining interfaces once their transfers have completed.
-  // This loop must ensure that what may be the final reference is released on
-  // the right thread.
-  for (auto& map_entry : claimed_interfaces_) {
-    InterfaceClaimer* interface_claimer = map_entry.second.get();
-    interface_claimer->AddRef();
-    map_entry.second = nullptr;
-    blocking_task_runner_->ReleaseSoon(FROM_HERE, interface_claimer);
-  }
-
-  // Cannot close device handle here. Need to wait for libusb_cancel_transfer to
-  // finish.
-  device_ = nullptr;
 }
 
 }  // namespace device

@@ -185,9 +185,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // completion callback.
   void TransferComplete(Transfer* transfer, const base::Closure& callback);
 
-  // Informs the object to drop internal references.
-  void InternalClose();
-
   scoped_refptr<UsbDeviceImpl> device_;
 
   PlatformUsbDeviceHandle handle_;

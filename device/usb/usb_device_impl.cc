@@ -197,17 +197,10 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
+void UsbDeviceImpl::HandleClosed(scoped_refptr<UsbDeviceHandle> handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
-       ++it) {
-    if (it->get() == handle.get()) {
-      (*it)->InternalClose();
-      handles_.erase(it);
-      return;
-    }
-  }
+  DCHECK(ContainsValue(handles_, handle.get()));
+  handles_.remove(handle.get());
 }
 
 const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() const {
@@ -217,15 +210,8 @@ const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() const {
 
 void UsbDeviceImpl::OnDisconnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Swap the list of handles into a local variable because closing all open
-  // handles may release the last reference to this object.
-  HandlesVector handles;
-  swap(handles, handles_);
-
-  for (const scoped_refptr<UsbDeviceHandleImpl>& handle : handles_) {
-    handle->InternalClose();
-  }
+  for (UsbDeviceHandle* handle : handles_)
+    handle->Close();
 }
 
 void UsbDeviceImpl::ReadAllConfigurations() {
@@ -333,7 +319,7 @@ void UsbDeviceImpl::Opened(PlatformUsbDeviceHandle platform_handle,
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_refptr<UsbDeviceHandleImpl> device_handle = new UsbDeviceHandleImpl(
       context_, this, platform_handle, blocking_task_runner_);
-  handles_.push_back(device_handle);
+  handles_.push_back(device_handle.get());
   callback.Run(device_handle);
 }
 

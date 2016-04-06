@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <list>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -89,7 +89,7 @@ class UsbDeviceImpl : public UsbDevice {
   void ReadAllConfigurations();
 
   // Called by UsbDeviceHandleImpl.
-  void Close(scoped_refptr<UsbDeviceHandle> handle);
+  void HandleClosed(scoped_refptr<UsbDeviceHandle> handle);
   void RefreshActiveConfiguration();
 
  private:
@@ -124,8 +124,7 @@ class UsbDeviceImpl : public UsbDevice {
   scoped_refptr<UsbContext> context_;
 
   // Opened handles.
-  typedef std::vector<scoped_refptr<UsbDeviceHandleImpl> > HandlesVector;
-  HandlesVector handles_;
+  std::list<UsbDeviceHandle*> handles_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
