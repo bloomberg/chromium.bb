@@ -5996,8 +5996,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // displayed in an OOPIF. The test ignores cert errors so that an HTTPS
 // iframe can be loaded from a site other than localhost (the
 // EmbeddedTestServer serves a certificate that is valid for localhost).
+// This test crashes on Windows under Dr. Memory, see https://crbug.com/600942.
+#if defined(OS_WIN)
+#define MAYBE_PassiveMixedContentInIframe DISABLED_PassiveMixedContentInIframe
+#else
+#define MAYBE_PassiveMixedContentInIframe PassiveMixedContentInIframe
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
-                       PassiveMixedContentInIframe) {
+                       MAYBE_PassiveMixedContentInIframe) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
