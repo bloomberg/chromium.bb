@@ -606,8 +606,10 @@ bool HTMLPlugInElement::useFallbackContent() const
 
 void HTMLPlugInElement::lazyReattachIfNeeded()
 {
-    if (!useFallbackContent() && needsWidgetUpdate() && layoutObject() && !isImageType())
+    if (!useFallbackContent() && needsWidgetUpdate() && layoutObject() && !isImageType()) {
         lazyReattachIfAttached();
+        setPersistedPluginWidget(nullptr);
+    }
 }
 
 } // namespace blink
