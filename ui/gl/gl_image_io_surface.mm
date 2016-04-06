@@ -28,9 +28,6 @@ using gfx::BufferFormat;
 namespace gl {
 namespace {
 
-using WidgetToLayerMap = std::map<gfx::AcceleratedWidget, CALayer*>;
-base::LazyInstance<WidgetToLayerMap> g_widget_to_layer_map;
-
 const char kGLSLVersion[] = "#version 110";
 
 const char kTextureRectangleRequired[] =
@@ -407,15 +404,6 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 
 base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {
   return io_surface_;
-}
-
-// static
-void GLImageIOSurface::SetLayerForWidget(gfx::AcceleratedWidget widget,
-                                         CALayer* layer) {
-  if (layer)
-    g_widget_to_layer_map.Pointer()->insert(std::make_pair(widget, layer));
-  else
-    g_widget_to_layer_map.Pointer()->erase(widget);
 }
 
 // static

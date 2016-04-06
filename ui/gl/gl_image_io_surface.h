@@ -53,8 +53,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
 
-  static void SetLayerForWidget(gfx::AcceleratedWidget widget, CALayer* layer);
-
   static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
  protected:

@@ -6,8 +6,6 @@ import("//build/config/ui.gni")
 
 component("surface") {
   sources = [
-    "accelerated_surface_mac.cc",
-    "accelerated_surface_mac.h",
     "surface_export.h",
     "transport_dib.cc",
     "transport_dib.h",
@@ -27,12 +25,4 @@ component("surface") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
-
-  if (is_mac) {
-    # Required by accelerated_surface_mac.cc.
-    libs = [
-      "IOSurface.framework",
-      "OpenGL.framework",
-    ]
-  }
 }

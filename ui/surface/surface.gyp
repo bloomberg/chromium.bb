@@ -13,15 +13,6 @@
           '../../third_party/khronos',
         ],
       }],
-      ['OS == "mac"', {
-        # Required by accelerated_surface_mac.cc.
-        'link_settings': {
-          'libraries': [
-            '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
-            '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-          ],
-        },
-      }],
     ],
   },
   'targets': [
@@ -37,8 +28,6 @@
         '../gl/gl.gyp:gl',
       ],
       'sources': [
-        'accelerated_surface_mac.cc',
-        'accelerated_surface_mac.h',
         'surface_export.h',
         'transport_dib.cc',
         'transport_dib.h',
