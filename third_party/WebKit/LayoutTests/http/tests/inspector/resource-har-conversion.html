@@ -41,7 +41,7 @@ var test = function()
             ]);
 
             request.responseHeaders = [
-                { name: "Set-Cookie", value: "x=y; Path=/path; Domain=example.com; Discard; httpOnly; Secure; Version=1\nx1=y1\nz2=y2" }
+                { name: "Set-Cookie", value: "x=y; Path=/path; Domain=example.com; Discard; httpOnly; Secure; Version=1\nx1=y1; SameSite=Strict\nz2=y2; SameSite=Lax" }
             ];
         }
 

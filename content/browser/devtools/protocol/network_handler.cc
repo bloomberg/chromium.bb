@@ -234,7 +234,7 @@ void NetworkHandler::SendGetCookiesResponse(
   std::vector<scoped_refptr<Cookie>> cookies;
   for (size_t i = 0; i < cookie_list.size(); ++i) {
     const net::CanonicalCookie& cookie = cookie_list[i];
-    cookies.push_back(Cookie::Create()
+    scoped_refptr<Cookie> devtools_cookie = Cookie::Create()
          ->set_name(cookie.Name())
          ->set_value(cookie.Value())
          ->set_domain(cookie.Domain())
@@ -243,7 +243,19 @@ void NetworkHandler::SendGetCookiesResponse(
          ->set_size(cookie.Name().length() + cookie.Value().length())
          ->set_http_only(cookie.IsHttpOnly())
          ->set_secure(cookie.IsSecure())
-         ->set_session(!cookie.IsPersistent()));
+         ->set_session(!cookie.IsPersistent());
+
+    switch (cookie.SameSite()) {
+      case net::CookieSameSite::STRICT_MODE:
+        devtools_cookie->set_same_site(cookie::kSameSiteStrict);
+        break;
+      case net::CookieSameSite::LAX_MODE:
+        devtools_cookie->set_same_site(cookie::kSameSiteLax);
+        break;
+      case net::CookieSameSite::NO_RESTRICTION:
+        break;
+    }
+    cookies.push_back(devtools_cookie);
   }
   client_->SendGetCookiesResponse(command_id,
       GetCookiesResponse::Create()->set_cookies(cookies));
