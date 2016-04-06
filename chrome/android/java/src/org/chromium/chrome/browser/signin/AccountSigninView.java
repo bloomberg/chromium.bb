@@ -234,14 +234,6 @@ public class AccountSigninView extends FirstRunView
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        // Ensure that the spinner's dropdown is the same width and vertically aligned with the
-        // spinner. The spinner's start and end padding must be 0 for this to work.
-        mSpinner.setDropDownWidth(mSpinner.getWidth());
-    }
-
-    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         updateAccounts();
