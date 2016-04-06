@@ -88,7 +88,7 @@ TreeScope::~TreeScope()
 {
 #if !ENABLE(OILPAN)
     ASSERT(!m_guardRefCount);
-    m_rootNode->setTreeScope(0);
+    m_rootNode->setTreeScope(nullptr);
 
     if (m_selection) {
         m_selection->clearTreeScope();
@@ -162,9 +162,9 @@ void TreeScope::clearScopedStyleResolver()
 Element* TreeScope::getElementById(const AtomicString& elementId) const
 {
     if (elementId.isEmpty())
-        return 0;
+        return nullptr;
     if (!m_elementsById)
-        return 0;
+        return nullptr;
     return m_elementsById->getElementById(elementId, this);
 }
 
@@ -201,12 +201,12 @@ Node* TreeScope::ancestorInThisScope(Node* node) const
         if (node->treeScope() == this)
             return node;
         if (!node->isInShadowTree())
-            return 0;
+            return nullptr;
 
         node = node->shadowHost();
     }
 
-    return 0;
+    return nullptr;
 }
 
 void TreeScope::addImageMap(HTMLMapElement* imageMap)
@@ -232,9 +232,9 @@ void TreeScope::removeImageMap(HTMLMapElement* imageMap)
 HTMLMapElement* TreeScope::getImageMap(const String& url) const
 {
     if (url.isNull())
-        return 0;
+        return nullptr;
     if (!m_imageMapsByName)
-        return 0;
+        return nullptr;
     size_t hashPos = url.find('#');
     String name = hashPos == kNotFound ? url : url.substring(hashPos + 1);
     if (rootNode().document().isHTMLDocument())
@@ -284,13 +284,13 @@ Element* TreeScope::hitTestPoint(int x, int y, const HitTestRequest& request) co
     HitTestResult result = hitTestInDocument(&rootNode().document(), x, y, request);
     Node* node = result.innerNode();
     if (!node || node->isDocumentNode())
-        return 0;
+        return nullptr;
     if (node->isPseudoElement() || node->isTextNode())
         node = node->parentOrShadowHostNode();
     ASSERT(!node || node->isElementNode() || node->isShadowRoot());
     node = ancestorInThisScope(node);
     if (!node || !node->isElementNode())
-        return 0;
+        return nullptr;
     return toElement(node);
 }
 
@@ -358,7 +358,7 @@ void TreeScope::removeLabel(const AtomicString& forAttributeValue, HTMLLabelElem
 HTMLLabelElement* TreeScope::labelElementForId(const AtomicString& forAttributeValue)
 {
     if (forAttributeValue.isEmpty())
-        return 0;
+        return nullptr;
 
     if (!m_labelsByForAttribute) {
         // Populate the map on first access.
@@ -376,7 +376,7 @@ HTMLLabelElement* TreeScope::labelElementForId(const AtomicString& forAttributeV
 DOMSelection* TreeScope::getSelection() const
 {
     if (!rootNode().document().frame())
-        return 0;
+        return nullptr;
 
     if (m_selection)
         return m_selection.get();
@@ -391,7 +391,7 @@ DOMSelection* TreeScope::getSelection() const
 Element* TreeScope::findAnchor(const String& name)
 {
     if (name.isEmpty())
-        return 0;
+        return nullptr;
     if (Element* element = getElementById(AtomicString(name)))
         return element;
     for (HTMLAnchorElement& anchor : Traversal<HTMLAnchorElement>::startsAfter(rootNode())) {
@@ -405,7 +405,7 @@ Element* TreeScope::findAnchor(const String& name)
                 return &anchor;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void TreeScope::adoptIfNeeded(Node& node)
@@ -427,7 +427,7 @@ Element* TreeScope::adjustedFocusedElement() const
     if (!element && document.page())
         element = document.page()->focusController().focusedFrameOwnerElement(*document.frame());
     if (!element)
-        return 0;
+        return nullptr;
 
     RawPtr<EventPath> eventPath = new EventPath(*element);
     for (size_t i = 0; i < eventPath->size(); ++i) {
@@ -440,7 +440,7 @@ Element* TreeScope::adjustedFocusedElement() const
             return toElement(eventPath->at(i).target()->toNode());
         }
     }
-    return 0;
+    return nullptr;
 }
 
 unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
@@ -543,8 +543,8 @@ bool TreeScope::isInclusiveAncestorOf(const TreeScope& scope) const
 Element* TreeScope::getElementByAccessKey(const String& key) const
 {
     if (key.isEmpty())
-        return 0;
-    Element* result = 0;
+        return nullptr;
+    Element* result = nullptr;
     Node& root = rootNode();
     for (Element& element : ElementTraversal::descendantsOf(root)) {
         if (equalIgnoringCase(element.fastGetAttribute(accesskeyAttr), key))
