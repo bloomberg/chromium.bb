@@ -345,29 +345,42 @@ TEST(CharacterTest, TestIsCJKIdeographOrSymbol)
     TestSpecificUChar32RangeIdeographSymbol(0x1F200, 0x1F6FF);
 }
 
-TEST(CharacterTest, TestEmojiTextPresentation)
+TEST(CharacterTest, TestEmojiTextDefault)
 {
-    EXPECT_TRUE(Character::isEmojiTextPresentation(0x0023));
-    EXPECT_TRUE(Character::isEmojiTextPresentation(0x1F9C0));
-    EXPECT_TRUE(Character::isEmojiTextPresentation(0x26BD));
-    EXPECT_TRUE(Character::isEmojiTextPresentation(0x26BE));
-    EXPECT_FALSE(Character::isEmojiTextPresentation('A'));
-    EXPECT_FALSE(Character::isEmojiTextPresentation(0x2713));
+    // Text-default emoji, i.e.
+    // Emoji=Yes and EmojiPresentation=No
+    EXPECT_TRUE(Character::isEmojiTextDefault(0x0023));
+    EXPECT_TRUE(Character::isEmojiTextDefault(0x2744));
+    EXPECT_TRUE(Character::isEmojiTextDefault(0x1F6F3));
+
+    // Non-emoji
+    EXPECT_FALSE(Character::isEmojiTextDefault('A'));
+    EXPECT_FALSE(Character::isEmojiTextDefault(0x2713));
+
+    // Emoji=Yes and EmojiPresentation=Yes
+    EXPECT_FALSE(Character::isEmojiTextDefault(0x1F9C0));
+    EXPECT_FALSE(Character::isEmojiTextDefault(0x26BD));
+    EXPECT_FALSE(Character::isEmojiTextDefault(0x26BE));
 }
 
-TEST(CharacterTest, TestEmojiEmojiPresentation)
+TEST(CharacterTest, TestEmojiEmojiDefault)
 {
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x231A));
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F191));
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F19A));
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F9C0));
+    // Emoji=Yes and EmojiPresentation=Yes
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x231A));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F191));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F19A));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F9C0));
     // Kiss
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F48F));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F48F));
     // Couple with heart
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F491));
-    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F46A));
-    EXPECT_FALSE(Character::isEmojiEmojiPresentation('A'));
-    EXPECT_FALSE(Character::isEmojiEmojiPresentation(0x1F202));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F491));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F46A));
+
+    // Non-emoji
+    EXPECT_FALSE(Character::isEmojiEmojiDefault('A'));
+
+    // Emoji=Yes and EmojiPresentation=No
+    EXPECT_FALSE(Character::isEmojiEmojiDefault(0x1F202));
 }
 
 TEST(CharacterTest, TestEmojiModifierBase)
@@ -382,8 +395,8 @@ TEST(CharacterTest, TestEmojiModifierBase)
 
 TEST(CharacterTest, LineBreakAndQuoteNotEmoji)
 {
-    EXPECT_FALSE(Character::isEmojiTextPresentation('\n'));
-    EXPECT_FALSE(Character::isEmojiTextPresentation('"'));
+    EXPECT_FALSE(Character::isEmojiTextDefault('\n'));
+    EXPECT_FALSE(Character::isEmojiTextDefault('"'));
 }
 
 TEST(CharacterTest, Truncation)

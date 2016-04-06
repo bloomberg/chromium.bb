@@ -84,15 +84,15 @@ static void applyPatternAndFreeze(icu::UnicodeSet* unicodeSet, const char* patte
     ASSERT(err == U_ZERO_ERROR);
 }
 
-bool Character::isEmojiTextPresentation(UChar32 ch)
+bool Character::isEmojiTextDefault(UChar32 ch)
 {
     DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojiTextSet, ());
     if (emojiTextSet.isEmpty())
         applyPatternAndFreeze(&emojiTextSet, kEmojiTextPattern);
-    return emojiTextSet.contains(ch);
+    return emojiTextSet.contains(ch) && !isEmojiEmojiDefault(ch);
 }
 
-bool Character::isEmojiEmojiPresentation(UChar32 ch)
+bool Character::isEmojiEmojiDefault(UChar32 ch)
 {
     DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojiEmojiSet, ());
     if (emojiEmojiSet.isEmpty())

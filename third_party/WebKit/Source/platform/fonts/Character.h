@@ -107,8 +107,10 @@ public:
         return u_hasBinaryProperty(c, UCHAR_GRAPHEME_EXTEND);
     }
 
-    static bool isEmojiTextPresentation(UChar32);
-    static bool isEmojiEmojiPresentation(UChar32);
+    // Default presentation style according to:
+    // http://www.unicode.org/reports/tr51/#Presentation_Style
+    static bool isEmojiTextDefault(UChar32);
+    static bool isEmojiEmojiDefault(UChar32);
     static bool isEmojiModifierBase(UChar32);
     static bool isEmojiKeycapBase(UChar32);
     static bool isRegionalIndicator(UChar32);

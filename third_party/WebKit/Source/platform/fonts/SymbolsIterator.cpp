@@ -32,14 +32,12 @@ FontFallbackPriority SymbolsIterator::fontFallbackPriorityForCharacter(UChar32 c
         || codepoint == combiningEnclosingCircleBackslashCharacter)
         return FontFallbackPriority::EmojiEmoji;
 
-    // There are overlaps between isEmojiTextpresentation and isEmojiEmojiPresentation.
-    // We want to prioritize emoji presentation if the character has such a property.
-    if (Character::isEmojiEmojiPresentation(codepoint)
+    if (Character::isEmojiEmojiDefault(codepoint)
         || Character::isEmojiModifierBase(codepoint)
         || Character::isModifier(codepoint))
         return FontFallbackPriority::EmojiEmoji;
 
-    if (Character::isEmojiTextPresentation(codepoint))
+    if (Character::isEmojiTextDefault(codepoint))
         return FontFallbackPriority::EmojiText;
 
     UBlockCode block = ublock_getCode(codepoint);
