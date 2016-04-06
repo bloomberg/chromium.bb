@@ -28,7 +28,7 @@ namespace content {
 const int32_t RTCVideoDecoder::ID_LAST = 0x3FFFFFFF;
 const int32_t RTCVideoDecoder::ID_HALF = 0x20000000;
 const int32_t RTCVideoDecoder::ID_INVALID = -1;
-const uint32_t kNumVDAResetsBeforeSWFallback = 5;
+const uint32_t kNumVDAErrorsBeforeSWFallback = 50;
 
 // Maximum number of concurrent VDA::Decode() operations RVD will maintain.
 // Higher values allow better pipelining in the GPU, but also require more
@@ -56,7 +56,7 @@ RTCVideoDecoder::BufferData::~BufferData() {}
 
 RTCVideoDecoder::RTCVideoDecoder(webrtc::VideoCodecType type,
                                  media::GpuVideoAcceleratorFactories* factories)
-    : num_vda_errors_(0),
+    : vda_error_counter_(0),
       video_codec_type_(type),
       factories_(factories),
       decoder_texture_target_(0),
@@ -162,9 +162,9 @@ int32_t RTCVideoDecoder::Decode(
 
   if (state_ == DECODE_ERROR) {
     LOG(ERROR) << "Decoding error occurred.";
-    // Try reseting the session |kNumVDAErrorsHandled| times.
-    if (num_vda_errors_ > kNumVDAResetsBeforeSWFallback) {
-      DLOG(ERROR) << num_vda_errors_
+    // Try reseting the session up to |kNumVDAErrorsHandled| times.
+    if (vda_error_counter_ > kNumVDAErrorsBeforeSWFallback) {
+      DLOG(ERROR) << vda_error_counter_
                   << " errors reported by VDA, falling back to software decode";
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     }
@@ -248,6 +248,7 @@ int32_t RTCVideoDecoder::Decode(
       Release();
     }
 
+    TryResetVDAErrorCounter_Locked();
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
@@ -256,6 +257,7 @@ int32_t RTCVideoDecoder::Decode(
       FROM_HERE,
       base::Bind(&RTCVideoDecoder::RequestBufferDecode,
                  weak_factory_.GetWeakPtr()));
+  TryResetVDAErrorCounter_Locked();
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -492,7 +494,7 @@ void RTCVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
 
   base::AutoLock auto_lock(lock_);
   state_ = DECODE_ERROR;
-  ++num_vda_errors_;
+  ++vda_error_counter_;
 }
 
 void RTCVideoDecoder::RequestBufferDecode() {
@@ -843,6 +845,14 @@ void RTCVideoDecoder::ClearPendingBuffers() {
   for (const auto& pending_buffer : pending_buffers_)
     delete[] pending_buffer.first._buffer;
   pending_buffers_.clear();
+}
+
+void RTCVideoDecoder::TryResetVDAErrorCounter_Locked() {
+  lock_.AssertAcquired();
+
+  if (vda_error_counter_ == 0)
+    return;
+  vda_error_counter_ = 0;
 }
 
 }  // namespace content

@@ -272,7 +272,7 @@ TEST_F(RTCVideoDecoderTest, IsFirstBufferAfterReset) {
 }
 
 
-TEST_P(RTCVideoDecoderTest, DecodeResetsAfterError) {
+TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
   const webrtc::VideoCodecType codec_type = GetParam();
   CreateDecoder(codec_type);
   Initialize();
@@ -289,11 +289,24 @@ TEST_P(RTCVideoDecoderTest, DecodeResetsAfterError) {
   // Notify the decoder about a platform error.
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
   RunUntilIdle();
+  EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
 
   // Expect decode call to reset decoder, and set up a new VDA to track it.
   SetUpResetVDA();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
             rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+  EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
+
+  // Decoder expects a keyframe after reset, so drops any other frames.
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+  EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
+
+  // Decoder resets error counter after a successfull decode.
+  input_image._frameType = webrtc::kVideoFrameKey;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 10));
+  EXPECT_EQ(0, rtc_decoder_->GetVDAErrorCounterForTesting());
 }
 
 INSTANTIATE_TEST_CASE_P(CodecProfiles,

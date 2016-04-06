@@ -109,6 +109,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsFirstBufferAfterReset);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, GetVDAErrorCounterForTesting);
 
   RTCVideoDecoder(webrtc::VideoCodecType type,
                   media::GpuVideoAcceleratorFactories* factories);
@@ -125,6 +126,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Returns true if bitstream buffer |id_buffer| is the first buffer after
   // |id_reset|.
   bool IsFirstBufferAfterReset(int32_t id_buffer, int32_t id_reset);
+
+  int GetVDAErrorCounterForTesting() { return vda_error_counter_; }
 
   // Saves a WebRTC buffer in |decode_buffers_| for decode.
   void SaveToDecodeBuffers_Locked(const webrtc::EncodedImage& input_image,
@@ -157,7 +160,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Tells VDA that a picture buffer can be recycled.
   void ReusePictureBuffer(int64_t picture_buffer_id);
 
-  // Create |vda_| on |vda_loop_proxy_|.
+  // Creates |vda_| on |vda_loop_proxy_|.
   void CreateVDA(media::VideoCodecProfile profile, base::WaitableEvent* waiter);
 
   void DestroyTextures();
@@ -184,16 +187,19 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Records the result of InitDecode to UMA and returns |status|.
   int32_t RecordInitDecodeUMA(int32_t status);
 
-  // Assert the contract that this class is operated on the right thread.
+  // Asserts the contract that this class is operated on the right thread.
   void DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent() const;
 
-  // Query factories_ whether |profile| is supported and return true is so,
+  // Queries factories_ whether |profile| is supported and return true is so,
   // false otherwise. If true, also set resolution limits for |profile|
   // in min/max_resolution_.
   bool IsProfileSupported(media::VideoCodecProfile profile);
 
-  // Clear the pending_buffers_ queue, freeing memory.
+  // Clears the pending_buffers_ queue, freeing memory.
   void ClearPendingBuffers();
+
+  // Resets |vda_error_counter_| after a successfull run of decode.
+  void TryResetVDAErrorCounter_Locked();
 
   enum State {
     UNINITIALIZED,  // The decoder has not initialized.
@@ -212,7 +218,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   media::VideoCodecProfile vda_codec_profile_;
 
   // Number of times that |vda_| notified of an error.
-  uint32_t num_vda_errors_;
+  uint32_t vda_error_counter_;
 
   // The video codec type, as reported by WebRTC.
   const webrtc::VideoCodecType video_codec_type_;
@@ -247,7 +253,8 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // Protects |state_|, |decode_complete_callback_| , |num_shm_buffers_|,
   // |available_shm_segments_|, |pending_buffers_|, |decode_buffers_|,
-  // |next_bitstream_buffer_id_| and |reset_bitstream_buffer_id_|.
+  // |next_bitstream_buffer_id_|, |reset_bitstream_buffer_id_| and
+  // |vda_error_counter_|.
   base::Lock lock_;
 
   // The state of RTCVideoDecoder. Guarded by |lock_|.
