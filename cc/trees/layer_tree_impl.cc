@@ -725,11 +725,11 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
                                      ? OuterViewportScrollLayer()
                                      : InnerViewportScrollLayer();
-  if (!root_scroll_layer || root_scroll_layer->children().empty())
+  if (!root_scroll_layer)
     return gfx::Rect();
-  LayerImpl* layer = root_scroll_layer->children()[0];
-  return MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
-                                           gfx::Rect(layer->bounds()));
+  return MathUtil::MapEnclosingClippedRect(
+      root_scroll_layer->ScreenSpaceTransform(),
+      gfx::Rect(root_scroll_layer->bounds()));
 }
 
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
@@ -988,11 +988,10 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
   LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
                                      ? OuterViewportScrollLayer()
                                      : InnerViewportScrollLayer();
-  if (!root_scroll_layer || root_scroll_layer->children().empty())
+  if (!root_scroll_layer)
     return gfx::SizeF();
 
-  gfx::SizeF content_size =
-      root_scroll_layer->children()[0]->BoundsForScrolling();
+  gfx::SizeF content_size = root_scroll_layer->BoundsForScrolling();
   gfx::SizeF viewport_size =
       root_scroll_layer->scroll_clip_layer()->BoundsForScrolling();
 
