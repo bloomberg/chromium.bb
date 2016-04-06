@@ -197,7 +197,10 @@ void ProfileStatisticsAggregator::WaitOrCountBookmarks() {
   if (bookmark_model) {
     if (bookmark_model->loaded()) {
       CountBookmarks(bookmark_model);
-    } else {
+    } else if (!bookmark_model_helper_) {
+      // If |bookmark_model_helper_| is not null, it means a previous bookmark
+      // counting task still waiting for the bookmark model to load. Do nothing
+      // and continue to use the old |bookmark_model_helper_| in this case.
       AddRef();
       bookmark_model_helper_.reset(new BookmarkModelHelper(this));
       bookmark_model->AddObserver(bookmark_model_helper_.get());

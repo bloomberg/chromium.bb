@@ -8,15 +8,67 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile_statistics.h"
+#include "chrome/browser/profiles/profile_statistics_aggregator.h"
 #include "chrome/browser/profiles/profile_statistics_common.h"
+#include "chrome/browser/profiles/profile_statistics_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+scoped_ptr<KeyedService> BuildBookmarkModelWithoutLoad(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  scoped_ptr<bookmarks::BookmarkModel> bookmark_model(
+      new bookmarks::BookmarkModel(make_scoped_ptr(new ChromeBookmarkClient(
+          profile, ManagedBookmarkServiceFactory::GetForProfile(profile)))));
+  return std::move(bookmark_model);
+}
+
+void LoadBookmarkModel(Profile* profile,
+                       bookmarks::BookmarkModel* bookmark_model) {
+  bookmark_model->Load(profile->GetPrefs(),
+                       profile->GetPath(),
+                       profile->GetIOTaskRunner(),
+                       content::BrowserThread::GetMessageLoopProxyForThread(
+                           content::BrowserThread::UI));
+}
+
+bookmarks::BookmarkModel* CreateBookmarkModelWithoutLoad(Profile* profile) {
+  return static_cast<bookmarks::BookmarkModel*>(
+      BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile, BuildBookmarkModelWithoutLoad));
+}
+
+class BookmarkStatHelper {
+ public:
+  BookmarkStatHelper() : num_of_times_called_(0) {}
+
+  void StatsCallback(profiles::ProfileCategoryStats stats) {
+    if (stats.back().category == profiles::kProfileStatisticsBookmarks)
+      ++num_of_times_called_;
+  }
+
+  int GetNumOfTimesCalled() { return num_of_times_called_; }
+
+ private:
+  base::Closure quit_closure_;
+  int num_of_times_called_;
+};
+
 void VerifyStatisticsCache(const base::FilePath& profile_path,
     const std::map<std::string, int>& expected,
     const std::vector<std::string>& categories_to_check) {
@@ -85,4 +137,48 @@ TEST_F(ProfileStatisticsTest, ProfileAttributesStorage) {
     expected[item.first] = item.second;
     VerifyStatisticsCache(profile_path, expected, categories_to_check);
   }
+}
+
+TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
+  TestingProfile* profile = manager()->CreateTestingProfile("Test 1");
+  ASSERT_TRUE(profile);
+
+  bookmarks::BookmarkModel* bookmark_model =
+      CreateBookmarkModelWithoutLoad(profile);
+  ASSERT_TRUE(bookmark_model);
+
+  // Run ProfileStatisticsAggregator::WaitOrCountBookmarks.
+  ProfileStatisticsAggregator* aggregator;
+  BookmarkStatHelper bookmark_stat_helper;
+  base::RunLoop run_loop_aggregator_destruction;
+  // The following should run inside a scope, so the scoped_refptr gets deleted
+  // immediately.
+  {
+    scoped_refptr<ProfileStatisticsAggregator> aggregator_scoped =
+        new ProfileStatisticsAggregator(
+                profile,
+                base::Bind(&BookmarkStatHelper::StatsCallback,
+                           base::Unretained(&bookmark_stat_helper)),
+                run_loop_aggregator_destruction.QuitClosure());
+    aggregator = aggregator_scoped.get();
+  }
+  // Wait until ProfileStatisticsAggregator::WaitOrCountBookmarks is run.
+  base::RunLoop run_loop1;
+  run_loop1.RunUntilIdle();
+  EXPECT_EQ(0, bookmark_stat_helper.GetNumOfTimesCalled());
+
+  // Run ProfileStatisticsAggregator::WaitOrCountBookmarks again.
+  aggregator->AddCallbackAndStartAggregator(
+      profiles::ProfileStatisticsCallback());
+  // Wait until ProfileStatisticsAggregator::WaitOrCountBookmarks is run.
+  base::RunLoop run_loop2;
+  run_loop2.RunUntilIdle();
+  EXPECT_EQ(0, bookmark_stat_helper.GetNumOfTimesCalled());
+
+  // Load the bookmark model. When the model is loaded (asynchronously), the
+  // observer added by WaitOrCountBookmarks is run.
+  LoadBookmarkModel(profile, bookmark_model);
+
+  run_loop_aggregator_destruction.Run();
+  EXPECT_EQ(1, bookmark_stat_helper.GetNumOfTimesCalled());
 }
