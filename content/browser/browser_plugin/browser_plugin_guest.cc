@@ -979,10 +979,9 @@ void BrowserPluginGuest::OnTakeFocus(bool reverse) {
       new BrowserPluginMsg_AdvanceFocus(browser_plugin_instance_id(), reverse));
 }
 
-void BrowserPluginGuest::OnTextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+void BrowserPluginGuest::OnTextInputStateChanged(const TextInputState& params) {
   // Save the state of text input so we can restore it on focus.
-  last_text_input_state_.reset(new ViewHostMsg_TextInputState_Params(params));
+  last_text_input_state_.reset(new TextInputState(params));
 
   SendTextInputTypeChangedToView(
       static_cast<RenderWidgetHostViewBase*>(

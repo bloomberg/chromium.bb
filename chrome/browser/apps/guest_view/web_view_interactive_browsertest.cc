@@ -51,6 +51,42 @@ using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 
+namespace {
+// A helper class which polls the text input state of the given WebContents.
+class TextInputStateHelper {
+ public:
+  using Predicate =
+      base::Callback<bool(const content::TextInputStateTestExport&)>;
+
+  static void WaitForDesiredState(content::WebContents* web_contents,
+                                  const Predicate& predicate) {
+    content::TextInputStateTestExport state =
+        content::TextInputStateTestExport::FromWebContents(web_contents);
+    while (!predicate.Run(state)) {
+      scoped_refptr<content::MessageLoopRunner> loop =
+          new content::MessageLoopRunner();
+      content::BrowserThread::PostDelayedTask(
+          content::BrowserThread::UI, FROM_HERE, loop->QuitClosure(),
+          base::TimeDelta::FromMilliseconds(100LL));
+      loop->Run();
+      state = content::TextInputStateTestExport::FromWebContents(web_contents);
+    }
+  }
+
+  static bool IsStateOfGivenType(
+      ui::TextInputType type,
+      const content::TextInputStateTestExport& state) {
+    return type == state.type();
+  }
+
+  static bool HasGivenValue(const std::string& value,
+                            const content::TextInputStateTestExport& state) {
+    return value == state.value();
+  }
+};
+
+}  // namespace
+
 class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
  public:
   WebViewInteractiveTestBase()
@@ -512,6 +548,9 @@ class WebViewPopupInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewPointerLockInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewDragDropInteractiveTest : public WebViewInteractiveTestBase {};
+// TODO(ekaramad): The following tests fail of OOPIF due to focus issues.
+// see crbug.com/61060.
+class WebViewTextInputStateInteractiveTest : public WebViewInteractiveTest {};
 
 INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
                         WebViewInteractiveTest,
@@ -520,6 +559,10 @@ INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
 INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
                         WebViewNewWindowInteractiveTest,
                         testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
+                        WebViewTextInputStateInteractiveTest,
+                        testing::Values(false));
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
 // likely won't work on many other platforms as well, so for now this test
@@ -1334,4 +1377,69 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, FocusAndVisibility) {
       "WebViewInteractiveTest.WebViewButtonWasFocused");
   SendMessageToEmbedder("verify");
   EXPECT_TRUE(webview_button_not_focused_listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
+                       TopLevelWebContentsTracksCorrectly) {
+  SetupTest("web_view/text_input_state",
+            "/extensions/platform_apps/web_view/text_input_state/guest.html");
+
+  auto press_tab_to_focus = [](WebViewTextInputStateInteractiveTest* test,
+                               const std::string& message) {
+    ExtensionTestMessageListener listener(message, false);
+    test->SendKeyPressToPlatformApp(ui::VKEY_TAB);
+    listener.WaitUntilSatisfied();
+  };
+
+  auto get_type_checker = [](ui::TextInputType target) {
+    return base::Bind(&TextInputStateHelper::IsStateOfGivenType, target);
+  };
+
+  // Press the tab key. The <input> in the embedder should get focused.
+  // Top level state type should be number.
+  press_tab_to_focus(this, "EMBEDDER-FOCUSED-1");
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(), get_type_checker(ui::TEXT_INPUT_TYPE_NUMBER));
+
+  // Press the tab key again and the <input> inside <webview> gets focused. The
+  // input type should text now.
+  press_tab_to_focus(this, "GUEST-FOCUSED");
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(), get_type_checker(ui::TEXT_INPUT_TYPE_TEXT));
+
+  // Press the tab key one more time to get back to embedder's second <input>.
+  // The value should be "last one".
+  press_tab_to_focus(this, "EMBEDDER-FOCUSED-2");
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(),
+      base::Bind(&TextInputStateHelper::HasGivenValue, "last one"));
+}
+
+// TODO(ekaramad): Activate this test for OOPIF when input event routing for
+// OOPIF-<webview> is fixed.
+IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
+                       CrashingWebViewResetsState) {
+  SetupTest("web_view/text_input_state",
+            "/extensions/platform_apps/web_view/text_input_state/guest.html");
+
+  // Press tab key twice to end up in the <input> of the <webview>,
+  ExtensionTestMessageListener listener("GUEST-FOCUSED", false);
+  for (size_t i = 0; i < 2; ++i)
+    SendKeyPressToPlatformApp(ui::VKEY_TAB);
+
+  listener.WaitUntilSatisfied();
+
+  // Now wait for a text input state change.
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(),
+      base::Bind(&TextInputStateHelper::HasGivenValue, "guest"));
+
+  // Now crash the <webview>.
+  guest_web_contents()->GetRenderProcessHost()->Shutdown(false, 0);
+
+  // State should reset to none.
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(),
+      base::Bind(&TextInputStateHelper::IsStateOfGivenType,
+                 ui::TEXT_INPUT_TYPE_NONE));
 }

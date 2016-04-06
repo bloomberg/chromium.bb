@@ -348,18 +348,6 @@ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
   platform_view_->SetIsLoading(is_loading);
 }
 
-void RenderWidgetHostViewGuest::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
-  if (!guest_)
-    return;
-
-  RenderWidgetHostViewBase* rwhv = GetOwnerRenderWidgetHostView();
-  if (!rwhv)
-    return;
-  // Forward the information to embedding RWHV.
-  rwhv->TextInputStateChanged(params);
-}
-
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
   if (!guest_)
     return;
@@ -505,6 +493,10 @@ void RenderWidgetHostViewGuest::DestroyGuestView() {
   // Let our observers know we're going away, since we don't want any event
   // processing calls coming in after we release host_.
   NotifyObserversAboutShutdown();
+
+  // The WebContentsImpl should be notified about us so that it will not hold
+  // an invalid text input state which was due to active text on this view.
+  NotifyHostDelegateAboutShutdown();
 
   host_->SetView(NULL);
   host_ = NULL;

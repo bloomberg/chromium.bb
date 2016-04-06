@@ -1726,7 +1726,7 @@ void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(
 }
 
 void RenderWidgetHostImpl::OnTextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+    const TextInputState& params) {
   if (view_)
     view_->TextInputStateChanged(params);
 }

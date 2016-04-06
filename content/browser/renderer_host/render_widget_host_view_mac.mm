@@ -1010,23 +1010,23 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   // like Chrome does on Windows, call |UpdateCursor()| here.
 }
 
-void RenderWidgetHostViewMac::TextInputStateChanged(
-const ViewHostMsg_TextInputState_Params& params) {
-  if (text_input_type_ != params.type
-      || can_compose_inline_ != params.can_compose_inline) {
-    text_input_type_ = params.type;
-    can_compose_inline_ = params.can_compose_inline;
-    if (HasFocus()) {
-      SetTextInputActive(true);
+void RenderWidgetHostViewMac::UpdateInputMethodIfNecessary(
+    bool text_input_state_changed) {
+  if (!text_input_state_changed)
+    return;
 
-      // Let AppKit cache the new input context to make IMEs happy.
-      // See http://crbug.com/73039.
-      [NSApp updateWindows];
+  if (HasFocus()) {
+    SetTextInputActive(true);
+
+    // Let AppKit cache the new input context to make IMEs happy.
+    // See http://crbug.com/73039.
+    [NSApp updateWindows];
 
 #ifndef __LP64__
-      UseInputWindow(TSMGetActiveDocument(), !can_compose_inline_);
+    UseInputWindow(TSMGetActiveDocument(), !render_widget_host_->delegate()
+                                                ->GetTextInputState()
+                                                ->can_compose_inline);
 #endif
-    }
   }
 }
 
@@ -1082,6 +1082,10 @@ void RenderWidgetHostViewMac::Destroy() {
   // Make sure none of our observers send events for us to process after
   // we release render_widget_host_.
   NotifyObserversAboutShutdown();
+
+  // The WebContentsImpl should be notified about us so that it will not hold
+  // an invalid text input state which was due to active text on this view.
+  NotifyHostDelegateAboutShutdown();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained

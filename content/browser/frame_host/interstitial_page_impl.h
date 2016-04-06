@@ -30,6 +30,7 @@ class NavigationControllerImpl;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class WebContentsView;
+struct TextInputState;
 
 enum ResourceRequestAction {
   BLOCK,
@@ -153,6 +154,9 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // RenderWidgetHostDelegate implementation:
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
+  const TextInputState* GetTextInputState() override;
+  void UpdateTextInputState(RenderWidgetHostViewBase* rwhv,
+                            bool text_input_state_changed) override;
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
@@ -294,6 +298,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   scoped_ptr<InterstitialPageDelegate> delegate_;
 
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+
+  scoped_ptr<TextInputState> text_input_state_;
 
   base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_;
 
