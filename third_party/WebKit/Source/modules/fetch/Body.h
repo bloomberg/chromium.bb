@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/ModulesExport.h"
@@ -47,6 +48,7 @@ public:
     ReadableByteStream* bodyWithUseCounter();
     virtual BodyStreamBuffer* bodyBuffer() = 0;
     virtual const BodyStreamBuffer* bodyBuffer() const = 0;
+    ScriptValue v8ExtraStreamBody(ScriptState*);
 
     virtual bool bodyUsed();
     bool isBodyLocked();
