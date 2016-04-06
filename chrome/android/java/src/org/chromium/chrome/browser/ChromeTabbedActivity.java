@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -312,6 +313,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             getWindow().setFeatureInt(Window.FEATURE_INDETERMINATE_PROGRESS,
                     Window.PROGRESS_VISIBILITY_OFF);
+
+            // Check for incognito tabs to handle the case where Chrome was swiped away in the
+            // background.
+            int incognitoCount = TabWindowManager.getInstance().getIncognitoTabCount();
+            if (incognitoCount == 0) IncognitoNotificationManager.dismissIncognitoNotification();
 
             super.finishNativeInitialization();
         } finally {
