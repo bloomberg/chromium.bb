@@ -26,10 +26,12 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/SharedBuffer.h"
 #include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/FrameData.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/ImageFrameGenerator.h"
+#include "platform/image-decoders/SegmentReader.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -54,7 +56,6 @@ PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnP
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
-    , m_lastDataSize(0)
     , m_actualDecoder(std::move(actualDecoder))
     , m_repetitionCount(cAnimationNone)
     , m_hasColorProfile(false)
@@ -114,15 +115,20 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 {
     if (m_actualDecoder) {
-        m_data = RefPtr<SharedBuffer>(data);
-        m_lastDataSize = data.size();
         m_allDataReceived = allDataReceived;
         m_actualDecoder->setData(&data, allDataReceived);
         prepareLazyDecodedFrames();
     }
 
-    if (m_frameGenerator)
-        m_frameGenerator->setData(&data, allDataReceived);
+    if (m_frameGenerator) {
+        if (!m_rwBuffer)
+            m_rwBuffer = adoptPtr(new SkRWBuffer(data.size()));
+
+        const char* segment = 0;
+        for (size_t length = data.getSomeData(segment, m_rwBuffer->size());
+            length; length = data.getSomeData(segment, m_rwBuffer->size()))
+            m_rwBuffer->append(segment, length);
+    }
 }
 
 bool DeferredImageDecoder::isSizeAvailable()
@@ -230,7 +236,8 @@ void DeferredImageDecoder::activateLazyDecoding()
     m_hasColorProfile = m_actualDecoder->hasColorProfile();
 
     const bool isSingleFrame = m_actualDecoder->repetitionCount() == cAnimationNone || (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
-    m_frameGenerator = ImageFrameGenerator::create(SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height()), m_data, m_allDataReceived, !isSingleFrame);
+    const SkISize decodedSize = SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height());
+    m_frameGenerator = ImageFrameGenerator::create(decodedSize, !isSingleFrame);
 }
 
 void DeferredImageDecoder::prepareLazyDecodedFrames()
@@ -267,7 +274,7 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
     if (m_allDataReceived) {
         m_repetitionCount = m_actualDecoder->repetitionCount();
         m_actualDecoder.clear();
-        m_data = nullptr;
+        // Hold on to m_rwBuffer, which is still needed by createFrameAtIndex.
     }
 }
 
@@ -282,7 +289,9 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, 
     ASSERT(decodedSize.width() > 0);
     ASSERT(decodedSize.height() > 0);
 
-    DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque), index);
+    RefPtr<SkROBuffer> roBuffer = adoptRef(m_rwBuffer->newRBufferSnapshot());
+    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkROBuffer(roBuffer.release());
+    DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque), segmentReader.release(), m_allDataReceived, index);
     RefPtr<SkImage> image = adoptRef(SkImage::NewFromGenerator(generator)); // SkImage takes ownership of the generator.
     if (!image)
         return nullptr;

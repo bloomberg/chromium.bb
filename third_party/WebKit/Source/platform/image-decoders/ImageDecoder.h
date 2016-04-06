@@ -33,6 +33,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/image-decoders/ImageFrame.h"
+#include "platform/image-decoders/SegmentReader.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
@@ -122,22 +123,29 @@ public:
     // we can't sniff a supported type from the provided data (possibly
     // because there isn't enough data yet).
     // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
-    static PassOwnPtr<ImageDecoder> create(const SharedBuffer& data, AlphaOption, GammaAndColorProfileOption);
+    static PassOwnPtr<ImageDecoder> create(const char* data, size_t length, AlphaOption, GammaAndColorProfileOption);
+    static PassOwnPtr<ImageDecoder> create(const SharedBuffer&, AlphaOption, GammaAndColorProfileOption);
+    static PassOwnPtr<ImageDecoder> create(const SegmentReader&, AlphaOption, GammaAndColorProfileOption);
 
     virtual String filenameExtension() const = 0;
 
     bool isAllDataReceived() const { return m_isAllDataReceived; }
 
-    void setData(SharedBuffer* data, bool allDataReceived)
+    void setData(PassRefPtr<SegmentReader> data, bool allDataReceived)
     {
         if (m_failed)
             return;
         m_data = data;
         m_isAllDataReceived = allDataReceived;
-        onSetData(data);
+        onSetData(m_data.get());
     }
 
-    virtual void onSetData(SharedBuffer* data) { }
+    void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
+    {
+        setData(SegmentReader::createFromSharedBuffer(data), allDataReceived);
+    }
+
+    virtual void onSetData(SegmentReader* data) { }
 
     bool isSizeAvailable()
     {
@@ -310,7 +318,7 @@ protected:
     // Decodes the requested frame.
     virtual void decode(size_t) = 0;
 
-    RefPtr<SharedBuffer> m_data; // The encoded data.
+    RefPtr<SegmentReader> m_data; // The encoded data.
     Vector<ImageFrame, 1> m_frameBufferCache;
     bool m_premultiplyAlpha;
     bool m_ignoreGammaAndColorProfile;

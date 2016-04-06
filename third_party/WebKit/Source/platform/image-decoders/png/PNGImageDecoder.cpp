@@ -110,7 +110,7 @@ public:
         m_readOffset = 0;
     }
 
-    bool decode(const SharedBuffer& data, bool sizeOnly)
+    bool decode(const SegmentReader& data, bool sizeOnly)
     {
         m_decodingSizeOnly = sizeOnly;
 

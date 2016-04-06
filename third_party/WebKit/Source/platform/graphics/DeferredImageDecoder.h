@@ -31,6 +31,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkRWBuffer.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -88,9 +89,10 @@ private:
 
     PassRefPtr<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque) const;
 
-    RefPtr<SharedBuffer> m_data;
+    // Copy of the data that is passed in, used by deferred decoding.
+    // Allows creating readonly snapshots that may be read in another thread.
+    OwnPtr<SkRWBuffer> m_rwBuffer;
     bool m_allDataReceived;
-    unsigned m_lastDataSize;
     OwnPtr<ImageDecoder> m_actualDecoder;
 
     String m_filenameExtension;
