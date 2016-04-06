@@ -100,7 +100,8 @@
       'Chromium Win 10': 'tbd',
       'Chromium Win x64 Clobber': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
-      'ClangToTAndroidASan': 'tbd',
+      'ClangToTAndroidASan':
+        'android_clang_no_chrome_plugins_asan_gyp_debug_bot_minimal_symbols',
       'ClangToTLinux': 'tbd',
       'ClangToTLinux (dbg)': 'tbd',
       'ClangToTLinuxASan': 'tbd',
@@ -901,6 +902,11 @@
       'android', 'cast', 'gyp', 'debug_static_bot',
     ],
 
+    'android_clang_no_chrome_plugins_asan_gyp_debug_bot_minimal_symbols': [
+      'android', 'clang_no_chrome_plugins', 'asan', 'gyp',
+      'debug_bot_minimal_symbols',
+    ],
+
     'android_clang_asan_findbugs_gyp_debug_bot_minimal_symbols': [
       'android', 'clang', 'asan', 'findbugs', 'gyp',
       'debug_bot_minimal_symbols',
@@ -1664,6 +1670,12 @@
       'gn_args': 'ffmpeg_branding="ChromeOS" proprietary_codecs=true',
       'gyp_defines': 'ffmpeg_branding=ChromeOS proprietary_codecs=1',
       'mixins': ['chromeos'],
+    },
+
+    'clang_no_chrome_plugins': {
+      'gn_args': 'clang_use_chrome_plugins=false',
+      'gyp_defines': 'clang_use_chrome_plugins=0',
+      'mixins': ['clang'],
     },
 
     'clang': {
