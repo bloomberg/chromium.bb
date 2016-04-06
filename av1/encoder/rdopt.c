@@ -674,6 +674,11 @@ static void choose_tx_size_from_rd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
   *psse = INT64_MAX;
 
   for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+#if CONFIG_REF_MV
+    if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT)
+      continue;
+#endif
+
     last_rd = INT64_MAX;
     for (n = start_tx; n >= end_tx; --n) {
       int r_tx_size = 0;
