@@ -22,7 +22,7 @@ namespace quirks {
 namespace {
 
 const char kQuirksUrlFormat[] =
-    "https://qa-quirksserver-pa.sandbox.googleapis.com/v2/display/%s/clients"
+    "https://chromeosquirksserver-pa.googleapis.com/v2/display/%s/clients"
     "/chromeos/M%d";
 
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
