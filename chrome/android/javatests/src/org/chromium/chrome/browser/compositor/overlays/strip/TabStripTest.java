@@ -22,6 +22,7 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -466,6 +467,224 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
+     * Compares tab strips with models after switching between the ScrollingStripStacker and
+     * CascadingStripStacker when an incognito tab is present. Also tests tapping the incognito
+     * button while the strip is using the ScrollingStripStacker (other tests cover tapping
+     * the button while using the CascadingStripStacker).
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testSwitchStripStackersWithIncognito() throws InterruptedException {
+        // Open an incognito tab.
+        newIncognitoTabFromMenu();
+
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Switch tab models.
+        clickIncognitoToggleButton();
+
+        // Switch to the CascadingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(true);
+    }
+
+    /**
+     * Compares tab strip with model after switching between the ScrollingStripStacker and
+     * CascadingStripStacker when the last tab is selected. This also verifies that the strip
+     * scrolls correctly and the correct index is selected after switching.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testSwitchStripStackersWithLastTabSelected() throws InterruptedException {
+        // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
+        // on which stacker is being used.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
+
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Switch to the CascadingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(true);
+    }
+
+    /**
+     * Compares tab strip with model after switching between the ScrollingStripStacker and
+     * CascadingStripStacker when the first tab is selected. This also verifies that the strip
+     * scrolls correctly and the correct index is selected after switching.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testSwitchStripStackersWithFirstTabSelected() throws InterruptedException {
+        // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
+        // on which stacker is being used.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
+
+        // Select the first tab by setting the index directly. It may not be visible, so don't
+        // try to tap on it.
+        ChromeTabUtils.switchTabInCurrentTabModel(getActivity(), 0);
+
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Scroll so the first tab is off screen to verify that switching to the
+        // CascadingStripStacker makes it visible again. The selected tab should always be visible
+        // when using the CascadingStripStacker but may not be visible when using the
+        // ScrollingStripStacker.
+        assertSetTabStripScrollOffset((int) TabStripUtils.getActiveStripLayoutHelper(
+                getActivity()).getMinimumScrollOffset());
+        StripLayoutTab selectedLayoutTab = TabStripUtils.findStripLayoutTab(
+                getActivity(), false, getActivity().getCurrentTabModel().getTabAt(0).getId());
+        assertTabVisibility(false, selectedLayoutTab);
+
+        // Switch to the CascadingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(true);
+    }
+
+    /**
+     * Compares tab strip with model after switching between the ScrollingStripStacker and
+     * CascadingStripStacker when a middle tab is selected. This also verifies that the strip
+     * scrolls correctly and the correct index is selected after switching.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testSwitchStripStackersWithMiddleTabSelected() throws InterruptedException {
+        // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
+        // on which stacker is being used.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
+
+        // Select the sixth tab by setting the index directly. It may not be visible, so don't
+        // try to tap on it.
+        ChromeTabUtils.switchTabInCurrentTabModel(getActivity(), 5);
+
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Switch to the CascadingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(true);
+    }
+
+    /**
+     * Test that the right and left tab strip fades are fully visible, partially visible or
+     * hidden at various scroll positions.
+     * TODO(twellington): Also test these expectations in RTL.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testScrollingStripStackerFadeOpacity() throws InterruptedException {
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Open enough regular tabs to cause the strip to scroll.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
+
+        // In RTL the expectation for left/right fade opacities is swapped.
+        boolean isLeft = !LocalizationUtils.isLayoutRtl();
+
+        // Initially the right fade (in LTR) should be hidden and the left fade should be visible.
+        assertTabStripFadeFullyHidden(!isLeft);
+        assertTabStripFadeFullyVisible(isLeft);
+
+        // Scroll a little below the minimum scroll offset causing the right fade (in LTR) to be
+        // at partial opacity.
+        assertSetTabStripScrollOffset((int) (TabStripUtils.getActiveStripLayoutHelper(
+                getActivity()).getMinimumScrollOffset()
+                + StripLayoutHelper.FADE_FULL_OPACITY_THRESHOLD_DP / 2));
+        assertTabStripFadePartiallyVisible(!isLeft);
+        assertTabStripFadeFullyVisible(isLeft);
+
+        // Scroll a little above 0 causing the left fade (in LTR) to be at partial opacity.
+        assertSetTabStripScrollOffset(
+                (int) (0 - StripLayoutHelper.FADE_FULL_OPACITY_THRESHOLD_DP / 2));
+        assertTabStripFadeFullyVisible(!isLeft);
+        assertTabStripFadePartiallyVisible(isLeft);
+
+        // Scroll to 0 causing the left fade (in LTR) to be hidden.
+        assertSetTabStripScrollOffset(0);
+        assertTabStripFadeFullyHidden(isLeft);
+        assertTabStripFadeFullyVisible(!isLeft);
+    }
+
+    /**
+     * Test that selecting a tab that isn't currently visible causes the ScrollingStripStacker
+     * to scroll to make it visible.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testScrollingStripStackerScrollsToSelectedTab() throws InterruptedException {
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Open enough regular tabs to cause the strip to scroll.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
+
+        // Get tab at index 0 and assert it is not visible.
+        TabModel model = getActivity().getTabModelSelector().getModel(false);
+        StripLayoutTab tab = TabStripUtils.findStripLayoutTab(getActivity(), false,
+                model.getTabAt(0).getId());
+        assertTabVisibility(false, tab);
+
+        // Select tab 0.
+        ChromeTabUtils.switchTabInCurrentTabModel(getActivity(), 0);
+        getInstrumentation().waitForIdleSync();
+
+        // Tab should now be visible.
+        assertTabVisibility(true, tab);
+    }
+
+    /**
+     * Test that the draw positions for tabs match expectations at various scroll positions
+     * when using the ScrollingStripStacker.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    public void testScrollingStripStackerTabOffsets() throws InterruptedException {
+        // Switch to the ScrollingStripStacker.
+        setShouldCascadeTabsAndCheckTabStrips(false);
+
+        // Open enough regular tabs to cause the strip to scroll and select the first tab.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
+        ChromeTabUtils.switchTabInCurrentTabModel(getActivity(), 0);
+        getInstrumentation().waitForIdleSync();
+
+        // Check initial model validity.
+        compareAllTabStripsWithModel();
+
+        // Set up some variables.
+        StripLayoutHelper strip = TabStripUtils.getActiveStripLayoutHelper(getActivity());
+        StripLayoutTab[] tabs = strip.getStripLayoutTabs();
+        float tabDrawWidth = tabs[0].getWidth() - strip.getTabOverlapWidth();
+
+        // Assert getStripLayoutTabs() returns the expected number of tabs.
+        assertEquals("Unexpected number of StripLayoutTabs.", 11, tabs.length);
+
+        // Scroll tab strip to 0 and check tab positions.
+        assertSetTabStripScrollOffset(0);
+        for (int i = 0; i < tabs.length; i++) {
+            assertTabDrawX(i * tabDrawWidth, tabs[i]);
+        }
+
+        // Scroll tab strip a little and check tab draw positions.
+        assertSetTabStripScrollOffset(-25);
+        for (int i = 0; i < tabs.length; i++) {
+            assertTabDrawX(i * tabDrawWidth - 25.f, tabs[i]);
+        }
+
+        // Scroll tab strip a lot and check tab draw positions.
+        assertSetTabStripScrollOffset(-500);
+        for (int i = 0; i < tabs.length; i++) {
+            assertTabDrawX(i * tabDrawWidth - 500.f, tabs[i]);
+        }
+        assertTabVisibility(false, tabs[0]);
+    }
+
+    /**
      * Take a model index and figure out which index it will be in the TabStrip's view hierarchy.
      * @param tabCount The number of tabs.
      * @param selectedIndex The index of the selected tab.
@@ -584,15 +803,22 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
                 && getActivity().getTabModelSelector().isIncognitoSelected() == incognito) {
             assertTrue("ChromeTab is not in the proper selection state",
                     tabStrip.isForegroundTab(tabView));
-            assertEquals("ChromeTab is not completely visible, but is selected",
-                    tabView.getVisiblePercentage(), 1.0f);
+            if (tabStrip.shouldCascadeTabs()) {
+                assertEquals("ChromeTab is not completely visible, but is selected. The selected "
+                        + "tab should be visible when the CascadingStripStacker is in use.",
+                        tabView.getVisiblePercentage(), 1.0f);
+            }
+        }
+
+        if (!tabStrip.shouldCascadeTabs()) {
+            assertTabVisibilityForScrollingStripStacker(tabStrip, tabView);
         }
 
         // TODO(dtrainor): Compare favicon bitmaps?  Only compare a few pixels.
     }
 
     /**
-     * Compares an entire TabStrip with the corresponding TabModel.  This tries to compare
+     * Compares an entire TabStrip with the corresponding TabModel. This tries to compare
      * as many features as possible, including checking all of the tabs through
      * compareTabViewWithModel.  It also checks that the incognito indicator is visible if the
      * incognito tab is showing.
@@ -635,5 +861,151 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
     protected void compareAllTabStripsWithModel() {
         compareTabStripWithModel(true);
         compareTabStripWithModel(false);
+    }
+
+    /**
+     * Sets whether the strip should cascade tabs and checks for validity.
+     *
+     * @param shouldCascadeTabs Whether the {@link CascadingStripStacker} should be used. If false,
+     *                          the {@link ScrollingStripStacker} will be used instead.
+     */
+    private void setShouldCascadeTabsAndCheckTabStrips(final boolean shouldCascadeTabs) {
+        TabModel model = getActivity().getCurrentTabModel();
+        int selectedTabIndex = model.index();
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TabStripUtils.getStripLayoutHelper(getActivity(), true).setShouldCascadeTabs(
+                        shouldCascadeTabs);
+                TabStripUtils.getStripLayoutHelper(getActivity(), false).setShouldCascadeTabs(
+                        shouldCascadeTabs);
+            }
+        });
+
+        // Assert that the correct StripStacker is being used.
+        assertEquals(shouldCascadeTabs
+                ? "Expected CascadingStripStacker but was ScrollingStripStacker."
+                        : "Expected ScrollingStripStacker but was CascadingStripStacker.",
+                shouldCascadeTabs,
+                TabStripUtils.getActiveStripLayoutHelper(getActivity()).shouldCascadeTabs());
+
+        // Assert that the same tab is still selected.
+        assertEquals("The correct tab is not selected.", selectedTabIndex, model.index());
+
+        // Compare all TabStrips with corresponding TabModels.
+        compareAllTabStripsWithModel();
+
+        // The selected tab should always be visible in the CascadingStripStacker and switching to
+        // the ScrollingStripStacker should auto-scroll to make the selected tab visible.
+        StripLayoutTab selectedLayoutTab = TabStripUtils.findStripLayoutTab(
+                getActivity(), model.isIncognito(), model.getTabAt(selectedTabIndex).getId());
+        assertTabVisibility(true, selectedLayoutTab);
+    }
+
+    /**
+     * Scrolls the tab strip to the desired position and checks for validity.
+     *
+     * @param scrollOffset The end scroll position for the tab strip.
+     */
+    private void assertSetTabStripScrollOffset(final int scrollOffset) {
+        final StripLayoutHelper strip = TabStripUtils.getActiveStripLayoutHelper(getActivity());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                strip.setScrollOffsetForTesting(scrollOffset);
+            }
+        });
+
+        assertEquals("Tab strip scroll incorrect.", scrollOffset, strip.getScrollOffset());
+        compareAllTabStripsWithModel();
+    }
+
+    /**
+     * Asserts that the left or right fade is fully hidden.
+     * @param isLeft Whether the left fade should be checked.
+     */
+    private void assertTabStripFadeFullyHidden(boolean isLeft) {
+        StripLayoutHelper strip = TabStripUtils.getActiveStripLayoutHelper(getActivity());
+        if (isLeft) {
+            assertEquals("Left tab strip fade visibility is incorrect.", 0.f,
+                    strip.getLeftFadeOpacity());
+        } else {
+            assertEquals("Right tab strip fade visibility is incorrect.", 0.f,
+                    strip.getRightFadeOpacity());
+        }
+    }
+
+    /**
+     * Asserts that the left or right fade is fully visible.
+     * @param isLeft Whether the left fade should be checked.
+     */
+    private void assertTabStripFadeFullyVisible(boolean isLeft) {
+        StripLayoutHelper strip = TabStripUtils.getActiveStripLayoutHelper(getActivity());
+        if (isLeft) {
+            assertEquals("Left tab strip fade visibility is incorrect.", 1.f,
+                    strip.getLeftFadeOpacity());
+        } else {
+            assertEquals("Right tab strip fade visibility is incorrect.", 1.f,
+                    strip.getRightFadeOpacity());
+        }
+    }
+
+    /**
+     * Asserts that the left or right fade is partially visible.
+     * @param isLeft Whether the left fade should be checked.
+     */
+    private void assertTabStripFadePartiallyVisible(boolean isLeft) {
+        StripLayoutHelper strip = TabStripUtils.getActiveStripLayoutHelper(getActivity());
+        if (isLeft) {
+            boolean isPartiallyVisible = strip.getLeftFadeOpacity() > 0.f
+                    && strip.getLeftFadeOpacity() < 1.f;
+            assertEquals("Left tab strip fade expected to be partially visible.", true,
+                    isPartiallyVisible);
+        } else {
+            boolean isPartiallyVisible = strip.getRightFadeOpacity() > 0.f
+                    && strip.getRightFadeOpacity() < 1.f;
+            assertEquals("Right tab strip fade expected to be partially visible.", true,
+                    isPartiallyVisible);
+        }
+    }
+
+    /**
+     * Checks visible percentage and visibility for the given tab. Should only be called when the
+     * ScrollingStripStacker is in use.
+     *
+     * @param tabStrip The StripLayoutHelper that owns the tab.
+     * @param tabView The StripLayoutTab associated with the tab to check.
+     */
+    private void assertTabVisibilityForScrollingStripStacker(StripLayoutHelper tabStrip,
+            StripLayoutTab tabView) {
+        // The visible percent for all tabs is 1.0 in the ScrollingStripStacker.
+        assertEquals("ChromeTab is not completely visible. All tabs should be visible when "
+                + "the ScrollingStripStacker is in use.",
+                tabView.getVisiblePercentage(), 1.0f);
+
+        // Only tabs that can currently be seen on the screen should be visible.
+        boolean shouldBeVisible = (tabView.getDrawX() + tabView.getWidth()) >= 0
+                && tabView.getDrawX() <= tabStrip.getWidth();
+        assertTabVisibility(shouldBeVisible, tabView);
+    }
+
+    /**
+     * Asserts whether a tab should be visible.
+     * @param shouldBeVisible Whether the tab should be visible.
+     * @param tabView The StripLayoutTab associated with the tab to check.
+     */
+    private void assertTabVisibility(boolean shouldBeVisible, StripLayoutTab tabView) {
+        assertEquals("ChromeTab " + (shouldBeVisible ? "should" : "should not") + " be visible.",
+                shouldBeVisible, tabView.isVisible());
+    }
+
+    /**
+     * Asserts that the tab has the expected draw X position.
+     * @param expectedDrawX The expected draw X position.
+     * @param tabView The StripLayoutTab associated with the tab to check.
+     */
+    private void assertTabDrawX(float expectedDrawX, StripLayoutTab tabView) {
+        assertEquals("Incorrect draw position for tab.", expectedDrawX, tabView.getDrawX());
     }
 }

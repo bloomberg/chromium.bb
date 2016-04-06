@@ -41,6 +41,7 @@ class TabStripSceneLayer : public SceneLayer {
   void BeginBuildingFrame(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jobj,
                           jboolean visible);
+
   void FinishBuildingFrame(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj);
 
@@ -52,6 +53,7 @@ class TabStripSceneLayer : public SceneLayer {
                            jfloat background_tab_brightness,
                            jfloat brightness,
                            jboolean should_readd_background);
+
   void UpdateNewTabButton(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
@@ -62,6 +64,7 @@ class TabStripSceneLayer : public SceneLayer {
       jfloat height,
       jboolean visible,
       const base::android::JavaParamRef<jobject>& jresource_manager);
+
   void UpdateModelSelectorButton(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
@@ -73,6 +76,21 @@ class TabStripSceneLayer : public SceneLayer {
       jboolean incognito,
       jboolean visible,
       const base::android::JavaParamRef<jobject>& jresource_manager);
+
+  void UpdateTabStripLeftFade(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint resource_id,
+      jfloat opacity,
+      const base::android::JavaParamRef<jobject>& jresource_manager);
+
+  void UpdateTabStripRightFade(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint resource_id,
+      jfloat opacity,
+      const base::android::JavaParamRef<jobject>& jresource_manager);
+
   void PutStripTabLayer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
@@ -101,7 +119,10 @@ class TabStripSceneLayer : public SceneLayer {
   typedef std::vector<scoped_refptr<TabHandleLayer>> TabHandleLayerList;
 
   scoped_refptr<cc::SolidColorLayer> tab_strip_layer_;
+  scoped_refptr<cc::Layer> scrollable_strip_layer_;
   scoped_refptr<cc::UIResourceLayer> new_tab_button_;
+  scoped_refptr<cc::UIResourceLayer> left_fade_;
+  scoped_refptr<cc::UIResourceLayer> right_fade_;
   scoped_refptr<cc::UIResourceLayer> model_selector_button_;
 
   float background_tab_brightness_;

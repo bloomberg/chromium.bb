@@ -15,14 +15,16 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.List;
@@ -41,15 +43,14 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     // Model selector buttons constants.
     private static final float MODEL_SELECTOR_BUTTON_Y_OFFSET_DP = 10.f;
-    private static final float MODEL_SELECTOR_BUTTON_RIGHT_PADDING_DP = 6.f;
-    private static final float MODEL_SELECTOR_BUTTON_LEFT_PADDING_DP = 3.f;
+    private static final float MODEL_SELECTOR_BUTTON_END_PADDING_DP = 6.f;
+    private static final float MODEL_SELECTOR_BUTTON_START_PADDING_DP = 3.f;
     private static final float MODEL_SELECTOR_BUTTON_WIDTH_DP = 24.f;
     private static final float MODEL_SELECTOR_BUTTON_HEIGHT_DP = 24.f;
 
     // External influences
     private TabModelSelector mTabModelSelector;
     private final LayoutUpdateHost mUpdateHost;
-    private final LayoutRenderHost mRenderHost;
 
     // Event Filters
     private final AreaGestureEventFilter mEventFilter;
@@ -76,7 +77,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
     public StripLayoutHelperManager(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, AreaGestureEventFilter eventFilter) {
         mUpdateHost = updateHost;
-        mRenderHost = renderHost;
         mTabStripTreeProvider = new TabStripSceneLayer(context);
 
         mEventFilter = eventFilter;
@@ -116,8 +116,12 @@ public class StripLayoutHelperManager implements SceneOverlay {
             ResourceManager resourceManager, float yOffset) {
         assert mTabStripTreeProvider != null;
 
+        Tab selectedTab = mTabModelSelector.getCurrentModel().getTabAt(
+                mTabModelSelector.getCurrentModel().index());
+        int selectedTabId = selectedTab == null ? TabModel.INVALID_TAB_INDEX : selectedTab.getId();
         mTabStripTreeProvider.pushAndUpdateStrip(this, layerTitleCache, resourceManager,
-                getActiveStripLayoutHelper().getStripLayoutTabsToRender(), yOffset);
+                getActiveStripLayoutHelper().getStripLayoutTabsToRender(), yOffset,
+                selectedTabId);
         return mTabStripTreeProvider;
     }
 
@@ -131,8 +135,13 @@ public class StripLayoutHelperManager implements SceneOverlay {
             float width, float height, float visibleViewportOffsetY, int orientation) {
         mWidth = width;
         mOrientation = orientation;
-        mModelSelectorButton.setX(
-                mWidth - MODEL_SELECTOR_BUTTON_WIDTH_DP - MODEL_SELECTOR_BUTTON_RIGHT_PADDING_DP);
+        if (!LocalizationUtils.isLayoutRtl()) {
+            mModelSelectorButton.setX(
+                    mWidth - MODEL_SELECTOR_BUTTON_WIDTH_DP - MODEL_SELECTOR_BUTTON_END_PADDING_DP);
+        } else {
+            mModelSelectorButton.setX(MODEL_SELECTOR_BUTTON_END_PADDING_DP);
+        }
+
         mNormalHelper.onSizeChanged(mWidth, mHeight);
         mIncognitoHelper.onSizeChanged(mWidth, mHeight);
 
@@ -157,6 +166,20 @@ public class StripLayoutHelperManager implements SceneOverlay {
     @Override
     public boolean shouldHideAndroidTopControls() {
         return false;
+    }
+
+    /**
+     * @return The opacity to use for the fade on the left side of the tab strip.
+     */
+    public float getLeftFadeOpacity() {
+        return getActiveStripLayoutHelper().getLeftFadeOpacity();
+    }
+
+    /**
+     * @return The opacity to use for the fade on the right side of the tab strip.
+     */
+    public float getRightFadeOpacity() {
+        return getActiveStripLayoutHelper().getRightFadeOpacity();
     }
 
     /**
@@ -185,16 +208,14 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * represent, and various objects associated with it.
      * @param modelSelector The {@link TabModelSelector} to visually represent.
      * @param tabCreatorManager The {@link TabCreatorManager}, used to create new tabs.
-     * @param tabContentManager The {@link TabContentManager}, used to provide display content for
-     *                          tabs.
      */
     public void setTabModelSelector(TabModelSelector modelSelector,
-            TabCreatorManager tabCreatorManager, TabContentManager tabContentManager) {
+            TabCreatorManager tabCreatorManager) {
         if (mTabModelSelector == modelSelector) return;
         mTabModelSelector = modelSelector;
-        mNormalHelper.setTabModel(mTabModelSelector.getModel(false), tabContentManager,
+        mNormalHelper.setTabModel(mTabModelSelector.getModel(false),
                 tabCreatorManager.getTabCreator(false));
-        mIncognitoHelper.setTabModel(mTabModelSelector.getModel(true), tabContentManager,
+        mIncognitoHelper.setTabModel(mTabModelSelector.getModel(true),
                 tabCreatorManager.getTabCreator(true));
         tabModelSwitched(mTabModelSelector.isIncognitoSelected());
     }
@@ -256,12 +277,13 @@ public class StripLayoutHelperManager implements SceneOverlay {
             boolean isVisible = mTabModelSelector.getModel(true).getCount() != 0;
             mModelSelectorButton.setVisible(isVisible);
 
-            float rightMargin = isVisible
-                    ? MODEL_SELECTOR_BUTTON_WIDTH_DP + MODEL_SELECTOR_BUTTON_RIGHT_PADDING_DP
-                            + MODEL_SELECTOR_BUTTON_LEFT_PADDING_DP
+            float endMargin = isVisible
+                    ? MODEL_SELECTOR_BUTTON_WIDTH_DP + MODEL_SELECTOR_BUTTON_END_PADDING_DP
+                            + MODEL_SELECTOR_BUTTON_START_PADDING_DP
                     : 0.0f;
-            mNormalHelper.setRightMargin(rightMargin);
-            mIncognitoHelper.setRightMargin(rightMargin);
+
+            mNormalHelper.setEndMargin(endMargin);
+            mIncognitoHelper.setEndMargin(endMargin);
         }
     }
 

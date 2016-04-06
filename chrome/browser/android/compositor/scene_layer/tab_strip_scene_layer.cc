@@ -11,6 +11,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "jni/TabStripSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/gfx/transform.h"
 
 namespace chrome {
 namespace android {
@@ -18,7 +19,10 @@ namespace android {
 TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
     : SceneLayer(env, jobj),
       tab_strip_layer_(cc::SolidColorLayer::Create()),
+      scrollable_strip_layer_(cc::Layer::Create()),
       new_tab_button_(cc::UIResourceLayer::Create()),
+      left_fade_(cc::UIResourceLayer::Create()),
+      right_fade_(cc::UIResourceLayer::Create()),
       model_selector_button_(cc::UIResourceLayer::Create()),
       background_tab_brightness_(1.f),
       brightness_(1.f),
@@ -26,9 +30,20 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
       content_tree_(nullptr) {
   new_tab_button_->SetIsDrawable(true);
   model_selector_button_->SetIsDrawable(true);
+  left_fade_->SetIsDrawable(true);
+  right_fade_->SetIsDrawable(true);
+
+  // When the ScrollingStripStacker is used, the new tab button and tabs scroll,
+  // while the incognito button and left/ride fade stay fixed. Put the new tab
+  // button and tabs in a separate layer placed visually below the others.
+  scrollable_strip_layer_->SetIsDrawable(true);
+  scrollable_strip_layer_->AddChild(new_tab_button_);
+
   tab_strip_layer_->SetBackgroundColor(SK_ColorBLACK);
   tab_strip_layer_->SetIsDrawable(true);
-  tab_strip_layer_->AddChild(new_tab_button_);
+  tab_strip_layer_->AddChild(scrollable_strip_layer_);
+  tab_strip_layer_->AddChild(left_fade_);
+  tab_strip_layer_->AddChild(right_fade_);
   tab_strip_layer_->AddChild(model_selector_button_);
   layer()->AddChild(tab_strip_layer_);
 }
@@ -90,6 +105,7 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
   tab_strip_layer_->SetBounds(gfx::Size(width, height));
+  scrollable_strip_layer_->SetBounds(gfx::Size(width, height));
 
   if (brightness != brightness_) {
     brightness_ = brightness;
@@ -168,6 +184,88 @@ void TabStripSceneLayer::UpdateModelSelectorButton(
   model_selector_button_->SetHideLayerAndSubtree(!visible);
 }
 
+void TabStripSceneLayer::UpdateTabStripLeftFade(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint resource_id,
+    jfloat opacity,
+    const JavaParamRef<jobject>& jresource_manager) {
+
+  // Hide layer if it's not visible.
+  if (opacity == 0.f) {
+    left_fade_->SetHideLayerAndSubtree(true);
+    return;
+  }
+
+  // Set UI resource.
+  ui::ResourceManager* resource_manager =
+      ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
+  ui::ResourceManager::Resource* fade_resource =
+      resource_manager->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                    resource_id);
+  left_fade_->SetUIResourceId(fade_resource->ui_resource->id());
+
+  // The same resource is used for both left and right fade, so the
+  // resource must be rotated for the left fade.
+  gfx::Transform fade_transform;
+  fade_transform.RotateAboutYAxis(180.0);
+  left_fade_->SetTransform(fade_transform);
+
+  // Set opacity.
+  left_fade_->SetOpacity(opacity);
+
+  // Set bounds. Use the parent layer height so the 1px fade resource is
+  // stretched vertically.
+  left_fade_->SetBounds(gfx::Size(fade_resource->size.width(),
+                                  scrollable_strip_layer_->bounds().height()));
+
+  // Set position. The rotation set above requires the layer to be offset
+  // by its width in order to display on the left edge.
+  left_fade_->SetPosition(gfx::PointF(fade_resource->size.width(), 0));
+
+  // Ensure layer is visible.
+  left_fade_->SetHideLayerAndSubtree(false);
+}
+
+void TabStripSceneLayer::UpdateTabStripRightFade(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint resource_id,
+    jfloat opacity,
+    const JavaParamRef<jobject>& jresource_manager) {
+
+  // Hide layer if it's not visible.
+  if (opacity == 0.f) {
+    right_fade_->SetHideLayerAndSubtree(true);
+    return;
+  }
+
+  // Set UI resource.
+  ui::ResourceManager* resource_manager =
+      ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
+  ui::ResourceManager::Resource* fade_resource =
+      resource_manager->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                    resource_id);
+  right_fade_->SetUIResourceId(fade_resource->ui_resource->id());
+
+  // Set opacity.
+  right_fade_->SetOpacity(opacity);
+
+  // Set bounds. Use the parent layer height so the 1px fade resource is
+  // stretched vertically.
+  right_fade_->SetBounds(gfx::Size(
+      fade_resource->size.width(),
+      scrollable_strip_layer_->bounds().height()));
+
+  // Set position. The right fade is positioned at the end of the tab strip.
+  float x =
+      scrollable_strip_layer_->bounds().width() - fade_resource->size.width();
+  right_fade_->SetPosition(gfx::PointF(x, 0));
+
+  // Ensure layer is visible.
+  right_fade_->SetHideLayerAndSubtree(false);
+}
+
 void TabStripSceneLayer::PutStripTabLayer(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,
@@ -214,7 +312,7 @@ scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(
   scoped_refptr<TabHandleLayer> layer_tree =
       TabHandleLayer::Create(layer_title_cache);
   tab_handle_layers_.push_back(layer_tree);
-  tab_strip_layer_->AddChild(layer_tree->layer());
+  scrollable_strip_layer_->AddChild(layer_tree->layer());
   write_index_++;
   return layer_tree;
 }

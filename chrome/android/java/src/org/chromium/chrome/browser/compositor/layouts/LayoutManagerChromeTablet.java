@@ -141,7 +141,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             ReaderModeManagerDelegate readerModeDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         if (mTabStripLayoutHelperManager != null) {
-            mTabStripLayoutHelperManager.setTabModelSelector(selector, creator, content);
+            mTabStripLayoutHelperManager.setTabModelSelector(selector, creator);
         }
 
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
