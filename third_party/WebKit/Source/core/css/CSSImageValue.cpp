@@ -28,13 +28,14 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/style/StyleFetchedImage.h"
+#include "core/style/StyleInvalidImage.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
-CSSImageValue::CSSImageValue(const AtomicString& rawValue, const KURL& url, StyleFetchedImage* image)
+CSSImageValue::CSSImageValue(const AtomicString& rawValue, const KURL& url, StyleImage* image)
     : CSSValue(ImageClass)
     , m_relativeURL(rawValue)
     , m_absoluteURL(url.getString())
@@ -55,7 +56,7 @@ CSSImageValue::~CSSImageValue()
 {
 }
 
-StyleFetchedImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeValue crossOrigin)
+StyleImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeValue crossOrigin)
 {
     ASSERT(document);
 
@@ -70,6 +71,8 @@ StyleFetchedImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttr
 
         if (RawPtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
             m_cachedImage = StyleFetchedImage::create(cachedImage.get(), document, request.url());
+        else
+            m_cachedImage = StyleInvalidImage::create(url());
     }
 
     return m_cachedImage.get();

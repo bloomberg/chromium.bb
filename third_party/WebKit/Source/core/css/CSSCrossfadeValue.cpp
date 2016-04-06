@@ -66,7 +66,7 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document
         return nullptr;
 
     if (value->isImageValue()) {
-        StyleFetchedImage* styleImageResource = toCSSImageValue(value)->cacheImage(document);
+        StyleImage* styleImageResource = toCSSImageValue(value)->cacheImage(document);
         if (!styleImageResource)
             return nullptr;
 

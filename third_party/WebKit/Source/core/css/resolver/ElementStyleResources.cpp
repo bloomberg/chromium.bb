@@ -134,11 +134,8 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
 
 RawPtr<StyleImage> ElementStyleResources::loadPendingImage(StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
 {
-    if (CSSImageValue* imageValue = pendingImage->cssImageValue()) {
-        if (RawPtr<StyleImage> cachedImage = imageValue->cacheImage(m_document, crossOrigin))
-            return cachedImage.release();
-        return StyleInvalidImage::create(imageValue->url());
-    }
+    if (CSSImageValue* imageValue = pendingImage->cssImageValue())
+        return imageValue->cacheImage(m_document, crossOrigin);
 
     if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(m_document);
