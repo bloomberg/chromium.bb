@@ -975,6 +975,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form_with_input.html"));
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "form_with_input.html");
+    webView->resize(WebSize(800, 600));
     webView->setInitialFocus(false);
     EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webView->mainFrame()->scrollOffset().height);

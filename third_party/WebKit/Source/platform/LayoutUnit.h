@@ -62,7 +62,6 @@ class LayoutUnit {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LayoutUnit() : m_value(0) { }
-    // TODO(leviw): All of the below constructors should be explicit. crbug.com/581254
     explicit LayoutUnit(int value) { setValue(value); }
     explicit LayoutUnit(unsigned short value) { setValue(value); }
     explicit LayoutUnit(unsigned value) { setValue(value); }
