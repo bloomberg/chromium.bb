@@ -157,16 +157,11 @@ ImageLoader::ImageLoader(Element* element)
     , m_suppressErrorEvents(false)
 {
     WTF_LOG(Timers, "new ImageLoader %p", this);
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 ImageLoader::~ImageLoader()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void ImageLoader::dispose()
@@ -174,26 +169,11 @@ void ImageLoader::dispose()
     WTF_LOG(Timers, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
         this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
 
-#if !ENABLE(OILPAN)
-    if (m_pendingTask)
-        m_pendingTask->clearLoader();
-#endif
-
     if (m_image) {
         m_image->removeClient(this);
         m_image->removeObserver(this);
         m_image = nullptr;
     }
-
-#if !ENABLE(OILPAN)
-    ASSERT(m_hasPendingLoadEvent || !loadEventSender().hasPendingEvents(this));
-    if (m_hasPendingLoadEvent)
-        loadEventSender().cancelEvent(this);
-
-    ASSERT(m_hasPendingErrorEvent || !errorEventSender().hasPendingEvents(this));
-    if (m_hasPendingErrorEvent)
-        errorEventSender().cancelEvent(this);
-#endif
 }
 
 DEFINE_TRACE(ImageLoader)
