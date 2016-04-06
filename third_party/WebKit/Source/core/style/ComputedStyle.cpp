@@ -718,9 +718,8 @@ bool ComputedStyle::diffNeedsPaintInvalidationLayer(const ComputedStyle& other) 
         return true;
 
     if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
-        if (RuntimeEnabledFeatures::cssCompositingEnabled()
-            && (rareNonInheritedData->m_effectiveBlendMode != other.rareNonInheritedData->m_effectiveBlendMode
-                || rareNonInheritedData->m_isolation != other.rareNonInheritedData->m_isolation))
+        if (rareNonInheritedData->m_effectiveBlendMode != other.rareNonInheritedData->m_effectiveBlendMode
+            || rareNonInheritedData->m_isolation != other.rareNonInheritedData->m_isolation)
             return true;
 
         if (rareNonInheritedData->m_mask != other.rareNonInheritedData->m_mask

@@ -139,11 +139,9 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
         case CSSPropertyBackdropFilter:
         case CSSPropertyZIndex:
         case CSSPropertyPosition:
-            return true;
         case CSSPropertyMixBlendMode:
         case CSSPropertyIsolation:
-            if (RuntimeEnabledFeatures::cssCompositingEnabled())
-                return true;
+            return true;
             break;
         default:
             break;

@@ -231,11 +231,8 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
     updateTransform(layoutObject()->styleRef());
     updateFilters(layoutObject()->styleRef());
     updateBackdropFilters(layoutObject()->styleRef());
-
-    if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(layoutObject()->styleRef());
-        updateIsRootForIsolatedGroup();
-    }
+    updateLayerBlendMode(layoutObject()->styleRef());
+    updateIsRootForIsolatedGroup();
 }
 
 void CompositedLayerMapping::destroyGraphicsLayers()
@@ -738,11 +735,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     if (m_owningLayer.getScrollableArea() && m_owningLayer.getScrollableArea()->scrollsOverflow())
         m_owningLayer.getScrollableArea()->positionOverflowControls();
 
-    if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(layoutObject()->styleRef());
-        updateIsRootForIsolatedGroup();
-    }
-
+    updateLayerBlendMode(layoutObject()->styleRef());
+    updateIsRootForIsolatedGroup();
     updateContentsRect();
     updateBackgroundColor();
     updateDrawsContent();
