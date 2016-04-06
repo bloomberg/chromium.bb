@@ -188,9 +188,11 @@ void BlobDispatcherHost::OnCancelBuildingBlob(
     // Second, if the last dereference of the blob happened on a different host,
     // then we still haven't gotten rid of the 'building' state in the original
     // host. So we call cancel just in case this happens.
-    async_builder_.CancelBuildingBlob(
-        uuid, IPCBlobCreationCancelCode::BLOB_DEREFERENCED_WHILE_BUILDING,
-        context);
+    if (async_builder_.IsBeingBuilt(uuid)) {
+      async_builder_.CancelBuildingBlob(
+          uuid, IPCBlobCreationCancelCode::BLOB_DEREFERENCED_WHILE_BUILDING,
+          context);
+    }
     return;
   }
   if (!async_builder_.IsBeingBuilt(uuid)) {

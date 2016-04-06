@@ -120,9 +120,7 @@ BlobTransportResult BlobAsyncBuilderHost::StartBuildingBlob(
     BlobStorageContext* context,
     const RequestMemoryCallback& request_memory) {
   DCHECK(context);
-  if (async_blob_map_.find(uuid) == async_blob_map_.end()) {
-    return BlobTransportResult::BAD_IPC;
-  }
+  DCHECK(async_blob_map_.find(uuid) != async_blob_map_.end());
 
   // Step 1: Get the sizes.
   size_t shortcut_memory_size_bytes = 0;

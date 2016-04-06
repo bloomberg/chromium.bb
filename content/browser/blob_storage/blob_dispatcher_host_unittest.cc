@@ -298,6 +298,46 @@ TEST_F(BlobDispatcherHostTest, RegularTransfer) {
   ExpectHandleEqualsData(handle.get(), elements);
 }
 
+TEST_F(BlobDispatcherHostTest, MultipleTransfers) {
+  const std::string kId = "uuid";
+  const int kNumIters = 10;
+  for (int i = 0; i < kNumIters; i++) {
+    std::string id = kId;
+    id += ('0' + i);
+    ExpectBlobNotExist(id);
+    host_->OnRegisterBlobUUID(id, std::string(kContentType),
+                              std::string(kContentDisposition),
+                              std::set<std::string>());
+    EXPECT_FALSE(host_->shutdown_for_bad_message_);
+  }
+  sink_.ClearMessages();
+  for (int i = 0; i < kNumIters; i++) {
+    std::string id = kId;
+    id += ('0' + i);
+    DataElement element;
+    element.SetToBytesDescription(kDataSize);
+    std::vector<DataElement> elements = {element};
+    host_->OnStartBuildingBlob(id, elements);
+    EXPECT_FALSE(host_->shutdown_for_bad_message_);
+    // Expect our request.
+    std::vector<BlobItemBytesRequest> expected_requests = {
+        BlobItemBytesRequest::CreateIPCRequest(0, 0, 0, kDataSize)};
+    ExpectRequest(id, expected_requests);
+    sink_.ClearMessages();
+  }
+  for (int i = 0; i < kNumIters; i++) {
+    std::string id = kId;
+    id += ('0' + i);
+    // Send results;
+    BlobItemBytesResponse response(0);
+    std::memcpy(response.allocate_mutable_data(kDataSize), kData, kDataSize);
+    std::vector<BlobItemBytesResponse> responses = {response};
+    host_->OnMemoryItemResponse(id, responses);
+    ExpectDone(id);
+    sink_.ClearMessages();
+  }
+}
+
 TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   const std::string kId = "uuid1";
   const size_t kLargeSize = kTestBlobStorageMaxSharedMemoryBytes * 2;
@@ -307,6 +347,7 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   host_->OnRegisterBlobUUID(kId, std::string(kContentType),
                             std::string(kContentDisposition),
                             std::set<std::string>());
+
   // Grab the handle.
   scoped_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
@@ -425,6 +466,7 @@ TEST_F(BlobDispatcherHostTest, OnCancelBuildingBlob) {
 
   // Get rid of it in the host.
   host_->OnDecrementBlobRefCount(kId);
+  EXPECT_FALSE(host_->shutdown_for_bad_message_);
   ExpectBlobNotExist(kId);
 
   // Create blob again to verify we don't have any old construction state lying

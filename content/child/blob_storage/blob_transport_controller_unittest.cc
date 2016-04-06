@@ -11,8 +11,10 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/tuple.h"
 #include "content/child/blob_storage/blob_consolidation.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_test_sink.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
@@ -25,6 +27,29 @@ using storage::DataElement;
 
 namespace content {
 namespace {
+
+class OtherThreadTestSimpleTaskRunner : public base::TestSimpleTaskRunner {
+ public:
+  bool RunsTasksOnCurrentThread() const override { return false; }
+
+ protected:
+  ~OtherThreadTestSimpleTaskRunner() override {}
+};
+
+class BlobTransportControllerTestSender : public ThreadSafeSender {
+ public:
+  explicit BlobTransportControllerTestSender(IPC::TestSink* ipc_sink)
+      : ThreadSafeSender(nullptr, nullptr), ipc_sink_(ipc_sink) {}
+
+  bool Send(IPC::Message* message) override { return ipc_sink_->Send(message); }
+
+ private:
+  ~BlobTransportControllerTestSender() override {}
+
+  IPC::TestSink* ipc_sink_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobTransportControllerTestSender);
+};
 
 BlobItemBytesResponse ResponseWithData(size_t request_number,
                                        const std::string& str) {
@@ -62,17 +87,45 @@ static blink::WebThreadSafeData CreateData(const std::string& str) {
 class BlobTransportControllerTest : public testing::Test {
  public:
   BlobTransportControllerTest()
-      : main_thread_runner_(new base::TestSimpleTaskRunner()) {}
+      : io_thread_runner_(new base::TestSimpleTaskRunner()),
+        main_thread_runner_(new OtherThreadTestSimpleTaskRunner()) {}
 
   void SetUp() override {
+    sender_ = new BlobTransportControllerTestSender(&sink_);
     BlobTransportController::GetInstance()->ClearForTesting();
+  }
+
+  void ExpectRegisterAndStartMessage(const std::string& expected_uuid,
+                                     const std::string& expected_content_type,
+                                     std::vector<DataElement>* descriptions) {
+    const IPC::Message* register_message =
+        sink_.GetUniqueMessageMatching(BlobStorageMsg_RegisterBlobUUID::ID);
+    const IPC::Message* start_message =
+        sink_.GetUniqueMessageMatching(BlobStorageMsg_StartBuildingBlob::ID);
+    ASSERT_TRUE(register_message);
+    ASSERT_TRUE(start_message);
+    base::Tuple<std::string, std::string, std::string, std::set<std::string>>
+        register_contents;
+    base::Tuple<std::string, std::vector<DataElement>> start_contents;
+    BlobStorageMsg_RegisterBlobUUID::Read(register_message, &register_contents);
+    BlobStorageMsg_StartBuildingBlob::Read(start_message, &start_contents);
+    EXPECT_EQ(expected_uuid, base::get<0>(register_contents));
+    EXPECT_EQ(expected_uuid, base::get<0>(start_contents));
+    EXPECT_EQ(expected_content_type, base::get<1>(register_contents));
+    if (descriptions)
+      *descriptions = base::get<1>(start_contents);
+    // We don't have dispositions from the renderer.
+    EXPECT_TRUE(base::get<2>(register_contents).empty());
   }
 
   void TearDown() override {
     BlobTransportController::GetInstance()->ClearForTesting();
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> main_thread_runner_;
+  IPC::TestSink sink_;
+  scoped_refptr<BlobTransportControllerTestSender> sender_;
+  scoped_refptr<base::TestSimpleTaskRunner> io_thread_runner_;
+  scoped_refptr<OtherThreadTestSimpleTaskRunner> main_thread_runner_;
 };
 
 TEST_F(BlobTransportControllerTest, Descriptions) {
@@ -80,7 +133,6 @@ TEST_F(BlobTransportControllerTest, Descriptions) {
   const std::string KRefBlobUUID = "refuuid";
   const std::string kBadBlobUUID = "uuuidBad";
   const size_t kShortcutSize = 11;
-  BlobTransportController* holder = BlobTransportController::GetInstance();
 
   // The first two data elements should be combined and the data shortcut.
   scoped_ptr<BlobConsolidation> consolidation(new BlobConsolidation());
@@ -91,7 +143,8 @@ TEST_F(BlobTransportControllerTest, Descriptions) {
   consolidation->AddDataItem(CreateData("Hello3"));
 
   std::vector<DataElement> out;
-  holder->GetDescriptions(consolidation.get(), kShortcutSize, &out);
+  BlobTransportController::GetDescriptions(consolidation.get(), kShortcutSize,
+                                           &out);
 
   std::vector<DataElement> expected;
   expected.push_back(MakeBlobElement(KRefBlobUUID, 10, 10));
@@ -211,30 +264,33 @@ TEST_F(BlobTransportControllerTest, SharedMemory) {
 
 TEST_F(BlobTransportControllerTest, TestPublicMethods) {
   const std::string kBlobUUID = "uuid";
+  const std::string kBlobContentType = "content_type";
   const std::string kBlob2UUID = "uuid2";
+  const std::string kBlob2ContentType = "content_type2";
   const std::string KRefBlobUUID = "refuuid";
+  std::vector<DataElement> message_descriptions;
   BlobTransportController* holder = BlobTransportController::GetInstance();
-  IPC::TestSink sink;
 
   BlobConsolidation* consolidation = new BlobConsolidation();
   consolidation->AddBlobItem(KRefBlobUUID, 10, 10);
-  holder->InitiateBlobTransfer(kBlobUUID, make_scoped_ptr(consolidation), &sink,
-                               main_thread_runner_);
+  BlobTransportController::InitiateBlobTransfer(
+      kBlobUUID, kBlobContentType, make_scoped_ptr(consolidation), sender_,
+      io_thread_runner_.get(), main_thread_runner_);
   // Check that we have the 'increase ref' pending task.
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
+  // Check that we have the 'store' pending task.
+  EXPECT_TRUE(io_thread_runner_->HasPendingTask());
+  // Check that we've sent the data.
+  ExpectRegisterAndStartMessage(kBlobUUID, kBlobContentType,
+                                &message_descriptions);
   main_thread_runner_->ClearPendingTasks();
 
   // Check that we got the correct start message.
-  const IPC::Message* message =
-      sink.GetUniqueMessageMatching(BlobStorageMsg_StartBuildingBlob::ID);
-  ASSERT_TRUE(message);
-  std::vector<DataElement> expected;
-  expected.push_back(MakeBlobElement(KRefBlobUUID, 10, 10));
+  EXPECT_FALSE(holder->IsTransporting(kBlobUUID));
+  io_thread_runner_->RunPendingTasks();
+  EXPECT_TRUE(holder->IsTransporting(kBlobUUID));
   base::Tuple<std::string, std::vector<DataElement>> message_contents;
-  BlobStorageMsg_StartBuildingBlob::Read(message, &message_contents);
-  EXPECT_EQ(kBlobUUID, base::get<0>(message_contents));
-  EXPECT_EQ(MakeBlobElement(KRefBlobUUID, 10, 10),
-            base::get<1>(message_contents)[0]);
+  EXPECT_EQ(MakeBlobElement(KRefBlobUUID, 10, 10), message_descriptions[0]);
 
   holder->OnCancel(kBlobUUID,
                    storage::IPCBlobCreationCancelCode::OUT_OF_MEMORY);
@@ -242,35 +298,22 @@ TEST_F(BlobTransportControllerTest, TestPublicMethods) {
   // Check we have the 'decrease ref' task.
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
   main_thread_runner_->ClearPendingTasks();
-  message = nullptr;
-  sink.ClearMessages();
+  sink_.ClearMessages();
 
-  // Check that we can complete the blob, and check that we only update the
-  // child process ref on the first and last transfer.
-  consolidation = new BlobConsolidation();
-  consolidation->AddBlobItem(KRefBlobUUID, 10, 10);
-  holder->InitiateBlobTransfer(kBlobUUID, make_scoped_ptr(consolidation), &sink,
-                               main_thread_runner_);
-  EXPECT_TRUE(main_thread_runner_->HasPendingTask());
-  main_thread_runner_->ClearPendingTasks();
-  EXPECT_TRUE(
-      sink.GetUniqueMessageMatching(BlobStorageMsg_StartBuildingBlob::ID));
-  sink.ClearMessages();
-
-  // Add the second and check that we don't have a task.
+  // Add the second.
   BlobConsolidation* consolidation2 = new BlobConsolidation();
   consolidation2->AddBlobItem(KRefBlobUUID, 10, 10);
-  holder->InitiateBlobTransfer(kBlob2UUID, make_scoped_ptr(consolidation2),
-                               &sink, main_thread_runner_);
-  EXPECT_FALSE(main_thread_runner_->HasPendingTask());
-  sink.ClearMessages();
+  BlobTransportController::InitiateBlobTransfer(
+      kBlob2UUID, kBlob2ContentType, make_scoped_ptr(consolidation2), sender_,
+      io_thread_runner_.get(), main_thread_runner_);
+  EXPECT_TRUE(main_thread_runner_->HasPendingTask());
+  main_thread_runner_->ClearPendingTasks();
+  sink_.ClearMessages();
 
-  // Finish the first one.
-  holder->OnDone(kBlobUUID);
-  EXPECT_FALSE(holder->IsTransporting(kBlobUUID));
-  EXPECT_FALSE(main_thread_runner_->HasPendingTask());
+  io_thread_runner_->RunPendingTasks();
+  EXPECT_TRUE(holder->IsTransporting(kBlob2UUID));
 
-  // Finish the second one, and verify that we have the task.
+  // Finish the second one.
   holder->OnDone(kBlob2UUID);
   EXPECT_FALSE(holder->IsTransporting(kBlob2UUID));
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());

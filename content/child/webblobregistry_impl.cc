@@ -235,22 +235,9 @@ void WebBlobRegistryImpl::BuilderImpl::appendFileSystemURL(
 }
 
 void WebBlobRegistryImpl::BuilderImpl::build() {
-  sender_->Send(new BlobStorageMsg_RegisterBlobUUID(
-      uuid_, content_type_, "", consolidation_->referenced_blobs()));
-  io_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&WebBlobRegistryImpl::StartBlobAsyncConstruction, uuid_,
-                 base::Passed(&consolidation_), sender_, main_runner_));
-}
-
-/* static */
-void WebBlobRegistryImpl::StartBlobAsyncConstruction(
-    const std::string& uuid,
-    std::unique_ptr<BlobConsolidation> consolidation,
-    scoped_refptr<ThreadSafeSender> sender,
-    scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
-  BlobTransportController::GetInstance()->InitiateBlobTransfer(
-      uuid, std::move(consolidation), sender.get(), std::move(main_runner));
+  BlobTransportController::InitiateBlobTransfer(
+      uuid_, content_type_, std::move(consolidation_), sender_,
+      io_runner_.get(), main_runner_);
 }
 
 }  // namespace content

@@ -98,13 +98,6 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
     scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   };
 
-  // Method called on the IO thread.
-  static void StartBlobAsyncConstruction(
-      const std::string& uuid,
-      std::unique_ptr<BlobConsolidation> consolidation,
-      scoped_refptr<ThreadSafeSender> sender,
-      scoped_refptr<base::SingleThreadTaskRunner> main_runner);
-
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<ThreadSafeSender> sender_;

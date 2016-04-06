@@ -20,6 +20,7 @@
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
 #include "storage/common/data_element.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 
 using base::SharedMemory;
 using base::SharedMemoryHandle;
@@ -27,6 +28,7 @@ using storage::BlobItemBytesRequest;
 using storage::BlobItemBytesResponse;
 using storage::IPCBlobItemRequestStrategy;
 using storage::DataElement;
+using storage::kBlobStorageIPCThresholdBytes;
 
 namespace content {
 
@@ -36,16 +38,18 @@ using ConsolidatedItem = BlobConsolidation::ConsolidatedItem;
 using ReadStatus = BlobConsolidation::ReadStatus;
 
 namespace {
-const size_t kLargeThresholdBytes = 250 * 1024;
-static base::LazyInstance<BlobTransportController> g_controller =
+static base::LazyInstance<BlobTransportController>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
 
 // This keeps the process alive while blobs are being transferred.
+// These need to be called on the main thread.
 void IncChildProcessRefCount() {
+  blink::Platform::current()->suddenTerminationChanged(false);
   ChildProcess::current()->AddRefProcess();
 }
 
 void DecChildProcessRefCount() {
+  blink::Platform::current()->suddenTerminationChanged(true);
   ChildProcess::current()->ReleaseProcess();
 }
 }  // namespace
@@ -54,22 +58,35 @@ BlobTransportController* BlobTransportController::GetInstance() {
   return g_controller.Pointer();
 }
 
-BlobTransportController::~BlobTransportController() {}
-
+// static
 void BlobTransportController::InitiateBlobTransfer(
     const std::string& uuid,
+    const std::string& content_type,
     scoped_ptr<BlobConsolidation> consolidation,
-    IPC::Sender* sender,
+    scoped_refptr<ThreadSafeSender> sender,
+    base::SingleThreadTaskRunner* io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
-  BlobConsolidation* consolidation_ptr = consolidation.get();
-  if (blob_storage_.empty()) {
-    main_thread_runner_ = std::move(main_runner);
-    main_thread_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&IncChildProcessRefCount));
+  if (main_runner->BelongsToCurrentThread()) {
+    IncChildProcessRefCount();
+  } else {
+    main_runner->PostTask(FROM_HERE, base::Bind(&IncChildProcessRefCount));
   }
-  blob_storage_[uuid] = std::move(consolidation);
+
   std::vector<storage::DataElement> descriptions;
-  GetDescriptions(consolidation_ptr, kLargeThresholdBytes, &descriptions);
+  std::set<std::string> referenced_blobs = consolidation->referenced_blobs();
+  BlobTransportController::GetDescriptions(
+      consolidation.get(), kBlobStorageIPCThresholdBytes, &descriptions);
+  // I post the task first to make sure that we store our consolidation before
+  // we get a request back from the browser.
+  io_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&BlobTransportController::StoreBlobDataForRequests,
+                 base::Unretained(BlobTransportController::GetInstance()), uuid,
+                 base::Passed(std::move(consolidation)),
+                 base::Passed(std::move(main_runner))));
+  // TODO(dmurph): Merge register and start messages.
+  sender->Send(new BlobStorageMsg_RegisterBlobUUID(uuid, content_type, "",
+                                                   referenced_blobs));
   sender->Send(new BlobStorageMsg_StartBuildingBlob(uuid, descriptions));
 }
 
@@ -115,16 +132,7 @@ void BlobTransportController::OnDone(const std::string& uuid) {
   ReleaseBlobConsolidation(uuid);
 }
 
-void BlobTransportController::ClearForTesting() {
-  if (!blob_storage_.empty() && main_thread_runner_) {
-    main_thread_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&DecChildProcessRefCount));
-  }
-  blob_storage_.clear();
-}
-
-BlobTransportController::BlobTransportController() {}
-
+// static
 void BlobTransportController::GetDescriptions(
     BlobConsolidation* consolidation,
     size_t max_data_population,
@@ -176,6 +184,28 @@ void BlobTransportController::GetDescriptions(
     }
     ++current_item;
   }
+}
+
+BlobTransportController::BlobTransportController() {}
+
+BlobTransportController::~BlobTransportController() {}
+
+void BlobTransportController::ClearForTesting() {
+  if (!blob_storage_.empty() && main_thread_runner_) {
+    main_thread_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&DecChildProcessRefCount));
+  }
+  blob_storage_.clear();
+}
+
+void BlobTransportController::StoreBlobDataForRequests(
+    const std::string& uuid,
+    scoped_ptr<BlobConsolidation> consolidation,
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
+  if (!main_thread_runner_.get()) {
+    main_thread_runner_ = std::move(main_runner);
+  }
+  blob_storage_[uuid] = std::move(consolidation);
 }
 
 BlobTransportController::ResponsesStatus BlobTransportController::GetResponses(
@@ -255,12 +285,9 @@ BlobTransportController::ResponsesStatus BlobTransportController::GetResponses(
 
 void BlobTransportController::ReleaseBlobConsolidation(
     const std::string& uuid) {
-  // If we erased something and we're now empty, release the child process
-  // ref count and deref the main thread runner.
-  if (blob_storage_.erase(uuid) && blob_storage_.empty()) {
+  if (blob_storage_.erase(uuid)) {
     main_thread_runner_->PostTask(FROM_HERE,
                                   base::Bind(&DecChildProcessRefCount));
-    main_thread_runner_ = nullptr;
   }
 }
 

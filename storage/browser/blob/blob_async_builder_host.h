@@ -72,7 +72,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
       const std::set<std::string>& referenced_blob_uuids,
       BlobStorageContext* context);
 
-  // This method begins the construction of the blob given the descriptions.
+  // This method begins the construction of the blob given the descriptions. The
+  // blob uuid MUST be building in this object.
   // When we return:
   // * DONE: The blob is finished transfering right away, and is now
   //   successfully saved in the context.
@@ -99,8 +100,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
 
   // This removes the BlobBuildingState from our map and flags the blob as
   // broken in the context. This can be called both from our own logic to cancel
-  // the blob, or from the DispatcherHost (Renderer). If the blob isn't being
-  // built then we do nothing.
+  // the blob, or from the DispatcherHost (Renderer). The blob MUST be being
+  // built in this builder.
   // Note: if the blob isn't in the context (renderer dereferenced it before we
   // finished constructing), then we don't bother touching the context.
   void CancelBuildingBlob(const std::string& uuid,
@@ -112,6 +113,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
   // are any references being held by anyone. We know that they're being used
   // by someone else if they still exist in the context.
   void CancelAll(BlobStorageContext* context);
+
+  bool IsEmpty() const { return async_blob_map_.empty(); }
 
   size_t blob_building_count() const { return async_blob_map_.size(); }
 

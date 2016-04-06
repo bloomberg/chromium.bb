@@ -66,6 +66,7 @@ class CONTENT_EXPORT BlobDispatcherHost : public BrowserMessageFilter {
   friend class base::RefCountedThreadSafe<BlobDispatcherHost>;
   friend class BlobDispatcherHostTest;
   FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest, EmptyUUIDs);
+  FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest, MultipleTransfers);
   FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest, SharedMemoryTransfer);
   FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest, OnCancelBuildingBlob);
   FRIEND_TEST_ALL_PREFIXES(BlobDispatcherHostTest,

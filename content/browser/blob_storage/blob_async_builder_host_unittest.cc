@@ -526,20 +526,9 @@ TEST_F(BlobAsyncBuilderHostTest, IncorrectBlobDependencies) {
 
   // The first blob shouldn't be building anymore.
   EXPECT_FALSE(host_.IsBeingBuilt(kBlob1));
-  // Test we get BAD_IPC.
-  std::vector<DataElement> descriptions;
-  AddShortcutMemoryItem(2, &descriptions);
-  DataElement element;
-  element.SetToBlob(kBlob1);
-  descriptions.push_back(element);
-  EXPECT_EQ(BlobTransportResult::BAD_IPC,
-            host_.StartBuildingBlob(
-                kBlob1, descriptions, 2, &context_,
-                base::Bind(&BlobAsyncBuilderHostTest::RequestMemoryCallback,
-                           base::Unretained(this))));
 
   // Try to finish the second one, without a reference to the first.
-  descriptions.clear();
+  std::vector<DataElement> descriptions;
   AddShortcutMemoryItem(2, &descriptions);
   EXPECT_EQ(BlobTransportResult::BAD_IPC,
             host_.StartBuildingBlob(
@@ -551,6 +540,7 @@ TEST_F(BlobAsyncBuilderHostTest, IncorrectBlobDependencies) {
   // Try to finish the third one with the reference we didn't declare earlier.
   descriptions.clear();
   AddShortcutMemoryItem(2, &descriptions);
+  DataElement element;
   element.SetToBlob(kGoodBlob);
   descriptions.push_back(element);
   EXPECT_EQ(BlobTransportResult::BAD_IPC,
@@ -619,21 +609,6 @@ TEST_F(BlobAsyncBuilderHostTest, BlobBreaksWhenReferenceBroken) {
                                    {kBlob1}, &context_));
   EXPECT_FALSE(host_.IsBeingBuilt(kBlob2));
   EXPECT_FALSE(IsBeingBuiltInContext(kBlob2));
-  EXPECT_TRUE(context_.GetBlobDataFromUUID(kBlob2)->IsBroken());
-
-  // Try to finish the second one, but we should get a BAD_IPC, as we are no
-  // longer being constructed.
-  std::vector<DataElement> descriptions;
-  AddShortcutMemoryItem(2, &descriptions);
-  DataElement element;
-  element.SetToBlob(kBlob1);
-  descriptions.push_back(element);
-  EXPECT_EQ(BlobTransportResult::BAD_IPC,
-            host_.StartBuildingBlob(
-                kBlob2, descriptions, 2, &context_,
-                base::Bind(&BlobAsyncBuilderHostTest::RequestMemoryCallback,
-                           base::Unretained(this))));
-  EXPECT_FALSE(request_called_);
   EXPECT_TRUE(context_.GetBlobDataFromUUID(kBlob2)->IsBroken());
 };
 
