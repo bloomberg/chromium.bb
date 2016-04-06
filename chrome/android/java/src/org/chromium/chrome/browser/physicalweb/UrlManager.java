@@ -269,7 +269,7 @@ class UrlManager {
             protected Void doInBackground(Void... params) {
                 SharedPreferences oldPrefs =
                         mContext.getSharedPreferences(DEPRECATED_PREFS_NAME, Context.MODE_PRIVATE);
-                oldPrefs.edit().clear().commit();
+                oldPrefs.edit().clear().apply();
                 return null;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

@@ -706,6 +706,7 @@ class InfoBarContainerLayout extends FrameLayout {
     }
 
     @Override
+    @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
         // Consume all touch events so they do not reach the ContentView.

@@ -204,6 +204,8 @@ public class FindToolbar extends LinearLayout
 
     @Override
     public void onFinishInflate() {
+        super.onFinishInflate();
+
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
 

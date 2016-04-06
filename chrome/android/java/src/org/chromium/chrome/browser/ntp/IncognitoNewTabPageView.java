@@ -95,10 +95,9 @@ public class IncognitoNewTabPageView extends FrameLayout {
         mSnapshotScrollY = mScrollView.getScrollY();
     }
 
-    // OnAttachStateChangeListener overrides
-
     @Override
     public void onAttachedToWindow() {
+        super.onAttachedToWindow();
         assert mManager != null;
         if (mFirstShow) {
             mManager.onLoadingComplete();

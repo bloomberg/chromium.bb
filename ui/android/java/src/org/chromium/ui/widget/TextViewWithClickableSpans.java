@@ -4,6 +4,7 @@
 
 package org.chromium.ui.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Layout;
@@ -78,6 +79,7 @@ public class TextViewWithClickableSpans extends TextView {
     }
 
     @Override
+    @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent event) {
         boolean superResult = super.onTouchEvent(event);
 

@@ -45,6 +45,7 @@ public class NewTabPageToolbar extends LinearLayout {
 
     @Override
     protected void onFinishInflate() {
+        super.onFinishInflate();
         mBookmarksButton = initButton(R.id.bookmarks_button, R.drawable.btn_star);
         mRecentTabsButton = initButton(R.id.recent_tabs_button, R.drawable.btn_recents);
         ((TextView) mBookmarksButton.getChildAt(0))

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -37,6 +38,7 @@ public class RepostFormWarningDialog extends DialogFragment {
      * Handles the repost form warning for the given Tab.
      * @param tab The tab waiting for confirmation on a repost form warning.
      */
+    @SuppressLint("ValidFragment")
     public RepostFormWarningDialog(Tab tab) {
         mTab = tab;
         mTabObserver = new EmptyTabObserver() {
