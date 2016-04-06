@@ -38,7 +38,7 @@ String stateToString(MediaRecorder::State state)
         return "paused";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -88,7 +88,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionCont
                 audioBps = kSmallestPossibleOpusBitRate;
             }
         } else {
-            ASSERT(!audioBps);
+            DCHECK(!audioBps);
         }
     }
 
@@ -103,7 +103,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionCont
                 videoBps = kSmallestPossibleVpxBitRate;
             }
         } else {
-            ASSERT(!videoBps);
+            DCHECK(!videoBps);
         }
     }
 
@@ -143,10 +143,10 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
     , m_state(State::Inactive)
     , m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaRecorder>::create(this, &MediaRecorder::dispatchScheduledEvent))
 {
-    ASSERT(m_stream->getTracks().size());
+    DCHECK(m_stream->getTracks().size());
 
     m_recorderHandler = adoptPtr(Platform::current()->createMediaRecorderHandler());
-    ASSERT(m_recorderHandler);
+    DCHECK(m_recorderHandler);
 
     if (!m_recorderHandler) {
         exceptionState.throwDOMException(NotSupportedError, "No MediaRecorder handler can be created.");
@@ -323,7 +323,7 @@ void MediaRecorder::createBlobEvent(Blob* blob)
 
 void MediaRecorder::stopRecording()
 {
-    ASSERT(m_state != State::Inactive);
+    DCHECK(m_state != State::Inactive);
     m_state = State::Inactive;
 
     m_recorderHandler->stop();

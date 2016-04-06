@@ -42,13 +42,13 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
     }
 
     WebMediaStreamTrack track;
-    WebSize size(element.width(), element.height());
+    const WebSize size(element.width(), element.height());
     OwnPtr<WebCanvasCaptureHandler> handler;
     if (givenFrameRate)
         handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, frameRate, &track));
     else
         handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, kDefaultFrameRate, &track));
-    ASSERT(handler);
+
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "No CanvasCapture handler can be created.");
         return nullptr;
