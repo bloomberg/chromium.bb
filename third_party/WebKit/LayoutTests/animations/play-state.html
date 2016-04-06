@@ -77,7 +77,7 @@
 
     function end() {
       logPassFail('none', getComputedStyle(document.getElementById('translate')).webkitTransform, 'translate', 'at end');
-      logPassFail('auto', getComputedStyle(document.getElementById('left')).left, 'left', 'at end');
+      logPassFail('0px', getComputedStyle(document.getElementById('left')).left, 'left', 'at end');
       if (window.testRunner) {
         testRunner.notifyDone();
       }

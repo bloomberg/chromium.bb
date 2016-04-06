@@ -5,6 +5,10 @@ Resolved values for element "fixed" with display "block":
 line-height: 30px
 width: 150px
 height: 100px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 15px
 margin-right: 30px
 margin-bottom: 20px
@@ -18,6 +22,10 @@ Resolved values for element "fixed" with display "inline":
 line-height: 30px
 width: auto
 height: auto
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 15px
 margin-right: 30px
 margin-bottom: 20px
@@ -31,6 +39,10 @@ Resolved values for element "fixed" with display "inline-block":
 line-height: 30px
 width: 150px
 height: 100px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 15px
 margin-right: 30px
 margin-bottom: 20px
@@ -44,6 +56,10 @@ Resolved values for element "fixed" with display "none":
 line-height: 30px
 width: 150px
 height: 100px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 15px
 margin-right: 30px
 margin-bottom: 20px
@@ -58,6 +74,10 @@ Resolved values for element "percents" with display "block":
 line-height: 36px
 width: 250px
 height: 75px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 50px
 margin-right: 25px
 margin-bottom: 50px
@@ -71,6 +91,10 @@ Resolved values for element "percents" with display "inline":
 line-height: 36px
 width: auto
 height: auto
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 10%
 margin-right: 5%
 margin-bottom: 10%
@@ -84,6 +108,10 @@ Resolved values for element "percents" with display "inline-block":
 line-height: 36px
 width: 250px
 height: 75px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 50px
 margin-right: 25px
 margin-bottom: 50px
@@ -97,6 +125,10 @@ Resolved values for element "percents" with display "none":
 line-height: 36px
 width: 50%
 height: 25%
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 10%
 margin-right: 5%
 margin-bottom: 10%
@@ -111,6 +143,10 @@ Resolved values for element "ems" with display "block":
 line-height: 24px
 width: 240px
 height: 120px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 24px
 margin-right: 12px
 margin-bottom: 36px
@@ -124,6 +160,10 @@ Resolved values for element "ems" with display "inline":
 line-height: 24px
 width: auto
 height: auto
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 24px
 margin-right: 12px
 margin-bottom: 36px
@@ -137,6 +177,10 @@ Resolved values for element "ems" with display "inline-block":
 line-height: 24px
 width: 240px
 height: 120px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 24px
 margin-right: 12px
 margin-bottom: 36px
@@ -150,6 +194,10 @@ Resolved values for element "ems" with display "none":
 line-height: 24px
 width: 240px
 height: 120px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 24px
 margin-right: 12px
 margin-bottom: 36px
@@ -164,6 +212,10 @@ Resolved values for element "auto" with display "block":
 line-height: 30px
 width: 200px
 height: 30px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 0px
 margin-right: 126px
 margin-bottom: 0px
@@ -177,6 +229,10 @@ Resolved values for element "auto" with display "inline":
 line-height: 30px
 width: auto
 height: auto
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 0px
 margin-right: auto
 margin-bottom: 0px
@@ -190,6 +246,10 @@ Resolved values for element "auto" with display "inline-block":
 line-height: 30px
 width: 200px
 height: 30px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 0px
 margin-right: 0px
 margin-bottom: 0px
@@ -203,6 +263,10 @@ Resolved values for element "auto" with display "none":
 line-height: 30px
 width: 200px
 height: auto
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 0px
 margin-right: auto
 margin-bottom: 0px
@@ -217,6 +281,10 @@ Resolved values for element "mixed" with display "block":
 line-height: 48px
 width: 150px
 height: 60px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 72px
 margin-right: 0px
 margin-bottom: 0px
@@ -230,6 +298,10 @@ Resolved values for element "mixed" with display "inline":
 line-height: 48px
 width: auto
 height: auto
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 72px
 margin-right: 0px
 margin-bottom: 0px
@@ -243,6 +315,10 @@ Resolved values for element "mixed" with display "inline-block":
 line-height: 48px
 width: 150px
 height: 60px
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 72px
 margin-right: 0px
 margin-bottom: 0px
@@ -256,6 +332,10 @@ Resolved values for element "mixed" with display "none":
 line-height: 48px
 width: 30%
 height: 20%
+top: auto
+right: auto
+bottom: auto
+left: auto
 margin-top: 72px
 margin-right: 0px
 margin-bottom: 0px
@@ -266,8 +346,148 @@ padding-bottom: 24px
 padding-left: 0px
 
 
+Resolved values for element "rel_positioned" with display "block":
+line-height: 30px
+width: 150px
+height: 100px
+top: 15px
+right: -10px
+bottom: -15px
+left: 10px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+Resolved values for element "rel_positioned" with display "inline":
+line-height: 30px
+width: auto
+height: auto
+top: 15px
+right: -10px
+bottom: -15px
+left: 10px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+Resolved values for element "rel_positioned" with display "inline-block":
+line-height: 30px
+width: 150px
+height: 100px
+top: 15px
+right: -10px
+bottom: -15px
+left: 10px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+Resolved values for element "rel_positioned" with display "none":
+line-height: 30px
+width: 150px
+height: 100px
+top: 15px
+right: auto
+bottom: auto
+left: 10px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+
+Resolved values for element "abs_positioned" with display "block":
+line-height: 30px
+width: 150px
+height: 100px
+top: 62px
+right: 10px
+bottom: 15px
+left: 212px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+Resolved values for element "abs_positioned" with display "inline":
+line-height: 30px
+width: 150px
+height: 100px
+top: 62px
+right: 10px
+bottom: 15px
+left: 212px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+Resolved values for element "abs_positioned" with display "inline-block":
+line-height: 30px
+width: 150px
+height: 100px
+top: 62px
+right: 10px
+bottom: 15px
+left: 212px
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+Resolved values for element "abs_positioned" with display "none":
+line-height: 30px
+width: 150px
+height: 100px
+top: auto
+right: 10px
+bottom: 15px
+left: auto
+margin-top: 15px
+margin-right: 30px
+margin-bottom: 20px
+margin-left: 10px
+padding-top: 20px
+padding-right: 20px
+padding-bottom: 20px
+padding-left: 20px
+
+
 Fixed
 Percents
 EMs
 Auto
 Mixed
+Relative Positioned
+Absolute Positioned
