@@ -72,7 +72,7 @@ inline Dest bit_cast(const Source& source) {
                 "non-trivially-copyable bit_cast is undefined");
   static_assert(std::is_trivially_copyable<Source>::value,
                 "non-trivially-copyable bit_cast is undefined");
-#elif __has_feature(is_trivially_copyable)
+#elif HAS_FEATURE(is_trivially_copyable)
   // The compiler supports an equivalent intrinsic.
   static_assert(__is_trivially_copyable(Dest),
                 "non-trivially-copyable bit_cast is undefined");
