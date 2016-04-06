@@ -214,10 +214,19 @@ void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
 }
 
 void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
-  if (!enabled_ || !IsTextInputClientFocused(client) ||
-      !IsWindowFocused(client)) {
+  if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
     return;
+  TextInputType text_input_type = GetTextInputType();
+  if (client == GetTextInputClient() &&
+      text_input_type != TEXT_INPUT_TYPE_NONE &&
+      text_input_type != TEXT_INPUT_TYPE_PASSWORD && GetEngine()) {
+    // |enabled_| == false could be faked, and the engine should rely on the
+    // real type from GetTextInputType().
+    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
   }
+  if (!enabled_)
+    return;
+
   // The current text input type should not be NONE if |client| is focused.
   DCHECK(!IsTextInputTypeNone());
   // Tentatively assume that the returned value is DIP (Density Independent
@@ -235,18 +244,20 @@ void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
   gfx::Rect caret_rect(gfx::Point(window_point.x, window_point.y),
                        screen_bounds.size());
   imm32_manager_.UpdateCaretRect(attached_window, caret_rect);
-
-  if (client == GetTextInputClient() &&
-      GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD && GetEngine())
-    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
 }
 
 void InputMethodWin::CancelComposition(const TextInputClient* client) {
-  if (enabled_ && IsTextInputClientFocused(client)) {
-    imm32_manager_.CancelIME(toplevel_window_handle_);
-
-    if (GetEngine())
+  if (IsTextInputClientFocused(client)) {
+    // |enabled_| == false could be faked, and the engine should rely on the
+    // real type get from GetTextInputType().
+    TextInputType text_input_type = GetTextInputType();
+    if (text_input_type != TEXT_INPUT_TYPE_NONE &&
+        text_input_type != TEXT_INPUT_TYPE_PASSWORD && GetEngine()) {
       GetEngine()->Reset();
+    }
+
+    if (enabled_)
+      imm32_manager_.CancelIME(toplevel_window_handle_);
   }
 }
 
