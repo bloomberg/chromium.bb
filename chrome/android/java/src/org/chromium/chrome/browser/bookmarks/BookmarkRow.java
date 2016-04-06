@@ -79,7 +79,7 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
 
     private void clearPopup() {
         if (mPopupMenu != null) {
-            if (mPopupMenu.isShowing()) mPopupMenu.dismiss();
+            mPopupMenu.dismiss();
             mPopupMenu = null;
         }
     }
@@ -164,9 +164,13 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
                         BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(),
                                 mBookmarkId);
                     } else if (position == 3) {
-                        mDelegate.getModel().deleteBookmarks(mBookmarkId);
+                        if (mDelegate != null && mDelegate.getModel() != null) {
+                            mDelegate.getModel().deleteBookmarks(mBookmarkId);
+                        }
                     }
-                    mPopupMenu.dismiss();
+                    // Somehow the on click event can be triggered way after we dismiss the popup.
+                    // http://crbug.com/600642
+                    if (mPopupMenu != null) mPopupMenu.dismiss();
                 }
             });
         }
