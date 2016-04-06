@@ -566,6 +566,20 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 redirectHandler,
                 OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                 START_ACTIVITY);
+        // Do not ignore if a new intent cannot be handled by Chrome.
+        redirectHandler.updateIntent(fooIntent);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
+        check("intent://myownurl",
+                NO_REFERRER,
+                NORMAL_PROFILE,
+                transTypeLinkFromIntent,
+                REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                START_ACTIVITY);
     }
 
     @SmallTest
@@ -1237,6 +1251,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 } else {
                     return list;
                 }
+            }
+            if (intent.getDataString().startsWith("http://")
+                    || intent.getDataString().startsWith("https://")) {
+                list.add(newResolveInfo("chrome", "chrome"));
             }
             if (intent.getDataString().startsWith("http://m.youtube.com")
                     || intent.getDataString().startsWith("http://youtube.com")) {

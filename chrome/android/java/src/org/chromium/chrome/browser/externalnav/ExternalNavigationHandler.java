@@ -383,8 +383,13 @@ public class ExternalNavigationHandler {
                         params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
             } else {
+                // Some third-party app launched Chrome with an intent, and the URL got redirected.
+                // The user has explicitly chosen Chrome over other intent handlers, so stay in
+                // Chrome unless there was a new intent handler after redirection or Chrome cannot
+                // handle it any more.
                 if (params.getRedirectHandler() != null && incomingIntentRedirect) {
-                    if (!params.getRedirectHandler().hasNewResolver(intent)) {
+                    if (!isExternalProtocol
+                            && !params.getRedirectHandler().hasNewResolver(intent)) {
                         return OverrideUrlLoadingResult.NO_OVERRIDE;
                     }
                 }
