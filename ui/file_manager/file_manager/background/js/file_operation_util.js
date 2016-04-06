@@ -35,9 +35,9 @@ fileOperationUtil.resolvePath = function(root, path) {
  * Checks if an entry exists at |relativePath| in |dirEntry|.
  * If exists, tries to deduplicate the path by inserting parenthesized number,
  * such as " (1)", before the extension. If it still exists, tries the
- * deduplication again by increasing the number up to 10 times.
+ * deduplication again by increasing the number.
  * For example, suppose "file.txt" is given, "file.txt", "file (1).txt",
- * "file (2).txt", ..., "file (9).txt" will be tried.
+ * "file (2).txt", ... will be tried.
  *
  * @param {DirectoryEntry} dirEntry The target directory entry.
  * @param {string} relativePath The path to be deduplicated.
@@ -49,9 +49,6 @@ fileOperationUtil.resolvePath = function(root, path) {
  */
 fileOperationUtil.deduplicatePath = function(
     dirEntry, relativePath, opt_successCallback, opt_errorCallback) {
-  // The trial is up to 10.
-  var MAX_RETRY = 10;
-
   // Crack the path into three part. The parenthesized number (if exists) will
   // be replaced by incremented number for retry. For example, suppose
   // |relativePath| is "file (10).txt", the second check path will be
@@ -61,17 +58,10 @@ fileOperationUtil.deduplicatePath = function(
   var ext = match[3] || '';
 
   // Check to see if the target exists.
-  var resolvePath = function(trialPath, numRetry, copyNumber) {
+  var resolvePath = function(trialPath, copyNumber) {
     return fileOperationUtil.resolvePath(dirEntry, trialPath).then(function() {
-      if (numRetry <= 1) {
-        // Hit the limit of the number of retrial.
-        // Note that we cannot create FileError object directly, so here we
-        // use Object.create instead.
-        return Promise.reject(
-            util.createDOMError(util.FileError.PATH_EXISTS_ERR));
-      }
       var newTrialPath = prefix + ' (' + copyNumber + ')' + ext;
-      return resolvePath(newTrialPath, numRetry - 1, copyNumber + 1);
+      return resolvePath(newTrialPath, copyNumber + 1);
     }, function(error) {
       // We expect to be unable to resolve the target file, since we're
       // going to create it during the copy.  However, if the resolve fails
@@ -83,24 +73,11 @@ fileOperationUtil.deduplicatePath = function(
     });
   };
 
-  var promise = resolvePath(relativePath, MAX_RETRY, 1).catch(function(error) {
-    var targetPromise;
-    if (error.name === util.FileError.PATH_EXISTS_ERR) {
-      // Failed to uniquify the file path. There should be an existing
-      // entry, so return the error with it.
-      targetPromise = fileOperationUtil.resolvePath(dirEntry, relativePath);
-    } else {
-      targetPromise = Promise.reject(error);
-    }
-    return targetPromise.then(function(entry) {
-      return Promise.reject(new fileOperationUtil.Error(
-          util.FileOperationErrorType.TARGET_EXISTS, entry));
-    }, function(/** (Error|DOMError) */ inError) {
-      if (inError instanceof Error)
-        return Promise.reject(inError);
-      return Promise.reject(new fileOperationUtil.Error(
-          util.FileOperationErrorType.FILESYSTEM_ERROR, inError));
-    });
+  var promise = resolvePath(relativePath, 1).catch(function(error) {
+    if (error instanceof Error)
+      return Promise.reject(error);
+    return Promise.reject(new fileOperationUtil.Error(
+      util.FileOperationErrorType.FILESYSTEM_ERROR, error));
   });
   if (opt_successCallback)
     promise.then(opt_successCallback, opt_errorCallback);
