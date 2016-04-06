@@ -1,0 +1,73 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+import("//build/config/ui.gni")
+
+assert(use_aura)
+
+component("shower") {
+  sources = [
+    "app_list_shower.h",
+    "app_list_shower_delegate.h",
+    "app_list_shower_delegate_factory.h",
+    "app_list_shower_export.h",
+    "app_list_shower_impl.cc",
+    "app_list_shower_impl.h",
+  ]
+
+  defines = [ "APP_LIST_SHOWER_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//base",
+    "//ui/app_list",
+    "//ui/aura",
+    "//ui/compositor",
+    "//ui/gfx/geometry",
+    "//ui/views",
+  ]
+}
+
+source_set("test_support") {
+  sources = [
+    "test/app_list_shower_impl_test_api.cc",
+    "test/app_list_shower_impl_test_api.h",
+  ]
+
+  public_deps = [
+    ":shower",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+test("app_list_shower_unittests") {
+  sources = [
+    "app_list_shower_impl_unittest.cc",
+    "test/run_all_unittests.cc",
+  ]
+
+  # TODO: Add to data_deps instead once GN has rolled past #339778.
+  data = [
+    "$root_out_dir/ui_test.pak",
+  ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    ":shower",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/app_list:test_support",
+    "//ui/aura:aura",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/gl:test_support",
+    "//ui/resources:ui_test_pak",
+    "//ui/wm:wm",
+  ]
+}

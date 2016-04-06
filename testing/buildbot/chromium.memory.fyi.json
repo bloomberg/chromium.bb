@@ -88,6 +88,9 @@
         "test": "app_list_unittests"
       },
       {
+        "test": "app_list_shower_unittests"
+      },
+      {
         "test": "display_unittests"
       },
       {
@@ -205,6 +208,7 @@
   "Chromium OS Builder (valgrind)": {
     "additional_compile_targets": [
       "app_list_unittests",
+      "app_list_shower_unittests",
       "ash_unittests",
       "aura_unittests",
       "base_unittests",
@@ -243,6 +247,7 @@
       "accessibility_unittests",
       "angle_unittests",
       "app_list_unittests",
+      "app_list_shower_unittests",
       "aura_unittests",
       "base_unittests",
       "blink_heap_unittests",
@@ -292,6 +297,7 @@
       "accessibility_unittests",
       "angle_unittests",
       "app_list_unittests",
+      "app_list_shower_unittests",
       "aura_unittests",
       "base_unittests",
       "blink_heap_unittests",
@@ -345,6 +351,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -630,6 +642,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -932,6 +950,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -2209,6 +2233,9 @@
         "test": "app_list_unittests"
       },
       {
+        "test": "app_list_shower_unittests"
+      },
+      {
         "test": "aura_unittests"
       },
       {
@@ -2274,6 +2301,9 @@
       },
       {
         "test": "app_list_unittests"
+      },
+      {
+        "test": "app_list_shower_unittests"
       },
       {
         "test": "aura_unittests"
@@ -2413,6 +2443,9 @@
       },
       {
         "test": "app_list_unittests"
+      },
+      {
+        "test": "app_list_shower_unittests"
       },
       {
         "test": "aura_unittests"

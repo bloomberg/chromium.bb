@@ -469,6 +469,7 @@
           'dependencies': [
             '../ash/ash.gyp:ash_unittests',
             '../ui/app_list/app_list.gyp:app_list_unittests',
+            '../ui/app_list/shower/app_list_shower.gyp:app_list_shower_unittests',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
           ],

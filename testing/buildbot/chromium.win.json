@@ -11,6 +11,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "app_list_shower_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -425,6 +431,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -865,6 +877,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "app_list_shower_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -1278,6 +1296,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -2064,6 +2088,7 @@
     "additional_compile_targets": [
       "accessibility_unittests",
       "app_list_unittests",
+      "app_list_shower_unittests",
       "app_shell_unittests",
       "ash_shell_with_content",
       "ash_unittests",

@@ -22,6 +22,12 @@
       "test": "app_list_unittests"
     },
     {
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      },
+      "test": "app_list_shower_unittests"
+    },
+    {
       "chromium_configs": [
         "chromium_chromeos",
         "chromium_chromeos_clang",

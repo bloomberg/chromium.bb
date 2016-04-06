@@ -99,6 +99,10 @@
     "label": "//ui/app_list:app_list_unittests",
     "type": "windowed_test_launcher",
   },
+  "app_list_shower_unittests": {
+    "label": "//ui/app_list/shower:app_list_shower_unittests",
+    "type": "windowed_test_launcher",
+  },
   "app_shell_unittests": {
     "label": "//extensions/shell:app_shell_unittests",
     "type": "windowed_test_launcher",

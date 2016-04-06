@@ -401,6 +401,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "app_list_shower_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -1289,6 +1295,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -6534,6 +6546,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "app_list_shower_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -6861,6 +6879,9 @@
         "test": "app_list_unittests"
       },
       {
+        "test": "app_list_shower_unittests"
+      },
+      {
         "test": "app_shell_unittests"
       },
       {
@@ -7057,6 +7078,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_list_shower_unittests"
       },
       {
         "swarming": {
@@ -7384,6 +7411,9 @@
       },
       {
         "test": "app_list_unittests"
+      },
+      {
+        "test": "app_list_shower_unittests"
       },
       {
         "test": "app_shell_unittests"
