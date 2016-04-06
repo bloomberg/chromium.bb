@@ -605,6 +605,5 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     ":chrome_sync_shell_test_apk_java",
     ":chrome_sync_shell_test_apk_manifest",
   ]
-  isolate_file = "../chrome_sync_shell_test_apk.isolate"
   proguard_enabled = !is_debug
 }
