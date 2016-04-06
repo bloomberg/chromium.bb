@@ -31,10 +31,18 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
 HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
 
 std::unique_ptr<HeadlessWebContents> HeadlessBrowserImpl::CreateWebContents(
+    const GURL& initial_url,
     const gfx::Size& size) {
   DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  return base::WrapUnique(new HeadlessWebContentsImpl(
-      browser_context(), window_tree_host_->window(), size));
+  std::unique_ptr<HeadlessWebContentsImpl> web_contents =
+      base::WrapUnique(new HeadlessWebContentsImpl(
+          browser_context(), window_tree_host_->window(), size));
+  // We require the user to pass in an initial URL to ensure that the renderer
+  // gets initialized and eventually becomes ready to be inspected. See
+  // HeadlessWebContents::Observer::WebContentsReady.
+  if (!web_contents->OpenURL(initial_url))
+    return nullptr;
+  return std::move(web_contents);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

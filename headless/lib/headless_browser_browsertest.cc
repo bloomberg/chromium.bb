@@ -16,10 +16,17 @@ namespace headless {
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateAndDestroyWebContents) {
   std::unique_ptr<HeadlessWebContents> web_contents =
-      browser()->CreateWebContents(gfx::Size(800, 600));
+      browser()->CreateWebContents(GURL("about:blank"), gfx::Size(800, 600));
   EXPECT_TRUE(web_contents);
   // TODO(skyostil): Verify viewport dimensions once we can.
   web_contents.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateWithBadURL) {
+  GURL bad_url("not_valid");
+  std::unique_ptr<HeadlessWebContents> web_contents =
+      browser()->CreateWebContents(bad_url, gfx::Size(800, 600));
+  EXPECT_FALSE(web_contents);
 }
 
 class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
@@ -51,13 +58,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
   builder.SetProxyServer(proxy_server()->host_port_pair());
   SetBrowserOptions(builder.Build());
 
-  std::unique_ptr<HeadlessWebContents> web_contents =
-      browser()->CreateWebContents(gfx::Size(800, 600));
-
   // Load a page which doesn't actually exist, but for which the our proxy
   // returns valid content anyway.
-  EXPECT_TRUE(NavigateAndWaitForLoad(
-      web_contents.get(), GURL("http://not-an-actual-domain.tld/hello.html")));
+  std::unique_ptr<HeadlessWebContents> web_contents =
+      browser()->CreateWebContents(
+          GURL("http://not-an-actual-domain.tld/hello.html"),
+          gfx::Size(800, 600));
+  EXPECT_TRUE(WaitForLoad(web_contents.get()));
 }
 
 }  // namespace headless

@@ -37,8 +37,6 @@ class HeadlessShell : public HeadlessWebContents::Observer {
 
   void OnStart(HeadlessBrowser* browser) {
     browser_ = browser;
-    web_contents_ = browser->CreateWebContents(gfx::Size(800, 600));
-    web_contents_->AddObserver(this);
 
     base::CommandLine::StringVector args =
         base::CommandLine::ForCurrentProcess()->GetArgs();
@@ -50,11 +48,13 @@ class HeadlessShell : public HeadlessWebContents::Observer {
     } else {
       url = GURL(args[0]);
     }
-    if (!web_contents_->OpenURL(url)) {
+    web_contents_ = browser->CreateWebContents(url, gfx::Size(800, 600));
+    if (!web_contents_) {
       LOG(ERROR) << "Navigation failed";
-      web_contents_ = nullptr;
       browser_->Shutdown();
+      return;
     }
+    web_contents_->AddObserver(this);
   }
 
   void ShutdownIfNeeded() {
@@ -70,8 +70,6 @@ class HeadlessShell : public HeadlessWebContents::Observer {
   void DocumentOnLoadCompletedInMainFrame() override {
     ShutdownIfNeeded();
   }
-
-  void DidFinishNavigation(bool success) override {}
 
  private:
   HeadlessBrowser* browser_;  // Not owned.

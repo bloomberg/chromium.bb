@@ -22,9 +22,13 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // TODO(skyostil): Replace this with an equivalent client API.
   class Observer {
    public:
-    // Will be called on browser thread.
-    virtual void DocumentOnLoadCompletedInMainFrame() = 0;
-    virtual void DidFinishNavigation(bool success) = 0;
+    // All the following notifications will be called on browser main thread.
+    virtual void DocumentOnLoadCompletedInMainFrame(){};
+    virtual void DidFinishNavigation(bool success){};
+
+    // After this event, this HeadlessWebContents instance is ready to be
+    // controlled using a DevTools client.
+    virtual void WebContentsReady(){};
 
    protected:
     Observer() {}
@@ -33,9 +37,6 @@ class HEADLESS_EXPORT HeadlessWebContents {
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
-
-  // TODO(skyostil): Replace this with an equivalent client API.
-  virtual bool OpenURL(const GURL& url) = 0;
 
   // Add or remove an observer to receive events from this WebContents.
   // |observer| must outlive this class or be removed prior to being destroyed.

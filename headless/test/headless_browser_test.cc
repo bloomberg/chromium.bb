@@ -5,6 +5,7 @@
 #include "headless/test/headless_browser_test.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,9 +19,9 @@ namespace {
 
 class WaitForNavigationObserver : public HeadlessWebContents::Observer {
  public:
-  WaitForNavigationObserver(base::RunLoop* run_loop,
+  WaitForNavigationObserver(HeadlessBrowserTest* browser_test,
                             HeadlessWebContents* web_contents)
-      : run_loop_(run_loop),
+      : browser_test_(browser_test),
         web_contents_(web_contents),
         navigation_succeeded_(false) {
     web_contents_->AddObserver(this);
@@ -28,7 +29,9 @@ class WaitForNavigationObserver : public HeadlessWebContents::Observer {
 
   ~WaitForNavigationObserver() override { web_contents_->RemoveObserver(this); }
 
-  void DocumentOnLoadCompletedInMainFrame() override { run_loop_->Quit(); }
+  void DocumentOnLoadCompletedInMainFrame() override {
+    browser_test_->FinishAsynchronousTest();
+  }
   void DidFinishNavigation(bool success) override {
     navigation_succeeded_ = success;
   }
@@ -36,7 +39,7 @@ class WaitForNavigationObserver : public HeadlessWebContents::Observer {
   bool navigation_succeeded() const { return navigation_succeeded_; }
 
  private:
-  base::RunLoop* run_loop_;            // Not owned.
+  HeadlessBrowserTest* browser_test_;  // Not owned.
   HeadlessWebContents* web_contents_;  // Not owned.
 
   bool navigation_succeeded_;
@@ -86,18 +89,22 @@ HeadlessBrowser* HeadlessBrowserTest::browser() const {
   return HeadlessContentMainDelegate::GetInstance()->browser();
 }
 
-bool HeadlessBrowserTest::NavigateAndWaitForLoad(
-    HeadlessWebContents* web_contents,
-    const GURL& url) {
-  base::RunLoop run_loop;
+bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
+  WaitForNavigationObserver observer(this, web_contents);
+  RunAsynchronousTest();
+  return observer.navigation_succeeded();
+}
+
+void HeadlessBrowserTest::RunAsynchronousTest() {
   base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
       base::MessageLoop::current());
-  WaitForNavigationObserver observer(&run_loop, web_contents);
+  run_loop_ = base::WrapUnique(new base::RunLoop());
+  run_loop_->Run();
+  run_loop_ = nullptr;
+}
 
-  if (!web_contents->OpenURL(url))
-    return false;
-  run_loop.Run();
-  return observer.navigation_succeeded();
+void HeadlessBrowserTest::FinishAsynchronousTest() {
+  run_loop_->Quit();
 }
 
 }  // namespace headless

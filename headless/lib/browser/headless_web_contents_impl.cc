@@ -31,6 +31,8 @@ class WebContentsObserverAdapter : public content::WebContentsObserver {
 
   ~WebContentsObserverAdapter() override {}
 
+  void RenderViewReady() override { observer_->WebContentsReady(); }
+
   void DocumentOnLoadCompletedInMainFrame() override {
     observer_->DocumentOnLoadCompletedInMainFrame();
   }

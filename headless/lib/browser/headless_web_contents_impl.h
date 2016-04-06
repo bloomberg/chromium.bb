@@ -28,22 +28,19 @@ class WebContentsObserverAdapter;
 
 class HeadlessWebContentsImpl : public HeadlessWebContents {
  public:
+  HeadlessWebContentsImpl(content::BrowserContext* context,
+                          aura::Window* parent_window,
+                          const gfx::Size& initial_size);
   ~HeadlessWebContentsImpl() override;
 
   // HeadlessWebContents implementation:
-  bool OpenURL(const GURL& url) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
   content::WebContents* web_contents() const;
+  bool OpenURL(const GURL& url);
 
  private:
-  friend class HeadlessBrowserImpl;
-
-  HeadlessWebContentsImpl(content::BrowserContext* context,
-                          aura::Window* parent_window,
-                          const gfx::Size& initial_size);
-
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;
   std::unique_ptr<content::WebContents> web_contents_;

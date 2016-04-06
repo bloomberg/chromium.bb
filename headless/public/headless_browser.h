@@ -35,8 +35,10 @@ class HEADLESS_EXPORT HeadlessBrowser {
  public:
   struct Options;
 
-  // Create a new browser tab. |size| is in physical pixels.
+  // Create a new browser tab which navigates to |initial_url|. |size| is in
+  // physical pixels.
   virtual std::unique_ptr<HeadlessWebContents> CreateWebContents(
+      const GURL& initial_url,
       const gfx::Size& size) = 0;
 
   // Returns a task runner for submitting work to the browser main thread.

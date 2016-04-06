@@ -30,6 +30,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   // HeadlessBrowser implementation:
   std::unique_ptr<HeadlessWebContents> CreateWebContents(
+      const GURL& initial_url,
       const gfx::Size& size) override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const override;

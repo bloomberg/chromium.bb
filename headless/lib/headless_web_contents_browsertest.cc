@@ -16,19 +16,39 @@ namespace headless {
 
 class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 
+class NavigationObserver : public HeadlessWebContents::Observer {
+ public:
+  NavigationObserver(HeadlessWebContentsTest* browser_test)
+      : browser_test_(browser_test), navigation_succeeded_(false) {}
+  ~NavigationObserver() override {}
+
+  void DocumentOnLoadCompletedInMainFrame() override {
+    browser_test_->FinishAsynchronousTest();
+  }
+
+  void DidFinishNavigation(bool success) override {
+    navigation_succeeded_ = success;
+  }
+
+  bool navigation_succeeded() const { return navigation_succeeded_; }
+
+ private:
+  HeadlessWebContentsTest* browser_test_;  // Not owned.
+  bool navigation_succeeded_;
+};
+
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
   EXPECT_TRUE(embedded_test_server()->Start());
   std::unique_ptr<HeadlessWebContents> web_contents =
-      browser()->CreateWebContents(gfx::Size(800, 600));
-  EXPECT_TRUE(NavigateAndWaitForLoad(
-      web_contents.get(), embedded_test_server()->GetURL("/hello.html")));
-}
+      browser()->CreateWebContents(
+          embedded_test_server()->GetURL("/hello.html"), gfx::Size(800, 600));
+  NavigationObserver observer(this);
+  web_contents->AddObserver(&observer);
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, NavigationWithBadURL) {
-  std::unique_ptr<HeadlessWebContents> web_contents =
-      browser()->CreateWebContents(gfx::Size(800, 600));
-  GURL bad_url("not_valid");
-  EXPECT_FALSE(web_contents->OpenURL(bad_url));
+  RunAsynchronousTest();
+
+  EXPECT_TRUE(observer.navigation_succeeded());
+  web_contents->RemoveObserver(&observer);
 }
 
 }  // namespace headless
