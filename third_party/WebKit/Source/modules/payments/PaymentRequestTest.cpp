@@ -78,10 +78,10 @@ TEST_F(PaymentRequestTest, ItemListRequired)
 
 TEST_F(PaymentRequestTest, AtLeastOnePaymentDetailsItemRequired)
 {
-    PaymentDetails emptyItems;
-    emptyItems.setItems(HeapVector<PaymentItem>());
+    PaymentDetails details;
+    details.setShippingOptions(HeapVector<ShippingOption>(2, buildShippingOptionForTest()));
 
-    PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), emptyItems, getExceptionState());
+    PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
 
     EXPECT_TRUE(getExceptionState().hadException());
     EXPECT_EQ(V8TypeError, getExceptionState().code());
@@ -89,8 +89,8 @@ TEST_F(PaymentRequestTest, AtLeastOnePaymentDetailsItemRequired)
 
 TEST_F(PaymentRequestTest, NullShippingOptionWhenNoOptionsAvailable)
 {
-    PaymentDetails details = buildPaymentDetailsForTest();
-    details.setShippingOptions(HeapVector<ShippingOption>());
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
 
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
 
@@ -99,8 +99,9 @@ TEST_F(PaymentRequestTest, NullShippingOptionWhenNoOptionsAvailable)
 
 TEST_F(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable)
 {
-    PaymentDetails details = buildPaymentDetailsForTest();
-    EXPECT_LE(2U, details.shippingOptions().size());
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
+    details.setShippingOptions(HeapVector<ShippingOption>(2, buildShippingOptionForTest()));
 
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
 
@@ -109,15 +110,9 @@ TEST_F(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable)
 
 TEST_F(PaymentRequestTest, SelectSingleAvailableShippingOption)
 {
-    CurrencyAmount amount;
-    amount.setCurrencyCode("USD");
-    amount.setValue("10.00");
-    ShippingOption option;
-    option.setAmount(amount);
-    option.setId("standard");
-    option.setLabel("Standard shipping");
-    PaymentDetails details = buildPaymentDetailsForTest();
-    details.setShippingOptions(HeapVector<ShippingOption>(1, option));
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
+    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest()));
 
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
 

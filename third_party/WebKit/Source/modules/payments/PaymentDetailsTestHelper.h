@@ -6,6 +6,8 @@
 #define PaymentDetailsTestHelper_h
 
 #include "modules/payments/PaymentDetails.h"
+#include "modules/payments/PaymentItem.h"
+#include "modules/payments/ShippingOption.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -28,6 +30,10 @@ enum PaymentTestModificationType {
     PaymentTestOverwriteValue,
     PaymentTestRemoveKey
 };
+
+PaymentItem buildPaymentItemForTest(PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
+
+ShippingOption buildShippingOptionForTest(PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
