@@ -115,8 +115,10 @@ bool ChromeRLZTrackerDelegate::GetLanguage(base::string16* language) {
 #if defined(OS_WIN)
   return GoogleUpdateSettings::GetLanguage(language);
 #else
-  // TODO(thakis): Implement.
-  NOTIMPLEMENTED();
+  // On other systems, we don't know the install language of promotions. That's
+  // OK, for now all promotions on non-Windows systems will be reported as "en".
+  // If non-Windows promotions end up requiring language code reporting, that
+  // code will need to go here.
   return false;
 #endif
 }
