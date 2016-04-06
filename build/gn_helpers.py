@@ -103,6 +103,27 @@ def FromGNString(input):
   return parser.Parse()
 
 
+def FromGNArgs(input):
+  """Converts a string with a bunch of gn arg assignments into a Python dict.
+
+  Given a whitespace-separated list of
+
+    <ident> = (integer | string | boolean | <list of the former>)
+
+  gn assignments, this returns a Python dict, i.e.:
+
+    FromGNArgs("foo=true\nbar=1\n") -> { 'foo': True, 'bar': 1 }.
+
+  Only simple types and lists supported; variables, structs, calls
+  and other, more complicated things are not.
+
+  This routine is meant to handle only the simple sorts of values that
+  arise in parsing --args.
+  """
+  parser = GNValueParser(input)
+  return parser.ParseArgs()
+
+
 def UnescapeGNString(value):
   """Given a string with GN escaping, returns the unescaped string.
 
@@ -174,6 +195,27 @@ class GNValueParser(object):
                         self.input[self.cur:])
     return result
 
+  def ParseArgs(self):
+    """Converts a whitespace-separated list of ident=literals to a dict.
+
+    See additional usage notes on FromGNArgs, above.
+    """
+    d = {}
+
+    self.ConsumeWhitespace()
+    while not self.IsDone():
+      ident = self._ParseIdent()
+      self.ConsumeWhitespace()
+      if self.input[self.cur] != '=':
+        raise GNException("Unexpected token: " + self.input[self.cur:])
+      self.cur += 1
+      self.ConsumeWhitespace()
+      val = self._ParseAllowTrailing()
+      self.ConsumeWhitespace()
+      d[ident] = val
+
+    return d
+
   def _ParseAllowTrailing(self):
     """Internal version of Parse that doesn't check for trailing stuff."""
     self.ConsumeWhitespace()
@@ -193,6 +235,24 @@ class GNValueParser(object):
       return False
     else:
       raise GNException("Unexpected token: " + self.input[self.cur:])
+
+  def _ParseIdent(self):
+    id = ''
+
+    next_char = self.input[self.cur]
+    if not next_char.isalpha() and not next_char=='_':
+      raise GNException("Expected an identifier: " + self.input[self.cur:])
+
+    id += next_char
+    self.cur += 1
+
+    next_char = self.input[self.cur]
+    while next_char.isalpha() or next_char.isdigit() or next_char=='_':
+      id += next_char
+      self.cur += 1
+      next_char = self.input[self.cur]
+
+    return id
 
   def ParseNumber(self):
     self.ConsumeWhitespace()
