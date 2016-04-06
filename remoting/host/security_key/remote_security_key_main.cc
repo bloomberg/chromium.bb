@@ -9,6 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/host/host_exit_codes.h"
