@@ -387,25 +387,18 @@ public class MediaNotificationManager {
 
     private MediaSessionCompat mMediaSession;
 
-    private static final class MediaSessionCallback extends MediaSessionCompat.Callback {
-        private final MediaNotificationManager mManager;
+    private final MediaSessionCompat.Callback mMediaSessionCallback =
+            new MediaSessionCompat.Callback() {
+                @Override
+                public void onPlay() {
+                    onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                }
 
-        private MediaSessionCallback(MediaNotificationManager manager) {
-            mManager = manager;
-        }
-
-        @Override
-        public void onPlay() {
-            mManager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-        }
-
-        @Override
-        public void onPause() {
-            mManager.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-        }
-    }
-
-    private final MediaSessionCallback mMediaSessionCallback = new MediaSessionCallback(this);
+                @Override
+                public void onPause() {
+                    onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                }
+            };
 
     private MediaNotificationManager(Context context, int notificationId) {
         mContext = context;
@@ -473,6 +466,7 @@ public class MediaNotificationManager {
         manager.cancel(mMediaNotificationInfo.id);
 
         if (mMediaSession != null) {
+            mMediaSession.setCallback(null);
             mMediaSession.setActive(false);
             mMediaSession.release();
             mMediaSession = null;
