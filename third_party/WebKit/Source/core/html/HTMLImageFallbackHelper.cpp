@@ -44,6 +44,7 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
     container->setInlineStyleProperty(CSSPropertyDisplay, CSSValueInlineBlock);
     container->setInlineStyleProperty(CSSPropertyBoxSizing, CSSValueBorderBox);
     container->setInlineStyleProperty(CSSPropertyPadding, 1, CSSPrimitiveValue::UnitType::Pixels);
+    container->setInlineStyleProperty(CSSPropertyBorderRadius, ("inherit"));
 
     RawPtr<HTMLImageElement> brokenImage = HTMLImageElement::create(element.document());
     container->appendChild(brokenImage);

@@ -22,6 +22,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/api/LineLayoutInline.h"
@@ -1028,6 +1029,10 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     }
 
     if (getLineLayoutItem().style()->hasBorderRadius()) {
+        LayoutPoint adjustedLocation = accumulatedOffset + overflowRect.location();
+        if (getLineLayoutItem().isBox() && toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(getLineLayoutItem()))->hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
+            return false;
+
         LayoutRect borderRect = logicalFrameRect();
         borderRect.moveBy(accumulatedOffset);
         FloatRoundedRect border = getLineLayoutItem().style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge(), includeLogicalRightEdge());

@@ -13,7 +13,7 @@ test contents:
 |     <shadow:root>
 |       <div>
 |         id="alttext-container"
-|         style="overflow: hidden; border: 1px solid silver; display: inline-block; box-sizing: border-box; padding: 1px;"
+|         style="overflow: hidden; border: 1px solid silver; display: inline-block; box-sizing: border-box; padding: 1px; border-radius: inherit;"
 |         <img>
 |           align="left"
 |           height="16"
