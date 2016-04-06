@@ -55,6 +55,7 @@ PrerenderMessageFilter::PrerenderMessageFilter(int render_process_id,
 }
 
 PrerenderMessageFilter::~PrerenderMessageFilter() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 // static
@@ -89,6 +90,11 @@ void PrerenderMessageFilter::OnChannelClosing() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PrerenderMessageFilter::OnChannelClosingInUIThread, this));
+}
+
+void PrerenderMessageFilter::OnDestruct() const {
+  // |shutdown_notifier_| needs to be destroyed on the UI thread.
+  BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 void PrerenderMessageFilter::OnAddPrerender(

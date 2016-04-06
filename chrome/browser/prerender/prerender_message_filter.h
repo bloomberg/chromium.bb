@@ -37,6 +37,10 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   static void EnsureShutdownNotifierFactoryBuilt();
 
  private:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<PrerenderMessageFilter>;
+
   ~PrerenderMessageFilter() override;
 
   // Overridden from content::BrowserMessageFilter.
@@ -44,6 +48,7 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override;
   void OnChannelClosing() override;
+  void OnDestruct() const override;
 
   void OnAddPrerender(int prerender_id,
                       const PrerenderAttributes& attributes,
