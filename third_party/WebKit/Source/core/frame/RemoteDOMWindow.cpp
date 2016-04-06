@@ -333,6 +333,12 @@ void RemoteDOMWindow::cancelIdleCallback(int id)
     ASSERT_NOT_REACHED();
 }
 
+CustomElementsRegistry* RemoteDOMWindow::customElements() const
+{
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
 RemoteDOMWindow::RemoteDOMWindow(RemoteFrame& frame)
     : m_frame(&frame)
 {

@@ -21,6 +21,7 @@ class BarProp;
 class CSSRuleList;
 class CSSStyleDeclaration;
 class Console;
+class CustomElementsRegistry;
 class DOMSelection;
 class DOMWindowCSS;
 class Document;
@@ -173,6 +174,9 @@ public:
     // Idle callback extensions
     virtual int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) = 0;
     virtual void cancelIdleCallback(int id) = 0;
+
+    // Custom elements
+    virtual CustomElementsRegistry* customElements() const = 0;
 
     void captureEvents() { }
     void releaseEvents() { }

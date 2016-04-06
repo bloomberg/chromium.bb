@@ -39,6 +39,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SandboxFlags.h"
+#include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"
 #include "core/events/HashChangeEvent.h"
@@ -552,6 +553,7 @@ void LocalDOMWindow::reset()
     m_console = nullptr;
     m_navigator = nullptr;
     m_media = nullptr;
+    m_customElements = nullptr;
     m_applicationCache = nullptr;
 #if ENABLE(ASSERT)
     m_hasBeenReset = true;
@@ -1308,6 +1310,13 @@ void LocalDOMWindow::cancelIdleCallback(int id)
         document->cancelIdleCallback(id);
 }
 
+CustomElementsRegistry* LocalDOMWindow::customElements() const
+{
+    if (!m_customElements)
+        m_customElements = CustomElementsRegistry::create();
+    return m_customElements.get();
+}
+
 bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (!EventTarget::addEventListenerInternal(eventType, listener, options))
@@ -1504,6 +1513,7 @@ DEFINE_TRACE(LocalDOMWindow)
     visitor->trace(m_console);
     visitor->trace(m_navigator);
     visitor->trace(m_media);
+    visitor->trace(m_customElements);
     visitor->trace(m_applicationCache);
     visitor->trace(m_eventQueue);
     visitor->trace(m_postMessageTimers);

@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class CustomElementsRegistry;
 class DOMWindowEventQueue;
 class DOMWindowProperty;
 class DocumentInit;
@@ -145,6 +146,7 @@ public:
     void cancelAnimationFrame(int id) override;
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
+    CustomElementsRegistry* customElements() const override;
     void schedulePostMessage(MessageEvent*, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
 
     void registerProperty(DOMWindowProperty*);
@@ -261,6 +263,7 @@ private:
     mutable Member<Console> m_console;
     mutable Member<Navigator> m_navigator;
     mutable Member<StyleMedia> m_media;
+    mutable Member<CustomElementsRegistry> m_customElements;
 
     String m_status;
     String m_defaultStatus;
