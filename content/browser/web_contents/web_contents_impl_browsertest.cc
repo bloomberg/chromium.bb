@@ -968,14 +968,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   dialog_manager.Wait();
   EXPECT_EQ("about:blank", dialog_manager.last_message());
 
-  // Dialogs do not work with out-of-process iframes yet.
-  // http://crbug.com/453893
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    wc->SetDelegate(nullptr);
-    wc->SetJavaScriptDialogManagerForTesting(nullptr);
-    return;  // :(
-  }
-
   // Navigate cross-domain.
   NavigateFrameToURL(frame,
                      embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -987,6 +979,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   dialog_manager.Wait();
   EXPECT_EQ(GURL("http://b.com/title2.html"),
             GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
+
+  // Dialogs do not work with out-of-process iframes yet.
+  // http://crbug.com/453893
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    wc->SetDelegate(nullptr);
+    wc->SetJavaScriptDialogManagerForTesting(nullptr);
+    return;  // :(
+  }
 
   // A dialog from the main frame.
   EXPECT_TRUE(

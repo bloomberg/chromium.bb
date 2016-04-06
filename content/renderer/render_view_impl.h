@@ -591,9 +591,6 @@ class CONTENT_EXPORT RenderViewImpl
                                    blink::WebView* web_view,
                                    CompositorDependencies* compositor_deps);
 
-  // Sends a message and runs a nested message loop.
-  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
-
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in

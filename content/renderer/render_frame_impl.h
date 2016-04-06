@@ -72,6 +72,10 @@ struct FrameMsg_PostMessage_Params;
 struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
 
+namespace IPC {
+class SyncMessage;
+}
+
 namespace blink {
 class WebGeolocationClient;
 class WebMouseEvent;
@@ -851,6 +855,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(varunjain): delete this method once we figure out how to keep
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
+
+  // Sends a message and runs a nested message loop.
+  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
   bool RunJavaScriptMessage(JavaScriptMessageType type,
                             const base::string16& message,

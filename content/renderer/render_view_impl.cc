@@ -1494,18 +1494,6 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
 #endif
 }
 
-bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
-  // Before WebKit asks us to show an alert (etc.), it takes care of doing the
-  // equivalent of WebView::willEnterModalLoop.  In the case of showModalDialog
-  // it is particularly important that we do not call willEnterModalLoop as
-  // that would defer resource loads for the dialog itself.
-  if (RenderThreadImpl::current())  // Will be NULL during unit tests.
-    RenderThreadImpl::current()->DoNotNotifyWebKitOfModalLoop();
-
-  message->EnableMessagePumping();  // Runs a nested message loop.
-  return Send(message);
-}
-
 void RenderViewImpl::OnForceRedraw(int id) {
   ui::LatencyInfo latency_info;
   if (id) {

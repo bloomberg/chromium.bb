@@ -2132,6 +2132,18 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
       surroundingText.endOffsetInTextContent()));
 }
 
+bool RenderFrameImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
+  // Before Blink asks us to show an alert (etc.), it takes care of doing the
+  // equivalent of WebView::willEnterModalLoop.  In this case it is particularly
+  // important that we do not call willEnterModalLoop as that would defer
+  // resource loads for the dialog itself.
+  if (RenderThreadImpl::current())  // Will be NULL during unit tests.
+    RenderThreadImpl::current()->DoNotNotifyWebKitOfModalLoop();
+
+  message->EnableMessagePumping();  // Runs a nested message loop.
+  return Send(message);
+}
+
 bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
                                            const base::string16& message,
                                            const base::string16& default_value,
@@ -2147,10 +2159,8 @@ bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
   if (!result)
     result = &result_temp;
 
-  render_view()->SendAndRunNestedMessageLoop(
-      new FrameHostMsg_RunJavaScriptMessage(
-        routing_id_, message, default_value, frame_url, type, &success,
-        result));
+  SendAndRunNestedMessageLoop(new FrameHostMsg_RunJavaScriptMessage(
+      routing_id_, message, default_value, frame_url, type, &success, result));
   return success;
 }
 
@@ -3612,10 +3622,9 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptMessage.
   base::string16 ignored_result;
-  render_view()->SendAndRunNestedMessageLoop(
-      new FrameHostMsg_RunBeforeUnloadConfirm(
-          routing_id_, frame_->document().url(), is_reload,
-          &success, &ignored_result));
+  SendAndRunNestedMessageLoop(new FrameHostMsg_RunBeforeUnloadConfirm(
+      routing_id_, frame_->document().url(), is_reload, &success,
+      &ignored_result));
   return success;
 }
 
