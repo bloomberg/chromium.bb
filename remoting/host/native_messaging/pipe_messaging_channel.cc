@@ -68,14 +68,15 @@ void PipeMessagingChannel::Start(EventHandler* event_handler) {
       base::Bind(&PipeMessagingChannel::Shutdown, weak_ptr_));
 }
 
-void PipeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
+void PipeMessagingChannel::ProcessMessage(
+    std::unique_ptr<base::Value> message) {
   DCHECK(CalledOnValidThread());
 
   if (event_handler_)
     event_handler_->OnMessage(std::move(message));
 }
 
-void PipeMessagingChannel::SendMessage(scoped_ptr<base::Value> message) {
+void PipeMessagingChannel::SendMessage(std::unique_ptr<base::Value> message) {
   DCHECK(CalledOnValidThread());
 
   bool success = message && native_messaging_writer_;

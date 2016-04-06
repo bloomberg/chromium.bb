@@ -8,7 +8,7 @@
 
 namespace remoting {
 
-scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
+std::unique_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
     const SendMessageCallback& callback) {
   return nullptr;
 }

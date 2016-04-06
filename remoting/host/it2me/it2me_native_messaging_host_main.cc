@@ -117,19 +117,19 @@ int StartIt2MeNativeMessagingHost() {
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
 
-  scoped_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
+  std::unique_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 
-  scoped_ptr<NativeMessagingPipe> native_messaging_pipe(
+  std::unique_ptr<NativeMessagingPipe> native_messaging_pipe(
       new NativeMessagingPipe());
 
   // Set up the native messaging channel.
-  scoped_ptr<extensions::NativeMessagingChannel> channel(
+  std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
 
-  scoped_ptr<ChromotingHostContext> context =
+  std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
           message_loop.task_runner(), run_loop.QuitClosure()));
-  scoped_ptr<extensions::NativeMessageHost> host(
+  std::unique_ptr<extensions::NativeMessageHost> host(
       new It2MeNativeMessagingHost(std::move(context), std::move(factory)));
 
   host->Start(native_messaging_pipe.get());

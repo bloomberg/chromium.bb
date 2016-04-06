@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,7 +28,7 @@ class MockSignalStrategy : public SignalStrategy {
   // GMock currently doesn't support move-only arguments, so we have
   // to use this hack here.
   MOCK_METHOD1(SendStanzaPtr, bool(buzz::XmlElement* stanza));
-  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override {
+  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override {
     return SendStanzaPtr(stanza.release());
   }
 };

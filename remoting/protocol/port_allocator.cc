@@ -41,8 +41,8 @@ namespace remoting {
 namespace protocol {
 
 PortAllocator::PortAllocator(
-    scoped_ptr<rtc::NetworkManager> network_manager,
-    scoped_ptr<rtc::PacketSocketFactory> socket_factory,
+    std::unique_ptr<rtc::NetworkManager> network_manager,
+    std::unique_ptr<rtc::PacketSocketFactory> socket_factory,
     scoped_refptr<TransportContext> transport_context)
     : BasicPortAllocator(network_manager.get(), socket_factory.get()),
       network_manager_(std::move(network_manager)),
@@ -110,14 +110,14 @@ void PortAllocatorSession::OnIceConfig(const IceConfig& ice_config) {
   }
 }
 
-scoped_ptr<cricket::PortConfiguration>
+std::unique_ptr<cricket::PortConfiguration>
 PortAllocatorSession::GetPortConfiguration() {
   cricket::ServerAddresses stun_servers;
   for (const auto& host : ice_config_.stun_servers) {
     stun_servers.insert(host);
   }
 
-  scoped_ptr<cricket::PortConfiguration> config(
+  std::unique_ptr<cricket::PortConfiguration> config(
       new cricket::PortConfiguration(stun_servers, username(), password()));
 
   if (relay_enabled()) {
@@ -150,7 +150,7 @@ void PortAllocatorSession::TryCreateRelaySession() {
                     net::EscapeUrlEncodedData(username(), false) +
                     "&password=" +
                     net::EscapeUrlEncodedData(password(), false) + "&sn=1";
-  scoped_ptr<UrlRequest> url_request =
+  std::unique_ptr<UrlRequest> url_request =
       transport_context_->url_request_factory()->CreateUrlRequest(
           UrlRequest::Type::GET, url);
   url_request->AddHeader("X-Talk-Google-Relay-Auth: " +
@@ -180,7 +180,7 @@ void PortAllocatorSession::OnSessionRequestResult(
     LOG(WARNING) << "Received unexpected password value from relay server.";
   }
 
-  scoped_ptr<cricket::PortConfiguration> config = GetPortConfiguration();
+  std::unique_ptr<cricket::PortConfiguration> config = GetPortConfiguration();
 
   std::string relay_ip = map["relay.ip"];
   std::string relay_port = map["relay.udp_port"];

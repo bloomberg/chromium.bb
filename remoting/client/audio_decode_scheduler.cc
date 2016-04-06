@@ -20,10 +20,10 @@ class AudioDecodeScheduler::Core : public base::RefCountedThreadSafe<Core> {
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-       scoped_ptr<AudioPlayer> audio_player);
+       std::unique_ptr<AudioPlayer> audio_player);
 
   void Initialize(const protocol::SessionConfig& config);
-  void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                           const base::Closure& done);
 
   // Called by AudioDecodeScheduler when it is destroyed.
@@ -35,16 +35,17 @@ class AudioDecodeScheduler::Core : public base::RefCountedThreadSafe<Core> {
   virtual ~Core();
 
   // Called on the audio decoder thread.
-  void DecodePacket(scoped_ptr<AudioPacket> packet, const base::Closure& done);
+  void DecodePacket(std::unique_ptr<AudioPacket> packet,
+                    const base::Closure& done);
 
   // Called on the main thread.
-  void ProcessDecodedPacket(scoped_ptr<AudioPacket> packet,
+  void ProcessDecodedPacket(std::unique_ptr<AudioPacket> packet,
                             const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner_;
-  scoped_ptr<AudioDecoder> decoder_;
-  scoped_ptr<AudioPlayer> audio_player_;
+  std::unique_ptr<AudioDecoder> decoder_;
+  std::unique_ptr<AudioPlayer> audio_player_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -52,7 +53,7 @@ class AudioDecodeScheduler::Core : public base::RefCountedThreadSafe<Core> {
 AudioDecodeScheduler::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-    scoped_ptr<AudioPlayer> audio_player)
+    std::unique_ptr<AudioPlayer> audio_player)
     : main_task_runner_(main_task_runner),
       audio_decode_task_runner_(audio_decode_task_runner),
       audio_player_(std::move(audio_player)) {}
@@ -66,7 +67,7 @@ void AudioDecodeScheduler::Core::Initialize(
 }
 
 void AudioDecodeScheduler::Core::ProcessAudioPacket(
-    scoped_ptr<AudioPacket> packet,
+    std::unique_ptr<AudioPacket> packet,
     const base::Closure& done) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   audio_decode_task_runner_->PostTask(FROM_HERE, base::Bind(
@@ -80,10 +81,11 @@ void AudioDecodeScheduler::Core::Detach() {
 }
 
 void AudioDecodeScheduler::Core::DecodePacket(
-    scoped_ptr<AudioPacket> packet,
+    std::unique_ptr<AudioPacket> packet,
     const base::Closure& done) {
   DCHECK(audio_decode_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<AudioPacket> decoded_packet = decoder_->Decode(std::move(packet));
+  std::unique_ptr<AudioPacket> decoded_packet =
+      decoder_->Decode(std::move(packet));
 
   main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &AudioDecodeScheduler::Core::ProcessDecodedPacket, this,
@@ -91,7 +93,7 @@ void AudioDecodeScheduler::Core::DecodePacket(
 }
 
 void AudioDecodeScheduler::Core::ProcessDecodedPacket(
-    scoped_ptr<AudioPacket> packet,
+    std::unique_ptr<AudioPacket> packet,
     const base::Closure& done) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   // Only process |packet| if it is non-null.
@@ -103,10 +105,10 @@ void AudioDecodeScheduler::Core::ProcessDecodedPacket(
 AudioDecodeScheduler::AudioDecodeScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-    scoped_ptr<AudioPlayer> audio_player)
-    : core_(new Core(main_task_runner, audio_decode_task_runner,
-                     std::move(audio_player))) {
-}
+    std::unique_ptr<AudioPlayer> audio_player)
+    : core_(new Core(main_task_runner,
+                     audio_decode_task_runner,
+                     std::move(audio_player))) {}
 
 AudioDecodeScheduler::~AudioDecodeScheduler() {
   core_->Detach();
@@ -116,8 +118,9 @@ void AudioDecodeScheduler::Initialize(const protocol::SessionConfig& config) {
   core_->Initialize(config);
 }
 
-void AudioDecodeScheduler::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
-                                              const base::Closure& done) {
+void AudioDecodeScheduler::ProcessAudioPacket(
+    std::unique_ptr<AudioPacket> packet,
+    const base::Closure& done) {
   core_->ProcessAudioPacket(std::move(packet), done);
 }
 

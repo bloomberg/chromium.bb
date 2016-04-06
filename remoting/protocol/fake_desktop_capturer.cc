@@ -41,7 +41,7 @@ class DefaultFrameGenerator
         box_speed_y_(kSpeed),
         first_frame_(true) {}
 
-  scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
+  std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::SharedMemoryFactory* shared_memory_factory);
 
  private:
@@ -58,10 +58,10 @@ class DefaultFrameGenerator
   DISALLOW_COPY_AND_ASSIGN(DefaultFrameGenerator);
 };
 
-scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
+std::unique_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
-  scoped_ptr<webrtc::DesktopFrame> frame;
+  std::unique_ptr<webrtc::DesktopFrame> frame;
   if (shared_memory_factory) {
     int buffer_size = kWidth * kHeight * kBytesPerPixel;
     frame.reset(new webrtc::SharedMemoryDesktopFrame(
@@ -147,7 +147,7 @@ void FakeDesktopCapturer::SetSharedMemoryFactory(
 
 void FakeDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
-  scoped_ptr<webrtc::DesktopFrame> frame =
+  std::unique_ptr<webrtc::DesktopFrame> frame =
       frame_generator_.Run(shared_memory_factory_.get());
   if (frame) {
     frame->set_capture_time_ms(

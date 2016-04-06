@@ -5,9 +5,10 @@
 #ifndef REMOTING_PROTOCOL_HTTP_ICE_CONFIG_REQUEST_H_
 #define REMOTING_PROTOCOL_HTTP_ICE_CONFIG_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/ice_config_request.h"
 
@@ -31,7 +32,7 @@ class HttpIceConfigRequest : public IceConfigRequest {
   void OnResponse(const UrlRequest::Result& result);
 
   std::string url_;
-  scoped_ptr<UrlRequest> url_request_;
+  std::unique_ptr<UrlRequest> url_request_;
   OnIceConfigCallback on_ice_config_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpIceConfigRequest);

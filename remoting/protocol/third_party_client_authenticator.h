@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_THIRD_PARTY_CLIENT_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_THIRD_PARTY_CLIENT_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/third_party_authenticator_base.h"

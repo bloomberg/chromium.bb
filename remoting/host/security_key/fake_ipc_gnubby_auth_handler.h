@@ -7,9 +7,9 @@
 
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ipc/ipc_listener.h"
 
@@ -62,7 +62,7 @@ class FakeIpcGnubbyAuthHandler : public GnubbyAuthHandler,
 
   // IPC Clients connect to this channel first to receive their own unique IPC
   // channel to start a security key forwarding session on.
-  scoped_ptr<IPC::Channel> ipc_server_channel_;
+  std::unique_ptr<IPC::Channel> ipc_server_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIpcGnubbyAuthHandler);
 };

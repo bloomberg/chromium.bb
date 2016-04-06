@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -46,7 +46,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
                                    public webrtc::DesktopCapturer::Callback {
  public:
   explicit WebrtcVideoCapturerAdapter(
-      scoped_ptr<webrtc::DesktopCapturer> capturer);
+      std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~WebrtcVideoCapturerAdapter() override;
 
   void SetSizeCallback(const VideoStream::SizeCallback& size_callback);
@@ -74,12 +74,12 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
 
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
+  std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
   VideoStream::SizeCallback size_callback_;
 
   // Timer to call CaptureNextFrame().
-  scoped_ptr<base::RepeatingTimer> capture_timer_;
+  std::unique_ptr<base::RepeatingTimer> capture_timer_;
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;

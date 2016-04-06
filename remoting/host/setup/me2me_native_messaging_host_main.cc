@@ -202,7 +202,7 @@ int StartMe2MeNativeMessagingHost() {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
       new URLRequestContextGetter(io_thread.task_runner(),
                                   file_thread.task_runner()));
-  scoped_ptr<OAuthClient> oauth_client(
+  std::unique_ptr<OAuthClient> oauth_client(
       new GaiaOAuthClient(url_request_context_getter));
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
@@ -244,7 +244,7 @@ int StartMe2MeNativeMessagingHost() {
   }
 
   // Initialize the pairing registry delegate and set the root keys.
-  scoped_ptr<PairingRegistryDelegateWin> delegate(
+  std::unique_ptr<PairingRegistryDelegateWin> delegate(
       new PairingRegistryDelegateWin());
   if (!delegate->SetRootKeys(privileged.Take(), unprivileged.Take()))
     return kInitializationFailed;
@@ -257,11 +257,11 @@ int StartMe2MeNativeMessagingHost() {
 #endif  // !defined(OS_WIN)
 
   // Set up the native messaging channel.
-  scoped_ptr<extensions::NativeMessagingChannel> channel(
+  std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
 
   // Create the native messaging host.
-  scoped_ptr<Me2MeNativeMessagingHost> host(new Me2MeNativeMessagingHost(
+  std::unique_ptr<Me2MeNativeMessagingHost> host(new Me2MeNativeMessagingHost(
       needs_elevation, static_cast<intptr_t>(native_view_handle),
       std::move(channel), daemon_controller, pairing_registry,
       std::move(oauth_client)));

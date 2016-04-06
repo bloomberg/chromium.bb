@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_HOST_WINDOW_H_
 #define REMOTING_HOST_HOST_WINDOW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -20,10 +21,10 @@ class HostWindow : public base::NonThreadSafe {
   virtual ~HostWindow() {}
 
   // Creates a platform-specific instance of the continue window.
-  static scoped_ptr<HostWindow> CreateContinueWindow();
+  static std::unique_ptr<HostWindow> CreateContinueWindow();
 
   // Creates a platform-specific instance of the disconnect window.
-  static scoped_ptr<HostWindow> CreateDisconnectWindow();
+  static std::unique_ptr<HostWindow> CreateDisconnectWindow();
 
   // Starts the UI state machine. |client_session_control| will be used to
   // notify the caller about the local user's actions.

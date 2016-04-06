@@ -55,7 +55,7 @@ class AppRemotingTestDriverEnvironmentTest : public ::testing::Test {
   FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher_;
   MockAccessTokenFetcher mock_access_token_fetcher_;
 
-  scoped_ptr<AppRemotingTestDriverEnvironment> environment_object_;
+  std::unique_ptr<AppRemotingTestDriverEnvironment> environment_object_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppRemotingTestDriverEnvironmentTest);
@@ -80,7 +80,7 @@ void AppRemotingTestDriverEnvironmentTest::Initialize(
     const AppRemotingTestDriverEnvironment::EnvironmentOptions& options) {
   environment_object_.reset(new AppRemotingTestDriverEnvironment(options));
 
-  scoped_ptr<FakeAccessTokenFetcher> fake_access_token_fetcher(
+  std::unique_ptr<FakeAccessTokenFetcher> fake_access_token_fetcher(
       new FakeAccessTokenFetcher());
   fake_access_token_fetcher_ = fake_access_token_fetcher.get();
   mock_access_token_fetcher_.SetAccessTokenFetcher(

@@ -54,7 +54,7 @@ class CaptureScheduler : public VideoFeedbackStub {
   void OnFrameSent();
 
   // VideoFeedbackStub interface.
-  void ProcessVideoAck(scoped_ptr<VideoAck> video_ack) override;
+  void ProcessVideoAck(std::unique_ptr<VideoAck> video_ack) override;
 
   // Sets minimum interval between frames.
   void set_minimum_interval(base::TimeDelta minimum_interval) {
@@ -62,8 +62,8 @@ class CaptureScheduler : public VideoFeedbackStub {
   }
 
   // Helper functions for tests.
-  void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
-  void SetTimerForTest(scoped_ptr<base::Timer> timer);
+  void SetTickClockForTest(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTimerForTest(std::unique_ptr<base::Timer> timer);
   void SetNumOfProcessorsForTest(int num_of_processors);
 
  private:
@@ -78,10 +78,10 @@ class CaptureScheduler : public VideoFeedbackStub {
 
   base::Closure capture_closure_;
 
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Timer used to schedule CaptureNextFrame().
-  scoped_ptr<base::Timer> capture_timer_;
+  std::unique_ptr<base::Timer> capture_timer_;
 
   // Minimum interval between frames that determines maximum possible framerate.
   base::TimeDelta minimum_interval_;

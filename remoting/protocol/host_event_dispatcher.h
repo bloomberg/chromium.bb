@@ -37,7 +37,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
   }
 
  private:
-  void OnIncomingMessage(scoped_ptr<CompoundBuffer> buffer) override;
+  void OnIncomingMessage(std::unique_ptr<CompoundBuffer> buffer) override;
 
   InputStub* input_stub_ = nullptr;
   OnInputEventCallback on_input_event_callback_;

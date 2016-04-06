@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_GNUBBY_EXTENSION_SESSION_H_
 #define REMOTING_HOST_SECURITY_KEY_GNUBBY_EXTENSION_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/host/host_extension_session.h"
 
@@ -38,7 +38,7 @@ class GnubbyExtensionSession : public HostExtensionSession {
 
   // Allows the underlying GnubbyAuthHandler to be overridden for unit testing.
   void SetGnubbyAuthHandlerForTesting(
-      scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler);
+      std::unique_ptr<GnubbyAuthHandler> gnubby_auth_handler);
 
  private:
   // These methods process specific gnubby extension message types.
@@ -55,7 +55,7 @@ class GnubbyExtensionSession : public HostExtensionSession {
   protocol::ClientStub* client_stub_ = nullptr;
 
   // Handles platform specific gnubby operations.
-  scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
+  std::unique_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(GnubbyExtensionSession);
 };

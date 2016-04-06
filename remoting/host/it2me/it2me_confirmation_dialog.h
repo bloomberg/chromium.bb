@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_IT2ME_IT2ME_CONFIRMATION_DIALOG_H_
 #define REMOTING_HOST_IT2ME_IT2ME_CONFIRMATION_DIALOG_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 
 namespace remoting {
@@ -38,7 +39,7 @@ class It2MeConfirmationDialogFactory {
   It2MeConfirmationDialogFactory();
   virtual ~It2MeConfirmationDialogFactory();
 
-  virtual scoped_ptr<It2MeConfirmationDialog> Create();
+  virtual std::unique_ptr<It2MeConfirmationDialog> Create();
 
   DISALLOW_COPY_AND_ASSIGN(It2MeConfirmationDialogFactory);
 };

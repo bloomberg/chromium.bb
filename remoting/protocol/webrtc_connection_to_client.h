@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -29,7 +29,7 @@ class WebrtcConnectionToClient : public ConnectionToClient,
                                  public ChannelDispatcherBase::EventHandler {
  public:
   WebrtcConnectionToClient(
-      scoped_ptr<Session> session,
+      std::unique_ptr<Session> session,
       scoped_refptr<protocol::TransportContext> transport_context);
   ~WebrtcConnectionToClient() override;
 
@@ -39,8 +39,8 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   Session* session() override;
   void Disconnect(ErrorCode error) override;
   void OnInputEventReceived(int64_t timestamp) override;
-  scoped_ptr<VideoStream> StartVideoStream(
-      scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
+  std::unique_ptr<VideoStream> StartVideoStream(
+      std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
   AudioStub* audio_stub() override;
   ClientStub* client_stub() override;
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
@@ -70,10 +70,10 @@ class WebrtcConnectionToClient : public ConnectionToClient,
 
   WebrtcTransport transport_;
 
-  scoped_ptr<Session> session_;
+  std::unique_ptr<Session> session_;
 
-  scoped_ptr<HostControlDispatcher> control_dispatcher_;
-  scoped_ptr<HostEventDispatcher> event_dispatcher_;
+  std::unique_ptr<HostControlDispatcher> control_dispatcher_;
+  std::unique_ptr<HostEventDispatcher> event_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToClient);
 };

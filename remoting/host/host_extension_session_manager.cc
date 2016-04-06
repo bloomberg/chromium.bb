@@ -55,7 +55,7 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
       continue;
     }
 
-    scoped_ptr<HostExtensionSession> extension_session =
+    std::unique_ptr<HostExtensionSession> extension_session =
         (*extension)
             ->CreateExtensionSession(client_session_control_, client_stub_);
     DCHECK(extension_session);

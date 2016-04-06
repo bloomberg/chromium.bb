@@ -194,7 +194,7 @@ class HostListFetcherTest : public ::testing::Test {
 
  private:
   net::FakeURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HostListFetcherTest);
 };

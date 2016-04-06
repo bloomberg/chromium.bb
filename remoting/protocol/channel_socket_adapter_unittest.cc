@@ -7,8 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -58,7 +59,8 @@ class MockTransportChannel : public cricket::TransportChannel {
 
   // This can't be a real mock method because gmock doesn't support move-only
   // return values.
-  virtual rtc::scoped_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate() const {
+  virtual rtc::scoped_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate()
+      const {
     EXPECT_TRUE(false);  // Never called.
     return nullptr;
   }
@@ -90,7 +92,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
   }
 
   MockTransportChannel channel_;
-  scoped_ptr<TransportChannelSocketAdapter> target_;
+  std::unique_ptr<TransportChannelSocketAdapter> target_;
   net::CompletionCallback callback_;
   int callback_result_;
   base::MessageLoopForIO message_loop_;

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
 
@@ -48,8 +49,8 @@ void DisconnectWindowAura::Start(
 }  // namespace
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return make_scoped_ptr(new DisconnectWindowAura());
+std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
+  return base::WrapUnique(new DisconnectWindowAura());
 }
 
 }  // namespace remoting

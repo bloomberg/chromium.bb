@@ -40,21 +40,21 @@ void JingleSessionManager::AcceptIncoming(
 }
 
 void JingleSessionManager::set_protocol_config(
-    scoped_ptr<CandidateSessionConfig> config) {
+    std::unique_ptr<CandidateSessionConfig> config) {
   protocol_config_ = std::move(config);
 }
 
-scoped_ptr<Session> JingleSessionManager::Connect(
+std::unique_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
-    scoped_ptr<Authenticator> authenticator) {
-  scoped_ptr<JingleSession> session(new JingleSession(this));
+    std::unique_ptr<Authenticator> authenticator) {
+  std::unique_ptr<JingleSession> session(new JingleSession(this));
   session->StartConnection(host_jid, std::move(authenticator));
   sessions_[session->session_id_] = session.get();
   return std::move(session);
 }
 
 void JingleSessionManager::set_authenticator_factory(
-    scoped_ptr<AuthenticatorFactory> authenticator_factory) {
+    std::unique_ptr<AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
   authenticator_factory_ = std::move(authenticator_factory);
 }
@@ -80,7 +80,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
     SendReply(stanza, JingleMessageReply::NONE);
 
-    scoped_ptr<Authenticator> authenticator =
+    std::unique_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
             signal_strategy_->GetLocalJid(), message.from);
 

@@ -23,7 +23,7 @@ class HostWindowProxy::Core
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-       scoped_ptr<HostWindow> host_window);
+       std::unique_ptr<HostWindow> host_window);
 
   // Starts |host_window_| on the |ui_task_runner_| thread.
   void Start(const base::WeakPtr<ClientSessionControl>& client_session_control);
@@ -59,7 +59,7 @@ class HostWindowProxy::Core
   base::WeakPtr<ClientSessionControl> client_session_control_;
 
   // The wrapped |HostWindow| instance running on the |ui_task_runner_| thread.
-  scoped_ptr<HostWindow> host_window_;
+  std::unique_ptr<HostWindow> host_window_;
 
   // Used to create the control pointer passed to |host_window_|.
   base::WeakPtrFactory<ClientSessionControl> weak_factory_;
@@ -70,7 +70,7 @@ class HostWindowProxy::Core
 HostWindowProxy::HostWindowProxy(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    scoped_ptr<HostWindow> host_window) {
+    std::unique_ptr<HostWindow> host_window) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   // Detach |host_window| from the calling thread so that |Core| could run it on
@@ -95,7 +95,7 @@ void HostWindowProxy::Start(
 HostWindowProxy::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    scoped_ptr<HostWindow> host_window)
+    std::unique_ptr<HostWindow> host_window)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       host_window_(std::move(host_window)),

@@ -19,10 +19,12 @@ HostEventDispatcher::HostEventDispatcher()
     : ChannelDispatcherBase(kEventChannelName) {}
 HostEventDispatcher::~HostEventDispatcher() {}
 
-void HostEventDispatcher::OnIncomingMessage(scoped_ptr<CompoundBuffer> buffer) {
+void HostEventDispatcher::OnIncomingMessage(
+    std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(input_stub_);
 
-  scoped_ptr<EventMessage> message = ParseMessage<EventMessage>(buffer.get());
+  std::unique_ptr<EventMessage> message =
+      ParseMessage<EventMessage>(buffer.get());
   if (!message)
     return;
 

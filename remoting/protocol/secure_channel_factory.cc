@@ -51,7 +51,7 @@ void SecureChannelFactory::CancelChannelCreation(
 void SecureChannelFactory::OnBaseChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
-    scoped_ptr<P2PStreamSocket> socket) {
+    std::unique_ptr<P2PStreamSocket> socket) {
   if (!socket) {
     callback.Run(nullptr);
     return;
@@ -70,7 +70,7 @@ void SecureChannelFactory::OnSecureChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
     int error,
-    scoped_ptr<P2PStreamSocket> socket) {
+    std::unique_ptr<P2PStreamSocket> socket) {
   DCHECK((socket && error == net::OK) || (!socket && error != net::OK));
 
   AuthenticatorMap::iterator it = channel_authenticators_.find(name);

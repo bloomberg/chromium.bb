@@ -22,14 +22,15 @@ HostVideoDispatcher::HostVideoDispatcher()
     : ChannelDispatcherBase(kVideoChannelName) {}
 HostVideoDispatcher::~HostVideoDispatcher() {}
 
-void HostVideoDispatcher::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                             const base::Closure& done) {
+void HostVideoDispatcher::ProcessVideoPacket(
+    std::unique_ptr<VideoPacket> packet,
+    const base::Closure& done) {
   message_pipe()->Send(packet.get(), done);
 }
 
 void HostVideoDispatcher::OnIncomingMessage(
-    scoped_ptr<CompoundBuffer> message) {
-  scoped_ptr<VideoAck> ack = ParseMessage<VideoAck>(message.get());
+    std::unique_ptr<CompoundBuffer> message) {
+  std::unique_ptr<VideoAck> ack = ParseMessage<VideoAck>(message.get());
   if (!ack)
     return;
   if (video_feedback_stub_)

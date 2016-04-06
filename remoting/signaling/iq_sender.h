@@ -6,12 +6,12 @@
 #define REMOTING_SIGNALING_IQ_SENDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/signaling/signal_strategy.h"
 
@@ -45,14 +45,14 @@ class IqSender : public SignalStrategy::Listener {
   // received. Destroy the returned IqRequest to cancel the callback.
   // Caller must take ownership of the result. Result must be
   // destroyed before sender is destroyed.
-  scoped_ptr<IqRequest> SendIq(scoped_ptr<buzz::XmlElement> stanza,
-                               const ReplyCallback& callback);
+  std::unique_ptr<IqRequest> SendIq(std::unique_ptr<buzz::XmlElement> stanza,
+                                    const ReplyCallback& callback);
 
   // Same as above, but also formats the message.
-  scoped_ptr<IqRequest> SendIq(const std::string& type,
-                               const std::string& addressee,
-                               scoped_ptr<buzz::XmlElement> iq_body,
-                               const ReplyCallback& callback);
+  std::unique_ptr<IqRequest> SendIq(const std::string& type,
+                                    const std::string& addressee,
+                                    std::unique_ptr<buzz::XmlElement> iq_body,
+                                    const ReplyCallback& callback);
 
   // SignalStrategy::Listener implementation.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
@@ -63,10 +63,10 @@ class IqSender : public SignalStrategy::Listener {
   friend class IqRequest;
 
   // Helper function used to create iq stanzas.
-  static scoped_ptr<buzz::XmlElement> MakeIqStanza(
+  static std::unique_ptr<buzz::XmlElement> MakeIqStanza(
       const std::string& type,
       const std::string& addressee,
-      scoped_ptr<buzz::XmlElement> iq_body);
+      std::unique_ptr<buzz::XmlElement> iq_body);
 
   // Removes |request| from the list of pending requests. Called by IqRequest.
   void RemoveRequest(IqRequest* request);
@@ -97,7 +97,7 @@ class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
   // Called by IqSender when a response is received.
   void OnResponse(const buzz::XmlElement* stanza);
 
-  void DeliverResponse(scoped_ptr<buzz::XmlElement> stanza);
+  void DeliverResponse(std::unique_ptr<buzz::XmlElement> stanza);
 
   IqSender* sender_;
   IqSender::ReplyCallback callback_;

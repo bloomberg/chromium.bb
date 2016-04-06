@@ -94,9 +94,9 @@ class WebrtcTransportTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ProcessTransportInfo(scoped_ptr<WebrtcTransport>* target_transport,
+  void ProcessTransportInfo(std::unique_ptr<WebrtcTransport>* target_transport,
                             bool normalize_line_endings,
-                            scoped_ptr<buzz::XmlElement> transport_info) {
+                            std::unique_ptr<buzz::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
 
     // Reformat the message to normalize line endings by removing CR symbol.
@@ -181,13 +181,13 @@ class WebrtcTransportTest : public testing::Test {
                                  base::Unretained(this)));
   }
 
-  void OnClientChannelCreated(scoped_ptr<MessagePipe> pipe) {
+  void OnClientChannelCreated(std::unique_ptr<MessagePipe> pipe) {
     client_message_pipe_ = std::move(pipe);
     if (run_loop_ && host_message_pipe_)
       run_loop_->Quit();
   }
 
-  void OnHostChannelCreated(scoped_ptr<MessagePipe> pipe) {
+  void OnHostChannelCreated(std::unique_ptr<MessagePipe> pipe) {
     host_message_pipe_ = std::move(pipe);
     if (run_loop_ && client_message_pipe_)
       run_loop_->Quit();
@@ -219,20 +219,20 @@ class WebrtcTransportTest : public testing::Test {
 
  protected:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   NetworkSettings network_settings_;
 
-  scoped_ptr<WebrtcTransport> host_transport_;
+  std::unique_ptr<WebrtcTransport> host_transport_;
   TestTransportEventHandler host_event_handler_;
-  scoped_ptr<FakeAuthenticator> host_authenticator_;
+  std::unique_ptr<FakeAuthenticator> host_authenticator_;
 
-  scoped_ptr<WebrtcTransport> client_transport_;
+  std::unique_ptr<WebrtcTransport> client_transport_;
   TestTransportEventHandler client_event_handler_;
-  scoped_ptr<FakeAuthenticator> client_authenticator_;
+  std::unique_ptr<FakeAuthenticator> client_authenticator_;
 
-  scoped_ptr<MessagePipe> client_message_pipe_;
-  scoped_ptr<MessagePipe> host_message_pipe_;
+  std::unique_ptr<MessagePipe> client_message_pipe_;
+  std::unique_ptr<MessagePipe> host_message_pipe_;
 
   ErrorCode client_error_ = OK;
   ErrorCode host_error_ = OK;

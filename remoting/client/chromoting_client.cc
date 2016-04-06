@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
 #include "remoting/client/audio_decode_scheduler.h"
@@ -30,7 +31,7 @@ namespace remoting {
 ChromotingClient::ChromotingClient(ClientContext* client_context,
                                    ClientUserInterface* user_interface,
                                    protocol::VideoRenderer* video_renderer,
-                                   scoped_ptr<AudioPlayer> audio_player)
+                                   std::unique_ptr<AudioPlayer> audio_player)
     : user_interface_(user_interface), video_renderer_(video_renderer) {
   DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
   if (audio_player) {
@@ -46,12 +47,12 @@ ChromotingClient::~ChromotingClient() {
 }
 
 void ChromotingClient::set_protocol_config(
-    scoped_ptr<protocol::CandidateSessionConfig> config) {
+    std::unique_ptr<protocol::CandidateSessionConfig> config) {
   protocol_config_ = std::move(config);
 }
 
 void ChromotingClient::SetConnectionToHostForTests(
-    scoped_ptr<protocol::ConnectionToHost> connection_to_host) {
+    std::unique_ptr<protocol::ConnectionToHost> connection_to_host) {
   connection_ = std::move(connection_to_host);
 }
 
@@ -239,7 +240,7 @@ void ChromotingClient::StartConnection() {
   connection_->Connect(
       session_manager_->Connect(
           host_jid_,
-          make_scoped_ptr(new protocol::NegotiatingClientAuthenticator(
+          base::WrapUnique(new protocol::NegotiatingClientAuthenticator(
               NormalizeJid(signal_strategy_->GetLocalJid()), host_jid_,
               client_auth_config_))),
       transport_context_, this);

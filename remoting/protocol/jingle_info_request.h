@@ -5,13 +5,13 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_INFO_REQUEST_H_
 #define REMOTING_PROTOCOL_JINGLE_INFO_REQUEST_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/ice_config_request.h"
 #include "remoting/signaling/iq_sender.h"
 
@@ -38,7 +38,7 @@ class JingleInfoRequest : public IceConfigRequest {
   void OnResponse(IqRequest* request, const buzz::XmlElement* stanza);
 
   IqSender iq_sender_;
-  scoped_ptr<IqRequest> request_;
+  std::unique_ptr<IqRequest> request_;
   OnIceConfigCallback on_ice_config_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleInfoRequest);

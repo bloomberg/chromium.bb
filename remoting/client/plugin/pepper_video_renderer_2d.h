@@ -58,9 +58,9 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
  private:
   // protocol::FrameConsumer implementation.
-  scoped_ptr<webrtc::DesktopFrame> AllocateFrame(
+  std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override;
-  void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+  void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                  const base::Closure& done) override;
   PixelFormat GetPixelFormat() override;
 
@@ -74,7 +74,7 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   pp::Graphics2D graphics2d_;
 
-  scoped_ptr<SoftwareVideoRenderer> software_video_renderer_;
+  std::unique_ptr<SoftwareVideoRenderer> software_video_renderer_;
 
   // View size in output pixels.
   webrtc::DesktopSize view_size_;

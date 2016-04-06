@@ -106,15 +106,15 @@ class SessionManager : public base::NonThreadSafe {
   // Sets local protocol configuration to be used when negotiating outgoing and
   // incoming connections.
   virtual void set_protocol_config(
-      scoped_ptr<CandidateSessionConfig> config) = 0;
+      std::unique_ptr<CandidateSessionConfig> config) = 0;
 
   // Tries to create a session to the host |jid|.
   //
   // |host_jid| is the full jid of the host to connect to.
   // |authenticator| is a client authenticator for the session.
-  virtual scoped_ptr<Session> Connect(
+  virtual std::unique_ptr<Session> Connect(
       const std::string& host_jid,
-      scoped_ptr<Authenticator> authenticator) = 0;
+      std::unique_ptr<Authenticator> authenticator) = 0;
 
   // Set authenticator factory that should be used to authenticate
   // incoming connection. No connections will be accepted if
@@ -122,7 +122,7 @@ class SessionManager : public base::NonThreadSafe {
   // once per SessionManager because it may not be safe to delete
   // factory before all authenticators it created are deleted.
   virtual void set_authenticator_factory(
-      scoped_ptr<AuthenticatorFactory> authenticator_factory) = 0;
+      std::unique_ptr<AuthenticatorFactory> authenticator_factory) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionManager);

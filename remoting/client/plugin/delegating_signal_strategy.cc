@@ -21,7 +21,7 @@ DelegatingSignalStrategy::~DelegatingSignalStrategy() {
 }
 
 void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
- scoped_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(message));
+  std::unique_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(message));
   if (!stanza.get()) {
     LOG(WARNING) << "Malformed XMPP stanza received: " << message;
     return;
@@ -61,7 +61,8 @@ void DelegatingSignalStrategy::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-bool DelegatingSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
+bool DelegatingSignalStrategy::SendStanza(
+    std::unique_ptr<buzz::XmlElement> stanza) {
   send_iq_callback_.Run(stanza->Str());
   return true;
 }

@@ -21,7 +21,7 @@ namespace remoting {
 static const int kCursorCaptureIntervalMs = 100;
 
 MouseShapePump::MouseShapePump(
-    scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
+    std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
     protocol::CursorShapeStub* cursor_shape_stub)
     : mouse_cursor_monitor_(std::move(mouse_cursor_monitor)),
       cursor_shape_stub_(cursor_shape_stub),
@@ -43,9 +43,9 @@ void MouseShapePump::Capture() {
 void MouseShapePump::OnMouseCursor(webrtc::MouseCursor* cursor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<webrtc::MouseCursor> owned_cursor(cursor);
+  std::unique_ptr<webrtc::MouseCursor> owned_cursor(cursor);
 
-  scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
+  std::unique_ptr<protocol::CursorShapeInfo> cursor_proto(
       new protocol::CursorShapeInfo());
   cursor_proto->set_width(cursor->image()->size().width());
   cursor_proto->set_height(cursor->image()->size().height());

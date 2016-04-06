@@ -59,7 +59,7 @@ bool AppRemotingTestDriverEnvironment::Initialize(
 
   // If a unit test has set |test_refresh_token_store_| then we should use it
   // below.  Note that we do not want to destroy the test object.
-  scoped_ptr<RefreshTokenStore> temporary_refresh_token_store;
+  std::unique_ptr<RefreshTokenStore> temporary_refresh_token_store;
   RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
   if (!refresh_token_store) {
     temporary_refresh_token_store =
@@ -118,7 +118,7 @@ bool AppRemotingTestDriverEnvironment::GetRemoteHostInfoForApplicationId(
   // If a unit test has set |test_remote_host_info_fetcher_| then we should use
   // it below.  Note that we do not want to destroy the test object at the end
   // of the function which is why we have the dance below.
-  scoped_ptr<RemoteHostInfoFetcher> temporary_remote_host_info_fetcher;
+  std::unique_ptr<RemoteHostInfoFetcher> temporary_remote_host_info_fetcher;
   RemoteHostInfoFetcher* remote_host_info_fetcher =
       test_remote_host_info_fetcher_;
   if (!remote_host_info_fetcher) {
@@ -228,7 +228,7 @@ void AppRemotingTestDriverEnvironment::TearDown() {
   // If a unit test has set |test_app_remoting_report_issue_request_| then we
   // should use it below.  Note that we do not want to destroy the test object
   // at the end of the function which is why we have the dance below.
-  scoped_ptr<AppRemotingReportIssueRequest> temporary_report_issue_request;
+  std::unique_ptr<AppRemotingReportIssueRequest> temporary_report_issue_request;
   AppRemotingReportIssueRequest* report_issue_request =
       test_app_remoting_report_issue_request_;
   if (!report_issue_request) {
@@ -279,7 +279,7 @@ bool AppRemotingTestDriverEnvironment::RetrieveAccessToken(
   // If a unit test has set |test_access_token_fetcher_| then we should use it
   // below.  Note that we do not want to destroy the test object at the end of
   // the function which is why we have the dance below.
-  scoped_ptr<AccessTokenFetcher> temporary_access_token_fetcher;
+  std::unique_ptr<AccessTokenFetcher> temporary_access_token_fetcher;
   AccessTokenFetcher* access_token_fetcher = test_access_token_fetcher_;
   if (!access_token_fetcher) {
     temporary_access_token_fetcher.reset(new AccessTokenFetcher());
@@ -307,7 +307,7 @@ bool AppRemotingTestDriverEnvironment::RetrieveAccessToken(
     if (!refresh_token_.empty()) {
       // If a unit test has set |test_refresh_token_store_| then we should use
       // it below.  Note that we do not want to destroy the test object.
-      scoped_ptr<RefreshTokenStore> temporary_refresh_token_store;
+      std::unique_ptr<RefreshTokenStore> temporary_refresh_token_store;
       RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
       if (!refresh_token_store) {
         temporary_refresh_token_store =

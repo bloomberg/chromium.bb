@@ -60,7 +60,7 @@ static MouseEvent MakeMouseButtonEvent(MouseEvent::MouseButton button,
 // Test OSKey press/release.
 TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -85,7 +85,7 @@ TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
 // Test OSKey key repeat switches it to "modifying" mode.
 TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -110,7 +110,7 @@ TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
 // just the function key events.
 TEST(NormalizingInputFilterCrosTest, FunctionKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -132,7 +132,7 @@ TEST(NormalizingInputFilterCrosTest, FunctionKey) {
 // just the function key events.
 TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -155,7 +155,7 @@ TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
 // test.
 TEST(NormalizingInputFilterCrosTest, OtherKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -181,7 +181,7 @@ TEST(NormalizingInputFilterCrosTest, OtherKey) {
 // results in OSKey switching to modifying mode for the normal key.
 TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -211,7 +211,7 @@ TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
 // Test OSKey press followed by mouse event puts the OSKey into modifying mode.
 TEST(NormalizingInputFilterCrosTest, MouseEvent) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -233,7 +233,7 @@ TEST(NormalizingInputFilterCrosTest, MouseEvent) {
 // Test left alt + right click is remapped to left alt + left click.
 TEST(NormalizingInputFilterCrosTest, LeftAltClick) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -262,7 +262,7 @@ TEST(NormalizingInputFilterCrosTest, LeftAltClick) {
 // Test that right alt + right click is unchanged.
 TEST(NormalizingInputFilterCrosTest, RightAltClick) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {
@@ -291,7 +291,7 @@ TEST(NormalizingInputFilterCrosTest, RightAltClick) {
 // Test that the Alt-key remapping for Up and Down is not applied.
 TEST(NormalizingInputFilterCrosTest, UndoAltPlusArrowRemapping) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterCros(&stub));
 
   {

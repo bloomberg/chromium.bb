@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/base/logging.h"
@@ -34,10 +35,11 @@ Me2MeDesktopEnvironment::~Me2MeDesktopEnvironment() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 }
 
-scoped_ptr<ScreenControls> Me2MeDesktopEnvironment::CreateScreenControls() {
+std::unique_ptr<ScreenControls>
+Me2MeDesktopEnvironment::CreateScreenControls() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return make_scoped_ptr(new ResizingHostObserver(DesktopResizer::Create()));
+  return base::WrapUnique(new ResizingHostObserver(DesktopResizer::Create()));
 }
 
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
@@ -132,11 +134,11 @@ Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
 Me2MeDesktopEnvironmentFactory::~Me2MeDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
+std::unique_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<Me2MeDesktopEnvironment> desktop_environment(
+  std::unique_ptr<Me2MeDesktopEnvironment> desktop_environment(
       new Me2MeDesktopEnvironment(
           caller_task_runner(), video_capture_task_runner(),
           input_task_runner(), ui_task_runner(), supports_touch_events()));

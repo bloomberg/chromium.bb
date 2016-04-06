@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "google_apis/google_api_keys.h"
@@ -23,8 +24,8 @@ const int kMaxGetTokensRetries = 3;
 namespace remoting {
 
 HostStarter::HostStarter(
-    scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
-    scoped_ptr<remoting::ServiceClient> service_client,
+    std::unique_ptr<gaia::GaiaOAuthClient> oauth_client,
+    std::unique_ptr<remoting::ServiceClient> service_client,
     scoped_refptr<remoting::DaemonController> daemon_controller)
     : oauth_client_(std::move(oauth_client)),
       service_client_(std::move(service_client)),
@@ -38,13 +39,13 @@ HostStarter::HostStarter(
 
 HostStarter::~HostStarter() {}
 
-scoped_ptr<HostStarter> HostStarter::Create(
+std::unique_ptr<HostStarter> HostStarter::Create(
     const std::string& chromoting_hosts_url,
     net::URLRequestContextGetter* url_request_context_getter) {
-  return make_scoped_ptr(new HostStarter(
-      make_scoped_ptr(new gaia::GaiaOAuthClient(url_request_context_getter)),
-      make_scoped_ptr(new remoting::ServiceClient(chromoting_hosts_url,
-                                                  url_request_context_getter)),
+  return base::WrapUnique(new HostStarter(
+      base::WrapUnique(new gaia::GaiaOAuthClient(url_request_context_getter)),
+      base::WrapUnique(new remoting::ServiceClient(chromoting_hosts_url,
+                                                   url_request_context_getter)),
       remoting::DaemonController::Create()));
 }
 
@@ -156,7 +157,7 @@ void HostStarter::OnHostRegistered(const std::string& authorization_code) {
 void HostStarter::StartHostProcess() {
   // Start the host.
   std::string host_secret_hash = remoting::MakeHostPinHash(host_id_, host_pin_);
-  scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> config(new base::DictionaryValue());
   if (host_owner_ != xmpp_login_) {
     config->SetString("host_owner", host_owner_);
   }

@@ -20,7 +20,7 @@ namespace remoting {
 // Name of the Daemon Controller's worker thread.
 const char kDaemonControllerThreadName[] = "Daemon Controller thread";
 
-DaemonController::DaemonController(scoped_ptr<Delegate> delegate)
+DaemonController::DaemonController(std::unique_ptr<Delegate> delegate)
     : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       delegate_(std::move(delegate)) {
   // Launch the delegate thread.
@@ -51,7 +51,7 @@ void DaemonController::GetConfig(const GetConfigCallback& done) {
 }
 
 void DaemonController::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     bool consent,
     const CompletionCallback& done) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -64,8 +64,9 @@ void DaemonController::SetConfigAndStart(
   ServiceOrQueueRequest(request);
 }
 
-void DaemonController::UpdateConfig(scoped_ptr<base::DictionaryValue> config,
-                                    const CompletionCallback& done) {
+void DaemonController::UpdateConfig(
+    std::unique_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   DaemonController::CompletionCallback wrapped_done = base::Bind(
@@ -109,13 +110,13 @@ DaemonController::~DaemonController() {
 void DaemonController::DoGetConfig(const GetConfigCallback& done) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<base::DictionaryValue> config = delegate_->GetConfig();
+  std::unique_ptr<base::DictionaryValue> config = delegate_->GetConfig();
   caller_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(done, base::Passed(&config)));
 }
 
 void DaemonController::DoSetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     bool consent,
     const CompletionCallback& done) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
@@ -124,7 +125,7 @@ void DaemonController::DoSetConfigAndStart(
 }
 
 void DaemonController::DoUpdateConfig(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     const CompletionCallback& done) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
@@ -163,7 +164,7 @@ void DaemonController::InvokeCompletionCallbackAndScheduleNext(
 
 void DaemonController::InvokeConfigCallbackAndScheduleNext(
     const GetConfigCallback& done,
-    scoped_ptr<base::DictionaryValue> config) {
+    std::unique_ptr<base::DictionaryValue> config) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   done.Run(std::move(config));

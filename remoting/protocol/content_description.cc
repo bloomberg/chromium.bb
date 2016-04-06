@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/authenticator.h"
@@ -115,11 +116,10 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 }  // namespace
 
 ContentDescription::ContentDescription(
-    scoped_ptr<CandidateSessionConfig> config,
-    scoped_ptr<buzz::XmlElement> authenticator_message)
+    std::unique_ptr<CandidateSessionConfig> config,
+    std::unique_ptr<buzz::XmlElement> authenticator_message)
     : candidate_config_(std::move(config)),
-      authenticator_message_(std::move(authenticator_message)) {
-}
+      authenticator_message_(std::move(authenticator_message)) {}
 
 ContentDescription::~ContentDescription() { }
 
@@ -200,14 +200,14 @@ bool ContentDescription::ParseChannelConfigs(
 }
 
 // static
-scoped_ptr<ContentDescription> ContentDescription::ParseXml(
+std::unique_ptr<ContentDescription> ContentDescription::ParseXml(
     const XmlElement* element,
     bool webrtc_transport) {
   if (element->Name() != QName(kChromotingXmlNamespace, kDescriptionTag)) {
     LOG(ERROR) << "Invalid description: " << element->Str();
     return nullptr;
   }
-  scoped_ptr<CandidateSessionConfig> config(
+  std::unique_ptr<CandidateSessionConfig> config(
       CandidateSessionConfig::CreateEmpty());
 
   config->set_webrtc_supported(webrtc_transport);
@@ -232,12 +232,12 @@ scoped_ptr<ContentDescription> ContentDescription::ParseXml(
     config->set_vp9_experiment_enabled(true);
   }
 
-  scoped_ptr<XmlElement> authenticator_message;
+  std::unique_ptr<XmlElement> authenticator_message;
   const XmlElement* child = Authenticator::FindAuthenticatorMessage(element);
   if (child)
     authenticator_message.reset(new XmlElement(*child));
 
-  return make_scoped_ptr(new ContentDescription(
+  return base::WrapUnique(new ContentDescription(
       std::move(config), std::move(authenticator_message)));
 }
 

@@ -28,7 +28,7 @@ GcdStateUpdater::GcdStateUpdater(
     const base::Closure& on_update_successful_callback,
     const base::Closure& on_unknown_host_id_error,
     SignalStrategy* signal_strategy,
-    scoped_ptr<GcdRestClient> gcd_rest_client)
+    std::unique_ptr<GcdRestClient> gcd_rest_client)
     : on_update_successful_callback_(on_update_successful_callback),
       on_unknown_host_id_error_(on_unknown_host_id_error),
       signal_strategy_(signal_strategy),
@@ -113,8 +113,8 @@ void GcdStateUpdater::MaybeSendStateUpdate() {
   }
 
   // Construct an update to the remote state.
-  scoped_ptr<base::DictionaryValue> patch(new base::DictionaryValue);
-  scoped_ptr<base::DictionaryValue> base_state(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> patch(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> base_state(new base::DictionaryValue);
   pending_request_jid_ = signal_strategy_->GetLocalJid();
   base_state->SetString("_jabberId", pending_request_jid_);
   base_state->SetString("_hostVersion", STRINGIZE(VERSION));

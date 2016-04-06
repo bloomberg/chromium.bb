@@ -129,7 +129,8 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
     return;
   }
 
-  scoped_ptr<base::Value> json = base::JSONReader::Read(result.response_body);
+  std::unique_ptr<base::Value> json =
+      base::JSONReader::Read(result.response_body);
   base::DictionaryValue* dictionary = nullptr;
   base::ListValue* ice_servers_list = nullptr;
   if (!json || !json->GetAsDictionary(&dictionary) ||

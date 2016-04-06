@@ -95,7 +95,7 @@ void RemoteSecurityKeyMessageReaderImpl::ReadMessage() {
       return;
     }
 
-    scoped_ptr<SecurityKeyMessage> message(new SecurityKeyMessage());
+    std::unique_ptr<SecurityKeyMessage> message(new SecurityKeyMessage());
     if (!message->ParseMessage(message_data)) {
       LOG(ERROR) << "Invalid message data received.";
       NotifyError();
@@ -120,7 +120,7 @@ void RemoteSecurityKeyMessageReaderImpl::NotifyError() {
 }
 
 void RemoteSecurityKeyMessageReaderImpl::InvokeMessageCallback(
-    scoped_ptr<SecurityKeyMessage> message) {
+    std::unique_ptr<SecurityKeyMessage> message) {
   DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
   message_callback_.Run(std::move(message));
 }

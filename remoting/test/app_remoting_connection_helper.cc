@@ -47,7 +47,7 @@ AppRemotingConnectionHelper::~AppRemotingConnectionHelper() {
 }
 
 void AppRemotingConnectionHelper::Initialize(
-    scoped_ptr<TestChromotingClient> test_chromoting_client) {
+    std::unique_ptr<TestChromotingClient> test_chromoting_client) {
   client_ = std::move(test_chromoting_client);
   client_->AddRemoteConnectionObserver(this);
 }
@@ -184,7 +184,8 @@ void AppRemotingConnectionHelper::HandleOnWindowAddedMessage(
   DCHECK_EQ(message.type(), "onWindowAdded");
 
   const base::DictionaryValue* message_data = nullptr;
-  scoped_ptr<base::Value> host_message = base::JSONReader::Read(message.data());
+  std::unique_ptr<base::Value> host_message =
+      base::JSONReader::Read(message.data());
   if (!host_message.get() || !host_message->GetAsDictionary(&message_data)) {
     LOG(ERROR) << "onWindowAdded message received was not valid JSON.";
     if (run_loop_) {

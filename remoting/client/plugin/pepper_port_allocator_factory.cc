@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/pepper_port_allocator_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "remoting/client/plugin/pepper_network_manager.h"
 #include "remoting/client/plugin/pepper_packet_socket_factory.h"
 #include "remoting/protocol/port_allocator.h"
@@ -17,12 +18,12 @@ PepperPortAllocatorFactory::PepperPortAllocatorFactory(
 
 PepperPortAllocatorFactory::~PepperPortAllocatorFactory() {}
 
-scoped_ptr<cricket::PortAllocator>
+std::unique_ptr<cricket::PortAllocator>
 PepperPortAllocatorFactory::CreatePortAllocator(
     scoped_refptr<protocol::TransportContext> transport_context) {
-  return make_scoped_ptr(new protocol::PortAllocator(
-      make_scoped_ptr(new PepperNetworkManager(pp_instance_)),
-      make_scoped_ptr(new PepperPacketSocketFactory(pp_instance_)),
+  return base::WrapUnique(new protocol::PortAllocator(
+      base::WrapUnique(new PepperNetworkManager(pp_instance_)),
+      base::WrapUnique(new PepperPacketSocketFactory(pp_instance_)),
       transport_context));
 }
 

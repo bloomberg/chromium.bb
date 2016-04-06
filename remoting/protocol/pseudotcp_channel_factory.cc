@@ -61,7 +61,7 @@ void PseudoTcpChannelFactory::CancelChannelCreation(const std::string& name) {
 void PseudoTcpChannelFactory::OnDatagramChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
-    scoped_ptr<P2PDatagramSocket> datagram_socket) {
+    std::unique_ptr<P2PDatagramSocket> datagram_socket) {
   PseudoTcpAdapter* adapter = new PseudoTcpAdapter(std::move(datagram_socket));
   pending_sockets_[name] = adapter;
 
@@ -88,7 +88,7 @@ void PseudoTcpChannelFactory::OnPseudoTcpConnected(
     int result) {
   PendingSocketsMap::iterator it = pending_sockets_.find(name);
   DCHECK(it != pending_sockets_.end());
-  scoped_ptr<P2PStreamSocket> socket(it->second);
+  std::unique_ptr<P2PStreamSocket> socket(it->second);
   pending_sockets_.erase(it);
 
   if (result != net::OK)

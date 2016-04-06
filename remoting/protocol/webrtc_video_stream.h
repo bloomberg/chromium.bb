@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/video_stream.h"
 
@@ -32,7 +33,7 @@ class WebrtcVideoStream : public VideoStream {
   WebrtcVideoStream();
   ~WebrtcVideoStream() override;
 
-  bool Start(scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
+  bool Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
              scoped_refptr<webrtc::PeerConnectionInterface> connection,
              scoped_refptr<webrtc::PeerConnectionFactoryInterface>
                  peer_connection_factory);

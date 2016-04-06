@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
@@ -54,7 +54,7 @@ class DaemonProcess
   // passing relevant task runners. Public methods of this class must be called
   // on the |caller_task_runner| thread. |io_task_runner| is used to handle IPC
   // and background I/O tasks.
-  static scoped_ptr<DaemonProcess> Create(
+  static std::unique_ptr<DaemonProcess> Create(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
@@ -129,7 +129,7 @@ class DaemonProcess
 
   // Creates a platform-specific desktop session and assigns a unique ID to it.
   // An implementation should validate |params| as they are received via IPC.
-  virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
+  virtual std::unique_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
       const ScreenResolution& resolution,
       bool virtual_terminal) = 0;
@@ -165,7 +165,7 @@ class DaemonProcess
   // Handles IPC and background I/O tasks.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
-  scoped_ptr<ConfigWatcher> config_watcher_;
+  std::unique_ptr<ConfigWatcher> config_watcher_;
 
   // The configuration file contents.
   std::string serialized_config_;
@@ -183,7 +183,7 @@ class DaemonProcess
   base::Closure stopped_callback_;
 
   // Writes host status updates to the system event log.
-  scoped_ptr<HostEventLogger> host_event_logger_;
+  std::unique_ptr<HostEventLogger> host_event_logger_;
 
   base::WeakPtrFactory<DaemonProcess> weak_factory_;
 

@@ -98,7 +98,7 @@ void FakeSignalStrategy::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-bool FakeSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
+bool FakeSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
 
   stanza->SetAttr(buzz::QN_FROM, jid_);
@@ -126,14 +126,14 @@ std::string FakeSignalStrategy::GetNextId() {
 void FakeSignalStrategy::DeliverMessageOnThread(
     scoped_refptr<base::SingleThreadTaskRunner> thread,
     base::WeakPtr<FakeSignalStrategy> target,
-    scoped_ptr<buzz::XmlElement> stanza) {
+    std::unique_ptr<buzz::XmlElement> stanza) {
   thread->PostTask(FROM_HERE,
                    base::Bind(&FakeSignalStrategy::OnIncomingMessage,
                               target, base::Passed(&stanza)));
 }
 
 void FakeSignalStrategy::OnIncomingMessage(
-    scoped_ptr<buzz::XmlElement> stanza) {
+    std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
 
   buzz::XmlElement* stanza_ptr = stanza.get();

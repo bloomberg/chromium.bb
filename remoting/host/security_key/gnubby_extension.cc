@@ -4,6 +4,7 @@
 
 #include "remoting/host/security_key/gnubby_extension.h"
 
+#include "base/memory/ptr_util.h"
 #include "remoting/host/security_key/gnubby_extension_session.h"
 
 namespace {
@@ -22,13 +23,13 @@ std::string GnubbyExtension::capability() const {
   return kCapability;
 }
 
-scoped_ptr<HostExtensionSession> GnubbyExtension::CreateExtensionSession(
+std::unique_ptr<HostExtensionSession> GnubbyExtension::CreateExtensionSession(
     ClientSessionControl* client_session_control,
     protocol::ClientStub* client_stub) {
   // TODO(joedow): Update this mechanism to allow for multiple sessions.  The
   //               extension will only send messages through the initial
   //               |client_stub| with the current design.
-  return make_scoped_ptr(new GnubbyExtensionSession(client_stub));
+  return base::WrapUnique(new GnubbyExtensionSession(client_stub));
 }
 
 }  // namespace remoting

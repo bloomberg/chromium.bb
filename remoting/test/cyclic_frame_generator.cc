@@ -24,7 +24,7 @@ const int kBarcodeBits = 10;
 const int kBarcodeBlackThreshold = 85;
 const int kBarcodeWhiteThreshold = 170;
 
-scoped_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
+std::unique_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
     const base::FilePath& file_path) {
   std::string file_content;
   if (!base::ReadFileToString(file_path, &file_content))
@@ -33,7 +33,7 @@ scoped_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
   SkBitmap bitmap;
   gfx::PNGCodec::Decode(reinterpret_cast<const uint8_t*>(file_content.data()),
                         file_content.size(), &bitmap);
-  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
+  std::unique_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(bitmap.width(), bitmap.height())));
   bitmap.copyPixelsTo(frame->data(),
                       frame->stride() * frame->size().height(),
@@ -70,7 +70,7 @@ scoped_refptr<CyclicFrameGenerator> CyclicFrameGenerator::Create() {
   test_data_path = test_data_path.Append(FILE_PATH_LITERAL("test"));
   test_data_path = test_data_path.Append(FILE_PATH_LITERAL("data"));
 
-  std::vector<scoped_ptr<webrtc::DesktopFrame>> frames;
+  std::vector<std::unique_ptr<webrtc::DesktopFrame>> frames;
   frames.push_back(
       LoadDesktopFrameFromPng(test_data_path.AppendASCII("test_frame1.png")));
   frames.push_back(
@@ -79,7 +79,7 @@ scoped_refptr<CyclicFrameGenerator> CyclicFrameGenerator::Create() {
 }
 
 CyclicFrameGenerator::CyclicFrameGenerator(
-    std::vector<scoped_ptr<webrtc::DesktopFrame>> reference_frames)
+    std::vector<std::unique_ptr<webrtc::DesktopFrame>> reference_frames)
     : reference_frames_(std::move(reference_frames)),
       clock_(&default_tick_clock_),
       started_time_(clock_->NowTicks()) {
@@ -98,14 +98,14 @@ void CyclicFrameGenerator::SetTickClock(base::TickClock* tick_clock) {
   started_time_ = clock_->NowTicks();
 }
 
-scoped_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
+std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   base::TimeTicks now = clock_->NowTicks();
   int reference_frame =
       ((now - started_time_) / frame_cycle_period_) % reference_frames_.size();
   bool cursor_state = ((now - started_time_) / cursor_blink_period_) % 2;
 
-  scoped_ptr<webrtc::DesktopFrame> frame(
+  std::unique_ptr<webrtc::DesktopFrame> frame(
       new webrtc::BasicDesktopFrame(screen_size_));
   frame->CopyPixelsFrom(*reference_frames_[reference_frame],
                         webrtc::DesktopVector(),

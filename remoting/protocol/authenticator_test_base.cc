@@ -84,7 +84,7 @@ void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
                                                      Authenticator* receiver,
                                                      bool sender_started,
                                                      bool receiver_started) {
-  scoped_ptr<buzz::XmlElement> message;
+  std::unique_ptr<buzz::XmlElement> message;
   ASSERT_NE(Authenticator::WAITING_MESSAGE, sender->state());
   if (sender->state() == Authenticator::ACCEPTED ||
       sender->state() == Authenticator::REJECTED) {
@@ -161,14 +161,14 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
 
 void AuthenticatorTestBase::OnHostConnected(
     int error,
-    scoped_ptr<P2PStreamSocket> socket) {
+    std::unique_ptr<P2PStreamSocket> socket) {
   host_callback_.OnDone(error);
   host_socket_ = std::move(socket);
 }
 
 void AuthenticatorTestBase::OnClientConnected(
     int error,
-    scoped_ptr<P2PStreamSocket> socket) {
+    std::unique_ptr<P2PStreamSocket> socket) {
   client_callback_.OnDone(error);
   client_socket_ = std::move(socket);
 }

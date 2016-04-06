@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "crypto/hmac.h"
 #include "crypto/secure_util.h"
@@ -40,13 +41,13 @@ const buzz::StaticQName kVerificationHashTag = {kChromotingXmlNamespace,
 const buzz::StaticQName kCertificateTag = {kChromotingXmlNamespace,
                                            "certificate"};
 
-scoped_ptr<buzz::XmlElement> EncodeBinaryValueToXml(
+std::unique_ptr<buzz::XmlElement> EncodeBinaryValueToXml(
     const buzz::StaticQName& qname,
     const std::string& content) {
   std::string content_base64;
   base::Base64Encode(content, &content_base64);
 
-  scoped_ptr<buzz::XmlElement> result(new buzz::XmlElement(qname));
+  std::unique_ptr<buzz::XmlElement> result(new buzz::XmlElement(qname));
   result->SetBodyText(content_base64);
   return result;
 }
@@ -80,24 +81,24 @@ std::string PrefixWithLength(const std::string& str) {
 }  // namespace
 
 // static
-scoped_ptr<Authenticator> Spake2Authenticator::CreateForClient(
+std::unique_ptr<Authenticator> Spake2Authenticator::CreateForClient(
     const std::string& local_id,
     const std::string& remote_id,
     const std::string& shared_secret,
     Authenticator::State initial_state) {
-  return make_scoped_ptr(new Spake2Authenticator(
+  return base::WrapUnique(new Spake2Authenticator(
       local_id, remote_id, shared_secret, false, initial_state));
 }
 
 // static
-scoped_ptr<Authenticator> Spake2Authenticator::CreateForHost(
+std::unique_ptr<Authenticator> Spake2Authenticator::CreateForHost(
     const std::string& local_id,
     const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& shared_secret,
     Authenticator::State initial_state) {
-  scoped_ptr<Spake2Authenticator> result(new Spake2Authenticator(
+  std::unique_ptr<Spake2Authenticator> result(new Spake2Authenticator(
       local_id, remote_id, shared_secret, true, initial_state));
   result->local_cert_ = local_cert;
   result->local_key_pair_ = key_pair;
@@ -247,10 +248,10 @@ void Spake2Authenticator::ProcessMessageInternal(
   state_ = MESSAGE_READY;
 }
 
-scoped_ptr<buzz::XmlElement> Spake2Authenticator::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement> Spake2Authenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
 
-  scoped_ptr<buzz::XmlElement> message = CreateEmptyAuthenticatorMessage();
+  std::unique_ptr<buzz::XmlElement> message = CreateEmptyAuthenticatorMessage();
 
   if (!spake_message_sent_) {
     if (!local_cert_.empty()) {
@@ -282,7 +283,7 @@ const std::string& Spake2Authenticator::GetAuthKey() const {
   return auth_key_;
 }
 
-scoped_ptr<ChannelAuthenticator>
+std::unique_ptr<ChannelAuthenticator>
 Spake2Authenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);
   CHECK(!auth_key_.empty());

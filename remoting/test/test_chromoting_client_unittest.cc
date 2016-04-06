@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/test/test_chromoting_client.h"
+
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "remoting/protocol/fake_connection_to_host.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/test/connection_setup_info.h"
-#include "remoting/test/test_chromoting_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -42,7 +44,7 @@ class TestChromotingClientTest : public ::testing::Test,
   ConnectionSetupInfo connection_setup_info_;
   FakeConnectionToHost* fake_connection_to_host_ = nullptr;
 
-  scoped_ptr<TestChromotingClient> test_chromoting_client_;
+  std::unique_ptr<TestChromotingClient> test_chromoting_client_;
 
  private:
   // RemoteConnectionObserver interface.
@@ -66,10 +68,10 @@ void TestChromotingClientTest::SetUp() {
   // keep the ptr around so we can use it to simulate state changes.  It will
   // remain valid until |test_chromoting_client_| is destroyed.
   fake_connection_to_host_ = new FakeConnectionToHost();
-  test_chromoting_client_->SetSignalStrategyForTests(make_scoped_ptr(
+  test_chromoting_client_->SetSignalStrategyForTests(base::WrapUnique(
       new FakeSignalStrategy("test_user@faux_address.com/123")));
   test_chromoting_client_->SetConnectionToHostForTests(
-      make_scoped_ptr(fake_connection_to_host_));
+      base::WrapUnique(fake_connection_to_host_));
 
   connection_setup_info_.host_jid = "test_host@faux_address.com/321";
 }

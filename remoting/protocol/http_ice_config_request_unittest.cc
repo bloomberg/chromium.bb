@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/ice_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,11 +48,12 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
   }
 
   // UrlRequestFactory interface.
-  scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
-                                          const std::string& url) override {
+  std::unique_ptr<UrlRequest> CreateUrlRequest(
+      UrlRequest::Type type,
+      const std::string& url) override {
     EXPECT_EQ(UrlRequest::Type::POST, type);
     CHECK(results_.count(url));
-    return make_scoped_ptr(new FakeUrlRequest(results_[url]));
+    return base::WrapUnique(new FakeUrlRequest(results_[url]));
   }
 
   std::map<std::string, UrlRequest::Result> results_;
@@ -81,13 +83,13 @@ static const char kTestUrl[] = "http://host/ice_config";
 class HttpIceConfigRequestTest : public testing::Test {
  public:
   void OnResult(const IceConfig& config) {
-    received_config_ = make_scoped_ptr(new IceConfig(config));
+    received_config_ = base::WrapUnique(new IceConfig(config));
   }
 
  protected:
   FakeUrlRequestFactory url_request_factory_;
-  scoped_ptr<HttpIceConfigRequest> request_;
-  scoped_ptr<IceConfig> received_config_;
+  std::unique_ptr<HttpIceConfigRequest> request_;
+  std::unique_ptr<IceConfig> received_config_;
 };
 
 TEST_F(HttpIceConfigRequestTest, Parse) {

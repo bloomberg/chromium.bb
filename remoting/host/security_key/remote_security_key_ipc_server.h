@@ -5,10 +5,10 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_SERVER_H_
 #define REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_SERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
@@ -23,7 +23,7 @@ class RemoteSecurityKeyIpcServer {
   virtual ~RemoteSecurityKeyIpcServer() {}
 
   // Creates a new RemoteSecurityKeyIpcServer instance.
-  static scoped_ptr<RemoteSecurityKeyIpcServer> Create(
+  static std::unique_ptr<RemoteSecurityKeyIpcServer> Create(
       int connection_id,
       base::TimeDelta initial_connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,
@@ -46,7 +46,7 @@ class RemoteSecurityKeyIpcServerFactory {
  public:
   virtual ~RemoteSecurityKeyIpcServerFactory() {}
 
-  virtual scoped_ptr<RemoteSecurityKeyIpcServer> Create(
+  virtual std::unique_ptr<RemoteSecurityKeyIpcServer> Create(
       int connection_id,
       base::TimeDelta connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,

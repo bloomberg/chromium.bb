@@ -11,7 +11,7 @@ bool AudioCapturer::IsSupported() {
   return false;
 }
 
-scoped_ptr<AudioCapturer> AudioCapturer::Create() {
+std::unique_ptr<AudioCapturer> AudioCapturer::Create() {
   NOTIMPLEMENTED();
   return nullptr;
 }

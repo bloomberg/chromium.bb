@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -46,7 +47,7 @@ class TestMouseCursorMonitor : public webrtc::MouseCursorMonitor  {
   void Capture() override {
     ASSERT_TRUE(callback_);
 
-    scoped_ptr<webrtc::MouseCursor> mouse_cursor(new webrtc::MouseCursor(
+    std::unique_ptr<webrtc::MouseCursor> mouse_cursor(new webrtc::MouseCursor(
         new webrtc::BasicDesktopFrame(
             webrtc::DesktopSize(kCursorWidth, kCursorHeight)),
         webrtc::DesktopVector(kHotspotX, kHotspotY)));
@@ -67,7 +68,7 @@ class MouseShapePumpTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  scoped_ptr<MouseShapePump> pump_;
+  std::unique_ptr<MouseShapePump> pump_;
 
   MockClientStub client_stub_;
 };
@@ -98,7 +99,7 @@ TEST_F(MouseShapePumpTest, FirstCursor) {
       .RetiresOnSaturation();
 
   // Start the pump.
-  pump_.reset(new MouseShapePump(make_scoped_ptr(new TestMouseCursorMonitor()),
+  pump_.reset(new MouseShapePump(base::WrapUnique(new TestMouseCursorMonitor()),
                                  &client_stub_));
 
   run_loop_.Run();

@@ -5,8 +5,9 @@
 #ifndef REMOTING_TEST_TEST_VIDEO_RENDERER_H_
 #define REMOTING_TEST_TEST_VIDEO_RENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/session_config.h"
@@ -44,14 +45,14 @@ class TestVideoRenderer : public protocol::VideoRenderer,
   protocol::FrameConsumer* GetFrameConsumer() override;
 
   // protocol::VideoStub interface.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override;
 
   // Initialize a decoder to decode video packets.
   void SetCodecForDecoding(const protocol::ChannelConfig::Codec codec);
 
   // Returns a copy of the current frame.
-  scoped_ptr<webrtc::DesktopFrame> GetCurrentFrameForTest() const;
+  std::unique_ptr<webrtc::DesktopFrame> GetCurrentFrameForTest() const;
 
   // Gets a weak pointer for this object.
   base::WeakPtr<TestVideoRenderer> GetWeakPtr() {
@@ -71,13 +72,13 @@ class TestVideoRenderer : public protocol::VideoRenderer,
  private:
   // The actual implementation resides in Core class.
   class Core;
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   // Used to ensure TestVideoRenderer methods are called on the same thread.
   base::ThreadChecker thread_checker_;
 
   // Used to decode and process video packets.
-  scoped_ptr<base::Thread>  video_decode_thread_;
+  std::unique_ptr<base::Thread> video_decode_thread_;
 
   // Used to post tasks to video decode thread.
   scoped_refptr<base::SingleThreadTaskRunner> video_decode_task_runner_;

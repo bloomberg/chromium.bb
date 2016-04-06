@@ -7,11 +7,11 @@
 #ifndef REMOTING_CLIENT_CHROMOTING_CLIENT_H_
 #define REMOTING_CLIENT_CHROMOTING_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -51,15 +51,16 @@ class ChromotingClient : public SignalStrategy::Listener,
   ChromotingClient(ClientContext* client_context,
                    ClientUserInterface* user_interface,
                    protocol::VideoRenderer* video_renderer,
-                   scoped_ptr<AudioPlayer> audio_player);
+                   std::unique_ptr<AudioPlayer> audio_player);
 
   ~ChromotingClient() override;
 
-  void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
+  void set_protocol_config(
+      std::unique_ptr<protocol::CandidateSessionConfig> config);
 
   // Used to set fake/mock objects for tests which use the ChromotingClient.
   void SetConnectionToHostForTests(
-      scoped_ptr<protocol::ConnectionToHost> connection_to_host);
+      std::unique_ptr<protocol::ConnectionToHost> connection_to_host);
 
   // Start the client. Must be called on the main thread. |signal_strategy|
   // must outlive the client.
@@ -115,7 +116,7 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
+  std::unique_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
   // The following are not owned by this class.
   ClientUserInterface* user_interface_ = nullptr;
@@ -126,10 +127,10 @@ class ChromotingClient : public SignalStrategy::Listener,
   protocol::ClientAuthenticationConfig client_auth_config_;
   scoped_refptr<protocol::TransportContext> transport_context_;
 
-  scoped_ptr<protocol::SessionManager> session_manager_;
-  scoped_ptr<protocol::ConnectionToHost> connection_;
+  std::unique_ptr<protocol::SessionManager> session_manager_;
+  std::unique_ptr<protocol::ConnectionToHost> connection_;
 
-  scoped_ptr<AudioDecodeScheduler> audio_decode_scheduler_;
+  std::unique_ptr<AudioDecodeScheduler> audio_decode_scheduler_;
 
   std::string local_capabilities_;
 

@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_DATAGRAM_CHANNEL_FACTORY_H_
 #define REMOTING_PROTOCOL_DATAGRAM_CHANNEL_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 namespace protocol {
@@ -18,7 +18,7 @@ class P2PDatagramSocket;
 
 class DatagramChannelFactory {
  public:
-  typedef base::Callback<void(scoped_ptr<P2PDatagramSocket>)>
+  typedef base::Callback<void(std::unique_ptr<P2PDatagramSocket>)>
       ChannelCreatedCallback;
 
   DatagramChannelFactory() {}

@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_TRANSPORT_H_
 #define REMOTING_PROTOCOL_TRANSPORT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/protocol/errors.h"
@@ -59,7 +59,7 @@ struct TransportRoute {
 // Implementations should provide other methods to send and receive data.
 class Transport {
  public:
-  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> transport_info)>
+  typedef base::Callback<void(std::unique_ptr<buzz::XmlElement> transport_info)>
       SendTransportInfoCallback;
 
   virtual ~Transport() {}

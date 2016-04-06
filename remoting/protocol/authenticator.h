@@ -5,10 +5,10 @@
 #ifndef REMOTING_PROTOCOL_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace buzz {
 class XmlElement;
@@ -71,7 +71,7 @@ class Authenticator {
   // Callback used for layered Authenticator implementations, particularly
   // third-party and pairing authenticators. They use this callback to create
   // base SPAKE2 authenticators.
-  typedef base::Callback<scoped_ptr<Authenticator>(
+  typedef base::Callback<std::unique_ptr<Authenticator>(
       const std::string& shared_secret,
       Authenticator::State initial_state)>
       CreateBaseAuthenticatorCallback;
@@ -80,7 +80,7 @@ class Authenticator {
   static bool IsAuthenticatorMessage(const buzz::XmlElement* message);
 
   // Creates an empty Authenticator message, owned by the caller.
-  static scoped_ptr<buzz::XmlElement> CreateEmptyAuthenticatorMessage();
+  static std::unique_ptr<buzz::XmlElement> CreateEmptyAuthenticatorMessage();
 
   // Finds Authenticator message among child elements of |message|, or
   // returns nullptr otherwise.
@@ -111,15 +111,15 @@ class Authenticator {
 
   // Must be called when in MESSAGE_READY state. Returns next
   // authentication message that needs to be sent to the peer.
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() = 0;
+  virtual std::unique_ptr<buzz::XmlElement> GetNextMessage() = 0;
 
   // Returns the auth key received as result of the authentication handshake.
   virtual const std::string& GetAuthKey() const = 0;
 
   // Creates new authenticator for a channel. Can be called only in
   // the ACCEPTED state.
-  virtual scoped_ptr<ChannelAuthenticator>
-      CreateChannelAuthenticator() const = 0;
+  virtual std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
+      const = 0;
 };
 
 // Factory for Authenticator instances.
@@ -136,7 +136,7 @@ class AuthenticatorFactory {
   // if the |first_message| is invalid and the session should be
   // rejected. ProcessMessage() should be called with |first_message|
   // for the result of this method.
-  virtual scoped_ptr<Authenticator> CreateAuthenticator(
+  virtual std::unique_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid) = 0;
 };

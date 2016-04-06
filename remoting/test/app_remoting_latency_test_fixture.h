@@ -5,11 +5,11 @@
 #ifndef REMOTING_TEST_APP_REMOTING_LATENCY_TEST_FIXTURE_H_
 #define REMOTING_TEST_APP_REMOTING_LATENCY_TEST_FIXTURE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/test/remote_connection_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +89,7 @@ class AppRemotingLatencyTestFixture : public testing::Test,
   virtual void ResetApplicationState();
 
   // Creates and manages the connection to the remote host.
-  scoped_ptr<AppRemotingConnectionHelper> connection_helper_;
+  std::unique_ptr<AppRemotingConnectionHelper> connection_helper_;
 
  private:
   // testing::Test interface.
@@ -106,14 +106,14 @@ class AppRemotingLatencyTestFixture : public testing::Test,
   // true if we received a response within the maximum time limit.
   // NOTE: This method should only be run when as a returned callback by
   // SetExpectedImagePattern.
-  bool WaitForImagePatternMatch(scoped_ptr<base::RunLoop> run_loop,
+  bool WaitForImagePatternMatch(std::unique_ptr<base::RunLoop> run_loop,
                                 const base::TimeDelta& max_wait_time);
 
   // Used to run the thread's message loop.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Used for setting timeouts and delays.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   // Used to maintain a reference to the TestVideoRenderer instance while it
   // exists.

@@ -5,10 +5,10 @@
 #ifndef REMOTING_SIGNALING_SIGNAL_STRATEGY_H_
 #define REMOTING_SIGNALING_SIGNAL_STRATEGY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace buzz {
 class XmlElement;
@@ -87,7 +87,7 @@ class SignalStrategy {
   virtual void RemoveListener(Listener* listener) = 0;
 
   // Sends a raw XMPP stanza. Returns false if the stanza couldn't be send.
-  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) = 0;
+  virtual bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) = 0;
 
   // Returns new ID that should be used for the next outgoing IQ
   // request.

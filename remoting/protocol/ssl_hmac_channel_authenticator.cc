@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "crypto/secure_util.h"
 #include "net/base/host_port_pair.h"
@@ -56,7 +57,7 @@ class FailingCertVerifier : public net::CertVerifier {
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
+             std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
     verify_result->verified_cert = cert;
     verify_result->cert_status = net::CERT_STATUS_INVALID;
@@ -68,7 +69,7 @@ class FailingCertVerifier : public net::CertVerifier {
 // to net::SSLClientSocket and net::SSLServerSocket.
 class NetStreamSocketAdapter : public net::StreamSocket {
  public:
-  NetStreamSocketAdapter(scoped_ptr<P2PStreamSocket> socket)
+  NetStreamSocketAdapter(std::unique_ptr<P2PStreamSocket> socket)
       : socket_(std::move(socket)) {}
   ~NetStreamSocketAdapter() override {}
 
@@ -140,15 +141,15 @@ class NetStreamSocketAdapter : public net::StreamSocket {
   }
 
  private:
-  scoped_ptr<P2PStreamSocket> socket_;
+  std::unique_ptr<P2PStreamSocket> socket_;
   net::BoundNetLog net_log_;
 };
 
 // Implements P2PStreamSocket interface on top of net::StreamSocket.
 class P2PStreamSocketAdapter : public P2PStreamSocket {
  public:
-  P2PStreamSocketAdapter(scoped_ptr<net::StreamSocket> socket,
-                         scoped_ptr<net::SSLServerContext> server_context)
+  P2PStreamSocketAdapter(std::unique_ptr<net::StreamSocket> socket,
+                         std::unique_ptr<net::SSLServerContext> server_context)
       : server_context_(std::move(server_context)),
         socket_(std::move(socket)) {}
   ~P2PStreamSocketAdapter() override {}
@@ -165,29 +166,27 @@ class P2PStreamSocketAdapter : public P2PStreamSocket {
  private:
   // The server_context_ will be a nullptr for client sockets.
   // The server_context_ must outlive any sockets it spawns.
-  scoped_ptr<net::SSLServerContext> server_context_;
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::SSLServerContext> server_context_;
+  std::unique_ptr<net::StreamSocket> socket_;
 };
 
 }  // namespace
 
 // static
-scoped_ptr<SslHmacChannelAuthenticator>
-SslHmacChannelAuthenticator::CreateForClient(
-      const std::string& remote_cert,
-      const std::string& auth_key) {
-  scoped_ptr<SslHmacChannelAuthenticator> result(
+std::unique_ptr<SslHmacChannelAuthenticator>
+SslHmacChannelAuthenticator::CreateForClient(const std::string& remote_cert,
+                                             const std::string& auth_key) {
+  std::unique_ptr<SslHmacChannelAuthenticator> result(
       new SslHmacChannelAuthenticator(auth_key));
   result->remote_cert_ = remote_cert;
   return result;
 }
 
-scoped_ptr<SslHmacChannelAuthenticator>
-SslHmacChannelAuthenticator::CreateForHost(
-    const std::string& local_cert,
-    scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& auth_key) {
-  scoped_ptr<SslHmacChannelAuthenticator> result(
+std::unique_ptr<SslHmacChannelAuthenticator>
+SslHmacChannelAuthenticator::CreateForHost(const std::string& local_cert,
+                                           scoped_refptr<RsaKeyPair> key_pair,
+                                           const std::string& auth_key) {
+  std::unique_ptr<SslHmacChannelAuthenticator> result(
       new SslHmacChannelAuthenticator(auth_key));
   result->local_cert_ = local_cert;
   result->local_key_pair_ = key_pair;
@@ -203,7 +202,7 @@ SslHmacChannelAuthenticator::~SslHmacChannelAuthenticator() {
 }
 
 void SslHmacChannelAuthenticator::SecureAndAuthenticate(
-    scoped_ptr<P2PStreamSocket> socket,
+    std::unique_ptr<P2PStreamSocket> socket,
     const DoneCallback& done_callback) {
   DCHECK(CalledOnValidThread());
 
@@ -232,9 +231,9 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     server_context_ = net::CreateSSLServerContext(
         cert.get(), *local_key_pair_->private_key(), ssl_config);
 
-    scoped_ptr<net::SSLServerSocket> server_socket =
+    std::unique_ptr<net::SSLServerSocket> server_socket =
         server_context_->CreateSSLServerSocket(
-            make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))));
+            base::WrapUnique(new NetStreamSocketAdapter(std::move(socket))));
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = std::move(server_socket);
     result = raw_server_socket->Handshake(
@@ -263,10 +262,10 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     net::SSLClientSocketContext context;
     context.transport_security_state = transport_security_state_.get();
     context.cert_verifier = cert_verifier_.get();
-    scoped_ptr<net::ClientSocketHandle> socket_handle(
+    std::unique_ptr<net::ClientSocketHandle> socket_handle(
         new net::ClientSocketHandle);
     socket_handle->SetSocket(
-        make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))));
+        base::WrapUnique(new NetStreamSocketAdapter(std::move(socket))));
 
 #if defined(OS_NACL)
     // net_nacl doesn't include ClientSocketFactory.
@@ -434,7 +433,7 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
       *callback_called = true;
 
     base::ResetAndReturn(&done_callback_)
-        .Run(net::OK, make_scoped_ptr(new P2PStreamSocketAdapter(
+        .Run(net::OK, base::WrapUnique(new P2PStreamSocketAdapter(
                           std::move(socket_), std::move(server_context_))));
   }
 }

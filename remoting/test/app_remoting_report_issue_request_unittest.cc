@@ -45,14 +45,14 @@ class AppRemotingReportIssueRequestTest : public ::testing::Test {
   // Used for result verification.
   std::string dev_service_environment_url_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::Timer> timer_;
 
   AppRemotingReportIssueRequest app_remoting_report_issue_request_;
 
  private:
   net::FakeURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRemotingReportIssueRequestTest);
 };

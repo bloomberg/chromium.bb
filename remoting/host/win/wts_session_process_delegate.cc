@@ -50,7 +50,7 @@ class WtsSessionProcessDelegate::Core
       public IPC::Listener {
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-       scoped_ptr<base::CommandLine> target,
+       std::unique_ptr<base::CommandLine> target,
        bool launch_elevated,
        const std::string& channel_security);
 
@@ -111,7 +111,7 @@ class WtsSessionProcessDelegate::Core
 
   // The server end of the IPC channel used to communicate to the worker
   // process.
-  scoped_ptr<IPC::ChannelProxy> channel_;
+  std::unique_ptr<IPC::ChannelProxy> channel_;
 
   // Security descriptor (as SDDL) to be applied to |channel_|.
   std::string channel_security_;
@@ -138,7 +138,7 @@ class WtsSessionProcessDelegate::Core
   base::win::ScopedHandle session_token_;
 
   // Command line of the launched process.
-  scoped_ptr<base::CommandLine> target_command_;
+  std::unique_ptr<base::CommandLine> target_command_;
 
   // The handle of the worker process, if launched.
   base::win::ScopedHandle worker_process_;
@@ -148,7 +148,7 @@ class WtsSessionProcessDelegate::Core
 
 WtsSessionProcessDelegate::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_ptr<base::CommandLine> target_command,
+    std::unique_ptr<base::CommandLine> target_command,
     bool launch_elevated,
     const std::string& channel_security)
     : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -382,11 +382,9 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   }
 
   // Wrap the pipe into an IPC channel.
-  scoped_ptr<IPC::ChannelProxy> channel(
-      IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe.Get()),
-                                IPC::Channel::MODE_SERVER,
-                                this,
-                                io_task_runner_));
+  std::unique_ptr<IPC::ChannelProxy> channel(IPC::ChannelProxy::Create(
+      IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER, this,
+      io_task_runner_));
 
   // Pass the name of the IPC channel to use.
   command_line.AppendSwitchNative(kDaemonPipeSwitchName,
@@ -529,7 +527,7 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
 
 WtsSessionProcessDelegate::WtsSessionProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_ptr<base::CommandLine> target_command,
+    std::unique_ptr<base::CommandLine> target_command,
     bool launch_elevated,
     const std::string& channel_security) {
   core_ = new Core(io_task_runner, std::move(target_command), launch_elevated,

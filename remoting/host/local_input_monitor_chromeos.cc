@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/chromeos/point_transformer.h"
@@ -56,14 +57,14 @@ class LocalInputMonitorChromeos : public LocalInputMonitor {
 
     // Used to rotate the local mouse positions appropriately based on the
     // current display rotation settings.
-    scoped_ptr<PointTransformer> point_transformer_;
+    std::unique_ptr<PointTransformer> point_transformer_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
   // Task runner on which ui::events are received.
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorChromeos);
 };
@@ -140,12 +141,12 @@ void LocalInputMonitorChromeos::Core::HandleKeyPressed(
 
 }  // namespace
 
-scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+std::unique_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return make_scoped_ptr(new LocalInputMonitorChromeos(
+  return base::WrapUnique(new LocalInputMonitorChromeos(
       caller_task_runner, input_task_runner, client_session_control));
 }
 

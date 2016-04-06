@@ -74,8 +74,8 @@ bool AudioDecoderOpus::ResetForPacket(AudioPacket* packet) {
   return decoder_ != nullptr;
 }
 
-scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
-    scoped_ptr<AudioPacket> packet) {
+std::unique_ptr<AudioPacket> AudioDecoderOpus::Decode(
+    std::unique_ptr<AudioPacket> packet) {
   if (packet->encoding() != AudioPacket::ENCODING_OPUS) {
     LOG(WARNING) << "Received an audio packet with encoding "
                  << packet->encoding() << " when an OPUS packet was expected.";
@@ -91,7 +91,7 @@ scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
   }
 
   // Create a new packet of decoded data.
-  scoped_ptr<AudioPacket> decoded_packet(new AudioPacket());
+  std::unique_ptr<AudioPacket> decoded_packet(new AudioPacket());
   decoded_packet->set_encoding(AudioPacket::ENCODING_RAW);
   decoded_packet->set_sampling_rate(kSamplingRate);
   decoded_packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);

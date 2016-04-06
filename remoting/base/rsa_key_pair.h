@@ -5,11 +5,11 @@
 #ifndef REMOTING_BASE_RSA_KEY_PAIR_H_
 #define REMOTING_BASE_RSA_KEY_PAIR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace crypto {
 class RSAPrivateKey;
@@ -43,10 +43,10 @@ class RsaKeyPair : public base::RefCountedThreadSafe<RsaKeyPair> {
 
  private:
   friend class base::RefCountedThreadSafe<RsaKeyPair>;
-  RsaKeyPair(scoped_ptr<crypto::RSAPrivateKey> key);
+  RsaKeyPair(std::unique_ptr<crypto::RSAPrivateKey> key);
   virtual ~RsaKeyPair();
 
-  scoped_ptr<crypto::RSAPrivateKey> key_;
+  std::unique_ptr<crypto::RSAPrivateKey> key_;
 
   DISALLOW_COPY_AND_ASSIGN(RsaKeyPair);
 };

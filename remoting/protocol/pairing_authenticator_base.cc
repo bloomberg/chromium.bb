@@ -74,9 +74,10 @@ void PairingAuthenticatorBase::ProcessMessage(
                  weak_factory_.GetWeakPtr(), resume_callback));
 }
 
-scoped_ptr<buzz::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
-  scoped_ptr<buzz::XmlElement> result = spake2_authenticator_->GetNextMessage();
+  std::unique_ptr<buzz::XmlElement> result =
+      spake2_authenticator_->GetNextMessage();
   MaybeAddErrorMessage(result.get());
   return result;
 }
@@ -85,7 +86,7 @@ const std::string& PairingAuthenticatorBase::GetAuthKey() const {
   return spake2_authenticator_->GetAuthKey();
 }
 
-scoped_ptr<ChannelAuthenticator>
+std::unique_ptr<ChannelAuthenticator>
 PairingAuthenticatorBase::CreateChannelAuthenticator() const {
   return spake2_authenticator_->CreateChannelAuthenticator();
 }

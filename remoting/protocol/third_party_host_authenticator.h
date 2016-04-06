@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_THIRD_PARTY_HOST_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_THIRD_PARTY_HOST_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/third_party_authenticator_base.h"
 
 namespace remoting {
@@ -32,7 +32,7 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
   // to the client and is used to obtain the shared secret.
   ThirdPartyHostAuthenticator(
       const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
-      scoped_ptr<TokenValidator> token_validator);
+      std::unique_ptr<TokenValidator> token_validator);
   ~ThirdPartyHostAuthenticator() override;
 
  protected:
@@ -47,7 +47,7 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
                                   const std::string& shared_secret);
 
   CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
-  scoped_ptr<TokenValidator> token_validator_;
+  std::unique_ptr<TokenValidator> token_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyHostAuthenticator);
 };

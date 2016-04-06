@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -30,7 +30,7 @@ class NativeMessagingReaderTest : public testing::Test {
 
   // MessageCallback passed to the Reader. Stores |message| so it can be
   // verified by tests.
-  void OnMessage(scoped_ptr<base::Value> message);
+  void OnMessage(std::unique_ptr<base::Value> message);
 
   // Writes a message (header+body) to the write-end of the pipe.
   void WriteMessage(const std::string& message);
@@ -39,10 +39,10 @@ class NativeMessagingReaderTest : public testing::Test {
   void WriteData(const char* data, int length);
 
  protected:
-  scoped_ptr<NativeMessagingReader> reader_;
+  std::unique_ptr<NativeMessagingReader> reader_;
   base::File read_file_;
   base::File write_file_;
-  scoped_ptr<base::Value> message_;
+  std::unique_ptr<base::Value> message_;
 
  private:
   // MessageLoop declared here, since the NativeMessageReader ctor requires a
@@ -71,7 +71,8 @@ void NativeMessagingReaderTest::Run() {
   run_loop_.Run();
 }
 
-void NativeMessagingReaderTest::OnMessage(scoped_ptr<base::Value> message) {
+void NativeMessagingReaderTest::OnMessage(
+    std::unique_ptr<base::Value> message) {
   message_ = std::move(message);
 }
 

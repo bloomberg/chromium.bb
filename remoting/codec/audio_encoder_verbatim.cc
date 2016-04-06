@@ -13,8 +13,8 @@ AudioEncoderVerbatim::AudioEncoderVerbatim() {}
 
 AudioEncoderVerbatim::~AudioEncoderVerbatim() {}
 
-scoped_ptr<AudioPacket> AudioEncoderVerbatim::Encode(
-    scoped_ptr<AudioPacket> packet) {
+std::unique_ptr<AudioPacket> AudioEncoderVerbatim::Encode(
+    std::unique_ptr<AudioPacket> packet) {
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_EQ(1, packet->data_size());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());

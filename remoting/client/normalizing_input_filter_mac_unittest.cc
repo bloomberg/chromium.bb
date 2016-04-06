@@ -37,7 +37,7 @@ KeyEvent MakeKeyEvent(ui::DomCode keycode, bool pressed) {
 // Test CapsLock press/release.
 TEST(NormalizingInputFilterMacTest, CapsLock) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterMac(&stub));
 
   {
@@ -57,7 +57,7 @@ TEST(NormalizingInputFilterMacTest, CapsLock) {
 // Test without pressing command key.
 TEST(NormalizingInputFilterMacTest, NoInjection) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterMac(&stub));
 
   {
@@ -77,7 +77,7 @@ TEST(NormalizingInputFilterMacTest, NoInjection) {
 // Test pressing command key and other normal keys.
 TEST(NormalizingInputFilterMacTest, CmdKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterMac(&stub));
 
   {
@@ -138,7 +138,7 @@ TEST(NormalizingInputFilterMacTest, CmdKey) {
 // Test pressing command and special keys.
 TEST(NormalizingInputFilterMacTest, SpecialKeys) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterMac(&stub));
 
   {
@@ -181,7 +181,7 @@ TEST(NormalizingInputFilterMacTest, SpecialKeys) {
 // Test pressing multiple command keys.
 TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterMac(&stub));
 
   {
@@ -210,7 +210,7 @@ TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
 // Test press C key before command key.
 TEST(NormalizingInputFilterMacTest, BeforeCmdKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor(
+  std::unique_ptr<protocol::InputFilter> processor(
       new NormalizingInputFilterMac(&stub));
 
   {

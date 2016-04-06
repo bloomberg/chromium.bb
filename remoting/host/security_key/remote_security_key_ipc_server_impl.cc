@@ -4,11 +4,11 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server_impl.h"
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "ipc/ipc_channel.h"

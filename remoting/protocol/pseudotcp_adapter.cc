@@ -32,7 +32,7 @@ namespace protocol {
 class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
                                public base::RefCounted<Core> {
  public:
-  explicit Core(scoped_ptr<P2PDatagramSocket> socket);
+  explicit Core(std::unique_ptr<P2PDatagramSocket> socket);
 
   // Functions used to implement net::StreamSocket.
   int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
@@ -88,7 +88,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   net::CompletionCallback write_callback_;
 
   cricket::PseudoTcp pseudo_tcp_;
-  scoped_ptr<P2PDatagramSocket> socket_;
+  std::unique_ptr<P2PDatagramSocket> socket_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
@@ -115,8 +115,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-
-PseudoTcpAdapter::Core::Core(scoped_ptr<P2PDatagramSocket> socket)
+PseudoTcpAdapter::Core::Core(std::unique_ptr<P2PDatagramSocket> socket)
     : pseudo_tcp_(this, 0),
       socket_(std::move(socket)),
       write_waits_for_send_(false),
@@ -452,9 +451,8 @@ void PseudoTcpAdapter::Core::CheckWriteComplete() {
 
 // Public interface implementation.
 
-PseudoTcpAdapter::PseudoTcpAdapter(scoped_ptr<P2PDatagramSocket> socket)
-    : core_(new Core(std::move(socket))) {
-}
+PseudoTcpAdapter::PseudoTcpAdapter(std::unique_ptr<P2PDatagramSocket> socket)
+    : core_(new Core(std::move(socket))) {}
 
 PseudoTcpAdapter::~PseudoTcpAdapter() {
   // Make sure that the underlying socket is destroyed before PseudoTcp.

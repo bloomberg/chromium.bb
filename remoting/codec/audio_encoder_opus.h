@@ -29,7 +29,8 @@ class AudioEncoderOpus : public AudioEncoder {
   ~AudioEncoderOpus() override;
 
   // AudioEncoder interface.
-  scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override;
+  std::unique_ptr<AudioPacket> Encode(
+      std::unique_ptr<AudioPacket> packet) override;
   int GetBitrate() override;
 
  private:
@@ -45,9 +46,9 @@ class AudioEncoderOpus : public AudioEncoder {
   OpusEncoder* encoder_;
 
   int frame_size_;
-  scoped_ptr<media::MultiChannelResampler> resampler_;
-  scoped_ptr<char[]> resample_buffer_;
-  scoped_ptr<media::AudioBus> resampler_bus_;
+  std::unique_ptr<media::MultiChannelResampler> resampler_;
+  std::unique_ptr<char[]> resample_buffer_;
+  std::unique_ptr<media::AudioBus> resampler_bus_;
 
   // Used to pass packet to the FetchBytesToResampler() callback.
   const char* resampling_data_;
@@ -55,7 +56,7 @@ class AudioEncoderOpus : public AudioEncoder {
   int resampling_data_pos_;
 
   // Left-over unencoded samples from the previous AudioPacket.
-  scoped_ptr<int16_t[]> leftover_buffer_;
+  std::unique_ptr<int16_t[]> leftover_buffer_;
   int leftover_buffer_size_;
   int leftover_samples_;
 

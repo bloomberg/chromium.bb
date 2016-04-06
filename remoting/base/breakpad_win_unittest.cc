@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
@@ -74,8 +75,8 @@ class BreakpadWinDeathTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  scoped_ptr<google_breakpad::CrashGenerationServer> crash_server_;
-  scoped_ptr<MockCrashServerCallbacks> callbacks_;
+  std::unique_ptr<google_breakpad::CrashGenerationServer> crash_server_;
+  std::unique_ptr<MockCrashServerCallbacks> callbacks_;
   std::wstring pipe_name_;
 };
 
@@ -86,7 +87,7 @@ BreakpadWinDeathTest::~BreakpadWinDeathTest() {
 }
 
 void BreakpadWinDeathTest::SetUp() {
-  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
   std::string pipe_name;
   if (environment->GetVar(kPipeVariableName, &pipe_name)) {
     // This is a child process. Initialize crash dump reporting to the crash

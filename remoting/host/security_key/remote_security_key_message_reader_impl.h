@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_MESSAGE_READER_IMPL_H_
 #define REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_MESSAGE_READER_IMPL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "remoting/host/security_key/remote_security_key_message_reader.h"
@@ -42,7 +43,7 @@ class RemoteSecurityKeyMessageReaderImpl
 
   // Used for callbacks on the appropriate task runner to signal status changes.
   // These callbacks are invoked on |main_task_runner_|.
-  void InvokeMessageCallback(scoped_ptr<SecurityKeyMessage> message);
+  void InvokeMessageCallback(std::unique_ptr<SecurityKeyMessage> message);
   void InvokeErrorCallback();
 
   base::File read_stream_;

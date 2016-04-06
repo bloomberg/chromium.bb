@@ -414,7 +414,7 @@ rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
     uint16_t min_port,
     uint16_t max_port) {
-  scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket(pp_instance_));
+  std::unique_ptr<UdpPacketSocket> result(new UdpPacketSocket(pp_instance_));
   if (!result->Init(local_address, min_port, max_port))
     return nullptr;
   return result.release();

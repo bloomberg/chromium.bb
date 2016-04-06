@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/util.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
@@ -25,7 +26,7 @@ class JniFrameConsumer::Renderer {
     DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
   }
 
-  void RenderFrame(scoped_ptr<webrtc::DesktopFrame> frame);
+  void RenderFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
 
  private:
   // Used to obtain task runner references and make calls to Java methods.
@@ -39,12 +40,12 @@ class JniFrameConsumer::Renderer {
 
   // Reference to the frame bitmap that is passed to Java when the frame is
   // allocated. This provides easy access to the underlying pixels.
-  scoped_ptr<gfx::JavaBitmap> bitmap_;
+  std::unique_ptr<gfx::JavaBitmap> bitmap_;
 };
 
 // Function called on the display thread to render the frame.
 void JniFrameConsumer::Renderer::RenderFrame(
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
   if (!bitmap_ || bitmap_->size().width() != frame->size().width() ||
@@ -91,12 +92,12 @@ JniFrameConsumer::~JniFrameConsumer() {
                                                   renderer_.release());
 }
 
-scoped_ptr<webrtc::DesktopFrame> JniFrameConsumer::AllocateFrame(
+std::unique_ptr<webrtc::DesktopFrame> JniFrameConsumer::AllocateFrame(
     const webrtc::DesktopSize& size) {
-  return make_scoped_ptr(new webrtc::BasicDesktopFrame(size));
+  return base::WrapUnique(new webrtc::BasicDesktopFrame(size));
 }
 
-void JniFrameConsumer::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+void JniFrameConsumer::DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                                  const base::Closure& done) {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 

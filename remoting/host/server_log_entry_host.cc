@@ -33,17 +33,17 @@ const char* GetValueSessionState(bool connected) {
 
 }  // namespace
 
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
     bool connected) {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+  std::unique_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleHost);
   entry->AddEventNameField(kValueEventNameSessionState);
   entry->Set(kKeySessionState, GetValueSessionState(connected));
   return entry;
 }
 
-scoped_ptr<ServerLogEntry> MakeLogEntryForHeartbeat() {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+std::unique_ptr<ServerLogEntry> MakeLogEntryForHeartbeat() {
+  std::unique_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleHost);
   entry->AddEventNameField(kValueEventNameHeartbeat);
   return entry;

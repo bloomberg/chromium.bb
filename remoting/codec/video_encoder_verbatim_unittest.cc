@@ -11,18 +11,18 @@
 namespace remoting {
 
 TEST(VideoEncoderVerbatimTest, TestVideoEncoder) {
-  scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
+  std::unique_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
   TestVideoEncoder(encoder.get(), true);
 }
 
 TEST(VideoEncoderVerbatimTest, EncodeAndDecode) {
-  scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
-  scoped_ptr<VideoDecoderVerbatim> decoder(new VideoDecoderVerbatim());
+  std::unique_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
+  std::unique_ptr<VideoDecoderVerbatim> decoder(new VideoDecoderVerbatim());
   TestVideoEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
 TEST(VideoEncoderVerbatimTest, EncodeUnchangedFrame) {
-  scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
+  std::unique_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
   TestVideoEncoderEmptyFrames(encoder.get(), 0);
 }
 

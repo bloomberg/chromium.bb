@@ -5,12 +5,12 @@
 #ifndef REMOTING_TEST_ACCESS_TOKEN_FETCHER_H_
 #define REMOTING_TEST_ACCESS_TOKEN_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 namespace remoting {
@@ -51,9 +51,9 @@ class AccessTokenFetcher : public gaia::GaiaOAuthClient::Delegate {
   void OnGetUserEmailResponse(const std::string& user_email) override;
   void OnGetUserIdResponse(const std::string& user_id) override;
   void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) override;
+      std::unique_ptr<base::DictionaryValue> user_info) override;
   void OnGetTokenInfoResponse(
-      scoped_ptr<base::DictionaryValue> token_info) override;
+      std::unique_ptr<base::DictionaryValue> token_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -78,7 +78,7 @@ class AccessTokenFetcher : public gaia::GaiaOAuthClient::Delegate {
   gaia::OAuthClientInfo oauth_client_info_;
 
   // Used to make token requests to GAIA.
-  scoped_ptr<gaia::GaiaOAuthClient> auth_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> auth_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcher);
 };

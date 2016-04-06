@@ -29,7 +29,7 @@ class ClientVideoDispatcherTest : public testing::Test,
   ClientVideoDispatcherTest();
 
   // VideoStub interface.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override;
 
   // ChannelDispatcherBase::EventHandler interface.
@@ -38,7 +38,7 @@ class ClientVideoDispatcherTest : public testing::Test,
  protected:
   void OnChannelError(int error);
 
-  void OnMessageReceived(scoped_ptr<CompoundBuffer> buffer);
+  void OnMessageReceived(std::unique_ptr<CompoundBuffer> buffer);
   void OnReadError(int error);
 
   base::MessageLoop message_loop_;
@@ -85,7 +85,7 @@ ClientVideoDispatcherTest::ClientVideoDispatcherTest()
 }
 
 void ClientVideoDispatcherTest::ProcessVideoPacket(
-    scoped_ptr<VideoPacket> video_packet,
+    std::unique_ptr<VideoPacket> video_packet,
     const base::Closure& done) {
   video_packets_.push_back(video_packet.release());
   packet_done_callbacks_.push_back(done);
@@ -102,8 +102,8 @@ void ClientVideoDispatcherTest::OnChannelError(int error) {
 }
 
 void ClientVideoDispatcherTest::OnMessageReceived(
-    scoped_ptr<CompoundBuffer> buffer) {
-  scoped_ptr<VideoAck> ack = ParseMessage<VideoAck>(buffer.get());
+    std::unique_ptr<CompoundBuffer> buffer) {
+  std::unique_ptr<VideoAck> ack = ParseMessage<VideoAck>(buffer.get());
   EXPECT_TRUE(ack);
   ack_messages_.push_back(ack.release());
 }

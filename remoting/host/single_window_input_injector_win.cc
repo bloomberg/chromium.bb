@@ -6,9 +6,9 @@
 
 namespace remoting {
 
-scoped_ptr<InputInjector> SingleWindowInputInjector::CreateForWindow(
+std::unique_ptr<InputInjector> SingleWindowInputInjector::CreateForWindow(
     webrtc::WindowId window_id,
-    scoped_ptr<InputInjector> input_injector) {
+    std::unique_ptr<InputInjector> input_injector) {
   return nullptr;
 }
 

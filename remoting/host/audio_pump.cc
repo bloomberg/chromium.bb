@@ -24,40 +24,40 @@ const int kMaxBufferedIntervalMs = 250;
 
 class AudioPump::Core {
    public:
-  Core(base::WeakPtr<AudioPump> pump,
-       scoped_ptr<AudioCapturer> audio_capturer,
-       scoped_ptr<AudioEncoder> audio_encoder);
-  ~Core();
+    Core(base::WeakPtr<AudioPump> pump,
+         std::unique_ptr<AudioCapturer> audio_capturer,
+         std::unique_ptr<AudioEncoder> audio_encoder);
+    ~Core();
 
-  void Start();
-  void Pause(bool pause);
+    void Start();
+    void Pause(bool pause);
 
-  void OnPacketSent(int size);
+    void OnPacketSent(int size);
 
- private:
-  void EncodeAudioPacket(scoped_ptr<AudioPacket> packet);
+   private:
+    void EncodeAudioPacket(std::unique_ptr<AudioPacket> packet);
 
-  base::ThreadChecker thread_checker_;
+    base::ThreadChecker thread_checker_;
 
-  base::WeakPtr<AudioPump> pump_;
+    base::WeakPtr<AudioPump> pump_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> pump_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> pump_task_runner_;
 
-  scoped_ptr<AudioCapturer> audio_capturer_;
-  scoped_ptr<AudioEncoder> audio_encoder_;
+    std::unique_ptr<AudioCapturer> audio_capturer_;
+    std::unique_ptr<AudioEncoder> audio_encoder_;
 
-  bool enabled_;
+    bool enabled_;
 
-  // Number of bytes in the queue that have been encoded but haven't been sent
-  // yet.
-  int bytes_pending_;
+    // Number of bytes in the queue that have been encoded but haven't been sent
+    // yet.
+    int bytes_pending_;
 
-  DISALLOW_COPY_AND_ASSIGN(Core);
+    DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 AudioPump::Core::Core(base::WeakPtr<AudioPump> pump,
-                      scoped_ptr<AudioCapturer> audio_capturer,
-                      scoped_ptr<AudioEncoder> audio_encoder)
+                      std::unique_ptr<AudioCapturer> audio_capturer,
+                      std::unique_ptr<AudioEncoder> audio_encoder)
     : pump_(pump),
       pump_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_capturer_(std::move(audio_capturer)),
@@ -91,7 +91,7 @@ void AudioPump::Core::OnPacketSent(int size) {
   DCHECK_GE(bytes_pending_, 0);
 }
 
-void AudioPump::Core::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
+void AudioPump::Core::EncodeAudioPacket(std::unique_ptr<AudioPacket> packet) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(packet);
 
@@ -100,7 +100,7 @@ void AudioPump::Core::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
   if (!enabled_ || bytes_pending_ > max_buffered_bytes)
     return;
 
-  scoped_ptr<AudioPacket> encoded_packet =
+  std::unique_ptr<AudioPacket> encoded_packet =
       audio_encoder_->Encode(std::move(packet));
 
   // The audio encoder returns a null audio packet if there's no audio to send.
@@ -117,8 +117,8 @@ void AudioPump::Core::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
 
 AudioPump::AudioPump(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    scoped_ptr<AudioCapturer> audio_capturer,
-    scoped_ptr<AudioEncoder> audio_encoder,
+    std::unique_ptr<AudioCapturer> audio_capturer,
+    std::unique_ptr<AudioEncoder> audio_encoder,
     protocol::AudioStub* audio_stub)
     : audio_task_runner_(audio_task_runner),
       audio_stub_(audio_stub),
@@ -146,7 +146,7 @@ void AudioPump::Pause(bool pause) {
       base::Bind(&Core::Pause, base::Unretained(core_.get()), pause));
 }
 
-void AudioPump::SendAudioPacket(scoped_ptr<AudioPacket> packet, int size) {
+void AudioPump::SendAudioPacket(std::unique_ptr<AudioPacket> packet, int size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(packet);
 

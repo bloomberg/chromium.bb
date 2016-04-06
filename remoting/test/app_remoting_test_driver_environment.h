@@ -6,12 +6,12 @@
 #define REMOTING_TEST_APP_REMOTING_TEST_DRIVER_ENVIRONMENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/test/remote_application_details.h"
 #include "remoting/test/remote_host_info_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -150,7 +150,7 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   remoting::test::RemoteHostInfoFetcher* test_remote_host_info_fetcher_;
 
   // Used for running network request tasks.
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   // Contains the host ids to release when the environment is torn down.
   // The key is the application id and the value is a list of hosts.
@@ -161,7 +161,7 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
 
 // Used to provide application specific instances of the
 // AppRemotingTestDriverEnvironment class.
-extern scoped_ptr<AppRemotingTestDriverEnvironment>
+extern std::unique_ptr<AppRemotingTestDriverEnvironment>
 CreateAppRemotingTestDriverEnvironment(
     const AppRemotingTestDriverEnvironment::EnvironmentOptions& options);
 

@@ -29,7 +29,7 @@ class TokenValidatorFactoryImpl : public protocol::TokenValidatorFactory {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
   // TokenValidatorFactory interface.
-  scoped_ptr<protocol::TokenValidator> CreateTokenValidator(
+  std::unique_ptr<protocol::TokenValidator> CreateTokenValidator(
       const std::string& local_jid,
       const std::string& remote_jid) override;
 

@@ -19,8 +19,8 @@ namespace protocol {
 
 class PortAllocator : public cricket::BasicPortAllocator {
  public:
-  PortAllocator(scoped_ptr<rtc::NetworkManager> network_manager,
-                scoped_ptr<rtc::PacketSocketFactory> socket_factory,
+  PortAllocator(std::unique_ptr<rtc::NetworkManager> network_manager,
+                std::unique_ptr<rtc::PacketSocketFactory> socket_factory,
                 scoped_refptr<TransportContext> transport_context);
   ~PortAllocator() override;
 
@@ -35,8 +35,8 @@ class PortAllocator : public cricket::BasicPortAllocator {
       const std::string& ice_pwd) override;
 
  private:
-  scoped_ptr<rtc::NetworkManager> network_manager_;
-  scoped_ptr<rtc::PacketSocketFactory> socket_factory_;
+  std::unique_ptr<rtc::NetworkManager> network_manager_;
+  std::unique_ptr<rtc::PacketSocketFactory> socket_factory_;
   scoped_refptr<TransportContext> transport_context_;
 };
 
@@ -62,7 +62,7 @@ class PortAllocatorSession : public cricket::BasicPortAllocatorSession {
 
   // Creates PortConfiguration that inclues STUN and TURN servers from
   // |ice_config_|.
-  scoped_ptr<cricket::PortConfiguration> GetPortConfiguration();
+  std::unique_ptr<cricket::PortConfiguration> GetPortConfiguration();
 
   // Attempts to allocate relay session.
   void TryCreateRelaySession();
@@ -76,7 +76,7 @@ class PortAllocatorSession : public cricket::BasicPortAllocatorSession {
 
   int attempts_ = 0;
 
-  std::set<scoped_ptr<UrlRequest>> url_requests_;
+  std::set<std::unique_ptr<UrlRequest>> url_requests_;
 
   base::WeakPtrFactory<PortAllocatorSession> weak_factory_;
 };

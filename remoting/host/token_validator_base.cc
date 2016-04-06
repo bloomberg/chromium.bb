@@ -209,7 +209,7 @@ std::string TokenValidatorBase::ProcessResponse() {
   }
 
   // Decode the JSON data from the response.
-  scoped_ptr<base::Value> value = base::JSONReader::Read(data_);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(data_);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict)) {
     LOG(ERROR) << "Invalid token validation response: '" << data_ << "'";

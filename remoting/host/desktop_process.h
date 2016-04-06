@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "remoting/host/desktop_session_agent.h"
@@ -53,7 +53,8 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
 
   // Creates the desktop agent and required threads and IPC channels. Returns
   // true on success.
-  bool Start(scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory);
+  bool Start(
+      std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory);
 
  private:
   // Crashes the process in response to a daemon's request. The daemon passes
@@ -70,14 +71,14 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   scoped_refptr<AutoThreadTaskRunner> input_task_runner_;
 
   // Factory used to create integration components for use by |desktop_agent_|.
-  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
+  std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Name of the IPC channel connecting the desktop process with the daemon
   // process.
   std::string daemon_channel_name_;
 
   // IPC channel connecting the desktop process with the daemon process.
-  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+  std::unique_ptr<IPC::ChannelProxy> daemon_channel_;
 
   // Provides screen/audio capturing and input injection services for
   // the network process.

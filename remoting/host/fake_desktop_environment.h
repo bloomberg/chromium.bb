@@ -20,7 +20,8 @@ class FakeInputInjector : public InputInjector,
   FakeInputInjector();
   ~FakeInputInjector() override;
 
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectKeyEvent(const protocol::KeyEvent& event) override;
   void InjectTextEvent(const protocol::TextEvent& event) override;
   void InjectMouseEvent(const protocol::MouseEvent& event) override;
@@ -76,11 +77,12 @@ class FakeDesktopEnvironment
   }
 
   // DesktopEnvironment implementation.
-  scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
-  scoped_ptr<InputInjector> CreateInputInjector() override;
-  scoped_ptr<ScreenControls> CreateScreenControls() override;
-  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
+  std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
+  std::unique_ptr<InputInjector> CreateInputInjector() override;
+  std::unique_ptr<ScreenControls> CreateScreenControls() override;
+  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
+      override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
 
@@ -109,7 +111,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   }
 
   // DesktopEnvironmentFactory implementation.
-  scoped_ptr<DesktopEnvironment> Create(
+  std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
   void SetEnableCurtaining(bool enable) override;
   bool SupportsAudioCapture() const override;

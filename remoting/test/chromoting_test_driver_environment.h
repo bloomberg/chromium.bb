@@ -5,13 +5,13 @@
 #ifndef REMOTING_TEST_CHROMOTING_TEST_DRIVER_ENVIRONMENT_H_
 #define REMOTING_TEST_CHROMOTING_TEST_DRIVER_ENVIRONMENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/test/host_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -141,7 +141,7 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   remoting::test::HostListFetcher* test_host_list_fetcher_;
 
   // Used for running network request tasks.
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingTestDriverEnvironment);
 };

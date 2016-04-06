@@ -6,10 +6,10 @@
 #define REMOTING_TEST_CYCLIC_FRAME_GENERATOR_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
@@ -47,7 +47,7 @@ class CyclicFrameGenerator
   static scoped_refptr<CyclicFrameGenerator> Create();
 
   CyclicFrameGenerator(
-      std::vector<scoped_ptr<webrtc::DesktopFrame>> reference_frames);
+      std::vector<std::unique_ptr<webrtc::DesktopFrame>> reference_frames);
 
   void set_frame_cycle_period(base::TimeDelta frame_cycle_period) {
     frame_cycle_period_ = frame_cycle_period;
@@ -64,7 +64,7 @@ class CyclicFrameGenerator
   // by its content.
   void set_draw_barcode(bool draw_barcode) { draw_barcode_ = draw_barcode; }
 
-  scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
+  std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::SharedMemoryFactory* shared_memory_factory);
 
   FrameType last_frame_type() { return last_frame_type_; }
@@ -77,7 +77,7 @@ class CyclicFrameGenerator
   ~CyclicFrameGenerator();
   friend class base::RefCountedThreadSafe<CyclicFrameGenerator>;
 
-  std::vector<scoped_ptr<webrtc::DesktopFrame>> reference_frames_;
+  std::vector<std::unique_ptr<webrtc::DesktopFrame>> reference_frames_;
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
   webrtc::DesktopSize screen_size_;

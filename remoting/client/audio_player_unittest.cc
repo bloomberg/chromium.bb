@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -82,13 +83,14 @@ class AudioPlayerTest : public ::testing::Test {
     return static_cast<int>(audio_->bytes_consumed_);
   }
 
-  scoped_ptr<AudioPlayer> audio_;
-  scoped_ptr<char[]> buffer_;
+  std::unique_ptr<AudioPlayer> audio_;
+  std::unique_ptr<char[]> buffer_;
 };
 
-scoped_ptr<AudioPacket> CreatePacketWithSamplingRate(
-      AudioPacket::SamplingRate rate, int samples) {
-  scoped_ptr<AudioPacket> packet(new AudioPacket());
+std::unique_ptr<AudioPacket> CreatePacketWithSamplingRate(
+    AudioPacket::SamplingRate rate,
+    int samples) {
+  std::unique_ptr<AudioPacket> packet(new AudioPacket());
   packet->set_encoding(AudioPacket::ENCODING_RAW);
   packet->set_sampling_rate(rate);
   packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
@@ -102,12 +104,12 @@ scoped_ptr<AudioPacket> CreatePacketWithSamplingRate(
   return packet;
 }
 
-scoped_ptr<AudioPacket> CreatePacket44100Hz(int samples) {
+std::unique_ptr<AudioPacket> CreatePacket44100Hz(int samples) {
   return CreatePacketWithSamplingRate(AudioPacket::SAMPLING_RATE_44100,
                                       samples);
 }
 
-scoped_ptr<AudioPacket> CreatePacket48000Hz(int samples) {
+std::unique_ptr<AudioPacket> CreatePacket48000Hz(int samples) {
   return CreatePacketWithSamplingRate(AudioPacket::SAMPLING_RATE_48000,
                                       samples);
 }

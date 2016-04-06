@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/performance_tracker.h"
@@ -55,20 +56,20 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
   protocol::FrameConsumer* GetFrameConsumer() override;
 
   // protocol::VideoStub interface.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
                           const base::Closure& done) override;
 
  private:
   void RenderFrame(int32_t frame_id,
                    const base::Closure& done,
-                   scoped_ptr<webrtc::DesktopFrame> frame);
+                   std::unique_ptr<webrtc::DesktopFrame> frame);
   void OnFrameRendered(int32_t frame_id, const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
   protocol::FrameConsumer* consumer_;
   protocol::PerformanceTracker* perf_tracker_;
 
-  scoped_ptr<VideoDecoder> decoder_;
+  std::unique_ptr<VideoDecoder> decoder_;
 
   webrtc::DesktopSize source_size_;
   webrtc::DesktopVector source_dpi_;

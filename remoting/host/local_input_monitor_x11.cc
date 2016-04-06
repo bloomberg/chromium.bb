@@ -6,6 +6,8 @@
 
 #include <sys/select.h>
 #include <unistd.h>
+
+#include "base/memory/ptr_util.h"
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
 
@@ -317,12 +319,12 @@ void LocalInputMonitorX11::Core::ProcessReply(XPointer self,
 
 }  // namespace
 
-scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+std::unique_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return make_scoped_ptr(new LocalInputMonitorX11(
+  return base::WrapUnique(new LocalInputMonitorX11(
       caller_task_runner, input_task_runner, client_session_control));
 }
 

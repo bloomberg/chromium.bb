@@ -59,7 +59,7 @@ void LogToServer::SendPendingEntries() {
     return;
   }
   // Make one stanza containing all the pending entries.
-  scoped_ptr<XmlElement> stanza(ServerLogEntry::MakeStanza());
+  std::unique_ptr<XmlElement> stanza(ServerLogEntry::MakeStanza());
   while (!pending_entries_.empty()) {
     ServerLogEntry& entry = pending_entries_.front();
     stanza->AddElement(entry.ToStanza().release());

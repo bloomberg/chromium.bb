@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/continue_window.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
@@ -9,9 +11,9 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"
-#include "remoting/host/continue_window.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // Handles the ContinueWindow.
@@ -73,8 +75,8 @@ void ContinueWindowMac::HideUi() {
 }
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return make_scoped_ptr(new ContinueWindowMac());
+std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
+  return base::WrapUnique(new ContinueWindowMac());
 }
 
 }  // namespace remoting

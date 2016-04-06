@@ -48,9 +48,10 @@ class PairingAuthenticatorBase : public Authenticator {
   RejectionReason rejection_reason() const override;
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
-  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
+  std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
+      const override;
 
  protected:
   // Create a Spake2 authenticator in the specified state, prompting the user
@@ -67,7 +68,7 @@ class PairingAuthenticatorBase : public Authenticator {
 
   // The underlying SPAKE2 authenticator, created with either the PIN or the
   // Paired Secret by the derived class.
-  scoped_ptr<Authenticator> spake2_authenticator_;
+  std::unique_ptr<Authenticator> spake2_authenticator_;
 
   // Derived classes must set this to True if the underlying authenticator is
   // using the Paired Secret.

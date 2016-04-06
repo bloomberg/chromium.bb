@@ -5,9 +5,10 @@
 #ifndef REMOTING_PROTOCOL_MESSAGE_READER_H_
 #define REMOTING_PROTOCOL_MESSAGE_READER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/base/compound_buffer.h"
@@ -35,7 +36,7 @@ class P2PStreamSocket;
 // e.g. when we the sender sends multiple messages in one TCP packet.
 class MessageReader : public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(scoped_ptr<CompoundBuffer> message)>
+  typedef base::Callback<void(std::unique_ptr<CompoundBuffer> message)>
       MessageReceivedCallback;
   typedef base::Callback<void(int)> ReadFailedCallback;
 
@@ -52,7 +53,7 @@ class MessageReader : public base::NonThreadSafe {
   void OnRead(int result);
   void HandleReadResult(int result, bool* read_succeeded);
   void OnDataReceived(net::IOBuffer* data, int data_size);
-  void RunCallback(scoped_ptr<CompoundBuffer> message);
+  void RunCallback(std::unique_ptr<CompoundBuffer> message);
 
   ReadFailedCallback read_failed_callback_;
 

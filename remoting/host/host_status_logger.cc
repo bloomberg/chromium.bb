@@ -31,7 +31,7 @@ void HostStatusLogger::LogSessionStateChange(const std::string& jid,
                                              bool connected) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<ServerLogEntry> entry(
+  std::unique_ptr<ServerLogEntry> entry(
       MakeLogEntryForSessionStateChange(connected));
   AddHostFieldsToLogEntry(entry.get());
   entry->AddModeField(log_to_server_.mode());

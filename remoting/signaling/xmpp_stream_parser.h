@@ -5,11 +5,11 @@
 #ifndef REMOTING_SIGNALING_XMPP_STREAM_PARSER_H_
 #define REMOTING_SIGNALING_XMPP_STREAM_PARSER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace buzz {
 class XmlElement;
@@ -22,7 +22,7 @@ namespace remoting {
 // |on_error_callback| specified using SetCallbacks().
 class XmppStreamParser {
  public:
-  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> stanza)>
+  typedef base::Callback<void(std::unique_ptr<buzz::XmlElement> stanza)>
       OnStanzaCallback;
 
   XmppStreamParser();
@@ -36,7 +36,7 @@ class XmppStreamParser {
  private:
   class Core;
 
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppStreamParser);
 };

@@ -29,7 +29,7 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   struct PendingFrame;
   typedef std::list<PendingFrame> PendingFramesList;
 
-  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
+  void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;
 
   // Callback for VideoStub::ProcessVideoPacket().
   void OnPacketDone(PendingFramesList::iterator pending_frame);

@@ -59,7 +59,7 @@ class ConfigFileWatcherTest : public testing::Test {
   base::FilePath config_file_;
 
   // The configuration file watcher that is being tested.
-  scoped_ptr<ConfigFileWatcher> watcher_;
+  std::unique_ptr<ConfigFileWatcher> watcher_;
 };
 
 ConfigFileWatcherTest::ConfigFileWatcherTest() {

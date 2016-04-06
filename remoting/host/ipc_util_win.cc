@@ -29,7 +29,7 @@ bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,
     base::File* client_out,
-    scoped_ptr<IPC::ChannelProxy>* server_out) {
+    std::unique_ptr<IPC::ChannelProxy>* server_out) {
   // presubmit: allow wstring
   std::wstring user_sid;
   if (!base::win::GetUserSidString(&user_sid)) {
@@ -56,11 +56,9 @@ bool CreateConnectedIpcChannel(
   }
 
   // Wrap the pipe into an IPC channel.
-  scoped_ptr<IPC::ChannelProxy> server =
-      IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe.Get()),
-                                IPC::Channel::MODE_SERVER,
-                                listener,
-                                io_task_runner);
+  std::unique_ptr<IPC::ChannelProxy> server = IPC::ChannelProxy::Create(
+      IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER, listener,
+      io_task_runner);
 
   // Convert the channel name to the pipe name.
   std::string pipe_name(kChromePipeNamePrefix);

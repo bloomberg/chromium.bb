@@ -6,11 +6,11 @@
 #define REMOTING_HOST_SECURITY_KEY_SECURITY_KEY_MESSAGE_H_
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -118,7 +118,7 @@ class SecurityKeyMessage final {
 
   // Creates a message from the passed in values, no validation is done as this
   // method is only expected to be called from test code.
-  static scoped_ptr<SecurityKeyMessage> CreateMessageForTest(
+  static std::unique_ptr<SecurityKeyMessage> CreateMessageForTest(
       RemoteSecurityKeyMessageType type,
       const std::string& payload);
 
@@ -138,7 +138,7 @@ class SecurityKeyMessage final {
 };
 
 // Used to pass remote security key message data between classes.
-typedef base::Callback<void(scoped_ptr<SecurityKeyMessage> message)>
+typedef base::Callback<void(std::unique_ptr<SecurityKeyMessage> message)>
     SecurityKeyMessageCallback;
 
 }  // namespace remoting

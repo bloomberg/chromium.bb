@@ -39,12 +39,13 @@ class JingleSessionManager : public SessionManager,
   // SessionManager interface.
   void AcceptIncoming(
       const IncomingSessionCallback& incoming_session_callback) override;
-  void set_protocol_config(scoped_ptr<CandidateSessionConfig> config) override;
-  scoped_ptr<Session> Connect(
+  void set_protocol_config(
+      std::unique_ptr<CandidateSessionConfig> config) override;
+  std::unique_ptr<Session> Connect(
       const std::string& host_jid,
-      scoped_ptr<Authenticator> authenticator) override;
+      std::unique_ptr<Authenticator> authenticator) override;
   void set_authenticator_factory(
-      scoped_ptr<AuthenticatorFactory> authenticator_factory) override;
+      std::unique_ptr<AuthenticatorFactory> authenticator_factory) override;
 
  private:
   friend class JingleSession;
@@ -64,10 +65,10 @@ class JingleSessionManager : public SessionManager,
 
   SignalStrategy* signal_strategy_ = nullptr;
   IncomingSessionCallback incoming_session_callback_;
-  scoped_ptr<CandidateSessionConfig> protocol_config_;
+  std::unique_ptr<CandidateSessionConfig> protocol_config_;
 
-  scoped_ptr<AuthenticatorFactory> authenticator_factory_;
-  scoped_ptr<IqSender> iq_sender_;
+  std::unique_ptr<AuthenticatorFactory> authenticator_factory_;
+  std::unique_ptr<IqSender> iq_sender_;
 
   SessionsMap sessions_;
 

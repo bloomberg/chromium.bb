@@ -7,10 +7,11 @@
 
 #include "remoting/signaling/signal_strategy.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class ClientSocketFactory;
@@ -50,7 +51,7 @@ class XmppSignalStrategy : public SignalStrategy {
   std::string GetLocalJid() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
-  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;
   std::string GetNextId() override;
 
   // This method is used to update the auth info (for example when the OAuth
@@ -62,7 +63,7 @@ class XmppSignalStrategy : public SignalStrategy {
  private:
   class Core;
 
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
 };

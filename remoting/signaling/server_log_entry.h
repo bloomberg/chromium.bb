@@ -6,9 +6,9 @@
 #define REMOTING_SIGNALING_SERVER_LOG_ENTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace buzz {
 class XmlElement;
@@ -49,10 +49,10 @@ class ServerLogEntry {
   // Constructs a log stanza. The caller should add one or more log entry
   // stanzas as children of this stanza, before sending the log stanza to
   // the remoting bot.
-  static scoped_ptr<buzz::XmlElement> MakeStanza();
+  static std::unique_ptr<buzz::XmlElement> MakeStanza();
 
   // Converts this object to an XML stanza.
-  scoped_ptr<buzz::XmlElement> ToStanza() const;
+  std::unique_ptr<buzz::XmlElement> ToStanza() const;
 
  private:
   typedef std::map<std::string, std::string> ValuesMap;

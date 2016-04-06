@@ -25,7 +25,7 @@ void FakeConnectionToHost::set_video_renderer(
 void FakeConnectionToHost::set_audio_stub(protocol::AudioStub* audio_stub) {}
 
 void FakeConnectionToHost::Connect(
-    scoped_ptr<protocol::Session> session,
+    std::unique_ptr<protocol::Session> session,
     scoped_refptr<protocol::TransportContext> transport_context,
     HostEventCallback* event_callback) {
   DCHECK(event_callback);

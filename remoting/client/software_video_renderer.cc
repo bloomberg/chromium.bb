@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "remoting/base/util.h"
@@ -36,7 +37,7 @@ namespace {
 // in the right byte-order, instead of swapping it here.
 class RgbToBgrVideoDecoderFilter : public VideoDecoder {
  public:
-  RgbToBgrVideoDecoderFilter(scoped_ptr<VideoDecoder> parent)
+  RgbToBgrVideoDecoderFilter(std::unique_ptr<VideoDecoder> parent)
       : parent_(std::move(parent)) {}
 
   bool DecodePacket(const VideoPacket& packet,
@@ -56,13 +57,13 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
   }
 
  private:
-  scoped_ptr<VideoDecoder> parent_;
+  std::unique_ptr<VideoDecoder> parent_;
 };
 
-scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
+std::unique_ptr<webrtc::DesktopFrame> DoDecodeFrame(
     VideoDecoder* decoder,
-    scoped_ptr<VideoPacket> packet,
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<VideoPacket> packet,
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   if (!decoder->DecodePacket(*packet, frame.get()))
     frame.reset();
   return frame;
@@ -102,7 +103,7 @@ void SoftwareVideoRenderer::OnSessionConfig(
 
   if (consumer_->GetPixelFormat() == protocol::FrameConsumer::FORMAT_RGBA) {
     decoder_ =
-        make_scoped_ptr(new RgbToBgrVideoDecoderFilter(std::move(decoder_)));
+        base::WrapUnique(new RgbToBgrVideoDecoderFilter(std::move(decoder_)));
   }
 }
 
@@ -115,8 +116,9 @@ protocol::FrameConsumer* SoftwareVideoRenderer::GetFrameConsumer() {
   return consumer_;
 }
 
-void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                               const base::Closure& done) {
+void SoftwareVideoRenderer::ProcessVideoPacket(
+    std::unique_ptr<VideoPacket> packet,
+    const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ScopedClosureRunner done_runner(done);
@@ -149,7 +151,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
     return;
   }
 
-  scoped_ptr<webrtc::DesktopFrame> frame =
+  std::unique_ptr<webrtc::DesktopFrame> frame =
       consumer_->AllocateFrame(source_size_);
   frame->set_dpi(source_dpi_);
 
@@ -165,7 +167,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
 void SoftwareVideoRenderer::RenderFrame(
     int32_t frame_id,
     const base::Closure& done,
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (perf_tracker_)

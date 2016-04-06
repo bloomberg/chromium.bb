@@ -30,14 +30,15 @@ class InputInjectorChromeos : public InputInjector {
   void InjectTouchEvent(const protocol::TouchEvent& event) override;
 
   // InputInjector interface.
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   class Core;
 
   // Task runner for input injection.
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(InputInjectorChromeos);
 };

@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
@@ -90,7 +90,7 @@ class DesktopSessionAgent
   void InjectClipboardEvent(const protocol::ClipboardEvent& event);
 
   // Forwards an audio packet though the IPC channel to the network process.
-  void ProcessAudioPacket(scoped_ptr<AudioPacket> packet);
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
 
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned in
@@ -132,7 +132,7 @@ class DesktopSessionAgent
   void SetScreenResolution(const ScreenResolution& resolution);
 
   // Sends a message to the network process.
-  void SendToNetwork(scoped_ptr<IPC::Message> message);
+  void SendToNetwork(std::unique_ptr<IPC::Message> message);
 
   // Posted to |audio_capture_task_runner_| to start the audio capturer.
   void StartAudioCapturer();
@@ -154,29 +154,29 @@ class DesktopSessionAgent
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
   // Captures audio output.
-  scoped_ptr<AudioCapturer> audio_capturer_;
+  std::unique_ptr<AudioCapturer> audio_capturer_;
 
   std::string client_jid_;
 
   base::WeakPtr<Delegate> delegate_;
 
   // The DesktopEnvironment instance used by this agent.
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
+  std::unique_ptr<DesktopEnvironment> desktop_environment_;
 
   // Executes keyboard, mouse and clipboard events.
-  scoped_ptr<InputInjector> input_injector_;
+  std::unique_ptr<InputInjector> input_injector_;
 
   // Tracker used to release pressed keys and buttons when disconnecting.
-  scoped_ptr<protocol::InputEventTracker> input_tracker_;
+  std::unique_ptr<protocol::InputEventTracker> input_tracker_;
 
   // Filter used to disable remote inputs during local input activity.
-  scoped_ptr<RemoteInputFilter> remote_input_filter_;
+  std::unique_ptr<RemoteInputFilter> remote_input_filter_;
 
   // Used to apply client-requested changes in screen resolution.
-  scoped_ptr<ScreenControls> screen_controls_;
+  std::unique_ptr<ScreenControls> screen_controls_;
 
   // IPC channel connecting the desktop process with the network process.
-  scoped_ptr<IPC::ChannelProxy> network_channel_;
+  std::unique_ptr<IPC::ChannelProxy> network_channel_;
 
   // The client end of the network-to-desktop pipe. It is kept alive until
   // the network process connects to the pipe.
@@ -189,14 +189,14 @@ class DesktopSessionAgent
   bool started_ = false;
 
   // Captures the screen.
-  scoped_ptr<webrtc::DesktopCapturer> video_capturer_;
+  std::unique_ptr<webrtc::DesktopCapturer> video_capturer_;
 
   // Captures mouse shapes.
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
+  std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
 
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.
-  scoped_ptr<webrtc::DesktopFrame> last_frame_;
+  std::unique_ptr<webrtc::DesktopFrame> last_frame_;
 
   // Used to disable callbacks to |this|.
   base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;

@@ -5,12 +5,12 @@
 #ifndef REMOTING_PROTOCOL_NEGOTIATING_HOST_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_NEGOTIATING_HOST_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/negotiating_authenticator_base.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -33,7 +33,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   // Creates a host authenticator, using a PIN or access code. If
   // |pairing_registry| is non-nullptr then the paired methods will be offered,
   // supporting PIN-less authentication.
-  static scoped_ptr<NegotiatingHostAuthenticator> CreateWithSharedSecret(
+  static std::unique_ptr<NegotiatingHostAuthenticator> CreateWithSharedSecret(
       const std::string& local_id,
       const std::string& remote_id,
       const std::string& local_cert,
@@ -42,7 +42,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
       scoped_refptr<PairingRegistry> pairing_registry);
 
   // Creates a host authenticator, using third party authentication.
-  static scoped_ptr<NegotiatingHostAuthenticator> CreateWithThirdPartyAuth(
+  static std::unique_ptr<NegotiatingHostAuthenticator> CreateWithThirdPartyAuth(
       const std::string& local_id,
       const std::string& remote_id,
       const std::string& local_cert,
@@ -52,7 +52,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   // Overriden from Authenticator.
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
   NegotiatingHostAuthenticator(const std::string& local_id,

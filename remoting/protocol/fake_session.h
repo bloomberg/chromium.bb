@@ -6,11 +6,11 @@
 #define REMOTING_PROTOCOL_FAKE_SESSION_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/fake_stream_socket.h"
 #include "remoting/protocol/session.h"
@@ -44,14 +44,14 @@ class FakeSession : public Session {
 
  private:
   // Callback provided to the |transport_|.
-  void SendTransportInfo(scoped_ptr<buzz::XmlElement> transport_info);
+  void SendTransportInfo(std::unique_ptr<buzz::XmlElement> transport_info);
 
   EventHandler* event_handler_ = nullptr;
-  scoped_ptr<SessionConfig> config_;
+  std::unique_ptr<SessionConfig> config_;
 
   std::string jid_;
 
-  scoped_ptr<FakeAuthenticator> authenticator_;
+  std::unique_ptr<FakeAuthenticator> authenticator_;
   Transport* transport_;
 
   ErrorCode error_ = OK;

@@ -6,12 +6,12 @@
 #define REMOTING_HOST_IPC_DESKTOP_ENVIRONMENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
@@ -48,11 +48,12 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   ~IpcDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
-  scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
-  scoped_ptr<InputInjector> CreateInputInjector() override;
-  scoped_ptr<ScreenControls> CreateScreenControls() override;
-  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
+  std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
+  std::unique_ptr<InputInjector> CreateInputInjector() override;
+  std::unique_ptr<ScreenControls> CreateScreenControls() override;
+  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
+      override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
 
@@ -78,7 +79,7 @@ class IpcDesktopEnvironmentFactory
   ~IpcDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory implementation.
-  scoped_ptr<DesktopEnvironment> Create(
+  std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
   void SetEnableCurtaining(bool enable) override;
   bool SupportsAudioCapture() const override;

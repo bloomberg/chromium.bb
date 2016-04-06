@@ -5,11 +5,11 @@
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -55,7 +55,8 @@ class GnubbyAuthHandlerWin : public GnubbyAuthHandler, public IPC::Listener {
   ~GnubbyAuthHandlerWin() override;
 
  private:
-  typedef std::map<int, scoped_ptr<RemoteSecurityKeyIpcServer>> ActiveChannels;
+  typedef std::map<int, std::unique_ptr<RemoteSecurityKeyIpcServer>>
+      ActiveChannels;
 
   // GnubbyAuthHandler interface.
   void CreateGnubbyConnection() override;
@@ -107,7 +108,7 @@ class GnubbyAuthHandlerWin : public GnubbyAuthHandler, public IPC::Listener {
 
   // IPC Clients connect to this channel first to receive their own IPC
   // channel to start a security key forwarding session on.
-  scoped_ptr<IPC::Channel> ipc_server_channel_;
+  std::unique_ptr<IPC::Channel> ipc_server_channel_;
 
   // Ensures GnubbyAuthHandlerWin methods are called on the same thread.
   base::ThreadChecker thread_checker_;
@@ -115,9 +116,9 @@ class GnubbyAuthHandlerWin : public GnubbyAuthHandler, public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerWin);
 };
 
-scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
+std::unique_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
     const SendMessageCallback& callback) {
-  scoped_ptr<GnubbyAuthHandler> auth_handler(new GnubbyAuthHandlerWin());
+  std::unique_ptr<GnubbyAuthHandler> auth_handler(new GnubbyAuthHandlerWin());
   auth_handler->SetSendMessageCallback(callback);
   return auth_handler;
 }
@@ -226,7 +227,7 @@ void GnubbyAuthHandlerWin::OnChannelConnected(int32_t peer_pid) {
   // Tracked via crbug.com/591746
 
   int new_connection_id = ++last_connection_id_;
-  scoped_ptr<RemoteSecurityKeyIpcServer> ipc_server(
+  std::unique_ptr<RemoteSecurityKeyIpcServer> ipc_server(
       RemoteSecurityKeyIpcServer::Create(
           new_connection_id, disconnect_timeout_, send_message_callback_,
           base::Bind(&GnubbyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,

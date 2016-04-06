@@ -58,9 +58,9 @@ const char* kSupportedFeatures[] = {
 
 // Helper to extract the "config" part of a message as a DictionaryValue.
 // Returns nullptr on failure, and logs an error message.
-scoped_ptr<base::DictionaryValue> ConfigDictionaryFromMessage(
-    scoped_ptr<base::DictionaryValue> message) {
-  scoped_ptr<base::DictionaryValue> result;
+std::unique_ptr<base::DictionaryValue> ConfigDictionaryFromMessage(
+    std::unique_ptr<base::DictionaryValue> message) {
+  std::unique_ptr<base::DictionaryValue> result;
   const base::DictionaryValue* config_dict;
   if (message->GetDictionary("config", &config_dict)) {
     result.reset(config_dict->DeepCopy());
@@ -77,10 +77,10 @@ namespace remoting {
 Me2MeNativeMessagingHost::Me2MeNativeMessagingHost(
     bool needs_elevation,
     intptr_t parent_window_handle,
-    scoped_ptr<extensions::NativeMessagingChannel> channel,
+    std::unique_ptr<extensions::NativeMessagingChannel> channel,
     scoped_refptr<DaemonController> daemon_controller,
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
-    scoped_ptr<OAuthClient> oauth_client)
+    std::unique_ptr<OAuthClient> oauth_client)
     : needs_elevation_(needs_elevation),
 #if defined(OS_WIN)
       parent_window_handle_(parent_window_handle),
@@ -110,7 +110,7 @@ void Me2MeNativeMessagingHost::Start(
   channel_->Start(this);
 }
 
-void Me2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
+void Me2MeNativeMessagingHost::OnMessage(std::unique_ptr<base::Value> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!message->IsType(base::Value::TYPE_DICTIONARY)) {
@@ -119,9 +119,9 @@ void Me2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> message_dict(
+  std::unique_ptr<base::DictionaryValue> message_dict(
       static_cast<base::DictionaryValue*>(message.release()));
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
 
   // If the client supplies an ID, it will expect it in the response. This
   // might be a string or a number, so cope with both.
@@ -184,12 +184,13 @@ void Me2MeNativeMessagingHost::OnDisconnect() {
 }
 
 void Me2MeNativeMessagingHost::ProcessHello(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetString("version", STRINGIZE(VERSION));
-  scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> supported_features_list(
+      new base::ListValue());
   supported_features_list->AppendStrings(std::vector<std::string>(
       kSupportedFeatures, kSupportedFeatures + arraysize(kSupportedFeatures)));
   response->Set("supportedFeatures", supported_features_list.release());
@@ -197,8 +198,8 @@ void Me2MeNativeMessagingHost::ProcessHello(
 }
 
 void Me2MeNativeMessagingHost::ProcessClearPairedClients(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
@@ -217,8 +218,8 @@ void Me2MeNativeMessagingHost::ProcessClearPairedClients(
 }
 
 void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
@@ -246,8 +247,8 @@ void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetHostName(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetString("hostname", net::GetHostName());
@@ -255,8 +256,8 @@ void Me2MeNativeMessagingHost::ProcessGetHostName(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetPinHash(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::string host_id;
@@ -276,8 +277,8 @@ void Me2MeNativeMessagingHost::ProcessGetPinHash(
 }
 
 void Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::Generate();
@@ -287,8 +288,8 @@ void Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
 }
 
 void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
@@ -297,7 +298,7 @@ void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> config_dict =
+  std::unique_ptr<base::DictionaryValue> config_dict =
       ConfigDictionaryFromMessage(std::move(message));
   if (!config_dict) {
     OnError();
@@ -311,8 +312,8 @@ void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   daemon_controller_->GetConfig(
@@ -321,8 +322,8 @@ void Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetPairedClients(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (pairing_registry_.get()) {
@@ -330,15 +331,15 @@ void Me2MeNativeMessagingHost::ProcessGetPairedClients(
         base::Bind(&Me2MeNativeMessagingHost::SendPairedClientsResponse,
                    weak_ptr_, base::Passed(&response)));
   } else {
-    scoped_ptr<base::ListValue> no_paired_clients(new base::ListValue);
+    std::unique_ptr<base::ListValue> no_paired_clients(new base::ListValue);
     SendPairedClientsResponse(std::move(response),
                               std::move(no_paired_clients));
   }
 }
 
 void Me2MeNativeMessagingHost::ProcessGetUsageStatsConsent(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   daemon_controller_->GetUsageStatsConsent(
@@ -347,8 +348,8 @@ void Me2MeNativeMessagingHost::ProcessGetUsageStatsConsent(
 }
 
 void Me2MeNativeMessagingHost::ProcessStartDaemon(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
@@ -364,7 +365,7 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> config_dict =
+  std::unique_ptr<base::DictionaryValue> config_dict =
       ConfigDictionaryFromMessage(std::move(message));
   if (!config_dict) {
     OnError();
@@ -378,8 +379,8 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
 }
 
 void Me2MeNativeMessagingHost::ProcessStopDaemon(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
@@ -394,8 +395,8 @@ void Me2MeNativeMessagingHost::ProcessStopDaemon(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetDaemonState(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DaemonController::State state = daemon_controller_->GetState();
@@ -423,8 +424,8 @@ void Me2MeNativeMessagingHost::ProcessGetDaemonState(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetHostClientId(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetString("clientId", google_apis::GetOAuth2ClientID(
@@ -433,8 +434,8 @@ void Me2MeNativeMessagingHost::ProcessGetHostClientId(
 }
 
 void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response,
     bool need_user_email) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -458,8 +459,8 @@ void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
 }
 
 void Me2MeNativeMessagingHost::SendConfigResponse(
-    scoped_ptr<base::DictionaryValue> response,
-    scoped_ptr<base::DictionaryValue> config) {
+    std::unique_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::DictionaryValue> config) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (config) {
@@ -471,8 +472,8 @@ void Me2MeNativeMessagingHost::SendConfigResponse(
 }
 
 void Me2MeNativeMessagingHost::SendPairedClientsResponse(
-    scoped_ptr<base::DictionaryValue> response,
-    scoped_ptr<base::ListValue> pairings) {
+    std::unique_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::ListValue> pairings) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->Set("pairedClients", pairings.release());
@@ -480,7 +481,7 @@ void Me2MeNativeMessagingHost::SendPairedClientsResponse(
 }
 
 void Me2MeNativeMessagingHost::SendUsageStatsConsentResponse(
-    scoped_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::DictionaryValue> response,
     const DaemonController::UsageStatsConsent& consent) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -491,7 +492,7 @@ void Me2MeNativeMessagingHost::SendUsageStatsConsentResponse(
 }
 
 void Me2MeNativeMessagingHost::SendAsyncResult(
-    scoped_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::DictionaryValue> response,
     DaemonController::AsyncResult result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -510,7 +511,8 @@ void Me2MeNativeMessagingHost::SendAsyncResult(
 }
 
 void Me2MeNativeMessagingHost::SendBooleanResult(
-    scoped_ptr<base::DictionaryValue> response, bool result) {
+    std::unique_ptr<base::DictionaryValue> response,
+    bool result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetBoolean("result", result);
@@ -518,7 +520,7 @@ void Me2MeNativeMessagingHost::SendBooleanResult(
 }
 
 void Me2MeNativeMessagingHost::SendCredentialsResponse(
-    scoped_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::DictionaryValue> response,
     const std::string& user_email,
     const std::string& refresh_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -549,7 +551,7 @@ Me2MeNativeMessagingHost::ElevatedChannelEventHandler::
 }
 
 void Me2MeNativeMessagingHost::ElevatedChannelEventHandler::OnMessage(
-    scoped_ptr<base::Value> message) {
+    std::unique_ptr<base::Value> message) {
   DCHECK(parent_->thread_checker_.CalledOnValidThread());
 
   // Simply pass along the response from the elevated host to the client.
@@ -561,7 +563,7 @@ void Me2MeNativeMessagingHost::ElevatedChannelEventHandler::OnDisconnect() {
 }
 
 bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
-    scoped_ptr<base::DictionaryValue> message) {
+    std::unique_ptr<base::DictionaryValue> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   EnsureElevatedHostCreated();
@@ -741,7 +743,7 @@ void Me2MeNativeMessagingHost::DisconnectElevatedHost() {
 #else  // defined(OS_WIN)
 
 bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
-    scoped_ptr<base::DictionaryValue> message) {
+    std::unique_ptr<base::DictionaryValue> message) {
   NOTREACHED();
   return false;
 }

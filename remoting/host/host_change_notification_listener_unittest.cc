@@ -65,10 +65,10 @@ class HostChangeNotificationListenerTest : public testing::Test {
     EXPECT_TRUE(signal_strategy_listeners_.empty());
   }
 
-  scoped_ptr<XmlElement> GetNotificationStanza(std::string operation,
-                                               std::string hostId,
-                                               std::string botJid) {
-    scoped_ptr<XmlElement> stanza(new XmlElement(buzz::QN_IQ));
+  std::unique_ptr<XmlElement> GetNotificationStanza(std::string operation,
+                                                    std::string hostId,
+                                                    std::string botJid) {
+    std::unique_ptr<XmlElement> stanza(new XmlElement(buzz::QN_IQ));
     stanza->AddAttr(QName(std::string(), "type"), "set");
     XmlElement* host_changed =
         new XmlElement(QName(kChromotingXmlNamespace, "host-changed"));
@@ -84,15 +84,16 @@ class HostChangeNotificationListenerTest : public testing::Test {
   MockListener mock_listener_;
   MockSignalStrategy signal_strategy_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
-  scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
+  std::unique_ptr<HostChangeNotificationListener>
+      host_change_notification_listener_;
   base::MessageLoop message_loop_;
 };
 
 TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .WillOnce(Return());
-  scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "delete", kHostId, kTestBotJid);
+  std::unique_ptr<XmlElement> stanza =
+      GetNotificationStanza("delete", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,
@@ -103,8 +104,8 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
 TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
-  scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "delete", kHostId, kTestBotJid);
+  std::unique_ptr<XmlElement> stanza =
+      GetNotificationStanza("delete", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   host_change_notification_listener_.reset();
@@ -117,8 +118,8 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
 TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidHostIdNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
-  scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "delete", "1", kTestBotJid);
+  std::unique_ptr<XmlElement> stanza =
+      GetNotificationStanza("delete", "1", kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,
@@ -129,7 +130,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidHostIdNotification) {
 TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidBotJidNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
-  scoped_ptr<XmlElement> stanza = GetNotificationStanza(
+  std::unique_ptr<XmlElement> stanza = GetNotificationStanza(
       "delete", kHostId, "notremotingbot@bot.talk.google.com");
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
@@ -141,8 +142,8 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidBotJidNotification) {
 TEST_F(HostChangeNotificationListenerTest, ReceiveNonDeleteNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
-  scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "update", kHostId, kTestBotJid);
+  std::unique_ptr<XmlElement> stanza =
+      GetNotificationStanza("update", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE,

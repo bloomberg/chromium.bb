@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/auth_util.h"
@@ -59,7 +60,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
                                   const std::string& host_secret) {
     std::string host_secret_hash =
         GetSharedSecretHash(kTestHostId, host_secret);
-    scoped_ptr<NegotiatingHostAuthenticator> host =
+    std::unique_ptr<NegotiatingHostAuthenticator> host =
         NegotiatingHostAuthenticator::CreateWithSharedSecret(
             kHostJid, kClientJid, host_cert_, key_pair_, host_secret_hash,
             pairing_registry_);
@@ -95,7 +96,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
 
   void CreatePairingRegistry(bool with_paired_client) {
     pairing_registry_ = new SynchronousPairingRegistry(
-        make_scoped_ptr(new MockPairingRegistryDelegate()));
+        base::WrapUnique(new MockPairingRegistryDelegate()));
     if (with_paired_client) {
       PairingRegistry::Pairing pairing(
           base::Time(), kTestClientName, kTestClientId, kTestPairedSecret);

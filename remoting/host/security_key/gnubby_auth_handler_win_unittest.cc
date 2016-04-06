@@ -4,11 +4,11 @@
 
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -85,10 +85,10 @@ class GnubbyAuthHandlerWinTest : public testing::Test {
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // The object under test.
-  scoped_ptr<GnubbyAuthHandler> auth_handler_;
+  std::unique_ptr<GnubbyAuthHandler> auth_handler_;
 
   // Set as the default factory to create RemoteSecurityKeyIpcServerFactory
   // instances, this class will track each objects creation and allow the tests

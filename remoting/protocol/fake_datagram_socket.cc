@@ -157,7 +157,7 @@ void FakeDatagramChannelFactory::CreateChannel(
     const ChannelCreatedCallback& callback) {
   EXPECT_TRUE(channels_[name] == nullptr);
 
-  scoped_ptr<FakeDatagramSocket> channel(new FakeDatagramSocket());
+  std::unique_ptr<FakeDatagramSocket> channel(new FakeDatagramSocket());
   channels_[name] = channel->GetWeakPtr();
 
   if (peer_factory_) {
@@ -181,7 +181,7 @@ void FakeDatagramChannelFactory::CreateChannel(
 }
 
 void FakeDatagramChannelFactory::NotifyChannelCreated(
-    scoped_ptr<FakeDatagramSocket> owned_socket,
+    std::unique_ptr<FakeDatagramSocket> owned_socket,
     const std::string& name,
     const ChannelCreatedCallback& callback) {
   if (channels_.find(name) != channels_.end())

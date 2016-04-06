@@ -41,7 +41,7 @@ class MonitoredVideoStub : public VideoStub {
   ~MonitoredVideoStub() override;
 
   // VideoStub implementation.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
                           const base::Closure& done) override;
 
  private:

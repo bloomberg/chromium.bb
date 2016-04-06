@@ -21,7 +21,7 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
   ~Me2MeDesktopEnvironment() override;
 
   // DesktopEnvironment interface.
-  scoped_ptr<ScreenControls> CreateScreenControls() override;
+  std::unique_ptr<ScreenControls> CreateScreenControls() override;
   std::string GetCapabilities() const override;
 
  protected:
@@ -42,13 +42,13 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
  private:
   // "Curtains" the session making sure it is disconnected from the local
   // console.
-  scoped_ptr<CurtainMode> curtain_;
+  std::unique_ptr<CurtainMode> curtain_;
 
   // Presents the disconnect window to the local user.
-  scoped_ptr<HostWindow> disconnect_window_;
+  std::unique_ptr<HostWindow> disconnect_window_;
 
   // Notifies the client session about the local mouse movements.
-  scoped_ptr<LocalInputMonitor> local_input_monitor_;
+  std::unique_ptr<LocalInputMonitor> local_input_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeDesktopEnvironment);
 };
@@ -64,7 +64,7 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
   ~Me2MeDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory interface.
-  scoped_ptr<DesktopEnvironment> Create(
+  std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
   void SetEnableCurtaining(bool enable) override;
 

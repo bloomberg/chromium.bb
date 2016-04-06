@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
@@ -27,7 +28,7 @@ namespace protocol {
 
 namespace {
 
-scoped_ptr<VideoEncoder> CreateVideoEncoder(
+std::unique_ptr<VideoEncoder> CreateVideoEncoder(
     const protocol::SessionConfig& config) {
   const protocol::ChannelConfig& video_config = config.video_config();
 
@@ -36,7 +37,7 @@ scoped_ptr<VideoEncoder> CreateVideoEncoder(
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
     return VideoEncoderVpx::CreateForVP9();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return make_scoped_ptr(new VideoEncoderVerbatim());
+    return base::WrapUnique(new VideoEncoderVerbatim());
   }
 
   NOTREACHED();
@@ -46,7 +47,7 @@ scoped_ptr<VideoEncoder> CreateVideoEncoder(
 }  // namespace
 
 IceConnectionToClient::IceConnectionToClient(
-    scoped_ptr<protocol::Session> session,
+    std::unique_ptr<protocol::Session> session,
     scoped_refptr<TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
     : event_handler_(nullptr),
@@ -86,14 +87,14 @@ void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
   event_handler_->OnInputEventReceived(this, timestamp);
 }
 
-scoped_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
-    scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
+std::unique_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
+    std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<VideoEncoder> video_encoder =
+  std::unique_ptr<VideoEncoder> video_encoder =
       CreateVideoEncoder(session_->config());
 
-  scoped_ptr<VideoFramePump> pump(
+  std::unique_ptr<VideoFramePump> pump(
       new VideoFramePump(video_encode_task_runner_, std::move(desktop_capturer),
                          std::move(video_encoder), video_dispatcher_.get()));
   video_dispatcher_->set_video_feedback_stub(pump->video_feedback_stub());

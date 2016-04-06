@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_NEGOTIATING_CLIENT_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_NEGOTIATING_CLIENT_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/client_authentication_config.h"
@@ -32,7 +32,7 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
   // Overriden from Authenticator.
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
   // (Asynchronously) creates an authenticator, and stores it in

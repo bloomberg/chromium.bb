@@ -36,7 +36,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
   friend class MuxChannel;
 
   // Callback for |base_channel_| creation.
-  void OnBaseChannelReady(scoped_ptr<P2PStreamSocket> socket);
+  void OnBaseChannelReady(std::unique_ptr<P2PStreamSocket> socket);
 
   // Helper to create channels asynchronously.
   void DoCreatePendingChannels();
@@ -52,10 +52,10 @@ class ChannelMultiplexer : public StreamChannelFactory {
   void NotifyBaseChannelError(const std::string& name, int error);
 
   // Callback for |reader_;
-  void OnIncomingPacket(scoped_ptr<CompoundBuffer> buffer);
+  void OnIncomingPacket(std::unique_ptr<CompoundBuffer> buffer);
 
   // Called by MuxChannel.
-  void DoWrite(scoped_ptr<MultiplexPacket> packet,
+  void DoWrite(std::unique_ptr<MultiplexPacket> packet,
                const base::Closure& done_task);
 
   // Factory used to create |base_channel_|. Set to nullptr once creation is
@@ -66,7 +66,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
   std::string base_channel_name_;
 
   // The channel over which to multiplex.
-  scoped_ptr<P2PStreamSocket> base_channel_;
+  std::unique_ptr<P2PStreamSocket> base_channel_;
 
   // List of requested channels while we are waiting for |base_channel_|.
   std::list<PendingChannel> pending_channels_;

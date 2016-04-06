@@ -34,7 +34,7 @@ GcdRestClient::GcdRestClient(const std::string& gcd_base_url,
 GcdRestClient::~GcdRestClient() {}
 
 void GcdRestClient::PatchState(
-    scoped_ptr<base::DictionaryValue> patch_details,
+    std::unique_ptr<base::DictionaryValue> patch_details,
     const GcdRestClient::ResultCallback& callback) {
   DCHECK(!HasPendingRequest());
 
@@ -54,9 +54,9 @@ void GcdRestClient::PatchState(
   // value because |DictionaryValue| doesn't support int64_t values, and
   // GCD doesn't accept fractional values.
   double now = clock_->Now().ToJavaTime();
-  scoped_ptr<base::DictionaryValue> patch_dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> patch_dict(new base::DictionaryValue);
   patch_dict->SetDouble("requestTimeMs", now);
-  scoped_ptr<base::ListValue> patch_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> patch_list(new base::ListValue);
   base::DictionaryValue* patch_item = new base::DictionaryValue;
   patch_list->Append(patch_item);
   patch_item->Set("patch", std::move(patch_details));
@@ -88,7 +88,7 @@ void GcdRestClient::PatchState(
       base::Bind(&GcdRestClient::OnTokenReceived, base::Unretained(this)));
 }
 
-void GcdRestClient::SetClockForTest(scoped_ptr<base::Clock> clock) {
+void GcdRestClient::SetClockForTest(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 

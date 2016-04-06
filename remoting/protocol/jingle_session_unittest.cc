@@ -117,9 +117,9 @@ class JingleSessionTest : public testing::Test {
         base::Bind(&MockSessionManagerListener::OnIncomingSession,
                    base::Unretained(&host_server_listener_)));
 
-    scoped_ptr<AuthenticatorFactory> factory(
-        new FakeHostAuthenticatorFactory(auth_round_trips,
-          messages_till_start, auth_action, true));
+    std::unique_ptr<AuthenticatorFactory> factory(
+        new FakeHostAuthenticatorFactory(auth_round_trips, messages_till_start,
+                                         auth_action, true));
     host_server_->set_authenticator_factory(std::move(factory));
 
     client_server_.reset(
@@ -198,7 +198,7 @@ class JingleSessionTest : public testing::Test {
       }
     }
 
-    scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+    std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
         FakeAuthenticator::CLIENT, auth_round_trips, auth_action, true));
 
     client_session_ =
@@ -218,21 +218,21 @@ class JingleSessionTest : public testing::Test {
         .Times(AtLeast(1));
   }
 
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   NetworkSettings network_settings_;
 
-  scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
-  scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
+  std::unique_ptr<FakeSignalStrategy> host_signal_strategy_;
+  std::unique_ptr<FakeSignalStrategy> client_signal_strategy_;
 
-  scoped_ptr<JingleSessionManager> host_server_;
+  std::unique_ptr<JingleSessionManager> host_server_;
   MockSessionManagerListener host_server_listener_;
-  scoped_ptr<JingleSessionManager> client_server_;
+  std::unique_ptr<JingleSessionManager> client_server_;
 
-  scoped_ptr<Session> host_session_;
+  std::unique_ptr<Session> host_session_;
   MockSessionEventHandler host_session_event_handler_;
   MockTransport host_transport_;
-  scoped_ptr<Session> client_session_;
+  std::unique_ptr<Session> client_session_;
   MockSessionEventHandler client_session_event_handler_;
   MockTransport client_transport_;
 };
@@ -260,7 +260,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
         .Times(1);
   }
 
-  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
   client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
   client_session_->SetEventHandler(&client_session_event_handler_);
@@ -312,10 +312,10 @@ TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
               OnSessionStateChange(Session::FAILED))
       .Times(1);
 
-  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
 
-  scoped_ptr<CandidateSessionConfig> config =
+  std::unique_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   // Disable all video codecs so the host will reject connection.
   config->mutable_video_configs()->clear();
@@ -339,10 +339,10 @@ TEST_F(JingleSessionTest, TestLegacyIceConnection) {
               OnSessionStateChange(Session::FAILED))
       .Times(1);
 
-  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
 
-  scoped_ptr<CandidateSessionConfig> config =
+  std::unique_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   config->set_ice_supported(false);
   client_server_->set_protocol_config(std::move(config));
@@ -371,7 +371,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {
       OnSessionStateChange(Session::AUTHENTICATING))
       .WillOnce(InvokeWithoutArgs(this, &JingleSessionTest::DeleteSession));
 
-  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
 
   client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
@@ -398,7 +398,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
       OnSessionStateChange(Session::AUTHENTICATING))
       .WillOnce(InvokeWithoutArgs(this, &JingleSessionTest::DeleteSession));
 
-  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
 
   client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));

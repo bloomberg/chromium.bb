@@ -25,7 +25,7 @@ RemoteSecurityKeyMessageHandler::~RemoteSecurityKeyMessageHandler() {}
 void RemoteSecurityKeyMessageHandler::Start(
     base::File message_read_stream,
     base::File message_write_stream,
-    scoped_ptr<RemoteSecurityKeyIpcClient> ipc_client,
+    std::unique_ptr<RemoteSecurityKeyIpcClient> ipc_client,
     const base::Closure& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(message_read_stream.IsValid());
@@ -56,19 +56,19 @@ void RemoteSecurityKeyMessageHandler::Start(
 }
 
 void RemoteSecurityKeyMessageHandler::SetRemoteSecurityKeyMessageReaderForTest(
-    scoped_ptr<RemoteSecurityKeyMessageReader> reader) {
+    std::unique_ptr<RemoteSecurityKeyMessageReader> reader) {
   DCHECK(!reader_);
   reader_ = std::move(reader);
 }
 
 void RemoteSecurityKeyMessageHandler::SetRemoteSecurityKeyMessageWriterForTest(
-    scoped_ptr<RemoteSecurityKeyMessageWriter> writer) {
+    std::unique_ptr<RemoteSecurityKeyMessageWriter> writer) {
   DCHECK(!writer_);
   writer_ = std::move(writer);
 }
 
 void RemoteSecurityKeyMessageHandler::ProcessRemoteSecurityKeyMessage(
-    scoped_ptr<SecurityKeyMessage> message) {
+    std::unique_ptr<SecurityKeyMessage> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RemoteSecurityKeyMessageType message_type = message->type();

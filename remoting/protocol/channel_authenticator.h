@@ -20,7 +20,7 @@ class P2PStreamSocket;
 // should be used only once for one channel.
 class ChannelAuthenticator {
  public:
-  typedef base::Callback<void(int error, scoped_ptr<P2PStreamSocket>)>
+  typedef base::Callback<void(int error, std::unique_ptr<P2PStreamSocket>)>
       DoneCallback;
 
   virtual ~ChannelAuthenticator() {}
@@ -28,9 +28,8 @@ class ChannelAuthenticator {
   // Start authentication of the given |socket|. |done_callback| is called when
   // authentication is finished. Callback may be invoked before this method
   // returns, and may delete the calling authenticator.
-  virtual void SecureAndAuthenticate(
-      scoped_ptr<P2PStreamSocket> socket,
-      const DoneCallback& done_callback) = 0;
+  virtual void SecureAndAuthenticate(std::unique_ptr<P2PStreamSocket> socket,
+                                     const DoneCallback& done_callback) = 0;
 };
 
 }  // namespace protocol

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/input_injector.h"
@@ -18,10 +19,11 @@ namespace remoting {
 
 SessionDesktopEnvironment::~SessionDesktopEnvironment() {}
 
-scoped_ptr<InputInjector> SessionDesktopEnvironment::CreateInputInjector() {
+std::unique_ptr<InputInjector>
+SessionDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return make_scoped_ptr(new SessionInputInjectorWin(
+  return base::WrapUnique(new SessionInputInjectorWin(
       input_task_runner(),
       InputInjector::Create(input_task_runner(), ui_task_runner()),
       ui_task_runner(), inject_sas_));
@@ -57,11 +59,11 @@ SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
 
 SessionDesktopEnvironmentFactory::~SessionDesktopEnvironmentFactory() {}
 
-scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
+std::unique_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<SessionDesktopEnvironment> desktop_environment(
+  std::unique_ptr<SessionDesktopEnvironment> desktop_environment(
       new SessionDesktopEnvironment(caller_task_runner(),
                                     video_capture_task_runner(),
                                     input_task_runner(), ui_task_runner(),

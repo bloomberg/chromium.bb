@@ -21,8 +21,8 @@ namespace remoting {
 namespace protocol {
 
 template <class T>
-scoped_ptr<T> ParseMessage(CompoundBuffer* buffer) {
-  scoped_ptr<T> message(new T());
+std::unique_ptr<T> ParseMessage(CompoundBuffer* buffer) {
+  std::unique_ptr<T> message(new T());
   CompoundBufferInputStream stream(buffer);
   if (!message->ParseFromZeroCopyStream(&stream)) {
     LOG(WARNING) << "Received message that is not a valid protocol buffer.";

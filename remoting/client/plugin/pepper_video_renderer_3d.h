@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/video_decoder.h"
@@ -47,7 +47,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   protocol::FrameConsumer* GetFrameConsumer() override;
 
   // protocol::VideoStub interface.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
                           const base::Closure& done) override;
 
  private:
@@ -111,12 +111,12 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   // The current picture shown on the screen or being rendered. Must be deleted
   // before |video_decoder_|.
-  scoped_ptr<Picture> current_picture_;
+  std::unique_ptr<Picture> current_picture_;
 
   // The next picture to be rendered. PaintIfNeeded() will copy it to
   // |current_picture_| and render it after that. Must be deleted
   // before |video_decoder_|.
-  scoped_ptr<Picture> next_picture_;
+  std::unique_ptr<Picture> next_picture_;
 
   // Set to true if the screen has been resized and needs to be repainted.
   bool force_repaint_ = false;

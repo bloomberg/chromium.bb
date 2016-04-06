@@ -209,8 +209,8 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
   next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
 
   // Create the desktop session.
-  scoped_ptr<DesktopSession> session = DoCreateDesktopSession(
-      terminal_id, resolution, virtual_terminal);
+  std::unique_ptr<DesktopSession> session =
+      DoCreateDesktopSession(terminal_id, resolution, virtual_terminal);
   if (!session) {
     LOG(ERROR) << "Failed to create a desktop session.";
     SendToNetwork(

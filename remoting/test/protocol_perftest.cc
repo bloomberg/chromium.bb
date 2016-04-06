@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -84,10 +85,10 @@ class FakeCursorShapeStub : public protocol::CursorShapeStub {
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override{};
 };
 
-scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
+std::unique_ptr<webrtc::DesktopFrame> DoDecodeFrame(
     VideoDecoder* decoder,
     VideoPacket* packet,
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   if (!decoder->DecodePacket(*packet, frame.get()))
     frame.reset();
   return frame;
@@ -153,7 +154,7 @@ class ProtocolPerfTest
   protocol::FrameConsumer* GetFrameConsumer() override { return this; }
 
   // protocol::VideoStub interface.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
                           const base::Closure& done) override {
     if (packet->data().empty()) {
       // Ignore keep-alive packets
@@ -167,7 +168,7 @@ class ProtocolPerfTest
                       packet->format().screen_height());
     }
 
-    scoped_ptr<webrtc::DesktopFrame> frame(
+    std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(frame_size_));
     base::PostTaskAndReplyWithResult(
         decode_thread_.task_runner().get(), FROM_HERE,
@@ -177,20 +178,20 @@ class ProtocolPerfTest
                    base::Passed(&packet), done));
   }
 
-  void OnFrameDecoded(scoped_ptr<VideoPacket> packet,
+  void OnFrameDecoded(std::unique_ptr<VideoPacket> packet,
                       const base::Closure& done,
-                      scoped_ptr<webrtc::DesktopFrame> frame) {
+                      std::unique_ptr<webrtc::DesktopFrame> frame) {
     last_video_packet_ = std::move(packet);
     DrawFrame(std::move(frame), done);
   }
 
   // protocol::FrameConsumer interface.
-  scoped_ptr<webrtc::DesktopFrame> AllocateFrame(
+  std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override {
-    return make_scoped_ptr(new webrtc::BasicDesktopFrame(size));
+    return base::WrapUnique(new webrtc::BasicDesktopFrame(size));
   }
 
-  void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+  void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                  const base::Closure& done) override {
     last_video_frame_ = std::move(frame);
     if (!on_frame_task_.is_null())
@@ -228,7 +229,7 @@ class ProtocolPerfTest
       connecting_loop_->Quit();
   }
 
-  scoped_ptr<webrtc::DesktopFrame> ReceiveFrame() {
+  std::unique_ptr<webrtc::DesktopFrame> ReceiveFrame() {
     last_video_frame_.reset();
 
     waiting_frames_loop_.reset(new base::RunLoop());
@@ -315,7 +316,7 @@ class ProtocolPerfTest
     protocol::NetworkSettings network_settings(
         protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING);
 
-    scoped_ptr<FakePortAllocatorFactory> port_allocator_factory(
+    std::unique_ptr<FakePortAllocatorFactory> port_allocator_factory(
         new FakePortAllocatorFactory(fake_network_dispatcher_));
     port_allocator_factory->socket_factory()->SetBandwidth(
         GetParam().bandwidth, GetParam().max_buffers);
@@ -327,7 +328,7 @@ class ProtocolPerfTest
         new protocol::TransportContext(
             host_signaling_.get(), std::move(port_allocator_factory), nullptr,
             network_settings, protocol::TransportRole::SERVER));
-    scoped_ptr<protocol::SessionManager> session_manager(
+    std::unique_ptr<protocol::SessionManager> session_manager(
         new protocol::JingleSessionManager(host_signaling_.get()));
     session_manager->set_protocol_config(protocol_config_->Clone());
 
@@ -354,7 +355,7 @@ class ProtocolPerfTest
 
     std::string host_pin_hash =
         protocol::GetSharedSecretHash(kHostId, kHostPin);
-    scoped_ptr<protocol::AuthenticatorFactory> auth_factory =
+    std::unique_ptr<protocol::AuthenticatorFactory> auth_factory =
         protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
             true, kHostOwner, host_cert, key_pair, "", host_pin_hash, nullptr);
     host_->SetAuthenticatorFactory(std::move(auth_factory));
@@ -377,7 +378,7 @@ class ProtocolPerfTest
     client_context_.reset(
         new ClientContext(base::ThreadTaskRunnerHandle::Get()));
 
-    scoped_ptr<FakePortAllocatorFactory> port_allocator_factory(
+    std::unique_ptr<FakePortAllocatorFactory> port_allocator_factory(
         new FakePortAllocatorFactory(fake_network_dispatcher_));
     port_allocator_factory->socket_factory()->SetBandwidth(
         GetParam().bandwidth, GetParam().max_buffers);
@@ -426,7 +427,7 @@ class ProtocolPerfTest
 
     int last_frame_id = -1;
     for (int i = 0; i < 30; ++i) {
-      scoped_ptr<webrtc::DesktopFrame> frame = ReceiveFrame();
+      std::unique_ptr<webrtc::DesktopFrame> frame = ReceiveFrame();
       test::CyclicFrameGenerator::FrameInfo frame_info =
           frame_generator->IdentifyFrame(frame.get());
       base::TimeDelta latency = base::TimeTicks::Now() - frame_info.timestamp;
@@ -475,27 +476,27 @@ class ProtocolPerfTest
 
   FakeCursorShapeStub cursor_shape_stub_;
 
-  scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
+  std::unique_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
-  scoped_ptr<FakeSignalStrategy> host_signaling_;
-  scoped_ptr<FakeSignalStrategy> client_signaling_;
+  std::unique_ptr<FakeSignalStrategy> host_signaling_;
+  std::unique_ptr<FakeSignalStrategy> client_signaling_;
 
-  scoped_ptr<ChromotingHost> host_;
-  scoped_ptr<ClientContext> client_context_;
-  scoped_ptr<ChromotingClient> client_;
+  std::unique_ptr<ChromotingHost> host_;
+  std::unique_ptr<ClientContext> client_context_;
+  std::unique_ptr<ChromotingClient> client_;
   webrtc::DesktopSize frame_size_;
-  scoped_ptr<VideoDecoder> video_decoder_;
+  std::unique_ptr<VideoDecoder> video_decoder_;
 
-  scoped_ptr<base::RunLoop> connecting_loop_;
-  scoped_ptr<base::RunLoop> waiting_frames_loop_;
+  std::unique_ptr<base::RunLoop> connecting_loop_;
+  std::unique_ptr<base::RunLoop> waiting_frames_loop_;
 
   bool client_connected_;
   bool host_connected_;
 
   base::Closure on_frame_task_;
 
-  scoped_ptr<VideoPacket> last_video_packet_;
-  scoped_ptr<webrtc::DesktopFrame> last_video_frame_;
+  std::unique_ptr<VideoPacket> last_video_packet_;
+  std::unique_ptr<webrtc::DesktopFrame> last_video_frame_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProtocolPerfTest);
@@ -562,7 +563,7 @@ class IntermittentChangeFrameGenerator
   IntermittentChangeFrameGenerator()
       : frame_index_(0) {}
 
-  scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
+  std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::SharedMemoryFactory* shared_memory_factory) {
     const int kWidth = 1000;
     const int kHeight = kIntermittentFrameSize / kWidth / 4;
@@ -575,7 +576,7 @@ class IntermittentChangeFrameGenerator
     }
     ++frame_index_;
 
-    scoped_ptr<webrtc::DesktopFrame> result(current_frame_->Share());
+    std::unique_ptr<webrtc::DesktopFrame> result(current_frame_->Share());
     result->mutable_updated_region()->Clear();
     if (fresh_frame) {
       result->mutable_updated_region()->AddRect(
@@ -589,7 +590,7 @@ class IntermittentChangeFrameGenerator
   friend class base::RefCountedThreadSafe<IntermittentChangeFrameGenerator>;
 
   int frame_index_;
-  scoped_ptr<webrtc::SharedDesktopFrame> current_frame_;
+  std::unique_ptr<webrtc::SharedDesktopFrame> current_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(IntermittentChangeFrameGenerator);
 };

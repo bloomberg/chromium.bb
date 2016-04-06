@@ -32,7 +32,7 @@ void ChannelDispatcherBase::Init(MessageChannelFactory* channel_factory,
 }
 
 void ChannelDispatcherBase::OnChannelReady(
-    scoped_ptr<MessagePipe> message_pipe) {
+    std::unique_ptr<MessagePipe> message_pipe) {
   channel_factory_ = nullptr;
   message_pipe_ = std::move(message_pipe);
   message_pipe_->StartReceiving(base::Bind(

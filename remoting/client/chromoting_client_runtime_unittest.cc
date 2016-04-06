@@ -15,13 +15,13 @@ namespace remoting {
 // A simple test that starts and stop the runtime. This tests the runtime
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingClientRuntimeTest, StartAndStop) {
-  scoped_ptr<base::MessageLoopForUI> ui_loop;
+  std::unique_ptr<base::MessageLoopForUI> ui_loop;
   ui_loop.reset(new base::MessageLoopForUI());
 #if defined(OS_IOS)
   ui_loop->Attach();
 #endif
 
-  scoped_ptr<ChromotingClientRuntime> runtime =
+  std::unique_ptr<ChromotingClientRuntime> runtime =
       ChromotingClientRuntime::Create(ui_loop.get());
 
   ASSERT_TRUE(runtime);

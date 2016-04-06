@@ -32,7 +32,8 @@ class IpcInputInjector : public InputInjector {
   void InjectTouchEvent(const protocol::TouchEvent& event) override;
 
   // InputInjector interface.
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   // Wraps the IPC channel to the desktop process.

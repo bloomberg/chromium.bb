@@ -137,8 +137,8 @@ int AudioEncoderOpus::GetBitrate() {
   return kOutputBitrateBps;
 }
 
-scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
-    scoped_ptr<AudioPacket> packet) {
+std::unique_ptr<AudioPacket> AudioEncoderOpus::Encode(
+    std::unique_ptr<AudioPacket> packet) {
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_EQ(1, packet->data_size());
   DCHECK_EQ(kBytesPerSample, packet->bytes_per_sample());
@@ -153,7 +153,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
       reinterpret_cast<const int16_t*>(packet->data(0).data());
 
   // Create a new packet of encoded data.
-  scoped_ptr<AudioPacket> encoded_packet(new AudioPacket());
+  std::unique_ptr<AudioPacket> encoded_packet(new AudioPacket());
   encoded_packet->set_encoding(AudioPacket::ENCODING_OPUS);
   encoded_packet->set_sampling_rate(kOpusSamplingRate);
   encoded_packet->set_channels(channels_);

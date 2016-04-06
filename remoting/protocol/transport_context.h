@@ -7,12 +7,12 @@
 
 #include <array>
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
@@ -46,8 +46,8 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   static scoped_refptr<TransportContext> ForTests(TransportRole role);
 
   TransportContext(SignalStrategy* signal_strategy,
-                   scoped_ptr<PortAllocatorFactory> port_allocator_factory,
-                   scoped_ptr<UrlRequestFactory> url_request_factory,
+                   std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
+                   std::unique_ptr<UrlRequestFactory> url_request_factory,
                    const NetworkSettings& network_settings,
                    TransportRole role);
 
@@ -85,15 +85,16 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   void OnIceConfig(RelayMode relay_mode, const IceConfig& ice_config);
 
   SignalStrategy* signal_strategy_;
-  scoped_ptr<PortAllocatorFactory> port_allocator_factory_;
-  scoped_ptr<UrlRequestFactory> url_request_factory_;
+  std::unique_ptr<PortAllocatorFactory> port_allocator_factory_;
+  std::unique_ptr<UrlRequestFactory> url_request_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
 
   std::string ice_config_url_;
   RelayMode relay_mode_ = RelayMode::GTURN;
 
-  std::array<scoped_ptr<IceConfigRequest>, kNumRelayModes> ice_config_request_;
+  std::array<std::unique_ptr<IceConfigRequest>, kNumRelayModes>
+      ice_config_request_;
   std::array<IceConfig, kNumRelayModes> ice_config_;
 
   // When there is an active |ice_config_request_| stores list of callbacks to

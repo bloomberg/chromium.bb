@@ -42,13 +42,13 @@ class FakeVideoStream : public protocol::VideoStream {
 
 class FakeConnectionToClient : public ConnectionToClient {
  public:
-  FakeConnectionToClient(scoped_ptr<Session> session);
+  FakeConnectionToClient(std::unique_ptr<Session> session);
   ~FakeConnectionToClient() override;
 
   void SetEventHandler(EventHandler* event_handler) override;
 
-  scoped_ptr<VideoStream> StartVideoStream(
-      scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
+  std::unique_ptr<VideoStream> StartVideoStream(
+      std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
 
   AudioStub* audio_stub() override;
   ClientStub* client_stub() override;
@@ -77,7 +77,7 @@ class FakeConnectionToClient : public ConnectionToClient {
   ErrorCode disconnect_error() { return disconnect_error_; }
 
  private:
-  scoped_ptr<Session> session_;
+  std::unique_ptr<Session> session_;
   EventHandler* event_handler_ = nullptr;
 
   base::WeakPtr<FakeVideoStream> last_video_stream_;

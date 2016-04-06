@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_HOST_EVENT_LOGGER_H_
 #define REMOTING_HOST_HOST_EVENT_LOGGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace remoting {
@@ -22,7 +22,7 @@ class HostEventLogger {
 
   // Creates an event-logger that monitors host status changes and logs
   // corresponding events to the OS-specific log (syslog/EventLog).
-  static scoped_ptr<HostEventLogger> Create(
+  static std::unique_ptr<HostEventLogger> Create(
       base::WeakPtr<HostStatusMonitor> monitor,
       const std::string& application_name);
 

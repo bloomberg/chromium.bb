@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -37,7 +38,7 @@ using remoting::protocol::SynchronousPairingRegistry;
 
 namespace {
 
-void VerifyHelloResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyHelloResponse(std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -52,7 +53,8 @@ void VerifyHelloResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_EQ(STRINGIZE(VERSION), value);
 }
 
-void VerifyGetHostNameResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyGetHostNameResponse(
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -61,7 +63,7 @@ void VerifyGetHostNameResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_EQ(net::GetHostName(), value);
 }
 
-void VerifyGetPinHashResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyGetPinHashResponse(std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -70,7 +72,8 @@ void VerifyGetPinHashResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_EQ(remoting::MakeHostPinHash("my_host", "1234"), value);
 }
 
-void VerifyGenerateKeyPairResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyGenerateKeyPairResponse(
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -79,7 +82,8 @@ void VerifyGenerateKeyPairResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_TRUE(response->GetString("publicKey", &value));
 }
 
-void VerifyGetDaemonConfigResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyGetDaemonConfigResponse(
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -90,7 +94,7 @@ void VerifyGetDaemonConfigResponse(scoped_ptr<base::DictionaryValue> response) {
 }
 
 void VerifyGetUsageStatsConsentResponse(
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -104,7 +108,7 @@ void VerifyGetUsageStatsConsentResponse(
   EXPECT_TRUE(set_by_policy);
 }
 
-void VerifyStopDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyStopDaemonResponse(std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -113,7 +117,8 @@ void VerifyStopDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_EQ("OK", value);
 }
 
-void VerifyGetDaemonStateResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyGetDaemonStateResponse(
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -123,7 +128,7 @@ void VerifyGetDaemonStateResponse(scoped_ptr<base::DictionaryValue> response) {
 }
 
 void VerifyUpdateDaemonConfigResponse(
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -132,7 +137,8 @@ void VerifyUpdateDaemonConfigResponse(
   EXPECT_EQ("OK", value);
 }
 
-void VerifyStartDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
+void VerifyStartDaemonResponse(
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -142,7 +148,7 @@ void VerifyStartDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
 }
 
 void VerifyGetCredentialsFromAuthCodeResponse(
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -164,12 +170,12 @@ class MockDaemonControllerDelegate : public DaemonController::Delegate {
 
   // DaemonController::Delegate interface.
   DaemonController::State GetState() override;
-  scoped_ptr<base::DictionaryValue> GetConfig() override;
+  std::unique_ptr<base::DictionaryValue> GetConfig() override;
   void SetConfigAndStart(
-      scoped_ptr<base::DictionaryValue> config,
+      std::unique_ptr<base::DictionaryValue> config,
       bool consent,
       const DaemonController::CompletionCallback& done) override;
-  void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+  void UpdateConfig(std::unique_ptr<base::DictionaryValue> config,
                     const DaemonController::CompletionCallback& done) override;
   void Stop(const DaemonController::CompletionCallback& done) override;
   DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
@@ -186,15 +192,15 @@ DaemonController::State MockDaemonControllerDelegate::GetState() {
   return DaemonController::STATE_STARTED;
 }
 
-scoped_ptr<base::DictionaryValue> MockDaemonControllerDelegate::GetConfig() {
-  return make_scoped_ptr(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue>
+MockDaemonControllerDelegate::GetConfig() {
+  return base::WrapUnique(new base::DictionaryValue());
 }
 
 void MockDaemonControllerDelegate::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     bool consent,
     const DaemonController::CompletionCallback& done) {
-
   // Verify parameters passed in.
   if (consent && config && config->HasKey("start")) {
     done.Run(DaemonController::RESULT_OK);
@@ -204,7 +210,7 @@ void MockDaemonControllerDelegate::SetConfigAndStart(
 }
 
 void MockDaemonControllerDelegate::UpdateConfig(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
   if (config && config->HasKey("update")) {
     done.Run(DaemonController::RESULT_OK);
@@ -235,7 +241,7 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
 
   void WriteMessageToInputPipe(const base::Value& message);
 
@@ -265,15 +271,15 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
   base::File output_read_file_;
 
   // Message loop of the test thread.
-  scoped_ptr<base::MessageLoop> test_message_loop_;
-  scoped_ptr<base::RunLoop> test_run_loop_;
+  std::unique_ptr<base::MessageLoop> test_message_loop_;
+  std::unique_ptr<base::RunLoop> test_run_loop_;
 
-  scoped_ptr<base::Thread> host_thread_;
-  scoped_ptr<base::RunLoop> host_run_loop_;
+  std::unique_ptr<base::Thread> host_thread_;
+  std::unique_ptr<base::RunLoop> host_run_loop_;
 
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
-  scoped_ptr<remoting::Me2MeNativeMessagingHost> host_;
+  std::unique_ptr<remoting::Me2MeNativeMessagingHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHostTest);
 };
@@ -322,17 +328,17 @@ void Me2MeNativeMessagingHostTest::StartHost() {
 
   daemon_controller_delegate_ = new MockDaemonControllerDelegate();
   scoped_refptr<DaemonController> daemon_controller(
-      new DaemonController(make_scoped_ptr(daemon_controller_delegate_)));
+      new DaemonController(base::WrapUnique(daemon_controller_delegate_)));
 
   scoped_refptr<PairingRegistry> pairing_registry =
       new SynchronousPairingRegistry(
-          make_scoped_ptr(new MockPairingRegistryDelegate()));
+          base::WrapUnique(new MockPairingRegistryDelegate()));
 
-  scoped_ptr<extensions::NativeMessagingChannel> channel(
+  std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(input_read_file),
                                std::move(output_write_file)));
 
-  scoped_ptr<OAuthClient> oauth_client(
+  std::unique_ptr<OAuthClient> oauth_client(
       new MockOAuthClient("fake_user_email", "fake_refresh_token"));
 
   host_.reset(new Me2MeNativeMessagingHost(false, 0, std::move(channel),
@@ -379,7 +385,7 @@ void Me2MeNativeMessagingHostTest::TearDown() {
   test_run_loop_->Run();
 
   // Verify there are no more message in the output pipe.
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
 
   // The It2MeMe2MeNativeMessagingHost dtor closes the handles that are passed
@@ -387,7 +393,7 @@ void Me2MeNativeMessagingHostTest::TearDown() {
   output_read_file_.Close();
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   while (true) {
     uint32_t length;
@@ -404,12 +410,12 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
       return nullptr;
     }
 
-    scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
     if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
       return nullptr;
     }
 
-    scoped_ptr<base::DictionaryValue> result = make_scoped_ptr(
+    std::unique_ptr<base::DictionaryValue> result = base::WrapUnique(
         static_cast<base::DictionaryValue*>(message.release()));
     std::string type;
     // If this is a debug message log, ignore it, otherwise return it.
@@ -442,7 +448,7 @@ void Me2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   WriteMessageToInputPipe(good_message);
 
   // Read from output pipe, and verify responses.
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   VerifyHelloResponse(std::move(response));
 
   response = ReadMessageFromOutputPipe();
@@ -510,7 +516,7 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
   message.SetString("authorizationCode", "fake_auth_code");
   WriteMessageToInputPipe(message);
 
-  void (*verify_routines[])(scoped_ptr<base::DictionaryValue>) = {
+  void (*verify_routines[])(std::unique_ptr<base::DictionaryValue>) = {
       &VerifyHelloResponse,
       &VerifyGetHostNameResponse,
       &VerifyGetPinHashResponse,
@@ -527,7 +533,8 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
 
   // Read all responses from output pipe, and verify them.
   for (int i = 0; i < next_id; ++i) {
-    scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+    std::unique_ptr<base::DictionaryValue> response =
+        ReadMessageFromOutputPipe();
 
     // Make sure that id is available and is in the range.
     int id;
@@ -551,7 +558,7 @@ TEST_F(Me2MeNativeMessagingHostTest, Id) {
   message.SetString("id", "42");
   WriteMessageToInputPipe(message);
 
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_TRUE(response);
   std::string value;
   EXPECT_FALSE(response->GetString("id", &value));

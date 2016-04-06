@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/protocol/message_decoder.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/message_serialization.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,7 +54,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   int size;
   uint8_t* test_data;
   PrepareData(&test_data, &size);
-  scoped_ptr<uint8_t[]> memory_deleter(test_data);
+  std::unique_ptr<uint8_t[]> memory_deleter(test_data);
 
   // Then simulate using MessageDecoder to decode variable
   // size of encoded data.
@@ -75,7 +76,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
     memcpy(buffer->data(), test_data + pos, read);
     decoder.AddData(buffer, read);
     while (true) {
-      scoped_ptr<CompoundBuffer> message(decoder.GetNextMessage());
+      std::unique_ptr<CompoundBuffer> message(decoder.GetNextMessage());
       if (!message.get())
         break;
 

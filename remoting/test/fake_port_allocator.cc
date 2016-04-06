@@ -5,6 +5,7 @@
 #include "remoting/test/fake_port_allocator.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_network_manager.h"
@@ -77,10 +78,10 @@ FakePortAllocatorFactory::FakePortAllocatorFactory(
 
 FakePortAllocatorFactory::~FakePortAllocatorFactory() {}
 
-scoped_ptr<cricket::PortAllocator>
+std::unique_ptr<cricket::PortAllocator>
 FakePortAllocatorFactory::CreatePortAllocator(
     scoped_refptr<protocol::TransportContext> transport_context) {
-  return make_scoped_ptr(new FakePortAllocator(
+  return base::WrapUnique(new FakePortAllocator(
       network_manager_.get(), socket_factory_.get(), transport_context));
 }
 

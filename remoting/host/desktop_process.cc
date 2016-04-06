@@ -97,7 +97,7 @@ void DesktopProcess::OnChannelError() {
 }
 
 bool DesktopProcess::Start(
-    scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory) {
+    std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_environment_factory_);
   DCHECK(desktop_environment_factory);

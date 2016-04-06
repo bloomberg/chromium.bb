@@ -33,7 +33,7 @@ void IpcMouseCursorMonitor::Capture() {
 }
 
 void IpcMouseCursorMonitor::OnMouseCursor(
-    scoped_ptr<webrtc::MouseCursor> cursor) {
+    std::unique_ptr<webrtc::MouseCursor> cursor) {
   DCHECK(callback_);
   callback_->OnMouseCursor(cursor.release());
 }

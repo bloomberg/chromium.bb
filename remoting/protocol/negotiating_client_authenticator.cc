@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -80,14 +81,15 @@ void NegotiatingClientAuthenticator::ProcessMessage(
   ProcessMessageInternal(message, resume_callback);
 }
 
-scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement>
+NegotiatingClientAuthenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
 
   // This is the first message to the host, send a list of supported methods.
   if (current_method_ == Method::INVALID) {
     // If no authentication method has been chosen, see if we can optimistically
     // choose one.
-    scoped_ptr<buzz::XmlElement> result;
+    std::unique_ptr<buzz::XmlElement> result;
     CreatePreferredAuthenticator();
     if (current_authenticator_) {
       DCHECK(current_authenticator_->state() == MESSAGE_READY);
@@ -147,7 +149,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
       PairingClientAuthenticator* pairing_authenticator =
           new PairingClientAuthenticator(
               config_, base::Bind(&V2Authenticator::CreateForClient));
-      current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+      current_authenticator_ = base::WrapUnique(pairing_authenticator);
       pairing_authenticator->Start(preferred_initial_state, resume_callback);
       break;
     }
@@ -157,7 +159,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
           new PairingClientAuthenticator(
               config_, base::Bind(&Spake2Authenticator::CreateForClient,
                                   local_id_, remote_id_));
-      current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+      current_authenticator_ = base::WrapUnique(pairing_authenticator);
       pairing_authenticator->Start(preferred_initial_state, resume_callback);
       break;
     }
@@ -181,7 +183,7 @@ void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
     PairingClientAuthenticator* pairing_authenticator =
         new PairingClientAuthenticator(
             config_, base::Bind(&V2Authenticator::CreateForClient));
-    current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+    current_authenticator_ = base::WrapUnique(pairing_authenticator);
     pairing_authenticator->StartPaired(MESSAGE_READY);
     current_method_ = Method::PAIRED_SPAKE2_P224;
   }

@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_WIN_SESSION_INPUT_INJECTOR_H_
 #define REMOTING_HOST_WIN_SESSION_INPUT_INJECTOR_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/host/input_injector.h"
 
 namespace base {
@@ -26,14 +27,14 @@ class SessionInputInjectorWin : public InputInjector {
   // Vista+.
   SessionInputInjectorWin(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_ptr<InputInjector> nested_executor,
+      std::unique_ptr<InputInjector> nested_executor,
       scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
       const base::Closure& inject_sas);
   ~SessionInputInjectorWin() override;
 
   // InputInjector implementation.
   void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
 
   // protocol::ClipboardStub implementation.
   void InjectClipboardEvent(

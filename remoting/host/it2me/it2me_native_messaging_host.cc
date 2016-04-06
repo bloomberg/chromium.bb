@@ -41,8 +41,8 @@ const remoting::protocol::NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
 }  // namespace
 
 It2MeNativeMessagingHost::It2MeNativeMessagingHost(
-    scoped_ptr<ChromotingHostContext> context,
-    scoped_ptr<It2MeHostFactory> factory)
+    std::unique_ptr<ChromotingHostContext> context,
+    std::unique_ptr<It2MeHostFactory> factory)
     : client_(nullptr),
       host_context_(std::move(context)),
       factory_(std::move(factory)),
@@ -72,15 +72,15 @@ It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
 void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  scoped_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
   if (!message_value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Received a message that's not a dictionary.";
     client_->CloseChannel(std::string());
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> message_dict(
+  std::unique_ptr<base::DictionaryValue> message_dict(
       static_cast<base::DictionaryValue*>(message_value.release()));
 
   // If the client supplies an ID, it will expect it in the response. This
@@ -120,7 +120,7 @@ void It2MeNativeMessagingHost::Start(Client* client) {
 }
 
 void It2MeNativeMessagingHost::SendMessageToClient(
-    scoped_ptr<base::Value> message) const {
+    std::unique_ptr<base::Value> message) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
   std::string message_json;
   base::JSONWriter::Write(*message, &message_json);
@@ -129,13 +129,14 @@ void It2MeNativeMessagingHost::SendMessageToClient(
 
 void It2MeNativeMessagingHost::ProcessHello(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response) const {
+    std::unique_ptr<base::DictionaryValue> response) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   response->SetString("version", STRINGIZE(VERSION));
 
   // This list will be populated when new features are added.
-  scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> supported_features_list(
+      new base::ListValue());
   response->Set("supportedFeatures", supported_features_list.release());
 
   SendMessageToClient(std::move(response));
@@ -143,7 +144,7 @@ void It2MeNativeMessagingHost::ProcessHello(
 
 void It2MeNativeMessagingHost::ProcessConnect(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (it2me_host_.get()) {
@@ -220,7 +221,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
 
 void It2MeNativeMessagingHost::ProcessDisconnect(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response) {
+    std::unique_ptr<base::DictionaryValue> response) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (it2me_host_.get()) {
@@ -231,7 +232,7 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
 }
 
 void It2MeNativeMessagingHost::SendErrorAndExit(
-    scoped_ptr<base::DictionaryValue> response,
+    std::unique_ptr<base::DictionaryValue> response,
     const std::string& description) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
@@ -252,7 +253,7 @@ void It2MeNativeMessagingHost::OnStateChanged(
 
   state_ = state;
 
-  scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
   message->SetString("type", "hostStateChanged");
   message->SetString("state", HostStateToString(state));
@@ -290,7 +291,7 @@ void It2MeNativeMessagingHost::OnStateChanged(
 void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
   message->SetString("type", "natPolicyChanged");
   message->SetBoolean("natTraversalEnabled", nat_traversal_enabled);

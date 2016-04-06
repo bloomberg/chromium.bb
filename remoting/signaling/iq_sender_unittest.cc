@@ -60,7 +60,7 @@ class IqSenderTest : public testing::Test {
 
  protected:
   void SendTestMessage() {
-    scoped_ptr<XmlElement> iq_body(
+    std::unique_ptr<XmlElement> iq_body(
         new XmlElement(QName(kNamespace, kBodyTag)));
     XmlElement* sent_stanza;
     EXPECT_CALL(signal_strategy_, GetNextId())
@@ -83,8 +83,8 @@ class IqSenderTest : public testing::Test {
   }
 
   bool FormatAndDeliverResponse(const std::string& from,
-                                scoped_ptr<XmlElement>* response_out) {
-    scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+                                std::unique_ptr<XmlElement>* response_out) {
+    std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
     response->AddAttr(QName(std::string(), "type"), "result");
     response->AddAttr(QName(std::string(), "id"), kStanzaId);
     response->AddAttr(QName(std::string(), "from"), from);
@@ -103,9 +103,9 @@ class IqSenderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
-  scoped_ptr<IqSender> sender_;
+  std::unique_ptr<IqSender> sender_;
   MockCallback callback_;
-  scoped_ptr<IqRequest> request_;
+  std::unique_ptr<IqRequest> request_;
 };
 
 TEST_F(IqSenderTest, SendIq) {
@@ -113,7 +113,7 @@ TEST_F(IqSenderTest, SendIq) {
     SendTestMessage();
   });
 
-  scoped_ptr<XmlElement> response;
+  std::unique_ptr<XmlElement> response;
   EXPECT_TRUE(FormatAndDeliverResponse(kTo, &response));
 
   EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
@@ -140,7 +140,7 @@ TEST_F(IqSenderTest, NotNormalizedJid) {
 
   // Set upper-case from value, which is equivalent to kTo in the original
   // message.
-  scoped_ptr<XmlElement> response;
+  std::unique_ptr<XmlElement> response;
   EXPECT_TRUE(FormatAndDeliverResponse("USER@domain.com", &response));
 
   EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));

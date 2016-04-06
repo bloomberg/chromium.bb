@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_TOKEN_VALIDATOR_BASE_H_
 #define REMOTING_HOST_TOKEN_VALIDATOR_BASE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -65,7 +66,7 @@ class TokenValidatorBase
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // URLRequest related fields.
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequest> request_;
   scoped_refptr<net::IOBuffer> buffer_;
   std::string data_;
 

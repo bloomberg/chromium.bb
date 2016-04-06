@@ -5,11 +5,12 @@
 #ifndef REMOTING_HOST_NATIVE_MESSAGING_PIPE_MESSAGING_CHANNEL_H_
 #define REMOTING_HOST_NATIVE_MESSAGING_PIPE_MESSAGING_CHANNEL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "extensions/browser/api/messaging/native_messaging_channel.h"
@@ -40,17 +41,17 @@ class PipeMessagingChannel : public extensions::NativeMessagingChannel,
 
   // extensions::NativeMessagingChannel implementation.
   void Start(EventHandler* event_handler) override;
-  void SendMessage(scoped_ptr<base::Value> message) override;
+  void SendMessage(std::unique_ptr<base::Value> message) override;
 
  private:
   // Processes a message received from the client app.
-  void ProcessMessage(scoped_ptr<base::Value> message);
+  void ProcessMessage(std::unique_ptr<base::Value> message);
 
   // Initiates shutdown.
   void Shutdown();
 
   NativeMessagingReader native_messaging_reader_;
-  scoped_ptr<NativeMessagingWriter> native_messaging_writer_;
+  std::unique_ptr<NativeMessagingWriter> native_messaging_writer_;
 
   EventHandler* event_handler_;
   base::WeakPtr<PipeMessagingChannel> weak_ptr_;

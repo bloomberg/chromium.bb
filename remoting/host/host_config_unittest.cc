@@ -52,7 +52,8 @@ TEST_F(HostConfigTest, Read) {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   base::FilePath test_file = test_dir_.path().AppendASCII("read.json");
   WriteTestFile(test_file);
-  scoped_ptr<base::DictionaryValue> target(HostConfigFromJsonFile(test_file));
+  std::unique_ptr<base::DictionaryValue> target(
+      HostConfigFromJsonFile(test_file));
   ASSERT_TRUE(target);
 
   std::string value;
@@ -75,7 +76,8 @@ TEST_F(HostConfigTest, Write) {
 
   base::FilePath test_file = test_dir_.path().AppendASCII("write.json");
   WriteTestFile(test_file);
-  scoped_ptr<base::DictionaryValue> target(HostConfigFromJsonFile(test_file));
+  std::unique_ptr<base::DictionaryValue> target(
+      HostConfigFromJsonFile(test_file));
   ASSERT_TRUE(target);
 
   std::string new_refresh_token_value = "NEW_REFRESH_TOKEN";
@@ -83,7 +85,8 @@ TEST_F(HostConfigTest, Write) {
   ASSERT_TRUE(HostConfigToJsonFile(*target, test_file));
 
   // Now read the file again and check that the value has been written.
-  scoped_ptr<base::DictionaryValue> reader(HostConfigFromJsonFile(test_file));
+  std::unique_ptr<base::DictionaryValue> reader(
+      HostConfigFromJsonFile(test_file));
   ASSERT_TRUE(reader);
 
   std::string value;

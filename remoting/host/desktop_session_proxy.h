@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -82,11 +82,11 @@ class DesktopSessionProxy
       bool supports_touch_events);
 
   // Mirrors DesktopEnvironment.
-  scoped_ptr<AudioCapturer> CreateAudioCapturer();
-  scoped_ptr<InputInjector> CreateInputInjector();
-  scoped_ptr<ScreenControls> CreateScreenControls();
-  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer();
-  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor();
+  std::unique_ptr<AudioCapturer> CreateAudioCapturer();
+  std::unique_ptr<InputInjector> CreateInputInjector();
+  std::unique_ptr<ScreenControls> CreateScreenControls();
+  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer();
+  std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor();
   std::string GetCapabilities() const;
   void SetCapabilities(const std::string& capabilities);
 
@@ -130,7 +130,8 @@ class DesktopSessionProxy
   void InjectTextEvent(const protocol::TextEvent& event);
   void InjectMouseEvent(const protocol::MouseEvent& event);
   void InjectTouchEvent(const protocol::TouchEvent& event);
-  void StartInputInjector(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+  void StartInputInjector(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
   // API used to implement the SessionController interface.
   void SetScreenResolution(const ScreenResolution& resolution);
@@ -185,7 +186,7 @@ class DesktopSessionProxy
   base::WeakPtr<IpcAudioCapturer> audio_capturer_;
 
   // Points to the client stub passed to StartInputInjector().
-  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
+  std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
 
   // Used to disconnect the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
@@ -201,7 +202,7 @@ class DesktopSessionProxy
   base::WeakPtr<IpcMouseCursorMonitor> mouse_cursor_monitor_;
 
   // IPC channel to the desktop session agent.
-  scoped_ptr<IPC::ChannelProxy> desktop_channel_;
+  std::unique_ptr<IPC::ChannelProxy> desktop_channel_;
 
   // Handle of the desktop process.
   base::Process desktop_process_;

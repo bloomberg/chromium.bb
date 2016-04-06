@@ -5,6 +5,7 @@
 #include "remoting/base/chromium_url_request.h"
 
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -67,10 +68,10 @@ ChromiumUrlRequestFactory::ChromiumUrlRequestFactory(
     : url_context_(url_context) {}
 ChromiumUrlRequestFactory::~ChromiumUrlRequestFactory() {}
 
-scoped_ptr<UrlRequest> ChromiumUrlRequestFactory::CreateUrlRequest(
+std::unique_ptr<UrlRequest> ChromiumUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,
     const std::string& url) {
-  return make_scoped_ptr(new ChromiumUrlRequest(url_context_, type, url));
+  return base::WrapUnique(new ChromiumUrlRequest(url_context_, type, url));
 }
 
 }  // namespace remoting

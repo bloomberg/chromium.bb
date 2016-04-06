@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -97,8 +98,8 @@ class IceTransportTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void ProcessTransportInfo(scoped_ptr<IceTransport>* target_transport,
-                            scoped_ptr<buzz::XmlElement> transport_info) {
+  void ProcessTransportInfo(std::unique_ptr<IceTransport>* target_transport,
+                            std::unique_ptr<buzz::XmlElement> transport_info) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&IceTransportTest::DeliverTransportInfo,
                               base::Unretained(this), target_transport,
@@ -106,8 +107,8 @@ class IceTransportTest : public testing::Test {
         transport_info_delay_);
   }
 
-  void DeliverTransportInfo(scoped_ptr<IceTransport>* target_transport,
-                            scoped_ptr<buzz::XmlElement> transport_info) {
+  void DeliverTransportInfo(std::unique_ptr<IceTransport>* target_transport,
+                            std::unique_ptr<buzz::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
     EXPECT_TRUE(
         (*target_transport)->ProcessTransportInfo(transport_info.get()));
@@ -118,7 +119,7 @@ class IceTransportTest : public testing::Test {
 
     host_transport_.reset(new IceTransport(
         new TransportContext(
-            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory()),
+            nullptr, base::WrapUnique(new ChromiumPortAllocatorFactory()),
             nullptr, network_settings_, TransportRole::SERVER),
         &host_event_handler_));
     if (!host_authenticator_) {
@@ -128,7 +129,7 @@ class IceTransportTest : public testing::Test {
 
     client_transport_.reset(new IceTransport(
         new TransportContext(
-            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory()),
+            nullptr, base::WrapUnique(new ChromiumPortAllocatorFactory()),
             nullptr, network_settings_, TransportRole::CLIENT),
         &client_event_handler_));
     if (!client_authenticator_) {
@@ -167,12 +168,12 @@ class IceTransportTest : public testing::Test {
     EXPECT_TRUE(host_message_pipe_.get());
   }
 
-  void OnClientChannelCreated(scoped_ptr<MessagePipe> message_pipe) {
+  void OnClientChannelCreated(std::unique_ptr<MessagePipe> message_pipe) {
     client_message_pipe_ = std::move(message_pipe);
     client_channel_callback_.OnDone(client_message_pipe_.get());
   }
 
-  void OnHostChannelCreated(scoped_ptr<MessagePipe> message_pipe) {
+  void OnHostChannelCreated(std::unique_ptr<MessagePipe> message_pipe) {
     host_message_pipe_ = std::move(message_pipe);
     host_channel_callback_.OnDone(host_message_pipe_.get());
   }
@@ -185,25 +186,25 @@ class IceTransportTest : public testing::Test {
 
  protected:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   NetworkSettings network_settings_;
 
   base::TimeDelta transport_info_delay_;
 
-  scoped_ptr<IceTransport> host_transport_;
+  std::unique_ptr<IceTransport> host_transport_;
   TestTransportEventHandler host_event_handler_;
-  scoped_ptr<FakeAuthenticator> host_authenticator_;
+  std::unique_ptr<FakeAuthenticator> host_authenticator_;
 
-  scoped_ptr<IceTransport> client_transport_;
+  std::unique_ptr<IceTransport> client_transport_;
   TestTransportEventHandler client_event_handler_;
-  scoped_ptr<FakeAuthenticator> client_authenticator_;
+  std::unique_ptr<FakeAuthenticator> client_authenticator_;
 
   MockChannelCreatedCallback client_channel_callback_;
   MockChannelCreatedCallback host_channel_callback_;
 
-  scoped_ptr<MessagePipe> client_message_pipe_;
-  scoped_ptr<MessagePipe> host_message_pipe_;
+  std::unique_ptr<MessagePipe> client_message_pipe_;
+  std::unique_ptr<MessagePipe> host_message_pipe_;
 
   ErrorCode error_ = OK;
 };

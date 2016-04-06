@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_IT2ME_IT2ME_NATIVE_MESSAGING_HOST_H_
 #define REMOTING_HOST_IT2ME_IT2ME_NATIVE_MESSAGING_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
@@ -30,9 +31,8 @@ namespace remoting {
 class It2MeNativeMessagingHost : public It2MeHost::Observer,
                                  public extensions::NativeMessageHost {
  public:
-  It2MeNativeMessagingHost(
-      scoped_ptr<ChromotingHostContext> host_context,
-      scoped_ptr<It2MeHostFactory> host_factory);
+  It2MeNativeMessagingHost(std::unique_ptr<ChromotingHostContext> host_context,
+                           std::unique_ptr<It2MeHostFactory> host_factory);
   ~It2MeNativeMessagingHost() override;
 
   // extensions::NativeMessageHost implementation.
@@ -57,24 +57,24 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
   void ProcessHello(const base::DictionaryValue& message,
-                    scoped_ptr<base::DictionaryValue> response) const;
+                    std::unique_ptr<base::DictionaryValue> response) const;
   void ProcessConnect(const base::DictionaryValue& message,
-                      scoped_ptr<base::DictionaryValue> response);
+                      std::unique_ptr<base::DictionaryValue> response);
   void ProcessDisconnect(const base::DictionaryValue& message,
-                         scoped_ptr<base::DictionaryValue> response);
-  void SendErrorAndExit(scoped_ptr<base::DictionaryValue> response,
+                         std::unique_ptr<base::DictionaryValue> response);
+  void SendErrorAndExit(std::unique_ptr<base::DictionaryValue> response,
                         const std::string& description) const;
-  void SendMessageToClient(scoped_ptr<base::Value> message) const;
+  void SendMessageToClient(std::unique_ptr<base::Value> message) const;
 
   Client* client_;
-  scoped_ptr<ChromotingHostContext> host_context_;
-  scoped_ptr<It2MeHostFactory> factory_;
+  std::unique_ptr<ChromotingHostContext> host_context_;
+  std::unique_ptr<It2MeHostFactory> factory_;
   scoped_refptr<It2MeHost> it2me_host_;
 
 #if !defined(OS_CHROMEOS)
   // Don't install a log message handler on ChromeOS because we run in the
   // browser process and don't want to intercept all its log messages.
-  scoped_ptr<LogMessageHandler> log_message_handler_;
+  std::unique_ptr<LogMessageHandler> log_message_handler_;
 #endif
 
   // Cached, read-only copies of |it2me_host_| session state.

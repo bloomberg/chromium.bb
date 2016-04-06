@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/continue_window.h"
+
 #include <gtk/gtk.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/string_resources.h"
-#include "remoting/host/continue_window.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -115,8 +117,8 @@ void ContinueWindowGtk::OnResponse(GtkDialog* dialog, int response_id) {
 }
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return make_scoped_ptr(new ContinueWindowGtk());
+std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
+  return base::WrapUnique(new ContinueWindowGtk());
 }
 
 }  // namespace remoting

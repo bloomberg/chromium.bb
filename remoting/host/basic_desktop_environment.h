@@ -5,12 +5,12 @@
 #ifndef REMOTING_HOST_BASIC_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_BASIC_DESKTOP_ENVIRONMENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/host/desktop_environment.h"
 
 namespace webrtc {
@@ -28,11 +28,12 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   ~BasicDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
-  scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
-  scoped_ptr<InputInjector> CreateInputInjector() override;
-  scoped_ptr<ScreenControls> CreateScreenControls() override;
-  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
+  std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
+  std::unique_ptr<InputInjector> CreateInputInjector() override;
+  std::unique_ptr<ScreenControls> CreateScreenControls() override;
+  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
+      override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
 
@@ -86,7 +87,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   // Also: it's dynamically allocated to avoid having to bring in
   // desktop_capture_options.h which brings in X11 headers which causes hard to
   // find build errors.
-  scoped_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options_;
+  std::unique_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options_;
 
   // True if the touch events capability should be offered.
   const bool supports_touch_events_;

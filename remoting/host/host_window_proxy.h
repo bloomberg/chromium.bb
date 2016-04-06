@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_HOST_WINDOW_PROXY_H_
 #define REMOTING_HOST_HOST_WINDOW_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/host_window.h"
 
@@ -23,7 +24,7 @@ class HostWindowProxy : public HostWindow {
   HostWindowProxy(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_ptr<HostWindow> host_window);
+      std::unique_ptr<HostWindow> host_window);
   ~HostWindowProxy() override;
 
   // HostWindow overrides.

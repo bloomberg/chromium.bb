@@ -15,7 +15,7 @@ using protocol::PairingRegistry;
 scoped_refptr<PairingRegistry> CreatePairingRegistry(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   scoped_refptr<PairingRegistry> pairing_registry;
-  scoped_ptr<PairingRegistry::Delegate> delegate(
+  std::unique_ptr<PairingRegistry::Delegate> delegate(
       CreatePairingRegistryDelegate());
   if (delegate) {
     pairing_registry = new PairingRegistry(task_runner, std::move(delegate));

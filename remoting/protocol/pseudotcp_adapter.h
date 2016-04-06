@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/log/net_log.h"
 #include "remoting/protocol/p2p_stream_socket.h"
@@ -28,7 +29,7 @@ class P2PDatagramSocket;
 // held on the stack during callbacks.
 class PseudoTcpAdapter : public P2PStreamSocket, base::NonThreadSafe {
  public:
-  explicit PseudoTcpAdapter(scoped_ptr<P2PDatagramSocket> socket);
+  explicit PseudoTcpAdapter(std::unique_ptr<P2PDatagramSocket> socket);
   ~PseudoTcpAdapter() override;
 
   // P2PStreamSocket implementation.

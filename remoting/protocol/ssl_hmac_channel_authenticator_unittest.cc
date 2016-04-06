@@ -118,7 +118,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
   void OnHostConnected(const std::string& ref_argument,
                        int error,
-                       scoped_ptr<P2PStreamSocket> socket) {
+                       std::unique_ptr<P2PStreamSocket> socket) {
     // Try deleting the authenticator and verify that this doesn't destroy
     // reference parameters.
     host_auth_.reset();
@@ -128,7 +128,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     host_socket_ = std::move(socket);
   }
 
-  void OnClientConnected(int error, scoped_ptr<P2PStreamSocket> socket) {
+  void OnClientConnected(int error, std::unique_ptr<P2PStreamSocket> socket) {
     client_auth_.reset();
     client_callback_.OnDone(error, socket.get());
     client_socket_ = std::move(socket);
@@ -138,14 +138,14 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_cert_;
-  scoped_ptr<FakeStreamSocket> client_fake_socket_;
-  scoped_ptr<FakeStreamSocket> host_fake_socket_;
-  scoped_ptr<ChannelAuthenticator> client_auth_;
-  scoped_ptr<ChannelAuthenticator> host_auth_;
+  std::unique_ptr<FakeStreamSocket> client_fake_socket_;
+  std::unique_ptr<FakeStreamSocket> host_fake_socket_;
+  std::unique_ptr<ChannelAuthenticator> client_auth_;
+  std::unique_ptr<ChannelAuthenticator> host_auth_;
   MockChannelDoneCallback client_callback_;
   MockChannelDoneCallback host_callback_;
-  scoped_ptr<P2PStreamSocket> client_socket_;
-  scoped_ptr<P2PStreamSocket> host_socket_;
+  std::unique_ptr<P2PStreamSocket> client_socket_;
+  std::unique_ptr<P2PStreamSocket> host_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(SslHmacChannelAuthenticatorTest);
 };

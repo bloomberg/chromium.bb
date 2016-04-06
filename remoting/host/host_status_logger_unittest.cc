@@ -137,7 +137,7 @@ class HostStatusLoggerTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
-  scoped_ptr<HostStatusLogger> host_status_logger_;
+  std::unique_ptr<HostStatusLogger> host_status_logger_;
   FakeHostStatusMonitor host_status_monitor_;
 };
 

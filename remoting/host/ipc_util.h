@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_IPC_UTIL_H_
 #define REMOTING_HOST_IPC_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -38,7 +38,7 @@ bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,
     base::File* client_out,
-    scoped_ptr<IPC::ChannelProxy>* server_out);
+    std::unique_ptr<IPC::ChannelProxy>* server_out);
 
 #if defined(OS_WIN)
 

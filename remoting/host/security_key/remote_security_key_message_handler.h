@@ -5,12 +5,12 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_MESSAGE_HANDLER_H_
 #define REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_MESSAGE_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/host/security_key/security_key_message.h"
 
@@ -30,22 +30,23 @@ class RemoteSecurityKeyMessageHandler {
   // Sets up the handler to begin receiving and processing messages.
   void Start(base::File message_read_stream,
              base::File message_write_stream,
-             scoped_ptr<RemoteSecurityKeyIpcClient> ipc_client,
+             std::unique_ptr<RemoteSecurityKeyIpcClient> ipc_client,
              const base::Closure& error_callback);
 
   // Sets |reader_| to the instance passed in via |reader|.  This method should
   // be called before Start().
   void SetRemoteSecurityKeyMessageReaderForTest(
-      scoped_ptr<RemoteSecurityKeyMessageReader> reader);
+      std::unique_ptr<RemoteSecurityKeyMessageReader> reader);
 
   // Sets |writer_| to the instance passed in via |writer|.  This method should
   // be called before Start().
   void SetRemoteSecurityKeyMessageWriterForTest(
-      scoped_ptr<RemoteSecurityKeyMessageWriter> writer);
+      std::unique_ptr<RemoteSecurityKeyMessageWriter> writer);
 
  private:
   // RemoteSecurityKeyMessage handler.
-  void ProcessRemoteSecurityKeyMessage(scoped_ptr<SecurityKeyMessage> message);
+  void ProcessRemoteSecurityKeyMessage(
+      std::unique_ptr<SecurityKeyMessage> message);
 
   // Cleans up resources when an error occurs.
   void OnError();
@@ -68,13 +69,13 @@ class RemoteSecurityKeyMessageHandler {
   void HandleSecurityKeyRequest(const std::string& message_payload);
 
   // Used to communicate with the remote security key.
-  scoped_ptr<RemoteSecurityKeyIpcClient> ipc_client_;
+  std::unique_ptr<RemoteSecurityKeyIpcClient> ipc_client_;
 
   // Used to listen for security key messages.
-  scoped_ptr<RemoteSecurityKeyMessageReader> reader_;
+  std::unique_ptr<RemoteSecurityKeyMessageReader> reader_;
 
   // Used to write security key messages to local security key tools.
-  scoped_ptr<RemoteSecurityKeyMessageWriter> writer_;
+  std::unique_ptr<RemoteSecurityKeyMessageWriter> writer_;
 
   // Signaled when an error occurs.
   base::Closure error_callback_;

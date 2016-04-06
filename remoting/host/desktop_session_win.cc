@@ -7,6 +7,7 @@
 #include <sddl.h>
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -14,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -104,7 +105,7 @@ class ConsoleSession : public DesktopSessionWin {
   void InjectSas() override;
 
  private:
-  scoped_ptr<SasInjector> sas_injector_;
+  std::unique_ptr<SasInjector> sas_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsoleSession);
 };
@@ -365,27 +366,27 @@ STDMETHODIMP RdpSession::EventHandler::OnRdpClosed() {
 } // namespace
 
 // static
-scoped_ptr<DesktopSession> DesktopSessionWin::CreateForConsole(
+std::unique_ptr<DesktopSession> DesktopSessionWin::CreateForConsole(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
     const ScreenResolution& resolution) {
-  return make_scoped_ptr(new ConsoleSession(
-      caller_task_runner, io_task_runner, daemon_process, id,
-      HostService::GetInstance()));
+  return base::WrapUnique(new ConsoleSession(caller_task_runner, io_task_runner,
+                                             daemon_process, id,
+                                             HostService::GetInstance()));
 }
 
 // static
-scoped_ptr<DesktopSession> DesktopSessionWin::CreateForVirtualTerminal(
+std::unique_ptr<DesktopSession> DesktopSessionWin::CreateForVirtualTerminal(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
     const ScreenResolution& resolution) {
-  scoped_ptr<RdpSession> session(new RdpSession(
-      caller_task_runner, io_task_runner, daemon_process, id,
-      HostService::GetInstance()));
+  std::unique_ptr<RdpSession> session(
+      new RdpSession(caller_task_runner, io_task_runner, daemon_process, id,
+                     HostService::GetInstance()));
   if (!session->Initialize(resolution))
     return nullptr;
 
@@ -530,16 +531,18 @@ void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
 
   session_attach_timer_.Stop();
 
-  scoped_ptr<base::CommandLine> target(new base::CommandLine(desktop_binary));
+  std::unique_ptr<base::CommandLine> target(
+      new base::CommandLine(desktop_binary));
   target->AppendSwitchASCII(kProcessTypeSwitchName, kProcessTypeDesktop);
   // Copy the command line switches enabling verbose logging.
   target->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                            kCopiedSwitchNames, arraysize(kCopiedSwitchNames));
 
   // Create a delegate capable of launching a process in a different session.
-  scoped_ptr<WtsSessionProcessDelegate> delegate(new WtsSessionProcessDelegate(
-      io_task_runner_, std::move(target), launch_elevated,
-      base::WideToUTF8(kDaemonIpcSecurityDescriptor)));
+  std::unique_ptr<WtsSessionProcessDelegate> delegate(
+      new WtsSessionProcessDelegate(
+          io_task_runner_, std::move(target), launch_elevated,
+          base::WideToUTF8(kDaemonIpcSecurityDescriptor)));
   if (!delegate->Initialize(session_id)) {
     TerminateSession();
     return;

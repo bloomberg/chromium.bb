@@ -5,8 +5,9 @@
 #ifndef REMOTING_BASE_VLOG_NET_LOG_H_
 #define REMOTING_BASE_VLOG_NET_LOG_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/log/net_log.h"
 
 namespace remoting {
@@ -22,7 +23,7 @@ class VlogNetLog : public net::NetLog {
 
  private:
   class Observer;
-  scoped_ptr<Observer> observer_;
+  std::unique_ptr<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(VlogNetLog);
 };

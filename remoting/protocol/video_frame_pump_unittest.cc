@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -40,16 +41,16 @@ ACTION(FinishSend) {
   arg1.Run();
 }
 
-scoped_ptr<webrtc::DesktopFrame> CreateNullFrame(
+std::unique_ptr<webrtc::DesktopFrame> CreateNullFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   return nullptr;
 }
 
-scoped_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
+std::unique_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   const webrtc::DesktopSize kSize(800, 640);
   // updated_region() is already empty by default in new BasicDesktopFrames.
-  return make_scoped_ptr(new webrtc::BasicDesktopFrame(kSize));
+  return base::WrapUnique(new webrtc::BasicDesktopFrame(kSize));
 }
 
 class MockVideoEncoder : public VideoEncoder {
@@ -61,8 +62,8 @@ class MockVideoEncoder : public VideoEncoder {
   MOCK_METHOD1(SetLosslessColor, void(bool));
   MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame&));
 
-  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
-    return make_scoped_ptr(EncodePtr(frame));
+  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
+    return base::WrapUnique(EncodePtr(frame));
   }
 };
 
@@ -81,8 +82,9 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
-  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) override {
-    return make_scoped_ptr(new VideoPacket());
+  std::unique_ptr<VideoPacket> Encode(
+      const webrtc::DesktopFrame& frame) override {
+    return base::WrapUnique(new VideoPacket());
   }
 
  private:
@@ -111,7 +113,7 @@ class ThreadCheckDesktopCapturer : public webrtc::DesktopCapturer {
   void Capture(const webrtc::DesktopRegion& rect) override {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
 
-    scoped_ptr<webrtc::DesktopFrame> frame(
+    std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
     frame->mutable_updated_region()->SetRect(
         webrtc::DesktopRect::MakeXYWH(0, 0, 10, 10));
@@ -130,16 +132,15 @@ class VideoFramePumpTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void StartVideoFramePump(
-      scoped_ptr<webrtc::DesktopCapturer> capturer,
-      scoped_ptr<VideoEncoder> encoder);
+  void StartVideoFramePump(std::unique_ptr<webrtc::DesktopCapturer> capturer,
+                           std::unique_ptr<VideoEncoder> encoder);
 
  protected:
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> encode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
-  scoped_ptr<VideoFramePump> pump_;
+  std::unique_ptr<VideoFramePump> pump_;
 
   MockVideoStub video_stub_;
 };
@@ -164,9 +165,9 @@ void VideoFramePumpTest::TearDown() {
 // This test mocks capturer, encoder and network layer to simulate one capture
 // cycle.
 TEST_F(VideoFramePumpTest, StartAndStop) {
-  scoped_ptr<ThreadCheckDesktopCapturer> capturer(
+  std::unique_ptr<ThreadCheckDesktopCapturer> capturer(
       new ThreadCheckDesktopCapturer(main_task_runner_));
-  scoped_ptr<ThreadCheckVideoEncoder> encoder(
+  std::unique_ptr<ThreadCheckVideoEncoder> encoder(
       new ThreadCheckVideoEncoder(encode_task_runner_));
 
   base::RunLoop run_loop;
@@ -187,8 +188,8 @@ TEST_F(VideoFramePumpTest, StartAndStop) {
 
 // Tests that the pump handles null frames returned by the capturer.
 TEST_F(VideoFramePumpTest, NullFrame) {
-  scoped_ptr<FakeDesktopCapturer> capturer(new FakeDesktopCapturer);
-  scoped_ptr<MockVideoEncoder> encoder(new MockVideoEncoder);
+  std::unique_ptr<FakeDesktopCapturer> capturer(new FakeDesktopCapturer);
+  std::unique_ptr<MockVideoEncoder> encoder(new MockVideoEncoder);
 
   base::RunLoop run_loop;
 
@@ -214,8 +215,8 @@ TEST_F(VideoFramePumpTest, NullFrame) {
 
 // Tests how the pump handles unchanged frames returned by the capturer.
 TEST_F(VideoFramePumpTest, UnchangedFrame) {
-  scoped_ptr<FakeDesktopCapturer> capturer(new FakeDesktopCapturer);
-  scoped_ptr<MockVideoEncoder> encoder(new MockVideoEncoder);
+  std::unique_ptr<FakeDesktopCapturer> capturer(new FakeDesktopCapturer);
+  std::unique_ptr<MockVideoEncoder> encoder(new MockVideoEncoder);
 
   base::RunLoop run_loop;
 

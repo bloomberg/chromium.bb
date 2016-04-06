@@ -18,7 +18,8 @@ class AudioEncoderVerbatim : public AudioEncoder {
   ~AudioEncoderVerbatim() override;
 
   // AudioEncoder implementation.
-  scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override;
+  std::unique_ptr<AudioPacket> Encode(
+      std::unique_ptr<AudioPacket> packet) override;
   int GetBitrate() override;
 
  private:

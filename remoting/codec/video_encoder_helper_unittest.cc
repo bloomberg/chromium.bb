@@ -4,7 +4,8 @@
 
 #include "remoting/codec/video_encoder_helper.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "remoting/proto/video.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -24,7 +25,7 @@ TEST(VideoEncoderHelperTest, PropagatesCommonFields) {
   frame.mutable_updated_region()->SetRect(DesktopRect::MakeLTRB(0, 0, 16, 16));
 
   VideoEncoderHelper helper;
-  scoped_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
+  std::unique_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
 
   ASSERT_TRUE(packet->has_format());
   EXPECT_FALSE(packet->format().has_encoding());
@@ -41,7 +42,7 @@ TEST(VideoEncoderHelperTest, ZeroDpi) {
   // DPI is zero unless explicitly set.
 
   VideoEncoderHelper helper;
-  scoped_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
+  std::unique_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
 
   // Packet should have a format containing the screen dimensions only.
   ASSERT_TRUE(packet->has_format());
@@ -57,7 +58,7 @@ TEST(VideoEncoderHelperTest, NoScreenSizeIfUnchanged) {
   frame.set_dpi(DesktopVector(96, 97));
 
   VideoEncoderHelper helper;
-  scoped_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
+  std::unique_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
   packet = helper.CreateVideoPacket(frame);
 
   ASSERT_TRUE(packet->has_format());
@@ -73,7 +74,7 @@ TEST(VideoEncoderHelperTest, ScreenSizeWhenChanged) {
   // Process the same frame twice, so the helper knows the current size, and
   // to trigger suppression of the size field due to the size not changing.
   BasicDesktopFrame frame1(DesktopSize(32, 32));
-  scoped_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame1));
+  std::unique_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame1));
   packet = helper.CreateVideoPacket(frame1);
 
   // Process a different-sized frame to trigger size to be emitted.

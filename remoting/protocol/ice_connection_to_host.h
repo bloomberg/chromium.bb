@@ -5,13 +5,13 @@
 #ifndef REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
 #define REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
@@ -46,7 +46,7 @@ class IceConnectionToHost : public ConnectionToHost,
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_video_renderer(VideoRenderer* video_renderer) override;
   void set_audio_stub(AudioStub* audio_stub) override;
-  void Connect(scoped_ptr<Session> session,
+  void Connect(std::unique_ptr<Session> session,
                scoped_refptr<TransportContext> transport_context,
                HostEventCallback* event_callback) override;
   const SessionConfig& config() override;
@@ -85,14 +85,14 @@ class IceConnectionToHost : public ConnectionToHost,
   VideoRenderer* video_renderer_ = nullptr;
   AudioStub* audio_stub_ = nullptr;
 
-  scoped_ptr<Session> session_;
-  scoped_ptr<IceTransport> transport_;
+  std::unique_ptr<Session> session_;
+  std::unique_ptr<IceTransport> transport_;
 
-  scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
-  scoped_ptr<ClientVideoDispatcher> video_dispatcher_;
-  scoped_ptr<AudioReader> audio_reader_;
-  scoped_ptr<ClientControlDispatcher> control_dispatcher_;
-  scoped_ptr<ClientEventDispatcher> event_dispatcher_;
+  std::unique_ptr<MonitoredVideoStub> monitored_video_stub_;
+  std::unique_ptr<ClientVideoDispatcher> video_dispatcher_;
+  std::unique_ptr<AudioReader> audio_reader_;
+  std::unique_ptr<ClientControlDispatcher> control_dispatcher_;
+  std::unique_ptr<ClientEventDispatcher> event_dispatcher_;
   ClipboardFilter clipboard_forwarder_;
   InputFilter event_forwarder_;
 

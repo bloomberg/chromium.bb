@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/proto/control.pb.h"
@@ -57,12 +58,12 @@ std::string FakeExtension::capability() const {
   return capability_;
 }
 
-scoped_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
+std::unique_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
     ClientSessionControl* client_session_control,
     protocol::ClientStub* client_stub) {
   DCHECK(!was_instantiated());
   was_instantiated_ = true;
-  return make_scoped_ptr(new Session(this, message_type_));
+  return base::WrapUnique(new Session(this, message_type_));
 }
 
 } // namespace remoting

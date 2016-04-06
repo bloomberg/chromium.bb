@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/port_allocator.h"
 #include "remoting/protocol/transport_context.h"
@@ -14,12 +15,12 @@ namespace protocol {
 ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory() {}
 ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
 
-scoped_ptr<cricket::PortAllocator>
+std::unique_ptr<cricket::PortAllocator>
 ChromiumPortAllocatorFactory::CreatePortAllocator(
     scoped_refptr<TransportContext> transport_context) {
-  return make_scoped_ptr(new PortAllocator(
-      make_scoped_ptr(new rtc::BasicNetworkManager()),
-      make_scoped_ptr(new ChromiumPacketSocketFactory()), transport_context));
+  return base::WrapUnique(new PortAllocator(
+      base::WrapUnique(new rtc::BasicNetworkManager()),
+      base::WrapUnique(new ChromiumPacketSocketFactory()), transport_context));
 }
 
 }  // namespace protocol

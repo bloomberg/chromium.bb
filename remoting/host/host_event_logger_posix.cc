@@ -4,19 +4,21 @@
 
 #include "remoting/host/host_event_logger.h"
 
+// Included here, since the #define for LOG_USER in syslog.h conflicts with the
+// constants in base/logging.h, and this source file should use the version in
+// syslog.h.
+#include <syslog.h>
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/transport.h"
-
-// Included here, since the #define for LOG_USER in syslog.h conflicts with the
-// constants in base/logging.h, and this source file should use the version in
-// syslog.h.
-#include <syslog.h>
 
 namespace remoting {
 
@@ -103,10 +105,10 @@ void HostEventLoggerPosix::Log(const std::string& message) {
 }
 
 // static
-scoped_ptr<HostEventLogger> HostEventLogger::Create(
+std::unique_ptr<HostEventLogger> HostEventLogger::Create(
     base::WeakPtr<HostStatusMonitor> monitor,
     const std::string& application_name) {
-  return make_scoped_ptr(new HostEventLoggerPosix(monitor, application_name));
+  return base::WrapUnique(new HostEventLoggerPosix(monitor, application_name));
 }
 
 }  // namespace remoting

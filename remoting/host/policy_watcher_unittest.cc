@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/policy_watcher.h"
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -15,7 +18,6 @@
 #include "components/policy/core/common/fake_async_policy_loader.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
-#include "remoting/host/policy_watcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,9 +47,9 @@ class MockPolicyCallback {
  public:
   MockPolicyCallback(){};
 
-  // TODO(lukasza): gmock cannot mock a method taking scoped_ptr<T>...
+  // TODO(lukasza): gmock cannot mock a method taking std::unique_ptr<T>...
   MOCK_METHOD1(OnPolicyUpdatePtr, void(const base::DictionaryValue* policies));
-  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
+  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies) {
     OnPolicyUpdatePtr(policies.get());
   }
 
@@ -70,7 +72,7 @@ class PolicyWatcherTest : public testing::Test {
     policy_loader_ =
         new policy::FakeAsyncPolicyLoader(base::ThreadTaskRunnerHandle::Get());
     policy_watcher_ =
-        PolicyWatcher::CreateFromPolicyLoader(make_scoped_ptr(policy_loader_));
+        PolicyWatcher::CreateFromPolicyLoader(base::WrapUnique(policy_loader_));
 
     nat_true_.SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
     nat_false_.SetBoolean(key::kRemoteAccessHostFirewallTraversal, false);
@@ -199,7 +201,7 @@ class PolicyWatcherTest : public testing::Test {
   // a raw pointer to |policy_loader_| in order to control the simulated / faked
   // policy contents.
   policy::FakeAsyncPolicyLoader* policy_loader_;
-  scoped_ptr<PolicyWatcher> policy_watcher_;
+  std::unique_ptr<PolicyWatcher> policy_watcher_;
 
   base::DictionaryValue empty_;
   base::DictionaryValue nat_true_;

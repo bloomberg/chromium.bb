@@ -14,8 +14,7 @@ namespace remoting {
 
 // static
 SkiaBitmapDesktopFrame* SkiaBitmapDesktopFrame::Create(
-    scoped_ptr<SkBitmap> bitmap) {
-
+    std::unique_ptr<SkBitmap> bitmap) {
   webrtc::DesktopSize size(bitmap->width(), bitmap->height());
   DCHECK_EQ(kBGRA_8888_SkColorType, bitmap->info().colorType())
       << "DesktopFrame objects always hold RGBA data.";
@@ -34,7 +33,7 @@ SkiaBitmapDesktopFrame* SkiaBitmapDesktopFrame::Create(
 SkiaBitmapDesktopFrame::SkiaBitmapDesktopFrame(webrtc::DesktopSize size,
                                                int stride,
                                                uint8_t* data,
-                                               scoped_ptr<SkBitmap> bitmap)
+                                               std::unique_ptr<SkBitmap> bitmap)
     : DesktopFrame(size, stride, data, nullptr), bitmap_(std::move(bitmap)) {}
 
 SkiaBitmapDesktopFrame::~SkiaBitmapDesktopFrame() {}

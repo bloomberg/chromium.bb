@@ -15,18 +15,18 @@
 #include <unistd.h>
 
 #include <fstream>
+#include <memory>
 
 #include "base/mac/authorization_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_launch_data.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "remoting/host/constants_mac.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/pin_hash.h"
 #import "remoting/host/mac/me2me_preference_pane_confirm_pin.h"
 #import "remoting/host/mac/me2me_preference_pane_disable.h"
+#include "remoting/host/pin_hash.h"
 #include "third_party/jsoncpp/source/include/json/reader.h"
 #include "third_party/jsoncpp/source/include/json/writer.h"
 
@@ -245,7 +245,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   if (access(file.c_str(), F_OK) != 0)
     return;
 
-  scoped_ptr<remoting::JsonHostConfig> new_config_(
+  std::unique_ptr<remoting::JsonHostConfig> new_config_(
       new remoting::JsonHostConfig(file));
   if (!new_config_->Read()) {
     // Report the error, because the file exists but couldn't be read.  The

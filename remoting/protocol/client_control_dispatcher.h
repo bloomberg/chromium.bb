@@ -51,7 +51,7 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   }
 
  private:
-  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
+  void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;
 
   ClientStub* client_stub_ = nullptr;
   ClipboardStub* clipboard_stub_ = nullptr;

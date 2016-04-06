@@ -4,10 +4,11 @@
 
 #include "remoting/base/vlog_net_log.h"
 
+#include <memory>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -34,7 +35,7 @@ VlogNetLog::Observer::~Observer() {
 
 void VlogNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
   if (VLOG_IS_ON(4)) {
-    scoped_ptr<base::Value> value(entry.ToValue());
+    std::unique_ptr<base::Value> value(entry.ToValue());
     std::string json;
     base::JSONWriter::Write(*value, &json);
     VLOG(4) << json;

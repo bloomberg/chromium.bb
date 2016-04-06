@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/proto/event.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/desktop_configuration.h"
 
@@ -25,13 +26,13 @@ using protocol::TouchEvent;
 
 class SingleWindowInputInjectorMac : public SingleWindowInputInjector {
  public:
-  SingleWindowInputInjectorMac(
-      webrtc::WindowId window_id,
-      scoped_ptr<InputInjector> input_injector);
+  SingleWindowInputInjectorMac(webrtc::WindowId window_id,
+                               std::unique_ptr<InputInjector> input_injector);
   ~SingleWindowInputInjectorMac() override;
 
   // InputInjector interface.
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
@@ -42,21 +43,21 @@ class SingleWindowInputInjectorMac : public SingleWindowInputInjector {
   CGRect FindCGRectOfWindow();
 
   CGWindowID window_id_;
-  scoped_ptr<InputInjector> input_injector_;
+  std::unique_ptr<InputInjector> input_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleWindowInputInjectorMac);
 };
 
 SingleWindowInputInjectorMac::SingleWindowInputInjectorMac(
     webrtc::WindowId window_id,
-    scoped_ptr<InputInjector> input_injector)
+    std::unique_ptr<InputInjector> input_injector)
     : window_id_(static_cast<CGWindowID>(window_id)),
       input_injector_(std::move(input_injector)) {}
 
 SingleWindowInputInjectorMac::~SingleWindowInputInjectorMac() {}
 
 void SingleWindowInputInjectorMac::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   input_injector_->Start(std::move(client_clipboard));
 }
 
@@ -161,10 +162,10 @@ CGRect SingleWindowInputInjectorMac::FindCGRectOfWindow() {
   return CGRectNull;
 }
 
-scoped_ptr<InputInjector> SingleWindowInputInjector::CreateForWindow(
+std::unique_ptr<InputInjector> SingleWindowInputInjector::CreateForWindow(
     webrtc::WindowId window_id,
-    scoped_ptr<InputInjector> input_injector) {
-  return make_scoped_ptr(
+    std::unique_ptr<InputInjector> input_injector) {
+  return base::WrapUnique(
       new SingleWindowInputInjectorMac(window_id, std::move(input_injector)));
 }
 

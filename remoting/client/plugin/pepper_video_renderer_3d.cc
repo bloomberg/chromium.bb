@@ -35,7 +35,7 @@ const uint32_t kMinimumPictureCount = 0;  // 3
 
 class PepperVideoRenderer3D::PendingPacket {
  public:
-  PendingPacket(scoped_ptr<VideoPacket> packet, const base::Closure& done)
+  PendingPacket(std::unique_ptr<VideoPacket> packet, const base::Closure& done)
       : packet_(std::move(packet)), done_runner_(done) {}
 
   ~PendingPacket() {}
@@ -43,7 +43,7 @@ class PepperVideoRenderer3D::PendingPacket {
   const VideoPacket* packet() const { return packet_.get(); }
 
  private:
-  scoped_ptr<VideoPacket> packet_;
+  std::unique_ptr<VideoPacket> packet_;
   base::ScopedClosureRunner done_runner_;
 };
 
@@ -186,8 +186,9 @@ protocol::FrameConsumer* PepperVideoRenderer3D::GetFrameConsumer() {
   return nullptr;
 }
 
-void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                               const base::Closure& done) {
+void PepperVideoRenderer3D::ProcessVideoPacket(
+    std::unique_ptr<VideoPacket> packet,
+    const base::Closure& done) {
   base::ScopedClosureRunner done_runner(done);
 
   perf_tracker_->RecordVideoPacketStats(*packet);

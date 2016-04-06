@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -75,11 +76,10 @@ class VideoFramePump : public VideoStream,
   // Creates a VideoFramePump running capture, encode and network tasks on the
   // supplied TaskRunners. Video will be pumped to |video_stub|, which must
   // outlive the pump..
-  VideoFramePump(
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-      scoped_ptr<webrtc::DesktopCapturer> capturer,
-      scoped_ptr<VideoEncoder> encoder,
-      protocol::VideoStub* video_stub);
+  VideoFramePump(scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+                 std::unique_ptr<webrtc::DesktopCapturer> capturer,
+                 std::unique_ptr<VideoEncoder> encoder,
+                 protocol::VideoStub* video_stub);
   ~VideoFramePump() override;
 
   // VideoStream interface.
@@ -113,12 +113,12 @@ class VideoFramePump : public VideoStream,
   };
 
   struct PacketWithTimestamps {
-    PacketWithTimestamps(scoped_ptr<VideoPacket> packet,
-                         scoped_ptr<FrameTimestamps> timestamps);
+    PacketWithTimestamps(std::unique_ptr<VideoPacket> packet,
+                         std::unique_ptr<FrameTimestamps> timestamps);
     ~PacketWithTimestamps();
 
-    scoped_ptr<VideoPacket> packet;
-    scoped_ptr<FrameTimestamps> timestamps;
+    std::unique_ptr<VideoPacket> packet;
+    std::unique_ptr<FrameTimestamps> timestamps;
   };
 
   // webrtc::DesktopCapturer::Callback interface.
@@ -129,16 +129,16 @@ class VideoFramePump : public VideoStream,
   void CaptureNextFrame();
 
   // Task running on the encoder thread to encode the |frame|.
-  static scoped_ptr<PacketWithTimestamps> EncodeFrame(
+  static std::unique_ptr<PacketWithTimestamps> EncodeFrame(
       VideoEncoder* encoder,
-      scoped_ptr<webrtc::DesktopFrame> frame,
-      scoped_ptr<FrameTimestamps> timestamps);
+      std::unique_ptr<webrtc::DesktopFrame> frame,
+      std::unique_ptr<FrameTimestamps> timestamps);
 
   // Task called when a frame has finished encoding.
-  void OnFrameEncoded(scoped_ptr<PacketWithTimestamps> packet);
+  void OnFrameEncoded(std::unique_ptr<PacketWithTimestamps> packet);
 
   // Sends |packet| to the client.
-  void SendPacket(scoped_ptr<PacketWithTimestamps> packet);
+  void SendPacket(std::unique_ptr<PacketWithTimestamps> packet);
 
   // Helper called from SendPacket() to calculate timing fields in the |packet|
   // before sending it.
@@ -157,10 +157,10 @@ class VideoFramePump : public VideoStream,
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
 
   // Capturer used to capture the screen.
-  scoped_ptr<webrtc::DesktopCapturer> capturer_;
+  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
 
   // Used to encode captured frames. Always accessed on the encode thread.
-  scoped_ptr<VideoEncoder> encoder_;
+  std::unique_ptr<VideoEncoder> encoder_;
 
   // Interface through which video frames are passed to the client.
   protocol::VideoStub* video_stub_;
@@ -178,10 +178,10 @@ class VideoFramePump : public VideoStream,
   CaptureScheduler capture_scheduler_;
 
   // Timestamps for the frame to be captured next.
-  scoped_ptr<FrameTimestamps> next_frame_timestamps_;
+  std::unique_ptr<FrameTimestamps> next_frame_timestamps_;
 
   // Timestamps for the frame that's being captured.
-  scoped_ptr<FrameTimestamps> captured_frame_timestamps_;
+  std::unique_ptr<FrameTimestamps> captured_frame_timestamps_;
 
   bool send_pending_ = false;
 

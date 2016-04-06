@@ -57,7 +57,7 @@ void ClientStatusLogger::LogSessionStateChange(
     protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<ServerLogEntry> entry(
+  std::unique_ptr<ServerLogEntry> entry(
       MakeLogEntryForSessionStateChange(state, error));
   AddClientFieldsToLogEntry(entry.get());
   entry->AddModeField(log_to_server_.mode());
@@ -97,7 +97,8 @@ void ClientStatusLogger::LogStatistics(
 
   MaybeExpireSessionId();
 
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(perf_tracker));
+  std::unique_ptr<ServerLogEntry> entry(
+      MakeLogEntryForStatistics(perf_tracker));
   AddClientFieldsToLogEntry(entry.get());
   entry->AddModeField(log_to_server_.mode());
   AddSessionIdToLogEntry(entry.get(), session_id_);
@@ -125,7 +126,8 @@ void ClientStatusLogger::MaybeExpireSessionId() {
   base::TimeDelta max_age = base::TimeDelta::FromDays(kMaxSessionIdAgeDays);
   if (base::TimeTicks::Now() - session_id_generation_time_ > max_age) {
     // Log the old session ID.
-    scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionIdOld(session_id_));
+    std::unique_ptr<ServerLogEntry> entry(
+        MakeLogEntryForSessionIdOld(session_id_));
     entry->AddModeField(log_to_server_.mode());
     log_to_server_.Log(*entry.get());
 

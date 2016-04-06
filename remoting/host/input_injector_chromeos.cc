@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/host/chromeos/point_transformer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
@@ -56,15 +57,15 @@ class InputInjectorChromeos::Core {
   void InjectKeyEvent(const KeyEvent& event);
   void InjectTextEvent(const TextEvent& event);
   void InjectMouseEvent(const MouseEvent& event);
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+  void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
-  scoped_ptr<ui::SystemInputInjector> delegate_;
-  scoped_ptr<Clipboard> clipboard_;
+  std::unique_ptr<ui::SystemInputInjector> delegate_;
+  std::unique_ptr<Clipboard> clipboard_;
 
   // Used to rotate the input coordinates appropriately based on the current
   // display rotation settings.
-  scoped_ptr<PointTransformer> point_transformer_;
+  std::unique_ptr<PointTransformer> point_transformer_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -111,7 +112,7 @@ void InputInjectorChromeos::Core::InjectMouseEvent(const MouseEvent& event) {
 }
 
 void InputInjectorChromeos::Core::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
   delegate_ = ozone_platform->CreateSystemInputInjector();
   DCHECK(delegate_);
@@ -161,19 +162,19 @@ void InputInjectorChromeos::InjectTouchEvent(const TouchEvent& event) {
 }
 
 void InputInjectorChromeos::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   input_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get()),
                             base::Passed(&client_clipboard)));
 }
 
 // static
-scoped_ptr<InputInjector> InputInjector::Create(
+std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   // The Ozone input injector must be called on the UI task runner of the
   // browser process.
-  return make_scoped_ptr(new InputInjectorChromeos(ui_task_runner));
+  return base::WrapUnique(new InputInjectorChromeos(ui_task_runner));
 }
 
 // static

@@ -150,7 +150,7 @@ class DesktopProcessTest : public testing::Test {
 
  protected:
   // The daemon's end of the daemon-to-desktop channel.
-  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+  std::unique_ptr<IPC::ChannelProxy> daemon_channel_;
 
   // Delegate that is passed to |daemon_channel_|.
   MockDaemonListener daemon_listener_;
@@ -161,7 +161,7 @@ class DesktopProcessTest : public testing::Test {
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
   // The network's end of the network-to-desktop channel.
-  scoped_ptr<IPC::ChannelProxy> network_channel_;
+  std::unique_ptr<IPC::ChannelProxy> network_channel_;
 
   // Delegate that is passed to |network_channel_|.
   MockNetworkListener network_listener_;
@@ -269,7 +269,7 @@ void DesktopProcessTest::RunDesktopProcess() {
       IPC::ChannelHandle(channel_name), IPC::Channel::MODE_SERVER,
       &daemon_listener_, io_task_runner_.get());
 
-  scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
+  std::unique_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
       new MockDesktopEnvironmentFactory());
   EXPECT_CALL(*desktop_environment_factory, CreatePtr())
       .Times(AnyNumber())

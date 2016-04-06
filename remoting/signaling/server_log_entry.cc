@@ -5,6 +5,7 @@
 #include "remoting/signaling/server_log_entry.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "remoting/base/constants.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -72,14 +73,14 @@ void ServerLogEntry::AddEventNameField(const char* name) {
 }
 
 // static
-scoped_ptr<XmlElement> ServerLogEntry::MakeStanza() {
-  return make_scoped_ptr(
+std::unique_ptr<XmlElement> ServerLogEntry::MakeStanza() {
+  return base::WrapUnique(
       new XmlElement(QName(kChromotingXmlNamespace, kLogCommand)));
 }
 
-scoped_ptr<XmlElement> ServerLogEntry::ToStanza() const {
-  scoped_ptr<XmlElement> stanza(new XmlElement(QName(
-      kChromotingXmlNamespace, kLogEntry)));
+std::unique_ptr<XmlElement> ServerLogEntry::ToStanza() const {
+  std::unique_ptr<XmlElement> stanza(
+      new XmlElement(QName(kChromotingXmlNamespace, kLogEntry)));
   ValuesMap::const_iterator iter;
   for (iter = values_map_.begin(); iter != values_map_.end(); ++iter) {
     stanza->AddAttr(QName(std::string(), iter->first), iter->second);

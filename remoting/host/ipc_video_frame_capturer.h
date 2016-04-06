@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_IPC_VIDEO_FRAME_CAPTURER_H_
 #define REMOTING_HOST_IPC_VIDEO_FRAME_CAPTURER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
@@ -28,7 +29,7 @@ class IpcVideoFrameCapturer : public webrtc::DesktopCapturer {
   void Capture(const webrtc::DesktopRegion& region) override;
 
   // Called when a video |frame| has been captured.
-  void OnCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);
+  void OnCaptureCompleted(std::unique_ptr<webrtc::DesktopFrame> frame);
 
  private:
   // Points to the callback passed to webrtc::DesktopCapturer::Start().

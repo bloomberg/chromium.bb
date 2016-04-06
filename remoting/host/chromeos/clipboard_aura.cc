@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
@@ -32,7 +33,7 @@ ClipboardAura::~ClipboardAura() {
 }
 
 void ClipboardAura::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   client_clipboard_ = std::move(client_clipboard);
@@ -90,8 +91,8 @@ void ClipboardAura::CheckClipboardForChanges() {
   client_clipboard_->InjectClipboardEvent(event);
 }
 
-scoped_ptr<Clipboard> Clipboard::Create() {
-  return make_scoped_ptr(new ClipboardAura());
+std::unique_ptr<Clipboard> Clipboard::Create() {
+  return base::WrapUnique(new ClipboardAura());
 }
 
 }  // namespace remoting

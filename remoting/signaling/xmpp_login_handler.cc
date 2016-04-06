@@ -83,7 +83,7 @@ void XmppLoginHandler::OnDataReceived(const std::string& data) {
   stream_parser_->AppendData(data);
 }
 
-void XmppLoginHandler::OnStanza(scoped_ptr<buzz::XmlElement> stanza) {
+void XmppLoginHandler::OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
   switch (state_) {
     case State::WAIT_STREAM_HEADER: {
       if (stanza->Name() == kJabberFeaturesName &&

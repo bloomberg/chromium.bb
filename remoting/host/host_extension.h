@@ -5,9 +5,9 @@
 #ifndef REMOTING_HOST_HOST_EXTENSION_H_
 #define REMOTING_HOST_HOST_EXTENSION_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -36,7 +36,7 @@ class HostExtension {
   // |client_session_control| may be used to e.g. disconnect the session.
   // |client_stub| may be used to send messages to the session.
   // Both interfaces are valid for the lifetime of the |HostExtensionSession|.
-  virtual scoped_ptr<HostExtensionSession> CreateExtensionSession(
+  virtual std::unique_ptr<HostExtensionSession> CreateExtensionSession(
       ClientSessionControl* client_session_control,
       protocol::ClientStub* client_stub) = 0;
 };

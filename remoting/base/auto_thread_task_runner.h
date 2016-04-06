@@ -5,9 +5,10 @@
 #ifndef REMOTING_BASE_AUTO_THREAD_TASK_RUNNER_H_
 #define REMOTING_BASE_AUTO_THREAD_TASK_RUNNER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 

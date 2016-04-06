@@ -38,7 +38,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   ~HostStarter() override;
 
   // Creates a HostStarter.
-  static scoped_ptr<HostStarter> Create(
+  static std::unique_ptr<HostStarter> Create(
       const std::string& chromoting_hosts_url,
       net::URLRequestContextGetter* url_request_context_getter);
 
@@ -72,16 +72,16 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   void OnNetworkError(int response_code) override;
 
  private:
-  HostStarter(scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
-              scoped_ptr<remoting::ServiceClient> service_client,
+  HostStarter(std::unique_ptr<gaia::GaiaOAuthClient> oauth_client,
+              std::unique_ptr<remoting::ServiceClient> service_client,
               scoped_refptr<remoting::DaemonController> daemon_controller);
 
   void StartHostProcess();
 
   void OnHostStarted(DaemonController::AsyncResult result);
 
-  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  scoped_ptr<remoting::ServiceClient> service_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
+  std::unique_ptr<remoting::ServiceClient> service_client_;
   scoped_refptr<remoting::DaemonController> daemon_controller_;
   gaia::OAuthClientInfo oauth_client_info_;
   std::string host_name_;

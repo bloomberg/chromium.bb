@@ -5,9 +5,9 @@
 #ifndef REMOTING_TEST_REFRESH_TOKEN_STORE_H_
 #define REMOTING_TEST_REFRESH_TOKEN_STORE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
@@ -28,7 +28,7 @@ class RefreshTokenStore {
 
   // Returns a RefreshTokenStore which reads/writes to a user specific token
   // file on the local disk.
-  static scoped_ptr<RefreshTokenStore> OnDisk(
+  static std::unique_ptr<RefreshTokenStore> OnDisk(
       const std::string& user_name,
       const base::FilePath& refresh_token_file_path);
 };

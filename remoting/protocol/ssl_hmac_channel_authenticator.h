@@ -5,12 +5,12 @@
 #ifndef REMOTING_PROTOCOL_SSL_HMAC_CHANNEL_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_SSL_HMAC_CHANNEL_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/channel_authenticator.h"
 
@@ -47,11 +47,11 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // |auth_key| is set to access code. For EKE-based authentication
   // |auth_key| is the key established using EKE over the signaling
   // channel.
-  static scoped_ptr<SslHmacChannelAuthenticator> CreateForClient(
+  static std::unique_ptr<SslHmacChannelAuthenticator> CreateForClient(
       const std::string& remote_cert,
       const std::string& auth_key);
 
-  static scoped_ptr<SslHmacChannelAuthenticator> CreateForHost(
+  static std::unique_ptr<SslHmacChannelAuthenticator> CreateForHost(
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& auth_key);
@@ -59,7 +59,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   ~SslHmacChannelAuthenticator() override;
 
   // ChannelAuthenticator interface.
-  void SecureAndAuthenticate(scoped_ptr<P2PStreamSocket> socket,
+  void SecureAndAuthenticate(std::unique_ptr<P2PStreamSocket> socket,
                              const DoneCallback& done_callback) override;
 
  private:
@@ -87,14 +87,14 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // Used in the SERVER mode only.
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> local_key_pair_;
-  scoped_ptr<net::SSLServerContext> server_context_;
+  std::unique_ptr<net::SSLServerContext> server_context_;
 
   // Used in the CLIENT mode only.
   std::string remote_cert_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
 
-  scoped_ptr<net::SSLSocket> socket_;
+  std::unique_ptr<net::SSLSocket> socket_;
   DoneCallback done_callback_;
 
   scoped_refptr<net::DrainableIOBuffer> auth_write_buf_;

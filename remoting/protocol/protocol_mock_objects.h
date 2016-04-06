@@ -12,6 +12,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
@@ -46,7 +47,8 @@ class MockConnectionToClientEventHandler
                void(ConnectionToClient* connection));
   MOCK_METHOD2(OnConnectionClosed,
                void(ConnectionToClient* connection, ErrorCode error));
-  MOCK_METHOD1(OnCreateVideoEncoder, void(scoped_ptr<VideoEncoder>* encoder));
+  MOCK_METHOD1(OnCreateVideoEncoder,
+               void(std::unique_ptr<VideoEncoder>* encoder));
   MOCK_METHOD2(OnInputEventReceived,
                void(ConnectionToClient* connection, int64_t timestamp));
   MOCK_METHOD3(OnRouteChange,
@@ -75,7 +77,7 @@ class MockCursorShapeChangeCallback {
   virtual ~MockCursorShapeChangeCallback();
 
   MOCK_METHOD1(CursorShapeChangedPtr, void(CursorShapeInfo* info));
-  void CursorShapeChanged(scoped_ptr<CursorShapeInfo> info);
+  void CursorShapeChanged(std::unique_ptr<CursorShapeInfo> info);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCursorShapeChangeCallback);
@@ -153,7 +155,7 @@ class MockVideoStub : public VideoStub {
   MOCK_METHOD2(ProcessVideoPacketPtr,
                void(const VideoPacket* video_packet,
                     const base::Closure& done));
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override {
     ProcessVideoPacketPtr(video_packet.get(), done);
   }
@@ -184,21 +186,21 @@ class MockSessionManager : public SessionManager {
   ~MockSessionManager() override;
 
   MOCK_METHOD1(AcceptIncoming, void(const IncomingSessionCallback&));
-  void set_protocol_config(scoped_ptr<CandidateSessionConfig> config) override {
-  }
+  void set_protocol_config(
+      std::unique_ptr<CandidateSessionConfig> config) override {}
   MOCK_METHOD2(ConnectPtr,
                Session*(const std::string& host_jid,
                         Authenticator* authenticator));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(set_authenticator_factory_ptr,
                void(AuthenticatorFactory* factory));
-  scoped_ptr<Session> Connect(
+  std::unique_ptr<Session> Connect(
       const std::string& host_jid,
-      scoped_ptr<Authenticator> authenticator) override {
-    return make_scoped_ptr(ConnectPtr(host_jid, authenticator.get()));
+      std::unique_ptr<Authenticator> authenticator) override {
+    return base::WrapUnique(ConnectPtr(host_jid, authenticator.get()));
   }
   void set_authenticator_factory(
-      scoped_ptr<AuthenticatorFactory> authenticator_factory) override {
+      std::unique_ptr<AuthenticatorFactory> authenticator_factory) override {
     set_authenticator_factory_ptr(authenticator_factory.release());
   }
 
@@ -213,7 +215,7 @@ class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
   ~MockPairingRegistryDelegate() override;
 
   // PairingRegistry::Delegate implementation.
-  scoped_ptr<base::ListValue> LoadAll() override;
+  std::unique_ptr<base::ListValue> LoadAll() override;
   bool DeleteAll() override;
   protocol::PairingRegistry::Pairing Load(
       const std::string& client_id) override;
@@ -227,7 +229,7 @@ class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
 
 class SynchronousPairingRegistry : public PairingRegistry {
  public:
-  explicit SynchronousPairingRegistry(scoped_ptr<Delegate> delegate);
+  explicit SynchronousPairingRegistry(std::unique_ptr<Delegate> delegate);
 
  protected:
   ~SynchronousPairingRegistry() override;

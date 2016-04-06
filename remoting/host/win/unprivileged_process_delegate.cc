@@ -238,7 +238,7 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
 
 UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_ptr<base::CommandLine> target_command)
+    std::unique_ptr<base::CommandLine> target_command)
     : io_task_runner_(io_task_runner),
       target_command_(std::move(target_command)),
       event_handler_(nullptr) {}
@@ -256,7 +256,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 
   event_handler_ = event_handler;
 
-  scoped_ptr<IPC::ChannelProxy> server;
+  std::unique_ptr<IPC::ChannelProxy> server;
 
   // Create a restricted token that will be used to run the worker process.
   ScopedHandle token;

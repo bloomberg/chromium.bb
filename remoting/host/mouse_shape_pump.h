@@ -5,8 +5,9 @@
 #ifndef REMOTING_HOST_MOUSE_SHAPE_PUMP_H_
 #define REMOTING_HOST_MOUSE_SHAPE_PUMP_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -21,8 +22,9 @@ class CursorShapeStub;
 // MouseCursorMonitor and sending it to a CursorShapeStub.
 class MouseShapePump : public webrtc::MouseCursorMonitor::Callback {
  public:
-  MouseShapePump(scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
-                 protocol::CursorShapeStub* cursor_shape_stub);
+  MouseShapePump(
+      std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
+      protocol::CursorShapeStub* cursor_shape_stub);
   ~MouseShapePump() override;
 
  private:
@@ -34,7 +36,7 @@ class MouseShapePump : public webrtc::MouseCursorMonitor::Callback {
                              const webrtc::DesktopVector& position) override;
 
   base::ThreadChecker thread_checker_;
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
+  std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
   protocol::CursorShapeStub* cursor_shape_stub_;
 
   base::Timer capture_timer_;

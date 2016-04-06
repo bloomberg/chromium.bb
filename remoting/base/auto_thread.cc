@@ -22,9 +22,9 @@ namespace remoting {
 namespace {
 
 #if defined(OS_WIN)
-scoped_ptr<base::win::ScopedCOMInitializer> CreateComInitializer(
+std::unique_ptr<base::win::ScopedCOMInitializer> CreateComInitializer(
     AutoThread::ComInitType type) {
-  scoped_ptr<base::win::ScopedCOMInitializer> initializer;
+  std::unique_ptr<base::win::ScopedCOMInitializer> initializer;
   if (type == AutoThread::COM_INIT_MTA) {
     initializer.reset(new base::win::ScopedCOMInitializer(
         base::win::ScopedCOMInitializer::kMTA));
@@ -202,7 +202,7 @@ void AutoThread::ThreadMain() {
 
 #if defined(OS_WIN)
   // Initialize COM on the thread, if requested.
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer(
+  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer(
       CreateComInitializer(com_init_type_));
 #endif
 

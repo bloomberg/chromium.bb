@@ -6,8 +6,8 @@
 #define REMOTING_HOST_DESKTOP_RESIZER_H_
 
 #include <list>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "remoting/host/screen_resolution.h"
 
 namespace remoting {
@@ -17,7 +17,7 @@ class DesktopResizer {
   virtual ~DesktopResizer() {}
 
   // Create a platform-specific DesktopResizer instance.
-  static scoped_ptr<DesktopResizer> Create();
+  static std::unique_ptr<DesktopResizer> Create();
 
   // Return the current resolution of the desktop.
   virtual ScreenResolution GetCurrentResolution() = 0;

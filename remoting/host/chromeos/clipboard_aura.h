@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/host/clipboard.h"
@@ -35,7 +36,8 @@ class ClipboardAura : public Clipboard {
   ~ClipboardAura() override;
 
   // Clipboard interface.
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
   // Overrides the clipboard polling interval for unit test.
@@ -45,7 +47,7 @@ class ClipboardAura : public Clipboard {
   void CheckClipboardForChanges();
 
   base::ThreadChecker thread_checker_;
-  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
+  std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
   base::RepeatingTimer clipboard_polling_timer_;
   uint64_t current_change_count_;
   base::TimeDelta polling_interval_;

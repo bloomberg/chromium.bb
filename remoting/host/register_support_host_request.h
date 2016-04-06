@@ -5,12 +5,12 @@
 #ifndef REMOTING_HOST_REGISTER_SUPPORT_HOST_REQUEST_H_
 #define REMOTING_HOST_REGISTER_SUPPORT_HOST_REQUEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -61,9 +61,9 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
  private:
   void DoSend();
 
-  scoped_ptr<buzz::XmlElement> CreateRegistrationRequest(
+  std::unique_ptr<buzz::XmlElement> CreateRegistrationRequest(
       const std::string& jid);
-  scoped_ptr<buzz::XmlElement> CreateSignature(const std::string& jid);
+  std::unique_ptr<buzz::XmlElement> CreateSignature(const std::string& jid);
 
   void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
   void ParseResponse(const buzz::XmlElement* response,
@@ -79,8 +79,8 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   std::string directory_bot_jid_;
   RegisterCallback callback_;
 
-  scoped_ptr<IqSender> iq_sender_;
-  scoped_ptr<IqRequest> request_;
+  std::unique_ptr<IqSender> iq_sender_;
+  std::unique_ptr<IqRequest> request_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterSupportHostRequest);
 };

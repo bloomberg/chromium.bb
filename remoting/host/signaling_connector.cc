@@ -42,7 +42,7 @@ const char* SignalStrategyErrorToString(SignalStrategy::Error error){
 
 SignalingConnector::SignalingConnector(
     XmppSignalStrategy* signal_strategy,
-    scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
+    std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker,
     OAuthTokenGetter* oauth_token_getter,
     const base::Closure& auth_failed_callback)
     : signal_strategy_(signal_strategy),

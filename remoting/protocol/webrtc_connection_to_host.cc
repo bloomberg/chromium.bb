@@ -23,7 +23,7 @@ WebrtcConnectionToHost::WebrtcConnectionToHost() {}
 WebrtcConnectionToHost::~WebrtcConnectionToHost() {}
 
 void WebrtcConnectionToHost::Connect(
-    scoped_ptr<Session> session,
+    std::unique_ptr<Session> session,
     scoped_refptr<TransportContext> transport_context,
     HostEventCallback* event_callback) {
   DCHECK(client_stub_);

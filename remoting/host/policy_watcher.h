@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_POLICY_WATCHER_H_
 #define REMOTING_HOST_POLICY_WATCHER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/policy/core/common/policy_service.h"
 
@@ -31,7 +32,7 @@ class PolicyWatcher : public policy::PolicyService::Observer,
                       public base::NonThreadSafe {
  public:
   // Called first with all policies, and subsequently with any changed policies.
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
+  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
       PolicyUpdatedCallback;
 
   // Called after detecting malformed policies.
@@ -73,7 +74,7 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   // policy from files / registry / preferences (although (2) is just an
   // implementation detail and should likely be ignored outside of
   // PolicyWatcher).
-  static scoped_ptr<PolicyWatcher> Create(
+  static std::unique_ptr<PolicyWatcher> Create(
       policy::PolicyService* policy_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
@@ -91,8 +92,8 @@ class PolicyWatcher : public policy::PolicyService::Observer,
 
   // Stores |new_policies| into |old_policies_|.  Returns dictionary with items
   // from |new_policies| that are different from the old |old_policies_|.
-  scoped_ptr<base::DictionaryValue> StoreNewAndReturnChangedPolicies(
-      scoped_ptr<base::DictionaryValue> new_policies);
+  std::unique_ptr<base::DictionaryValue> StoreNewAndReturnChangedPolicies(
+      std::unique_ptr<base::DictionaryValue> new_policies);
 
   // Signals policy error to the registered |PolicyErrorCallback|.
   void SignalPolicyError();
@@ -100,19 +101,19 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   // |policy_service_task_runner| is the task runner where it is safe
   // to call |policy_service_| methods and where we expect to get callbacks
   // from |policy_service_|.
-  PolicyWatcher(
-      policy::PolicyService* policy_service,
-      scoped_ptr<policy::PolicyService> owned_policy_service,
-      scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
-      scoped_ptr<policy::SchemaRegistry> owned_schema_registry);
+  PolicyWatcher(policy::PolicyService* policy_service,
+                std::unique_ptr<policy::PolicyService> owned_policy_service,
+                std::unique_ptr<policy::ConfigurationPolicyProvider>
+                    owned_policy_provider,
+                std::unique_ptr<policy::SchemaRegistry> owned_schema_registry);
 
   // Creates PolicyWatcher that wraps the owned |async_policy_loader| with an
   // appropriate PolicySchema.
   //
   // |policy_service_task_runner| is passed through to the constructor of
   // PolicyWatcher.
-  static scoped_ptr<PolicyWatcher> CreateFromPolicyLoader(
-      scoped_ptr<policy::AsyncPolicyLoader> async_policy_loader);
+  static std::unique_ptr<PolicyWatcher> CreateFromPolicyLoader(
+      std::unique_ptr<policy::AsyncPolicyLoader> async_policy_loader);
 
   // PolicyService::Observer interface.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -123,8 +124,8 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   PolicyUpdatedCallback policy_updated_callback_;
   PolicyErrorCallback policy_error_callback_;
 
-  scoped_ptr<base::DictionaryValue> old_policies_;
-  scoped_ptr<base::DictionaryValue> default_values_;
+  std::unique_ptr<base::DictionaryValue> old_policies_;
+  std::unique_ptr<base::DictionaryValue> default_values_;
 
   policy::PolicyService* policy_service_;
 
@@ -132,9 +133,9 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   // dependencies into account:
   // - |owned_policy_service_| uses |owned_policy_provider_|
   // - |owned_policy_provider_| uses |owned_schema_registry_|
-  scoped_ptr<policy::SchemaRegistry> owned_schema_registry_;
-  scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider_;
-  scoped_ptr<policy::PolicyService> owned_policy_service_;
+  std::unique_ptr<policy::SchemaRegistry> owned_schema_registry_;
+  std::unique_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider_;
+  std::unique_ptr<policy::PolicyService> owned_policy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyWatcher);
 };

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/host/client_session_control.h"
@@ -84,11 +85,11 @@ It2MeDesktopEnvironmentFactory::It2MeDesktopEnvironmentFactory(
 
 It2MeDesktopEnvironmentFactory::~It2MeDesktopEnvironmentFactory() {}
 
-scoped_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
+std::unique_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return make_scoped_ptr(new It2MeDesktopEnvironment(
+  return base::WrapUnique(new It2MeDesktopEnvironment(
       caller_task_runner(), video_capture_task_runner(), input_task_runner(),
       ui_task_runner(), client_session_control, supports_touch_events()));
 }

@@ -5,13 +5,13 @@
 #ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -66,7 +66,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // is returned containing host_id and xmpp_login, with security-sensitive
   // fields filtered out. An empty dictionary is returned if the host is not
   // configured, and nullptr if the configuration is corrupt or cannot be read.
-  typedef base::Callback<void (scoped_ptr<base::DictionaryValue> config)>
+  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue> config)>
       GetConfigCallback;
 
   // Callback used for asynchronous operations, e.g. when
@@ -107,13 +107,13 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
 
     // Queries current host configuration. Any values that might be security
     // sensitive have been filtered out.
-    virtual scoped_ptr<base::DictionaryValue> GetConfig() = 0;
+    virtual std::unique_ptr<base::DictionaryValue> GetConfig() = 0;
 
     // Starts the daemon process. This may require that the daemon be
     // downloaded and installed. |done| is invoked on the calling thread when
     // the operation is completed.
     virtual void SetConfigAndStart(
-        scoped_ptr<base::DictionaryValue> config,
+        std::unique_ptr<base::DictionaryValue> config,
         bool consent,
         const CompletionCallback& done) = 0;
 
@@ -122,9 +122,8 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // |config| is preserved. |config| must not contain host_id or xmpp_login
     // values, because implementations of this method cannot change them. |done|
     // is invoked on the calling thread when the operation is completed.
-    virtual void UpdateConfig(
-        scoped_ptr<base::DictionaryValue> config,
-        const CompletionCallback& done) = 0;
+    virtual void UpdateConfig(std::unique_ptr<base::DictionaryValue> config,
+                              const CompletionCallback& done) = 0;
 
     // Stops the daemon process. |done| is invoked on the calling thread when
     // the operation is completed.
@@ -136,7 +135,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
 
   static scoped_refptr<DaemonController> Create();
 
-  explicit DaemonController(scoped_ptr<Delegate> delegate);
+  explicit DaemonController(std::unique_ptr<Delegate> delegate);
 
   // Return the "installed/running" state of the daemon process.
   //
@@ -159,7 +158,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // these two steps are merged for simplicity. Consider splitting it
   // into SetConfig() and Start() once we have basic host setup flow
   // working.
-  void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+  void SetConfigAndStart(std::unique_ptr<base::DictionaryValue> config,
                          bool consent,
                          const CompletionCallback& done);
 
@@ -168,7 +167,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // Any value in the existing configuration that isn't specified in |config|
   // is preserved. |config| must not contain host_id or xmpp_login values,
   // because implementations of this method cannot change them.
-  void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+  void UpdateConfig(std::unique_ptr<base::DictionaryValue> config,
                     const CompletionCallback& done);
 
   // Stop the daemon process. It is permitted to call Stop while the daemon
@@ -188,10 +187,10 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
 
   // Blocking helper methods used to call the delegate.
   void DoGetConfig(const GetConfigCallback& done);
-  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+  void DoSetConfigAndStart(std::unique_ptr<base::DictionaryValue> config,
                            bool consent,
                            const CompletionCallback& done);
-  void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
+  void DoUpdateConfig(std::unique_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done);
   void DoStop(const CompletionCallback& done);
   void DoGetUsageStatsConsent(const GetUsageStatsConsentCallback& done);
@@ -203,7 +202,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
       AsyncResult result);
   void InvokeConfigCallbackAndScheduleNext(
       const GetConfigCallback& done,
-      scoped_ptr<base::DictionaryValue> config);
+      std::unique_ptr<base::DictionaryValue> config);
   void InvokeConsentCallbackAndScheduleNext(
       const GetUsageStatsConsentCallback& done,
       const UsageStatsConsent& consent);
@@ -221,9 +220,9 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // called at a time.
   scoped_refptr<AutoThreadTaskRunner> delegate_task_runner_;
 
-  scoped_ptr<AutoThread> delegate_thread_;
+  std::unique_ptr<AutoThread> delegate_thread_;
 
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   std::queue<base::Closure> pending_requests_;
 

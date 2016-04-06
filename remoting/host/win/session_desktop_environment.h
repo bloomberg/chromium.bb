@@ -20,7 +20,7 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
   ~SessionDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
-  scoped_ptr<InputInjector> CreateInputInjector() override;
+  std::unique_ptr<InputInjector> CreateInputInjector() override;
 
  private:
   friend class SessionDesktopEnvironmentFactory;
@@ -50,7 +50,7 @@ class SessionDesktopEnvironmentFactory : public Me2MeDesktopEnvironmentFactory {
   ~SessionDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory implementation.
-  scoped_ptr<DesktopEnvironment> Create(
+  std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:

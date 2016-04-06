@@ -17,14 +17,14 @@ NativeMessagingPipe::NativeMessagingPipe() {}
 NativeMessagingPipe::~NativeMessagingPipe() {}
 
 void NativeMessagingPipe::Start(
-    scoped_ptr<extensions::NativeMessageHost> host,
-    scoped_ptr<extensions::NativeMessagingChannel> channel) {
+    std::unique_ptr<extensions::NativeMessageHost> host,
+    std::unique_ptr<extensions::NativeMessagingChannel> channel) {
   host_ = std::move(host);
   channel_ = std::move(channel);
   channel_->Start(this);
 }
 
-void NativeMessagingPipe::OnMessage(scoped_ptr<base::Value> message) {
+void NativeMessagingPipe::OnMessage(std::unique_ptr<base::Value> message) {
   std::string message_json;
   base::JSONWriter::Write(*message, &message_json);
   host_->OnMessage(message_json);
@@ -37,7 +37,7 @@ void NativeMessagingPipe::OnDisconnect() {
 
 void NativeMessagingPipe::PostMessageFromNativeHost(
     const std::string& message) {
-  scoped_ptr<base::Value> json = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> json = base::JSONReader::Read(message);
   channel_->SendMessage(std::move(json));
 }
 

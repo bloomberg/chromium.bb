@@ -52,15 +52,16 @@ class JingleSession : public Session {
 
   // Start connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
-                       scoped_ptr<Authenticator> authenticator);
+                       std::unique_ptr<Authenticator> authenticator);
 
   // Called by JingleSessionManager for incoming connections.
-  void InitializeIncomingConnection(const JingleMessage& initiate_message,
-                                    scoped_ptr<Authenticator> authenticator);
+  void InitializeIncomingConnection(
+      const JingleMessage& initiate_message,
+      std::unique_ptr<Authenticator> authenticator);
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
 
   // Callback for Transport interface to send transport-info messages.
-  void SendTransportInfo(scoped_ptr<buzz::XmlElement> transport_info);
+  void SendTransportInfo(std::unique_ptr<buzz::XmlElement> transport_info);
 
   // Sends |message| to the peer. The session is closed if the send fails or no
   // response is received within a reasonable time. All other responses are
@@ -122,9 +123,9 @@ class JingleSession : public Session {
   State state_;
   ErrorCode error_;
 
-  scoped_ptr<SessionConfig> config_;
+  std::unique_ptr<SessionConfig> config_;
 
-  scoped_ptr<Authenticator> authenticator_;
+  std::unique_ptr<Authenticator> authenticator_;
 
   Transport* transport_ = nullptr;
 

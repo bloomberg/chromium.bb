@@ -13,7 +13,8 @@ It2MeConfirmationDialogFactory::~It2MeConfirmationDialogFactory() {}
 
 // TODO(dcaiafa): Remove after implementations for all platforms exist.
 #if !defined(OS_CHROMEOS)
-scoped_ptr<It2MeConfirmationDialog> It2MeConfirmationDialogFactory::Create() {
+std::unique_ptr<It2MeConfirmationDialog>
+It2MeConfirmationDialogFactory::Create() {
   return nullptr;
 }
 #endif

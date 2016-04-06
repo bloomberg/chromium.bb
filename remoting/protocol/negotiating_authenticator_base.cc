@@ -127,12 +127,12 @@ void NegotiatingAuthenticatorBase::UpdateState(
   resume_callback.Run();
 }
 
-scoped_ptr<buzz::XmlElement>
+std::unique_ptr<buzz::XmlElement>
 NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   DCHECK_EQ(state(), MESSAGE_READY);
   DCHECK(current_method_ != Method::INVALID);
 
-  scoped_ptr<buzz::XmlElement> result;
+  std::unique_ptr<buzz::XmlElement> result;
   if (current_authenticator_->state() == MESSAGE_READY) {
     result = current_authenticator_->GetNextMessage();
   } else {
@@ -154,7 +154,7 @@ const std::string& NegotiatingAuthenticatorBase::GetAuthKey() const {
   return current_authenticator_->GetAuthKey();
 }
 
-scoped_ptr<ChannelAuthenticator>
+std::unique_ptr<ChannelAuthenticator>
 NegotiatingAuthenticatorBase::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);
   return current_authenticator_->CreateChannelAuthenticator();

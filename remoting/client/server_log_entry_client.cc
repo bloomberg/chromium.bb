@@ -95,10 +95,10 @@ const char* GetValueError(ErrorCode error) {
 
 }  // namespace
 
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
     ConnectionToHost::State state,
     ErrorCode error) {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+  std::unique_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameSessionState);
 
@@ -110,9 +110,9 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
   return entry;
 }
 
-scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForStatistics(
     protocol::PerformanceTracker* perf_tracker) {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+  std::unique_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameStatistics);
 
@@ -132,18 +132,18 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
   return entry;
 }
 
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(
     const std::string& session_id) {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+  std::unique_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameSessionIdOld);
   AddSessionIdToLogEntry(entry.get(), session_id);
   return entry;
 }
 
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdNew(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionIdNew(
     const std::string& session_id) {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+  std::unique_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameSessionIdNew);
   AddSessionIdToLogEntry(entry.get(), session_id);

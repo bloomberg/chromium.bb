@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "remoting/host/setup/test_util.h"
@@ -25,7 +25,7 @@ class NativeMessagingWriterTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  scoped_ptr<NativeMessagingWriter> writer_;
+  std::unique_ptr<NativeMessagingWriter> writer_;
   base::File read_file_;
   base::File write_file_;
 };
@@ -52,7 +52,8 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
   EXPECT_EQ(static_cast<int>(length), read);
 
   // |content| should now contain serialized |message|.
-  scoped_ptr<base::Value> written_message = base::JSONReader::Read(content);
+  std::unique_ptr<base::Value> written_message =
+      base::JSONReader::Read(content);
   EXPECT_TRUE(message.Equals(written_message.get()));
 
   // Nothing more should have been written. Close the write-end of the pipe,
@@ -84,7 +85,8 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
   }
 
   // |content| should now contain serialized |message2|.
-  scoped_ptr<base::Value> written_message2 = base::JSONReader::Read(content);
+  std::unique_ptr<base::Value> written_message2 =
+      base::JSONReader::Read(content);
   EXPECT_TRUE(message2.Equals(written_message2.get()));
 }
 

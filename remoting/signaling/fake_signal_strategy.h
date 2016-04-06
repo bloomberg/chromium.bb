@@ -53,20 +53,20 @@ class FakeSignalStrategy : public SignalStrategy,
   std::string GetLocalJid() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
-  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;
   std::string GetNextId() override;
 
  private:
-  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> message)>
+  typedef base::Callback<void(std::unique_ptr<buzz::XmlElement> message)>
       PeerCallback;
 
   static void DeliverMessageOnThread(
       scoped_refptr<base::SingleThreadTaskRunner> thread,
       base::WeakPtr<FakeSignalStrategy> target,
-      scoped_ptr<buzz::XmlElement> stanza);
+      std::unique_ptr<buzz::XmlElement> stanza);
 
   // Called by the |peer_|. Takes ownership of |stanza|.
-  void OnIncomingMessage(scoped_ptr<buzz::XmlElement> stanza);
+  void OnIncomingMessage(std::unique_ptr<buzz::XmlElement> stanza);
   void SetPeerCallback(const PeerCallback& peer_callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;

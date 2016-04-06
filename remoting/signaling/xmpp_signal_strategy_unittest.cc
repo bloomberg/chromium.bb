@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "net/socket/socket_test_util.h"
@@ -89,8 +90,8 @@ class XmppSocketDataProvider : public net::SocketDataProvider {
 
 class MockClientSocketFactory : public net::MockClientSocketFactory {
  public:
-  scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      scoped_ptr<net::ClientSocketHandle> transport_socket,
+  std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<net::ClientSocketHandle> transport_socket,
       const net::HostPortPair& host_and_port,
       const net::SSLConfig& ssl_config,
       const net::SSLClientSocketContext& context) override {
@@ -119,7 +120,7 @@ class XmppSignalStrategyTest : public testing::Test,
   void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.task_runner(),
-        make_scoped_ptr(new net::TestURLRequestContext()));
+        base::WrapUnique(new net::TestURLRequestContext()));
   }
 
   void CreateSignalStrategy(int port) {
@@ -145,7 +146,7 @@ class XmppSignalStrategyTest : public testing::Test,
 
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override {
     received_messages_.push_back(
-        make_scoped_ptr(new buzz::XmlElement(*stanza)));
+        base::WrapUnique(new buzz::XmlElement(*stanza)));
     return true;
   }
 
@@ -155,9 +156,9 @@ class XmppSignalStrategyTest : public testing::Test,
   base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   MockClientSocketFactory client_socket_factory_;
-  scoped_ptr<XmppSocketDataProvider> socket_data_provider_;
-  scoped_ptr<net::SSLSocketDataProvider> ssl_socket_data_provider_;
-  scoped_ptr<XmppSignalStrategy> signal_strategy_;
+  std::unique_ptr<XmppSocketDataProvider> socket_data_provider_;
+  std::unique_ptr<net::SSLSocketDataProvider> ssl_socket_data_provider_;
+  std::unique_ptr<XmppSignalStrategy> signal_strategy_;
 
   std::vector<SignalStrategy::State> state_history_;
   ScopedVector<buzz::XmlElement> received_messages_;
@@ -272,7 +273,7 @@ TEST_F(XmppSignalStrategyTest, SendAndReceive) {
   CreateSignalStrategy(kDefaultPort);
   Connect(true);
 
-  EXPECT_TRUE(signal_strategy_->SendStanza(make_scoped_ptr(
+  EXPECT_TRUE(signal_strategy_->SendStanza(base::WrapUnique(
       new buzz::XmlElement(buzz::QName(std::string(), "hello")))));
   EXPECT_EQ("<hello/>", socket_data_provider_->GetAndClearWrittenData());
 
@@ -298,7 +299,7 @@ TEST_F(XmppSignalStrategyTest, ConnectionClosed) {
   EXPECT_EQ(SignalStrategy::OK, signal_strategy_->GetError());
 
   // Can't send messages anymore.
-  EXPECT_FALSE(signal_strategy_->SendStanza(make_scoped_ptr(
+  EXPECT_FALSE(signal_strategy_->SendStanza(base::WrapUnique(
       new buzz::XmlElement(buzz::QName(std::string(), "hello")))));
 
   // Try connecting again.
@@ -316,7 +317,7 @@ TEST_F(XmppSignalStrategyTest, NetworkReadError) {
   EXPECT_EQ(SignalStrategy::NETWORK_ERROR, signal_strategy_->GetError());
 
   // Can't send messages anymore.
-  EXPECT_FALSE(signal_strategy_->SendStanza(make_scoped_ptr(
+  EXPECT_FALSE(signal_strategy_->SendStanza(base::WrapUnique(
       new buzz::XmlElement(buzz::QName(std::string(), "hello")))));
 
   // Try connecting again.
@@ -330,7 +331,7 @@ TEST_F(XmppSignalStrategyTest, NetworkWriteError) {
   socket_data_provider_->set_write_error(net::ERR_FAILED);
 
   // Next SendMessage() will call Write() which will fail.
-  EXPECT_FALSE(signal_strategy_->SendStanza(make_scoped_ptr(
+  EXPECT_FALSE(signal_strategy_->SendStanza(base::WrapUnique(
       new buzz::XmlElement(buzz::QName(std::string(), "hello")))));
 
   EXPECT_EQ(3U, state_history_.size());

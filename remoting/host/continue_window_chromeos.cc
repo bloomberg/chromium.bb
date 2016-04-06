@@ -5,6 +5,7 @@
 #include "remoting/host/continue_window.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/chromeos/message_box.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,7 +27,7 @@ class ContinueWindowAura : public ContinueWindow {
   void HideUi() override;
 
  private:
-  scoped_ptr<MessageBox> message_box_;
+  std::unique_ptr<MessageBox> message_box_;
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowAura);
 };
 
@@ -63,8 +64,8 @@ void ContinueWindowAura::HideUi() {
 }  // namespace
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return make_scoped_ptr(new ContinueWindowAura());
+std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
+  return base::WrapUnique(new ContinueWindowAura());
 }
 
 }  // namespace remoting

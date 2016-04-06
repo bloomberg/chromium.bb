@@ -87,7 +87,7 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  scoped_ptr<base::Value> response_value(
+  std::unique_ptr<base::Value> response_value(
       base::JSONReader::Read(response_string));
   if (!response_value ||
       !response_value->IsType(base::Value::TYPE_DICTIONARY)) {

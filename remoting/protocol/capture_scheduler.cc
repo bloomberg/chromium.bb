@@ -117,7 +117,7 @@ void CaptureScheduler::OnFrameSent() {
   ScheduleNextCapture();
 }
 
-void CaptureScheduler::ProcessVideoAck(scoped_ptr<VideoAck> video_ack) {
+void CaptureScheduler::ProcessVideoAck(std::unique_ptr<VideoAck> video_ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   --num_unacknowledged_frames_;
@@ -127,11 +127,11 @@ void CaptureScheduler::ProcessVideoAck(scoped_ptr<VideoAck> video_ack) {
 }
 
 void CaptureScheduler::SetTickClockForTest(
-    scoped_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
 }
 
-void CaptureScheduler::SetTimerForTest(scoped_ptr<base::Timer> timer) {
+void CaptureScheduler::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
   capture_timer_ = std::move(timer);
 }
 

@@ -8,11 +8,11 @@
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 
@@ -90,7 +90,7 @@ class FakeRemoteSecurityKeyIpcServer : public RemoteSecurityKeyIpcServer,
   base::Closure send_response_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  scoped_ptr<IPC::Channel> ipc_channel_;
+  std::unique_ptr<IPC::Channel> ipc_channel_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FakeRemoteSecurityKeyIpcServer> weak_factory_;
@@ -109,7 +109,7 @@ class FakeRemoteSecurityKeyIpcServerFactory
   ~FakeRemoteSecurityKeyIpcServerFactory() override;
 
   // RemoteSecurityKeyIpcServerFactory implementation.
-  scoped_ptr<RemoteSecurityKeyIpcServer> Create(
+  std::unique_ptr<RemoteSecurityKeyIpcServer> Create(
       int connection_id,
       base::TimeDelta initial_connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,

@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "third_party/webrtc/p2p/base/packetsocketfactory.h"
@@ -109,7 +109,7 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
 
   rtc::IPAddress address_;
 
-  scoped_ptr<LeakyBucket> leaky_bucket_;
+  std::unique_ptr<LeakyBucket> leaky_bucket_;
   base::TimeDelta latency_average_;
   base::TimeDelta latency_stddev_;
   double out_of_order_rate_;

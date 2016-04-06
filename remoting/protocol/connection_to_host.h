@@ -5,10 +5,10 @@
 #ifndef REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 #define REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/errors.h"
 
 namespace remoting {
@@ -77,7 +77,7 @@ class ConnectionToHost {
   // Initiates a connection using |session|. |event_callback| will be notified
   // of changes in the state of the connection and must outlive the
   // ConnectionToHost. Caller must set stubs (see below) before calling Connect.
-  virtual void Connect(scoped_ptr<Session> session,
+  virtual void Connect(std::unique_ptr<Session> session,
                        scoped_refptr<TransportContext> transport_context,
                        HostEventCallback* event_callback) = 0;
 

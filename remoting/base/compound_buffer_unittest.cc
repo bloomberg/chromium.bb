@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/base/compound_buffer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
-#include "remoting/base/compound_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::IOBuffer;
@@ -140,14 +141,14 @@ class CompoundBufferTest : public testing::Test {
   static void ReadString(CompoundBufferInputStream* input,
                          const std::string& str) {
     SCOPED_TRACE(str);
-    scoped_ptr<char[]> buffer(new char[str.size() + 1]);
+    std::unique_ptr<char[]> buffer(new char[str.size() + 1]);
     buffer[str.size()] = '\0';
     EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
     EXPECT_STREQ(str.data(), buffer.get());
   }
 
   // Construct and prepare data in the |buffer|.
-  static void PrepareData(scoped_ptr<CompoundBuffer>* buffer) {
+  static void PrepareData(std::unique_ptr<CompoundBuffer>* buffer) {
     static const std::string kTestData =
         "Hello world!"
         "This is testing"
@@ -261,7 +262,7 @@ TEST_F(CompoundBufferTest, CopyFrom) {
 }
 
 TEST_F(CompoundBufferTest, InputStream) {
-  scoped_ptr<CompoundBuffer> buffer;
+  std::unique_ptr<CompoundBuffer> buffer;
   PrepareData(&buffer);
   CompoundBufferInputStream stream(buffer.get());
 

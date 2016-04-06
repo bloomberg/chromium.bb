@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -66,21 +67,22 @@ class TestVideoRendererTest : public testing::Test {
                              bool expect_to_match);
 
   // Generate a basic desktop frame containing a gradient.
-  scoped_ptr<webrtc::DesktopFrame> CreateDesktopFrameWithGradient(
-      int screen_width, int screen_height) const;
+  std::unique_ptr<webrtc::DesktopFrame> CreateDesktopFrameWithGradient(
+      int screen_width,
+      int screen_height) const;
 
  protected:
   // Used to post tasks to the message loop.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Used to set timeouts and delays.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   // Manages the decoder and process generated video packets.
-  scoped_ptr<TestVideoRenderer> test_video_renderer_;
+  std::unique_ptr<TestVideoRenderer> test_video_renderer_;
 
   // Used to encode desktop frames to generate video packets.
-  scoped_ptr<VideoEncoder> encoder_;
+  std::unique_ptr<VideoEncoder> encoder_;
 
  private:
   // testing::Test interface.
@@ -88,7 +90,7 @@ class TestVideoRendererTest : public testing::Test {
 
   // Set image pattern, send video packet and returns if the expected pattern is
   // matched.
-  bool SendPacketAndWaitForMatch(scoped_ptr<VideoPacket> packet,
+  bool SendPacketAndWaitForMatch(std::unique_ptr<VideoPacket> packet,
                                  const webrtc::DesktopRect& expected_rect,
                                  const RGBValue& expected_average_color);
 
@@ -108,7 +110,7 @@ class TestVideoRendererTest : public testing::Test {
   void FillFrameWithGradient(webrtc::DesktopFrame* frame) const;
 
   // The thread's message loop. Valid only when the thread is alive.
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVideoRendererTest);
 };
@@ -134,11 +136,11 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
   DCHECK(test_video_renderer_);
 
   // Generate a frame containing a gradient.
-  scoped_ptr<webrtc::DesktopFrame> original_frame =
+  std::unique_ptr<webrtc::DesktopFrame> original_frame =
       CreateDesktopFrameWithGradient(screen_width, screen_height);
   EXPECT_TRUE(original_frame);
 
-  scoped_ptr<VideoPacket> packet = encoder_->Encode(*original_frame.get());
+  std::unique_ptr<VideoPacket> packet = encoder_->Encode(*original_frame.get());
 
   DCHECK(!run_loop_ || !run_loop_->running());
   DCHECK(!timer_->IsRunning());
@@ -159,7 +161,7 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
   timer_->Stop();
   run_loop_.reset();
 
-  scoped_ptr<webrtc::DesktopFrame> buffer_copy =
+  std::unique_ptr<webrtc::DesktopFrame> buffer_copy =
       test_video_renderer_->GetCurrentFrameForTest();
   EXPECT_NE(buffer_copy, nullptr);
 
@@ -170,7 +172,7 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
 }
 
 bool TestVideoRendererTest::SendPacketAndWaitForMatch(
-    scoped_ptr<VideoPacket> packet,
+    std::unique_ptr<VideoPacket> packet,
     const webrtc::DesktopRect& expected_rect,
     const RGBValue& expected_average_color) {
   DCHECK(!run_loop_ || !run_loop_->running());
@@ -188,7 +190,7 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
       expected_rect, expected_average_color, run_loop_->QuitClosure());
 
   // Used to verify if the expected image pattern will be matched by |packet|.
-  scoped_ptr<VideoPacket> packet_copy(new VideoPacket(*packet.get()));
+  std::unique_ptr<VideoPacket> packet_copy(new VideoPacket(*packet.get()));
 
   // Post first test packet: |packet|.
   test_video_renderer_->ProcessVideoPacket(std::move(packet),
@@ -226,11 +228,11 @@ void TestVideoRendererTest::TestImagePatternMatch(
   DCHECK(encoder_);
   DCHECK(test_video_renderer_);
 
-  scoped_ptr<webrtc::DesktopFrame> frame =
+  std::unique_ptr<webrtc::DesktopFrame> frame =
       CreateDesktopFrameWithGradient(screen_width, screen_height);
   RGBValue expected_average_color =
       CalculateAverageColorValueForFrame(frame.get(), expected_rect);
-  scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame.get());
+  std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame.get());
 
   if (expect_to_match) {
     EXPECT_TRUE(SendPacketAndWaitForMatch(std::move(packet), expected_rect,
@@ -332,11 +334,11 @@ double TestVideoRendererTest::CalculateError(
   return sqrt(error_sum_squares / (3 * screen_width * screen_height));
 }
 
-scoped_ptr<webrtc::DesktopFrame>
-    TestVideoRendererTest::CreateDesktopFrameWithGradient(
-        int screen_width, int screen_height) const {
+std::unique_ptr<webrtc::DesktopFrame>
+TestVideoRendererTest::CreateDesktopFrameWithGradient(int screen_width,
+                                                      int screen_height) const {
   webrtc::DesktopSize screen_size(screen_width, screen_height);
-  scoped_ptr<webrtc::DesktopFrame> frame(
+  std::unique_ptr<webrtc::DesktopFrame> frame(
       new webrtc::BasicDesktopFrame(screen_size));
   frame->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeSize(screen_size));
@@ -399,7 +401,7 @@ TEST_F(TestVideoRendererTest, VerifyMultipleVideoProcessing) {
   const int task_num = 20;
   ScopedVector<VideoPacket> video_packets;
   for (int i = 0; i < task_num; ++i) {
-    scoped_ptr<webrtc::DesktopFrame> original_frame =
+    std::unique_ptr<webrtc::DesktopFrame> original_frame =
         CreateDesktopFrameWithGradient(kDefaultScreenWidthPx,
                                        kDefaultScreenHeightPx);
     video_packets.push_back(encoder_->Encode(*original_frame.get()));
@@ -409,7 +411,7 @@ TEST_F(TestVideoRendererTest, VerifyMultipleVideoProcessing) {
     // Transfer ownership of video packet.
     VideoPacket* packet = video_packets[i];
     video_packets[i] = nullptr;
-    test_video_renderer_->ProcessVideoPacket(make_scoped_ptr(packet),
+    test_video_renderer_->ProcessVideoPacket(base::WrapUnique(packet),
                                              base::Bind(&base::DoNothing));
   }
 }
@@ -439,7 +441,7 @@ TEST_F(TestVideoRendererTest, VerifySetExpectedImagePattern) {
   DCHECK(encoder_);
   DCHECK(test_video_renderer_);
 
-  scoped_ptr<webrtc::DesktopFrame> frame = CreateDesktopFrameWithGradient(
+  std::unique_ptr<webrtc::DesktopFrame> frame = CreateDesktopFrameWithGradient(
       kDefaultScreenWidthPx, kDefaultScreenHeightPx);
 
   // Since we don't care whether expected image pattern is matched or not in

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/compound_buffer.h"
@@ -19,7 +20,7 @@ namespace remoting {
 namespace protocol {
 
 StreamMessagePipeAdapter::StreamMessagePipeAdapter(
-    scoped_ptr<P2PStreamSocket> socket,
+    std::unique_ptr<P2PStreamSocket> socket,
     const ErrorCallback& error_callback)
     : socket_(std::move(socket)),
       error_callback_(error_callback),
@@ -79,12 +80,12 @@ void StreamMessageChannelFactoryAdapter::CancelChannelCreation(
 
 void StreamMessageChannelFactoryAdapter::OnChannelCreated(
     const ChannelCreatedCallback& callback,
-    scoped_ptr<P2PStreamSocket> socket) {
+    std::unique_ptr<P2PStreamSocket> socket) {
   if (!socket) {
     error_callback_.Run(net::ERR_FAILED);
     return;
   }
-  callback.Run(make_scoped_ptr(
+  callback.Run(base::WrapUnique(
       new StreamMessagePipeAdapter(std::move(socket), error_callback_)));
 }
 

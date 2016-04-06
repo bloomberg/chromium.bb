@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_DESKTOP_CAPTURER_PROXY_H_
 #define REMOTING_HOST_DESKTOP_CAPTURER_PROXY_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -28,7 +29,7 @@ class DesktopCapturerProxy : public webrtc::DesktopCapturer {
  public:
   DesktopCapturerProxy(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_ptr<webrtc::DesktopCapturer> capturer);
+      std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~DesktopCapturerProxy() override;
 
   // webrtc::DesktopCapturer interface.
@@ -40,11 +41,11 @@ class DesktopCapturerProxy : public webrtc::DesktopCapturer {
  private:
   class Core;
 
-  void OnFrameCaptured(scoped_ptr<webrtc::DesktopFrame> frame);
+  void OnFrameCaptured(std::unique_ptr<webrtc::DesktopFrame> frame);
 
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   webrtc::DesktopCapturer::Callback* callback_;
 

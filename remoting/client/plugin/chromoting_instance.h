@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "ppapi/c/pp_instance.h"
@@ -222,7 +222,7 @@ class ChromotingInstance : public ClientUserInterface,
   // TODO(sergeyu): When all current versions of the webapp support raw messages
   // remove this method and use PostChromotingMessage() instead.
   void PostLegacyJsonMessage(const std::string& method,
-                             scoped_ptr<base::DictionaryValue> data);
+                             std::unique_ptr<base::DictionaryValue> data);
 
   // Posts trapped keys to the web-app to handle.
   void SendTrappedKey(uint32_t usb_keycode, bool pressed);
@@ -244,25 +244,25 @@ class ChromotingInstance : public ClientUserInterface,
   bool initialized_;
 
   scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
-  scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
-  scoped_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
+  std::unique_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
   ClientContext context_;
   protocol::PerformanceTracker perf_tracker_;
-  scoped_ptr<PepperVideoRenderer> video_renderer_;
+  std::unique_ptr<PepperVideoRenderer> video_renderer_;
   pp::View plugin_view_;
 
   // Contains the most-recently-reported desktop shape, if any.
-  scoped_ptr<webrtc::DesktopRegion> desktop_shape_;
+  std::unique_ptr<webrtc::DesktopRegion> desktop_shape_;
 
-  scoped_ptr<DelegatingSignalStrategy> signal_strategy_;
+  std::unique_ptr<DelegatingSignalStrategy> signal_strategy_;
 
-  scoped_ptr<ChromotingClient> client_;
+  std::unique_ptr<ChromotingClient> client_;
 
   // Input pipeline components, in reverse order of distance from input source.
   protocol::MouseInputFilter mouse_input_filter_;
   TouchInputScaler touch_input_scaler_;
   KeyEventMapper key_mapper_;
-  scoped_ptr<protocol::InputFilter> normalizing_input_filter_;
+  std::unique_ptr<protocol::InputFilter> normalizing_input_filter_;
   protocol::InputEventTracker input_tracker_;
   PepperInputHandler input_handler_;
 
@@ -270,7 +270,7 @@ class ChromotingInstance : public ClientUserInterface,
   // process cursor shape events. Note that |mouse_locker_| appears in the
   // cursor pipeline since it is triggered by receipt of an empty cursor.
   PepperCursorSetter cursor_setter_;
-  scoped_ptr<PepperMouseLocker> mouse_locker_;
+  std::unique_ptr<PepperMouseLocker> mouse_locker_;
   EmptyCursorFilter empty_cursor_filter_;
 
   // Used to control text input settings, such as whether to show the IME.

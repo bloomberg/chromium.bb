@@ -4,11 +4,11 @@
 
 #include "remoting/host/security_key/remote_security_key_message_handler.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -50,11 +50,11 @@ class RemoteSecurityKeyMessageHandlerTest : public testing::Test {
   base::WeakPtr<FakeRemoteSecurityKeyIpcClient> ipc_client_weak_ptr_;
   base::WeakPtr<FakeRemoteSecurityKeyMessageReader> reader_weak_ptr_;
   base::WeakPtr<FakeRemoteSecurityKeyMessageWriter> writer_weak_ptr_;
-  scoped_ptr<RemoteSecurityKeyMessageHandler> message_handler_;
+  std::unique_ptr<RemoteSecurityKeyMessageHandler> message_handler_;
 
  private:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyMessageHandlerTest);
 };
@@ -71,17 +71,17 @@ void RemoteSecurityKeyMessageHandlerTest::SetUp() {
   run_loop_.reset(new base::RunLoop());
   message_handler_.reset(new RemoteSecurityKeyMessageHandler());
 
-  scoped_ptr<FakeRemoteSecurityKeyIpcClient> ipc_client(
+  std::unique_ptr<FakeRemoteSecurityKeyIpcClient> ipc_client(
       new FakeRemoteSecurityKeyIpcClient(
           base::Bind(&RemoteSecurityKeyMessageHandlerTest::OperationComplete,
                      base::Unretained(this))));
   ipc_client_weak_ptr_ = ipc_client->AsWeakPtr();
 
-  scoped_ptr<FakeRemoteSecurityKeyMessageReader> reader(
+  std::unique_ptr<FakeRemoteSecurityKeyMessageReader> reader(
       new FakeRemoteSecurityKeyMessageReader());
   reader_weak_ptr_ = reader->AsWeakPtr();
 
-  scoped_ptr<FakeRemoteSecurityKeyMessageWriter> writer(
+  std::unique_ptr<FakeRemoteSecurityKeyMessageWriter> writer(
       new FakeRemoteSecurityKeyMessageWriter(
           base::Bind(&RemoteSecurityKeyMessageHandlerTest::OperationComplete,
                      base::Unretained(this))));

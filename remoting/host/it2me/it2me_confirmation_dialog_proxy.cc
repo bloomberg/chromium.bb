@@ -19,7 +19,7 @@ class It2MeConfirmationDialogProxy::Core {
   Core(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        base::WeakPtr<It2MeConfirmationDialogProxy> parent,
-       scoped_ptr<It2MeConfirmationDialog> dialog);
+       std::unique_ptr<It2MeConfirmationDialog> dialog);
   ~Core();
 
   // Shows the wrapped dialog. Must be called on the UI thread.
@@ -40,7 +40,7 @@ class It2MeConfirmationDialogProxy::Core {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   base::WeakPtr<It2MeConfirmationDialogProxy> parent_;
-  scoped_ptr<It2MeConfirmationDialog> dialog_;
+  std::unique_ptr<It2MeConfirmationDialog> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -49,12 +49,11 @@ It2MeConfirmationDialogProxy::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     base::WeakPtr<It2MeConfirmationDialogProxy> parent,
-    scoped_ptr<It2MeConfirmationDialog> dialog)
+    std::unique_ptr<It2MeConfirmationDialog> dialog)
     : ui_task_runner_(ui_task_runner),
       caller_task_runner_(caller_task_runner),
       parent_(parent),
-      dialog_(std::move(dialog)) {
-}
+      dialog_(std::move(dialog)) {}
 
 It2MeConfirmationDialogProxy::Core::~Core() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -77,7 +76,7 @@ void It2MeConfirmationDialogProxy::Core::ReportResult(
 
 It2MeConfirmationDialogProxy::It2MeConfirmationDialogProxy(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    scoped_ptr<It2MeConfirmationDialog> dialog)
+    std::unique_ptr<It2MeConfirmationDialog> dialog)
     : weak_factory_(this) {
   core_.reset(new Core(ui_task_runner, base::ThreadTaskRunnerHandle::Get(),
                        weak_factory_.GetWeakPtr(), std::move(dialog)));

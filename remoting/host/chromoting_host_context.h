@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_
 #define REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -30,7 +31,7 @@ class ChromotingHostContext {
   // During shutdown the caller should tear-down the ChromotingHostContext and
   // then continue to run until |ui_task_runner| is no longer referenced.
   // nullptr is returned if any threads fail to start.
-  static scoped_ptr<ChromotingHostContext> Create(
+  static std::unique_ptr<ChromotingHostContext> Create(
       scoped_refptr<AutoThreadTaskRunner> ui_task_runner);
 
 #if defined(OS_CHROMEOS)
@@ -43,7 +44,7 @@ class ChromotingHostContext {
   // violates the "Disallow IO" thread restrictions on some task runners (e.g.
   // the IO Thread of the browser process).
   // Instead, we re-use the |url_request_context_getter| in the browser process.
-  static scoped_ptr<ChromotingHostContext> CreateForChromeOS(
+  static std::unique_ptr<ChromotingHostContext> CreateForChromeOS(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -52,7 +53,7 @@ class ChromotingHostContext {
 
   ~ChromotingHostContext();
 
-  scoped_ptr<ChromotingHostContext> Copy();
+  std::unique_ptr<ChromotingHostContext> Copy();
 
   // Task runner for the thread that is used for the UI.
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner() const;

@@ -31,7 +31,7 @@ AudioPlayer::~AudioPlayer() {
   ResetQueue();
 }
 
-void AudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
+void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
   CHECK_EQ(1, packet->data_size());
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());

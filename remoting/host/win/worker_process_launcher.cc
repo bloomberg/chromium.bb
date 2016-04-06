@@ -53,7 +53,7 @@ namespace remoting {
 WorkerProcessLauncher::Delegate::~Delegate() {}
 
 WorkerProcessLauncher::WorkerProcessLauncher(
-    scoped_ptr<WorkerProcessLauncher::Delegate> launcher_delegate,
+    std::unique_ptr<WorkerProcessLauncher::Delegate> launcher_delegate,
     WorkerProcessIpcDelegate* ipc_handler)
     : ipc_handler_(ipc_handler),
       launcher_delegate_(std::move(launcher_delegate)),

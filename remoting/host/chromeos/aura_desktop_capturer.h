@@ -5,8 +5,9 @@
 #ifndef REMOTING_HOST_CHROMEOS_AURA_DESKTOP_CAPTURER_H_
 #define REMOTING_HOST_CHROMEOS_AURA_DESKTOP_CAPTURER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
@@ -37,7 +38,7 @@ class AuraDesktopCapturer : public webrtc::DesktopCapturer {
   friend class AuraDesktopCapturerTest;
 
   // Called when a copy of the layer is captured.
-  void OnFrameCaptured(scoped_ptr<cc::CopyOutputResult> result);
+  void OnFrameCaptured(std::unique_ptr<cc::CopyOutputResult> result);
 
   // Points to the callback passed to webrtc::DesktopCapturer::Start().
   webrtc::DesktopCapturer::Callback* callback_;

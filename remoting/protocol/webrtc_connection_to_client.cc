@@ -35,7 +35,7 @@ namespace protocol {
 // TODO(sergeyu): Figure out if we would benefit from using a separate
 // thread as a worker thread.
 WebrtcConnectionToClient::WebrtcConnectionToClient(
-    scoped_ptr<protocol::Session> session,
+    std::unique_ptr<protocol::Session> session,
     scoped_refptr<protocol::TransportContext> transport_context)
     : transport_(jingle_glue::JingleThreadWrapper::current(),
                  transport_context,
@@ -73,9 +73,9 @@ void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
   event_handler_->OnInputEventReceived(this, timestamp);
 }
 
-scoped_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
-    scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
-  scoped_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
+std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
+    std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
+  std::unique_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
   if (!stream->Start(std::move(desktop_capturer), transport_.peer_connection(),
                      transport_.peer_connection_factory())) {
     return nullptr;

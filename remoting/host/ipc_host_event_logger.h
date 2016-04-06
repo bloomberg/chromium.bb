@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_IPC_HOST_EVENT_LOGGER_H_
 #define REMOTING_HOST_IPC_HOST_EVENT_LOGGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/host_event_logger.h"

@@ -5,8 +5,9 @@
 #ifndef REMOTING_PROTOCOL_MESSAGE_PIPE_H_
 #define REMOTING_PROTOCOL_MESSAGE_PIPE_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace google {
 namespace protobuf {
@@ -23,7 +24,7 @@ namespace protocol {
 // Represents a bi-directional pipe that allows to send and receive messages.
 class MessagePipe {
  public:
-  typedef base::Callback<void(scoped_ptr<CompoundBuffer> message)>
+  typedef base::Callback<void(std::unique_ptr<CompoundBuffer> message)>
       MessageReceivedCallback;
 
   virtual ~MessagePipe() {}

@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_PAIRING_REGISTRY_DELEGATE_WIN_H_
 #define REMOTING_PROTOCOL_PAIRING_REGISTRY_DELEGATE_WIN_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "remoting/protocol/pairing_registry.h"
 
@@ -52,7 +52,7 @@ class PairingRegistryDelegateWin
   bool SetRootKeys(HKEY privileged, HKEY unprivileged);
 
   // PairingRegistry::Delegate interface
-  scoped_ptr<base::ListValue> LoadAll() override;
+  std::unique_ptr<base::ListValue> LoadAll() override;
   bool DeleteAll() override;
   protocol::PairingRegistry::Pairing Load(
       const std::string& client_id) override;

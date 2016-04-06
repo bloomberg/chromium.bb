@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "remoting/proto/audio.pb.h"
 
@@ -21,7 +21,7 @@ class AudioPlayer {
  public:
   virtual ~AudioPlayer();
 
-  void ProcessAudioPacket(scoped_ptr<AudioPacket> packet);
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
 
  protected:
   AudioPlayer();

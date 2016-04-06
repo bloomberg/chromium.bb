@@ -5,9 +5,10 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_TRANSPORT_H_
 #define REMOTING_PROTOCOL_WEBRTC_TRANSPORT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -82,7 +83,7 @@ class WebrtcTransport : public Transport,
 
  private:
   void OnLocalSessionDescriptionCreated(
-      scoped_ptr<webrtc::SessionDescriptionInterface> description,
+      std::unique_ptr<webrtc::SessionDescriptionInterface> description,
       const std::string& error);
   void OnLocalDescriptionSet(bool success, const std::string& error);
   void OnRemoteDescriptionSet(bool send_answer,
@@ -119,7 +120,7 @@ class WebrtcTransport : public Transport,
 
   crypto::HMAC handshake_hmac_;
 
-  scoped_ptr<webrtc::FakeAudioDeviceModule> fake_audio_device_module_;
+  std::unique_ptr<webrtc::FakeAudioDeviceModule> fake_audio_device_module_;
 
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
@@ -129,7 +130,7 @@ class WebrtcTransport : public Transport,
 
   bool connected_ = false;
 
-  scoped_ptr<buzz::XmlElement> pending_transport_info_message_;
+  std::unique_ptr<buzz::XmlElement> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
   ScopedVector<webrtc::IceCandidateInterface> pending_incoming_candidates_;

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/constants.h"
@@ -64,7 +65,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 
 ChromotingHost::ChromotingHost(
     DesktopEnvironmentFactory* desktop_environment_factory,
-    scoped_ptr<protocol::SessionManager> session_manager,
+    std::unique_ptr<protocol::SessionManager> session_manager,
     scoped_refptr<protocol::TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
@@ -120,12 +121,12 @@ void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
   status_observers_.RemoveObserver(observer);
 }
 
-void ChromotingHost::AddExtension(scoped_ptr<HostExtension> extension) {
+void ChromotingHost::AddExtension(std::unique_ptr<HostExtension> extension) {
   extensions_.push_back(extension.release());
 }
 
 void ChromotingHost::SetAuthenticatorFactory(
-    scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
+    std::unique_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
   session_manager_->set_authenticator_factory(std::move(authenticator_factory));
 }
@@ -262,14 +263,14 @@ void ChromotingHost::OnIncomingSession(
 
   // Create either IceConnectionToClient or WebrtcConnectionToClient.
   // TODO(sergeyu): Move this logic to the protocol layer.
-  scoped_ptr<protocol::ConnectionToClient> connection;
+  std::unique_ptr<protocol::ConnectionToClient> connection;
   if (session->config().protocol() ==
       protocol::SessionConfig::Protocol::WEBRTC) {
     connection.reset(new protocol::WebrtcConnectionToClient(
-        make_scoped_ptr(session), transport_context_));
+        base::WrapUnique(session), transport_context_));
   } else {
     connection.reset(new protocol::IceConnectionToClient(
-        make_scoped_ptr(session), transport_context_,
+        base::WrapUnique(session), transport_context_,
         video_encode_task_runner_));
   }
 

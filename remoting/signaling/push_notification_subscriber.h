@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_GCD_NOTIFICATION_SUBSCRIBER_H_
 #define REMOTING_HOST_GCD_NOTIFICATION_SUBSCRIBER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/signaling/signal_strategy.h"
 
 namespace remoting {
@@ -47,8 +47,8 @@ class PushNotificationSubscriber : public SignalStrategy::Listener {
 
   SignalStrategy* signal_strategy_;
   SubscriptionList subscriptions_;
-  scoped_ptr<IqSender> iq_sender_;
-  scoped_ptr<IqRequest> iq_request_;
+  std::unique_ptr<IqSender> iq_sender_;
+  std::unique_ptr<IqRequest> iq_request_;
 
   DISALLOW_COPY_AND_ASSIGN(PushNotificationSubscriber);
 };

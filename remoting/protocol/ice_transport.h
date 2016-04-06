@@ -91,19 +91,19 @@ class IceTransport : public Transport,
   SendTransportInfoCallback send_transport_info_callback_;
 
   ChannelsMap channels_;
-  scoped_ptr<PseudoTcpChannelFactory> pseudotcp_channel_factory_;
-  scoped_ptr<SecureChannelFactory> secure_channel_factory_;
-  scoped_ptr<MessageChannelFactory> message_channel_factory_;
+  std::unique_ptr<PseudoTcpChannelFactory> pseudotcp_channel_factory_;
+  std::unique_ptr<SecureChannelFactory> secure_channel_factory_;
+  std::unique_ptr<MessageChannelFactory> message_channel_factory_;
 
-  scoped_ptr<ChannelMultiplexer> channel_multiplexer_;
-  scoped_ptr<MessageChannelFactory> mux_channel_factory_;
+  std::unique_ptr<ChannelMultiplexer> channel_multiplexer_;
+  std::unique_ptr<MessageChannelFactory> mux_channel_factory_;
 
   // Pending remote transport info received before the local channels were
   // created.
   std::list<IceTransportInfo::IceCredentials> pending_remote_ice_credentials_;
   std::list<IceTransportInfo::NamedCandidate> pending_remote_candidates_;
 
-  scoped_ptr<IceTransportInfo> pending_transport_info_message_;
+  std::unique_ptr<IceTransportInfo> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
   base::WeakPtrFactory<IceTransport> weak_factory_;

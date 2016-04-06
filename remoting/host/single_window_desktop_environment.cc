@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/single_window_input_injector.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
@@ -22,8 +23,8 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
   ~SingleWindowDesktopEnvironment() override;
 
   // DesktopEnvironment interface.
-  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  scoped_ptr<InputInjector> CreateInputInjector() override;
+  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  std::unique_ptr<InputInjector> CreateInputInjector() override;
 
  protected:
   friend class SingleWindowDesktopEnvironmentFactory;
@@ -43,7 +44,7 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
 
 SingleWindowDesktopEnvironment::~SingleWindowDesktopEnvironment() {}
 
-scoped_ptr<webrtc::DesktopCapturer>
+std::unique_ptr<webrtc::DesktopCapturer>
 SingleWindowDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
@@ -51,20 +52,19 @@ SingleWindowDesktopEnvironment::CreateVideoCapturer() {
       webrtc::DesktopCaptureOptions::CreateDefault();
   options.set_use_update_notifications(true);
 
-  scoped_ptr<webrtc::WindowCapturer> window_capturer(
-        webrtc::WindowCapturer::Create(options));
+  std::unique_ptr<webrtc::WindowCapturer> window_capturer(
+      webrtc::WindowCapturer::Create(options));
   window_capturer->SelectWindow(window_id_);
 
   return std::move(window_capturer);
 }
 
-scoped_ptr<InputInjector>
+std::unique_ptr<InputInjector>
 SingleWindowDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<InputInjector> input_injector(
-      InputInjector::Create(input_task_runner(),
-                            ui_task_runner()));
+  std::unique_ptr<InputInjector> input_injector(
+      InputInjector::Create(input_task_runner(), ui_task_runner()));
   return SingleWindowInputInjector::CreateForWindow(
              window_id_, std::move(input_injector));
 }
@@ -99,11 +99,12 @@ SingleWindowDesktopEnvironmentFactory::
     ~SingleWindowDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> SingleWindowDesktopEnvironmentFactory::Create(
+std::unique_ptr<DesktopEnvironment>
+SingleWindowDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return make_scoped_ptr(new SingleWindowDesktopEnvironment(
+  return base::WrapUnique(new SingleWindowDesktopEnvironment(
       caller_task_runner(), video_capture_task_runner(), input_task_runner(),
       ui_task_runner(), window_id_, supports_touch_events()));
 }

@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_SPAKE2_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_SPAKE2_AUTHENTICATOR_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -12,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 
 typedef struct spake2_ctx_st SPAKE2_CTX;
@@ -27,13 +27,13 @@ namespace protocol {
 // implements SPAKE2 over Curve25519.
 class Spake2Authenticator : public Authenticator {
  public:
-  static scoped_ptr<Authenticator> CreateForClient(
+  static std::unique_ptr<Authenticator> CreateForClient(
       const std::string& local_id,
       const std::string& remote_id,
       const std::string& shared_secret,
       State initial_state);
 
-  static scoped_ptr<Authenticator> CreateForHost(
+  static std::unique_ptr<Authenticator> CreateForHost(
       const std::string& local_id,
       const std::string& remote_id,
       const std::string& local_cert,
@@ -49,9 +49,10 @@ class Spake2Authenticator : public Authenticator {
   RejectionReason rejection_reason() const override;
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
-  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
+  std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
+      const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(Spake2AuthenticatorTest, InvalidSecret);

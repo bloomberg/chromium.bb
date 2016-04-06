@@ -6,10 +6,10 @@
 #define REMOTING_PROTOCOL_CONNECTION_TESTER_H_
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 
 namespace base {
@@ -123,7 +123,7 @@ class MessagePipeConnectionTester {
   void RunAndCheckResults();
 
  protected:
-  void OnMessageReceived(scoped_ptr<CompoundBuffer> message);
+  void OnMessageReceived(std::unique_ptr<CompoundBuffer> message);
 
  private:
   base::RunLoop run_loop_;
@@ -132,8 +132,8 @@ class MessagePipeConnectionTester {
   int message_size_;
   int message_count_;
 
-  std::vector<scoped_ptr<VideoPacket>> sent_messages_;
-  std::vector<scoped_ptr<VideoPacket>> received_messages_;
+  std::vector<std::unique_ptr<VideoPacket>> sent_messages_;
+  std::vector<std::unique_ptr<VideoPacket>> received_messages_;
 };
 
 }  // namespace protocol

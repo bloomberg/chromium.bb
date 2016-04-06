@@ -5,10 +5,10 @@
 #ifndef REMOTING_BASE_URL_REQUEST_H_
 #define REMOTING_BASE_URL_REQUEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -59,8 +59,9 @@ class UrlRequest {
 class UrlRequestFactory {
  public:
   virtual ~UrlRequestFactory() {}
-  virtual scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
-                                                  const std::string& url) = 0;
+  virtual std::unique_ptr<UrlRequest> CreateUrlRequest(
+      UrlRequest::Type type,
+      const std::string& url) = 0;
 };
 
 }  // namespace remoting

@@ -6,9 +6,9 @@
 #define REMOTING_PROTOCOL_JINGLE_MESSAGES_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/p2p/base/candidate.h"
 
@@ -53,7 +53,7 @@ struct JingleMessage {
   // message when parsing fails.
   bool ParseXml(const buzz::XmlElement* stanza, std::string* error);
 
-  scoped_ptr<buzz::XmlElement> ToXml() const;
+  std::unique_ptr<buzz::XmlElement> ToXml() const;
 
   std::string from;
   std::string to;
@@ -62,12 +62,12 @@ struct JingleMessage {
 
   std::string initiator;
 
-  scoped_ptr<ContentDescription> description;
+  std::unique_ptr<ContentDescription> description;
 
-  scoped_ptr<buzz::XmlElement> transport_info;
+  std::unique_ptr<buzz::XmlElement> transport_info;
 
   // Content of session-info messages.
-  scoped_ptr<buzz::XmlElement> info;
+  std::unique_ptr<buzz::XmlElement> info;
 
   // Value from the <reason> tag if it is present in the
   // message. Useful mainly for session-terminate messages, but Jingle
@@ -97,7 +97,7 @@ struct JingleMessageReply {
   // Formats reply stanza for the specified |request_stanza|. Id and
   // recepient as well as other information needed to generate a valid
   // reply are taken from |request_stanza|.
-  scoped_ptr<buzz::XmlElement> ToXml(
+  std::unique_ptr<buzz::XmlElement> ToXml(
       const buzz::XmlElement* request_stanza) const;
 
   ReplyType type;
@@ -131,7 +131,7 @@ struct IceTransportInfo {
   // Caller keeps ownership of |stanza|. |error| is set to debug error
   // message when parsing fails.
   bool ParseXml(const buzz::XmlElement* stanza);
-  scoped_ptr<buzz::XmlElement> ToXml() const;
+  std::unique_ptr<buzz::XmlElement> ToXml() const;
 
   std::list<IceCredentials> ice_credentials;
   std::list<NamedCandidate> candidates;

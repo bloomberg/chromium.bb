@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/environment.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/username.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -21,7 +22,7 @@ namespace remoting {
 namespace {
 class PamAuthorizer : public protocol::Authenticator {
  public:
-  PamAuthorizer(scoped_ptr<protocol::Authenticator> underlying);
+  PamAuthorizer(std::unique_ptr<protocol::Authenticator> underlying);
   ~PamAuthorizer() override;
 
   // protocol::Authenticator interface.
@@ -30,9 +31,9 @@ class PamAuthorizer : public protocol::Authenticator {
   RejectionReason rejection_reason() const override;
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
-  scoped_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
+  std::unique_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
       const override;
 
  private:
@@ -45,13 +46,14 @@ class PamAuthorizer : public protocol::Authenticator {
                              struct pam_response** responses,
                              void* context);
 
-  scoped_ptr<protocol::Authenticator> underlying_;
+  std::unique_ptr<protocol::Authenticator> underlying_;
   enum { NOT_CHECKED, ALLOWED, DISALLOWED } local_login_status_;
 };
 
 }  // namespace
 
-PamAuthorizer::PamAuthorizer(scoped_ptr<protocol::Authenticator> underlying)
+PamAuthorizer::PamAuthorizer(
+    std::unique_ptr<protocol::Authenticator> underlying)
     : underlying_(std::move(underlying)), local_login_status_(NOT_CHECKED) {}
 
 PamAuthorizer::~PamAuthorizer() {}
@@ -90,8 +92,8 @@ void PamAuthorizer::OnMessageProcessed(const base::Closure& resume_callback) {
   resume_callback.Run();
 }
 
-scoped_ptr<buzz::XmlElement> PamAuthorizer::GetNextMessage() {
-  scoped_ptr<buzz::XmlElement> result(underlying_->GetNextMessage());
+std::unique_ptr<buzz::XmlElement> PamAuthorizer::GetNextMessage() {
+  std::unique_ptr<buzz::XmlElement> result(underlying_->GetNextMessage());
   MaybeCheckLocalLogin();
   return result;
 }
@@ -100,7 +102,7 @@ const std::string& PamAuthorizer::GetAuthKey() const {
   return underlying_->GetAuthKey();
 }
 
-scoped_ptr<protocol::ChannelAuthenticator>
+std::unique_ptr<protocol::ChannelAuthenticator>
 PamAuthorizer::CreateChannelAuthenticator() const {
   return underlying_->CreateChannelAuthenticator();
 }
@@ -161,17 +163,17 @@ int PamAuthorizer::PamConversation(int num_messages,
 }
 
 PamAuthorizationFactory::PamAuthorizationFactory(
-    scoped_ptr<protocol::AuthenticatorFactory> underlying)
+    std::unique_ptr<protocol::AuthenticatorFactory> underlying)
     : underlying_(std::move(underlying)) {}
 
 PamAuthorizationFactory::~PamAuthorizationFactory() {}
 
-scoped_ptr<protocol::Authenticator>
+std::unique_ptr<protocol::Authenticator>
 PamAuthorizationFactory::CreateAuthenticator(const std::string& local_jid,
                                              const std::string& remote_jid) {
-  scoped_ptr<protocol::Authenticator> authenticator(
+  std::unique_ptr<protocol::Authenticator> authenticator(
       underlying_->CreateAuthenticator(local_jid, remote_jid));
-  return make_scoped_ptr(new PamAuthorizer(std::move(authenticator)));
+  return base::WrapUnique(new PamAuthorizer(std::move(authenticator)));
 }
 
 }  // namespace remoting

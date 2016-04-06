@@ -25,7 +25,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
                              public base::NonThreadSafe,
                              public gaia::GaiaOAuthClient::Delegate {
  public:
-  OAuthTokenGetterImpl(scoped_ptr<OAuthCredentials> oauth_credentials,
+  OAuthTokenGetterImpl(std::unique_ptr<OAuthCredentials> oauth_credentials,
                        const scoped_refptr<net::URLRequestContextGetter>&
                            url_request_context_getter,
                        bool auto_refresh);
@@ -52,8 +52,8 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
                        const std::string& access_token);
   void RefreshOAuthToken();
 
-  scoped_ptr<OAuthCredentials> oauth_credentials_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<OAuthCredentials> oauth_credentials_;
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   bool refreshing_oauth_token_ = false;
@@ -61,7 +61,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   std::string oauth_access_token_;
   base::Time auth_token_expiry_time_;
   std::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
-  scoped_ptr<base::OneShotTimer> refresh_timer_;
+  std::unique_ptr<base::OneShotTimer> refresh_timer_;
 };
 
 }  // namespace remoting

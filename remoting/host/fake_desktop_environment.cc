@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
@@ -17,8 +18,7 @@ FakeInputInjector::FakeInputInjector() {}
 FakeInputInjector::~FakeInputInjector() {}
 
 void FakeInputInjector::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-}
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {}
 
 void FakeInputInjector::InjectKeyEvent(const protocol::KeyEvent& event) {
   if (key_events_)
@@ -58,32 +58,32 @@ FakeDesktopEnvironment::FakeDesktopEnvironment() {}
 FakeDesktopEnvironment::~FakeDesktopEnvironment() {}
 
 // DesktopEnvironment implementation.
-scoped_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
+std::unique_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
   return nullptr;
 }
 
-scoped_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
-  scoped_ptr<FakeInputInjector> result(new FakeInputInjector());
+std::unique_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
+  std::unique_ptr<FakeInputInjector> result(new FakeInputInjector());
   last_input_injector_ = result->AsWeakPtr();
   return std::move(result);
 }
 
-scoped_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
-  return make_scoped_ptr(new FakeScreenControls());
+std::unique_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
+  return base::WrapUnique(new FakeScreenControls());
 }
 
-scoped_ptr<webrtc::DesktopCapturer>
+std::unique_ptr<webrtc::DesktopCapturer>
 FakeDesktopEnvironment::CreateVideoCapturer() {
-  scoped_ptr<protocol::FakeDesktopCapturer> result(
+  std::unique_ptr<protocol::FakeDesktopCapturer> result(
       new protocol::FakeDesktopCapturer());
   if (!frame_generator_.is_null())
     result->set_frame_generator(frame_generator_);
   return std::move(result);
 }
 
-scoped_ptr<webrtc::MouseCursorMonitor>
+std::unique_ptr<webrtc::MouseCursorMonitor>
 FakeDesktopEnvironment::CreateMouseCursorMonitor() {
-  return make_scoped_ptr(new FakeMouseCursorMonitor());
+  return base::WrapUnique(new FakeMouseCursorMonitor());
 }
 
 std::string FakeDesktopEnvironment::GetCapabilities() const {
@@ -96,9 +96,9 @@ FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory() {}
 FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {}
 
 // DesktopEnvironmentFactory implementation.
-scoped_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
+std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  scoped_ptr<FakeDesktopEnvironment> result(new FakeDesktopEnvironment());
+  std::unique_ptr<FakeDesktopEnvironment> result(new FakeDesktopEnvironment());
   result->set_frame_generator(frame_generator_);
   last_desktop_environment_ = result->AsWeakPtr();
   return std::move(result);

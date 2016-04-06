@@ -28,7 +28,7 @@ class It2MeConfirmationDialogChromeOS : public It2MeConfirmationDialog {
   // Handles result from |message_box_|.
   void OnMessageBoxResult(MessageBox::Result result);
 
-  scoped_ptr<MessageBox> message_box_;
+  std::unique_ptr<MessageBox> message_box_;
   ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeConfirmationDialogChromeOS);
@@ -59,8 +59,9 @@ void It2MeConfirmationDialogChromeOS::OnMessageBoxResult(
                                        Result::OK : Result::CANCEL);
 }
 
-scoped_ptr<It2MeConfirmationDialog> It2MeConfirmationDialogFactory::Create() {
-  return scoped_ptr<It2MeConfirmationDialog>(
+std::unique_ptr<It2MeConfirmationDialog>
+It2MeConfirmationDialogFactory::Create() {
+  return std::unique_ptr<It2MeConfirmationDialog>(
       new It2MeConfirmationDialogChromeOS());
 }
 

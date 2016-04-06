@@ -88,7 +88,7 @@ class TouchInjectorWinDelegateMock : public TouchInjectorWinDelegate {
 // A test to make sure that the touch event is converted correctly to
 // POINTER_TOUCH_INFO.
 TEST(TouchInjectorWinTest, CheckConversionWithPressure) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -156,7 +156,7 @@ TEST(TouchInjectorWinTest, CheckConversionWithPressure) {
 // Some devices don't detect pressure. This test is a conversion check for
 // such devices.
 TEST(TouchInjectorWinTest, CheckConversionNoPressure) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -201,7 +201,7 @@ TEST(TouchInjectorWinTest, CheckConversionNoPressure) {
 
 // If initialization fails, it should not call any touch injection functions.
 TEST(TouchInjectorWinTest, InitFailed) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -220,10 +220,12 @@ TEST(TouchInjectorWinTest, InitFailed) {
 
 // Deinitialize and initialize should clean the state.
 TEST(TouchInjectorWinTest, Reinitialize) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock_before_deinitialize(
-      new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock_after_deinitialize(
-      new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
+  std::unique_ptr<TouchInjectorWinDelegateMock>
+      delegate_mock_before_deinitialize(
+          new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
+  std::unique_ptr<TouchInjectorWinDelegateMock>
+      delegate_mock_after_deinitialize(
+          new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent first_event;
   first_event.set_event_type(TouchEvent::TOUCH_POINT_START);
@@ -274,7 +276,7 @@ TEST(TouchInjectorWinTest, Reinitialize) {
 
 // Make sure that the flag is set to kStartFlag.
 TEST(TouchInjectorWinTest, StartTouchPoint) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -301,7 +303,7 @@ TEST(TouchInjectorWinTest, StartTouchPoint) {
 
 // Start a point and then move, make sure the flag is set to kMoveFlag.
 TEST(TouchInjectorWinTest, MoveTouchPoint) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -337,7 +339,7 @@ TEST(TouchInjectorWinTest, MoveTouchPoint) {
 
 // Start a point and then move, make sure the flag is set to kEndFlag.
 TEST(TouchInjectorWinTest, EndTouchPoint) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -372,7 +374,7 @@ TEST(TouchInjectorWinTest, EndTouchPoint) {
 
 // Start a point and then move, make sure the flag is set to kCancelFlag.
 TEST(TouchInjectorWinTest, CancelTouchPoint) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   TouchEvent event;
@@ -414,7 +416,7 @@ TEST(TouchInjectorWinTest, CancelTouchPoint) {
 // 5. End second touch point.
 // 6. Cancel remaining (first and third) touch points.
 TEST(TouchInjectorWinTest, MultiTouch) {
-  scoped_ptr<TouchInjectorWinDelegateMock> delegate_mock(
+  std::unique_ptr<TouchInjectorWinDelegateMock> delegate_mock(
       new ::testing::StrictMock<TouchInjectorWinDelegateMock>());
 
   InSequence s;

@@ -5,11 +5,11 @@
 #ifndef REMOTING_TEST_TEST_CHROMOTING_CLIENT_H_
 #define REMOTING_TEST_TEST_CHROMOTING_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_user_interface.h"
@@ -45,7 +45,7 @@ class TestChromotingClient : public ClientUserInterface,
  public:
   TestChromotingClient();
   explicit TestChromotingClient(
-      scoped_ptr<protocol::VideoRenderer> video_renderer);
+      std::unique_ptr<protocol::VideoRenderer> video_renderer);
   ~TestChromotingClient() override;
 
   // Starts a Chromoting connection using the specified connection setup info.
@@ -70,9 +70,10 @@ class TestChromotingClient : public ClientUserInterface,
   void RemoveRemoteConnectionObserver(RemoteConnectionObserver* observer);
 
   // Used to set a fake/mock dependencies for tests.
-  void SetSignalStrategyForTests(scoped_ptr<SignalStrategy> signal_strategy);
+  void SetSignalStrategyForTests(
+      std::unique_ptr<SignalStrategy> signal_strategy);
   void SetConnectionToHostForTests(
-      scoped_ptr<protocol::ConnectionToHost> connection_to_host);
+      std::unique_ptr<protocol::ConnectionToHost> connection_to_host);
 
  private:
   // ClientUserInterface interface.
@@ -108,19 +109,19 @@ class TestChromotingClient : public ClientUserInterface,
   base::ObserverList<RemoteConnectionObserver, true> connection_observers_;
 
   // ConnectionToHost used by TestChromotingClient tests.
-  scoped_ptr<protocol::ConnectionToHost> test_connection_to_host_;
+  std::unique_ptr<protocol::ConnectionToHost> test_connection_to_host_;
 
   // Creates and manages the connection to the remote host.
-  scoped_ptr<ChromotingClient> chromoting_client_;
+  std::unique_ptr<ChromotingClient> chromoting_client_;
 
   // Manages the threads and task runners for |chromoting_client_|.
-  scoped_ptr<ClientContext> client_context_;
+  std::unique_ptr<ClientContext> client_context_;
 
   // Processes video packets from the host.
-  scoped_ptr<protocol::VideoRenderer> video_renderer_;
+  std::unique_ptr<protocol::VideoRenderer> video_renderer_;
 
   // SignalStrategy used for connection signaling.
-  scoped_ptr<SignalStrategy> signal_strategy_;
+  std::unique_ptr<SignalStrategy> signal_strategy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromotingClient);
 };

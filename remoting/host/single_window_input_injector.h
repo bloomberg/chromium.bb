@@ -5,7 +5,8 @@
 #ifndef REMOTING_HOST_SINGLE_WINDOW_INPUT_INJECTOR_H_
 #define REMOTING_HOST_SINGLE_WINDOW_INPUT_INJECTOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "remoting/host/input_injector.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 
@@ -20,9 +21,9 @@ class SingleWindowInputInjector : public InputInjector {
  public:
   // This Create method needs to be passed a full desktop
   // InputInjector.
-  static scoped_ptr<InputInjector> CreateForWindow(
+  static std::unique_ptr<InputInjector> CreateForWindow(
       webrtc::WindowId window_id,
-      scoped_ptr<InputInjector> input_injector);
+      std::unique_ptr<InputInjector> input_injector);
 };
 
 }  // namespace remoting

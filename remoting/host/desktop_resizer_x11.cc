@@ -4,12 +4,13 @@
 
 #include "remoting/host/desktop_resizer.h"
 
-#include <string.h>
-#include <X11/extensions/Xrandr.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+#include <string.h>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/linux/x11_util.h"
 
@@ -324,8 +325,8 @@ void DesktopResizerX11::SwitchToMode(const char* name) {
                    CurrentTime, 0, 0, mode_id, 1, outputs, number_of_outputs);
 }
 
-scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return make_scoped_ptr(new DesktopResizerX11);
+std::unique_ptr<DesktopResizer> DesktopResizer::Create() {
+  return base::WrapUnique(new DesktopResizerX11);
 }
 
 }  // namespace remoting

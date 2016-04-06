@@ -79,7 +79,7 @@ class AccessTokenFetcherTest : public ::testing::Test {
 
  private:
   net::FakeURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcherTest);
 };
@@ -174,7 +174,7 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
                   kValidTokenInfoResponse, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
-  scoped_ptr<base::RunLoop> run_loop;
+  std::unique_ptr<base::RunLoop> run_loop;
   run_loop.reset(new base::RunLoop());
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,

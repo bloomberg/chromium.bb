@@ -9,11 +9,11 @@
 namespace remoting {
 namespace protocol {
 
-void TestGetFinalConfig(scoped_ptr<SessionConfig> config) {
-  scoped_ptr<CandidateSessionConfig> candidate_config =
+void TestGetFinalConfig(std::unique_ptr<SessionConfig> config) {
+  std::unique_ptr<CandidateSessionConfig> candidate_config =
       CandidateSessionConfig::CreateFrom(*config);
   ASSERT_TRUE(candidate_config);
-  scoped_ptr<SessionConfig> config2 =
+  std::unique_ptr<SessionConfig> config2 =
       SessionConfig::GetFinalConfig(candidate_config.get());
   ASSERT_TRUE(config2);
   EXPECT_EQ(config->protocol(), config2->protocol());
@@ -27,18 +27,18 @@ void TestGetFinalConfig(scoped_ptr<SessionConfig> config) {
 }
 
 TEST(SessionConfig, SelectCommon) {
-  scoped_ptr<CandidateSessionConfig> default_candidate_config =
+  std::unique_ptr<CandidateSessionConfig> default_candidate_config =
       CandidateSessionConfig::CreateDefault();
 
-  scoped_ptr<CandidateSessionConfig> candidate_config_with_webrtc =
+  std::unique_ptr<CandidateSessionConfig> candidate_config_with_webrtc =
       CandidateSessionConfig::CreateEmpty();
   candidate_config_with_webrtc->set_webrtc_supported(true);
 
-  scoped_ptr<CandidateSessionConfig> hybrid_candidate_config =
+  std::unique_ptr<CandidateSessionConfig> hybrid_candidate_config =
       CandidateSessionConfig::CreateDefault();
   hybrid_candidate_config->set_webrtc_supported(true);
 
-  scoped_ptr<SessionConfig> selected;
+  std::unique_ptr<SessionConfig> selected;
 
   // ICE is selected by default.
   selected = SessionConfig::SelectCommon(default_candidate_config.get(),
@@ -82,19 +82,20 @@ TEST(SessionConfig, GetFinalConfig) {
 }
 
 TEST(SessionConfig, IsSupported) {
-  scoped_ptr<CandidateSessionConfig> default_candidate_config =
+  std::unique_ptr<CandidateSessionConfig> default_candidate_config =
       CandidateSessionConfig::CreateDefault();
 
-  scoped_ptr<CandidateSessionConfig> candidate_config_with_webrtc =
+  std::unique_ptr<CandidateSessionConfig> candidate_config_with_webrtc =
       CandidateSessionConfig::CreateEmpty();
   candidate_config_with_webrtc->set_webrtc_supported(true);
 
-  scoped_ptr<CandidateSessionConfig> hybrid_candidate_config =
+  std::unique_ptr<CandidateSessionConfig> hybrid_candidate_config =
       CandidateSessionConfig::CreateDefault();
   hybrid_candidate_config->set_webrtc_supported(true);
 
-  scoped_ptr<SessionConfig> ice_config = SessionConfig::ForTest();
-  scoped_ptr<SessionConfig> webrtc_config = SessionConfig::ForTestWithWebrtc();
+  std::unique_ptr<SessionConfig> ice_config = SessionConfig::ForTest();
+  std::unique_ptr<SessionConfig> webrtc_config =
+      SessionConfig::ForTestWithWebrtc();
 
   EXPECT_TRUE(default_candidate_config->IsSupported(*ice_config));
   EXPECT_FALSE(default_candidate_config->IsSupported(*webrtc_config));

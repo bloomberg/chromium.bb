@@ -5,10 +5,10 @@
 #ifndef REMOTING_PROTOCOL_MESSAGE_CHANNEL_FACTORY_H_
 #define REMOTING_PROTOCOL_MESSAGE_CHANNEL_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 namespace protocol {
@@ -17,7 +17,8 @@ class MessagePipe;
 
 class MessageChannelFactory {
  public:
-  typedef base::Callback<void(scoped_ptr<MessagePipe>)> ChannelCreatedCallback;
+  typedef base::Callback<void(std::unique_ptr<MessagePipe>)>
+      ChannelCreatedCallback;
 
   virtual ~MessageChannelFactory() {}
 

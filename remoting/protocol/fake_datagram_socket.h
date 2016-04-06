@@ -6,11 +6,11 @@
 #define REMOTING_PROTOCOL_FAKE_DATAGRAM_SOCKET_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/datagram_channel_factory.h"
@@ -123,7 +123,7 @@ class FakeDatagramChannelFactory : public DatagramChannelFactory {
  private:
   typedef std::map<std::string, base::WeakPtr<FakeDatagramSocket> > ChannelsMap;
 
-  void NotifyChannelCreated(scoped_ptr<FakeDatagramSocket> owned_socket,
+  void NotifyChannelCreated(std::unique_ptr<FakeDatagramSocket> owned_socket,
                             const std::string& name,
                             const ChannelCreatedCallback& callback);
 

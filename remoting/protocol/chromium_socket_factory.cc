@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "jingle/glue/utils.h"
 #include "net/base/io_buffer.h"
@@ -81,7 +82,7 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
   void OnReadCompleted(int result);
   void HandleReadResult(int result);
 
-  scoped_ptr<net::UDPServerSocket> socket_;
+  std::unique_ptr<net::UDPServerSocket> socket_;
 
   State state_;
   int error_;
@@ -375,7 +376,7 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
     uint16_t min_port,
     uint16_t max_port) {
-  scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket());
+  std::unique_ptr<UdpPacketSocket> result(new UdpPacketSocket());
   if (!result->Init(local_address, min_port, max_port))
     return nullptr;
   return result.release();

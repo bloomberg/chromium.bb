@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ppapi/cpp/url_response_info.h"
 
 // Read buffer we allocate per read when reading response from
@@ -107,10 +108,10 @@ PepperUrlRequestFactory::PepperUrlRequestFactory(pp::InstanceHandle pp_instance)
     : pp_instance_(pp_instance) {}
 PepperUrlRequestFactory::~PepperUrlRequestFactory() {}
 
-scoped_ptr<UrlRequest> PepperUrlRequestFactory::CreateUrlRequest(
+std::unique_ptr<UrlRequest> PepperUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,
     const std::string& url) {
-  return make_scoped_ptr(new PepperUrlRequest(pp_instance_, type, url));
+  return base::WrapUnique(new PepperUrlRequest(pp_instance_, type, url));
 }
 
 }  // namespace remoting

@@ -66,7 +66,7 @@ void MouseCursorMonitorAura::Capture() {
 }
 
 void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
-  scoped_ptr<SkBitmap> cursor_bitmap(new SkBitmap());
+  std::unique_ptr<SkBitmap> cursor_bitmap(new SkBitmap());
   gfx::Point cursor_hotspot;
 
   if (cursor.native_type() == ui::kCursorNone) {
@@ -96,9 +96,9 @@ void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
     cursor_hotspot.SetPoint(0, 0);
   }
 
-  scoped_ptr<webrtc::DesktopFrame> image(
+  std::unique_ptr<webrtc::DesktopFrame> image(
       SkiaBitmapDesktopFrame::Create(std::move(cursor_bitmap)));
-  scoped_ptr<webrtc::MouseCursor> cursor_shape(new webrtc::MouseCursor(
+  std::unique_ptr<webrtc::MouseCursor> cursor_shape(new webrtc::MouseCursor(
       image.release(),
       webrtc::DesktopVector(cursor_hotspot.x(), cursor_hotspot.y())));
 

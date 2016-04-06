@@ -56,7 +56,7 @@ bool ChromotingTestDriverEnvironment::Initialize(
 
   // If a unit test has set |test_refresh_token_store_| then we should use it
   // below.  Note that we do not want to destroy the test object.
-  scoped_ptr<RefreshTokenStore> temporary_refresh_token_store;
+  std::unique_ptr<RefreshTokenStore> temporary_refresh_token_store;
   RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
   if (!refresh_token_store) {
     temporary_refresh_token_store =
@@ -199,7 +199,7 @@ bool ChromotingTestDriverEnvironment::RetrieveAccessToken(
   // If a unit test has set |test_access_token_fetcher_| then we should use it
   // below.  Note that we do not want to destroy the test object at the end of
   // the function which is why we have the dance below.
-  scoped_ptr<AccessTokenFetcher> temporary_access_token_fetcher;
+  std::unique_ptr<AccessTokenFetcher> temporary_access_token_fetcher;
   AccessTokenFetcher* access_token_fetcher = test_access_token_fetcher_;
   if (!access_token_fetcher) {
     temporary_access_token_fetcher.reset(new AccessTokenFetcher());
@@ -227,7 +227,7 @@ bool ChromotingTestDriverEnvironment::RetrieveAccessToken(
     if (!refresh_token_.empty()) {
       // If a unit test has set |test_refresh_token_store_| then we should use
       // it below.  Note that we do not want to destroy the test object.
-      scoped_ptr<RefreshTokenStore> temporary_refresh_token_store;
+      std::unique_ptr<RefreshTokenStore> temporary_refresh_token_store;
       RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
       if (!refresh_token_store) {
         temporary_refresh_token_store =
@@ -283,7 +283,7 @@ bool ChromotingTestDriverEnvironment::RetrieveHostList() {
   // If a unit test has set |test_host_list_fetcher_| then we should use it
   // below.  Note that we do not want to destroy the test object at the end of
   // the function which is why we have the dance below.
-  scoped_ptr<HostListFetcher> temporary_host_list_fetcher;
+  std::unique_ptr<HostListFetcher> temporary_host_list_fetcher;
   HostListFetcher* host_list_fetcher = test_host_list_fetcher_;
   if (!host_list_fetcher) {
     temporary_host_list_fetcher.reset(new HostListFetcher());

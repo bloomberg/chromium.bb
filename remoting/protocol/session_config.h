@@ -6,9 +6,9 @@
 #define REMOTING_PROTOCOL_SESSION_CONFIG_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 namespace protocol {
@@ -75,7 +75,7 @@ class SessionConfig {
   // nullptr is returned if such configuration doesn't exist. When selecting
   // channel configuration priority is given to the configs listed first
   // in |client_config|.
-  static scoped_ptr<SessionConfig> SelectCommon(
+  static std::unique_ptr<SessionConfig> SelectCommon(
       const CandidateSessionConfig* client_config,
       const CandidateSessionConfig* host_config);
 
@@ -84,13 +84,13 @@ class SessionConfig {
   // (e.g. there is more than one configuration for one of the channel)
   // or undefined (e.g. no configurations for a channel) then nullptr is
   // returned.
-  static scoped_ptr<SessionConfig> GetFinalConfig(
+  static std::unique_ptr<SessionConfig> GetFinalConfig(
       const CandidateSessionConfig* candidate_config);
 
   // Returns a suitable session configuration for use in tests.
-  static scoped_ptr<SessionConfig> ForTest();
-  static scoped_ptr<SessionConfig> ForTestWithVerbatimVideo();
-  static scoped_ptr<SessionConfig> ForTestWithWebrtc();
+  static std::unique_ptr<SessionConfig> ForTest();
+  static std::unique_ptr<SessionConfig> ForTestWithVerbatimVideo();
+  static std::unique_ptr<SessionConfig> ForTestWithWebrtc();
 
   Protocol protocol() const { return protocol_; }
 
@@ -120,10 +120,10 @@ class SessionConfig {
 // because it allows one to specify multiple configurations for each channel.
 class CandidateSessionConfig {
  public:
-  static scoped_ptr<CandidateSessionConfig> CreateEmpty();
-  static scoped_ptr<CandidateSessionConfig> CreateFrom(
+  static std::unique_ptr<CandidateSessionConfig> CreateEmpty();
+  static std::unique_ptr<CandidateSessionConfig> CreateFrom(
       const SessionConfig& config);
-  static scoped_ptr<CandidateSessionConfig> CreateDefault();
+  static std::unique_ptr<CandidateSessionConfig> CreateDefault();
 
   ~CandidateSessionConfig();
 
@@ -182,7 +182,7 @@ class CandidateSessionConfig {
   // Returns true if |config| is supported.
   bool IsSupported(const SessionConfig& config) const;
 
-  scoped_ptr<CandidateSessionConfig> Clone() const;
+  std::unique_ptr<CandidateSessionConfig> Clone() const;
 
   // Helpers for enabling/disabling specific features.
   void DisableAudioChannel();

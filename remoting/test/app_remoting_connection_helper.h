@@ -5,11 +5,11 @@
 #ifndef REMOTING_TEST_APP_REMOTING_CONNECTION_HELPER_H_
 #define REMOTING_TEST_APP_REMOTING_CONNECTION_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/test/remote_connection_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,7 @@ class AppRemotingConnectionHelper
   ~AppRemotingConnectionHelper() override;
 
   // Initialize internal structures.
-  void Initialize(scoped_ptr<TestChromotingClient> test_chromoting_client);
+  void Initialize(std::unique_ptr<TestChromotingClient> test_chromoting_client);
 
   // Starts a connection with the remote host.
   // NOTE: Initialize() must be called before calling this method.
@@ -75,17 +75,17 @@ class AppRemotingConnectionHelper
   bool connection_is_ready_for_tests_;
 
   // Used to run the thread's message loop.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Used for setting timeouts and delays.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   // Used to ensure RemoteConnectionObserver methods are called on the same
   // thread.
   base::ThreadChecker thread_checker_;
 
   // Creates and manages the connection to the remote host.
-  scoped_ptr<TestChromotingClient> client_;
+  std::unique_ptr<TestChromotingClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRemotingConnectionHelper);
 };

@@ -285,8 +285,8 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   return true;
 }
 
-scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
-  scoped_ptr<XmlElement> root(
+std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
+  std::unique_ptr<XmlElement> root(
       new XmlElement(QName("jabber:client", "iq"), true));
 
   DCHECK(!to.empty());
@@ -367,9 +367,9 @@ JingleMessageReply::JingleMessageReply(ErrorType error,
 
 JingleMessageReply::~JingleMessageReply() { }
 
-scoped_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
+std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
     const buzz::XmlElement* request_stanza) const {
-  scoped_ptr<XmlElement> iq(
+  std::unique_ptr<XmlElement> iq(
       new XmlElement(QName(kJabberNamespace, "iq"), true));
   iq->SetAttr(QName(kEmptyNamespace, "to"),
               request_stanza->Attr(QName(kEmptyNamespace, "from")));
@@ -482,8 +482,8 @@ bool IceTransportInfo::ParseXml(
   return true;
 }
 
-scoped_ptr<buzz::XmlElement> IceTransportInfo::ToXml() const {
-  scoped_ptr<buzz::XmlElement> result(
+std::unique_ptr<buzz::XmlElement> IceTransportInfo::ToXml() const {
+  std::unique_ptr<buzz::XmlElement> result(
       new XmlElement(QName(kIceTransportNamespace, "transport"), true));
   for (const IceCredentials& credentials : ice_credentials) {
     result->AddElement(FormatIceCredentials(credentials));

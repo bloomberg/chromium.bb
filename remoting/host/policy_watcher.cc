@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -48,10 +49,10 @@ namespace {
 
 // Copies all policy values from one dictionary to another, using values from
 // |default_values| if they are not set in |from|.
-scoped_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
+std::unique_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     const base::DictionaryValue& from,
     const base::DictionaryValue& default_values) {
-  scoped_ptr<base::DictionaryValue> to(default_values.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> to(default_values.DeepCopy());
   for (base::DictionaryValue::Iterator i(default_values); !i.IsAtEnd();
        i.Advance()) {
     const base::Value* value = nullptr;
@@ -72,22 +73,23 @@ policy::PolicyNamespace GetPolicyNamespace() {
   return policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
 }
 
-scoped_ptr<policy::SchemaRegistry> CreateSchemaRegistry() {
+std::unique_ptr<policy::SchemaRegistry> CreateSchemaRegistry() {
   // TODO(lukasza): Schema below should ideally only cover Chromoting-specific
   // policies (expecting perf and maintanability improvement, but no functional
   // impact).
   policy::Schema schema = policy::Schema::Wrap(policy::GetChromeSchemaData());
 
-  scoped_ptr<policy::SchemaRegistry> schema_registry(
+  std::unique_ptr<policy::SchemaRegistry> schema_registry(
       new policy::SchemaRegistry());
   schema_registry->RegisterComponent(GetPolicyNamespace(), schema);
   return schema_registry;
 }
 
-scoped_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
+std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
     const policy::PolicyMap& current) {
   const char kPolicyNameSubstring[] = "RemoteAccessHost";
-  scoped_ptr<base::DictionaryValue> policy_dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> policy_dict(
+      new base::DictionaryValue());
   for (auto it = current.begin(); it != current.end(); ++it) {
     const std::string& key = it->first;
     const base::Value* value = it->second.value;
@@ -163,9 +165,9 @@ void PolicyWatcher::SignalPolicyError() {
 
 PolicyWatcher::PolicyWatcher(
     policy::PolicyService* policy_service,
-    scoped_ptr<policy::PolicyService> owned_policy_service,
-    scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
-    scoped_ptr<policy::SchemaRegistry> owned_schema_registry)
+    std::unique_ptr<policy::PolicyService> owned_policy_service,
+    std::unique_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
+    std::unique_ptr<policy::SchemaRegistry> owned_schema_registry)
     : old_policies_(new base::DictionaryValue()),
       default_values_(new base::DictionaryValue()),
       policy_service_(policy_service),
@@ -246,11 +248,11 @@ void CopyDictionaryValue(const base::DictionaryValue& from,
 }
 }  // namespace
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 PolicyWatcher::StoreNewAndReturnChangedPolicies(
-    scoped_ptr<base::DictionaryValue> new_policies) {
+    std::unique_ptr<base::DictionaryValue> new_policies) {
   // Find the changed policies.
-  scoped_ptr<base::DictionaryValue> changed_policies(
+  std::unique_ptr<base::DictionaryValue> changed_policies(
       new base::DictionaryValue());
   base::DictionaryValue::Iterator iter(*new_policies);
   while (!iter.IsAtEnd()) {
@@ -284,7 +286,7 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
 void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                     const policy::PolicyMap& previous,
                                     const policy::PolicyMap& current) {
-  scoped_ptr<base::DictionaryValue> new_policies =
+  std::unique_ptr<base::DictionaryValue> new_policies =
       CopyChromotingPoliciesIntoDictionary(current);
 
   // Check for mistyped values and get rid of unknown policies.
@@ -294,11 +296,11 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   }
 
   // Use default values for any missing policies.
-  scoped_ptr<base::DictionaryValue> filled_policies =
+  std::unique_ptr<base::DictionaryValue> filled_policies =
       CopyValuesAndAddDefaults(*new_policies, *default_values_);
 
   // Limit reporting to only the policies that were changed.
-  scoped_ptr<base::DictionaryValue> changed_policies =
+  std::unique_ptr<base::DictionaryValue> changed_policies =
       StoreNewAndReturnChangedPolicies(std::move(filled_policies));
   if (changed_policies->empty()) {
     return;
@@ -320,40 +322,41 @@ void PolicyWatcher::OnPolicyServiceInitialized(policy::PolicyDomain domain) {
   OnPolicyUpdated(ns, current, current);
 }
 
-scoped_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
-    scoped_ptr<policy::AsyncPolicyLoader> async_policy_loader) {
-  scoped_ptr<policy::SchemaRegistry> schema_registry = CreateSchemaRegistry();
-  scoped_ptr<policy::AsyncPolicyProvider> policy_provider(
+std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
+    std::unique_ptr<policy::AsyncPolicyLoader> async_policy_loader) {
+  std::unique_ptr<policy::SchemaRegistry> schema_registry =
+      CreateSchemaRegistry();
+  std::unique_ptr<policy::AsyncPolicyProvider> policy_provider(
       new policy::AsyncPolicyProvider(schema_registry.get(),
                                       std::move(async_policy_loader)));
   policy_provider->Init(schema_registry.get());
 
   policy::PolicyServiceImpl::Providers providers;
   providers.push_back(policy_provider.get());
-  scoped_ptr<policy::PolicyService> policy_service(
+  std::unique_ptr<policy::PolicyService> policy_service(
       new policy::PolicyServiceImpl(providers));
 
   policy::PolicyService* borrowed_policy_service = policy_service.get();
-  return make_scoped_ptr(new PolicyWatcher(
+  return base::WrapUnique(new PolicyWatcher(
       borrowed_policy_service, std::move(policy_service),
       std::move(policy_provider), std::move(schema_registry)));
 }
 
-scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
+std::unique_ptr<PolicyWatcher> PolicyWatcher::Create(
     policy::PolicyService* policy_service,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner) {
 #if defined(OS_CHROMEOS)
   // On Chrome OS the PolicyService is owned by the browser.
   DCHECK(policy_service);
-  return make_scoped_ptr(new PolicyWatcher(policy_service, nullptr, nullptr,
-                                           CreateSchemaRegistry()));
+  return base::WrapUnique(new PolicyWatcher(policy_service, nullptr, nullptr,
+                                            CreateSchemaRegistry()));
 #else  // !defined(OS_CHROMEOS)
   DCHECK(!policy_service);
 
   // Create platform-specific PolicyLoader. Always read the Chrome policies
   // (even on Chromium) so that policy enforcement can't be bypassed by running
   // Chromium.
-  scoped_ptr<policy::AsyncPolicyLoader> policy_loader;
+  std::unique_ptr<policy::AsyncPolicyLoader> policy_loader;
 #if defined(OS_WIN)
   policy_loader.reset(new policy::PolicyLoaderWin(
       file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome",

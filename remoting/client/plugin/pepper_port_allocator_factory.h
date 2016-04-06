@@ -5,9 +5,10 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_PORT_ALLOCATOR_FACTORY_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_PORT_ALLOCATOR_FACTORY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "remoting/protocol/port_allocator_factory.h"
 
@@ -19,7 +20,7 @@ class PepperPortAllocatorFactory : public protocol::PortAllocatorFactory {
   ~PepperPortAllocatorFactory() override;
 
    // PortAllocatorFactory interface.
-  scoped_ptr<cricket::PortAllocator> CreatePortAllocator(
+  std::unique_ptr<cricket::PortAllocator> CreatePortAllocator(
       scoped_refptr<protocol::TransportContext> transport_context) override;
 
  private:

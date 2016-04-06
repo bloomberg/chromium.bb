@@ -83,11 +83,10 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   // |iq_request| is freed by RegisterSupportHostRequest.
   int64_t start_time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
 
-  scoped_ptr<RegisterSupportHostRequest> request(
-      new RegisterSupportHostRequest(&signal_strategy_, key_pair_,
-                                     kTestBotJid,
-                                     base::Bind(&MockCallback::OnResponse,
-                                                base::Unretained(&callback_))));
+  std::unique_ptr<RegisterSupportHostRequest> request(
+      new RegisterSupportHostRequest(
+          &signal_strategy_, key_pair_, kTestBotJid,
+          base::Bind(&MockCallback::OnResponse, base::Unretained(&callback_))));
 
   XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -99,7 +98,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   base::RunLoop().RunUntilIdle();
 
   // Verify format of the query.
-  scoped_ptr<XmlElement> stanza(sent_iq);
+  std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
 
   EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "to")),
@@ -134,7 +133,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
                                     base::TimeDelta::FromSeconds(300),
                                     ""));
 
-  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+  std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "from"), kTestBotJid);
   response->AddAttr(QName(std::string(), "type"), "result");
   response->AddAttr(QName(std::string(), "id"), kStanzaId);

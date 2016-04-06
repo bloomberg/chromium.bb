@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -42,24 +43,24 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() {}
 
-scoped_ptr<AudioCapturer> IpcDesktopEnvironment::CreateAudioCapturer() {
+std::unique_ptr<AudioCapturer> IpcDesktopEnvironment::CreateAudioCapturer() {
   return desktop_session_proxy_->CreateAudioCapturer();
 }
 
-scoped_ptr<InputInjector> IpcDesktopEnvironment::CreateInputInjector() {
+std::unique_ptr<InputInjector> IpcDesktopEnvironment::CreateInputInjector() {
   return desktop_session_proxy_->CreateInputInjector();
 }
 
-scoped_ptr<ScreenControls> IpcDesktopEnvironment::CreateScreenControls() {
+std::unique_ptr<ScreenControls> IpcDesktopEnvironment::CreateScreenControls() {
   return desktop_session_proxy_->CreateScreenControls();
 }
 
-scoped_ptr<webrtc::MouseCursorMonitor>
+std::unique_ptr<webrtc::MouseCursorMonitor>
 IpcDesktopEnvironment::CreateMouseCursorMonitor() {
   return desktop_session_proxy_->CreateMouseCursorMonitor();
 }
 
-scoped_ptr<webrtc::DesktopCapturer>
+std::unique_ptr<webrtc::DesktopCapturer>
 IpcDesktopEnvironment::CreateVideoCapturer() {
   return desktop_session_proxy_->CreateVideoCapturer();
 }
@@ -85,11 +86,11 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
 
 IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {}
 
-scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
+std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return make_scoped_ptr(new IpcDesktopEnvironment(
+  return base::WrapUnique(new IpcDesktopEnvironment(
       audio_task_runner_, caller_task_runner_, io_task_runner_,
       client_session_control, connector_factory_.GetWeakPtr(), curtain_enabled_,
       supports_touch_events_));

@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_IPC_AUDIO_CAPTURER_H_
 #define REMOTING_HOST_IPC_AUDIO_CAPTURER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/audio_capturer.h"
 
@@ -26,7 +27,7 @@ class IpcAudioCapturer : public AudioCapturer {
   bool Start(const PacketCapturedCallback& callback) override;
 
   // Called by DesktopSessionProxy when an audio packet is received.
-  void OnAudioPacket(scoped_ptr<AudioPacket> packet);
+  void OnAudioPacket(std::unique_ptr<AudioPacket> packet);
 
  private:
   // Invoked when an audio packet was received.

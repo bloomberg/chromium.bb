@@ -40,7 +40,7 @@ void IpcInputInjector::InjectTouchEvent(const protocol::TouchEvent& event) {
 }
 
 void IpcInputInjector::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   desktop_session_proxy_->StartInputInjector(std::move(client_clipboard));
 }
 

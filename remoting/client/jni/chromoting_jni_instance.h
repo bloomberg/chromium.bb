@@ -5,11 +5,11 @@
 #ifndef REMOTING_CLIENT_CHROMOTING_JNI_INSTANCE_H_
 #define REMOTING_CLIENT_CHROMOTING_JNI_INSTANCE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "remoting/client/chromoting_client.h"
@@ -156,14 +156,14 @@ class ChromotingJniInstance
   std::string flags_;
 
   // This group of variables is to be used on the network thread.
-  scoped_ptr<ClientContext> client_context_;
-  scoped_ptr<protocol::PerformanceTracker> perf_tracker_;
-  scoped_ptr<JniFrameConsumer> view_;
-  scoped_ptr<protocol::VideoRenderer> video_renderer_;
-  scoped_ptr<ChromotingClient> client_;
+  std::unique_ptr<ClientContext> client_context_;
+  std::unique_ptr<protocol::PerformanceTracker> perf_tracker_;
+  std::unique_ptr<JniFrameConsumer> view_;
+  std::unique_ptr<protocol::VideoRenderer> video_renderer_;
+  std::unique_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
-  scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
-  scoped_ptr<ClientStatusLogger> client_status_logger_;
+  std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
+  std::unique_ptr<ClientStatusLogger> client_status_logger_;
   protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
   // Pass this the user's PIN once we have it. To be assigned and accessed on

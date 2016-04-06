@@ -84,7 +84,7 @@ bool GnubbyExtensionSession::OnExtensionMessage(
     return false;
   }
 
-  scoped_ptr<base::Value> value = base::JSONReader::Read(message.data());
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(message.data());
   base::DictionaryValue* client_message;
   if (!value || !value->GetAsDictionary(&client_message)) {
     LOG(WARNING) << "Failed to retrieve data from gnubby-auth message.";
@@ -179,7 +179,7 @@ void GnubbyExtensionSession::SendMessageToClient(
   request.SetString(kMessageType, kDataMessage);
   request.SetInteger(kConnectionId, connection_id);
 
-  scoped_ptr<base::ListValue> bytes(new base::ListValue());
+  std::unique_ptr<base::ListValue> bytes(new base::ListValue());
   for (std::string::const_iterator i = data.begin(); i != data.end(); ++i) {
     bytes->AppendInteger(static_cast<unsigned char>(*i));
   }
@@ -196,7 +196,7 @@ void GnubbyExtensionSession::SendMessageToClient(
 }
 
 void GnubbyExtensionSession::SetGnubbyAuthHandlerForTesting(
-    scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler) {
+    std::unique_ptr<GnubbyAuthHandler> gnubby_auth_handler) {
   DCHECK(gnubby_auth_handler);
 
   gnubby_auth_handler_ = std::move(gnubby_auth_handler);

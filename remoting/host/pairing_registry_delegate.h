@@ -5,8 +5,9 @@
 #ifndef REMOTING_HOST_PAIRING_REGISTRY_DELEGATE_H_
 #define REMOTING_HOST_PAIRING_REGISTRY_DELEGATE_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/pairing_registry.h"
 
 namespace base {
@@ -16,7 +17,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 // Returns a platform-specific pairing registry delegate that will save to
 // permanent storage. Returns nullptr on platforms that don't support pairing.
-scoped_ptr<protocol::PairingRegistry::Delegate>
+std::unique_ptr<protocol::PairingRegistry::Delegate>
 CreatePairingRegistryDelegate();
 
 // Convenience function which returns a new PairingRegistry, using the delegate

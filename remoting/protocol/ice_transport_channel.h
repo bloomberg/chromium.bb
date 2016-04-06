@@ -59,7 +59,8 @@ class IceTransportChannel : public sigslot::has_slots<> {
     virtual void OnChannelDeleted(IceTransportChannel* transport) = 0;
   };
 
-  typedef base::Callback<void(scoped_ptr<P2PDatagramSocket>)> ConnectedCallback;
+  typedef base::Callback<void(std::unique_ptr<P2PDatagramSocket>)>
+      ConnectedCallback;
 
   explicit IceTransportChannel(
       scoped_refptr<TransportContext> transport_context);
@@ -86,7 +87,7 @@ class IceTransportChannel : public sigslot::has_slots<> {
 
  private:
   void OnPortAllocatorCreated(
-      scoped_ptr<cricket::PortAllocator> port_allocator);
+      std::unique_ptr<cricket::PortAllocator> port_allocator);
 
   void NotifyConnected();
 
@@ -113,12 +114,12 @@ class IceTransportChannel : public sigslot::has_slots<> {
   ConnectedCallback callback_;
   std::string ice_username_fragment_;
 
-  scoped_ptr<cricket::PortAllocator> port_allocator_;
+  std::unique_ptr<cricket::PortAllocator> port_allocator_;
 
   std::string remote_ice_username_fragment_;
   std::string remote_ice_password_;
   std::list<cricket::Candidate> pending_candidates_;
-  scoped_ptr<cricket::P2PTransportChannel> channel_;
+  std::unique_ptr<cricket::P2PTransportChannel> channel_;
   int connect_attempts_left_;
   base::RepeatingTimer reconnect_timer_;
 

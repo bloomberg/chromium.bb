@@ -50,7 +50,7 @@ class ChromotingTestDriverEnvironmentTest : public ::testing::Test {
   FakeRefreshTokenStore fake_token_store_;
   FakeHostListFetcher fake_host_list_fetcher_;
 
-  scoped_ptr<ChromotingTestDriverEnvironment> environment_object_;
+  std::unique_ptr<ChromotingTestDriverEnvironment> environment_object_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromotingTestDriverEnvironmentTest);

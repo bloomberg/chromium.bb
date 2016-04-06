@@ -22,8 +22,8 @@ AudioReader::AudioReader(AudioStub* audio_stub)
 
 AudioReader::~AudioReader() {}
 
-void AudioReader::OnIncomingMessage(scoped_ptr<CompoundBuffer> message) {
-  scoped_ptr<AudioPacket> audio_packet =
+void AudioReader::OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) {
+  std::unique_ptr<AudioPacket> audio_packet =
       ParseMessage<AudioPacket>(message.get());
   if (audio_packet) {
     audio_stub_->ProcessAudioPacket(std::move(audio_packet),

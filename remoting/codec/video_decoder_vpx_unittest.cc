@@ -16,8 +16,8 @@ namespace {
 
 class VideoDecoderVpxTest : public testing::Test {
  protected:
-  scoped_ptr<VideoEncoderVpx> encoder_;
-  scoped_ptr<VideoDecoderVpx> decoder_;
+  std::unique_ptr<VideoEncoderVpx> encoder_;
+  std::unique_ptr<VideoDecoderVpx> decoder_;
 
   VideoDecoderVpxTest() : encoder_(VideoEncoderVpx::CreateForVP8()),
                           decoder_(VideoDecoderVpx::CreateForVP8()) {

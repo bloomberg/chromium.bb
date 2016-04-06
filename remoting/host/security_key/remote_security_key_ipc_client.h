@@ -5,10 +5,10 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_CLIENT_H_
 #define REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc_listener.h"
@@ -98,7 +98,7 @@ class RemoteSecurityKeyIpcClient : public IPC::Listener {
   ResponseCallback response_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  scoped_ptr<IPC::Channel> ipc_channel_;
+  std::unique_ptr<IPC::Channel> ipc_channel_;
 
   base::ThreadChecker thread_checker_;
 

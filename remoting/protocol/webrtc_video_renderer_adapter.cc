@@ -4,12 +4,12 @@
 
 #include "remoting/protocol/webrtc_video_renderer_adapter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/protocol/frame_consumer.h"
@@ -54,7 +54,7 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
   // cannot call FrameConsumer::AllocateFrame() here and instead
   // BasicDesktopFrame is created directly. This will not work correctly with
   // all FrameConsumer implementations. Fix this somehow.
-  scoped_ptr<webrtc::DesktopFrame> rgb_frame(new webrtc::BasicDesktopFrame(
+  std::unique_ptr<webrtc::DesktopFrame> rgb_frame(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(frame.GetWidth(), frame.GetHeight())));
 
   frame.ConvertToRgbBuffer(
@@ -70,7 +70,7 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
 }
 
 void WebrtcVideoRendererAdapter::DrawFrame(
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   frame_consumer_->DrawFrame(std::move(frame), base::Closure());
 }

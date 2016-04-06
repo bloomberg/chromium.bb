@@ -5,6 +5,7 @@
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/negotiating_host_authenticator.h"
@@ -25,7 +26,8 @@ It2MeHostAuthenticatorFactory::It2MeHostAuthenticatorFactory(
 
 It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {}
 
-scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
+std::unique_ptr<Authenticator>
+It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid) {
   // Check the client domain policy.
@@ -40,7 +42,7 @@ scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
                         base::CompareCase::INSENSITIVE_ASCII)) {
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
                  << ": Domain mismatch.";
-      return make_scoped_ptr(
+      return base::WrapUnique(
           new RejectingAuthenticator(Authenticator::INVALID_CREDENTIALS));
     }
   }

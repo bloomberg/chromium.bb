@@ -81,10 +81,10 @@ bool RegisterSupportHostRequest::OnSignalStrategyIncomingStanza(
   return false;
 }
 
-scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateRegistrationRequest(
-    const std::string& jid) {
-  scoped_ptr<XmlElement> query(new XmlElement(
-      QName(kChromotingXmlNamespace, kRegisterQueryTag)));
+std::unique_ptr<XmlElement>
+RegisterSupportHostRequest::CreateRegistrationRequest(const std::string& jid) {
+  std::unique_ptr<XmlElement> query(
+      new XmlElement(QName(kChromotingXmlNamespace, kRegisterQueryTag)));
   XmlElement* public_key = new XmlElement(
       QName(kChromotingXmlNamespace, kPublicKeyTag));
   public_key->AddText(key_pair_->GetPublicKey());
@@ -93,10 +93,10 @@ scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateRegistrationRequest(
   return query;
 }
 
-scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
+std::unique_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
     const std::string& jid) {
-  scoped_ptr<XmlElement> signature_tag(new XmlElement(
-      QName(kChromotingXmlNamespace, kSignatureTag)));
+  std::unique_ptr<XmlElement> signature_tag(
+      new XmlElement(QName(kChromotingXmlNamespace, kSignatureTag)));
 
   int64_t time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
   std::string time_str(base::Int64ToString(time));

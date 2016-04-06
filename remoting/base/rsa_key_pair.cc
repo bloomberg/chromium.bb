@@ -21,8 +21,8 @@
 
 namespace remoting {
 
-RsaKeyPair::RsaKeyPair(scoped_ptr<crypto::RSAPrivateKey> key)
-    : key_(std::move(key)){
+RsaKeyPair::RsaKeyPair(std::unique_ptr<crypto::RSAPrivateKey> key)
+    : key_(std::move(key)) {
   DCHECK(key_);
 }
 
@@ -30,7 +30,8 @@ RsaKeyPair::~RsaKeyPair() {}
 
 // static
 scoped_refptr<RsaKeyPair> RsaKeyPair::Generate() {
-  scoped_ptr<crypto::RSAPrivateKey> key(crypto::RSAPrivateKey::Create(2048));
+  std::unique_ptr<crypto::RSAPrivateKey> key(
+      crypto::RSAPrivateKey::Create(2048));
   if (!key) {
     LOG(ERROR) << "Cannot generate private key.";
     return NULL;
@@ -48,7 +49,7 @@ scoped_refptr<RsaKeyPair> RsaKeyPair::FromString(
   }
 
   std::vector<uint8_t> key_buf(key_str.begin(), key_str.end());
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_buf));
   if (!key) {
     LOG(ERROR) << "Invalid private key.";
@@ -80,7 +81,7 @@ std::string RsaKeyPair::GetPublicKey() const {
 }
 
 std::string RsaKeyPair::SignMessage(const std::string& message) const {
-  scoped_ptr<crypto::SignatureCreator> signature_creator(
+  std::unique_ptr<crypto::SignatureCreator> signature_creator(
       crypto::SignatureCreator::Create(key_.get(),
                                        crypto::SignatureCreator::SHA1));
   signature_creator->Update(reinterpret_cast<const uint8_t*>(message.c_str()),

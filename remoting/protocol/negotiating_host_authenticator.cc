@@ -36,7 +36,7 @@ NegotiatingHostAuthenticator::NegotiatingHostAuthenticator(
       local_key_pair_(key_pair) {}
 
 // static
-scoped_ptr<NegotiatingHostAuthenticator>
+std::unique_ptr<NegotiatingHostAuthenticator>
 NegotiatingHostAuthenticator::CreateWithSharedSecret(
     const std::string& local_id,
     const std::string& remote_id,
@@ -44,7 +44,7 @@ NegotiatingHostAuthenticator::CreateWithSharedSecret(
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& shared_secret_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
-  scoped_ptr<NegotiatingHostAuthenticator> result(
+  std::unique_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
                                        key_pair));
   result->shared_secret_hash_ = shared_secret_hash;
@@ -59,14 +59,14 @@ NegotiatingHostAuthenticator::CreateWithSharedSecret(
 }
 
 // static
-scoped_ptr<NegotiatingHostAuthenticator>
+std::unique_ptr<NegotiatingHostAuthenticator>
 NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
     const std::string& local_id,
     const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     scoped_refptr<TokenValidatorFactory> token_validator_factory) {
-  scoped_ptr<NegotiatingHostAuthenticator> result(
+  std::unique_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
                                        key_pair));
   result->token_validator_factory_ = token_validator_factory;
@@ -166,7 +166,8 @@ void NegotiatingHostAuthenticator::ProcessMessage(
   ProcessMessageInternal(message, resume_callback);
 }
 
-scoped_ptr<buzz::XmlElement> NegotiatingHostAuthenticator::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement>
+NegotiatingHostAuthenticator::GetNextMessage() {
   return GetNextMessageInternal();
 }
 

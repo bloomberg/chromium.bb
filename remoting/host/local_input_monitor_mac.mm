@@ -6,6 +6,7 @@
 
 #import <AppKit/AppKit.h>
 #include <stdint.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -277,12 +279,12 @@ void LocalInputMonitorMac::Core::OnDisconnectShortcut() {
 
 }  // namespace
 
-scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+std::unique_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return make_scoped_ptr(new LocalInputMonitorMac(
+  return base::WrapUnique(new LocalInputMonitorMac(
       caller_task_runner, ui_task_runner, client_session_control));
 }
 

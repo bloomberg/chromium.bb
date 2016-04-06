@@ -31,7 +31,7 @@ class XmppStreamParserTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnStanza(scoped_ptr<buzz::XmlElement> stanza) {
+  void OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
     received_stanzas_.push_back(std::move(stanza));
   }
 
@@ -42,7 +42,7 @@ class XmppStreamParserTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
 
-  scoped_ptr<XmppStreamParser> parser_;
+  std::unique_ptr<XmppStreamParser> parser_;
   ScopedVector<buzz::XmlElement> received_stanzas_;
   bool error_;
 };

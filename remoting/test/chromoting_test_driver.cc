@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
   // Create and register our global test data object. It will handle
   // retrieving an access token or host list for the user. The GTest framework
   // will own the lifetime of this object once it is registered below.
-  scoped_ptr<remoting::test::ChromotingTestDriverEnvironment> shared_data(
+  std::unique_ptr<remoting::test::ChromotingTestDriverEnvironment> shared_data(
       new remoting::test::ChromotingTestDriverEnvironment(options));
 
   if (!shared_data->Initialize(auth_code)) {

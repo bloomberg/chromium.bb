@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_FAKE_SECURITY_KEY_IPC_CLIENT_H_
 #define REMOTING_HOST_SECURITY_KEY_FAKE_SECURITY_KEY_IPC_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/security_key/remote_security_key_ipc_client.h"
 
@@ -85,7 +85,7 @@ class FakeRemoteSecurityKeyIpcClient : public RemoteSecurityKeyIpcClient {
   base::Closure channel_event_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  scoped_ptr<IPC::Channel> client_channel_;
+  std::unique_ptr<IPC::Channel> client_channel_;
 
   // Provides the contents of the last IPC message received.
   std::string last_message_received_;

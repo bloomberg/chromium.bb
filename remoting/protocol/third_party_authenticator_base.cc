@@ -68,10 +68,11 @@ void ThirdPartyAuthenticatorBase::ProcessMessage(
   }
 }
 
-scoped_ptr<buzz::XmlElement> ThirdPartyAuthenticatorBase::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement>
+ThirdPartyAuthenticatorBase::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
 
-  scoped_ptr<buzz::XmlElement> message;
+  std::unique_ptr<buzz::XmlElement> message;
   if (underlying_ && underlying_->state() == MESSAGE_READY) {
     message = underlying_->GetNextMessage();
   } else {
@@ -91,7 +92,7 @@ const std::string& ThirdPartyAuthenticatorBase::GetAuthKey() const {
   return underlying_->GetAuthKey();
 }
 
-scoped_ptr<ChannelAuthenticator>
+std::unique_ptr<ChannelAuthenticator>
 ThirdPartyAuthenticatorBase::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);
 

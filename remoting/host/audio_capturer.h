@@ -5,8 +5,9 @@
 #ifndef REMOTING_HOST_AUDIO_CAPTURER_H_
 #define REMOTING_HOST_AUDIO_CAPTURER_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -14,7 +15,7 @@ class AudioPacket;
 
 class AudioCapturer {
  public:
-  typedef base::Callback<void(scoped_ptr<AudioPacket> packet)>
+  typedef base::Callback<void(std::unique_ptr<AudioPacket> packet)>
       PacketCapturedCallback;
 
   virtual ~AudioCapturer() {}
@@ -22,7 +23,7 @@ class AudioCapturer {
   // Returns true if audio capturing is supported on this platform. If this
   // returns true, then Create() must not return nullptr.
   static bool IsSupported();
-  static scoped_ptr<AudioCapturer> Create();
+  static std::unique_ptr<AudioCapturer> Create();
 
   // Capturers should sample at a 44.1 or 48 kHz sampling rate, in uncompressed
   // PCM stereo format. Capturers may choose the number of frames per packet.

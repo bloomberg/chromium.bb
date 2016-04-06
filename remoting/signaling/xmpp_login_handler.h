@@ -5,10 +5,10 @@
 #ifndef REMOTING_SIGNALING_XMPP_LOGIN_HANDLER_H_
 #define REMOTING_SIGNALING_XMPP_LOGIN_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/signaling/signal_strategy.h"
 
 // Undefine SendMessage and ERROR defined in Windows headers.
@@ -40,7 +40,7 @@ class XmppLoginHandler {
     virtual void SendMessage(const std::string& message) = 0;
     virtual void StartTls() = 0;
     virtual void OnHandshakeDone(const std::string& jid,
-                                 scoped_ptr<XmppStreamParser> parser) = 0;
+                                 std::unique_ptr<XmppStreamParser> parser) = 0;
     virtual void OnLoginHandlerError(SignalStrategy::Error error) = 0;
 
    protected:
@@ -112,7 +112,7 @@ class XmppLoginHandler {
   };
 
   // Callbacks for XmppStreamParser.
-  void OnStanza(scoped_ptr<buzz::XmlElement> stanza);
+  void OnStanza(std::unique_ptr<buzz::XmlElement> stanza);
   void OnParserError();
 
   // Starts authentication handshake in WAIT_STREAM_HEADER_AFTER_TLS state.
@@ -134,7 +134,7 @@ class XmppLoginHandler {
 
   std::string jid_;
 
-  scoped_ptr<XmppStreamParser> stream_parser_;
+  std::unique_ptr<XmppStreamParser> stream_parser_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppLoginHandler);
 };

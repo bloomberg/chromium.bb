@@ -33,7 +33,7 @@ void BackoffTimer::Stop() {
   backoff_entry_.reset();
 };
 
-void BackoffTimer::SetTimerForTest(scoped_ptr<base::Timer> timer) {
+void BackoffTimer::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
   timer_ = std::move(timer);
 }
 

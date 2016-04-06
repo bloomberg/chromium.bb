@@ -51,7 +51,7 @@ void ClientEventDispatcher::InjectTouchEvent(const TouchEvent& event) {
 }
 
 void ClientEventDispatcher::OnIncomingMessage(
-    scoped_ptr<CompoundBuffer> message) {
+    std::unique_ptr<CompoundBuffer> message) {
   LOG(ERROR) << "Received unexpected message on the event channel.";
 }
 

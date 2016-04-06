@@ -89,8 +89,9 @@ ErrorCode JingleSession::error() {
   return error_;
 }
 
-void JingleSession::StartConnection(const std::string& peer_jid,
-                                    scoped_ptr<Authenticator> authenticator) {
+void JingleSession::StartConnection(
+    const std::string& peer_jid,
+    std::unique_ptr<Authenticator> authenticator) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
@@ -119,7 +120,7 @@ void JingleSession::StartConnection(const std::string& peer_jid,
 
 void JingleSession::InitializeIncomingConnection(
     const JingleMessage& initiate_message,
-    scoped_ptr<Authenticator> authenticator) {
+    std::unique_ptr<Authenticator> authenticator) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initiate_message.description.get());
   DCHECK(authenticator.get());
@@ -173,7 +174,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
   JingleMessage message(peer_jid_, JingleMessage::SESSION_ACCEPT,
                         session_id_);
 
-  scoped_ptr<buzz::XmlElement> auth_message;
+  std::unique_ptr<buzz::XmlElement> auth_message;
   if (authenticator_->state() == Authenticator::MESSAGE_READY)
     auth_message = authenticator_->GetNextMessage();
 
@@ -212,14 +213,14 @@ void JingleSession::SetTransport(Transport* transport) {
 }
 
 void JingleSession::SendTransportInfo(
-    scoped_ptr<buzz::XmlElement> transport_info) {
+    std::unique_ptr<buzz::XmlElement> transport_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, AUTHENTICATED);
 
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.transport_info = std::move(transport_info);
 
-  scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
+  std::unique_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(), base::Bind(&JingleSession::OnTransportInfoResponse,
                                   base::Unretained(this)));
   if (request) {
@@ -280,11 +281,9 @@ void JingleSession::Close(protocol::ErrorCode error) {
 void JingleSession::SendMessage(const JingleMessage& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
-      message.ToXml(),
-      base::Bind(&JingleSession::OnMessageResponse,
-                 base::Unretained(this),
-                 message.action));
+  std::unique_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
+      message.ToXml(), base::Bind(&JingleSession::OnMessageResponse,
+                                  base::Unretained(this), message.action));
 
   int timeout = kDefaultMessageTimeout;
   if (message.action == JingleMessage::SESSION_INITIATE ||

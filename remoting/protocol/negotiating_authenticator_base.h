@@ -5,13 +5,13 @@
 #ifndef REMOTING_PROTOCOL_NEGOTIATING_AUTHENTICATOR_BASE_H_
 #define REMOTING_PROTOCOL_NEGOTIATING_AUTHENTICATOR_BASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 
 namespace buzz {
@@ -90,7 +90,8 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   bool started() const override;
   RejectionReason rejection_reason() const override;
   const std::string& GetAuthKey() const override;
-  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
+  std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
+      const override;
 
   // Calls |current_authenticator_| to process |message|, passing the supplied
   // |resume_callback|.
@@ -124,11 +125,11 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
   // Gets the next message from |current_authenticator_|, if any, and fills in
   // the 'method' tag with |current_method_|.
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessageInternal();
+  virtual std::unique_ptr<buzz::XmlElement> GetNextMessageInternal();
 
   std::vector<Method> methods_;
   Method current_method_ = Method::INVALID;
-  scoped_ptr<Authenticator> current_authenticator_;
+  std::unique_ptr<Authenticator> current_authenticator_;
   State state_;
   RejectionReason rejection_reason_ = INVALID_CREDENTIALS;
 

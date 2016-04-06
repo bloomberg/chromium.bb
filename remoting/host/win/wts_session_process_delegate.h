@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
@@ -33,7 +34,7 @@ class WtsSessionProcessDelegate
  public:
   WtsSessionProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_ptr<base::CommandLine> target,
+      std::unique_ptr<base::CommandLine> target,
       bool launch_elevated,
       const std::string& channel_security);
   ~WtsSessionProcessDelegate() override;

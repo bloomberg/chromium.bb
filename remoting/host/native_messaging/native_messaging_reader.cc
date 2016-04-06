@@ -113,7 +113,7 @@ void NativeMessagingReader::Core::ReadMessage() {
       return;
     }
 
-    scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
     if (!message) {
       LOG(ERROR) << "Failed to parse JSON message: " << message.get();
       NotifyEof();
@@ -160,7 +160,7 @@ void NativeMessagingReader::Start(MessageCallback message_callback,
 }
 
 void NativeMessagingReader::InvokeMessageCallback(
-    scoped_ptr<base::Value> message) {
+    std::unique_ptr<base::Value> message) {
   message_callback_.Run(std::move(message));
 }
 

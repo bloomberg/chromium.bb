@@ -83,7 +83,7 @@ TEST_F(V2AuthenticatorTest, InvalidSecret) {
   reinterpret_cast<V2Authenticator*>(client_.get())->state_ =
       Authenticator::MESSAGE_READY;
 
-  scoped_ptr<buzz::XmlElement> message(client_->GetNextMessage());
+  std::unique_ptr<buzz::XmlElement> message(client_->GetNextMessage());
   ASSERT_TRUE(message.get());
 
   ASSERT_EQ(Authenticator::WAITING_MESSAGE, client_->state());

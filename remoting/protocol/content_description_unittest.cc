@@ -17,13 +17,13 @@ namespace remoting {
 namespace protocol {
 
 TEST(ContentDescriptionTest, FormatAndParse) {
-  scoped_ptr<CandidateSessionConfig> config =
+  std::unique_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   ContentDescription description(
       std::move(config), Authenticator::CreateEmptyAuthenticatorMessage());
-  scoped_ptr<buzz::XmlElement> xml(description.ToXml());
+  std::unique_ptr<buzz::XmlElement> xml(description.ToXml());
   LOG(ERROR) << xml->Str();
-  scoped_ptr<ContentDescription> parsed(
+  std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());
   EXPECT_TRUE(description.config()->control_configs() ==
@@ -48,8 +48,9 @@ TEST(ContentDescriptionTest, ParseUnknown) {
       "  <video transport=\"stream\" version=\"2\" codec=\"vp8\"/>"
       "  <authentication/>"
       "</description>";
-  scoped_ptr<buzz::XmlElement> xml(buzz::XmlElement::ForStr(kTestDescription));
-  scoped_ptr<ContentDescription> parsed(
+  std::unique_ptr<buzz::XmlElement> xml(
+      buzz::XmlElement::ForStr(kTestDescription));
+  std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());
   EXPECT_EQ(1U, parsed->config()->event_configs().size());
@@ -72,8 +73,9 @@ TEST(ContentDescriptionTest, NoneTransport) {
       "  <audio transport=\"none\"/>"
       "  <authentication/>"
       "</description>";
-  scoped_ptr<buzz::XmlElement> xml(buzz::XmlElement::ForStr(kTestDescription));
-  scoped_ptr<ContentDescription> parsed(
+  std::unique_ptr<buzz::XmlElement> xml(
+      buzz::XmlElement::ForStr(kTestDescription));
+  std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());
   EXPECT_EQ(1U, parsed->config()->audio_configs().size());
@@ -93,8 +95,9 @@ TEST(ContentDescriptionTest, NoneTransportWithCodec) {
       "  <audio transport=\"none\" version=\"2\" codec=\"verbatim\"/>"
       "  <authentication/>"
       "</description>";
-  scoped_ptr<buzz::XmlElement> xml(buzz::XmlElement::ForStr(kTestDescription));
-  scoped_ptr<ContentDescription> parsed(
+  std::unique_ptr<buzz::XmlElement> xml(
+      buzz::XmlElement::ForStr(kTestDescription));
+  std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());
   EXPECT_EQ(1U, parsed->config()->audio_configs().size());

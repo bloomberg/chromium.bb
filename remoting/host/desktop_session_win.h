@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_handle.h"
@@ -41,7 +42,7 @@ class DesktopSessionWin
       public WtsTerminalObserver {
  public:
   // Creates a desktop session instance that attaches to the physical console.
-  static scoped_ptr<DesktopSession> CreateForConsole(
+  static std::unique_ptr<DesktopSession> CreateForConsole(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       DaemonProcess* daemon_process,
@@ -49,7 +50,7 @@ class DesktopSessionWin
       const ScreenResolution& resolution);
 
   // Creates a desktop session instance that attaches to a virtual console.
-  static scoped_ptr<DesktopSession> CreateForVirtualTerminal(
+  static std::unique_ptr<DesktopSession> CreateForVirtualTerminal(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       DaemonProcess* daemon_process,
@@ -116,7 +117,7 @@ class DesktopSessionWin
   base::win::ScopedHandle desktop_process_;
 
   // Launches and monitors the desktop process.
-  scoped_ptr<WorkerProcessLauncher> launcher_;
+  std::unique_ptr<WorkerProcessLauncher> launcher_;
 
   // Used to unsubscribe from session attach and detach events.
   WtsTerminalMonitor* monitor_;

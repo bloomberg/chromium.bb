@@ -20,7 +20,7 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
   ~FakeChannelAuthenticator() override;
 
   // ChannelAuthenticator interface.
-  void SecureAndAuthenticate(scoped_ptr<P2PStreamSocket> socket,
+  void SecureAndAuthenticate(std::unique_ptr<P2PStreamSocket> socket,
                              const DoneCallback& done_callback) override;
 
  private:
@@ -32,7 +32,7 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
   const int result_;
   const bool async_;
 
-  scoped_ptr<P2PStreamSocket> socket_;
+  std::unique_ptr<P2PStreamSocket> socket_;
   DoneCallback done_callback_;
 
   bool did_read_bytes_ = false;
@@ -74,9 +74,10 @@ class FakeAuthenticator : public Authenticator {
   RejectionReason rejection_reason() const override;
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
-  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
+  std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
+      const override;
 
  protected:
   const Type type_;
@@ -103,7 +104,7 @@ class FakeHostAuthenticatorFactory : public AuthenticatorFactory {
   ~FakeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.
-  scoped_ptr<Authenticator> CreateAuthenticator(
+  std::unique_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid) override;
 

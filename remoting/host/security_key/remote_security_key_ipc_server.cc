@@ -4,10 +4,11 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "ipc/ipc_channel.h"
@@ -31,16 +32,16 @@ void RemoteSecurityKeyIpcServer::SetFactoryForTest(
   g_factory = factory;
 }
 
-scoped_ptr<RemoteSecurityKeyIpcServer> RemoteSecurityKeyIpcServer::Create(
+std::unique_ptr<RemoteSecurityKeyIpcServer> RemoteSecurityKeyIpcServer::Create(
     int connection_id,
     base::TimeDelta initial_connect_timeout,
     const GnubbyAuthHandler::SendMessageCallback& message_callback,
     const base::Closure& done_callback) {
-  scoped_ptr<RemoteSecurityKeyIpcServer> ipc_server =
+  std::unique_ptr<RemoteSecurityKeyIpcServer> ipc_server =
       g_factory
           ? g_factory->Create(connection_id, initial_connect_timeout,
                               message_callback, done_callback)
-          : make_scoped_ptr(new RemoteSecurityKeyIpcServerImpl(
+          : base::WrapUnique(new RemoteSecurityKeyIpcServerImpl(
                 connection_id, initial_connect_timeout, message_callback,
                 done_callback));
 

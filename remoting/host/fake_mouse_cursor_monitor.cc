@@ -4,8 +4,9 @@
 
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
@@ -34,14 +35,13 @@ void FakeMouseCursorMonitor::Capture() {
   const int kWidth = 32;
   const int kHeight = 32;
 
-  scoped_ptr<webrtc::DesktopFrame> desktop_frame(
+  std::unique_ptr<webrtc::DesktopFrame> desktop_frame(
       new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
   memset(desktop_frame->data(), 0xFF,
          webrtc::DesktopFrame::kBytesPerPixel * kWidth * kHeight);
 
-  scoped_ptr<webrtc::MouseCursor> mouse_cursor(
-      new webrtc::MouseCursor(desktop_frame.release(),
-                              webrtc::DesktopVector()));
+  std::unique_ptr<webrtc::MouseCursor> mouse_cursor(new webrtc::MouseCursor(
+      desktop_frame.release(), webrtc::DesktopVector()));
 
   callback_->OnMouseCursor(mouse_cursor.release());
 }

@@ -5,8 +5,9 @@
 #ifndef REMOTING_HOST_MOUSE_CURSOR_MONITOR_PROXY_H_
 #define REMOTING_HOST_MOUSE_CURSOR_MONITOR_PROXY_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -21,7 +22,7 @@ class MouseCursorMonitorProxy : public webrtc::MouseCursorMonitor {
  public:
   MouseCursorMonitorProxy(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor);
+      std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor);
   ~MouseCursorMonitorProxy() override;
 
   // webrtc::MouseCursorMonitor interface.
@@ -31,13 +32,13 @@ class MouseCursorMonitorProxy : public webrtc::MouseCursorMonitor {
  private:
   class Core;
 
-  void OnMouseCursor(scoped_ptr<webrtc::MouseCursor> cursor);
+  void OnMouseCursor(std::unique_ptr<webrtc::MouseCursor> cursor);
   void OnMouseCursorPosition(CursorState state,
                              const webrtc::DesktopVector& position);
 
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   Callback* callback_ = nullptr;
 

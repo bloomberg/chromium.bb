@@ -167,19 +167,19 @@ class WorkerProcessLauncherTest
   MockIpcDelegate server_listener_;
 
   // Implements WorkerProcessLauncher::Delegate.
-  scoped_ptr<MockProcessLauncherDelegate> launcher_delegate_;
+  std::unique_ptr<MockProcessLauncherDelegate> launcher_delegate_;
 
   // The name of the IPC channel.
   std::string channel_name_;
 
   // Client and server ends of the IPC channel.
-  scoped_ptr<IPC::ChannelProxy> channel_client_;
-  scoped_ptr<IPC::ChannelProxy> channel_server_;
+  std::unique_ptr<IPC::ChannelProxy> channel_client_;
+  std::unique_ptr<IPC::ChannelProxy> channel_server_;
 
   WorkerProcessLauncher* event_handler_;
 
   // The worker process launcher.
-  scoped_ptr<WorkerProcessLauncher> launcher_;
+  std::unique_ptr<WorkerProcessLauncher> launcher_;
 
   // An event that is used to emulate the worker process's handle.
   ScopedHandle worker_process_;

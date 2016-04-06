@@ -56,7 +56,7 @@ class ThreadCheckMouseCursorMonitor : public webrtc::MouseCursorMonitor  {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
     ASSERT_TRUE(callback_);
 
-    scoped_ptr<webrtc::MouseCursor> mouse_cursor(new webrtc::MouseCursor(
+    std::unique_ptr<webrtc::MouseCursor> mouse_cursor(new webrtc::MouseCursor(
         new webrtc::BasicDesktopFrame(
             webrtc::DesktopSize(kCursorWidth, kCursorHeight)),
         webrtc::DesktopVector(kHotspotX, kHotspotY)));
@@ -94,7 +94,7 @@ class MouseCursorMonitorProxyTest
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   base::Thread capture_thread_;
-  scoped_ptr<MouseCursorMonitorProxy> proxy_;
+  std::unique_ptr<MouseCursorMonitorProxy> proxy_;
 
   MockClientStub client_stub_;
 };
@@ -119,7 +119,7 @@ void MouseCursorMonitorProxyTest::OnMouseCursorPosition(
 }
 
 TEST_F(MouseCursorMonitorProxyTest, CursorShape) {
-  scoped_ptr<ThreadCheckMouseCursorMonitor> cursor_monitor(
+  std::unique_ptr<ThreadCheckMouseCursorMonitor> cursor_monitor(
       new ThreadCheckMouseCursorMonitor(capture_thread_.task_runner()));
 
   // Initialize the proxy.

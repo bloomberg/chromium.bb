@@ -36,10 +36,10 @@ struct BufferedSocketWriter::PendingPacket {
 };
 
 // static
-scoped_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
+std::unique_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
     net::Socket* socket,
     const WriteFailedCallback& write_failed_callback) {
-  scoped_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
+  std::unique_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
   result->Start(base::Bind(&WriteNetSocket, socket), write_failed_callback);
   return result;
 }

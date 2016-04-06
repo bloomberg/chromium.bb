@@ -35,10 +35,10 @@ class MockAccessTokenFetcher : public AccessTokenFetcher {
   // Stores an access token fetcher object and wires up the mock methods to call
   // through to the appropriate method on it.  This method is typically used to
   // pass a FakeAccessTokenFetcher.
-  void SetAccessTokenFetcher(scoped_ptr<AccessTokenFetcher> fetcher);
+  void SetAccessTokenFetcher(std::unique_ptr<AccessTokenFetcher> fetcher);
 
  private:
-  scoped_ptr<AccessTokenFetcher> internal_access_token_fetcher_;
+  std::unique_ptr<AccessTokenFetcher> internal_access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAccessTokenFetcher);
 };

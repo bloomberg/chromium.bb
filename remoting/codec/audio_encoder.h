@@ -5,7 +5,7 @@
 #ifndef REMOTING_CODEC_AUDIO_ENCODER_H_
 #define REMOTING_CODEC_AUDIO_ENCODER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace remoting {
 
@@ -15,7 +15,8 @@ class AudioEncoder {
  public:
   virtual ~AudioEncoder() {}
 
-  virtual scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) = 0;
+  virtual std::unique_ptr<AudioPacket> Encode(
+      std::unique_ptr<AudioPacket> packet) = 0;
 
   // Returns average bitrate for the stream in bits per second.
   virtual int GetBitrate() = 0;

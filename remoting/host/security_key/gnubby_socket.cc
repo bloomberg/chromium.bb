@@ -26,7 +26,7 @@ const char kSshError[] = {0x05};
 
 }  // namespace
 
-GnubbySocket::GnubbySocket(scoped_ptr<net::StreamSocket> socket,
+GnubbySocket::GnubbySocket(std::unique_ptr<net::StreamSocket> socket,
                            base::TimeDelta timeout,
                            const base::Closure& timeout_callback)
     : socket_(std::move(socket)),
@@ -59,7 +59,7 @@ void GnubbySocket::SendResponse(const std::string& response_data) {
 
   std::string response_length_string = GetResponseLengthAsBytes(response_data);
   int response_len = response_length_string.size() + response_data.size();
-  scoped_ptr<std::string> response(
+  std::unique_ptr<std::string> response(
       new std::string(response_length_string + response_data));
   write_buffer_ = new net::DrainableIOBuffer(
       new net::StringIOBuffer(std::move(response)), response_len);

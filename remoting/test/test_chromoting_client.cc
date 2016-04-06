@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/request_priority.h"
@@ -63,7 +64,7 @@ TestChromotingClient::TestChromotingClient()
     : TestChromotingClient(nullptr) {}
 
 TestChromotingClient::TestChromotingClient(
-    scoped_ptr<protocol::VideoRenderer> video_renderer)
+    std::unique_ptr<protocol::VideoRenderer> video_renderer)
     : connection_to_host_state_(protocol::ConnectionToHost::INITIALIZING),
       connection_error_code_(protocol::OK),
       video_renderer_(std::move(video_renderer)) {}
@@ -121,8 +122,8 @@ void TestChromotingClient::StartConnection(
   scoped_refptr<protocol::TransportContext> transport_context(
       new protocol::TransportContext(
           signal_strategy_.get(),
-          make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
-          make_scoped_ptr(
+          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
+          base::WrapUnique(
               new ChromiumUrlRequestFactory(request_context_getter)),
           network_settings, protocol::TransportRole::CLIENT));
 
@@ -177,12 +178,12 @@ void TestChromotingClient::RemoveRemoteConnectionObserver(
 }
 
 void TestChromotingClient::SetSignalStrategyForTests(
-    scoped_ptr<SignalStrategy> signal_strategy) {
+    std::unique_ptr<SignalStrategy> signal_strategy) {
   signal_strategy_ = std::move(signal_strategy);
 }
 
 void TestChromotingClient::SetConnectionToHostForTests(
-    scoped_ptr<protocol::ConnectionToHost> connection_to_host) {
+    std::unique_ptr<protocol::ConnectionToHost> connection_to_host) {
   test_connection_to_host_ = std::move(connection_to_host);
 }
 

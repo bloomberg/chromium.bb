@@ -118,7 +118,7 @@ class CandidateResolution {
 }  // namespace
 
 ResizingHostObserver::ResizingHostObserver(
-    scoped_ptr<DesktopResizer> desktop_resizer)
+    std::unique_ptr<DesktopResizer> desktop_resizer)
     : desktop_resizer_(std::move(desktop_resizer)),
       now_function_(base::Bind(base::Time::Now)),
       weak_factory_(this) {}

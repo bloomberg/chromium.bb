@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -294,16 +295,16 @@ class PseudoTcpAdapterTest : public testing::Test {
     host_socket_->Connect(client_socket_);
     client_socket_->Connect(host_socket_);
 
-    host_pseudotcp_.reset(new PseudoTcpAdapter(make_scoped_ptr(host_socket_)));
+    host_pseudotcp_.reset(new PseudoTcpAdapter(base::WrapUnique(host_socket_)));
     client_pseudotcp_.reset(
-        new PseudoTcpAdapter(make_scoped_ptr(client_socket_)));
+        new PseudoTcpAdapter(base::WrapUnique(client_socket_)));
   }
 
   FakeSocket* host_socket_;
   FakeSocket* client_socket_;
 
-  scoped_ptr<PseudoTcpAdapter> host_pseudotcp_;
-  scoped_ptr<PseudoTcpAdapter> client_pseudotcp_;
+  std::unique_ptr<PseudoTcpAdapter> host_pseudotcp_;
+  std::unique_ptr<PseudoTcpAdapter> client_pseudotcp_;
   base::MessageLoop message_loop_;
 };
 
@@ -368,7 +369,7 @@ TEST_F(PseudoTcpAdapterTest, LimitedChannel) {
 class DeleteOnConnected {
  public:
   DeleteOnConnected(base::MessageLoop* message_loop,
-                    scoped_ptr<PseudoTcpAdapter>* adapter)
+                    std::unique_ptr<PseudoTcpAdapter>* adapter)
       : message_loop_(message_loop), adapter_(adapter) {}
   void OnConnected(int error) {
     adapter_->reset();
@@ -376,7 +377,7 @@ class DeleteOnConnected {
                             base::MessageLoop::QuitWhenIdleClosure());
   }
   base::MessageLoop* message_loop_;
-  scoped_ptr<PseudoTcpAdapter>* adapter_;
+  std::unique_ptr<PseudoTcpAdapter>* adapter_;
 };
 
 TEST_F(PseudoTcpAdapterTest, DeleteOnConnected) {

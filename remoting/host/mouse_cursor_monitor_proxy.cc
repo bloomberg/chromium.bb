@@ -20,7 +20,7 @@ class MouseCursorMonitorProxy::Core
  public:
   Core(base::WeakPtr<MouseCursorMonitorProxy> proxy,
        scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-       scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor);
+       std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor);
   ~Core() override;
 
   void Init(webrtc::MouseCursorMonitor::Mode mode);
@@ -36,7 +36,7 @@ class MouseCursorMonitorProxy::Core
 
   base::WeakPtr<MouseCursorMonitorProxy> proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
+  std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -44,7 +44,7 @@ class MouseCursorMonitorProxy::Core
 MouseCursorMonitorProxy::Core::Core(
     base::WeakPtr<MouseCursorMonitorProxy> proxy,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor)
+    std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor)
     : proxy_(proxy),
       caller_task_runner_(caller_task_runner),
       mouse_cursor_monitor_(std::move(mouse_cursor_monitor)) {
@@ -71,7 +71,7 @@ void MouseCursorMonitorProxy::Core::Capture() {
 void MouseCursorMonitorProxy::Core::OnMouseCursor(webrtc::MouseCursor* cursor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<webrtc::MouseCursor> owned_cursor(cursor);
+  std::unique_ptr<webrtc::MouseCursor> owned_cursor(cursor);
   caller_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MouseCursorMonitorProxy::OnMouseCursor, proxy_,
                             base::Passed(&owned_cursor)));
@@ -89,7 +89,7 @@ void MouseCursorMonitorProxy::Core::OnMouseCursorPosition(
 
 MouseCursorMonitorProxy::MouseCursorMonitorProxy(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor)
+    std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor)
     : capture_task_runner_(capture_task_runner), weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr(),
                        base::ThreadTaskRunnerHandle::Get(),
@@ -114,7 +114,7 @@ void MouseCursorMonitorProxy::Capture() {
 }
 
 void MouseCursorMonitorProxy::OnMouseCursor(
-    scoped_ptr<webrtc::MouseCursor> cursor) {
+    std::unique_ptr<webrtc::MouseCursor> cursor) {
   DCHECK(thread_checker_.CalledOnValidThread());
   callback_->OnMouseCursor(cursor.release());
 }

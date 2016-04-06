@@ -5,12 +5,12 @@
 #include "remoting/host/security_key/security_key_message.h"
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace {
 
@@ -55,10 +55,10 @@ RemoteSecurityKeyMessageType SecurityKeyMessage::MessageTypeFromValue(
   }
 }
 
-scoped_ptr<SecurityKeyMessage> SecurityKeyMessage::CreateMessageForTest(
+std::unique_ptr<SecurityKeyMessage> SecurityKeyMessage::CreateMessageForTest(
     RemoteSecurityKeyMessageType type,
     const std::string& payload) {
-  scoped_ptr<SecurityKeyMessage> message(new SecurityKeyMessage());
+  std::unique_ptr<SecurityKeyMessage> message(new SecurityKeyMessage());
   message->type_ = type;
   message->payload_ = payload;
 

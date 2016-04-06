@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,7 +58,7 @@ class ClipboardAuraTest : public testing::Test {
 
   base::MessageLoopForUI message_loop_;
   ClientClipboard* client_clipboard_;
-  scoped_ptr<ClipboardAura> clipboard_;
+  std::unique_ptr<ClipboardAura> clipboard_;
 };
 
 void ClipboardAuraTest::SetUp() {
@@ -77,7 +78,7 @@ void ClipboardAuraTest::SetUp() {
       << "The test timeout should be greater than the polling interval";
   clipboard_->SetPollingIntervalForTesting(kTestOverridePollingInterval);
 
-  clipboard_->Start(make_scoped_ptr(client_clipboard_));
+  clipboard_->Start(base::WrapUnique(client_clipboard_));
 }
 
 void ClipboardAuraTest::TearDown() {

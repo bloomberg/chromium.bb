@@ -6,11 +6,11 @@
 #define REMOTING_HOST_CHROMOTING_HOST_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -69,7 +69,7 @@ class ChromotingHost : public base::NonThreadSafe,
   // |desktop_environment_factory| must outlive this object.
   ChromotingHost(
       DesktopEnvironmentFactory* desktop_environment_factory,
-      scoped_ptr<protocol::SessionManager> session_manager,
+      std::unique_ptr<protocol::SessionManager> session_manager,
       scoped_refptr<protocol::TransportContext> transport_context,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner);
@@ -88,7 +88,7 @@ class ChromotingHost : public base::NonThreadSafe,
   void RemoveStatusObserver(HostStatusObserver* observer) override;
 
   // Registers a host extension.
-  void AddExtension(scoped_ptr<HostExtension> extension);
+  void AddExtension(std::unique_ptr<HostExtension> extension);
 
   // Sets the authenticator factory to use for incoming
   // connections. Incoming connections are rejected until
@@ -97,7 +97,7 @@ class ChromotingHost : public base::NonThreadSafe,
   // once per host instance because it may not be safe to delete
   // factory before all authenticators it created are deleted.
   void SetAuthenticatorFactory(
-      scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory);
+      std::unique_ptr<protocol::AuthenticatorFactory> authenticator_factory);
 
   // Enables/disables curtaining when one or more clients are connected.
   // Takes immediate effect if clients are already connected.
@@ -153,7 +153,7 @@ class ChromotingHost : public base::NonThreadSafe,
 
   // Parameters specified when the host was created.
   DesktopEnvironmentFactory* desktop_environment_factory_;
-  scoped_ptr<protocol::SessionManager> session_manager_;
+  std::unique_ptr<protocol::SessionManager> session_manager_;
   scoped_refptr<protocol::TransportContext> transport_context_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;

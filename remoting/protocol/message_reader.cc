@@ -10,8 +10,9 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/compound_buffer.h"
@@ -108,11 +109,11 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&MessageReader::RunCallback, weak_factory_.GetWeakPtr(),
-                   base::Passed(make_scoped_ptr(buffer))));
+                   base::Passed(base::WrapUnique(buffer))));
   }
 }
 
-void MessageReader::RunCallback(scoped_ptr<CompoundBuffer> message) {
+void MessageReader::RunCallback(std::unique_ptr<CompoundBuffer> message) {
   if (!message_received_callback_.is_null())
     message_received_callback_.Run(std::move(message));
 }

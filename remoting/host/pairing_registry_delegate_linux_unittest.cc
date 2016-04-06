@@ -30,7 +30,7 @@ class PairingRegistryDelegateLinuxTest : public testing::Test {
 };
 
 TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
-  scoped_ptr<PairingRegistryDelegateLinux> delegate(
+  std::unique_ptr<PairingRegistryDelegateLinux> delegate(
       new PairingRegistryDelegateLinux());
   delegate->SetRegistryPathForTesting(temp_registry_);
 
@@ -59,7 +59,7 @@ TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
 
   // Verify that the only value that left is |pairing2|.
   EXPECT_EQ(delegate->LoadAll()->GetSize(), 1u);
-  scoped_ptr<base::ListValue> pairings = delegate->LoadAll();
+  std::unique_ptr<base::ListValue> pairings = delegate->LoadAll();
   base::DictionaryValue* json;
   EXPECT_TRUE(pairings->GetDictionary(0, &json));
   EXPECT_EQ(PairingRegistry::Pairing::CreateFromValue(*json), pairing2);
@@ -71,9 +71,9 @@ TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
 
 // Verifies that the delegate is stateless by using two different instances.
 TEST_F(PairingRegistryDelegateLinuxTest, Stateless) {
-  scoped_ptr<PairingRegistryDelegateLinux> save_delegate(
+  std::unique_ptr<PairingRegistryDelegateLinux> save_delegate(
       new PairingRegistryDelegateLinux());
-  scoped_ptr<PairingRegistryDelegateLinux> load_delegate(
+  std::unique_ptr<PairingRegistryDelegateLinux> load_delegate(
       new PairingRegistryDelegateLinux());
   save_delegate->SetRegistryPathForTesting(temp_registry_);
   load_delegate->SetRegistryPathForTesting(temp_registry_);

@@ -18,7 +18,7 @@ namespace protocol {
 const int kFramesPerSec = 30;
 
 WebrtcVideoCapturerAdapter::WebrtcVideoCapturerAdapter(
-    scoped_ptr<webrtc::DesktopCapturer> capturer)
+    std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : desktop_capturer_(std::move(capturer)), weak_factory_(this) {
   DCHECK(desktop_capturer_);
 
@@ -157,7 +157,7 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
   if (!frame)
     return;
 
-  scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
+  std::unique_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
   // TODO(sergeyu): Currently the adapter keeps generating frames even when
   // nothing is changing on the screen. This is necessary because the video

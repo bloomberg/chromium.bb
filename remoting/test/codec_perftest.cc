@@ -43,7 +43,7 @@ class CodecPerfTest : public testing::Test,
  protected:
   base::SimpleTestTickClock clock_;
   scoped_refptr<CyclicFrameGenerator> frame_generator_;
-  scoped_ptr<VideoEncoderVpx> encoder_;
+  std::unique_ptr<VideoEncoderVpx> encoder_;
 };
 
 INSTANTIATE_TEST_CASE_P(VP8,
@@ -73,11 +73,11 @@ TEST_P(CodecPerfTest, EncodeLatency) {
   int total_bytes = 0;
 
   for (int i = 0; i < kTotalFrames; ++i) {
-    scoped_ptr<webrtc::DesktopFrame> frame =
+    std::unique_ptr<webrtc::DesktopFrame> frame =
         frame_generator_->GenerateFrame(nullptr);
     base::TimeTicks started = base::TimeTicks::Now();
 
-    scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame);
+    std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame);
 
     base::TimeTicks ended = base::TimeTicks::Now();
     base::TimeDelta latency = ended - started;
@@ -136,11 +136,11 @@ TEST_P(CodecPerfTest, MaxFramerate) {
       base::TimeDelta::FromMilliseconds(kIntervalBetweenFramesMs));
 
   for (int i = 0; i < kTotalFrames; ++i) {
-    scoped_ptr<webrtc::DesktopFrame> frame =
+    std::unique_ptr<webrtc::DesktopFrame> frame =
         frame_generator_->GenerateFrame(nullptr);
     base::TimeTicks started = base::TimeTicks::Now();
 
-    scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame);
+    std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame);
 
     base::TimeTicks ended = base::TimeTicks::Now();
     base::TimeDelta latency = ended - started;

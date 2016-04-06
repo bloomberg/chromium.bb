@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/local_input_monitor.h"
+
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/local_input_monitor.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,10 +78,8 @@ TEST_F(LocalInputMonitorTest, Basic) {
       .Times(0);
 
   {
-    scoped_ptr<LocalInputMonitor> local_input_monitor =
-        LocalInputMonitor::Create(task_runner_,
-                                  task_runner_,
-                                  task_runner_,
+    std::unique_ptr<LocalInputMonitor> local_input_monitor =
+        LocalInputMonitor::Create(task_runner_, task_runner_, task_runner_,
                                   client_session_control_factory_.GetWeakPtr());
     task_runner_ = nullptr;
   }

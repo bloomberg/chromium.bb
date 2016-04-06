@@ -63,11 +63,11 @@ void HostControlDispatcher::SetCursorShape(
 }
 
 void HostControlDispatcher::OnIncomingMessage(
-    scoped_ptr<CompoundBuffer> buffer) {
+    std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(clipboard_stub_);
   DCHECK(host_stub_);
 
-  scoped_ptr<ControlMessage> message =
+  std::unique_ptr<ControlMessage> message =
       ParseMessage<ControlMessage>(buffer.get());
   if (!message)
     return;

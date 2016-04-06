@@ -5,6 +5,7 @@
 #include "remoting/protocol/audio_writer.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
@@ -19,19 +20,19 @@ namespace protocol {
 AudioWriter::AudioWriter() : ChannelDispatcherBase(kAudioChannelName) {}
 AudioWriter::~AudioWriter() {}
 
-void AudioWriter::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
+void AudioWriter::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                                      const base::Closure& done) {
   message_pipe()->Send(packet.get(), done);
 }
 
 // static
-scoped_ptr<AudioWriter> AudioWriter::Create(const SessionConfig& config) {
+std::unique_ptr<AudioWriter> AudioWriter::Create(const SessionConfig& config) {
   if (!config.is_audio_enabled())
     return nullptr;
-  return make_scoped_ptr(new AudioWriter());
+  return base::WrapUnique(new AudioWriter());
 }
 
-void AudioWriter::OnIncomingMessage(scoped_ptr<CompoundBuffer> message) {
+void AudioWriter::OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) {
   LOG(ERROR) << "Received unexpected message on the audio channel.";
 }
 

@@ -81,7 +81,7 @@ class RdpClient::Core
   RdpClient::EventHandler* event_handler_;
 
   // Hosts the RDP ActiveX control.
-  scoped_ptr<RdpClientWindow> rdp_client_window_;
+  std::unique_ptr<RdpClientWindow> rdp_client_window_;
 
   // A self-reference to keep the object alive during connection shutdown.
   scoped_refptr<Core> self_;

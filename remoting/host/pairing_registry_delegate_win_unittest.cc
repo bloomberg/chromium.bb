@@ -47,7 +47,7 @@ class PairingRegistryDelegateWinTest : public testing::Test {
 };
 
 TEST_F(PairingRegistryDelegateWinTest, SaveAndLoad) {
-  scoped_ptr<PairingRegistryDelegateWin> delegate(
+  std::unique_ptr<PairingRegistryDelegateWin> delegate(
       new PairingRegistryDelegateWin());
   delegate->SetRootKeys(privileged_.Handle(), unprivileged_.Handle());
 
@@ -76,7 +76,7 @@ TEST_F(PairingRegistryDelegateWinTest, SaveAndLoad) {
 
   // Verify that the only remaining value is |pairing2|.
   EXPECT_EQ(delegate->LoadAll()->GetSize(), 1u);
-  scoped_ptr<base::ListValue> pairings = delegate->LoadAll();
+  std::unique_ptr<base::ListValue> pairings = delegate->LoadAll();
   base::DictionaryValue* json;
   EXPECT_TRUE(pairings->GetDictionary(0, &json));
   EXPECT_EQ(PairingRegistry::Pairing::CreateFromValue(*json), pairing2);
@@ -88,10 +88,10 @@ TEST_F(PairingRegistryDelegateWinTest, SaveAndLoad) {
 
 // Verifies that the delegate is stateless by using two different instances.
 TEST_F(PairingRegistryDelegateWinTest, Stateless) {
-  scoped_ptr<PairingRegistryDelegateWin> load_delegate(
+  std::unique_ptr<PairingRegistryDelegateWin> load_delegate(
       new PairingRegistryDelegateWin());
   load_delegate->SetRootKeys(privileged_.Handle(), unprivileged_.Handle());
-  scoped_ptr<PairingRegistryDelegateWin> save_delegate(
+  std::unique_ptr<PairingRegistryDelegateWin> save_delegate(
       new PairingRegistryDelegateWin());
   save_delegate->SetRootKeys(privileged_.Handle(), unprivileged_.Handle());
 
@@ -101,7 +101,7 @@ TEST_F(PairingRegistryDelegateWinTest, Stateless) {
 }
 
 TEST_F(PairingRegistryDelegateWinTest, Unprivileged) {
-  scoped_ptr<PairingRegistryDelegateWin> delegate(
+  std::unique_ptr<PairingRegistryDelegateWin> delegate(
       new PairingRegistryDelegateWin());
   delegate->SetRootKeys(privileged_.Handle(), unprivileged_.Handle());
 

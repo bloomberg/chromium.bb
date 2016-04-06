@@ -34,7 +34,7 @@ void IpcVideoFrameCapturer::Capture(const webrtc::DesktopRegion& region) {
 }
 
 void IpcVideoFrameCapturer::OnCaptureCompleted(
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(capture_pending_);
   capture_pending_ = false;
   callback_->OnCaptureCompleted(frame.release());

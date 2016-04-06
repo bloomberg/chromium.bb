@@ -7,11 +7,12 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
@@ -91,10 +92,10 @@ class GnubbyAuthHandlerLinux : public GnubbyAuthHandler {
   base::ThreadChecker thread_checker_;
 
   // Socket used to listen for authorization requests.
-  scoped_ptr<net::UnixDomainServerSocket> auth_socket_;
+  std::unique_ptr<net::UnixDomainServerSocket> auth_socket_;
 
   // A temporary holder for an accepted connection.
-  scoped_ptr<net::StreamSocket> accept_socket_;
+  std::unique_ptr<net::StreamSocket> accept_socket_;
 
   // Used to pass gnubby extension messages to the client.
   SendMessageCallback send_message_callback_;
@@ -111,9 +112,9 @@ class GnubbyAuthHandlerLinux : public GnubbyAuthHandler {
   DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerLinux);
 };
 
-scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
+std::unique_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
     const SendMessageCallback& callback) {
-  scoped_ptr<GnubbyAuthHandler> auth_handler(new GnubbyAuthHandlerLinux());
+  std::unique_ptr<GnubbyAuthHandler> auth_handler(new GnubbyAuthHandlerLinux());
   auth_handler->SetSendMessageCallback(callback);
   return auth_handler;
 }

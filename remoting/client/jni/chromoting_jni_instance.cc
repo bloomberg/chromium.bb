@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
@@ -408,8 +409,8 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signaling_.get(),
-          make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
-          make_scoped_ptr(
+          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
+          base::WrapUnique(
               new ChromiumUrlRequestFactory(jni_runtime_->url_requester())),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
@@ -418,7 +419,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 #if defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   if (flags_.find("useWebrtc") != std::string::npos) {
     VLOG(0) << "Attempting to connect using WebRTC.";
-    scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
+    std::unique_ptr<protocol::CandidateSessionConfig> protocol_config =
         protocol::CandidateSessionConfig::CreateEmpty();
     protocol_config->set_webrtc_supported(true);
     protocol_config->set_ice_supported(false);

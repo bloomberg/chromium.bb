@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -17,7 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -202,12 +203,12 @@ class NoopAuthenticator : public protocol::Authenticator {
     done_ = true;
     resume_callback.Run();
   }
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override {
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override {
     NOTREACHED();
     return nullptr;
   }
   const std::string& GetAuthKey() const override { return auth_key_; }
-  scoped_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
+  std::unique_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
       const override {
     NOTREACHED();
     return nullptr;
@@ -224,10 +225,10 @@ class NoopAuthenticatorFactory : public protocol::AuthenticatorFactory {
   NoopAuthenticatorFactory() {}
   ~NoopAuthenticatorFactory() override {}
 
-  scoped_ptr<protocol::Authenticator> CreateAuthenticator(
+  std::unique_ptr<protocol::Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid) override {
-    return make_scoped_ptr(new NoopAuthenticator());
+    return base::WrapUnique(new NoopAuthenticator());
   }
 };
 
@@ -241,7 +242,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   // |shutdown_watchdog| is armed when shutdown is started, and should be kept
   // alive as long as possible until the process exits (since destroying the
   // watchdog disarms it).
-  HostProcess(scoped_ptr<ChromotingHostContext> context,
+  HostProcess(std::unique_ptr<ChromotingHostContext> context,
               int* exit_code_out,
               ShutdownWatchdog* shutdown_watchdog);
 
@@ -330,7 +331,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool ApplyConfig(const base::DictionaryValue& config);
 
   // Handles policy updates, by calling On*PolicyUpdate methods.
-  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
+  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
   void OnPolicyError();
   void ReportPolicyErrorAndRestartHost();
   void ApplyHostDomainPolicy();
@@ -381,7 +382,7 @@ class HostProcess : public ConfigWatcher::Delegate,
                const std::string& file_name,
                const int& line_number);
 
-  scoped_ptr<ChromotingHostContext> context_;
+  std::unique_ptr<ChromotingHostContext> context_;
 
   // XMPP server/remoting bot configuration (initialized from the command line).
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
@@ -390,12 +391,12 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Created on the UI thread but used from the network thread.
   base::FilePath host_config_path_;
   std::string host_config_;
-  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
+  std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
   HostState state_ = HOST_STARTING;
 
-  scoped_ptr<ConfigWatcher> config_watcher_;
+  std::unique_ptr<ConfigWatcher> config_watcher_;
 
   std::string host_id_;
   std::string pin_hash_;
@@ -407,7 +408,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool use_service_account_ = false;
   bool enable_vp9_ = false;
 
-  scoped_ptr<PolicyWatcher> policy_watcher_;
+  std::unique_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_ = POLICY_INITIALIZING;
   std::string client_domain_;
   std::string host_domain_;
@@ -431,31 +432,32 @@ class HostProcess : public ConfigWatcher::Delegate,
   webrtc::WindowId window_id_ = 0;
 
   // Must outlive |gcd_state_updater_| and |signaling_connector_|.
-  scoped_ptr<OAuthTokenGetter> oauth_token_getter_;
+  std::unique_ptr<OAuthTokenGetter> oauth_token_getter_;
 
   // Must outlive |signaling_connector_|, |gcd_subscriber_|, and
   // |heartbeat_sender_|.
-  scoped_ptr<SignalStrategy> signal_strategy_;
+  std::unique_ptr<SignalStrategy> signal_strategy_;
 
-  scoped_ptr<SignalingConnector> signaling_connector_;
-  scoped_ptr<HeartbeatSender> heartbeat_sender_;
+  std::unique_ptr<SignalingConnector> signaling_connector_;
+  std::unique_ptr<HeartbeatSender> heartbeat_sender_;
 #if defined(USE_GCD)
-  scoped_ptr<GcdStateUpdater> gcd_state_updater_;
-  scoped_ptr<PushNotificationSubscriber> gcd_subscriber_;
+  std::unique_ptr<GcdStateUpdater> gcd_state_updater_;
+  std::unique_ptr<PushNotificationSubscriber> gcd_subscriber_;
 #endif  // defined(USE_GCD)
 
-  scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
-  scoped_ptr<HostStatusLogger> host_status_logger_;
-  scoped_ptr<HostEventLogger> host_event_logger_;
+  std::unique_ptr<HostChangeNotificationListener>
+      host_change_notification_listener_;
+  std::unique_ptr<HostStatusLogger> host_status_logger_;
+  std::unique_ptr<HostEventLogger> host_event_logger_;
 
-  scoped_ptr<ChromotingHost> host_;
+  std::unique_ptr<ChromotingHost> host_;
 
   // Used to keep this HostProcess alive until it is shutdown.
   scoped_refptr<HostProcess> self_;
 
 #if defined(REMOTING_MULTI_PROCESS)
   // Accessed on the UI thread.
-  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+  std::unique_ptr<IPC::ChannelProxy> daemon_channel_;
 
   // Owned as |desktop_environment_factory_|.
   DesktopSessionConnector* desktop_session_connector_ = nullptr;
@@ -471,7 +473,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   DISALLOW_COPY_AND_ASSIGN(HostProcess);
 };
 
-HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
+HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
                          int* exit_code_out,
                          ShutdownWatchdog* shutdown_watchdog)
     : context_(std::move(context)),
@@ -536,7 +538,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     // Read config from stdin if necessary.
     if (host_config_path_ == base::FilePath(kStdinConfigPath)) {
       const size_t kBufferSize = 4096;
-      scoped_ptr<char[]> buf(new char[kBufferSize]);
+      std::unique_ptr<char[]> buf(new char[kBufferSize]);
       size_t len;
       while ((len = fread(buf.get(), 1, kBufferSize, stdin)) > 0) {
         host_config_.append(buf.get(), len);
@@ -611,7 +613,7 @@ void HostProcess::OnConfigUpdated(
   HOST_LOG << "Processing new host configuration.";
 
   serialized_config_ = serialized_config;
-  scoped_ptr<base::DictionaryValue> config(
+  std::unique_ptr<base::DictionaryValue> config(
       HostConfigFromJson(serialized_config));
   if (!config) {
     LOG(ERROR) << "Invalid configuration.";
@@ -740,7 +742,7 @@ void HostProcess::CreateAuthenticatorFactory() {
     ShutdownHost(kInitializationFailed);
 #else  // defined(NDEBUG)
     host_->SetAuthenticatorFactory(
-        make_scoped_ptr(new NoopAuthenticatorFactory()));
+        base::WrapUnique(new NoopAuthenticatorFactory()));
 #endif  // !defined(NDEBUG)
     return;
   }
@@ -752,7 +754,7 @@ void HostProcess::CreateAuthenticatorFactory() {
     return;
   }
 
-  scoped_ptr<protocol::AuthenticatorFactory> factory;
+  std::unique_ptr<protocol::AuthenticatorFactory> factory;
 
   if (third_party_auth_config_.is_null()) {
     scoped_refptr<PairingRegistry> pairing_registry;
@@ -761,7 +763,7 @@ void HostProcess::CreateAuthenticatorFactory() {
       // InitializePairingRegistry().
 #if !defined(OS_WIN)
       if (!pairing_registry_) {
-        scoped_ptr<PairingRegistry::Delegate> delegate =
+        std::unique_ptr<PairingRegistry::Delegate> delegate =
             CreatePairingRegistryDelegate();
 
         if (delegate)
@@ -976,7 +978,7 @@ void HostProcess::InitializePairingRegistry(
   HKEY unprivileged_hkey = reinterpret_cast<HKEY>(
       IPC::PlatformFileForTransitToPlatformFile(unprivileged_key));
 
-  scoped_ptr<PairingRegistryDelegateWin> delegate(
+  std::unique_ptr<PairingRegistryDelegateWin> delegate(
       new PairingRegistryDelegateWin());
   delegate->SetRootKeys(privileged_hkey, unprivileged_hkey);
 
@@ -1050,7 +1052,8 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   return true;
 }
 
-void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
+void HostProcess::OnPolicyUpdate(
+    std::unique_ptr<base::DictionaryValue> policies) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&HostProcess::OnPolicyUpdate, this,
@@ -1391,9 +1394,10 @@ void HostProcess::InitializeSignaling() {
   signal_strategy_.reset(xmpp_signal_strategy);
 
   // Create SignalingConnector.
-  scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(new DnsBlackholeChecker(
-      context_->url_request_context_getter(), talkgadget_prefix_));
-  scoped_ptr<OAuthTokenGetter::OAuthCredentials> oauth_credentials(
+  std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker(
+      new DnsBlackholeChecker(context_->url_request_context_getter(),
+                              talkgadget_prefix_));
+  std::unique_ptr<OAuthTokenGetter::OAuthCredentials> oauth_credentials(
       new OAuthTokenGetter::OAuthCredentials(xmpp_server_config_.username,
                                              oauth_refresh_token_,
                                              use_service_account_));
@@ -1408,7 +1412,7 @@ void HostProcess::InitializeSignaling() {
 #if defined(USE_GCD)
   // Create objects to manage GCD state.
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  scoped_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
+  std::unique_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
       service_urls->gcd_base_url(), host_id_,
       context_->url_request_context_getter(), oauth_token_getter_.get()));
   gcd_state_updater_.reset(new GcdStateUpdater(
@@ -1475,17 +1479,17 @@ void HostProcess::StartHost() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signal_strategy_.get(),
-          make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
-          make_scoped_ptr(new ChromiumUrlRequestFactory(
+          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
+          base::WrapUnique(new ChromiumUrlRequestFactory(
               context_->url_request_context_getter())),
           network_settings, protocol::TransportRole::SERVER);
   transport_context->set_ice_config_url(
       ServiceUrls::GetInstance()->ice_config_url());
 
-  scoped_ptr<protocol::SessionManager> session_manager(
+  std::unique_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));
 
-  scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
+  std::unique_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
   if (!desktop_environment_factory_->SupportsAudioCapture())
     protocol_config->DisableAudioChannel();
@@ -1500,7 +1504,7 @@ void HostProcess::StartHost() {
                                  context_->video_encode_task_runner()));
 
   if (gnubby_auth_policy_enabled_ && gnubby_extension_supported_) {
-    host_->AddExtension(make_scoped_ptr(new GnubbyExtension()));
+    host_->AddExtension(base::WrapUnique(new GnubbyExtension()));
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
@@ -1679,14 +1683,15 @@ int HostProcessMain() {
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
-  scoped_ptr<ChromotingHostContext> context = ChromotingHostContext::Create(
-      new AutoThreadTaskRunner(message_loop.task_runner(),
-                               base::MessageLoop::QuitWhenIdleClosure()));
+  std::unique_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(
+          new AutoThreadTaskRunner(message_loop.task_runner(),
+                                   base::MessageLoop::QuitWhenIdleClosure()));
   if (!context)
     return kInitializationFailed;
 
   // NetworkChangeNotifier must be initialized after MessageLoop.
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::Create());
 
   // Create & start the HostProcess using these threads.

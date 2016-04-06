@@ -5,10 +5,10 @@
 #ifndef REMOTING_PROTOCOL_CONTENT_DESCRIPTION_H_
 #define REMOTING_PROTOCOL_CONTENT_DESCRIPTION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/session_config.h"
 
 namespace buzz {
@@ -27,8 +27,8 @@ class ContentDescription {
  public:
   static const char kChromotingContentName[];
 
-  ContentDescription(scoped_ptr<CandidateSessionConfig> config,
-                     scoped_ptr<buzz::XmlElement> authenticator_message);
+  ContentDescription(std::unique_ptr<CandidateSessionConfig> config,
+                     std::unique_ptr<buzz::XmlElement> authenticator_message);
   ~ContentDescription();
 
   const CandidateSessionConfig* config() const {
@@ -41,13 +41,13 @@ class ContentDescription {
 
   buzz::XmlElement* ToXml() const;
 
-  static scoped_ptr<ContentDescription> ParseXml(
+  static std::unique_ptr<ContentDescription> ParseXml(
       const buzz::XmlElement* element,
       bool webrtc_transport);
 
  private:
-  scoped_ptr<const CandidateSessionConfig> candidate_config_;
-  scoped_ptr<const buzz::XmlElement> authenticator_message_;
+  std::unique_ptr<const CandidateSessionConfig> candidate_config_;
+  std::unique_ptr<const buzz::XmlElement> authenticator_message_;
 
   static bool ParseChannelConfigs(const buzz::XmlElement* const element,
                                   const char tag_name[],

@@ -39,8 +39,8 @@ ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub,
 ClientVideoDispatcher::~ClientVideoDispatcher() {}
 
 void ClientVideoDispatcher::OnIncomingMessage(
-    scoped_ptr<CompoundBuffer> message) {
-  scoped_ptr<VideoPacket> video_packet =
+    std::unique_ptr<CompoundBuffer> message) {
+  std::unique_ptr<VideoPacket> video_packet =
       ParseMessage<VideoPacket>(message.get());
   if (!video_packet)
     return;

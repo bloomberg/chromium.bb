@@ -6,12 +6,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "remoting/base/url_request_context_getter.h"
 
 namespace remoting {
 
-scoped_ptr<ChromotingClientRuntime> ChromotingClientRuntime::Create(
+std::unique_ptr<ChromotingClientRuntime> ChromotingClientRuntime::Create(
     base::MessageLoopForUI* ui_loop) {
   DCHECK(ui_loop);
 
@@ -33,7 +34,7 @@ scoped_ptr<ChromotingClientRuntime> ChromotingClientRuntime::Create(
   scoped_refptr<net::URLRequestContextGetter> url_requester =
       new URLRequestContextGetter(network_task_runner, file_task_runner);
 
-  return make_scoped_ptr(new ChromotingClientRuntime(
+  return base::WrapUnique(new ChromotingClientRuntime(
       ui_task_runner, display_task_runner, network_task_runner,
       file_task_runner, url_requester));
 }

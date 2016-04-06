@@ -4,9 +4,10 @@
 
 #include "remoting/host/security_key/fake_remote_security_key_ipc_client.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"

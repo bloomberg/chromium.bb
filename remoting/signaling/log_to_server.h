@@ -46,7 +46,7 @@ class LogToServer : public base::NonThreadSafe,
 
   ServerLogEntry::Mode mode_;
   SignalStrategy* signal_strategy_;
-  scoped_ptr<IqSender> iq_sender_;
+  std::unique_ptr<IqSender> iq_sender_;
   std::string directory_bot_jid_;
 
   std::deque<ServerLogEntry> pending_entries_;

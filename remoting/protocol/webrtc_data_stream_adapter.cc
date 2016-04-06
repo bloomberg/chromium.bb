@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/compound_buffer.h"
@@ -144,7 +145,7 @@ void WebrtcDataStreamAdapter::Channel::OnError() {
 
 void WebrtcDataStreamAdapter::Channel::OnMessage(
     const webrtc::DataBuffer& rtc_buffer) {
-  scoped_ptr<CompoundBuffer> buffer(new CompoundBuffer());
+  std::unique_ptr<CompoundBuffer> buffer(new CompoundBuffer());
   buffer->AppendCopyOf(reinterpret_cast<const char*>(rtc_buffer.data.data()),
                        rtc_buffer.data.size());
   buffer->Lock();
@@ -153,7 +154,7 @@ void WebrtcDataStreamAdapter::Channel::OnMessage(
 
 struct WebrtcDataStreamAdapter::PendingChannel {
   PendingChannel() {}
-  PendingChannel(scoped_ptr<Channel> channel,
+  PendingChannel(std::unique_ptr<Channel> channel,
                  const ChannelCreatedCallback& connected_callback)
       : channel(std::move(channel)), connected_callback(connected_callback) {}
   PendingChannel(PendingChannel&& other)
@@ -165,7 +166,7 @@ struct WebrtcDataStreamAdapter::PendingChannel {
     return *this;
   }
 
-  scoped_ptr<Channel> channel;
+  std::unique_ptr<Channel> channel;
   ChannelCreatedCallback connected_callback;
 };
 
@@ -204,7 +205,7 @@ void WebrtcDataStreamAdapter::CreateChannel(
   DCHECK(pending_channels_.find(name) == pending_channels_.end());
 
   Channel* channel = new Channel(weak_factory_.GetWeakPtr());
-  pending_channels_[name] = PendingChannel(make_scoped_ptr(channel), callback);
+  pending_channels_[name] = PendingChannel(base::WrapUnique(channel), callback);
 
   if (outgoing_) {
     webrtc::DataChannelInit config;

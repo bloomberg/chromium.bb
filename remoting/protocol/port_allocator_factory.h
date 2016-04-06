@@ -5,8 +5,9 @@
 #ifndef REMOTING_PROTOCOL_PORT_ALLOCATOR_FACTORY_H_
 #define REMOTING_PROTOCOL_PORT_ALLOCATOR_FACTORY_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace cricket {
 class PortAllocator;
@@ -23,7 +24,7 @@ class PortAllocatorFactory {
  public:
   virtual ~PortAllocatorFactory() {}
 
-  virtual scoped_ptr<cricket::PortAllocator> CreatePortAllocator(
+  virtual std::unique_ptr<cricket::PortAllocator> CreatePortAllocator(
       scoped_refptr<TransportContext> transport_context) = 0;
 };
 

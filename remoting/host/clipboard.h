@@ -5,10 +5,10 @@
 #ifndef REMOTING_HOST_CLIPBOARD_H_
 #define REMOTING_HOST_CLIPBOARD_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -24,12 +24,13 @@ class Clipboard {
   virtual ~Clipboard() {}
 
   // Initialises any objects needed to read from or write to the clipboard.
-  virtual void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;
+  virtual void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) = 0;
 
   // Writes an item to the clipboard. It must be called after Start().
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event) = 0;
 
-  static scoped_ptr<Clipboard> Create();
+  static std::unique_ptr<Clipboard> Create();
 };
 
 }  // namespace remoting

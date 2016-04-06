@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_IPC_MOUSE_CURSOR_MONITOR_H_
 #define REMOTING_HOST_IPC_MOUSE_CURSOR_MONITOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -29,7 +30,7 @@ class IpcMouseCursorMonitor : public webrtc::MouseCursorMonitor {
   void Capture() override;
 
   // Called when the cursor shape has changed.
-  void OnMouseCursor(scoped_ptr<webrtc::MouseCursor> cursor);
+  void OnMouseCursor(std::unique_ptr<webrtc::MouseCursor> cursor);
 
  private:
   // The callback passed to |webrtc::MouseCursorMonitor::Init()|.

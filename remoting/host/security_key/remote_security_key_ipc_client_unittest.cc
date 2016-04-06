@@ -4,11 +4,11 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_client.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_channel.h"
@@ -68,7 +68,7 @@ class RemoteSecurityKeyIpcClientTest : public testing::Test {
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // The object under test.
   RemoteSecurityKeyIpcClient remote_security_key_ipc_client_;

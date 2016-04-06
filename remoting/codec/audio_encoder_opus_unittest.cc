@@ -67,18 +67,17 @@ class OpusAudioEncoderTest : public testing::Test {
 
   // Creates  audio packet filled with a test signal with the specified
   // |frequency_hz|.
-  scoped_ptr<AudioPacket> CreatePacket(
-      int samples,
-      AudioPacket::SamplingRate rate,
-      double frequency_hz,
-      int pos) {
+  std::unique_ptr<AudioPacket> CreatePacket(int samples,
+                                            AudioPacket::SamplingRate rate,
+                                            double frequency_hz,
+                                            int pos) {
     std::vector<int16_t> data(samples * kChannels);
     for (int i = 0; i < samples; ++i) {
       data[i * kChannels] = GetSampleValue(rate, frequency_hz, i + pos, 0);
       data[i * kChannels + 1] = GetSampleValue(rate, frequency_hz, i + pos, 1);
     }
 
-    scoped_ptr<AudioPacket> packet(new AudioPacket());
+    std::unique_ptr<AudioPacket> packet(new AudioPacket());
     packet->add_data(reinterpret_cast<char*>(&(data[0])),
                      samples * kChannels * sizeof(int16_t));
     packet->set_encoding(AudioPacket::ENCODING_RAW);
@@ -139,21 +138,21 @@ class OpusAudioEncoderTest : public testing::Test {
     std::vector<int16_t> received_data;
     int pos = 0;
     for (; pos < kTotalTestSamples; pos += packet_size) {
-        scoped_ptr<AudioPacket> source_packet =
-            CreatePacket(packet_size, rate, frequency_hz, pos);
-        scoped_ptr<AudioPacket> encoded =
-            encoder_->Encode(std::move(source_packet));
-        if (encoded.get()) {
-          scoped_ptr<AudioPacket> decoded =
-              decoder_->Decode(std::move(encoded));
-          EXPECT_EQ(kDefaultSamplingRate, decoded->sampling_rate());
-          for (int i = 0; i < decoded->data_size(); ++i) {
-            const int16_t* data =
-                reinterpret_cast<const int16_t*>(decoded->data(i).data());
-            received_data.insert(
-                received_data.end(), data,
-                data + decoded->data(i).size() / sizeof(int16_t));
-          }
+      std::unique_ptr<AudioPacket> source_packet =
+          CreatePacket(packet_size, rate, frequency_hz, pos);
+      std::unique_ptr<AudioPacket> encoded =
+          encoder_->Encode(std::move(source_packet));
+      if (encoded.get()) {
+        std::unique_ptr<AudioPacket> decoded =
+            decoder_->Decode(std::move(encoded));
+        EXPECT_EQ(kDefaultSamplingRate, decoded->sampling_rate());
+        for (int i = 0; i < decoded->data_size(); ++i) {
+          const int16_t* data =
+              reinterpret_cast<const int16_t*>(decoded->data(i).data());
+          received_data.insert(
+              received_data.end(), data,
+              data + decoded->data(i).size() / sizeof(int16_t));
+        }
         }
     }
 
@@ -167,8 +166,8 @@ class OpusAudioEncoderTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<AudioEncoderOpus> encoder_;
-  scoped_ptr<AudioDecoderOpus> decoder_;
+  std::unique_ptr<AudioEncoderOpus> encoder_;
+  std::unique_ptr<AudioDecoderOpus> decoder_;
 };
 
 TEST_F(OpusAudioEncoderTest, CreateAndDestroy) {

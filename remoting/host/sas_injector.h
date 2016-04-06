@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_SAS_INJECTOR_H_
 #define REMOTING_HOST_SAS_INJECTOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace remoting {
 
@@ -20,7 +20,7 @@ class SasInjector {
 
   // Creates an instance of SasInjector if supported by the OS, otherwise
   // returns nullptr.
-  static scoped_ptr<SasInjector> Create();
+  static std::unique_ptr<SasInjector> Create();
 };
 
 }  // namespace remoting

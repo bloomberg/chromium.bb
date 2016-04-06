@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_HOST_EXTENSION_SESSION_MANAGER_H_
 #define REMOTING_HOST_HOST_EXTENSION_SESSION_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace webrtc {

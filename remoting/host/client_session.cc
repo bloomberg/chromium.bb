@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -42,14 +43,14 @@ namespace {
 // Name of command-line flag to disable use of I444 by default.
 const char kDisableI444SwitchName[] = "disable-i444";
 
-scoped_ptr<AudioEncoder> CreateAudioEncoder(
+std::unique_ptr<AudioEncoder> CreateAudioEncoder(
     const protocol::SessionConfig& config) {
   const protocol::ChannelConfig& audio_config = config.audio_config();
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return make_scoped_ptr(new AudioEncoderVerbatim());
+    return base::WrapUnique(new AudioEncoderVerbatim());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return make_scoped_ptr(new AudioEncoderOpus());
+    return base::WrapUnique(new AudioEncoderOpus());
   }
 
   NOTREACHED();
@@ -61,7 +62,7 @@ scoped_ptr<AudioEncoder> CreateAudioEncoder(
 ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    scoped_ptr<protocol::ConnectionToClient> connection,
+    std::unique_ptr<protocol::ConnectionToClient> connection,
     DesktopEnvironmentFactory* desktop_environment_factory,
     const base::TimeDelta& max_duration,
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
@@ -187,7 +188,7 @@ void ClientSession::SetCapabilities(
   }
 
   // Compute the set of capabilities supported by both client and host.
-  client_capabilities_ = make_scoped_ptr(new std::string());
+  client_capabilities_ = base::WrapUnique(new std::string());
   if (capabilities.has_capabilities())
     *client_capabilities_ = capabilities.capabilities();
   capabilities_ = IntersectCapabilities(*client_capabilities_,
@@ -331,7 +332,7 @@ void ClientSession::OnConnectionChannelsConnected(
 
   // Create an AudioPump if audio is enabled, to pump audio samples.
   if (connection_->session()->config().is_audio_enabled()) {
-    scoped_ptr<AudioEncoder> audio_encoder =
+    std::unique_ptr<AudioEncoder> audio_encoder =
         CreateAudioEncoder(connection_->session()->config());
     audio_pump_.reset(new AudioPump(
         audio_task_runner_, desktop_environment_->CreateAudioCapturer(),
@@ -423,10 +424,10 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
   disable_clipboard_filter_.set_enabled(!disable_inputs);
 }
 
-scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
+std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK(CalledOnValidThread());
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new protocol::ClipboardThreadProxy(client_clipboard_factory_.GetWeakPtr(),
                                          base::ThreadTaskRunnerHandle::Get()));
 }

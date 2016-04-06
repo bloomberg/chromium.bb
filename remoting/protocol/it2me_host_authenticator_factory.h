@@ -5,12 +5,12 @@
 #ifndef REMOTING_PROTOCOL_IT2ME_HOST_AUTHENTICATOR_FACTORY_H_
 #define REMOTING_PROTOCOL_IT2ME_HOST_AUTHENTICATOR_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 
 namespace remoting {
@@ -30,7 +30,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   ~It2MeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.
-  scoped_ptr<Authenticator> CreateAuthenticator(
+  std::unique_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid) override;
 

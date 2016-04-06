@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator_test_base.h"
@@ -104,7 +105,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
     token_validator_ = new FakeTokenValidator();
     host_.reset(new ThirdPartyHostAuthenticator(
         base::Bind(&V2Authenticator::CreateForHost, host_cert_, key_pair_),
-        make_scoped_ptr(token_validator_)));
+        base::WrapUnique(token_validator_)));
     client_.reset(new ThirdPartyClientAuthenticator(
         base::Bind(&V2Authenticator::CreateForClient),
         base::Bind(&FakeTokenFetcher::FetchThirdPartyToken,

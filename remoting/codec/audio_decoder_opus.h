@@ -5,8 +5,9 @@
 #ifndef REMOTING_CODEC_AUDIO_DECODER_OPUS_H_
 #define REMOTING_CODEC_AUDIO_DECODER_OPUS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/codec/audio_decoder.h"
 
 struct OpusDecoder;
@@ -21,7 +22,8 @@ class AudioDecoderOpus : public AudioDecoder {
   ~AudioDecoderOpus() override;
 
   // AudioDecoder interface.
-  scoped_ptr<AudioPacket> Decode(scoped_ptr<AudioPacket> packet) override;
+  std::unique_ptr<AudioPacket> Decode(
+      std::unique_ptr<AudioPacket> packet) override;
 
  private:
   void InitDecoder();

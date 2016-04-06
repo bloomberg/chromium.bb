@@ -22,7 +22,7 @@ bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,
     base::File* client_out,
-    scoped_ptr<IPC::ChannelProxy>* server_out) {
+    std::unique_ptr<IPC::ChannelProxy>* server_out) {
   // Create a socket pair.
   int pipe_fds[2];
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, pipe_fds) != 0) {

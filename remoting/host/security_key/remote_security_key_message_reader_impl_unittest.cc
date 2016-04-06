@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/security_key/remote_security_key_message_reader.h"
+#include "remoting/host/security_key/remote_security_key_message_reader_impl.h"
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "remoting/host/security_key/remote_security_key_message_reader_impl.h"
 #include "remoting/host/security_key/security_key_message.h"
 #include "remoting/host/setup/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +31,7 @@ class RemoteSecurityKeyMessageReaderImplTest : public testing::Test {
 
   // SecurityKeyMessageCallback passed to the Reader. Stores |message| so it can
   // be verified by tests.
-  void OnMessage(scoped_ptr<SecurityKeyMessage> message);
+  void OnMessage(std::unique_ptr<SecurityKeyMessage> message);
 
   // Used as a callback to signal completion.
   void OperationComplete();
@@ -55,15 +54,15 @@ class RemoteSecurityKeyMessageReaderImplTest : public testing::Test {
   // Writes some data to the write-end of the pipe.
   void WriteData(const char* data, int length);
 
-  scoped_ptr<RemoteSecurityKeyMessageReader> reader_;
+  std::unique_ptr<RemoteSecurityKeyMessageReader> reader_;
   base::File read_file_;
   base::File write_file_;
 
-  std::vector<scoped_ptr<SecurityKeyMessage>> messages_received_;
+  std::vector<std::unique_ptr<SecurityKeyMessage>> messages_received_;
 
  private:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyMessageReaderImplTest);
 };
@@ -99,7 +98,7 @@ void RemoteSecurityKeyMessageReaderImplTest::CloseWriteFileAndRunLoop() {
 }
 
 void RemoteSecurityKeyMessageReaderImplTest::OnMessage(
-    scoped_ptr<SecurityKeyMessage> message) {
+    std::unique_ptr<SecurityKeyMessage> message) {
   messages_received_.push_back(std::move(message));
   OperationComplete();
 }

@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_HOST_CHANGE_NOTIFICATION_LISTENER_H
 #define REMOTING_HOST_HOST_CHANGE_NOTIFICATION_LISTENER_H
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/signaling/signal_strategy.h"
 

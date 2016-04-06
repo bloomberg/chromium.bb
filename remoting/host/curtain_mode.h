@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_CURTAIN_MODE_H_
 #define REMOTING_HOST_CURTAIN_MODE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -28,7 +29,7 @@ class CurtainMode {
   // the local console. |client_session_control| can be used to drop
   // the connection in the case if the session re-connects to the local console
   // in mid-flight.
-  static scoped_ptr<CurtainMode> Create(
+  static std::unique_ptr<CurtainMode> Create(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);

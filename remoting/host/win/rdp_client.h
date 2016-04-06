@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_WIN_RDP_CLIENT_H_
 #define REMOTING_HOST_WIN_RDP_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace base {

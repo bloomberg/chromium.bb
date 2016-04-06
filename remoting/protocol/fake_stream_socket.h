@@ -6,10 +6,10 @@
 #define REMOTING_PROTOCOL_FAKE_STREAM_SOCKET_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/p2p_stream_socket.h"
@@ -128,7 +128,7 @@ class FakeStreamChannelFactory : public StreamChannelFactory {
   void CancelChannelCreation(const std::string& name) override;
 
  private:
-  void NotifyChannelCreated(scoped_ptr<FakeStreamSocket> owned_channel,
+  void NotifyChannelCreated(std::unique_ptr<FakeStreamSocket> owned_channel,
                             const std::string& name,
                             const ChannelCreatedCallback& callback);
 

@@ -24,7 +24,7 @@ class PairingRegistryDelegateLinux
   ~PairingRegistryDelegateLinux() override;
 
   // PairingRegistry::Delegate interface
-  scoped_ptr<base::ListValue> LoadAll() override;
+  std::unique_ptr<base::ListValue> LoadAll() override;
   bool DeleteAll() override;
   protocol::PairingRegistry::Pairing Load(
       const std::string& client_id) override;

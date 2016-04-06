@@ -129,7 +129,8 @@ class InputInjectorX11 : public InputInjector {
   void InjectTouchEvent(const TouchEvent& event) override;
 
   // InputInjector interface.
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   // The actual implementation resides in InputInjectorX11::Core class.
@@ -148,7 +149,7 @@ class InputInjectorX11 : public InputInjector {
     void InjectMouseEvent(const MouseEvent& event);
 
     // Mirrors the InputInjector interface.
-    void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+    void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
     void Stop();
 
@@ -196,7 +197,7 @@ class InputInjectorX11 : public InputInjector {
     PointTransformer point_transformer_;
 #endif
 
-    scoped_ptr<Clipboard> clipboard_;
+    std::unique_ptr<Clipboard> clipboard_;
 
     bool saved_auto_repeat_enabled_;
 
@@ -242,7 +243,7 @@ void InputInjectorX11::InjectTouchEvent(const TouchEvent& event) {
 }
 
 void InputInjectorX11::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   core_->Start(std::move(client_clipboard));
 }
 
@@ -522,7 +523,8 @@ void InputInjectorX11::Core::InitMouseButtonMap() {
   // Note that if a user has a global mapping that completely disables a button
   // (by assigning 0 to it), we won't be able to inject it.
   int num_buttons = XGetPointerMapping(display_, nullptr, 0);
-  scoped_ptr<unsigned char[]> pointer_mapping(new unsigned char[num_buttons]);
+  std::unique_ptr<unsigned char[]> pointer_mapping(
+      new unsigned char[num_buttons]);
   num_buttons = XGetPointerMapping(display_, pointer_mapping.get(),
                                    num_buttons);
   for (int i = 0; i < kNumPointerButtons; i++) {
@@ -579,7 +581,8 @@ void InputInjectorX11::Core::InitMouseButtonMap() {
 
   int num_device_buttons =
       XGetDeviceButtonMapping(display_, device, nullptr, 0);
-  scoped_ptr<unsigned char[]> button_mapping(new unsigned char[num_buttons]);
+  std::unique_ptr<unsigned char[]> button_mapping(
+      new unsigned char[num_buttons]);
   for (int i = 0; i < num_device_buttons; i++) {
     button_mapping[i] = i + 1;
   }
@@ -620,7 +623,7 @@ int InputInjectorX11::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
 }
 
 void InputInjectorX11::Core::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -645,10 +648,10 @@ void InputInjectorX11::Core::Stop() {
 }  // namespace
 
 // static
-scoped_ptr<InputInjector> InputInjector::Create(
+std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  scoped_ptr<InputInjectorX11> injector(
+  std::unique_ptr<InputInjectorX11> injector(
       new InputInjectorX11(main_task_runner));
   if (!injector->Init())
     return nullptr;

@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/security_key/remote_security_key_message_writer.h"
+#include "remoting/host/security_key/remote_security_key_message_writer_impl.h"
 
 #include <cstdint>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "remoting/host/security_key/remote_security_key_message_writer_impl.h"
 #include "remoting/host/security_key/security_key_message.h"
 #include "remoting/host/setup/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +48,7 @@ class RemoteSecurityKeyMessageWriterImplTest : public testing::Test {
   // they were written correctly.
   void WriteMessageToOutput(const std::string& payload);
 
-  scoped_ptr<RemoteSecurityKeyMessageWriter> writer_;
+  std::unique_ptr<RemoteSecurityKeyMessageWriter> writer_;
   base::File read_file_;
   base::File write_file_;
 

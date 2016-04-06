@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/constants.h"
@@ -71,7 +72,7 @@ class TestScreenCapturer : public webrtc::DesktopCapturer {
   }
   void Capture(const webrtc::DesktopRegion& region) override {
     // Return black 10x10 frame.
-    scoped_ptr<webrtc::DesktopFrame> frame(
+    std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(100, 100)));
     memset(frame->data(), 0, frame->stride() * frame->size().height());
     frame->mutable_updated_region()->SetRect(
@@ -102,13 +103,13 @@ class ConnectionTest : public testing::Test,
     // Create Connection objects.
     if (is_using_webrtc()) {
       host_connection_.reset(new WebrtcConnectionToClient(
-          make_scoped_ptr(host_session_),
+          base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER)));
       client_connection_.reset(new WebrtcConnectionToHost());
 
     } else {
       host_connection_.reset(new IceConnectionToClient(
-          make_scoped_ptr(host_session_),
+          base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
           message_loop_.task_runner()));
       client_connection_.reset(new IceConnectionToHost());
@@ -187,13 +188,13 @@ class ConnectionTest : public testing::Test,
   }
 
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   MockConnectionToClientEventHandler host_event_handler_;
   MockClipboardStub host_clipboard_stub_;
   MockHostStub host_stub_;
   MockInputStub host_input_stub_;
-  scoped_ptr<ConnectionToClient> host_connection_;
+  std::unique_ptr<ConnectionToClient> host_connection_;
   FakeSession* host_session_;  // Owned by |host_connection_|.
   bool host_connected_ = false;
 
@@ -201,9 +202,9 @@ class ConnectionTest : public testing::Test,
   MockClientStub client_stub_;
   MockClipboardStub client_clipboard_stub_;
   FakeVideoRenderer client_video_renderer_;
-  scoped_ptr<ConnectionToHost> client_connection_;
+  std::unique_ptr<ConnectionToHost> client_connection_;
   FakeSession* client_session_;  // Owned by |client_connection_|.
-  scoped_ptr<FakeSession> owned_client_session_;
+  std::unique_ptr<FakeSession> owned_client_session_;
   bool client_connected_ = false;
 
  private:
@@ -279,8 +280,9 @@ TEST_P(ConnectionTest, Events) {
 TEST_P(ConnectionTest, Video) {
   Connect();
 
-  scoped_ptr<VideoStream> video_stream = host_connection_->StartVideoStream(
-      make_scoped_ptr(new TestScreenCapturer()));
+  std::unique_ptr<VideoStream> video_stream =
+      host_connection_->StartVideoStream(
+          base::WrapUnique(new TestScreenCapturer()));
 
   base::RunLoop run_loop;
 

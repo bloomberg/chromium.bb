@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_THIRD_PARTY_AUTHENTICATOR_BASE_H_
 #define REMOTING_PROTOCOL_THIRD_PARTY_AUTHENTICATOR_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/qname.h"
 
@@ -41,9 +41,10 @@ class ThirdPartyAuthenticatorBase : public Authenticator {
   RejectionReason rejection_reason() const override;
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
-  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
+  std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
+      const override;
 
  protected:
   // XML tag names for third party authentication fields.
@@ -66,7 +67,7 @@ class ThirdPartyAuthenticatorBase : public Authenticator {
   // Adds the token related XML elements to the message.
   virtual void AddTokenElements(buzz::XmlElement* message) = 0;
 
-  scoped_ptr<Authenticator> underlying_;
+  std::unique_ptr<Authenticator> underlying_;
   State token_state_;
   bool started_;
   RejectionReason rejection_reason_;

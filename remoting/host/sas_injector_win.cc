@@ -5,11 +5,13 @@
 #include "remoting/host/sas_injector.h"
 
 #include <windows.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
@@ -188,7 +190,7 @@ bool SasInjectorXp::InjectSas() {
   const wchar_t kSasWindowClassName[] = L"SAS window class";
   const wchar_t kSasWindowTitle[] = L"SAS window";
 
-  scoped_ptr<webrtc::Desktop> winlogon_desktop(
+  std::unique_ptr<webrtc::Desktop> winlogon_desktop(
       webrtc::Desktop::GetDesktop(kWinlogonDesktopName));
   if (!winlogon_desktop.get()) {
     PLOG(ERROR) << "Failed to open '" << kWinlogonDesktopName << "' desktop";
@@ -219,11 +221,11 @@ bool SasInjectorXp::InjectSas() {
   return true;
 }
 
-scoped_ptr<SasInjector> SasInjector::Create() {
+std::unique_ptr<SasInjector> SasInjector::Create() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return make_scoped_ptr(new SasInjectorXp());
+    return base::WrapUnique(new SasInjectorXp());
   } else {
-    return make_scoped_ptr(new SasInjectorWin());
+    return base::WrapUnique(new SasInjectorWin());
   }
 }
 

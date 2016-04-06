@@ -35,7 +35,7 @@ class PseudoTcpChannelFactory : public StreamChannelFactory {
 
   void OnDatagramChannelCreated(const std::string& name,
                                 const ChannelCreatedCallback& callback,
-                                scoped_ptr<P2PDatagramSocket> socket);
+                                std::unique_ptr<P2PDatagramSocket> socket);
   void OnPseudoTcpConnected(const std::string& name,
                             const ChannelCreatedCallback& callback,
                             int result);

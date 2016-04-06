@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;

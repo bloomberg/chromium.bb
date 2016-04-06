@@ -19,7 +19,7 @@ namespace protocol {
 
 ThirdPartyHostAuthenticator::ThirdPartyHostAuthenticator(
     const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
-    scoped_ptr<TokenValidator> token_validator)
+    std::unique_ptr<TokenValidator> token_validator)
     : ThirdPartyAuthenticatorBase(MESSAGE_READY),
       create_base_authenticator_callback_(create_base_authenticator_callback),
       token_validator_(std::move(token_validator)) {}

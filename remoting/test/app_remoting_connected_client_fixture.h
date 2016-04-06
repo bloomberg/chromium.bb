@@ -5,11 +5,11 @@
 #ifndef REMOTING_TEST_APP_REMOTING_CONNECTED_CLIENT_FIXTURE_H_
 #define REMOTING_TEST_APP_REMOTING_CONNECTED_CLIENT_FIXTURE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/test/remote_connection_observer.h"
@@ -63,17 +63,17 @@ class AppRemotingConnectedClientFixture
   const RemoteApplicationDetails& application_details_;
 
   // Used to run the thread's message loop.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Used for setting timeouts and delays.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   // Used to ensure RemoteConnectionObserver methods are called on the same
   // thread.
   base::ThreadChecker thread_checker_;
 
   // Creates and manages the connection to the remote host.
-  scoped_ptr<AppRemotingConnectionHelper> connection_helper_;
+  std::unique_ptr<AppRemotingConnectionHelper> connection_helper_;
 
   // Called when an ExtensionMessage is received from the host.
   HostMessageReceivedCallback host_message_received_callback_;

@@ -23,7 +23,7 @@ class It2MeConfirmationDialogProxy : public It2MeConfirmationDialog {
   // |dialog| is the dialog being wrapped.
   It2MeConfirmationDialogProxy(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_ptr<It2MeConfirmationDialog> dialog);
+      std::unique_ptr<It2MeConfirmationDialog> dialog);
 
   ~It2MeConfirmationDialogProxy() override;
 
@@ -35,7 +35,7 @@ class It2MeConfirmationDialogProxy : public It2MeConfirmationDialog {
 
   void ReportResult(It2MeConfirmationDialog::Result result);
 
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
   It2MeConfirmationDialog::ResultCallback callback_;
   base::WeakPtrFactory<It2MeConfirmationDialogProxy> weak_factory_;
 

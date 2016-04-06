@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -23,8 +24,8 @@ namespace remoting {
 namespace {
 
 // Creates a dummy packet with 1k data
-scoped_ptr<AudioPacket> MakeAudioPacket() {
-  scoped_ptr<AudioPacket> packet(new AudioPacket);
+std::unique_ptr<AudioPacket> MakeAudioPacket() {
+  std::unique_ptr<AudioPacket> packet(new AudioPacket);
   packet->add_data()->resize(1000);
   return packet;
 }
@@ -54,7 +55,8 @@ class FakeAudioEncoder : public AudioEncoder {
   FakeAudioEncoder() {}
   ~FakeAudioEncoder() override {}
 
-  scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override {
+  std::unique_ptr<AudioPacket> Encode(
+      std::unique_ptr<AudioPacket> packet) override {
     return packet;
   }
   int GetBitrate() override {
@@ -73,7 +75,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
   void TearDown() override;
 
   // protocol::AudioStub interface.
-  void ProcessAudioPacket(scoped_ptr<AudioPacket> audio_packet,
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> audio_packet,
                           const base::Closure& done) override;
 
  protected:
@@ -83,7 +85,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
   FakeAudioCapturer* capturer_;
   FakeAudioEncoder* encoder_;
 
-  scoped_ptr<AudioPump> pump_;
+  std::unique_ptr<AudioPump> pump_;
 
   ScopedVector<AudioPacket> sent_packets_;
   std::vector<base::Closure> done_closures_;
@@ -96,8 +98,8 @@ void AudioPumpTest::SetUp() {
   capturer_ = new FakeAudioCapturer();
   encoder_ = new FakeAudioEncoder();
   pump_.reset(new AudioPump(message_loop_.task_runner(),
-                            make_scoped_ptr(capturer_),
-                            make_scoped_ptr(encoder_), this));
+                            base::WrapUnique(capturer_),
+                            base::WrapUnique(encoder_), this));
 }
 
 void AudioPumpTest::TearDown() {
@@ -108,7 +110,7 @@ void AudioPumpTest::TearDown() {
 }
 
 void AudioPumpTest::ProcessAudioPacket(
-    scoped_ptr<AudioPacket> audio_packet,
+    std::unique_ptr<AudioPacket> audio_packet,
     const base::Closure& done) {
   sent_packets_.push_back(std::move(audio_packet));
   done_closures_.push_back(done);

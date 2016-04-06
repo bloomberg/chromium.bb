@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 #define REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -43,85 +44,76 @@ class Me2MeNativeMessagingHost
   Me2MeNativeMessagingHost(
       bool needs_elevation,
       intptr_t parent_window_handle,
-      scoped_ptr<extensions::NativeMessagingChannel> channel,
+      std::unique_ptr<extensions::NativeMessagingChannel> channel,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
-      scoped_ptr<OAuthClient> oauth_client);
+      std::unique_ptr<OAuthClient> oauth_client);
   ~Me2MeNativeMessagingHost() override;
 
   void Start(const base::Closure& quit_closure);
 
   // extensions::NativeMessagingChannel::EventHandler implementation
-  void OnMessage(scoped_ptr<base::Value> message) override;
+  void OnMessage(std::unique_ptr<base::Value> message) override;
   void OnDisconnect() override;
 
  private:
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
-  void ProcessHello(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
+  void ProcessHello(std::unique_ptr<base::DictionaryValue> message,
+                    std::unique_ptr<base::DictionaryValue> response);
   void ProcessClearPairedClients(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
+      std::unique_ptr<base::DictionaryValue> message,
+      std::unique_ptr<base::DictionaryValue> response);
   void ProcessDeletePairedClient(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGetHostName(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGetPinHash(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGenerateKeyPair(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
+      std::unique_ptr<base::DictionaryValue> message,
+      std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGetHostName(std::unique_ptr<base::DictionaryValue> message,
+                          std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGetPinHash(std::unique_ptr<base::DictionaryValue> message,
+                         std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGenerateKeyPair(std::unique_ptr<base::DictionaryValue> message,
+                              std::unique_ptr<base::DictionaryValue> response);
   void ProcessUpdateDaemonConfig(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGetDaemonConfig(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGetPairedClients(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
+      std::unique_ptr<base::DictionaryValue> message,
+      std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGetDaemonConfig(std::unique_ptr<base::DictionaryValue> message,
+                              std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGetPairedClients(std::unique_ptr<base::DictionaryValue> message,
+                               std::unique_ptr<base::DictionaryValue> response);
   void ProcessGetUsageStatsConsent(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessStartDaemon(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessStopDaemon(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGetDaemonState(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
-  void ProcessGetHostClientId(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
+      std::unique_ptr<base::DictionaryValue> message,
+      std::unique_ptr<base::DictionaryValue> response);
+  void ProcessStartDaemon(std::unique_ptr<base::DictionaryValue> message,
+                          std::unique_ptr<base::DictionaryValue> response);
+  void ProcessStopDaemon(std::unique_ptr<base::DictionaryValue> message,
+                         std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGetDaemonState(std::unique_ptr<base::DictionaryValue> message,
+                             std::unique_ptr<base::DictionaryValue> response);
+  void ProcessGetHostClientId(std::unique_ptr<base::DictionaryValue> message,
+                              std::unique_ptr<base::DictionaryValue> response);
   void ProcessGetCredentialsFromAuthCode(
-      scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response,
+      std::unique_ptr<base::DictionaryValue> message,
+      std::unique_ptr<base::DictionaryValue> response,
       bool need_user_email);
 
   // These Send... methods get called on the DaemonController's internal thread,
   // or on the calling thread if called by the PairingRegistry.
   // These methods fill in the |response| dictionary from the other parameters,
   // and pass it to SendResponse().
-  void SendConfigResponse(scoped_ptr<base::DictionaryValue> response,
-                          scoped_ptr<base::DictionaryValue> config);
-  void SendPairedClientsResponse(scoped_ptr<base::DictionaryValue> response,
-                                 scoped_ptr<base::ListValue> pairings);
+  void SendConfigResponse(std::unique_ptr<base::DictionaryValue> response,
+                          std::unique_ptr<base::DictionaryValue> config);
+  void SendPairedClientsResponse(
+      std::unique_ptr<base::DictionaryValue> response,
+      std::unique_ptr<base::ListValue> pairings);
   void SendUsageStatsConsentResponse(
-      scoped_ptr<base::DictionaryValue> response,
+      std::unique_ptr<base::DictionaryValue> response,
       const DaemonController::UsageStatsConsent& consent);
-  void SendAsyncResult(scoped_ptr<base::DictionaryValue> response,
+  void SendAsyncResult(std::unique_ptr<base::DictionaryValue> response,
                        DaemonController::AsyncResult result);
-  void SendBooleanResult(scoped_ptr<base::DictionaryValue> response,
+  void SendBooleanResult(std::unique_ptr<base::DictionaryValue> response,
                          bool result);
-  void SendCredentialsResponse(scoped_ptr<base::DictionaryValue> response,
+  void SendCredentialsResponse(std::unique_ptr<base::DictionaryValue> response,
                                const std::string& user_email,
                                const std::string& refresh_token);
 
@@ -131,7 +123,7 @@ class Me2MeNativeMessagingHost
 
   // Returns true if the request was successfully delegated to the elevated
   // host and false otherwise.
-  bool DelegateToElevatedHost(scoped_ptr<base::DictionaryValue> message);
+  bool DelegateToElevatedHost(std::unique_ptr<base::DictionaryValue> message);
 
 #if defined(OS_WIN)
   class ElevatedChannelEventHandler
@@ -139,7 +131,7 @@ class Me2MeNativeMessagingHost
    public:
     ElevatedChannelEventHandler(Me2MeNativeMessagingHost* host);
 
-    void OnMessage(scoped_ptr<base::Value> message) override;
+    void OnMessage(std::unique_ptr<base::Value> message) override;
     void OnDisconnect() override;
    private:
     Me2MeNativeMessagingHost* parent_;
@@ -154,11 +146,11 @@ class Me2MeNativeMessagingHost
   void DisconnectElevatedHost();
 
   // Native messaging channel used to communicate with the elevated host.
-  scoped_ptr<extensions::NativeMessagingChannel> elevated_channel_;
+  std::unique_ptr<extensions::NativeMessagingChannel> elevated_channel_;
 
   // Native messaging event handler used to process responses from the elevated
   // host.
-  scoped_ptr<ElevatedChannelEventHandler> elevated_channel_event_handler_;
+  std::unique_ptr<ElevatedChannelEventHandler> elevated_channel_event_handler_;
 
   // Timer to control the lifetime of the elevated host.
   base::OneShotTimer elevated_host_timer_;
@@ -175,7 +167,7 @@ class Me2MeNativeMessagingHost
 
   // Native messaging channel used to communicate with the native message
   // client.
-  scoped_ptr<extensions::NativeMessagingChannel> channel_;
+  std::unique_ptr<extensions::NativeMessagingChannel> channel_;
 
   LogMessageHandler log_message_handler_;
 
@@ -185,7 +177,7 @@ class Me2MeNativeMessagingHost
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;
 
   // Used to exchange the service account authorization code for credentials.
-  scoped_ptr<OAuthClient> oauth_client_;
+  std::unique_ptr<OAuthClient> oauth_client_;
 
   base::ThreadChecker thread_checker_;
 

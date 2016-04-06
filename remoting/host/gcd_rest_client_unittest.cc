@@ -4,6 +4,7 @@
 
 #include "remoting/host/gcd_rest_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
@@ -25,8 +26,9 @@ class GcdRestClientTest : public testing::Test {
     last_result_ = result;
   }
 
-  scoped_ptr<base::DictionaryValue> MakePatchDetails(int id) {
-    scoped_ptr<base::DictionaryValue> patch_details(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> MakePatchDetails(int id) {
+    std::unique_ptr<base::DictionaryValue> patch_details(
+        new base::DictionaryValue);
     patch_details->SetInteger("id", id);
     return patch_details;
   }
@@ -37,13 +39,13 @@ class GcdRestClientTest : public testing::Test {
     }
     client_.reset(new GcdRestClient("http://gcd_base_url", "<gcd_device_id>",
                                     nullptr, token_getter));
-    client_->SetClockForTest(make_scoped_ptr(new base::SimpleTestClock));
+    client_->SetClockForTest(base::WrapUnique(new base::SimpleTestClock));
   }
 
  protected:
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeOAuthTokenGetter default_token_getter_;
-  scoped_ptr<GcdRestClient> client_;
+  std::unique_ptr<GcdRestClient> client_;
   int counter_ = 0;
   GcdRestClient::Result last_result_ = GcdRestClient::OTHER_ERROR;
 

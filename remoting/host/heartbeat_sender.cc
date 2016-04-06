@@ -305,10 +305,10 @@ void HeartbeatSender::SetSequenceId(int sequence_id) {
   sequence_id_was_set_ = true;
 }
 
-scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
+std::unique_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   // Create heartbeat stanza.
-  scoped_ptr<XmlElement> heartbeat(new XmlElement(
-      QName(kChromotingXmlNamespace, kHeartbeatQueryTag)));
+  std::unique_ptr<XmlElement> heartbeat(
+      new XmlElement(QName(kChromotingXmlNamespace, kHeartbeatQueryTag)));
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
                  base::IntToString(sequence_id_));
@@ -319,35 +319,35 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   }
   heartbeat->AddElement(CreateSignature().release());
   // Append host version.
-  scoped_ptr<XmlElement> version_tag(new XmlElement(
-      QName(kChromotingXmlNamespace, kHostVersionTag)));
+  std::unique_ptr<XmlElement> version_tag(
+      new XmlElement(QName(kChromotingXmlNamespace, kHostVersionTag)));
   version_tag->AddText(STRINGIZE(VERSION));
   heartbeat->AddElement(version_tag.release());
   // If we have not recorded a heartbeat success, continue sending host OS info.
   if (!heartbeat_succeeded_) {
     // Append host OS name.
-    scoped_ptr<XmlElement> os_name_tag(new XmlElement(
+    std::unique_ptr<XmlElement> os_name_tag(new XmlElement(
         QName(kChromotingXmlNamespace, kHostOperatingSystemNameTag)));
     os_name_tag->AddText(GetHostOperatingSystemName());
     heartbeat->AddElement(os_name_tag.release());
     // Append host OS version.
-    scoped_ptr<XmlElement> os_version_tag(new XmlElement(
+    std::unique_ptr<XmlElement> os_version_tag(new XmlElement(
         QName(kChromotingXmlNamespace, kHostOperatingSystemVersionTag)));
     os_version_tag->AddText(GetHostOperatingSystemVersion());
     heartbeat->AddElement(os_version_tag.release());
   }
   // Append log message (which isn't signed).
-  scoped_ptr<XmlElement> log(ServerLogEntry::MakeStanza());
-  scoped_ptr<ServerLogEntry> log_entry(MakeLogEntryForHeartbeat());
+  std::unique_ptr<XmlElement> log(ServerLogEntry::MakeStanza());
+  std::unique_ptr<ServerLogEntry> log_entry(MakeLogEntryForHeartbeat());
   AddHostFieldsToLogEntry(log_entry.get());
   log->AddElement(log_entry->ToStanza().release());
   heartbeat->AddElement(log.release());
   return heartbeat;
 }
 
-scoped_ptr<XmlElement> HeartbeatSender::CreateSignature() {
-  scoped_ptr<XmlElement> signature_tag(new XmlElement(
-      QName(kChromotingXmlNamespace, kHeartbeatSignatureTag)));
+std::unique_ptr<XmlElement> HeartbeatSender::CreateSignature() {
+  std::unique_ptr<XmlElement> signature_tag(
+      new XmlElement(QName(kChromotingXmlNamespace, kHeartbeatSignatureTag)));
 
   std::string message = NormalizeJid(signal_strategy_->GetLocalJid()) + ' ' +
                         base::IntToString(sequence_id_);

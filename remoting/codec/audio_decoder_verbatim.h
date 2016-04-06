@@ -5,10 +5,10 @@
 #ifndef REMOTING_CODEC_AUDIO_DECODER_VERBATIM_H_
 #define REMOTING_CODEC_AUDIO_DECODER_VERBATIM_H_
 
-#include "remoting/codec/audio_decoder.h"
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "remoting/codec/audio_decoder.h"
 
 namespace remoting {
 
@@ -20,7 +20,8 @@ class AudioDecoderVerbatim : public AudioDecoder {
   AudioDecoderVerbatim();
   ~AudioDecoderVerbatim() override;
 
-  scoped_ptr<AudioPacket> Decode(scoped_ptr<AudioPacket> packet) override;
+  std::unique_ptr<AudioPacket> Decode(
+      std::unique_ptr<AudioPacket> packet) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderVerbatim);

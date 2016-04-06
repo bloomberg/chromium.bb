@@ -5,8 +5,9 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_RENDERER_ADAPTER_H_
 #define REMOTING_PROTOCOL_WEBRTC_VIDEO_RENDERER_ADAPTER_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/media/base/videosinkinterface.h"
@@ -42,7 +43,7 @@ class WebrtcVideoRendererAdapter
   void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
-  void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame);
+  void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
   FrameConsumer* frame_consumer_;

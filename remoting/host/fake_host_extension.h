@@ -29,7 +29,7 @@ class FakeExtension : public HostExtension {
 
   // HostExtension interface.
   std::string capability() const override;
-  scoped_ptr<HostExtensionSession> CreateExtensionSession(
+  std::unique_ptr<HostExtensionSession> CreateExtensionSession(
       ClientSessionControl* client_session_control,
       protocol::ClientStub* client_stub) override;
 

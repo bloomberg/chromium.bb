@@ -18,20 +18,20 @@ class PerformanceTracker;
 }  // namespace protocol
 
 // Constructs a log entry for a session state change.
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error);
 
 // Constructs a log entry for reporting statistics.
-scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForStatistics(
     protocol::PerformanceTracker* statistics);
 
 // Constructs a log entry for reporting session ID is old.
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(
     const std::string& session_id);
 
 // Constructs a log entry for reporting session ID is old.
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdNew(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionIdNew(
     const std::string& session_id);
 
 void AddClientFieldsToLogEntry(ServerLogEntry* entry);

@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -125,13 +126,14 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
   }
 }
 
-scoped_ptr<base::DictionaryValue> DaemonControllerDelegateLinux::GetConfig() {
-  scoped_ptr<base::DictionaryValue> config(
+std::unique_ptr<base::DictionaryValue>
+DaemonControllerDelegateLinux::GetConfig() {
+  std::unique_ptr<base::DictionaryValue> config(
       HostConfigFromJsonFile(GetConfigPath()));
   if (!config)
     return nullptr;
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   std::string value;
   if (config->GetString(kHostIdConfigPath, &value)) {
     result->SetString(kHostIdConfigPath, value);
@@ -143,7 +145,7 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateLinux::GetConfig() {
 }
 
 void DaemonControllerDelegateLinux::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     bool consent,
     const DaemonController::CompletionCallback& done) {
   // Add the user to chrome-remote-desktop group first.
@@ -185,9 +187,9 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
 }
 
 void DaemonControllerDelegateLinux::UpdateConfig(
-    scoped_ptr<base::DictionaryValue> config,
+    std::unique_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
-  scoped_ptr<base::DictionaryValue> new_config(
+  std::unique_ptr<base::DictionaryValue> new_config(
       HostConfigFromJsonFile(GetConfigPath()));
   if (new_config)
     new_config->MergeDictionary(config.get());
@@ -230,7 +232,7 @@ DaemonControllerDelegateLinux::GetUsageStatsConsent() {
 
 scoped_refptr<DaemonController> DaemonController::Create() {
   return new DaemonController(
-      make_scoped_ptr(new DaemonControllerDelegateLinux()));
+      base::WrapUnique(new DaemonControllerDelegateLinux()));
 }
 
 }  // namespace remoting

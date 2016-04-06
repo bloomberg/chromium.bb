@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -76,7 +77,7 @@ class InputInjectorWin : public InputInjector {
 
   // InputInjector interface.
   void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   // The actual implementation resides in InputInjectorWin::Core class.
@@ -95,7 +96,7 @@ class InputInjectorWin : public InputInjector {
     void InjectTouchEvent(const TouchEvent& event);
 
     // Mirrors the InputInjector interface.
-    void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+    void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
     void Stop();
 
@@ -110,7 +111,7 @@ class InputInjectorWin : public InputInjector {
 
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-    scoped_ptr<Clipboard> clipboard_;
+    std::unique_ptr<Clipboard> clipboard_;
     TouchInjectorWin touch_injector_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
@@ -152,7 +153,7 @@ void InputInjectorWin::InjectTouchEvent(const TouchEvent& event) {
 }
 
 void InputInjectorWin::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   core_->Start(std::move(client_clipboard));
 }
 
@@ -216,7 +217,7 @@ void InputInjectorWin::Core::InjectTouchEvent(const TouchEvent& event) {
 }
 
 void InputInjectorWin::Core::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
@@ -353,10 +354,10 @@ void InputInjectorWin::Core::HandleTouch(const TouchEvent& event) {
 }  // namespace
 
 // static
-scoped_ptr<InputInjector> InputInjector::Create(
+std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new InputInjectorWin(main_task_runner, ui_task_runner));
 }
 

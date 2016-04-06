@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 
 namespace base {
@@ -33,7 +33,7 @@ namespace remoting {
 // bytes over the wire, which is checked by IsRequestTooLarge method.
 class GnubbySocket {
  public:
-  GnubbySocket(scoped_ptr<net::StreamSocket> socket,
+  GnubbySocket(std::unique_ptr<net::StreamSocket> socket,
                base::TimeDelta timeout,
                const base::Closure& timeout_callback);
   ~GnubbySocket();
@@ -86,7 +86,7 @@ class GnubbySocket {
   base::ThreadChecker thread_checker_;
 
   // The socket.
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
 
   // Invoked when request data has been read.
   base::Closure request_received_callback_;
@@ -103,7 +103,7 @@ class GnubbySocket {
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
 
   // The activity timer.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(GnubbySocket);
 };

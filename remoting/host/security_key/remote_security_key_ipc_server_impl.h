@@ -7,10 +7,10 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -73,7 +73,7 @@ class RemoteSecurityKeyIpcServerImpl : public RemoteSecurityKeyIpcServer,
   GnubbyAuthHandler::SendMessageCallback message_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  scoped_ptr<IPC::Channel> ipc_channel_;
+  std::unique_ptr<IPC::Channel> ipc_channel_;
 
   // Ensures RemoteSecurityKeyIpcServerImpl methods are called on the same
   // thread.

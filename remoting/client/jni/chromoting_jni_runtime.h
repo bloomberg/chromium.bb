@@ -129,11 +129,11 @@ class ChromotingJniRuntime {
 
   // Chromium code's connection to the app message loop. Once created the
   // MessageLoop will live for the life of the program.
-  scoped_ptr<base::MessageLoopForUI> ui_loop_;
+  std::unique_ptr<base::MessageLoopForUI> ui_loop_;
 
   // Contains threads.
   //
-  scoped_ptr<ChromotingClientRuntime> runtime_;
+  std::unique_ptr<ChromotingClientRuntime> runtime_;
 
   // Contains all connection-specific state.
   scoped_refptr<ChromotingJniInstance> session_;

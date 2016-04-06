@@ -29,7 +29,7 @@ class BufferedSocketWriter {
       WriteCallback;
   typedef base::Callback<void(int)> WriteFailedCallback;
 
-  static scoped_ptr<BufferedSocketWriter> CreateForSocket(
+  static std::unique_ptr<BufferedSocketWriter> CreateForSocket(
       net::Socket* socket,
       const WriteFailedCallback& write_failed_callback);
 

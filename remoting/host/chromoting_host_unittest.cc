@@ -4,11 +4,12 @@
 
 #include "remoting/host/chromoting_host.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -64,7 +65,7 @@ class ChromotingHostTest : public testing::Test {
     session_manager_ = new protocol::MockSessionManager();
 
     host_.reset(new ChromotingHost(
-        desktop_environment_factory_.get(), make_scoped_ptr(session_manager_),
+        desktop_environment_factory_.get(), base::WrapUnique(session_manager_),
         protocol::TransportContext::ForTests(protocol::TransportRole::SERVER),
         task_runner_,    // Audio
         task_runner_));  // Video encode
@@ -106,13 +107,13 @@ class ChromotingHostTest : public testing::Test {
         .WillRepeatedly(ReturnRef(*session_config2_));
 
     owned_connection1_.reset(
-        new protocol::FakeConnectionToClient(make_scoped_ptr(session1_)));
+        new protocol::FakeConnectionToClient(base::WrapUnique(session1_)));
     owned_connection1_->set_host_stub(&host_stub1_);
     connection1_ = owned_connection1_.get();
     connection1_->set_client_stub(&client_stub1_);
 
     owned_connection2_.reset(
-        new protocol::FakeConnectionToClient(make_scoped_ptr(session2_)));
+        new protocol::FakeConnectionToClient(base::WrapUnique(session2_)));
     owned_connection2_->set_host_stub(&host_stub2_);
     connection2_ = owned_connection2_.get();
     connection2_->set_client_stub(&client_stub2_);
@@ -121,10 +122,10 @@ class ChromotingHostTest : public testing::Test {
   // Helper method to pretend a client is connected to ChromotingHost.
   void SimulateClientConnection(int connection_index, bool authenticate,
                                 bool reject) {
-    scoped_ptr<protocol::ConnectionToClient> connection = std::move(
+    std::unique_ptr<protocol::ConnectionToClient> connection = std::move(
         (connection_index == 0) ? owned_connection1_ : owned_connection2_);
     protocol::ConnectionToClient* connection_ptr = connection.get();
-    scoped_ptr<ClientSession> client(new ClientSession(
+    std::unique_ptr<ClientSession> client(new ClientSession(
         host_.get(), task_runner_ /* audio_task_runner */,
         std::move(connection), desktop_environment_factory_.get(),
         base::TimeDelta(), nullptr, std::vector<HostExtension*>()));
@@ -206,30 +207,30 @@ class ChromotingHostTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
   MockConnectionToClientEventHandler handler_;
-  scoped_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;
+  std::unique_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;
   MockHostStatusObserver host_status_observer_;
-  scoped_ptr<ChromotingHost> host_;
+  std::unique_ptr<ChromotingHost> host_;
   protocol::MockSessionManager* session_manager_;
   std::string xmpp_login_;
   protocol::FakeConnectionToClient* connection1_;
-  scoped_ptr<protocol::FakeConnectionToClient> owned_connection1_;
+  std::unique_ptr<protocol::FakeConnectionToClient> owned_connection1_;
   ClientSession* client1_;
   std::string session_jid1_;
   MockSession* session1_;  // Owned by |connection_|.
-  scoped_ptr<SessionConfig> session_config1_;
+  std::unique_ptr<SessionConfig> session_config1_;
   MockClientStub client_stub1_;
   MockHostStub host_stub1_;
   protocol::FakeConnectionToClient* connection2_;
-  scoped_ptr<protocol::FakeConnectionToClient> owned_connection2_;
+  std::unique_ptr<protocol::FakeConnectionToClient> owned_connection2_;
   ClientSession* client2_;
   std::string session_jid2_;
   MockSession* session2_;  // Owned by |connection2_|.
-  scoped_ptr<SessionConfig> session_config2_;
+  std::unique_ptr<SessionConfig> session_config2_;
   MockClientStub client_stub2_;
   MockHostStub host_stub2_;
-  scoped_ptr<MockSession> session_unowned1_;  // Not owned by a connection.
+  std::unique_ptr<MockSession> session_unowned1_;  // Not owned by a connection.
   std::string session_unowned_jid1_;
-  scoped_ptr<MockSession> session_unowned2_;  // Not owned by a connection.
+  std::unique_ptr<MockSession> session_unowned2_;  // Not owned by a connection.
   std::string session_unowned_jid2_;
   protocol::Session::EventHandler* session_unowned1_event_handler_;
   protocol::Session::EventHandler* session_unowned2_event_handler_;

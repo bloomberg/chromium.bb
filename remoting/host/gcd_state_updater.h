@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_GCD_STATE_UPDATER_H_
 #define REMOTING_HOST_GCD_STATE_UPDATER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/host/backoff_timer.h"
 #include "remoting/host/gcd_rest_client.h"
@@ -37,7 +37,7 @@ class GcdStateUpdater : public SignalStrategy::Listener {
   GcdStateUpdater(const base::Closure& on_update_successful_callback,
                   const base::Closure& on_unknown_host_id_error,
                   SignalStrategy* signal_strategy,
-                  scoped_ptr<GcdRestClient> gcd_client);
+                  std::unique_ptr<GcdRestClient> gcd_client);
   ~GcdStateUpdater() override;
 
   // See HeartbeatSender::SetHostOfflineReason.
@@ -57,7 +57,7 @@ class GcdStateUpdater : public SignalStrategy::Listener {
   base::Closure on_update_successful_callback_;
   base::Closure on_unknown_host_id_error_;
   SignalStrategy* signal_strategy_;
-  scoped_ptr<GcdRestClient> gcd_rest_client_;
+  std::unique_ptr<GcdRestClient> gcd_rest_client_;
   BackoffTimer timer_;
   base::ThreadChecker thread_checker_;
   std::string pending_request_jid_;

@@ -4,6 +4,7 @@
 
 #include "remoting/host/config_file_watcher.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -11,7 +12,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
@@ -70,13 +70,13 @@ class ConfigFileWatcherImpl
   std::string config_;
   base::FilePath config_path_;
 
-  scoped_ptr<base::DelayTimer> config_updated_timer_;
+  std::unique_ptr<base::DelayTimer> config_updated_timer_;
 
   // Number of times an attempt to read the configuration file failed.
   int retries_;
 
   // Monitors the host configuration file.
-  scoped_ptr<base::FilePathWatcher> config_watcher_;
+  std::unique_ptr<base::FilePathWatcher> config_watcher_;
 
   ConfigWatcher::Delegate* delegate_;
 

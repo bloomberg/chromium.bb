@@ -45,11 +45,11 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
 
   // DesktopEnvironment implementation.
-  scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
-  scoped_ptr<InputInjector> CreateInputInjector() override;
-  scoped_ptr<ScreenControls> CreateScreenControls() override;
-  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
+  std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
+  std::unique_ptr<InputInjector> CreateInputInjector() override;
+  std::unique_ptr<ScreenControls> CreateScreenControls() override;
+  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       override;
 };
 
@@ -95,7 +95,7 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   MOCK_METHOD0(CreatePtr, DesktopEnvironment*());
   MOCK_CONST_METHOD0(SupportsAudioCapture, bool());
 
-  scoped_ptr<DesktopEnvironment> Create(
+  std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:
@@ -116,7 +116,7 @@ class MockInputInjector : public InputInjector {
   MOCK_METHOD1(StartPtr,
                void(protocol::ClipboardStub* client_clipboard));
 
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+  void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputInjector);

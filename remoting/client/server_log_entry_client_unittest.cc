@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "remoting/client/server_log_entry_client.h"
+
+#include <memory>
+
 #include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
-#include "remoting/client/server_log_entry_client.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
@@ -20,9 +22,9 @@ using remoting::protocol::ConnectionToHost;
 namespace remoting {
 
 TEST(ServerLogEntryClientTest, SessionStateChange) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
+  std::unique_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
       ConnectionToHost::CONNECTED, remoting::protocol::OK));
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "client";
@@ -34,9 +36,9 @@ TEST(ServerLogEntryClientTest, SessionStateChange) {
 }
 
 TEST(ServerLogEntryClientTest, SessionStateChangeWithError) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
+  std::unique_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
       ConnectionToHost::FAILED, remoting::protocol::PEER_IS_OFFLINE));
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "client";
@@ -50,8 +52,9 @@ TEST(ServerLogEntryClientTest, SessionStateChangeWithError) {
 
 TEST(ServerLogEntryClientTest, Statistics) {
   protocol::PerformanceTracker perf_tracker;
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(&perf_tracker));
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<ServerLogEntry> entry(
+      MakeLogEntryForStatistics(&perf_tracker));
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "client";
@@ -68,8 +71,8 @@ TEST(ServerLogEntryClientTest, Statistics) {
 }
 
 TEST(ServerLogEntryClientTest, SessionIdChanged) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionIdOld("abc"));
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<ServerLogEntry> entry(MakeLogEntryForSessionIdOld("abc"));
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "client";
@@ -88,10 +91,10 @@ TEST(ServerLogEntryClientTest, SessionIdChanged) {
 }
 
 TEST(ServerLogEntryClientTest, AddClientFields) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
+  std::unique_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
       ConnectionToHost::CONNECTED, remoting::protocol::OK));
   AddClientFieldsToLogEntry(entry.get());
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "client";
@@ -107,10 +110,10 @@ TEST(ServerLogEntryClientTest, AddClientFields) {
 }
 
 TEST(ServerLogEntryClientTest, AddSessionDuration) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
+  std::unique_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(
       ConnectionToHost::CONNECTED, remoting::protocol::OK));
   AddSessionDurationToLogEntry(entry.get(), base::TimeDelta::FromSeconds(123));
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "client";

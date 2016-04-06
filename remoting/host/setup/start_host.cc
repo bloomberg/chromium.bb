@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   // Start the host.
-  scoped_ptr<HostStarter> host_starter(HostStarter::Create(
+  std::unique_ptr<HostStarter> host_starter(HostStarter::Create(
       remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
       url_request_context_getter.get()));
   if (redirect_url.empty()) {

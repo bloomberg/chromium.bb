@@ -76,7 +76,7 @@ class ClientStatusLoggerTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
-  scoped_ptr<ClientStatusLogger> client_status_logger_;
+  std::unique_ptr<ClientStatusLogger> client_status_logger_;
 };
 
 TEST_F(ClientStatusLoggerTest, LogStateChange) {

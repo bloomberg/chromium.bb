@@ -29,7 +29,7 @@ bool IpcAudioCapturer::Start(const PacketCapturedCallback& callback) {
   return true;
 }
 
-void IpcAudioCapturer::OnAudioPacket(scoped_ptr<AudioPacket> packet) {
+void IpcAudioCapturer::OnAudioPacket(std::unique_ptr<AudioPacket> packet) {
   callback_.Run(std::move(packet));
 }
 

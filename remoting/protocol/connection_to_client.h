@@ -84,8 +84,8 @@ class ConnectionToClient {
 
   // Start video stream that sends screen content from |desktop_capturer| to the
   // client.
-  virtual scoped_ptr<VideoStream> StartVideoStream(
-      scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) = 0;
+  virtual std::unique_ptr<VideoStream> StartVideoStream(
+      std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) = 0;
 
   // Get the stubs used by the host to transmit messages to the client.
   // The stubs must not be accessed before OnConnectionAuthenticated(), or

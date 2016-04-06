@@ -11,6 +11,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/logging.h"
 
 namespace {
@@ -167,8 +168,8 @@ bool DesktopResizerMac::GetSoleDisplayId(CGDirectDisplayID* display) {
   return true;
 }
 
-scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return make_scoped_ptr(new DesktopResizerMac);
+std::unique_ptr<DesktopResizer> DesktopResizer::Create() {
+  return base::WrapUnique(new DesktopResizerMac);
 }
 
 }  // namespace remoting

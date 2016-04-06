@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_AUDIO_PUMP_H_
 #define REMOTING_HOST_AUDIO_PUMP_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 
@@ -34,8 +35,8 @@ class AudioPump {
   // The caller must ensure that the |audio_stub| is not destroyed until the
   // pump is destroyed.
   AudioPump(scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-            scoped_ptr<AudioCapturer> audio_capturer,
-            scoped_ptr<AudioEncoder> audio_encoder,
+            std::unique_ptr<AudioCapturer> audio_capturer,
+            std::unique_ptr<AudioEncoder> audio_encoder,
             protocol::AudioStub* audio_stub);
   virtual ~AudioPump();
 
@@ -48,7 +49,7 @@ class AudioPump {
   class Core;
 
   // Called on the network thread to send a captured packet to the audio stub.
-  void SendAudioPacket(scoped_ptr<AudioPacket> packet, int size);
+  void SendAudioPacket(std::unique_ptr<AudioPacket> packet, int size);
 
   // Callback for BufferedSocketWriter.
   void OnPacketSent(int size);
@@ -58,7 +59,7 @@ class AudioPump {
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   protocol::AudioStub* audio_stub_;
 
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   base::WeakPtrFactory<AudioPump> weak_factory_;
 

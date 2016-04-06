@@ -5,7 +5,7 @@
 #ifndef REMOTING_CODEC_AUDIO_DECODER_H_
 #define REMOTING_CODEC_AUDIO_DECODER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace remoting {
 
@@ -17,14 +17,15 @@ class AudioPacket;
 
 class AudioDecoder {
  public:
-  static scoped_ptr<AudioDecoder> CreateAudioDecoder(
+  static std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       const protocol::SessionConfig& config);
 
   virtual ~AudioDecoder() {}
 
   // Returns the decoded packet. If the packet is invalid, then a NULL
   // scoped_ptr is returned.
-  virtual scoped_ptr<AudioPacket> Decode(scoped_ptr<AudioPacket> packet) = 0;
+  virtual std::unique_ptr<AudioPacket> Decode(
+      std::unique_ptr<AudioPacket> packet) = 0;
 };
 
 }  // namespace remoting

@@ -26,7 +26,7 @@ const int kTokenUpdateTimeBeforeExpirySeconds = 60;
 }  // namespace
 
 OAuthTokenGetterImpl::OAuthTokenGetterImpl(
-    scoped_ptr<OAuthCredentials> oauth_credentials,
+    std::unique_ptr<OAuthCredentials> oauth_credentials,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     bool auto_refresh)

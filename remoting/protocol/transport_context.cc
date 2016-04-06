@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/base/url_request.h"
@@ -30,7 +31,7 @@ namespace protocol {
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   return new protocol::TransportContext(
-      nullptr, make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
+      nullptr, base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
       nullptr, protocol::NetworkSettings(
                    protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
       role);
@@ -39,8 +40,8 @@ scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
 
 TransportContext::TransportContext(
     SignalStrategy* signal_strategy,
-    scoped_ptr<PortAllocatorFactory> port_allocator_factory,
-    scoped_ptr<UrlRequestFactory> url_request_factory,
+    std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
+    std::unique_ptr<UrlRequestFactory> url_request_factory,
     const NetworkSettings& network_settings,
     TransportRole role)
     : signal_strategy_(signal_strategy),
@@ -80,7 +81,7 @@ void TransportContext::EnsureFreshIceConfig() {
 
   if (ice_config_[relay_mode_].is_null() ||
       base::Time::Now() > ice_config_[relay_mode_].expiration_time) {
-    scoped_ptr<IceConfigRequest> request;
+    std::unique_ptr<IceConfigRequest> request;
     switch (relay_mode_) {
       case RelayMode::TURN:
         if (ice_config_url_.empty()) {

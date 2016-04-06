@@ -5,8 +5,9 @@
 #ifndef REMOTING_CLIENT_CHROMOTING_CLIENT_RUNTIME_H_
 #define REMOTING_CLIENT_CHROMOTING_CLIENT_RUNTIME_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
 
@@ -28,17 +29,17 @@ class ChromotingClientRuntime {
   //
   //  base::MessageLoopForUI *ui_loop = new base::MessageLoopForUI();
   //  ui_loop_->Start();
-  //  scoped_ptr<ChromotingClientRuntime> runtime =
+  //  std::unique_ptr<ChromotingClientRuntime> runtime =
   //    ChromotingClientRuntime::Create(ui_loop);
   //
   // On iOS we created a new message loop and now attach it.
   //
   //  base::MessageLoopForUI *ui_loop = new base::MessageLoopForUI();
   //  ui_loop_->Attach();
-  //  scoped_ptr<ChromotingClientRuntime> runtime =
+  //  std::unique_ptr<ChromotingClientRuntime> runtime =
   //    ChromotingClientRuntime::Create(ui_loop);
   //
-  static scoped_ptr<ChromotingClientRuntime> Create(
+  static std::unique_ptr<ChromotingClientRuntime> Create(
       base::MessageLoopForUI* ui_loop);
 
   ~ChromotingClientRuntime();

@@ -12,8 +12,8 @@ namespace remoting {
 AudioDecoderVerbatim::AudioDecoderVerbatim() {}
 AudioDecoderVerbatim::~AudioDecoderVerbatim() {}
 
-scoped_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
-    scoped_ptr<AudioPacket> packet) {
+std::unique_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
+    std::unique_ptr<AudioPacket> packet) {
   // Return a null scoped_ptr if we get a corrupted packet.
   if ((packet->encoding() != AudioPacket::ENCODING_RAW) ||
       (packet->data_size() != 1) ||

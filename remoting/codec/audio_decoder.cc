@@ -5,20 +5,21 @@
 #include "remoting/codec/audio_decoder.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/codec/audio_decoder_opus.h"
 #include "remoting/codec/audio_decoder_verbatim.h"
 #include "remoting/protocol/session_config.h"
 
 namespace remoting {
 
-scoped_ptr<AudioDecoder> AudioDecoder::CreateAudioDecoder(
+std::unique_ptr<AudioDecoder> AudioDecoder::CreateAudioDecoder(
     const protocol::SessionConfig& config) {
   const protocol::ChannelConfig& audio_config = config.audio_config();
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return make_scoped_ptr(new AudioDecoderVerbatim());
+    return base::WrapUnique(new AudioDecoderVerbatim());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return make_scoped_ptr(new AudioDecoderOpus());
+    return base::WrapUnique(new AudioDecoderOpus());
   }
 
   NOTIMPLEMENTED();

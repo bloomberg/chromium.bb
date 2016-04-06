@@ -48,7 +48,7 @@ AppRemotingConnectedClientFixture::~AppRemotingConnectedClientFixture() {}
 void AppRemotingConnectedClientFixture::SetUp() {
   connection_helper_.reset(
       new AppRemotingConnectionHelper(application_details_));
-  scoped_ptr<TestChromotingClient> test_chromoting_client(
+  std::unique_ptr<TestChromotingClient> test_chromoting_client(
       new TestChromotingClient());
 
   test_chromoting_client->AddRemoteConnectionObserver(this);

@@ -107,7 +107,7 @@ class HeartbeatSenderTest
   MockClosure mock_unknown_host_id_error_callback_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
-  scoped_ptr<HeartbeatSender> heartbeat_sender_;
+  std::unique_ptr<HeartbeatSender> heartbeat_sender_;
 };
 
 // Call Start() followed by Stop(), and make sure a valid heartbeat is sent.
@@ -125,7 +125,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza(sent_iq);
+  std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
@@ -149,7 +149,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza(sent_iq);
+  std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
@@ -166,7 +166,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza2(sent_iq);
+  std::unique_ptr<XmlElement> stanza2(sent_iq);
   ValidateHeartbeatStanza(stanza2.get(), "1", nullptr);
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
@@ -190,7 +190,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza(sent_iq);
+  std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
@@ -202,7 +202,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq2), Return(true)));
 
-  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+  std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "type"), "result");
   XmlElement* result =
       new XmlElement(QName(kChromotingXmlNamespace, "heartbeat-result"));
@@ -215,7 +215,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   heartbeat_sender_->ProcessResponse(false, nullptr, response.get());
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza2(sent_iq2);
+  std::unique_ptr<XmlElement> stanza2(sent_iq2);
   ASSERT_TRUE(stanza2 != nullptr);
   ValidateHeartbeatStanza(stanza2.get(),
                           base::IntToString(kExpectedSequenceId).c_str(),
@@ -228,7 +228,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
 void HeartbeatSenderTest::ProcessResponseWithInterval(
     bool is_offline_heartbeat_response,
     int interval) {
-  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+  std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "type"), "result");
 
   XmlElement* result = new XmlElement(
@@ -276,7 +276,7 @@ TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza(sent_iq);
+  std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", "test_error");
 
@@ -346,7 +346,7 @@ TEST_F(HeartbeatSenderTest, HostOsInfo) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<XmlElement> stanza(sent_iq);
+  std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
 
   XmlElement* heartbeat_stanza =

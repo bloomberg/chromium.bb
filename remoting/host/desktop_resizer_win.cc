@@ -5,10 +5,12 @@
 #include "remoting/host/desktop_resizer.h"
 
 #include <windows.h>
+
 #include <map>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 
 namespace {
 // TODO(jamiewalch): Use the correct DPI for the mode: http://crbug.com/172405.
@@ -185,8 +187,8 @@ ScreenResolution DesktopResizerWin::GetModeResolution(const DEVMODE& mode) {
       webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
 }
 
-scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return make_scoped_ptr(new DesktopResizerWin);
+std::unique_ptr<DesktopResizer> DesktopResizer::Create() {
+  return base::WrapUnique(new DesktopResizerWin);
 }
 
 }  // namespace remoting

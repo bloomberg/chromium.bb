@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "remoting/host/server_log_entry_host.h"
+
+#include <memory>
+
 #include "base/strings/stringize_macros.h"
 #include "build/build_config.h"
-#include "remoting/host/server_log_entry_host.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,8 +19,9 @@ using buzz::XmlElement;
 namespace remoting {
 
 TEST(ServerLogEntryHostTest, MakeForSessionStateChange) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(true));
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<ServerLogEntry> entry(
+      MakeLogEntryForSessionStateChange(true));
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -30,8 +33,8 @@ TEST(ServerLogEntryHostTest, MakeForSessionStateChange) {
 }
 
 TEST(ServerLogEntryHostTest, MakeForHeartbeat) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForHeartbeat());
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<ServerLogEntry> entry(MakeLogEntryForHeartbeat());
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -42,9 +45,10 @@ TEST(ServerLogEntryHostTest, MakeForHeartbeat) {
 }
 
 TEST(ServerLogEntryHostTest, AddHostFields) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(true));
+  std::unique_ptr<ServerLogEntry> entry(
+      MakeLogEntryForSessionStateChange(true));
   AddHostFieldsToLogEntry(entry.get());
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -77,9 +81,10 @@ TEST(ServerLogEntryHostTest, AddHostFields) {
 }
 
 TEST(ServerLogEntryHostTest, AddModeField1) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(true));
+  std::unique_ptr<ServerLogEntry> entry(
+      MakeLogEntryForSessionStateChange(true));
   entry->AddModeField(ServerLogEntry::IT2ME);
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -92,9 +97,10 @@ TEST(ServerLogEntryHostTest, AddModeField1) {
 }
 
 TEST(ServerLogEntryHostTest, AddModeField2) {
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionStateChange(true));
+  std::unique_ptr<ServerLogEntry> entry(
+      MakeLogEntryForSessionStateChange(true));
   entry->AddModeField(ServerLogEntry::ME2ME);
-  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::unique_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";

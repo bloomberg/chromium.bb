@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -120,17 +121,18 @@ protocol::FrameConsumer* PepperVideoRenderer2D::GetFrameConsumer() {
   return software_video_renderer_->GetFrameConsumer();
 }
 
-scoped_ptr<webrtc::DesktopFrame> PepperVideoRenderer2D::AllocateFrame(
+std::unique_ptr<webrtc::DesktopFrame> PepperVideoRenderer2D::AllocateFrame(
     const webrtc::DesktopSize& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   pp::ImageData buffer_data(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                             pp::Size(size.width(), size.height()), false);
-  return make_scoped_ptr(new PepperDesktopFrame(buffer_data));
+  return base::WrapUnique(new PepperDesktopFrame(buffer_data));
 }
 
-void PepperVideoRenderer2D::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
-                                      const base::Closure& done) {
+void PepperVideoRenderer2D::DrawFrame(
+    std::unique_ptr<webrtc::DesktopFrame> frame,
+    const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!frame_received_) {

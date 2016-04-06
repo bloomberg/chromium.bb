@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_HEARTBEAT_SENDER_H_
 #define REMOTING_HOST_HEARTBEAT_SENDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -12,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -147,8 +147,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   void OnHostOfflineReasonAck();
 
   // Helper methods used by DoSendStanza() to generate heartbeat stanzas.
-  scoped_ptr<buzz::XmlElement> CreateHeartbeatMessage();
-  scoped_ptr<buzz::XmlElement> CreateSignature();
+  std::unique_ptr<buzz::XmlElement> CreateHeartbeatMessage();
+  std::unique_ptr<buzz::XmlElement> CreateSignature();
 
   base::Closure on_heartbeat_successful_callback_;
   base::Closure on_unknown_host_id_error_;
@@ -156,8 +156,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   SignalStrategy* signal_strategy_;
   scoped_refptr<const RsaKeyPair> host_key_pair_;
   std::string directory_bot_jid_;
-  scoped_ptr<IqSender> iq_sender_;
-  scoped_ptr<IqRequest> request_;
+  std::unique_ptr<IqSender> iq_sender_;
+  std::unique_ptr<IqRequest> request_;
   int interval_ms_;
   base::RepeatingTimer timer_;
   base::OneShotTimer timer_resend_;

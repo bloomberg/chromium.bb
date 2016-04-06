@@ -5,9 +5,10 @@
 #ifndef REMOTING_CODEC_VIDEO_DECODER_VPX_H_
 #define REMOTING_CODEC_VIDEO_DECODER_VPX_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_decoder.h"
 
@@ -19,8 +20,8 @@ namespace remoting {
 class VideoDecoderVpx : public VideoDecoder {
  public:
   // Create decoders for the specified protocol.
-  static scoped_ptr<VideoDecoderVpx> CreateForVP8();
-  static scoped_ptr<VideoDecoderVpx> CreateForVP9();
+  static std::unique_ptr<VideoDecoderVpx> CreateForVP8();
+  static std::unique_ptr<VideoDecoderVpx> CreateForVP9();
 
   ~VideoDecoderVpx() override;
 

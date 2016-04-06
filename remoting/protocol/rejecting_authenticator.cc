@@ -39,7 +39,7 @@ void RejectingAuthenticator::ProcessMessage(
   resume_callback.Run();
 }
 
-scoped_ptr<buzz::XmlElement> RejectingAuthenticator::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement> RejectingAuthenticator::GetNextMessage() {
   NOTREACHED();
   return nullptr;
 }
@@ -49,7 +49,7 @@ const std::string& RejectingAuthenticator::GetAuthKey() const {
   return auth_key_;
 };
 
-scoped_ptr<ChannelAuthenticator>
+std::unique_ptr<ChannelAuthenticator>
 RejectingAuthenticator::CreateChannelAuthenticator() const {
   NOTREACHED();
   return nullptr;

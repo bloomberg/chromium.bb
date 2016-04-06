@@ -20,7 +20,7 @@ class AudioReader : public ChannelDispatcherBase {
   ~AudioReader() override;
 
  private:
-  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
+  void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;
 
   AudioStub* audio_stub_;
 

@@ -5,11 +5,13 @@
 #include "remoting/host/audio_capturer_linux.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {
@@ -61,7 +63,7 @@ void AudioCapturerLinux::OnDataRead(
     return;
   }
 
-  scoped_ptr<AudioPacket> packet(new AudioPacket());
+  std::unique_ptr<AudioPacket> packet(new AudioPacket());
   packet->add_data(data->data());
   packet->set_encoding(AudioPacket::ENCODING_RAW);
   packet->set_sampling_rate(AudioPipeReader::kSamplingRate);
@@ -74,12 +76,12 @@ bool AudioCapturer::IsSupported() {
   return g_pulseaudio_pipe_sink_reader.Get().get() != nullptr;
 }
 
-scoped_ptr<AudioCapturer> AudioCapturer::Create() {
+std::unique_ptr<AudioCapturer> AudioCapturer::Create() {
   scoped_refptr<AudioPipeReader> reader =
       g_pulseaudio_pipe_sink_reader.Get();
   if (!reader.get())
     return nullptr;
-  return make_scoped_ptr(new AudioCapturerLinux(reader));
+  return base::WrapUnique(new AudioCapturerLinux(reader));
 }
 
 }  // namespace remoting

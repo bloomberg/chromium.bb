@@ -25,11 +25,11 @@ class HostVideoDispatcher : public ChannelDispatcherBase, public VideoStub {
   }
 
   // VideoStub interface.
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+  void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
                           const base::Closure& done) override;
 
  private:
-  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
+  void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;
 
   VideoFeedbackStub* video_feedback_stub_ = nullptr;
 

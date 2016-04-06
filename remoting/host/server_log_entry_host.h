@@ -13,11 +13,11 @@ class ServerLogEntry;
 
 // Constructs a log entry for a session state change.
 // Currently this is either connection or disconnection.
-scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
+std::unique_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
     bool connected);
 
 // Constructs a log entry for a heartbeat.
-scoped_ptr<ServerLogEntry> MakeLogEntryForHeartbeat();
+std::unique_ptr<ServerLogEntry> MakeLogEntryForHeartbeat();
 
 // Adds fields describing the host to this log entry.
 void AddHostFieldsToLogEntry(ServerLogEntry* entry);

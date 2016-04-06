@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace {
 const int kChannels = 2;
@@ -267,7 +268,7 @@ void AudioCapturerWin::ProcessSamples(uint8_t* data,
     }
   }
 
-  scoped_ptr<AudioPacket> packet(new AudioPacket());
+  std::unique_ptr<AudioPacket> packet(new AudioPacket());
   packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
   packet->set_encoding(AudioPacket::ENCODING_RAW);
   packet->set_sampling_rate(sampling_rate_);
@@ -325,8 +326,8 @@ bool AudioCapturer::IsSupported() {
   return true;
 }
 
-scoped_ptr<AudioCapturer> AudioCapturer::Create() {
-  return make_scoped_ptr(new AudioCapturerWin());
+std::unique_ptr<AudioCapturer> AudioCapturer::Create() {
+  return base::WrapUnique(new AudioCapturerWin());
 }
 
 }  // namespace remoting

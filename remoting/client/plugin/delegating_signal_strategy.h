@@ -34,7 +34,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
   std::string GetLocalJid() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
-  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;
   std::string GetNextId() override;
 
  private:

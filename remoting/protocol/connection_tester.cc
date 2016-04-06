@@ -276,7 +276,7 @@ void MessagePipeConnectionTester::RunAndCheckResults() {
       &MessagePipeConnectionTester::OnMessageReceived, base::Unretained(this)));
 
   for (int i = 0; i < message_count_; ++i) {
-    scoped_ptr<VideoPacket> message(new VideoPacket());
+    std::unique_ptr<VideoPacket> message(new VideoPacket());
     message->mutable_data()->resize(message_size_);
     for (int p = 0; p < message_size_; ++p) {
       message->mutable_data()[0] = static_cast<char>(i + p);
@@ -294,7 +294,7 @@ void MessagePipeConnectionTester::RunAndCheckResults() {
 }
 
 void MessagePipeConnectionTester::OnMessageReceived(
-    scoped_ptr<CompoundBuffer> message) {
+    std::unique_ptr<CompoundBuffer> message) {
   received_messages_.push_back(ParseMessage<VideoPacket>(message.get()));
   if (received_messages_.size() >= sent_messages_.size()) {
     run_loop_.Quit();

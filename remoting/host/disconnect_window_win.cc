@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
 #include <stddef.h>
+#include <windows.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
@@ -395,8 +396,8 @@ bool DisconnectWindowWin::SetStrings() {
 } // namespace
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return make_scoped_ptr(new DisconnectWindowWin());
+std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
+  return base::WrapUnique(new DisconnectWindowWin());
 }
 
 }  // namespace remoting

@@ -4,7 +4,8 @@
 
 #include "remoting/host/security_key/fake_ipc_gnubby_auth_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"

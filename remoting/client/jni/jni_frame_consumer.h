@@ -6,10 +6,10 @@
 #define REMOTING_CLIENT_JNI_JNI_FRAME_CONSUMER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -27,9 +27,9 @@ class JniFrameConsumer : public protocol::FrameConsumer {
   ~JniFrameConsumer() override;
 
   // FrameConsumer implementation.
-  scoped_ptr<webrtc::DesktopFrame> AllocateFrame(
+  std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override;
-  void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+  void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                  const base::Closure& done) override;
   PixelFormat GetPixelFormat() override;
 
@@ -42,7 +42,7 @@ class JniFrameConsumer : public protocol::FrameConsumer {
   ChromotingJniRuntime* jni_runtime_;
 
   // Renderer object used to render the frames on the display thread.
-  scoped_ptr<Renderer> renderer_;
+  std::unique_ptr<Renderer> renderer_;
 
   base::WeakPtrFactory<JniFrameConsumer> weak_factory_;
 

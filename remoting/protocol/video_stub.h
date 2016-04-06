@@ -5,9 +5,10 @@
 #ifndef REMOTING_PROTOCOL_VIDEO_STUB_H_
 #define REMOTING_PROTOCOL_VIDEO_STUB_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -17,7 +18,7 @@ namespace protocol {
 
 class VideoStub {
  public:
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+  virtual void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                                   const base::Closure& done) = 0;
 
  protected:

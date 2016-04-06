@@ -5,9 +5,9 @@
 #ifndef REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
 #define REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 

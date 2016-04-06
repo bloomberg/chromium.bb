@@ -5,8 +5,9 @@
 #ifndef REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
 #define REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -29,7 +30,7 @@ class LocalInputMonitor {
 
   // Creates a platform-specific instance of LocalInputMonitor.
   // |client_session_control| is called on the |caller_task_runner| thread.
-  static scoped_ptr<LocalInputMonitor> Create(
+  static std::unique_ptr<LocalInputMonitor> Create(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,

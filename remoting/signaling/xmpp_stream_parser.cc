@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlbuilder.h"
@@ -17,7 +18,7 @@ namespace remoting {
 
 class XmppStreamParser::Core : public buzz::XmlParseHandler {
  public:
-  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> stanza)>
+  typedef base::Callback<void(std::unique_ptr<buzz::XmlElement> stanza)>
       OnStanzaCallback;
 
   Core();
@@ -82,7 +83,7 @@ void XmppStreamParser::Core::StartElement(buzz::XmlParseContext* context,
 
   ++depth_;
   if (depth_ == 1) {
-    scoped_ptr<buzz::XmlElement> header(
+    std::unique_ptr<buzz::XmlElement> header(
         buzz::XmlBuilder::BuildElement(context, name, atts));
     if (!header) {
       LOG(ERROR) << "Failed to parse XMPP stream header.";
@@ -109,7 +110,7 @@ void XmppStreamParser::Core::EndElement(buzz::XmlParseContext* context,
 
   if (depth_ == 1) {
     if (!on_stanza_callback_.is_null())
-      on_stanza_callback_.Run(make_scoped_ptr(builder_.CreateElement()));
+      on_stanza_callback_.Run(base::WrapUnique(builder_.CreateElement()));
   }
 }
 

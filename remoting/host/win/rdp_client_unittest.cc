@@ -93,7 +93,7 @@ class RdpClientTest : public testing::Test {
 
  protected:
   // The ATL module instance required by the ATL code.
-  scoped_ptr<RdpClientModule> module_;
+  std::unique_ptr<RdpClientModule> module_;
 
   // The UI message loop used by RdpClient. The loop is stopped once there is no
   // more references to |task_runner_|.
@@ -105,7 +105,7 @@ class RdpClientTest : public testing::Test {
   MockRdpClientEventHandler event_handler_;
 
   // Points to the object being tested.
-  scoped_ptr<RdpClient> rdp_client_;
+  std::unique_ptr<RdpClient> rdp_client_;
 
   // Unique terminal identifier passed to RdpClient.
   std::string terminal_id_;

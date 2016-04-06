@@ -4,6 +4,7 @@
 
 #include "remoting/host/backoff_timer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +21,7 @@ void IncrementCounter(int* counter) {
 TEST(BackoffTimer, Basic) {
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
   BackoffTimer backoff_timer;
-  backoff_timer.SetTimerForTest(make_scoped_ptr(mock_timer));
+  backoff_timer.SetTimerForTest(base::WrapUnique(mock_timer));
   ASSERT_FALSE(backoff_timer.IsRunning());
 
   int counter = 0;

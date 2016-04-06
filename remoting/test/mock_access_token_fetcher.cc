@@ -16,7 +16,7 @@ MockAccessTokenFetcher::MockAccessTokenFetcher() {}
 MockAccessTokenFetcher::~MockAccessTokenFetcher() {}
 
 void MockAccessTokenFetcher::SetAccessTokenFetcher(
-    scoped_ptr<AccessTokenFetcher> fetcher) {
+    std::unique_ptr<AccessTokenFetcher> fetcher) {
   internal_access_token_fetcher_ = std::move(fetcher);
 
   ON_CALL(*this, GetAccessTokenFromAuthCode(_, _))

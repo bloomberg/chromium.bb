@@ -54,8 +54,8 @@ class PepperUrlRequestFactory : public UrlRequestFactory {
   ~PepperUrlRequestFactory() override;
 
    // UrlRequestFactory interface.
-  scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
-                                          const std::string& url) override;
+  std::unique_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
+                                               const std::string& url) override;
 
  private:
   pp::InstanceHandle pp_instance_;

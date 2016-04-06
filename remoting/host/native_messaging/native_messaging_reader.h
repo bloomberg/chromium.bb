@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_
 #define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 
@@ -23,7 +24,7 @@ namespace remoting {
 // webapp.
 class NativeMessagingReader {
  public:
-  typedef base::Callback<void(scoped_ptr<base::Value>)> MessageCallback;
+  typedef base::Callback<void(std::unique_ptr<base::Value>)> MessageCallback;
 
   explicit NativeMessagingReader(base::File file);
   ~NativeMessagingReader();
@@ -42,13 +43,13 @@ class NativeMessagingReader {
   // Wrappers posted to by the read thread to trigger the message and EOF
   // callbacks on the caller thread, and have them safely dropped if the reader
   // has been deleted before they are processed.
-  void InvokeMessageCallback(scoped_ptr<base::Value> message);
+  void InvokeMessageCallback(std::unique_ptr<base::Value> message);
   void InvokeEofCallback();
 
   // Holds the information that the read thread needs to access, such as the
   // File, and the TaskRunner used for posting notifications back to this
   // class.
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   // Caller-supplied message and end-of-file callbacks.
   MessageCallback message_callback_;

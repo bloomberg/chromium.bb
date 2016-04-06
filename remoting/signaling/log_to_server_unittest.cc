@@ -50,7 +50,7 @@ class LogToServerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   MockSignalStrategy signal_strategy_;
-  scoped_ptr<LogToServer> log_to_server_;
+  std::unique_ptr<LogToServer> log_to_server_;
 };
 
 TEST_F(LogToServerTest, LogWhenConnected) {

@@ -32,7 +32,7 @@ class SignalingConnector
  public:
   // The |auth_failed_callback| is called when authentication fails.
   SignalingConnector(XmppSignalStrategy* signal_strategy,
-                     scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
+                     std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker,
                      OAuthTokenGetter* oauth_token_getter,
                      const base::Closure& auth_failed_callback);
   ~SignalingConnector() override;
@@ -62,7 +62,7 @@ class SignalingConnector
 
   XmppSignalStrategy* signal_strategy_;
   base::Closure auth_failed_callback_;
-  scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
+  std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
 
   OAuthTokenGetter* oauth_token_getter_;
 

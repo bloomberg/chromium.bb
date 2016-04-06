@@ -9,7 +9,8 @@
 #include <atlcom.h>
 #include <atlctl.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/win/scoped_comptr.h"
 // chromoting_lib.h contains MIDL-generated declarations.
 #include "remoting/host/chromoting_lib.h"
@@ -61,7 +62,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
   END_COM_MAP()
 
   // Implements loading and instantiation of the RDP ActiveX client.
-  scoped_ptr<RdpClient> client_;
+  std::unique_ptr<RdpClient> client_;
 
   // Holds a reference to the caller's EventHandler, through which notifications
   // are dispatched. Released in Disconnect(), to prevent further notifications.

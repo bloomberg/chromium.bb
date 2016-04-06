@@ -4,9 +4,11 @@
 
 #include "remoting/host/security_key/fake_remote_security_key_ipc_server.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -97,19 +99,19 @@ FakeRemoteSecurityKeyIpcServerFactory::
   RemoteSecurityKeyIpcServer::SetFactoryForTest(nullptr);
 }
 
-scoped_ptr<RemoteSecurityKeyIpcServer>
+std::unique_ptr<RemoteSecurityKeyIpcServer>
 FakeRemoteSecurityKeyIpcServerFactory::Create(
     int connection_id,
     base::TimeDelta initial_connect_timeout,
     const GnubbyAuthHandler::SendMessageCallback& send_message_callback,
     const base::Closure& done_callback) {
-  scoped_ptr<FakeRemoteSecurityKeyIpcServer> fake_ipc_server(
+  std::unique_ptr<FakeRemoteSecurityKeyIpcServer> fake_ipc_server(
       new FakeRemoteSecurityKeyIpcServer(connection_id, initial_connect_timeout,
                                          send_message_callback, done_callback));
 
   ipc_server_map_[connection_id] = fake_ipc_server->AsWeakPtr();
 
-  return make_scoped_ptr(fake_ipc_server.release());
+  return base::WrapUnique(fake_ipc_server.release());
 }
 
 base::WeakPtr<FakeRemoteSecurityKeyIpcServer>

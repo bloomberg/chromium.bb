@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
 #import "remoting/host/disconnect_window_mac.h"
+
+#import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -74,8 +75,8 @@ void DisconnectWindowMac::Start(
 }
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return make_scoped_ptr(new DisconnectWindowMac());
+std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
+  return base::WrapUnique(new DisconnectWindowMac());
 }
 
 }  // namespace remoting

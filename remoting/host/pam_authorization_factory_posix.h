@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_PAM_AUTHORIZATION_FACTORY_POSIX_H_
 #define REMOTING_HOST_PAM_AUTHORIZATION_FACTORY_POSIX_H_
 
+#include <memory>
+
 #include "remoting/protocol/authenticator.h"
 
-#include "base/memory/scoped_ptr.h"
 
 // PamAuthorizationFactory abuses the AuthenticatorFactory interface to apply
 // PAM-based authorization on top of some underlying authentication scheme.
@@ -17,15 +18,15 @@ namespace remoting {
 class PamAuthorizationFactory : public protocol::AuthenticatorFactory {
  public:
   PamAuthorizationFactory(
-      scoped_ptr<protocol::AuthenticatorFactory> underlying);
+      std::unique_ptr<protocol::AuthenticatorFactory> underlying);
   ~PamAuthorizationFactory() override;
 
-  scoped_ptr<protocol::Authenticator> CreateAuthenticator(
+  std::unique_ptr<protocol::Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid) override;
 
  private:
-  scoped_ptr<protocol::AuthenticatorFactory> underlying_;
+  std::unique_ptr<protocol::AuthenticatorFactory> underlying_;
 };
 
 }  // namespace remoting

@@ -5,6 +5,8 @@
 #include "remoting/host/clipboard.h"
 
 #include <X11/Xlib.h>
+
+#include "base/memory/ptr_util.h"
 #undef Status  // Xlib.h #defines this, which breaks protobuf headers.
 
 #include "base/bind.h"
@@ -25,7 +27,8 @@ class ClipboardX11 : public Clipboard,
   ~ClipboardX11() override;
 
   // Clipboard interface.
-  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
   // MessageLoopForIO::Watcher interface.
@@ -37,7 +40,7 @@ class ClipboardX11 : public Clipboard,
                           const std::string& data);
   void PumpXEvents();
 
-  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
+  std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
 
   // Underlying X11 clipboard implementation.
   XServerClipboard x_server_clipboard_;
@@ -62,7 +65,7 @@ ClipboardX11::~ClipboardX11() {
 }
 
 void ClipboardX11::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   // TODO(lambroslambrou): Share the X connection with InputInjector.
   display_ = XOpenDisplay(nullptr);
   if (!display_) {
@@ -117,8 +120,8 @@ void ClipboardX11::PumpXEvents() {
   }
 }
 
-scoped_ptr<Clipboard> Clipboard::Create() {
-  return make_scoped_ptr(new ClipboardX11());
+std::unique_ptr<Clipboard> Clipboard::Create() {
+  return base::WrapUnique(new ClipboardX11());
 }
 
 }  // namespace remoting

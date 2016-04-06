@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_CHANNEL_DISPATCHER_BASE_H_
 #define REMOTING_PROTOCOL_CHANNEL_DISPATCHER_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/errors.h"
 
 namespace remoting {
@@ -58,17 +58,17 @@ class ChannelDispatcherBase {
   MessagePipe* message_pipe() { return message_pipe_.get(); }
 
   // Child classes must override this method to handle incoming messages.
-  virtual void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) = 0;
+  virtual void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) = 0;
 
  private:
-  void OnChannelReady(scoped_ptr<MessagePipe> message_pipe);
+  void OnChannelReady(std::unique_ptr<MessagePipe> message_pipe);
   void OnPipeError(int error);
 
   std::string channel_name_;
   MessageChannelFactory* channel_factory_ = nullptr;
   EventHandler* event_handler_ = nullptr;
 
-  scoped_ptr<MessagePipe> message_pipe_;
+  std::unique_ptr<MessagePipe> message_pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelDispatcherBase);
 };

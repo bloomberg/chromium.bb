@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -69,8 +70,9 @@ class CreateSessionDescriptionObserver
     : public webrtc::CreateSessionDescriptionObserver {
  public:
   typedef base::Callback<void(
-      scoped_ptr<webrtc::SessionDescriptionInterface> description,
-      const std::string& error)> ResultCallback;
+      std::unique_ptr<webrtc::SessionDescriptionInterface> description,
+      const std::string& error)>
+      ResultCallback;
 
   static CreateSessionDescriptionObserver* Create(
       const ResultCallback& result_callback) {
@@ -79,7 +81,7 @@ class CreateSessionDescriptionObserver
   }
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     base::ResetAndReturn(&result_callback_)
-        .Run(make_scoped_ptr(desc), std::string());
+        .Run(base::WrapUnique(desc), std::string());
   }
   void OnFailure(const std::string& error) override {
     base::ResetAndReturn(&result_callback_).Run(nullptr, error);
@@ -185,7 +187,7 @@ void WebrtcTransport::Start(
   constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
-  scoped_ptr<cricket::PortAllocator> port_allocator =
+  std::unique_ptr<cricket::PortAllocator> port_allocator =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
           transport_context_);
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
@@ -249,7 +251,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     }
 
     webrtc::SdpParseError error;
-    scoped_ptr<webrtc::SessionDescriptionInterface> session_description(
+    std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(
         webrtc::CreateSessionDescription(type, sdp, &error));
     if (!session_description) {
       LOG(ERROR) << "Failed to parse the session description: "
@@ -283,7 +285,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     }
 
     webrtc::SdpParseError error;
-    scoped_ptr<webrtc::IceCandidateInterface> candidate(
+    std::unique_ptr<webrtc::IceCandidateInterface> candidate(
         webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, candidate_str,
                                    &error));
     if (!candidate) {
@@ -307,7 +309,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
-    scoped_ptr<webrtc::SessionDescriptionInterface> description,
+    std::unique_ptr<webrtc::SessionDescriptionInterface> description,
     const std::string& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -329,7 +331,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
   description_sdp = NormalizeSessionDescription(description_sdp);
 
   // Format and send the session description to the peer.
-  scoped_ptr<XmlElement> transport_info(
+  std::unique_ptr<XmlElement> transport_info(
       new XmlElement(QName(kTransportNamespace, "transport"), true));
   XmlElement* offer_tag =
       new XmlElement(QName(kTransportNamespace, "session-description"));
@@ -460,7 +462,7 @@ void WebrtcTransport::OnIceCandidate(
     const webrtc::IceCandidateInterface* candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<XmlElement> candidate_element(
+  std::unique_ptr<XmlElement> candidate_element(
       new XmlElement(QName(kTransportNamespace, "candidate")));
   std::string candidate_str;
   if (!candidate->ToString(&candidate_str)) {

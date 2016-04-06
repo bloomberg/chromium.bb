@@ -8,10 +8,10 @@
 #include <windows.h>
 #include <stdint.h>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_native_library.h"
 
 namespace remoting {
@@ -30,7 +30,7 @@ class TouchInjectorWinDelegate {
 
   // Determines whether Windows touch injection functions can be used.
   // Returns a non-null TouchInjectorWinDelegate on success.
-  static scoped_ptr<TouchInjectorWinDelegate> Create();
+  static std::unique_ptr<TouchInjectorWinDelegate> Create();
 
   // These match the functions in MSDN.
   virtual BOOL InitializeTouchInjection(UINT32 max_count, DWORD dw_mode);
@@ -75,7 +75,7 @@ class TouchInjectorWin {
   void InjectTouchEvent(const protocol::TouchEvent& event);
 
   void SetInjectorDelegateForTest(
-      scoped_ptr<TouchInjectorWinDelegate> functions);
+      std::unique_ptr<TouchInjectorWinDelegate> functions);
 
  private:
   // Helper methods called from InjectTouchEvent().
@@ -88,7 +88,7 @@ class TouchInjectorWin {
   void CancelTouchPoints(const protocol::TouchEvent& event);
 
   // Set to null if touch injection is not available from the OS.
-  scoped_ptr<TouchInjectorWinDelegate> delegate_;
+  std::unique_ptr<TouchInjectorWinDelegate> delegate_;
 
   // TODO(rkuroiwa): crbug.com/470203
   // This is a naive implementation. Check if we can achieve

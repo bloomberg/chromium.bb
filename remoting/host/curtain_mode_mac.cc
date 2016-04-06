@@ -15,6 +15,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/errors.h"
@@ -260,12 +261,12 @@ bool CurtainModeMac::Activate() {
 }
 
 // static
-scoped_ptr<CurtainMode> CurtainMode::Create(
+std::unique_ptr<CurtainMode> CurtainMode::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return make_scoped_ptr(new CurtainModeMac(
-      caller_task_runner, ui_task_runner, client_session_control));
+  return base::WrapUnique(new CurtainModeMac(caller_task_runner, ui_task_runner,
+                                             client_session_control));
 }
 
 }  // namespace remoting

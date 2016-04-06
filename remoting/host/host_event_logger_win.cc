@@ -4,13 +4,15 @@
 
 #include "remoting/host/host_event_logger.h"
 
-#include <windows.h>
 #include <stddef.h>
+#include <windows.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,10 +150,10 @@ void HostEventLoggerWin::LogString(WORD type,
 }
 
 // static
-scoped_ptr<HostEventLogger> HostEventLogger::Create(
+std::unique_ptr<HostEventLogger> HostEventLogger::Create(
     base::WeakPtr<HostStatusMonitor> monitor,
     const std::string& application_name) {
-  return make_scoped_ptr(new HostEventLoggerWin(monitor, application_name));
+  return base::WrapUnique(new HostEventLoggerWin(monitor, application_name));
 }
 
 }  // namespace remoting

@@ -36,7 +36,7 @@ class ChromiumUrlRequest : public UrlRequest, public net::URLFetcherDelegate {
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* url_fetcher) override;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   OnResultCallback on_result_callback_;
 };
 
@@ -47,8 +47,8 @@ class ChromiumUrlRequestFactory : public UrlRequestFactory {
   ~ChromiumUrlRequestFactory() override;
 
   // UrlRequestFactory interface.
-  scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
-                                          const std::string& url) override;
+  std::unique_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
+                                               const std::string& url) override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_context_;

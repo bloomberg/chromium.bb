@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/proto/control.pb.h"
@@ -23,12 +24,12 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
  public:
   Core(base::WeakPtr<DesktopCapturerProxy> proxy,
        scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-       scoped_ptr<webrtc::DesktopCapturer> capturer);
+       std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~Core() override;
 
   void Start();
   void SetSharedMemoryFactory(
-      scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
+      std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
   void Capture(const webrtc::DesktopRegion& rect);
 
  private:
@@ -39,7 +40,7 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
 
   base::WeakPtr<DesktopCapturerProxy> proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-  scoped_ptr<webrtc::DesktopCapturer> capturer_;
+  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -47,7 +48,7 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
 DesktopCapturerProxy::Core::Core(
     base::WeakPtr<DesktopCapturerProxy> proxy,
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_ptr<webrtc::DesktopCapturer> capturer)
+    std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : proxy_(proxy),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       capturer_(std::move(capturer)) {
@@ -64,7 +65,7 @@ void DesktopCapturerProxy::Core::Start() {
 }
 
 void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
-    scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
+    std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capturer_->SetSharedMemoryFactory(
       rtc_make_scoped_ptr(shared_memory_factory.release()));
@@ -81,12 +82,12 @@ void DesktopCapturerProxy::Core::OnCaptureCompleted(
 
   caller_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DesktopCapturerProxy::OnFrameCaptured, proxy_,
-                            base::Passed(make_scoped_ptr(frame))));
+                            base::Passed(base::WrapUnique(frame))));
 }
 
 DesktopCapturerProxy::DesktopCapturerProxy(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_ptr<webrtc::DesktopCapturer> capturer)
+    std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : capture_task_runner_(capture_task_runner), weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr(), capture_task_runner,
                        std::move(capturer)));
@@ -113,7 +114,7 @@ void DesktopCapturerProxy::SetSharedMemoryFactory(
       FROM_HERE,
       base::Bind(
           &Core::SetSharedMemoryFactory, base::Unretained(core_.get()),
-          base::Passed(make_scoped_ptr(shared_memory_factory.release()))));
+          base::Passed(base::WrapUnique(shared_memory_factory.release()))));
 }
 
 void DesktopCapturerProxy::Capture(const webrtc::DesktopRegion& rect) {
@@ -128,7 +129,7 @@ void DesktopCapturerProxy::Capture(const webrtc::DesktopRegion& rect) {
 }
 
 void DesktopCapturerProxy::OnFrameCaptured(
-    scoped_ptr<webrtc::DesktopFrame> frame) {
+    std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   callback_->OnCaptureCompleted(frame.release());

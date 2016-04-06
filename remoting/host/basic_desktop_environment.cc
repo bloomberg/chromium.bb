@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/host/audio_capturer.h"
@@ -33,27 +34,28 @@ BasicDesktopEnvironment::~BasicDesktopEnvironment() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
-scoped_ptr<AudioCapturer> BasicDesktopEnvironment::CreateAudioCapturer() {
+std::unique_ptr<AudioCapturer> BasicDesktopEnvironment::CreateAudioCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return AudioCapturer::Create();
 }
 
-scoped_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector() {
+std::unique_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return InputInjector::Create(input_task_runner(), ui_task_runner());
 }
 
-scoped_ptr<ScreenControls> BasicDesktopEnvironment::CreateScreenControls() {
+std::unique_ptr<ScreenControls>
+BasicDesktopEnvironment::CreateScreenControls() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return nullptr;
 }
 
-scoped_ptr<webrtc::MouseCursorMonitor>
+std::unique_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
-  scoped_ptr<webrtc::MouseCursorMonitor> cursor_monitor;
+  std::unique_ptr<webrtc::MouseCursorMonitor> cursor_monitor;
 
 #if defined(OS_CHROMEOS)
   cursor_monitor.reset(new MouseCursorMonitorAura());
@@ -61,7 +63,7 @@ BasicDesktopEnvironment::CreateMouseCursorMonitor() {
   cursor_monitor.reset(webrtc::MouseCursorMonitor::CreateForScreen(
       *desktop_capture_options_, webrtc::kFullDesktopScreenId));
 #endif
-  return make_scoped_ptr(new MouseCursorMonitorProxy(
+  return base::WrapUnique(new MouseCursorMonitorProxy(
       video_capture_task_runner_, std::move(cursor_monitor)));
 }
 
@@ -75,11 +77,11 @@ std::string BasicDesktopEnvironment::GetCapabilities() const {
 void BasicDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
 }
 
-scoped_ptr<webrtc::DesktopCapturer>
+std::unique_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<webrtc::DesktopCapturer> capturer;
+  std::unique_ptr<webrtc::DesktopCapturer> capturer;
 
 #if defined(OS_CHROMEOS)
   capturer.reset(new AuraDesktopCapturer());
@@ -87,8 +89,8 @@ BasicDesktopEnvironment::CreateVideoCapturer() {
   capturer.reset(webrtc::ScreenCapturer::Create(*desktop_capture_options_));
 #endif  // !defined(OS_CHROMEOS)
 
-  return make_scoped_ptr(new DesktopCapturerProxy(video_capture_task_runner_,
-                                                  std::move(capturer)));
+  return base::WrapUnique(new DesktopCapturerProxy(video_capture_task_runner_,
+                                                   std::move(capturer)));
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

@@ -5,9 +5,10 @@
 #ifndef REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
 #define REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/audio_stub.h"
 
 namespace base {
@@ -29,14 +30,14 @@ class AudioDecodeScheduler : public protocol::AudioStub {
   AudioDecodeScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-      scoped_ptr<AudioPlayer> audio_player);
+      std::unique_ptr<AudioPlayer> audio_player);
   ~AudioDecodeScheduler() override;
 
   // Initializes decoder with the information from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
 
   // AudioStub implementation.
-  void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                           const base::Closure& done) override;
 
  private:

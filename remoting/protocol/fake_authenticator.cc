@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,7 +30,7 @@ FakeChannelAuthenticator::FakeChannelAuthenticator(bool accept, bool async)
 FakeChannelAuthenticator::~FakeChannelAuthenticator() {}
 
 void FakeChannelAuthenticator::SecureAndAuthenticate(
-    scoped_ptr<P2PStreamSocket> socket,
+    std::unique_ptr<P2PStreamSocket> socket,
     const DoneCallback& done_callback) {
   socket_ = std::move(socket);
 
@@ -154,10 +155,10 @@ void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message,
   resume_callback.Run();
 }
 
-scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
+std::unique_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
   EXPECT_EQ(MESSAGE_READY, state());
 
-  scoped_ptr<buzz::XmlElement> result(new buzz::XmlElement(
+  std::unique_ptr<buzz::XmlElement> result(new buzz::XmlElement(
       buzz::QName(kChromotingXmlNamespace, "authentication")));
   buzz::XmlElement* id = new buzz::XmlElement(
       buzz::QName(kChromotingXmlNamespace, "id"));
@@ -185,10 +186,10 @@ const std::string& FakeAuthenticator::GetAuthKey() const {
   return auth_key_;
 }
 
-scoped_ptr<ChannelAuthenticator>
+std::unique_ptr<ChannelAuthenticator>
 FakeAuthenticator::CreateChannelAuthenticator() const {
   EXPECT_EQ(ACCEPTED, state());
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new FakeChannelAuthenticator(action_ != REJECT_CHANNEL, async_));
 }
 
@@ -203,10 +204,11 @@ FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
       async_(async) {}
 FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {}
 
-scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(
+std::unique_ptr<Authenticator>
+FakeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid) {
-  scoped_ptr<FakeAuthenticator> authenticator(new FakeAuthenticator(
+  std::unique_ptr<FakeAuthenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::HOST, round_trips_, action_, async_));
   authenticator->set_messages_till_started(messages_till_started_);
   return std::move(authenticator);

@@ -5,10 +5,10 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_HOST_H_
 #define REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_HOST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -38,7 +38,7 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_video_renderer(VideoRenderer* video_renderer) override;
   void set_audio_stub(AudioStub* audio_stub) override;
-  void Connect(scoped_ptr<Session> session,
+  void Connect(std::unique_ptr<Session> session,
                scoped_refptr<TransportContext> transport_context,
                HostEventCallback* event_callback) override;
   const SessionConfig& config() override;
@@ -76,15 +76,15 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   VideoRenderer* video_renderer_ = nullptr;
   ClipboardStub* clipboard_stub_ = nullptr;
 
-  scoped_ptr<Session> session_;
-  scoped_ptr<WebrtcTransport> transport_;
+  std::unique_ptr<Session> session_;
+  std::unique_ptr<WebrtcTransport> transport_;
 
-  scoped_ptr<ClientControlDispatcher> control_dispatcher_;
-  scoped_ptr<ClientEventDispatcher> event_dispatcher_;
+  std::unique_ptr<ClientControlDispatcher> control_dispatcher_;
+  std::unique_ptr<ClientEventDispatcher> event_dispatcher_;
   ClipboardFilter clipboard_forwarder_;
   InputFilter event_forwarder_;
 
-  scoped_ptr<WebrtcVideoRendererAdapter> video_adapter_;
+  std::unique_ptr<WebrtcVideoRendererAdapter> video_adapter_;
 
   // Internal state of the connection.
   State state_ = INITIALIZING;

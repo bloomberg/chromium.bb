@@ -55,8 +55,8 @@ MockPairingRegistryDelegate::MockPairingRegistryDelegate() {
 MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {
 }
 
-scoped_ptr<base::ListValue> MockPairingRegistryDelegate::LoadAll() {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+std::unique_ptr<base::ListValue> MockPairingRegistryDelegate::LoadAll() {
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (Pairings::const_iterator i = pairings_.begin(); i != pairings_.end();
        ++i) {
     result->Append(i->second.ToValue().release());
@@ -91,7 +91,7 @@ bool MockPairingRegistryDelegate::Delete(const std::string& client_id) {
 }
 
 SynchronousPairingRegistry::SynchronousPairingRegistry(
-    scoped_ptr<Delegate> delegate)
+    std::unique_ptr<Delegate> delegate)
     : PairingRegistry(base::ThreadTaskRunnerHandle::Get(),
                       std::move(delegate)) {}
 SynchronousPairingRegistry::~SynchronousPairingRegistry() {}

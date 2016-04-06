@@ -5,9 +5,9 @@
 #ifndef REMOTING_HOST_HOST_CONFIG_H_
 #define REMOTING_HOST_HOST_CONFIG_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -47,12 +47,12 @@ extern const char kFrameRecorderBufferKbConfigPath[];
 extern const char kGcdDeviceIdConfigPath[];
 
 // Helpers for serializing/deserializing Host configuration dictonaries.
-scoped_ptr<base::DictionaryValue> HostConfigFromJson(
+std::unique_ptr<base::DictionaryValue> HostConfigFromJson(
     const std::string& serialized);
 std::string HostConfigToJson(const base::DictionaryValue& host_config);
 
 // Helpers for loading/saving host configurations from/to files.
-scoped_ptr<base::DictionaryValue> HostConfigFromJsonFile(
+std::unique_ptr<base::DictionaryValue> HostConfigFromJsonFile(
     const base::FilePath& config_file);
 bool HostConfigToJsonFile(const base::DictionaryValue& host_config,
                           const base::FilePath& config_file);

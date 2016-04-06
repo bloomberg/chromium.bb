@@ -77,13 +77,13 @@ class MessageReaderTest : public testing::Test {
     reader_.reset();
   }
 
-  void OnMessage(scoped_ptr<CompoundBuffer> buffer) {
+  void OnMessage(std::unique_ptr<CompoundBuffer> buffer) {
     messages_.push_back(buffer.release());
     callback_.OnMessage();
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<MessageReader> reader_;
+  std::unique_ptr<MessageReader> reader_;
   FakeStreamSocket socket_;
   MockMessageReceivedCallback callback_;
   int read_error_ = 0;

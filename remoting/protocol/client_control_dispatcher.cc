@@ -112,11 +112,11 @@ void ClientControlDispatcher::DeliverClientMessage(
 }
 
 void ClientControlDispatcher::OnIncomingMessage(
-    scoped_ptr<CompoundBuffer> buffer) {
+    std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
 
-  scoped_ptr<ControlMessage> message =
+  std::unique_ptr<ControlMessage> message =
       ParseMessage<ControlMessage>(buffer.get());
   if (!message)
     return;

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
@@ -150,8 +151,8 @@ void SetVp9CodecOptions(vpx_codec_ctx_t* codec, bool lossless_encode) {
 
 void FreeImageIfMismatched(bool use_i444,
                            const webrtc::DesktopSize& size,
-                           scoped_ptr<vpx_image_t>* out_image,
-                           scoped_ptr<uint8_t[]>* out_image_buffer) {
+                           std::unique_ptr<vpx_image_t>* out_image,
+                           std::unique_ptr<uint8_t[]>* out_image_buffer) {
   if (*out_image) {
     const vpx_img_fmt_t desired_fmt =
         use_i444 ? VPX_IMG_FMT_I444 : VPX_IMG_FMT_I420;
@@ -165,13 +166,13 @@ void FreeImageIfMismatched(bool use_i444,
 
 void CreateImage(bool use_i444,
                  const webrtc::DesktopSize& size,
-                 scoped_ptr<vpx_image_t>* out_image,
-                 scoped_ptr<uint8_t[]>* out_image_buffer) {
+                 std::unique_ptr<vpx_image_t>* out_image,
+                 std::unique_ptr<uint8_t[]>* out_image_buffer) {
   DCHECK(!size.is_empty());
   DCHECK(!*out_image_buffer);
   DCHECK(!*out_image);
 
-  scoped_ptr<vpx_image_t> image(new vpx_image_t());
+  std::unique_ptr<vpx_image_t> image(new vpx_image_t());
   memset(image.get(), 0, sizeof(vpx_image_t));
 
   // libvpx seems to require both to be assigned.
@@ -209,7 +210,7 @@ void CreateImage(bool use_i444,
 
   // Allocate a YUV buffer large enough for the aligned data & padding.
   const int buffer_size = y_stride * y_rows + 2*uv_stride * uv_rows;
-  scoped_ptr<uint8_t[]> image_buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> image_buffer(new uint8_t[buffer_size]);
 
   // Reset image value to 128 so we just need to fill in the y plane.
   memset(image_buffer.get(), 128, buffer_size);
@@ -231,13 +232,13 @@ void CreateImage(bool use_i444,
 } // namespace
 
 // static
-scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP8() {
-  return make_scoped_ptr(new VideoEncoderVpx(false));
+std::unique_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP8() {
+  return base::WrapUnique(new VideoEncoderVpx(false));
 }
 
 // static
-scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
-  return make_scoped_ptr(new VideoEncoderVpx(true));
+std::unique_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
+  return base::WrapUnique(new VideoEncoderVpx(true));
 }
 
 VideoEncoderVpx::~VideoEncoderVpx() {}
@@ -267,7 +268,7 @@ void VideoEncoderVpx::SetLosslessColor(bool want_lossless) {
   }
 }
 
-scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
+std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
     const webrtc::DesktopFrame& frame) {
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
@@ -325,7 +326,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
 
   // TODO(hclam): Make sure we get exactly one frame from the packet.
   // TODO(hclam): We should provide the output buffer to avoid one copy.
-  scoped_ptr<VideoPacket> packet(
+  std::unique_ptr<VideoPacket> packet(
       helper_.CreateVideoPacketWithUpdatedRegion(frame, updated_region));
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
 

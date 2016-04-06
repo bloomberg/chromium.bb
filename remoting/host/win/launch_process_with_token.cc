@@ -9,10 +9,10 @@
 #include <winternl.h>
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string16.h"
@@ -323,7 +323,7 @@ bool SendCreateProcessRequest(
   // and three nullptr-terminated string parameters.
   size_t size = sizeof(CreateProcessRequest) + sizeof(wchar_t) *
       (application_name.size() + command_line.size() + desktop.size() + 3);
-  scoped_ptr<char[]> buffer(new char[size]);
+  std::unique_ptr<char[]> buffer(new char[size]);
   memset(buffer.get(), 0, size);
 
   // Marshal the input parameters.

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/logging.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/jid_util.h"
@@ -72,7 +73,7 @@ void PushNotificationSubscriber::Subscribe(const Subscription& subscription) {
   // Send the request.
   iq_sender_.reset(new IqSender(signal_strategy_));
   iq_request_ = iq_sender_->SendIq(
-      "set", bare_jid, make_scoped_ptr(subscribe_element),
+      "set", bare_jid, base::WrapUnique(subscribe_element),
       base::Bind(&PushNotificationSubscriber::OnSubscriptionResult,
                  base::Unretained(this)));
 }

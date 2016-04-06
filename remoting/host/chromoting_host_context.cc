@@ -5,6 +5,7 @@
 #include "remoting/host/chromoting_host_context.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread.h"
@@ -43,8 +44,8 @@ ChromotingHostContext::ChromotingHostContext(
 ChromotingHostContext::~ChromotingHostContext() {
 }
 
-scoped_ptr<ChromotingHostContext> ChromotingHostContext::Copy() {
-  return make_scoped_ptr(new ChromotingHostContext(
+std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Copy() {
+  return base::WrapUnique(new ChromotingHostContext(
       ui_task_runner_, audio_task_runner_, file_task_runner_,
       input_task_runner_, network_task_runner_, video_capture_task_runner_,
       video_encode_task_runner_, url_request_context_getter_));
@@ -90,7 +91,7 @@ ChromotingHostContext::url_request_context_getter() const {
   return url_request_context_getter_;
 }
 
-scoped_ptr<ChromotingHostContext> ChromotingHostContext::Create(
+std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
     scoped_refptr<AutoThreadTaskRunner> ui_task_runner) {
 #if defined(OS_WIN)
   // On Windows the AudioCapturer requires COM, so we run a single-threaded
@@ -114,10 +115,8 @@ scoped_ptr<ChromotingHostContext> ChromotingHostContext::Create(
   network_task_runner->PostTask(FROM_HERE,
                                 base::Bind(&DisallowBlockingOperations));
 
-  return make_scoped_ptr(new ChromotingHostContext(
-      ui_task_runner,
-      audio_task_runner,
-      file_task_runner,
+  return base::WrapUnique(new ChromotingHostContext(
+      ui_task_runner, audio_task_runner, file_task_runner,
       AutoThread::CreateWithType("ChromotingInputThread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO),
       network_task_runner,
@@ -130,7 +129,7 @@ scoped_ptr<ChromotingHostContext> ChromotingHostContext::Create(
 #if defined(OS_CHROMEOS)
 
 // static
-scoped_ptr<ChromotingHostContext> ChromotingHostContext::CreateForChromeOS(
+std::unique_ptr<ChromotingHostContext> ChromotingHostContext::CreateForChromeOS(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -153,7 +152,7 @@ scoped_ptr<ChromotingHostContext> ChromotingHostContext::CreateForChromeOS(
 
   // Use browser's file thread as the joiner as it is the only browser-thread
   // that allows blocking I/O, which is required by thread joining.
-  return make_scoped_ptr(new ChromotingHostContext(
+  return base::WrapUnique(new ChromotingHostContext(
       ui_auto_task_runner,
       AutoThread::Create("ChromotingAudioThread", file_auto_task_runner),
       file_auto_task_runner,

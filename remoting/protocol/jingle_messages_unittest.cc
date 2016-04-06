@@ -96,8 +96,7 @@ bool VerifyXml(const XmlElement* exp,
 // Parses |message_text| to JingleMessage.
 void ParseJingleMessageFromXml(const char* message_text,
                                JingleMessage* parsed) {
-  scoped_ptr<XmlElement> source_message(
-      XmlElement::ForStr(message_text));
+  std::unique_ptr<XmlElement> source_message(XmlElement::ForStr(message_text));
   ASSERT_TRUE(source_message.get());
 
   EXPECT_TRUE(JingleMessage::IsJingleMessage(source_message.get()));
@@ -110,8 +109,7 @@ void ParseJingleMessageFromXml(const char* message_text,
 // Parses |message_text| to JingleMessage then attempts to format it to XML and
 // verifies that the same XML content is generated.
 void ParseFormatAndCompare(const char* message_text, JingleMessage* parsed) {
-  scoped_ptr<XmlElement> source_message(
-      XmlElement::ForStr(message_text));
+  std::unique_ptr<XmlElement> source_message(XmlElement::ForStr(message_text));
   ASSERT_TRUE(source_message.get());
 
   EXPECT_TRUE(JingleMessage::IsJingleMessage(source_message.get()));
@@ -119,7 +117,7 @@ void ParseFormatAndCompare(const char* message_text, JingleMessage* parsed) {
   std::string error;
   EXPECT_TRUE(parsed->ParseXml(source_message.get(), &error)) << error;
 
-  scoped_ptr<XmlElement> formatted_message(parsed->ToXml());
+  std::unique_ptr<XmlElement> formatted_message(parsed->ToXml());
   ASSERT_TRUE(formatted_message.get());
   EXPECT_TRUE(VerifyXml(source_message.get(), formatted_message.get(), &error))
       << error;
@@ -412,7 +410,7 @@ TEST(JingleMessageReplyTest, ToXml) {
       "xmlns:cli='jabber:client'><jingle action='session-terminate' "
       "sid='2227053353' xmlns='urn:xmpp:jingle:1'><reason><success/>"
       "</reason></jingle></cli:iq>";
-  scoped_ptr<XmlElement> incoming_message(
+  std::unique_ptr<XmlElement> incoming_message(
       XmlElement::ForStr(kTestIncomingMessage));
   ASSERT_TRUE(incoming_message.get());
 
@@ -460,9 +458,10 @@ TEST(JingleMessageReplyTest, ToXml) {
     } else {
       reply_msg = JingleMessageReply(tests[i].error, tests[i].error_text);
     }
-    scoped_ptr<XmlElement> reply(reply_msg.ToXml(incoming_message.get()));
+    std::unique_ptr<XmlElement> reply(reply_msg.ToXml(incoming_message.get()));
 
-    scoped_ptr<XmlElement> expected(XmlElement::ForStr(tests[i].expected_text));
+    std::unique_ptr<XmlElement> expected(
+        XmlElement::ForStr(tests[i].expected_text));
     ASSERT_TRUE(expected.get());
 
     std::string error;
@@ -495,7 +494,7 @@ TEST(JingleMessageTest, ErrorMessage) {
             "xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>"
         "</error>"
       "</iq>";
-  scoped_ptr<XmlElement> source_message(
+  std::unique_ptr<XmlElement> source_message(
       XmlElement::ForStr(kTestSessionInitiateErrorMessage));
   ASSERT_TRUE(source_message.get());
 

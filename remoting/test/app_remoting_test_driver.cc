@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
   // retrieving an access token for the user and spinning up VMs.
   // The GTest framework will own the lifetime of this object once
   // it is registered below.
-  scoped_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data(
+  std::unique_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data(
       remoting::test::CreateAppRemotingTestDriverEnvironment(options));
 
   if (!shared_data->Initialize(auth_code)) {

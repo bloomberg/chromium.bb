@@ -54,7 +54,7 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   void set_host_stub(HostStub* host_stub) { host_stub_ = host_stub; }
 
  private:
-  void OnIncomingMessage(scoped_ptr<CompoundBuffer> buffer) override;
+  void OnIncomingMessage(std::unique_ptr<CompoundBuffer> buffer) override;
 
   ClipboardStub* clipboard_stub_ = nullptr;
   HostStub* host_stub_ = nullptr;

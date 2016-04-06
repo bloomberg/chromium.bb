@@ -8,20 +8,21 @@
 #include "base/files/important_file_writer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace remoting {
 
-scoped_ptr<base::DictionaryValue> HostConfigFromJson(
+std::unique_ptr<base::DictionaryValue> HostConfigFromJson(
     const std::string& json) {
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "Failed to parse host config from JSON";
     return nullptr;
   }
 
-  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+  return base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
 }
 
 std::string HostConfigToJson(const base::DictionaryValue& host_config) {
@@ -30,7 +31,7 @@ std::string HostConfigToJson(const base::DictionaryValue& host_config) {
   return data;
 }
 
-scoped_ptr<base::DictionaryValue> HostConfigFromJsonFile(
+std::unique_ptr<base::DictionaryValue> HostConfigFromJsonFile(
     const base::FilePath& config_file) {
   // TODO(sergeyu): Implement better error handling here.
   std::string serialized;

@@ -83,7 +83,7 @@ void FakeSession::Close(ErrorCode error) {
 }
 
 void FakeSession::SendTransportInfo(
-    scoped_ptr<buzz::XmlElement> transport_info) {
+    std::unique_ptr<buzz::XmlElement> transport_info) {
   if (!peer_)
     return;
   peer_->transport_->ProcessTransportInfo(transport_info.get());

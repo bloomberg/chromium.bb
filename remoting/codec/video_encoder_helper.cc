@@ -13,16 +13,16 @@ namespace remoting {
 
 VideoEncoderHelper::VideoEncoderHelper() {}
 
-scoped_ptr<VideoPacket> VideoEncoderHelper::CreateVideoPacket(
+std::unique_ptr<VideoPacket> VideoEncoderHelper::CreateVideoPacket(
     const webrtc::DesktopFrame& frame) {
   return CreateVideoPacketWithUpdatedRegion(frame, frame.updated_region());
 }
 
-scoped_ptr<VideoPacket>
+std::unique_ptr<VideoPacket>
 VideoEncoderHelper::CreateVideoPacketWithUpdatedRegion(
     const webrtc::DesktopFrame& frame,
     const webrtc::DesktopRegion& updated_region) {
-  scoped_ptr<VideoPacket> packet(new VideoPacket());
+  std::unique_ptr<VideoPacket> packet(new VideoPacket());
 
   // Set |screen_width| and |screen_height| iff they have changed.
   if (!frame.size().equals(screen_size_)) {

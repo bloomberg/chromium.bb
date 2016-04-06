@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace {
@@ -71,7 +72,8 @@ std::string RefreshTokenStoreOnDisk::FetchRefreshToken() {
     return std::string();
   }
 
-  scoped_ptr<base::Value> token_data(base::JSONReader::Read(file_contents));
+  std::unique_ptr<base::Value> token_data(
+      base::JSONReader::Read(file_contents));
   base::DictionaryValue* tokens = nullptr;
   if (!token_data || !token_data->GetAsDictionary(&tokens)) {
     LOG(ERROR) << "Refresh token file contents were not valid JSON, "
@@ -113,7 +115,8 @@ bool RefreshTokenStoreOnDisk::StoreRefreshToken(
     }
   }
 
-  scoped_ptr<base::Value> token_data(base::JSONReader::Read(file_contents));
+  std::unique_ptr<base::Value> token_data(
+      base::JSONReader::Read(file_contents));
   base::DictionaryValue* tokens = nullptr;
   if (!token_data || !token_data->GetAsDictionary(&tokens)) {
     LOG(ERROR) << "Invalid refresh token file format, could not store token.";
@@ -158,10 +161,10 @@ base::FilePath RefreshTokenStoreOnDisk::GetPathForRefreshTokenFile() {
   return refresh_token_file_path;
 }
 
-scoped_ptr<RefreshTokenStore> RefreshTokenStore::OnDisk(
+std::unique_ptr<RefreshTokenStore> RefreshTokenStore::OnDisk(
     const std::string& user_name,
     const base::FilePath& refresh_token_file_path) {
-  return make_scoped_ptr<RefreshTokenStore>(
+  return base::WrapUnique<RefreshTokenStore>(
       new RefreshTokenStoreOnDisk(user_name, refresh_token_file_path));
 }
 

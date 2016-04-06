@@ -32,7 +32,7 @@ JingleInfoRequest::~JingleInfoRequest() {}
 
 void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
   on_ice_config_callback_ = callback;
-  scoped_ptr<buzz::XmlElement> iq_body(
+  std::unique_ptr<buzz::XmlElement> iq_body(
       new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
   request_ = iq_sender_.SendIq(
       buzz::STR_GET, buzz::STR_EMPTY, std::move(iq_body),

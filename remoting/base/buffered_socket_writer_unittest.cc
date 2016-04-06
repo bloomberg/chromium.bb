@@ -153,8 +153,8 @@ class BufferedSocketWriterTest : public testing::Test {
   base::MessageLoop message_loop_;
   net::NetLog net_log_;
   SocketDataProvider socket_data_provider_;
-  scoped_ptr<net::StreamSocket> socket_;
-  scoped_ptr<BufferedSocketWriter> writer_;
+  std::unique_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<BufferedSocketWriter> writer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_2_;
   int write_error_;

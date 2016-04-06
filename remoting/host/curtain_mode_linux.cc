@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"
@@ -100,11 +101,11 @@ bool CurtainModeLinux::IsXvfbSession() {
 }
 
 // static
-scoped_ptr<CurtainMode> CurtainMode::Create(
+std::unique_ptr<CurtainMode> CurtainMode::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return make_scoped_ptr(new CurtainModeLinux());
+  return base::WrapUnique(new CurtainModeLinux());
 }
 
 }  // namespace remoting

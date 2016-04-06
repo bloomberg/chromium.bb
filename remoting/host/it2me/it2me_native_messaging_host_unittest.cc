@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -35,7 +36,8 @@ const char kTestAccessCode[] = "888888";
 const int kTestAccessCodeLifetimeInSeconds = 666;
 const char kTestClientUsername[] = "some_user@gmail.com";
 
-void VerifyId(scoped_ptr<base::DictionaryValue> response, int expected_value) {
+void VerifyId(std::unique_ptr<base::DictionaryValue> response,
+              int expected_value) {
   ASSERT_TRUE(response);
 
   int value;
@@ -43,7 +45,7 @@ void VerifyId(scoped_ptr<base::DictionaryValue> response, int expected_value) {
   EXPECT_EQ(expected_value, value);
 }
 
-void VerifyStringProperty(scoped_ptr<base::DictionaryValue> response,
+void VerifyStringProperty(std::unique_ptr<base::DictionaryValue> response,
                           const std::string& name,
                           const std::string& expected_value) {
   ASSERT_TRUE(response);
@@ -54,7 +56,7 @@ void VerifyStringProperty(scoped_ptr<base::DictionaryValue> response,
 }
 
 // Verity the values of the "type" and "id" properties
-void VerifyCommonProperties(scoped_ptr<base::DictionaryValue> response,
+void VerifyCommonProperties(std::unique_ptr<base::DictionaryValue> response,
                             const std::string& type,
                             int id) {
   ASSERT_TRUE(response);
@@ -72,8 +74,8 @@ void VerifyCommonProperties(scoped_ptr<base::DictionaryValue> response,
 
 class MockIt2MeHost : public It2MeHost {
  public:
-  MockIt2MeHost(scoped_ptr<ChromotingHostContext> context,
-                scoped_ptr<PolicyWatcher> policy_watcher,
+  MockIt2MeHost(std::unique_ptr<ChromotingHostContext> context,
+                std::unique_ptr<PolicyWatcher> policy_watcher,
                 base::WeakPtr<It2MeHost::Observer> observer,
                 const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
                 const std::string& directory_bot_jid)
@@ -155,7 +157,7 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
  public:
   MockIt2MeHostFactory() : It2MeHostFactory() {}
   scoped_refptr<It2MeHost> CreateIt2MeHost(
-      scoped_ptr<ChromotingHostContext> context,
+      std::unique_ptr<ChromotingHostContext> context,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid) override {
@@ -176,7 +178,7 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
   void WriteMessageToInputPipe(const base::Value& message);
 
   void VerifyHelloResponse(int request_id);
@@ -205,15 +207,15 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   base::File output_read_file_;
 
   // Message loop of the test thread.
-  scoped_ptr<base::MessageLoop> test_message_loop_;
-  scoped_ptr<base::RunLoop> test_run_loop_;
+  std::unique_ptr<base::MessageLoop> test_message_loop_;
+  std::unique_ptr<base::RunLoop> test_run_loop_;
 
-  scoped_ptr<base::Thread> host_thread_;
-  scoped_ptr<base::RunLoop> host_run_loop_;
+  std::unique_ptr<base::Thread> host_thread_;
+  std::unique_ptr<base::RunLoop> host_run_loop_;
 
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
-  scoped_ptr<remoting::NativeMessagingPipe> pipe_;
+  std::unique_ptr<remoting::NativeMessagingPipe> pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHostTest);
 };
@@ -254,7 +256,7 @@ void It2MeNativeMessagingHostTest::TearDown() {
   test_run_loop_->Run();
 
   // Verify there are no more message in the output pipe.
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
 
   // The It2MeNativeMessagingHost dtor closes the handles that are passed to it.
@@ -262,7 +264,7 @@ void It2MeNativeMessagingHostTest::TearDown() {
   output_read_file_.Close();
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   while (true) {
     uint32_t length;
@@ -282,13 +284,13 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
       return nullptr;
     }
 
-    scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
     if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
       LOG(ERROR) << "Malformed message:" << message_json;
       return nullptr;
     }
 
-    scoped_ptr<base::DictionaryValue> result = make_scoped_ptr(
+    std::unique_ptr<base::DictionaryValue> result = base::WrapUnique(
         static_cast<base::DictionaryValue*>(message.release()));
     std::string type;
     // If this is a debug message log, ignore it, otherwise return it.
@@ -311,12 +313,12 @@ void It2MeNativeMessagingHostTest::WriteMessageToInputPipe(
 }
 
 void It2MeNativeMessagingHostTest::VerifyHelloResponse(int request_id) {
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   VerifyCommonProperties(std::move(response), "helloResponse", request_id);
 }
 
 void It2MeNativeMessagingHostTest::VerifyErrorResponse() {
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   VerifyStringProperty(std::move(response), "type", "error");
 }
 
@@ -329,7 +331,8 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
 
   // We expect a total of 5 messages: 1 connectResponse and 4 hostStateChanged.
   for (int i = 0; i < 5; ++i) {
-    scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+    std::unique_ptr<base::DictionaryValue> response =
+        ReadMessageFromOutputPipe();
     ASSERT_TRUE(response);
 
     std::string type;
@@ -385,7 +388,8 @@ void It2MeNativeMessagingHostTest::VerifyDisconnectResponses(int request_id) {
 
   // We expect a total of 3 messages: 1 connectResponse and 1 hostStateChanged.
   for (int i = 0; i < 2; ++i) {
-    scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+    std::unique_ptr<base::DictionaryValue> response =
+        ReadMessageFromOutputPipe();
     ASSERT_TRUE(response);
 
     std::string type;
@@ -425,7 +429,7 @@ void It2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message,
   if (expect_error_response)
     VerifyErrorResponse();
 
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
 }
 
@@ -440,15 +444,15 @@ void It2MeNativeMessagingHostTest::StartHost() {
 
   pipe_.reset(new NativeMessagingPipe());
 
-  scoped_ptr<extensions::NativeMessagingChannel> channel(
+  std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(input_read_file),
                                std::move(output_write_file)));
 
   // Creating a native messaging host with a mock It2MeHostFactory.
-  scoped_ptr<extensions::NativeMessageHost> it2me_host(
+  std::unique_ptr<extensions::NativeMessageHost> it2me_host(
       new It2MeNativeMessagingHost(
           ChromotingHostContext::Create(host_task_runner_),
-          make_scoped_ptr(new MockIt2MeHostFactory())));
+          base::WrapUnique(new MockIt2MeHostFactory())));
   it2me_host->Start(pipe_.get());
 
   pipe_->Start(std::move(it2me_host), std::move(channel));
@@ -512,7 +516,7 @@ TEST_F(It2MeNativeMessagingHostTest, Id) {
   message.SetString("id", "42");
   WriteMessageToInputPipe(message);
 
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_TRUE(response);
   std::string value;
   EXPECT_FALSE(response->GetString("id", &value));

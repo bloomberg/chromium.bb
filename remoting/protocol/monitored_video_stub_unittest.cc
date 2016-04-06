@@ -43,8 +43,8 @@ class MonitoredVideoStubTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockVideoStub video_stub_;
 
-  scoped_ptr<MonitoredVideoStub> monitor_;
-  scoped_ptr<VideoPacket> packet_;
+  std::unique_ptr<MonitoredVideoStub> monitor_;
+  std::unique_ptr<VideoPacket> packet_;
   base::OneShotTimer timer_end_test_;
 };
 

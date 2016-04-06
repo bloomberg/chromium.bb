@@ -24,7 +24,7 @@ class StreamMessagePipeAdapter : public MessagePipe {
  public:
   typedef base::Callback<void(int)> ErrorCallback;
 
-  StreamMessagePipeAdapter(scoped_ptr<P2PStreamSocket> socket,
+  StreamMessagePipeAdapter(std::unique_ptr<P2PStreamSocket> socket,
                            const ErrorCallback& error_callback);
   ~StreamMessagePipeAdapter() override;
 
@@ -36,11 +36,11 @@ class StreamMessagePipeAdapter : public MessagePipe {
  private:
   void CloseOnError(int error);
 
-  scoped_ptr<P2PStreamSocket> socket_;
+  std::unique_ptr<P2PStreamSocket> socket_;
   ErrorCallback error_callback_;
 
   MessageReader reader_;
-  scoped_ptr<BufferedSocketWriter> writer_;
+  std::unique_ptr<BufferedSocketWriter> writer_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMessagePipeAdapter);
 };
@@ -61,7 +61,7 @@ class StreamMessageChannelFactoryAdapter : public MessageChannelFactory {
 
  private:
   void OnChannelCreated(const ChannelCreatedCallback& callback,
-                        scoped_ptr<P2PStreamSocket> socket);
+                        std::unique_ptr<P2PStreamSocket> socket);
 
   StreamChannelFactory* stream_channel_factory_;
   ErrorCallback error_callback_;

@@ -4,12 +4,12 @@
 
 #include "remoting/host/usage_stats_consent.h"
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/host_config.h"
@@ -27,7 +27,7 @@ bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
   if (command_line->HasSwitch(kHostConfigSwitchName)) {
     base::FilePath config_file_path =
         command_line->GetSwitchValuePath(kHostConfigSwitchName);
-    scoped_ptr<base::DictionaryValue> host_config(
+    std::unique_ptr<base::DictionaryValue> host_config(
         HostConfigFromJsonFile(config_file_path));
     if (host_config) {
       return host_config->GetBoolean(kUsageStatsConsentConfigPath, allowed);
