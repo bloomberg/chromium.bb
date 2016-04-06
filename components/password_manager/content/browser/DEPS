@@ -3,5 +3,7 @@ include_rules = [
   "+components/autofill/content/browser",
   "+components/keyed_service/content",
   "+content/public/browser",
+  "+ipc",
+  "+mojo/public",
   "+net",
 ]

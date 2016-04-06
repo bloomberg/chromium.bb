@@ -6,10 +6,9 @@
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_RENDERER_CREDENTIAL_MANAGER_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
 #include "base/macros.h"
+#include "components/password_manager/content/public/interfaces/credential_manager.mojom.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -45,19 +44,7 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   explicit CredentialManagerClient(content::RenderView* render_view);
   ~CredentialManagerClient() override;
 
-  // RenderViewObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Message handlers for messages from the browser process:
-  virtual void OnAcknowledgeStore(int request_id);
-  virtual void OnAcknowledgeRequireUserMediation(int request_id);
-  virtual void OnSendCredential(int request_id,
-                                const CredentialInfo& credential_info);
-  virtual void OnRejectCredentialRequest(
-      int request_id,
-      blink::WebCredentialManagerError error);
-
-  // blink::WebCredentialManager:
+  // blink::WebCredentialManagerClient:
   void dispatchStore(
       const blink::WebCredential& credential,
       WebCredentialManagerClient::NotificationCallbacks* callbacks) override;
@@ -68,19 +55,9 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
                    RequestCallbacks* callbacks) override;
 
  private:
-  typedef IDMap<blink::WebCredentialManagerClient::RequestCallbacks,
-                IDMapOwnPointer> RequestCallbacksMap;
-  typedef IDMap<blink::WebCredentialManagerClient::NotificationCallbacks,
-                IDMapOwnPointer> NotificationCallbacksMap;
+  void ConnectToMojoCMIfNeeded();
 
-  void RespondToNotificationCallback(int request_id,
-                                     NotificationCallbacksMap* map);
-
-  // Track the various blink::WebCredentialManagerClient::*Callbacks objects
-  // generated from Blink. This class takes ownership of these objects.
-  NotificationCallbacksMap store_callbacks_;
-  NotificationCallbacksMap require_user_mediation_callbacks_;
-  RequestCallbacksMap get_callbacks_;
+  mojom::CredentialManagerPtr mojo_cm_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerClient);
 };

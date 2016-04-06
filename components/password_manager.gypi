@@ -249,26 +249,47 @@
     ['OS != "ios"', {
       'targets': [
         {
-          # GN version: //components/password_manager/content/common
-          'target_name': 'password_manager_content_common',
+          # GN version: //components/password_manager/content/public/interfaces
+          'target_name': 'password_manager_content_mojo_bindings_mojom',
+          'type': 'none',
+          'variables': {
+            'mojom_extra_generator_args': [
+              '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
+            ],
+            'mojom_files': [
+              'password_manager/content/public/interfaces/credential_manager.mojom',
+            ],
+          },
+          'include_dirs': [
+            '..',
+          ],
+          'includes': [
+            '../mojo/mojom_bindings_generator_explicit.gypi',
+          ],
+        },
+        {
+          # GN version: //components/password_manager/content/public/cpp
+          'target_name': 'password_manager_content_mojo_bindings',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../content/content.gyp:content_common',
-            '../ipc/ipc.gyp:ipc',
-            '../third_party/WebKit/public/blink.gyp:blink_minimal',
-            '../url/ipc/url_ipc.gyp:url_ipc',
+            '../mojo/mojo_base.gyp:mojo_common_lib',
+            '../mojo/mojo_base.gyp:mojo_url_type_converters',
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+            '../third_party/WebKit/public/blink.gyp:blink',
+            '../url/url.gyp:url_mojom',
+            'password_manager_content_mojo_bindings_mojom',
             'password_manager_core_common',
           ],
+          'export_dependent_settings': [
+             '../url/url.gyp:url_mojom',
+           ],
           'include_dirs': [
             '..',
           ],
           'sources': [
-            'password_manager/content/common/credential_manager_content_utils.cc',
-            'password_manager/content/common/credential_manager_content_utils.h',
-            'password_manager/content/common/credential_manager_message_generator.cc',
-            'password_manager/content/common/credential_manager_message_generator.h',
-            'password_manager/content/common/credential_manager_messages.h',
+            'password_manager/content/public/cpp/type_converters.cc',
+            'password_manager/content/public/cpp/type_converters.h',
           ],
         },
         {
@@ -278,11 +299,10 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
-            '../ipc/ipc.gyp:ipc',
+            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../third_party/WebKit/public/blink.gyp:blink',
-            '../url/ipc/url_ipc.gyp:url_ipc',
+            'password_manager_content_mojo_bindings',
             'password_manager_core_common',
-            'password_manager_content_common',
           ],
           'include_dirs': [
             '..',
@@ -301,13 +321,14 @@
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
+            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../net/net.gyp:net',
             'autofill_content_browser',
             'autofill_content_common',
             'autofill_core_common',
             'keyed_service_content',
+            'password_manager_content_mojo_bindings',
             'password_manager_core_browser',
-            'password_manager_content_common',
           ],
           'include_dirs': [
             '..',
@@ -320,8 +341,8 @@
             'password_manager/content/browser/content_password_manager_driver.h',
             'password_manager/content/browser/content_password_manager_driver_factory.cc',
             'password_manager/content/browser/content_password_manager_driver_factory.h',
-            'password_manager/content/browser/credential_manager_dispatcher.cc',
-            'password_manager/content/browser/credential_manager_dispatcher.h',
+            'password_manager/content/browser/credential_manager_impl.cc',
+            'password_manager/content/browser/credential_manager_impl.h',
             'password_manager/content/browser/password_manager_internals_service_factory.cc',
             'password_manager/content/browser/password_manager_internals_service_factory.h',
           ],

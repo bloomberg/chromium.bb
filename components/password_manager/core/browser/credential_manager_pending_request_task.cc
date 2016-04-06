@@ -19,14 +19,14 @@ namespace password_manager {
 
 CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
     CredentialManagerPendingRequestTaskDelegate* delegate,
-    int request_id,
+    const SendCredentialCallback& callback,
     bool request_zero_click_only,
     const GURL& request_origin,
     bool include_passwords,
     const std::vector<GURL>& request_federations,
     const std::vector<std::string>& affiliated_realms)
     : delegate_(delegate),
-      id_(request_id),
+      send_callback_(callback),
       zero_click_only_(request_zero_click_only),
       origin_(request_origin),
       include_passwords_(include_passwords),
@@ -42,7 +42,7 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
   if (delegate_->GetOrigin() != origin_) {
-    delegate_->SendCredential(id_, CredentialInfo());
+    delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
 
@@ -88,7 +88,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   }
 
   if ((local_results.empty() && federated_results.empty())) {
-    delegate_->SendCredential(id_, CredentialInfo());
+    delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
 
@@ -109,7 +109,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
                             : CredentialType::CREDENTIAL_TYPE_FEDERATED);
     delegate_->client()->NotifyUserAutoSignin(std::move(local_results),
                                               origin_);
-    delegate_->SendCredential(id_, info);
+    delegate_->SendCredential(send_callback_, info);
     return;
   }
 
@@ -123,7 +123,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
           std::move(local_results), std::move(federated_results), origin_,
           base::Bind(
               &CredentialManagerPendingRequestTaskDelegate::SendPasswordForm,
-              base::Unretained(delegate_), id_))) {
+              base::Unretained(delegate_), send_callback_))) {
     if (can_use_autosignin) {
       // The user had credentials, but either chose not to share them with the
       // site, or was prevented from doing so by lack of zero-click (or the
@@ -134,7 +134,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
           std::move(potential_autosignin_form));
     }
 
-    delegate_->SendCredential(id_, CredentialInfo());
+    delegate_->SendCredential(send_callback_, CredentialInfo());
   }
 }
 
