@@ -104,7 +104,7 @@ InputDeviceCapabilities status=stable
 InputEvent status=experimental
 InputModeAttribute status=experimental
 InstalledApp status=experimental
-IntersectionObserver status=experimental
+IntersectionObserver status=stable
 KeyboardEventCode status=stable
 KeyboardEventKey status=stable
 LangAttributeAwareFormControlUI

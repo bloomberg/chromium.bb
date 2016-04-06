@@ -2959,6 +2959,23 @@ interface InputDeviceCapabilities
     attribute @@toStringTag
     getter firesTouchEvents
     method constructor
+interface IntersectionObserver
+    attribute @@toStringTag
+    getter root
+    getter rootMargin
+    method constructor
+    method disconnect
+    method observe
+    method takeRecords
+    method unobserve
+interface IntersectionObserverEntry
+    attribute @@toStringTag
+    getter boundingClientRect
+    getter intersectionRect
+    getter rootBounds
+    getter target
+    getter time
+    method constructor
 interface KeyboardEvent : UIEvent
     attribute @@toStringTag
     attribute DOM_KEY_LOCATION_LEFT
