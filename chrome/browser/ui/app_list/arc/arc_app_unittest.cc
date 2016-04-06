@@ -18,6 +18,7 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
@@ -29,8 +30,40 @@
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace {
+
+class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
+ public:
+  FakeAppIconLoaderDelegate() {}
+  ~FakeAppIconLoaderDelegate() override {}
+
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override {
+    app_id_ = app_id;
+    image_ = image;
+    ++update_image_cnt_;
+  }
+
+  size_t update_image_cnt() const { return update_image_cnt_; }
+
+  const std::string& app_id() const { return app_id_; }
+
+  const gfx::ImageSkia& image() { return image_; }
+
+ private:
+  size_t update_image_cnt_ = 0;
+  std::string app_id_;
+  gfx::ImageSkia image_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAppIconLoaderDelegate);
+};
+
+}  // namespace
 
 class ArcAppModelBuilderTest : public AppListTestBase {
  public:
@@ -164,7 +197,28 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     }
   }
 
+  // Validates that provided image is acceptable as Arc app icon.
+  void ValidateIcon(const gfx::ImageSkia& image) {
+    EXPECT_EQ(app_list::kGridIconDimension, image.width());
+    EXPECT_EQ(app_list::kGridIconDimension, image.height());
+
+    const std::vector<ui::ScaleFactor>& scale_factors =
+        ui::GetSupportedScaleFactors();
+    for (auto& scale_factor : scale_factors) {
+      const float scale = ui::GetScaleForScaleFactor(scale_factor);
+      EXPECT_TRUE(image.HasRepresentation(scale));
+      const gfx::ImageSkiaRep& representation = image.GetRepresentation(scale);
+      EXPECT_FALSE(representation.is_null());
+      EXPECT_EQ(gfx::ToCeiledInt(app_list::kGridIconDimension * scale),
+          representation.pixel_width());
+      EXPECT_EQ(gfx::ToCeiledInt(app_list::kGridIconDimension * scale),
+          representation.pixel_height());
+    }
+  }
+
   AppListControllerDelegate* controller() { return controller_.get(); }
+
+  Profile* profile() { return profile_.get(); }
 
   const std::vector<arc::AppInfo>& fake_apps() const {
     return arc_test_.fake_apps();
@@ -414,7 +468,7 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
   base::RunLoop().RunUntilIdle();
 
   // Validating decoded content does not fit well for unit tests.
-  ArcAppIcon::DisableDecodingForTesting();
+  ArcAppIcon::DisableSafeDecodingForTesting();
 
   // Now send generated icon for the app.
   std::string png_data;
@@ -516,4 +570,45 @@ TEST_F(ArcAppModelBuilderTest, LastLaunchTime) {
   ASSERT_NE(nullptr, app_info.get());
   ASSERT_LE(time_before, app_info->last_launch_time);
   ASSERT_GE(time_after, app_info->last_launch_time);
+}
+
+TEST_F(ArcAppModelBuilderTest, IconLoader) {
+  // Validating decoded content does not fit well for unit tests.
+  ArcAppIcon::DisableSafeDecodingForTesting();
+
+  const arc::AppInfo& app = fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  bridge_service()->SetReady();
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(
+      std::vector<arc::AppInfo>(fake_apps().begin(), fake_apps().begin() + 1));
+
+  FakeAppIconLoaderDelegate delegate;
+  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
+  EXPECT_EQ(0UL, delegate.update_image_cnt());
+  icon_loader.FetchImage(app_id);
+  EXPECT_EQ(1UL, delegate.update_image_cnt());
+  EXPECT_EQ(app_id, delegate.app_id());
+
+  // Validate default image.
+  ValidateIcon(delegate.image());
+
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
+  for (auto& scale_factor : scale_factors) {
+    std::string png_data;
+    EXPECT_TRUE(app_instance()->GenerateAndSendIcon(
+                    app, static_cast<arc::ScaleFactor>(scale_factor),
+                    &png_data));
+  }
+
+  // Process pending tasks.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  // Validate loaded image.
+  EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_cnt());
+  EXPECT_EQ(app_id, delegate.app_id());
+  ValidateIcon(delegate.image());
 }

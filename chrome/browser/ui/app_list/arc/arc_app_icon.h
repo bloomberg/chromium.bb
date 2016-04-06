@@ -64,17 +64,17 @@ class ArcAppIcon {
   // LoadImageForScaleFactor again.
   void LoadForScaleFactor(ui::ScaleFactor scale_factor);
 
-  // Disables decoding requests when unit tests are executed. This is done to
-  // avoid two problems. Problems come because icons are decoded at a separate
-  // process created by ImageDecoder. ImageDecoder has 5 seconds delay to stop
-  // since the last request (see its kBatchModeTimeoutSeconds for more details).
-  // This is unacceptably long for unit tests because the test framework waits
-  // until external process is finished. Another problem happens when we issue
-  // a decoding request, but the process has not started its processing yet by
-  // the time when a test exits. This might cause situation when
-  // g_one_utility_thread_lock from in_process_utility_thread.cc gets released
-  // in an acquired state which is crash condition in debug builds.
-  static void DisableDecodingForTesting();
+  // Disables async safe decoding requests when unit tests are executed. This is
+  // done to avoid two problems. Problems come because icons are decoded at a
+  // separate process created by ImageDecoder. ImageDecoder has 5 seconds delay
+  // to stop since the last request (see its kBatchModeTimeoutSeconds for more
+  // details). This is unacceptably long for unit tests because the test
+  // framework waits until external process is finished. Another problem happens
+  // when we issue a decoding request, but the process has not started its
+  // processing yet by the time when a test exits. This might cause situation
+  // when g_one_utility_thread_lock from in_process_utility_thread.cc gets
+  // released in an acquired state which is crash condition in debug builds.
+  static void DisableSafeDecodingForTesting();
 
  private:
   class Source;

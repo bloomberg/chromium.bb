@@ -39,6 +39,7 @@ void ArcAppIconLoader::FetchImage(const std::string& app_id) {
                                              this));
   icon->image_skia().EnsureRepsForSupportedScales();
   icon_map_[app_id] = std::move(icon);
+  UpdateImage(app_id);
 }
 
 void ArcAppIconLoader::ClearImage(const std::string& app_id) {
