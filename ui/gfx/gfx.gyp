@@ -165,6 +165,7 @@
         'font.h',
         'font_fallback.h',
         'font_fallback_linux.cc',
+        'font_fallback_linux.h',
         'font_fallback_mac.mm',
         'font_fallback_win.cc',
         'font_fallback_win.h',

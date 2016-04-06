@@ -220,7 +220,6 @@
       "platform/WebURLResponse.h",
       "platform/WebVector.h",
       "platform/linux/WebFallbackFont.h",
-      "platform/linux/WebFontInfo.h",
       "platform/linux/WebFontRenderStyle.h",
       "platform/linux/WebSandboxSupport.h",
       "platform/mac/WebSandboxSupport.h",

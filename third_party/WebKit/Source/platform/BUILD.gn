@@ -410,10 +410,6 @@ component("platform") {
     sources -= [ "scroll/ScrollbarThemeAndroid.cpp" ]
   }
 
-  if (is_linux) {
-    public_deps += [ "//build/linux:fontconfig" ]
-  }
-
   if (!use_default_render_theme) {
     sources -= [
       "scroll/ScrollbarThemeAura.cpp",

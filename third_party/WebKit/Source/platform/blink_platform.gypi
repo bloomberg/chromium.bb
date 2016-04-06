@@ -383,7 +383,6 @@
       'exported/WebURLResponsePrivate.h',
       'exported/WrappedResourceRequest.h',
       'exported/WrappedResourceResponse.h',
-      'exported/linux/WebFontInfo.cpp',
       'exported/linux/WebFontRenderStyle.cpp',
       'fonts/AcceptLanguagesResolver.cpp',
       'fonts/AcceptLanguagesResolver.h',

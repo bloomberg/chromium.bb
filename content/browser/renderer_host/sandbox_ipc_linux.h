@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"
-#include "content/child/blink_platform_impl.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace content {
@@ -30,8 +29,6 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   void Run() override;
 
  private:
-  void EnsureWebKitInitialized();
-
   int FindOrAddPath(const SkString& path);
 
   void HandleRequestFromRenderer(int fd);
@@ -70,7 +67,6 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
   const int lifeline_fd_;
   const int browser_socket_;
-  scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
   std::vector<SkString> paths_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxIPCHandler);

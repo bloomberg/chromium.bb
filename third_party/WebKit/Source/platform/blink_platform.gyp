@@ -343,14 +343,6 @@
           ['exclude', 'Android\\.cpp$'],
         ],
       }],
-      ['OS=="linux"', {
-        'dependencies': [
-          '<(DEPTH)/build/linux/system.gyp:fontconfig',
-        ],
-        'export_dependent_settings': [
-          '<(DEPTH)/build/linux/system.gyp:fontconfig',
-        ],
-      }],
       ['use_default_render_theme==0', {
         'sources/': [
           ['exclude', 'scroll/ScrollbarThemeAura\\.(cpp|h)'],

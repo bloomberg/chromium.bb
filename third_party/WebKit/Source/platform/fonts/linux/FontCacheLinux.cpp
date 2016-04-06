@@ -27,9 +27,9 @@
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "public/platform/linux/WebFallbackFont.h"
-#include "public/platform/linux/WebFontInfo.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 #include "public/platform/Platform.h"
+#include "ui/gfx/font_fallback_linux.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
@@ -47,17 +47,25 @@ FontCache::FontCache()
 
 void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {
-    WebFallbackFont webFallbackFont;
-    if (Platform::current()->sandboxSupport())
+    if (Platform::current()->sandboxSupport()) {
+        WebFallbackFont webFallbackFont;
         Platform::current()->sandboxSupport()->getFallbackFontForCharacter(c, preferredLocale, &webFallbackFont);
-    else
-        WebFontInfo::fallbackFontForChar(c, preferredLocale, &webFallbackFont);
-    fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
-    fallbackFont->filename = webFallbackFont.filename;
-    fallbackFont->fontconfigInterfaceId = webFallbackFont.fontconfigInterfaceId;
-    fallbackFont->ttcIndex = webFallbackFont.ttcIndex;
-    fallbackFont->isBold = webFallbackFont.isBold;
-    fallbackFont->isItalic = webFallbackFont.isItalic;
+        fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
+        fallbackFont->filename = webFallbackFont.filename;
+        fallbackFont->fontconfigInterfaceId = webFallbackFont.fontconfigInterfaceId;
+        fallbackFont->ttcIndex = webFallbackFont.ttcIndex;
+        fallbackFont->isBold = webFallbackFont.isBold;
+        fallbackFont->isItalic = webFallbackFont.isItalic;
+    } else {
+        std::string locale = preferredLocale ? preferredLocale : std::string();
+        gfx::FallbackFontData fallbackData = gfx::GetFallbackFontForChar(c, locale);
+        fallbackFont->name = String::fromUTF8(fallbackData.name.data(), fallbackData.name.length());
+        fallbackFont->filename = CString(fallbackData.filename.data(), fallbackData.filename.length());
+        fallbackFont->fontconfigInterfaceId = 0;
+        fallbackFont->ttcIndex = fallbackData.ttc_index;
+        fallbackFont->isBold = fallbackData.is_bold;
+        fallbackFont->isItalic = fallbackData.is_italic;
+    }
 }
 
 #if !OS(ANDROID)
