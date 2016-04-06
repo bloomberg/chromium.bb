@@ -41,7 +41,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
@@ -258,8 +258,8 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 
 PaintLayerCompositor* InspectorLayerTreeAgent::paintLayerCompositor()
 {
-    LayoutView* layoutView = m_inspectedFrames->root()->contentLayoutObject();
-    PaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
+    LayoutViewItem layoutView = m_inspectedFrames->root()->contentLayoutItem();
+    PaintLayerCompositor* compositor = layoutView.isNull() ? nullptr : layoutView.compositor();
     return compositor;
 }
 
