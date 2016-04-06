@@ -261,9 +261,8 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  if (info->GetProcessType() != PROCESS_TYPE_PLUGIN &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanRequestURL(info->GetChildID(), redirect_info.new_url)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          info->GetChildID(), redirect_info.new_url)) {
     DVLOG(1) << "Denied unauthorized request for "
              << redirect_info.new_url.possibly_invalid_spec();
 

@@ -85,9 +85,6 @@ class ContentSettingsObserver
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
 
-  // This is used for cases when the NPAPI plugins malfunction if used.
-  bool AreNPAPIPluginsBlocked() const;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest,
@@ -102,7 +99,6 @@ class ContentSettingsObserver
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetAsInterstitial();
-  void OnNPAPINotSupported();
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
   void OnReloadFrame();
@@ -156,7 +152,6 @@ class ContentSettingsObserver
 
   std::set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_;
-  bool npapi_plugins_blocked_;
 
   int current_request_id_;
   typedef std::map<int, blink::WebContentSettingCallbacks> PermissionRequestMap;

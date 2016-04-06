@@ -272,7 +272,6 @@
       'browser/extensions/mutation_observers_apitest.cc',
       'browser/extensions/options_page_apitest.cc',
       'browser/extensions/page_action_browsertest.cc',
-      'browser/extensions/plugin_apitest.cc',
       'browser/extensions/process_management_browsertest.cc',
       'browser/extensions/process_manager_browsertest.cc',
       'browser/extensions/requirements_checker_browsertest.cc',

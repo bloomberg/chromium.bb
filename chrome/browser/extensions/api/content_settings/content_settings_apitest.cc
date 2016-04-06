@@ -36,11 +36,6 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
  public:
   ExtensionContentSettingsApiTest() : profile_(NULL) {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
-  }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 

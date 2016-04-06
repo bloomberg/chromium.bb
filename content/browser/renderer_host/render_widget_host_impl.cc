@@ -77,10 +77,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 
-#if defined(OS_WIN)
-#include "content/common/plugin_constants_win.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif

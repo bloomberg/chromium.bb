@@ -18,16 +18,11 @@ const int64_t kHungRendererDelayMs = 30000;
 
 const int64_t kNewContentRenderingDelayMs = 4000;
 
-const uint16_t kMaxPluginSideLength = 1 << 15;
-// 8m pixels.
-const uint32_t kMaxPluginSize = 8 << 20;
-
 // 20MiB
 const size_t kMaxLengthOfDataURLString = 1024 * 1024 * 20;
 
 const int kTraceEventBrowserProcessSortIndex = -6;
 const int kTraceEventRendererProcessSortIndex = -5;
-const int kTraceEventPluginProcessSortIndex = -4;
 const int kTraceEventPpapiProcessSortIndex = -3;
 const int kTraceEventPpapiBrokerProcessSortIndex = -2;
 const int kTraceEventGpuProcessSortIndex = -1;

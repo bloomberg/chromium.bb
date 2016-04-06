@@ -218,23 +218,6 @@ void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode) {
   SetUIMode();
 }
 
-void SetCursorVisibility(bool visible) {
-  if (visible)
-    [NSCursor unhide];
-  else
-    [NSCursor hide];
-}
-
-void ActivateProcess(pid_t pid) {
-  ProcessSerialNumber process;
-  OSStatus status = GetProcessForPID(pid, &process);
-  if (status == noErr) {
-    SetFrontProcess(&process);
-  } else {
-    OSSTATUS_DLOG(WARNING, status) << "Unable to get process for pid " << pid;
-  }
-}
-
 bool AmIForeground() {
   ProcessSerialNumber foreground_psn = { 0 };
   OSErr err = GetFrontProcess(&foreground_psn);

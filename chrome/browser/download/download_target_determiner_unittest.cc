@@ -1861,7 +1861,6 @@ class DownloadTargetDeterminerTestWithPlugin
     content::PluginService* plugin_service =
         content::PluginService::GetInstance();
     plugin_service->Init();
-    plugin_service->DisablePluginsDiscoveryForTesting();
     old_plugin_service_filter_ = plugin_service->GetFilter();
     plugin_service->SetFilter(&mock_plugin_filter_);
   }
@@ -2019,72 +2018,6 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
 }
 
-// Check if secure handling of filetypes is determined correctly for NPAPI
-// plugins.
-TEST_F(DownloadTargetDeterminerTestWithPlugin,
-       TargetDeterminer_CheckForSecureHandling_NPAPI) {
-  // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
-  // path.
-  const base::FilePath::CharType kInitialPath[] =
-      FILE_PATH_LITERAL("some_path/bar.txt");
-  const char kTestMIMEType[] = "application/x-example-should-not-exist";
-
-  DownloadTestCase kSecureHandlingTestCase = {
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      download_util::NOT_DANGEROUS,
-      "http://example.com/foo.fakeext",
-      "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("foo.fakeext"),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD};
-
-  content::PluginService* plugin_service =
-      content::PluginService::GetInstance();
-
-  // Can't run this test if NPAPI isn't supported.
-  if (!plugin_service->NPAPIPluginsSupported())
-    return;
-
-  // Verify our test assumptions.
-  {
-    ForceRefreshOfPlugins();
-    std::vector<content::WebPluginInfo> info;
-    ASSERT_FALSE(plugin_service->GetPluginInfoArray(
-        GURL(), kTestMIMEType, false, &info, NULL));
-    ASSERT_EQ(0u, info.size())
-        << "Name: " << info[0].name << ", Path: " << info[0].path.value();
-  }
-
-  ON_CALL(*delegate(), GetFileMimeType(
-      GetPathInDownloadDir(FILE_PATH_LITERAL("foo.fakeext")), _))
-      .WillByDefault(WithArg<1>(
-          ScheduleCallback(kTestMIMEType)));
-  scoped_ptr<content::MockDownloadItem> item(
-      CreateActiveDownloadItem(1, kSecureHandlingTestCase));
-  scoped_ptr<DownloadTargetInfo> target_info =
-      RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
-                                  item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_safely);
-
-  // Register a NPAPI plugin. This should not count as handling the filetype
-  // securely.
-  ScopedRegisterInternalPlugin npapi_plugin(
-      plugin_service,
-      content::WebPluginInfo::PLUGIN_TYPE_NPAPI,
-      test_download_dir().AppendASCII("npapi"),
-      kTestMIMEType,
-      "fakeext");
-  EXPECT_CALL(mock_plugin_filter_, MockPluginAvailable(npapi_plugin.path()))
-      .WillRepeatedly(Return(true));
-
-  target_info = RunDownloadTargetDeterminer(
-      GetPathInDownloadDir(kInitialPath), item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_safely);
-}
 #endif  // defined(ENABLE_PLUGINS)
 
 }  // namespace

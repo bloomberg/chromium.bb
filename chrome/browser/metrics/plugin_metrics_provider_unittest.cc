@@ -27,16 +27,12 @@ namespace {
 content::WebPluginInfo CreateFakePluginInfo(
     const std::string& name,
     const base::FilePath::CharType* path,
-    const std::string& version,
-    bool is_pepper) {
+    const std::string& version) {
   content::WebPluginInfo plugin(base::UTF8ToUTF16(name),
                                 base::FilePath(path),
                                 base::UTF8ToUTF16(version),
                                 base::string16());
-  if (is_pepper)
-    plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
-  else
-    plugin.type = content::WebPluginInfo::PLUGIN_TYPE_NPAPI;
+  plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
   return plugin;
 }
 
@@ -61,8 +57,6 @@ class PluginMetricsProviderTest : public ::testing::Test {
 
 TEST_F(PluginMetricsProviderTest, IsPluginProcess) {
   EXPECT_TRUE(PluginMetricsProvider::IsPluginProcess(
-      content::PROCESS_TYPE_PLUGIN));
-  EXPECT_TRUE(PluginMetricsProvider::IsPluginProcess(
       content::PROCESS_TYPE_PPAPI_PLUGIN));
   EXPECT_FALSE(PluginMetricsProvider::IsPluginProcess(
       content::PROCESS_TYPE_GPU));
@@ -75,9 +69,9 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
 
   std::vector<content::WebPluginInfo> plugins;
   plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
-                                         "1.5", true));
+                                         "1.5"));
   plugins.push_back(CreateFakePluginInfo("p2", FILE_PATH_LITERAL("p2.plugin"),
-                                         "2.0", false));
+                                         "2.0"));
   provider.SetPluginsForTesting(plugins);
 
   metrics::SystemProfileProto system_profile;
@@ -91,7 +85,7 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
   EXPECT_EQ("p2", system_profile.plugin(1).name());
   EXPECT_EQ("p2.plugin", system_profile.plugin(1).filename());
   EXPECT_EQ("2.0", system_profile.plugin(1).version());
-  EXPECT_FALSE(system_profile.plugin(1).is_pepper());
+  EXPECT_TRUE(system_profile.plugin(1).is_pepper());
 
   // Now set some plugin stability stats for p2 and verify they're recorded.
   scoped_ptr<base::DictionaryValue> plugin_dict(new base::DictionaryValue);
@@ -113,7 +107,7 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
   EXPECT_EQ("p2", stability.plugin_stability(0).plugin().name());
   EXPECT_EQ("p2.plugin", stability.plugin_stability(0).plugin().filename());
   EXPECT_EQ("2.0", stability.plugin_stability(0).plugin().version());
-  EXPECT_FALSE(stability.plugin_stability(0).plugin().is_pepper());
+  EXPECT_TRUE(stability.plugin_stability(0).plugin().is_pepper());
   EXPECT_EQ(1, stability.plugin_stability(0).launch_count());
   EXPECT_EQ(2, stability.plugin_stability(0).crash_count());
   EXPECT_EQ(3, stability.plugin_stability(0).instance_count());
@@ -161,33 +155,34 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
 
   // Create plugin information for testing.
   std::vector<content::WebPluginInfo> plugins;
-  plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
-                                         "1.5", true));
-  plugins.push_back(CreateFakePluginInfo("p2", FILE_PATH_LITERAL("p2.plugin"),
-                                         "1.5", true));
+  plugins.push_back(
+      CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"), "1.5"));
+  plugins.push_back(
+      CreateFakePluginInfo("p2", FILE_PATH_LITERAL("p2.plugin"), "1.5"));
   provider.SetPluginsForTesting(plugins);
   metrics::SystemProfileProto system_profile;
   provider.ProvideSystemProfileMetrics(&system_profile);
 
-  // Increase number of created instances which should also start a delayed
+  // Increase number of process launches which should also start a delayed
   // task.
-  content::ChildProcessData child_process_data1(content::PROCESS_TYPE_PLUGIN);
+  content::ChildProcessData child_process_data1(
+      content::PROCESS_TYPE_PPAPI_PLUGIN);
   child_process_data1.name = base::UTF8ToUTF16("p1");
-  provider.BrowserChildProcessInstanceCreated(child_process_data1);
+  provider.BrowserChildProcessHostConnected(child_process_data1);
   provider.BrowserChildProcessCrashed(child_process_data1, 1);
 
   // A disconnect should not generate a crash event.
-  provider.BrowserChildProcessInstanceCreated(child_process_data1);
+  provider.BrowserChildProcessHostConnected(child_process_data1);
   provider.BrowserChildProcessHostDisconnected(child_process_data1);
 
   content::ChildProcessData child_process_data2(
       content::PROCESS_TYPE_PPAPI_PLUGIN);
   child_process_data2.name = base::UTF8ToUTF16("p2");
-  provider.BrowserChildProcessInstanceCreated(child_process_data2);
+  provider.BrowserChildProcessHostConnected(child_process_data2);
   provider.BrowserChildProcessCrashed(child_process_data2, 1);
 
   // A kill should generate a crash event
-  provider.BrowserChildProcessInstanceCreated(child_process_data2);
+  provider.BrowserChildProcessHostConnected(child_process_data2);
   provider.BrowserChildProcessKilled(child_process_data2, 1);
 
   // Call ProvideStabilityMetrics to check that it will force pending tasks to
@@ -202,11 +197,11 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
   for (int i = 0; i < 2; i++) {
     std::string name = stability.plugin_stability(i).plugin().name();
     if (name == "p1") {
-      EXPECT_EQ(2, stability.plugin_stability(i).instance_count());
+      EXPECT_EQ(2, stability.plugin_stability(i).launch_count());
       EXPECT_EQ(1, stability.plugin_stability(i).crash_count());
       found++;
     } else if (name == "p2") {
-      EXPECT_EQ(2, stability.plugin_stability(i).instance_count());
+      EXPECT_EQ(2, stability.plugin_stability(i).launch_count());
       EXPECT_EQ(2, stability.plugin_stability(i).crash_count());
       found++;
     } else {

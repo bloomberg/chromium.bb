@@ -58,7 +58,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
-#include "content/common/webplugin_geometry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"

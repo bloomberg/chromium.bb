@@ -230,8 +230,7 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   DCHECK(kMiscScore > 0);
   DCHECK(kPluginScore > 0);
 
-  if (process_type == switches::kPluginProcess ||
-      process_type == switches::kPpapiPluginProcess) {
+  if (process_type == switches::kPpapiPluginProcess) {
     score = kPluginScore;
   } else if (process_type == switches::kPpapiBrokerProcess) {
     // The broker should be killed before the PPAPI plugin.
@@ -269,11 +268,6 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
 // and resources loaded.
 bool SubprocessNeedsResourceBundle(const std::string& process_type) {
   return
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      // Windows needs resources for the default/null plugin.
-      // Mac needs them for the plugin process name.
-      process_type == switches::kPluginProcess ||
-#endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
       // The zygote process opens the resources for the renderers.
       process_type == switches::kZygoteProcess ||

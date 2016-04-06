@@ -49,14 +49,10 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                            net::URLRequestContextGetter* request_context,
                            RenderWidgetHelper* render_widget_helper);
 
-  // IPC::MessageFilter methods:
-  void OnChannelClosing() override;
-
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  class OpenChannelToNpapiPluginCallback;
   class OpenChannelToPpapiPluginCallback;
   class OpenChannelToPpapiBrokerCallback;
 
@@ -110,13 +106,6 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                        bool* found,
                        WebPluginInfo* info,
                        std::string* actual_mime_type);
-  void OnOpenChannelToPlugin(int render_frame_id,
-                             const GURL& url,
-                             const GURL& policy_url,
-                             const std::string& mime_type,
-                             IPC::Message* reply_msg);
-  void OnCompletedOpenChannelToNpapiPlugin(
-      OpenChannelToNpapiPluginCallback* client);
   void OnOpenChannelToPepperPlugin(const base::FilePath& path,
                                    IPC::Message* reply_msg);
   void OnDidCreateOutOfProcessPepperInstance(
@@ -145,8 +134,6 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   // Initialized to 0, accessed on FILE thread only.
   base::TimeTicks last_plugin_refresh_time_;
-
-  std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
 #endif  // ENABLE_PLUGINS
 
   // Contextual information to be used for requests created here.

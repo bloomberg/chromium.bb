@@ -105,7 +105,8 @@ message ProfilerEventProto {
       UNKNOWN = 0;  // Should not reach here
       BROWSER = 1;
       RENDERER = 2;
-      PLUGIN = 3;
+      PLUGIN = 3;  // Deprecated. Should not be sent as of M51 due to
+                   // NPAPI removal.
       WORKER = 4;
       NACL_LOADER = 5;
       UTILITY = 6;

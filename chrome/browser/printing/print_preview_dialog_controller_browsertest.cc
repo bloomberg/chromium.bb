@@ -190,7 +190,6 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     ASSERT_NE(first_tab, initiator_);
 
     content::PluginService::GetInstance()->Init();
-    content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
   }
 
   void TearDownOnMainThread() override {

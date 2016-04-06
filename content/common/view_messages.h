@@ -24,7 +24,6 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/resize_params.h"
 #include "content/common/view_message_enums.h"
-#include "content/common/webplugin_geometry.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_file_info.h"

@@ -56,10 +56,6 @@ class UtilityThreadImpl : public UtilityThread,
   void OnBatchModeStarted();
   void OnBatchModeFinished();
 
-#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
-  void OnLoadPlugins(const std::vector<base::FilePath>& plugin_paths);
-#endif
-
   void BindProcessControlRequest(
       mojo::InterfaceRequest<content::mojom::ProcessControl> request);
 

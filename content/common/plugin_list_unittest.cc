@@ -52,7 +52,6 @@ class PluginListTest : public testing::Test {
   }
 
   void SetUp() override {
-    plugin_list_.DisablePluginsDiscovery();
     plugin_list_.RegisterInternalPlugin(bar_plugin_, false);
     foo_plugin_.mime_types.push_back(
         WebPluginMimeType(kFooMimeType, kFooFileType, std::string()));
@@ -67,7 +66,7 @@ class PluginListTest : public testing::Test {
 
 TEST_F(PluginListTest, GetPlugins) {
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(&plugins, true);
+  plugin_list_.GetPlugins(&plugins);
   EXPECT_EQ(2u, plugins.size());
   EXPECT_TRUE(Contains(plugins, foo_plugin_));
   EXPECT_TRUE(Contains(plugins, bar_plugin_));
@@ -82,7 +81,7 @@ TEST_F(PluginListTest, BadPluginDescription) {
   // Now we should have them in the state we specified above.
   plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(&plugins, true);
+  plugin_list_.GetPlugins(&plugins);
   ASSERT_TRUE(Contains(plugins, plugin_3043));
 }
 
@@ -99,7 +98,6 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
                                   "application/octet-stream",
                                   false, // allow_wildcard
                                   NULL,  // use_stale
-                                  false, // include_npapi
                                   &plugins,
                                   &actual_mime_types);
   EXPECT_EQ(0u, plugins.size());
@@ -112,7 +110,6 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
                                   kFooMimeType,
                                   false, // allow_wildcard
                                   NULL,  // use_stale
-                                  false, // include_npapi
                                   &plugins,
                                   &actual_mime_types);
   EXPECT_EQ(1u, plugins.size());
@@ -127,7 +124,6 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
                                   "",
                                   false, // allow_wildcard
                                   NULL,  // use_stale
-                                  false, // include_npapi
                                   &plugins,
                                   &actual_mime_types);
   EXPECT_EQ(1u, plugins.size());

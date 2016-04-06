@@ -46,7 +46,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;
   bool IsHandledURL(const GURL& url) override;
-  bool IsNPAPIEnabled() override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;
   void RegisterOutOfProcessMojoApplications(

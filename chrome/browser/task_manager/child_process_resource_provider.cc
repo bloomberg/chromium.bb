@@ -159,7 +159,6 @@ Resource::Type ChildProcessResource::GetType() const {
   // Translate types to Resource::Type, since ChildProcessData's type
   // is not available for all TaskManager resources.
   switch (process_type_) {
-    case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_BROKER:
       return Resource::PLUGIN;
@@ -191,7 +190,6 @@ base::string16 ChildProcessResource::GetLocalizedTitle() const {
   base::string16 title = name_;
   if (title.empty()) {
     switch (process_type_) {
-      case content::PROCESS_TYPE_PLUGIN:
       case content::PROCESS_TYPE_PPAPI_PLUGIN:
       case content::PROCESS_TYPE_PPAPI_BROKER:
         title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
@@ -213,7 +211,6 @@ base::string16 ChildProcessResource::GetLocalizedTitle() const {
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX, title);
     case content::PROCESS_TYPE_GPU:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
-    case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_PREFIX, title);
     case content::PROCESS_TYPE_PPAPI_BROKER:

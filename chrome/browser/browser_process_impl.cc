@@ -1022,18 +1022,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #if defined(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
-  plugin_service->StartWatchingPlugins();
-
-#if defined(OS_POSIX)
-  // Also find plugins in a user-specific plugins dir,
-  // e.g. ~/.config/chromium/Plugins.
-  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
-  if (!cmd_line.HasSwitch(switches::kDisablePluginsDiscovery)) {
-    base::FilePath user_data_dir;
-    if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-      plugin_service->AddExtraPluginDir(user_data_dir.Append("Plugins"));
-  }
-#endif
 
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();

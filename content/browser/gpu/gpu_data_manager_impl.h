@@ -115,10 +115,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Insert switches into gpu process command line: kUseGL, etc.
   void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
-  // Insert switches into plugin process command line:
-  // kDisableCoreAnimationPlugins.
-  void AppendPluginCommandLine(base::CommandLine* command_line) const;
-
   // Update WebPreferences for renderer based on blacklisting decisions.
   void UpdateRendererWebPrefs(WebPreferences* prefs) const;
 

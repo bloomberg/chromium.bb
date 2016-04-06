@@ -14,7 +14,6 @@ enum IPCMessageStart {
   PageMsgStart,
   ViewMsgStart,
   InputMsgStart,
-  PluginProcessMsgStart,
   ProfileImportMsgStart,
   TestMsgStart,
   DevToolsMsgStart,

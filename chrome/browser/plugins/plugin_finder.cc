@@ -252,20 +252,6 @@ PluginFinder::~PluginFinder() {
   STLDeleteValues(&identifier_plugin_);
 }
 
-base::string16 PluginFinder::FindPluginName(const std::string& mime_type,
-                                            const std::string& language) {
-  base::AutoLock lock(mutex_);
-
-  for (auto plugin : identifier_plugin_) {
-    if (language == plugin.second->language() &&
-        plugin.second->HasMimeType(mime_type)) {
-      return plugin.second->name();
-    }
-  }
-
-  return base::UTF8ToUTF16(mime_type);
-}
-
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 bool PluginFinder::FindPlugin(
     const std::string& mime_type,
@@ -340,17 +326,6 @@ void PluginFinder::ReinitializePlugins(
 #endif
     }
   }
-}
-
-base::string16 PluginFinder::FindPluginNameWithIdentifier(
-    const std::string& identifier) {
-  base::AutoLock lock(mutex_);
-  PluginMap::const_iterator it = identifier_plugin_.find(identifier);
-  base::string16 name;
-  if (it != identifier_plugin_.end())
-    name = it->second->name();
-
-  return name.empty() ? base::UTF8ToUTF16(identifier) : name;
 }
 
 scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(

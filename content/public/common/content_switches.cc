@@ -63,9 +63,6 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 const char kUseCrossProcessFramesForGuests[]   =
     "use-cross-process-frames-for-guests";
 
-// Dumps extra logging about plugin loading to the log file.
-const char kDebugPluginLoading[] = "debug-plugin-loading";
-
 // Sets the tile size used by composited layers.
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";
@@ -111,9 +108,6 @@ const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
-
-// Handles URL requests by NPAPI plugins through the renderer.
-const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 
 // Disable the per-domain blocking for 3D APIs after GPU reset.
 // This switch is intended only for tests.
@@ -240,11 +234,6 @@ const char kDisablePermissionsAPI[]         = "disable-permissions-api";
 
 // Disables compositor-accelerated touch-screen pinch gestures.
 const char kDisablePinch[]                  = "disable-pinch";
-
-// Disable discovering third-party plugins. Effectively loading only
-// ones shipped with the browser plus third-party ones as specified by
-// --extra-plugin-dir and --load-plugin switches.
-const char kDisablePluginsDiscovery[]       = "disable-plugins-discovery";
 
 // Disable the creation of compositing layers when it would prevent LCD text.
 const char kDisablePreferCompositingToLCDText[] =
@@ -509,9 +498,6 @@ const char kEnableZeroCopy[]                = "enable-zero-copy";
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
-// Load NPAPI plugins from the specified directory.
-const char kExtraPluginDir[]                = "extra-plugin-dir";
-
 // Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
 // accelerated compositing + impl-side painting. Overrides the
 // kEnableGpuRasterization flag.
@@ -590,9 +576,6 @@ const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 
-// Load an NPAPI plugin from the specified path.
-const char kLoadPlugin[]                    = "load-plugin";
-
 // Logs GPU control list decisions when enforcing blacklist rules.
 const char kLogGpuControlListDecisions[]    = "log-gpu-control-list-decisions";
 
@@ -602,9 +585,6 @@ const char kLoggingLevel[]                  = "log-level";
 
 // Enables saving net log events to a file and sets the file name to use.
 const char kLogNetLog[]                     = "log-net-log";
-
-// Make plugin processes log their sent and received messages to VLOG(1).
-const char kLogPluginMessages[]             = "log-plugin-messages";
 
 // Resizes of the main frame are caused by changing between landscape and
 // portrait mode (i.e. Android) so the page should be rescaled to fit.
@@ -659,20 +639,6 @@ const char kOverridePluginPowerSaverForTesting[] =
 const char kOverscrollHistoryNavigation[] =
     "overscroll-history-navigation";
 
-// Specifies a command that should be used to launch the plugin process.  Useful
-// for running the plugin process through purify or quantify.  Ex:
-//   --plugin-launcher="path\to\purify /Run=yes"
-const char kPluginLauncher[]                = "plugin-launcher";
-
-// Tells the plugin process the path of the plugin to load
-const char kPluginPath[]                    = "plugin-path";
-
-// Causes the process to run as a plugin subprocess.
-const char kPluginProcess[]                 = "plugin";
-
-// Causes the plugin process to display a dialog on launch.
-const char kPluginStartupDialog[]           = "plugin-startup-dialog";
-
 // Argument to the process type that indicates a PPAPI broker process type.
 const char kPpapiBrokerProcess[]            = "ppapi-broker";
 
@@ -682,7 +648,9 @@ const char kPpapiFlashArgs[]                = "ppapi-flash-args";
 // Runs PPAPI (Pepper) plugins in-process.
 const char kPpapiInProcess[]                = "ppapi-in-process";
 
-// Like kPluginLauncher for PPAPI plugins.
+// Specifies a command that should be used to launch the ppapi plugin process.
+// Useful for running the plugin process through purify or quantify.  Ex:
+//   --ppapi-plugin-launcher="path\to\purify /Run=yes"
 const char kPpapiPluginLauncher[]           = "ppapi-plugin-launcher";
 
 // Argument to the process type that indicates a PPAPI plugin process type.
@@ -987,13 +955,6 @@ const char kDisableVaapiAcceleratedVideoEncode[] =
 // Linux speech service. Because it's buggy, the user must explicitly
 // enable it so that visiting a random webpage can't cause instability.
 const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
-#endif
-
-#if defined(OS_MACOSX)
-// Disables support for Core Animation plugins. This is triggered when
-// accelerated compositing is disabled. See http://crbug.com/122430.
-const char kDisableCoreAnimationPlugins[] =
-    "disable-core-animation-plugins";
 #endif
 
 #if defined(OS_WIN)

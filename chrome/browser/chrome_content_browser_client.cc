@@ -541,13 +541,6 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
     return crash_handler->GetDeathSignalSocket();
   }
 
-  if (process_type == switches::kPluginProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
   if (process_type == switches::kPpapiPluginProcess) {
     static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
@@ -1676,15 +1669,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,
       extensions::switches::kWhitelistedExtensionID,
-    };
-
-    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   arraysize(kSwitchNames));
-#endif
-  } else if (process_type == switches::kPluginProcess) {
-#if defined(OS_CHROMEOS)
-    static const char* const kSwitchNames[] = {
-      chromeos::switches::kLoginProfile,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

@@ -142,80 +142,6 @@ class RenderFrameMessageFilter::OpenChannelToPpapiBrokerCallback
   int routing_id_;
 };
 
-class RenderFrameMessageFilter::OpenChannelToNpapiPluginCallback
-    : public RenderMessageCompletionCallback,
-      public PluginProcessHost::Client {
- public:
-  OpenChannelToNpapiPluginCallback(RenderFrameMessageFilter* filter,
-                                   ResourceContext* context,
-                                   IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg),
-        context_(context),
-        host_(nullptr),
-        sent_plugin_channel_request_(false) {
-  }
-
-  int ID() override { return filter()->render_process_id_; }
-
-  ResourceContext* GetResourceContext() override { return context_; }
-
-  bool OffTheRecord() override {
-    if (filter()->incognito_)
-      return true;
-    if (GetContentClient()->browser()->AllowSaveLocalState(context_))
-      return false;
-
-    // For now, only disallow storing data for Flash <http://crbug.com/97319>.
-    for (const auto& type : info_.mime_types) {
-      if (type.mime_type == kFlashPluginSwfMimeType)
-        return true;
-    }
-    return false;
-  }
-
-  void SetPluginInfo(const WebPluginInfo& info) override { info_ = info; }
-
-  void OnFoundPluginProcessHost(PluginProcessHost* host) override {
-    DCHECK(host);
-    host_ = host;
-  }
-
-  void OnSentPluginChannelRequest() override {
-    sent_plugin_channel_request_ = true;
-  }
-
-  void OnChannelOpened(const IPC::ChannelHandle& handle) override {
-    WriteReplyAndDeleteThis(handle);
-  }
-
-  void OnError() override { WriteReplyAndDeleteThis(IPC::ChannelHandle()); }
-
-  PluginProcessHost* host() const {
-    return host_;
-  }
-
-  bool sent_plugin_channel_request() const {
-    return sent_plugin_channel_request_;
-  }
-
-  void Cancel() {
-    delete this;
-  }
-
- private:
-  void WriteReplyAndDeleteThis(const IPC::ChannelHandle& handle) {
-    FrameHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg(),
-                                                       handle, info_);
-    filter()->OnCompletedOpenChannelToNpapiPlugin(this);
-    SendReplyAndDeleteThis();
-  }
-
-  ResourceContext* context_;
-  WebPluginInfo info_;
-  PluginProcessHost* host_;
-  bool sent_plugin_channel_request_;
-};
-
 class RenderFrameMessageFilter::OpenChannelToPpapiPluginCallback
     : public RenderMessageCompletionCallback,
       public PpapiPluginProcessHost::PluginClient {
@@ -272,27 +198,6 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
 RenderFrameMessageFilter::~RenderFrameMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-#if defined(ENABLE_PLUGINS)
-  DCHECK(plugin_host_clients_.empty());
-#endif  // ENABLE_PLUGINS
-}
-
-void RenderFrameMessageFilter::OnChannelClosing() {
-#if defined(ENABLE_PLUGINS)
-  for (OpenChannelToNpapiPluginCallback* client : plugin_host_clients_) {
-    if (client->host()) {
-      if (client->sent_plugin_channel_request()) {
-        client->host()->CancelSentRequest(client);
-      } else {
-        client->host()->CancelPendingRequest(client);
-      }
-    } else {
-      plugin_service_->CancelOpenChannelToNpapiPlugin(client);
-    }
-    client->Cancel();
-  }
-  plugin_host_clients_.clear();
-#endif  // ENABLE_PLUGINS
 }
 
 bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -309,8 +214,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPlugin,
-                                    OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidCreateOutOfProcessPepperInstance,
@@ -556,28 +459,6 @@ void RenderFrameMessageFilter::OnGetPluginInfo(
       render_process_id_, render_frame_id, resource_context_,
       url, page_url, mime_type, allow_wildcard,
       nullptr, info, actual_mime_type);
-}
-
-void RenderFrameMessageFilter::OnOpenChannelToPlugin(
-    int render_frame_id,
-    const GURL& url,
-    const GURL& policy_url,
-    const std::string& mime_type,
-    IPC::Message* reply_msg) {
-  OpenChannelToNpapiPluginCallback* client =
-      new OpenChannelToNpapiPluginCallback(this, resource_context_, reply_msg);
-  DCHECK(!ContainsKey(plugin_host_clients_, client));
-  plugin_host_clients_.insert(client);
-  plugin_service_->OpenChannelToNpapiPlugin(
-      render_process_id_, render_frame_id,
-      url, policy_url, mime_type, client);
-}
-
-void RenderFrameMessageFilter::OnCompletedOpenChannelToNpapiPlugin(
-    OpenChannelToNpapiPluginCallback* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(ContainsKey(plugin_host_clients_, client));
-  plugin_host_clients_.erase(client);
 }
 
 void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(

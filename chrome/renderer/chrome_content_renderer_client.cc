@@ -677,19 +677,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
-#if defined(OS_WIN)
-    // In Windows we need to check if we can load NPAPI plugins.
-    // For example, if the render view is in the Ash desktop, we should not.
-    // If user is on ALLOW or DETECT setting, loading needs to be blocked here.
-    if ((status == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-         status ==
-             ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) &&
-        info.type == content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
-        if (observer->AreNPAPIPluginsBlocked())
-          status = ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
-    }
-#endif
-
     auto create_blocked_plugin = [&render_frame, &frame, &params, &info,
                                   &identifier, &group_name](
         int template_id, const base::string16& message) {
@@ -805,14 +792,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         return render_frame->CreatePlugin(frame, info, params,
                                           std::move(throttler));
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
-        RenderThread::Get()->RecordAction(
-            UserMetricsAction("Plugin_NPAPINotSupported"));
-        placeholder = create_blocked_plugin(
-            IDR_BLOCKED_PLUGIN_HTML,
-            l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED_METRO));
-        break;
-      }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
@@ -846,12 +825,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
         placeholder->AllowLoading();
-        if (info.type != content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
-          render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
-              render_frame->GetRoutingID(),
-              group_name,
-              identifier));
-        }
+        render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
+            render_frame->GetRoutingID(), group_name, identifier));
         observer->DidBlockContentType(content_type, group_name);
         break;
       }

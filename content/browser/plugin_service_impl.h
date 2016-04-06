@@ -24,7 +24,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/plugin_service.h"
@@ -48,19 +47,9 @@ class SingleThreadTaskRunner;
 namespace content {
 class BrowserContext;
 class PluginDirWatcherDelegate;
-class PluginLoaderPosix;
 class PluginServiceFilter;
 class ResourceContext;
 struct PepperPluginInfo;
-
-// base::Bind() has limited arity, and the filter-related methods tend to
-// surpass that limit.
-struct PluginServiceFilterParams {
-  int render_process_id;
-  int render_frame_id;
-  GURL page_url;
-  ResourceContext* resource_context;
-};
 
 class CONTENT_EXPORT PluginServiceImpl
     : NON_EXPORTED_BASE(public PluginService) {
@@ -70,7 +59,6 @@ class CONTENT_EXPORT PluginServiceImpl
 
   // PluginService implementation:
   void Init() override;
-  void StartWatchingPlugins() override;
   bool GetPluginInfoArray(const GURL& url,
                           const std::string& mime_type,
                           bool allow_wildcard,
@@ -95,21 +83,12 @@ class CONTENT_EXPORT PluginServiceImpl
       const base::FilePath& plugin_path) override;
   void SetFilter(PluginServiceFilter* filter) override;
   PluginServiceFilter* GetFilter() override;
-  void ForcePluginShutdown(const base::FilePath& plugin_path) override;
   bool IsPluginUnstable(const base::FilePath& plugin_path) override;
   void RefreshPlugins() override;
-  void AddExtraPluginPath(const base::FilePath& path) override;
-  void RemoveExtraPluginPath(const base::FilePath& path) override;
-  void AddExtraPluginDir(const base::FilePath& path) override;
   void RegisterInternalPlugin(const WebPluginInfo& info,
                               bool add_at_beginning) override;
   void UnregisterInternalPlugin(const base::FilePath& path) override;
   void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) override;
-  bool NPAPIPluginsSupported() override;
-  void DisablePluginsDiscoveryForTesting() override;
-#if defined(OS_MACOSX)
-  void AppActivated() override;
-#endif
   bool PpapiDevChannelSupported(BrowserContext* browser_context,
                                 const GURL& document_url) override;
 
@@ -117,8 +96,6 @@ class CONTENT_EXPORT PluginServiceImpl
   // has been started by this service. This will start a process to host the
   // 'plugin_path' if needed. If the process fails to start, the return value
   // is NULL. Must be called on the IO thread.
-  PluginProcessHost* FindOrStartNpapiPluginProcess(
-      int render_process_id, const base::FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
       int render_process_id,
       const base::FilePath& plugin_path,
@@ -129,12 +106,6 @@ class CONTENT_EXPORT PluginServiceImpl
   // Opens a channel to a plugin process for the given mime type, starting
   // a new plugin process if necessary.  This must be called on the IO thread
   // or else a deadlock can occur.
-  void OpenChannelToNpapiPlugin(int render_process_id,
-                                int render_frame_id,
-                                const GURL& url,
-                                const GURL& page_url,
-                                const std::string& mime_type,
-                                PluginProcessHost::Client* client);
   void OpenChannelToPpapiPlugin(int render_process_id,
                                 const base::FilePath& plugin_path,
                                 const base::FilePath& profile_data_directory,
@@ -142,9 +113,6 @@ class CONTENT_EXPORT PluginServiceImpl
   void OpenChannelToPpapiBroker(int render_process_id,
                                 const base::FilePath& path,
                                 PpapiPluginProcessHost::BrokerClient* client);
-
-  // Cancels opening a channel to a NPAPI plugin.
-  void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
 
   // Used to monitor plugin stability.
   void RegisterPluginCrash(const base::FilePath& plugin_path);
@@ -164,7 +132,6 @@ class CONTENT_EXPORT PluginServiceImpl
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
   // started.
-  PluginProcessHost* FindNpapiPluginProcess(const base::FilePath& plugin_path);
   PpapiPluginProcessHost* FindPpapiPluginProcess(
       const base::FilePath& plugin_path,
       const base::FilePath& profile_data_directory);
@@ -177,66 +144,13 @@ class CONTENT_EXPORT PluginServiceImpl
   void GetPluginsInternal(base::SingleThreadTaskRunner* target_task_runner,
                           const GetPluginsCallback& callback);
 
-#if defined(OS_POSIX)
-  void GetPluginsOnIOThread(base::SingleThreadTaskRunner* target_task_runner,
-                            const GetPluginsCallback& callback);
-#endif
-
-  // Binding directly to GetAllowedPluginForOpenChannelToPlugin() isn't possible
-  // because more arity is needed <http://crbug.com/98542>. This just forwards.
-  void ForwardGetAllowedPluginForOpenChannelToPlugin(
-      const PluginServiceFilterParams& params,
-      const GURL& url,
-      const std::string& mime_type,
-      PluginProcessHost::Client* client,
-      const std::vector<WebPluginInfo>&);
-  // Helper so we can do the plugin lookup on the FILE thread.
-  void GetAllowedPluginForOpenChannelToPlugin(
-      int render_process_id,
-      int render_frame_id,
-      const GURL& url,
-      const GURL& page_url,
-      const std::string& mime_type,
-      PluginProcessHost::Client* client,
-      ResourceContext* resource_context);
-
-  // Helper so we can finish opening the channel after looking up the
-  // plugin.
-  void FinishOpenChannelToPlugin(int render_process_id,
-                                 const base::FilePath& plugin_path,
-                                 PluginProcessHost::Client* client);
-
-#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
-  // Registers a new FilePathWatcher for a given path.
-  static void RegisterFilePathWatcher(base::FilePathWatcher* watcher,
-                                      const base::FilePath& path);
-#endif
-
-#if defined(OS_WIN)
-  // Registry keys for getting notifications when new plugins are installed.
-  base::win::RegKey hkcu_key_;
-  base::win::RegKey hklm_key_;
-#endif
-
-  bool npapi_plugins_enabled_;
-
-#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
-  ScopedVector<base::FilePathWatcher> file_watchers_;
-#endif
-
   std::vector<PepperPluginInfo> ppapi_plugins_;
 
   // Weak pointer; outlives us.
   PluginServiceFilter* filter_;
 
-  std::set<PluginProcessHost::Client*> pending_plugin_clients_;
-
   // Used to sequentialize loading plugins from disk.
   base::SequencedWorkerPool::SequenceToken plugin_list_token_;
-
-#if defined(OS_POSIX)
-  scoped_refptr<PluginLoaderPosix> plugin_loader_;
-#endif
 
   // Used to detect if a given plugin is crashing over and over.
   std::map<base::FilePath, std::vector<base::Time> > crash_times_;

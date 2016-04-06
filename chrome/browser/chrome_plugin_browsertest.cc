@@ -171,10 +171,8 @@ class ChromePluginTest : public InProcessBrowserTest {
   static void CrashFlashInternal(const base::Closure& quit_task) {
     bool found = false;
     for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().process_type != content::PROCESS_TYPE_PLUGIN &&
-          iter.GetData().process_type != content::PROCESS_TYPE_PPAPI_PLUGIN) {
+      if (iter.GetData().process_type != content::PROCESS_TYPE_PPAPI_PLUGIN)
         continue;
-      }
       base::Process process = base::Process::DeprecatedGetProcessFromHandle(
           iter.GetData().handle);
       process.Terminate(0, true);
@@ -194,10 +192,8 @@ class ChromePluginTest : public InProcessBrowserTest {
 
   static void CountPluginProcesses(int* count, const base::Closure& quit_task) {
     for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().process_type == content::PROCESS_TYPE_PLUGIN ||
-          iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+      if (iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN)
         (*count)++;
-      }
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
   }

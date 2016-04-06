@@ -506,8 +506,7 @@ bool SetPluginEnabled(PluginPrefs* plugin_prefs,
 int CountPluginsOnIOThread() {
   int count = 0;
   for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter.GetData().process_type == content::PROCESS_TYPE_PLUGIN ||
-        iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+    if (iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
       count++;
     }
   }

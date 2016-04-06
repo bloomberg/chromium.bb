@@ -721,23 +721,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       gpu_info_.driver_version);
 }
 
-void GpuDataManagerImplPrivate::AppendPluginCommandLine(
-    base::CommandLine* command_line) const {
-  DCHECK(command_line);
-
-#if defined(OS_MACOSX)
-  // TODO(jbauman): Add proper blacklist support for core animation plugins so
-  // special-casing this video card won't be necessary. See
-  // http://crbug.com/134015
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING)) {
-    if (!command_line->HasSwitch(
-           switches::kDisableCoreAnimationPlugins))
-      command_line->AppendSwitch(
-          switches::kDisableCoreAnimationPlugins);
-  }
-#endif
-}
-
 void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     WebPreferences* prefs) const {
   DCHECK(prefs);

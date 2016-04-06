@@ -256,13 +256,6 @@ void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   child_process_host_->AddFilter(filter->GetFilter());
 }
 
-void BrowserChildProcessHostImpl::NotifyProcessInstanceCreated(
-    const ChildProcessData& data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FOR_EACH_OBSERVER(BrowserChildProcessObserver, g_observers.Get(),
-                    BrowserChildProcessInstanceCreated(data));
-}
-
 void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
     int process_type) {
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.BadMessgeTerminated", process_type,

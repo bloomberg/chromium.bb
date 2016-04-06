@@ -5148,9 +5148,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PLUGINS_NO_PLUGINS" desc="Text that indicates that no plugins are installed">
           No plugins are installed
         </message>
-        <message name="IDS_PLUGINS_NPAPI" desc="Text that indicates the plugin is an NPAPI plugin.">
-          NPAPI
-        </message>
         <message name="IDS_PLUGINS_PPAPI_IN_PROCESS" desc="Text that indicates the plugin is an in-process PPAPI plugin.">
           PPAPI (in-process)
         </message>
@@ -5159,12 +5156,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PLUGINS_BROWSER_PLUGIN" desc="Text that indicates the plugin is a browser plugin.">
           BROWSER PLUGIN
-        </message>
-        <message name="IDS_PLUGINS_NPAPI_BEING_REMOVED_SOON" desc="The text shown when an NPAPI plugin loads to warn the user that NPAPI plugin support is being removed soon.">
-          This site uses a plugin (<ph name="PLUGIN_NAME">$1<ex>Silverlight</ex></ph>) that will soon be unsupported.
-        </message>
-        <message name="IDS_PLUGINS_NPAPI_REMOVED" desc="The text shown when an NPAPI plugin attempts to load to tell the user that NPAPI plugin support has been removed.">
-          This site uses a plugin (<ph name="PLUGIN_NAME">$1<ex>Silverlight</ex></ph>) that is unsupported.
         </message>
       </if>
 
@@ -6793,9 +6784,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plugin.">
         Update plugin...
-      </message>
-      <message name="IDS_PLUGIN_NOT_SUPPORTED_METRO" desc="The placeholder text for a plugin that can't run in Windows Metro mode.">
-        This plugin only works on the desktop.
       </message>
       <if expr="is_macosx">
         <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">

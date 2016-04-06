@@ -749,7 +749,6 @@
     ],
     # Put WebRTC-related sources in the plugin+WebRTC section below.
     'content_unittests_plugins_sources': [
-      'browser/plugin_loader_posix_unittest.cc',
       'browser/renderer_host/pepper/browser_ppapi_host_test.cc',
       'browser/renderer_host/pepper/browser_ppapi_host_test.h',
       'browser/renderer_host/pepper/pepper_file_system_browser_host_unittest.cc',

@@ -142,7 +142,6 @@ ContentSettingsObserver::ContentSettingsObserver(
       allow_running_insecure_content_(false),
       content_setting_rules_(NULL),
       is_interstitial_page_(false),
-      npapi_plugins_blocked_(false),
       current_request_id_(0),
       should_whitelist_(should_whitelist) {
   ClearBlockedContentSettings();
@@ -162,7 +161,6 @@ ContentSettingsObserver::ContentSettingsObserver(
     allow_running_insecure_content_ = parent->allow_running_insecure_content_;
     temporarily_allowed_plugins_ = parent->temporarily_allowed_plugins_;
     is_interstitial_page_ = parent->is_interstitial_page_;
-    npapi_plugins_blocked_ = parent->npapi_plugins_blocked_;
   }
 }
 
@@ -205,7 +203,6 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAsInterstitial, OnSetAsInterstitial)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_NPAPINotSupported, OnNPAPINotSupported)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowDisplayingInsecureContent,
                         OnSetAllowDisplayingInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
@@ -504,10 +501,6 @@ void ContentSettingsObserver::didNotAllowScript() {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
-bool ContentSettingsObserver::AreNPAPIPluginsBlocked() const {
-  return npapi_plugins_blocked_;
-}
-
 void ContentSettingsObserver::OnLoadBlockedPlugins(
     const std::string& identifier) {
   temporarily_allowed_plugins_.insert(identifier);
@@ -515,10 +508,6 @@ void ContentSettingsObserver::OnLoadBlockedPlugins(
 
 void ContentSettingsObserver::OnSetAsInterstitial() {
   is_interstitial_page_ = true;
-}
-
-void ContentSettingsObserver::OnNPAPINotSupported() {
-  npapi_plugins_blocked_ = true;
 }
 
 void ContentSettingsObserver::OnSetAllowDisplayingInsecureContent(bool allow) {

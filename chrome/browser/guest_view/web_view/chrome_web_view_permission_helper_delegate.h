@@ -62,7 +62,6 @@ class ChromeWebViewPermissionHelperDelegate :
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(int placeholder_id,
                                const std::string& identifier);
-  void OnNPAPINotSupported(const std::string& identifier);
   void OnOpenAboutPlugins();
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);

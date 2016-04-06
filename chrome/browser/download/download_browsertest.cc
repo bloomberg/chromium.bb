@@ -437,10 +437,6 @@ class DownloadTest : public InProcessBrowserTest {
     file_activity_observer_.reset();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
-  }
-
   // Returning false indicates a failure of the setup, and should be asserted
   // in the caller.
   virtual bool InitialSetup() {

@@ -75,8 +75,7 @@ void HistogramController::GetHistogramDataFromChildProcesses(
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     const ChildProcessData& data = iter.GetData();
     int type = data.process_type;
-    if (type != PROCESS_TYPE_PLUGIN &&
-        type != PROCESS_TYPE_GPU &&
+    if (type != PROCESS_TYPE_GPU &&
         type != PROCESS_TYPE_PPAPI_PLUGIN &&
         type != PROCESS_TYPE_PPAPI_BROKER) {
       continue;

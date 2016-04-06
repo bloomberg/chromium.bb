@@ -70,7 +70,6 @@ class SyntheticGestureTarget;
 class WebCursor;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
-struct WebPluginGeometry;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,

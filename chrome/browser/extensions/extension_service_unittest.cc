@@ -5291,7 +5291,6 @@ TEST_F(ExtensionServiceTestSimple, Enabledness) {
   base::ShadowingAtExitManager at_exit_manager;
 #if defined(ENABLE_PLUGINS)
   content::PluginService::GetInstance()->Init();
-  content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
 #endif
 
   ExtensionErrorReporter::Init(false);  // no noisy errors

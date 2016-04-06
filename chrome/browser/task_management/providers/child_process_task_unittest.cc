@@ -31,7 +31,6 @@ struct ProcessTypeTaskTypePair {
   int process_type_;
   Task::Type expected_task_type_;
 } process_task_types_pairs[] = {
-    { content::PROCESS_TYPE_PLUGIN, Task::PLUGIN },
     { content::PROCESS_TYPE_PPAPI_PLUGIN, Task::PLUGIN },
     { content::PROCESS_TYPE_PPAPI_BROKER, Task::PLUGIN },
     { content::PROCESS_TYPE_UTILITY, Task::UTILITY },
@@ -115,7 +114,7 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   const base::string16 expected_name(l10n_util::GetStringFUTF16(
       IDS_TASK_MANAGER_PLUGIN_PREFIX, name));
 
-  ChildProcessData data2(content::PROCESS_TYPE_PLUGIN);
+  ChildProcessData data2(content::PROCESS_TYPE_PPAPI_PLUGIN);
   data2.handle = base::GetCurrentProcessHandle();
   data2.name = name;
   data2.id = unique_id;

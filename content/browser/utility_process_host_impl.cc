@@ -319,7 +319,6 @@ bool UtilityProcessHostImpl::StartProcess() {
 
     // Browser command-line switches to propagate to the utility process.
     static const char* const kSwitchNames[] = {
-      switches::kDebugPluginLoading,
       switches::kNoSandbox,
       switches::kProfilerTiming,
 #if defined(OS_MACOSX)

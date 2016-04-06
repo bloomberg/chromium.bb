@@ -100,13 +100,6 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
     return crash_handler->GetDeathSignalSocket();
   }
 
-  if (process_type == switches::kPluginProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
   if (process_type == switches::kPpapiPluginProcess) {
     static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
@@ -206,14 +199,6 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       return true;
   }
   return false;
-}
-
-bool ShellContentBrowserClient::IsNPAPIEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  return true;
-#else
-  return false;
-#endif
 }
 
 void ShellContentBrowserClient::RegisterInProcessMojoApplications(

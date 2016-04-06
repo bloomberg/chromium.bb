@@ -32,9 +32,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestFileSystemAccessAsyncResponse,
                     int  /* request_id */,
                     bool /* allowed */)
 
-// Tells the renderer that the NPAPI cannot be used. For example Ash on windows.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_NPAPINotSupported)
-
 // Tells the render frame to load all blocked plugins with the given identifier.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
                     std::string /* identifier */)

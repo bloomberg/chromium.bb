@@ -20,8 +20,6 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
       return ProfilerEventProto::TrackedObject::BROWSER;
     case content::PROCESS_TYPE_RENDERER:
       return ProfilerEventProto::TrackedObject::RENDERER;
-    case content::PROCESS_TYPE_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PLUGIN;
     case content::PROCESS_TYPE_UTILITY:
       return ProfilerEventProto::TrackedObject::UTILITY;
     case content::PROCESS_TYPE_ZYGOTE:

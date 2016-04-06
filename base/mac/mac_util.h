@@ -66,12 +66,6 @@ BASE_EXPORT void ReleaseFullScreen(FullScreenMode mode);
 BASE_EXPORT void SwitchFullScreenModes(FullScreenMode from_mode,
                                        FullScreenMode to_mode);
 
-// Set the visibility of the cursor.
-BASE_EXPORT void SetCursorVisibility(bool visible);
-
-// Activates the process with the given PID.
-BASE_EXPORT void ActivateProcess(pid_t pid);
-
 // Returns true if this process is in the foreground, meaning that it's the
 // frontmost process, the one whose menu bar is shown at the top of the main
 // display.

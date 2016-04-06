@@ -41,12 +41,6 @@ class CONTENT_EXPORT BrowserChildProcessObserver {
   virtual void BrowserChildProcessKilled(const ChildProcessData& data,
                                          int exit_code) {}
 
-  // Called when an instance of a particular child is created in a page. If one
-  // page contains several regions rendered by the same child, this will be
-  // called once for each region during the page load.
-  virtual void BrowserChildProcessInstanceCreated(
-      const ChildProcessData& data) {}
-
  protected:
   // The observer can be destroyed on any thread.
   virtual ~BrowserChildProcessObserver() {}

@@ -20,10 +20,6 @@ namespace content {
 
 namespace {
 
-#if defined(OS_WIN)
-static bool g_win32k_renderer_lockdown_disabled = false;
-#endif
-
 bool IsUseZoomForDSFEnabledByDefault() {
 #if defined(OS_CHROMEOS)
   return true;
@@ -44,13 +40,7 @@ bool IsPinchToZoomEnabled() {
 
 #if defined(OS_WIN)
 
-void DisableWin32kRendererLockdown() {
-  g_win32k_renderer_lockdown_disabled = true;
-}
-
 bool IsWin32kRendererLockdownEnabled() {
-  if (g_win32k_renderer_lockdown_disabled)
-    return false;
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return false;
   if (!gfx::win::ShouldUseDirectWrite())

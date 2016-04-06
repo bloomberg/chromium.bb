@@ -16,7 +16,6 @@ void PrintPreviewTest::SetUp() {
   // The PluginService will be destroyed at the end of the test (due to the
   // ShadowingAtExitManager in our base class).
   content::PluginService::GetInstance()->Init();
-  content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
 }
 
 BrowserWindow* PrintPreviewTest::CreateBrowserWindow() {

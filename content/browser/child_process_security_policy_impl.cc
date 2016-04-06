@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/child_process_data.h"

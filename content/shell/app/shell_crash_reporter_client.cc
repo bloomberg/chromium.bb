@@ -66,7 +66,6 @@ int ShellCrashReporterClient::GetAndroidMinidumpDescriptor() {
 bool ShellCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == switches::kRendererProcess ||
-         process_type == switches::kPluginProcess ||
          process_type == switches::kPpapiPluginProcess ||
          process_type == switches::kZygoteProcess ||
          process_type == switches::kGpuProcess;

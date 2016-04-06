@@ -108,9 +108,6 @@ bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(UtilityThreadImpl, msg)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Started, OnBatchModeStarted)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Finished, OnBatchModeFinished)
-#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
-    IPC_MESSAGE_HANDLER(UtilityMsg_LoadPlugins, OnLoadPlugins)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -124,28 +121,6 @@ void UtilityThreadImpl::OnBatchModeFinished() {
   batch_mode_ = false;
   ReleaseProcessIfNeeded();
 }
-
-#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
-void UtilityThreadImpl::OnLoadPlugins(
-    const std::vector<base::FilePath>& plugin_paths) {
-  PluginList* plugin_list = PluginList::Singleton();
-
-  std::vector<WebPluginInfo> plugins;
-  // TODO(bauerb): If we restart loading plugins, we might mess up the logic in
-  // PluginList::ShouldLoadPlugin due to missing the previously loaded plugins
-  // in |plugin_groups|.
-  for (size_t i = 0; i < plugin_paths.size(); ++i) {
-    WebPluginInfo plugin;
-    if (!plugin_list->LoadPluginIntoPluginList(
-        plugin_paths[i], &plugins, &plugin))
-      Send(new UtilityHostMsg_LoadPluginFailed(i, plugin_paths[i]));
-    else
-      Send(new UtilityHostMsg_LoadedPlugin(i, plugin));
-  }
-
-  ReleaseProcessIfNeeded();
-}
-#endif
 
 void UtilityThreadImpl::BindProcessControlRequest(
     mojo::InterfaceRequest<mojom::ProcessControl> request) {

@@ -305,23 +305,6 @@ class ExtensionCrxInstallerTestWithExperimentalApis
   }
 };
 
-// This test is skipped on ChromeOS because it requires the NPAPI,
-// which is not available on that platform.
-#if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
-  std::string id = "hdgllgikmikobbofgnabhfimcfoopgnd";
-  ExtensionRegistry* registry = ExtensionRegistry::Get(
-      browser()->profile());
-
-  // Even whitelisted extensions with NPAPI should not prompt.
-  scoped_ptr<MockPromptProxy> mock_prompt =
-      CreateMockPromptProxyForBrowser(browser());
-  InstallWithPrompt("uitest/plugins", id, mock_prompt.get());
-  EXPECT_FALSE(mock_prompt->confirmation_requested());
-  EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        ExperimentalExtensionFromGallery) {
   // Gallery-installed extensions should have their experimental permission

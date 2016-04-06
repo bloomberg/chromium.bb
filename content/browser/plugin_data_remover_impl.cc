@@ -15,11 +15,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/plugin_process_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
@@ -61,8 +59,7 @@ void PluginDataRemover::GetSupportedPlugins(
 }
 
 class PluginDataRemoverImpl::Context
-    : public PluginProcessHost::Client,
-      public PpapiPluginProcessHost::BrokerClient,
+    : public PpapiPluginProcessHost::BrokerClient,
       public IPC::Listener,
       public base::RefCountedThreadSafe<Context,
                                         BrowserThread::DeleteOnIOThread> {
@@ -71,8 +68,7 @@ class PluginDataRemoverImpl::Context
       : event_(new base::WaitableEvent(true, false)),
         begin_time_(begin_time),
         is_removing_(false),
-        browser_context_path_(browser_context->GetPath()),
-        resource_context_(browser_context->GetResourceContext()) {
+        browser_context_path_(browser_context->GetPath()) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
@@ -104,23 +100,22 @@ class PluginDataRemoverImpl::Context
 
     base::FilePath plugin_path = plugins[0].path;
 
+    PepperPluginInfo* pepper_info =
+        plugin_service->GetRegisteredPpapiPluginInfo(plugin_path);
+    if (!pepper_info) {
+      event_->Signal();
+      return;
+    }
+
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     remove_start_time_ = base::Time::Now();
     is_removing_ = true;
-    // Balanced in On[Ppapi]ChannelOpened or OnError. Exactly one them will
-    // eventually be called, so we need to keep this object around until then.
-    AddRef();
 
-    PepperPluginInfo* pepper_info =
-        plugin_service->GetRegisteredPpapiPluginInfo(plugin_path);
-    if (pepper_info) {
-      plugin_name_ = pepper_info->name;
-      // Use the broker since we run this function outside the sandbox.
-      plugin_service->OpenChannelToPpapiBroker(0, plugin_path, this);
-    } else {
-      plugin_service->OpenChannelToNpapiPlugin(
-          0, 0, GURL(), GURL(), mime_type, this);
-    }
+    // Balanced in OnPpapiChannelOpened.
+    AddRef();
+    plugin_name_ = pepper_info->name;
+    // Use the broker since we run this function outside the sandbox.
+    plugin_service->OpenChannelToPpapiBroker(0, plugin_path, this);
   }
 
   // Called when a timeout happens in order not to block the client
@@ -130,34 +125,7 @@ class PluginDataRemoverImpl::Context
     SignalDone();
   }
 
-  // PluginProcessHost::Client methods.
-  int ID() override {
-    // Generate a unique identifier for this PluginProcessHostClient.
-    return ChildProcessHostImpl::GenerateChildProcessUniqueId();
-  }
-
   bool OffTheRecord() override { return false; }
-
-  ResourceContext* GetResourceContext() override { return resource_context_; }
-
-  void SetPluginInfo(const WebPluginInfo& info) override {}
-
-  void OnFoundPluginProcessHost(PluginProcessHost* host) override {}
-
-  void OnSentPluginChannelRequest() override {}
-
-  void OnChannelOpened(const IPC::ChannelHandle& handle) override {
-    ConnectToChannel(handle, false);
-    // Balancing the AddRef call.
-    Release();
-  }
-
-  void OnError() override {
-    LOG(ERROR) << "Couldn't open plugin channel";
-    SignalDone();
-    // Balancing the AddRef call.
-    Release();
-  }
 
   // PpapiPluginProcessHost::BrokerClient implementation.
   void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
@@ -170,7 +138,7 @@ class PluginDataRemoverImpl::Context
                             base::ProcessId /* peer_pid */,
                             int /* child_id */) override {
     if (!channel_handle.name.empty())
-      ConnectToChannel(channel_handle, true);
+      ConnectToChannel(channel_handle);
 
     // Balancing the AddRef call.
     Release();
@@ -179,8 +147,6 @@ class PluginDataRemoverImpl::Context
   // IPC::Listener methods.
   bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(Context, message)
-      IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ClearSiteDataResult,
-                          OnClearSiteDataResult)
       IPC_MESSAGE_HANDLER(PpapiHostMsg_ClearSiteDataResult,
                           OnPpapiClearSiteDataResult)
       IPC_MESSAGE_UNHANDLED_ERROR()
@@ -222,7 +188,7 @@ class PluginDataRemoverImpl::Context
   }
 
   // Connects the client side of a newly opened plugin channel.
-  void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {
+  void ConnectToChannel(const IPC::ChannelHandle& handle) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // If we timed out, don't bother connecting.
@@ -241,13 +207,7 @@ class PluginDataRemoverImpl::Context
                            ? std::numeric_limits<uint64_t>::max()
                            : (base::Time::Now() - begin_time_).InSeconds();
 
-    IPC::Message* msg;
-    if (is_ppapi) {
-      msg = CreatePpapiClearSiteDataMsg(max_age);
-    } else {
-      msg = new PluginProcessMsg_ClearSiteData(
-          std::string(), kClearAllData, max_age);
-    }
+    IPC::Message* msg = CreatePpapiClearSiteDataMsg(max_age);
     if (!channel_->Send(msg)) {
       NOTREACHED() << "Couldn't send ClearSiteData message";
       SignalDone();
@@ -255,15 +215,9 @@ class PluginDataRemoverImpl::Context
     }
   }
 
-  // Handles the PpapiHostMsg_ClearSiteDataResult message by delegating to the
-  // PluginProcessHostMsg_ClearSiteDataResult handler.
+  // Handles the PpapiHostMsg_ClearSiteDataResult message.
   void OnPpapiClearSiteDataResult(uint32_t request_id, bool success) {
     DCHECK_EQ(0u, request_id);
-    OnClearSiteDataResult(success);
-  }
-
-  // Handles the PluginProcessHostMsg_ClearSiteDataResult message.
-  void OnClearSiteDataResult(bool success) {
     LOG_IF(ERROR, !success) << "ClearSiteData returned error";
     UMA_HISTOGRAM_TIMES("ClearPluginData.time",
                         base::Time::Now() - remove_start_time_);
@@ -290,9 +244,6 @@ class PluginDataRemoverImpl::Context
   // Path for the current profile. Must be retrieved on the UI thread from the
   // browser context when we start so we can use it later on the I/O thread.
   base::FilePath browser_context_path_;
-
-  // The resource context for the profile. Use only on the I/O thread.
-  ResourceContext* resource_context_;
 
   // The name of the plugin. Use only on the I/O thread.
   std::string plugin_name_;

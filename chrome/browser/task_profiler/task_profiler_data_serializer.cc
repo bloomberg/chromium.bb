@@ -79,13 +79,12 @@ int AsChromeProcessType(
     metrics::ProfilerEventProto::TrackedObject::ProcessType process_type) {
   switch (process_type) {
     case metrics::ProfilerEventProto::TrackedObject::UNKNOWN:
+    case metrics::ProfilerEventProto::TrackedObject::PLUGIN:
       return content::PROCESS_TYPE_UNKNOWN;
     case metrics::ProfilerEventProto::TrackedObject::BROWSER:
       return content::PROCESS_TYPE_BROWSER;
     case metrics::ProfilerEventProto::TrackedObject::RENDERER:
       return content::PROCESS_TYPE_RENDERER;
-    case metrics::ProfilerEventProto::TrackedObject::PLUGIN:
-      return content::PROCESS_TYPE_PLUGIN;
     case metrics::ProfilerEventProto::TrackedObject::WORKER:
       return content::PROCESS_TYPE_WORKER_DEPRECATED;
     case metrics::ProfilerEventProto::TrackedObject::NACL_LOADER:

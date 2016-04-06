@@ -293,9 +293,6 @@ bool ShouldServiceRequest(int process_type,
                           const net::HttpRequestHeaders& headers,
                           ResourceMessageFilter* filter,
                           ResourceContext* resource_context) {
-  if (process_type == PROCESS_TYPE_PLUGIN)
-    return true;
-
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 

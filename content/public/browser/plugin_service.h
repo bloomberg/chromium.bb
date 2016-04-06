@@ -22,7 +22,6 @@ class FilePath;
 namespace content {
 
 class BrowserContext;
-class PluginProcessHost;
 class PluginServiceFilter;
 class ResourceContext;
 struct PepperPluginInfo;
@@ -53,9 +52,6 @@ class PluginService {
 
   // Must be called on the instance to finish initialization.
   virtual void Init() = 0;
-
-  // Starts watching for changes in the list of installed plugins.
-  virtual void StartWatchingPlugins() = 0;
 
   // Gets the plugin in the list of plugins that matches the given url and mime
   // type. Returns true if the data is frome a stale plugin list, false if it
@@ -106,9 +102,6 @@ class PluginService {
   virtual void SetFilter(PluginServiceFilter* filter) = 0;
   virtual PluginServiceFilter* GetFilter() = 0;
 
-  // If the plugin with the given path is running, cleanly shuts it down.
-  virtual void ForcePluginShutdown(const base::FilePath& plugin_path) = 0;
-
   // Used to monitor plugin stability. An unstable plugin is one that has
   // crashed more than a set number of times in a set time period.
   virtual bool IsPluginUnstable(const base::FilePath& plugin_path) = 0;
@@ -116,14 +109,6 @@ class PluginService {
   // Cause the plugin list to refresh next time they are accessed, regardless
   // of whether they are already loaded.
   virtual void RefreshPlugins() = 0;
-
-  // Add/Remove an extra plugin to load when we actually do the loading.  Must
-  // be called before the plugins have been loaded.
-  virtual void AddExtraPluginPath(const base::FilePath& path) = 0;
-  virtual void RemoveExtraPluginPath(const base::FilePath& path) = 0;
-
-  // Same as above, but specifies a directory in which to search for plugins.
-  virtual void AddExtraPluginDir(const base::FilePath& path) = 0;
 
   // Register an internal plugin with the specified plugin information.
   // An internal plugin must be registered before it can
@@ -139,20 +124,6 @@ class PluginService {
 
   // Gets a list of all the registered internal plugins.
   virtual void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) = 0;
-
-  // Returns true iff NPAPI plugins are supported on the current platform.
-  // This can be called from any thread.
-  virtual bool NPAPIPluginsSupported() = 0;
-
-  // This is equivalent to specifying kDisablePluginsDiscovery, but is useful
-  // for unittests.
-  virtual void DisablePluginsDiscoveryForTesting() = 0;
-
-#if defined(OS_MACOSX)
-  // Called when the application is made active so that modal plugin windows can
-  // be made forward too.
-  virtual void AppActivated() = 0;
-#endif
 
   // Returns true iff PPAPI "dev channel" methods are supported.
   virtual bool PpapiDevChannelSupported(BrowserContext* browser_context,

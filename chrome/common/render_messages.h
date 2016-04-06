@@ -39,7 +39,6 @@ enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kBlockedByPolicy,
   kDisabled,
   kNotFound,
-  kNPAPINotSupported,
   kOutdatedBlocked,
   kOutdatedDisallowed,
   kPlayImportantContent,

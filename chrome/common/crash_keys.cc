@@ -243,7 +243,6 @@ static bool IsBoringSwitch(const std::string& flag) {
     switches::kVModule,
 #if defined(OS_WIN)
     switches::kForceFieldTrials,
-    switches::kPluginPath,
 #elif defined(OS_MACOSX)
     switches::kMetricsClientID,
 #elif defined(OS_CHROMEOS)

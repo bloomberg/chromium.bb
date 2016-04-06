@@ -78,7 +78,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   size_t aggregate_memory = 0;
   int chrome_count = 0;
   int extension_count = 0;
-  int plugin_count = 0;
   int pepper_plugin_count = 0;
   int pepper_plugin_broker_count = 0;
   int renderer_count = 0;
@@ -124,10 +123,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
             continue;
         }
       }
-      case content::PROCESS_TYPE_PLUGIN:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Plugin", sample);
-        plugin_count++;
-        continue;
       case content::PROCESS_TYPE_UTILITY:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Utility", sample);
         other_count++;
@@ -188,7 +183,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   UMA_HISTOGRAM_COUNTS_100("Memory.ChromeProcessCount", chrome_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.ExtensionProcessCount", extension_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.OtherProcessCount", other_count);
-  UMA_HISTOGRAM_COUNTS_100("Memory.PluginProcessCount", plugin_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.PepperPluginProcessCount",
                            pepper_plugin_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.PepperPluginBrokerProcessCount",
@@ -253,9 +247,6 @@ void MetricsMemoryDetails::UpdateSwapHistograms() {
             continue;
         }
       }
-      case content::PROCESS_TYPE_PLUGIN:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Plugin", sample);
-        continue;
       case content::PROCESS_TYPE_UTILITY:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Utility", sample);
         continue;

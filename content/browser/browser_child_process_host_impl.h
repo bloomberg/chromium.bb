@@ -89,9 +89,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Adds an IPC message filter.
   void AddFilter(BrowserMessageFilter* filter);
 
-  // Called when an instance of a particular child is created in a page.
-  static void NotifyProcessInstanceCreated(const ChildProcessData& data);
-
   static void HistogramBadMessageTerminated(int process_type);
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }

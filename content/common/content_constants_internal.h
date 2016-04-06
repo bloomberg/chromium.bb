@@ -19,19 +19,12 @@ CONTENT_EXPORT extern const int64_t kHungRendererDelayMs;
 // before clearing previously displayed graphics.
 extern const int64_t kNewContentRenderingDelayMs;
 
-// The maximum plugin width and height.
-extern const uint16_t kMaxPluginSideLength;
-// The maximum plugin size, defined as the number of pixels occupied by the
-// plugin.
-extern const uint32_t kMaxPluginSize;
-
 // The maximum length of string as data url.
 extern const size_t kMaxLengthOfDataURLString;
 
 // Constants used to organize content processes in about:tracing.
 CONTENT_EXPORT extern const int kTraceEventBrowserProcessSortIndex;
 CONTENT_EXPORT extern const int kTraceEventRendererProcessSortIndex;
-CONTENT_EXPORT extern const int kTraceEventPluginProcessSortIndex;
 CONTENT_EXPORT extern const int kTraceEventPpapiProcessSortIndex;
 CONTENT_EXPORT extern const int kTraceEventPpapiBrokerProcessSortIndex;
 CONTENT_EXPORT extern const int kTraceEventGpuProcessSortIndex;

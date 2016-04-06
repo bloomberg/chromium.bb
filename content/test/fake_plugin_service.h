@@ -17,7 +17,6 @@ class FakePluginService : public PluginService {
   ~FakePluginService() override;
   // PluginService implementation:
   void Init() override;
-  void StartWatchingPlugins() override;
   bool GetPluginInfoArray(const GURL& url,
                           const std::string& mime_type,
                           bool allow_wildcard,
@@ -42,21 +41,12 @@ class FakePluginService : public PluginService {
       const base::FilePath& plugin_path) override;
   void SetFilter(PluginServiceFilter* filter) override;
   PluginServiceFilter* GetFilter() override;
-  void ForcePluginShutdown(const base::FilePath& plugin_path) override;
   bool IsPluginUnstable(const base::FilePath& plugin_path) override;
   void RefreshPlugins() override;
-  void AddExtraPluginPath(const base::FilePath& path) override;
-  void RemoveExtraPluginPath(const base::FilePath& path) override;
-  void AddExtraPluginDir(const base::FilePath& path) override;
   void RegisterInternalPlugin(const WebPluginInfo& info,
                               bool add_at_beginning) override;
   void UnregisterInternalPlugin(const base::FilePath& path) override;
   void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) override;
-  bool NPAPIPluginsSupported() override;
-  void DisablePluginsDiscoveryForTesting() override;
-#if defined(OS_MACOSX)
-  void AppActivated() override;
-#endif
   bool PpapiDevChannelSupported(BrowserContext* browser_context,
                                 const GURL& document_url) override;
 

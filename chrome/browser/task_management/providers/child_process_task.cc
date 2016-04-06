@@ -46,7 +46,6 @@ base::string16 GetLocalizedTitle(const base::string16& title,
   base::string16 result_title = title;
   if (result_title.empty()) {
     switch (process_type) {
-      case content::PROCESS_TYPE_PLUGIN:
       case content::PROCESS_TYPE_PPAPI_PLUGIN:
       case content::PROCESS_TYPE_PPAPI_BROKER:
         result_title = l10n_util::GetStringUTF16(
@@ -70,7 +69,6 @@ base::string16 GetLocalizedTitle(const base::string16& title,
                                         result_title);
     case content::PROCESS_TYPE_GPU:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
-    case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_PREFIX,
                                         result_title);
@@ -206,7 +204,6 @@ void ChildProcessTask::Refresh(const base::TimeDelta& update_interval,
 Task::Type ChildProcessTask::GetType() const {
   // Convert |content::ProcessType| to |task_management::Task::Type|.
   switch (process_type_) {
-    case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_BROKER:
       return Task::PLUGIN;

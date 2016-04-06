@@ -298,9 +298,9 @@ void PluginMetricsProvider::LogPluginLoadingError(
   ChildProcessStats& stats = child_process_stats_buffer_[plugin.name];
   // Initialize the type if this entry is new.
   if (stats.process_type == content::PROCESS_TYPE_UNKNOWN) {
-    // The plugin process might not actually be of type PLUGIN (which means
-    // NPAPI), but we only care that it is *a* plugin process.
-    stats.process_type = content::PROCESS_TYPE_PLUGIN;
+    // The plugin process might not actually be of type PPAPI_PLUGIN, but we
+    // only care that it is *a* plugin process.
+    stats.process_type = content::PROCESS_TYPE_PPAPI_PLUGIN;
   } else {
     DCHECK(IsPluginProcess(stats.process_type));
   }
@@ -315,8 +315,7 @@ void PluginMetricsProvider::SetPluginsForTesting(
 
 // static
 bool PluginMetricsProvider::IsPluginProcess(int process_type) {
-  return (process_type == content::PROCESS_TYPE_PLUGIN ||
-          process_type == content::PROCESS_TYPE_PPAPI_PLUGIN ||
+  return (process_type == content::PROCESS_TYPE_PPAPI_PLUGIN ||
           process_type == content::PROCESS_TYPE_PPAPI_BROKER);
 }
 
@@ -353,12 +352,6 @@ void PluginMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
     int exit_code) {
   GetChildProcessStats(data).process_crashes++;
-  RecordCurrentStateWithDelay(kRecordStateDelayMs);
-}
-
-void PluginMetricsProvider::BrowserChildProcessInstanceCreated(
-    const content::ChildProcessData& data) {
-  GetChildProcessStats(data).instances++;
   RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }
 

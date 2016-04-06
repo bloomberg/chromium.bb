@@ -53,8 +53,7 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
     if (command_line.HasSwitch(switches::kDisableGpuSandbox))
       return false;
     *sandbox_type = SANDBOX_TYPE_GPU;
-  } else if ((process_type == switches::kPluginProcess) ||
-             (process_type == switches::kPpapiBrokerProcess)) {
+  } else if (process_type == switches::kPpapiBrokerProcess) {
     return false;
   } else if (process_type == switches::kPpapiPluginProcess) {
     *sandbox_type = SANDBOX_TYPE_PPAPI;

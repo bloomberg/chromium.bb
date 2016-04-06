@@ -235,8 +235,6 @@ source_set("common") {
                  "gpu/media/vt_video_encode_accelerator_mac.h",
                ] + get_target_outputs(":libvt_generate_stubs")
 
-    sources -= [ "plugin_list_posix.cc" ]
-
     deps += [
       ":libvt_generate_stubs",
       "//content:resources",
@@ -332,7 +330,6 @@ source_set("common") {
       "pepper_renderer_instance_data.h",
       "plugin_list.cc",
       "plugin_list.h",
-      "plugin_list_posix.cc",
       "sandbox_util.cc",
     ]
   }

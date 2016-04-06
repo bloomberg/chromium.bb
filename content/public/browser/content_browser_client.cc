@@ -360,10 +360,6 @@ TracingDelegate* ContentBrowserClient::GetTracingDelegate() {
   return nullptr;
 }
 
-bool ContentBrowserClient::IsNPAPIEnabled() {
-  return false;
-}
-
 bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     BrowserContext* browser_context,
     const GURL& url) {

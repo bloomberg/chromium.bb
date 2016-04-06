@@ -796,12 +796,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
       new HandoffActiveURLObserverBridge(self));
 }
 
-// This is called after profiles have been loaded and preferences registered.
-// It is safe to access the default profile here.
-- (void)applicationDidBecomeActive:(NSNotification*)notify {
-  content::PluginService::GetInstance()->AppActivated();
-}
-
 // Helper function for populating and displaying the in progress downloads at
 // exit alert panel.
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount {

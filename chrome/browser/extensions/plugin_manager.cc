@@ -48,27 +48,6 @@ PluginManager::GetFactoryInstance() {
 void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
                                       const Extension* extension) {
   bool plugins_or_nacl_changed = false;
-  if (PluginInfo::HasPlugins(extension)) {
-    const PluginInfo::PluginVector* plugins = PluginInfo::GetPlugins(extension);
-    CHECK(plugins);
-    plugins_or_nacl_changed = true;
-    for (PluginInfo::PluginVector::const_iterator plugin = plugins->begin();
-         plugin != plugins->end();
-         ++plugin) {
-      PluginService::GetInstance()->RefreshPlugins();
-      PluginService::GetInstance()->AddExtraPluginPath(plugin->path);
-      ChromePluginServiceFilter* filter =
-          ChromePluginServiceFilter::GetInstance();
-      if (plugin->is_public) {
-        filter->RestrictPluginToProfileAndOrigin(
-            plugin->path, profile_, GURL());
-      } else {
-        filter->RestrictPluginToProfileAndOrigin(
-            plugin->path, profile_, extension->url());
-      }
-    }
-  }
-
 #if !defined(DISABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =
       NaClModuleInfo::GetNaClModules(extension);
@@ -118,19 +97,6 @@ void PluginManager::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   bool plugins_or_nacl_changed = false;
-  if (PluginInfo::HasPlugins(extension)) {
-    const PluginInfo::PluginVector* plugins = PluginInfo::GetPlugins(extension);
-    plugins_or_nacl_changed = true;
-    for (PluginInfo::PluginVector::const_iterator plugin = plugins->begin();
-         plugin != plugins->end();
-         ++plugin) {
-      PluginService::GetInstance()->ForcePluginShutdown(plugin->path);
-      PluginService::GetInstance()->RefreshPlugins();
-      PluginService::GetInstance()->RemoveExtraPluginPath(plugin->path);
-      ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin->path);
-    }
-  }
-
 #if !defined(DISABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =
       NaClModuleInfo::GetNaClModules(extension);
@@ -150,7 +116,6 @@ void PluginManager::OnExtensionUnloaded(
     plugins_or_nacl_changed = true;
     base::FilePath path = handler->GetPluginPath();
     PluginService::GetInstance()->UnregisterInternalPlugin(path);
-    PluginService::GetInstance()->ForcePluginShutdown(path);
     PluginService::GetInstance()->RefreshPlugins();
   }
 

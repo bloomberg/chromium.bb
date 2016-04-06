@@ -208,7 +208,6 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
 
   PluginService::GetInstance()->Init();
-  PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
 
   base::string16 component_updated_plugin_name(
       ASCIIToUTF16("Component-updated Pepper Flash"));

@@ -50,8 +50,6 @@ base::string16 PluginTypeToString(int type) {
   // enumeration type gives us better build-time error checking (if someone adds
   // a new type).
   switch (static_cast<WebPluginInfo::PluginType>(type)) {
-    case WebPluginInfo::PLUGIN_TYPE_NPAPI:
-      return l10n_util::GetStringUTF16(IDS_PLUGINS_NPAPI);
     case WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS:
       return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_IN_PROCESS);
     case WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS:
