@@ -61,7 +61,7 @@
 #include "core/inspector/PageConsoleAgent.h"
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/InspectorAccessibilityAgent.h"
@@ -597,7 +597,7 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
     dummyEvent.y = pointInRootFrame.y;
     IntPoint transformedPoint = PlatformMouseEventBuilder(m_webLocalFrameImpl->frameView(), dummyEvent).position();
     HitTestResult result(request, m_webLocalFrameImpl->frameView()->rootFrameToContents(transformedPoint));
-    m_webLocalFrameImpl->frame()->contentLayoutObject()->hitTest(result);
+    m_webLocalFrameImpl->frame()->contentLayoutItem().hitTest(result);
     Node* node = result.innerNode();
     if (!node && m_webLocalFrameImpl->frame()->document())
         node = m_webLocalFrameImpl->frame()->document()->documentElement();
