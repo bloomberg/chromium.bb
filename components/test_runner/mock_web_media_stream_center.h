@@ -40,9 +40,6 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
   blink::WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  // Task related methods
-  WebTaskList* mutable_task_list() { return &task_list_; }
-
  private:
   WebTaskList task_list_;
   TestInterfaces* interfaces_;

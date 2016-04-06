@@ -1909,10 +1909,6 @@ bool TestRunner::shouldDumpPingLoaderCallbacks() const {
   return test_is_running_ && dump_ping_loader_callbacks_;
 }
 
-void TestRunner::setShouldDumpPingLoaderCallbacks(bool value) {
-  dump_ping_loader_callbacks_ = value;
-}
-
 void TestRunner::setShouldEnableViewSource(bool value) {
   web_view_->mainFrame()->enableViewSourceMode(value);
 }
@@ -1939,10 +1935,6 @@ bool TestRunner::canOpenWindows() const {
 
 bool TestRunner::shouldDumpResourceLoadCallbacks() const {
   return test_is_running_ && dump_resource_load_callbacks_;
-}
-
-bool TestRunner::shouldDumpResourceRequestCallbacks() const {
-  return test_is_running_ && dump_resource_request_callbacks_;
 }
 
 bool TestRunner::shouldDumpResourceResponseMIMETypes() const {

@@ -27,7 +27,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   void Reset();
 
   TrackedDictionary& tracked_dictionary() { return dict_; }
-  const TrackedDictionary& tracked_dictionary() const { return dict_; }
 
 #define DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(name)                  \
   bool name() const {                                               \

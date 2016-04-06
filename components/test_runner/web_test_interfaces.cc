@@ -95,10 +95,6 @@ WebTestInterfaces::CreateAppBannerClient() {
   return std::move(client);
 }
 
-AppBannerClient* WebTestInterfaces::GetAppBannerClient() {
-  return interfaces_->GetAppBannerClient();
-}
-
 scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient() {
   return make_scoped_ptr(new WebFrameTestClient(
         interfaces_->GetTestRunner(),

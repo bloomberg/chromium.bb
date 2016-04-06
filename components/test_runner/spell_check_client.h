@@ -32,7 +32,6 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
   void SetDelegate(WebTestDelegate* delegate);
 
   WebTaskList* mutable_task_list() { return &task_list_; }
-  MockSpellCheck* MockSpellCheckWord() { return &spell_check_; }
 
   // blink::WebSpellCheckClient implementation.
   void spellCheck(

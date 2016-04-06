@@ -63,7 +63,6 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   blink::WebAudioDevice* CreateAudioDevice(double sample_rate);
 
   scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient();
-  AppBannerClient* GetAppBannerClient();
 
   TestInterfaces* GetTestInterfaces();
 

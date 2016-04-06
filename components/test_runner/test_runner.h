@@ -99,7 +99,6 @@ class TestRunner : public WebTestRunner,
   MockWebUserMediaClient* getMockWebUserMediaClient();
   MockWebSpeechRecognizer* getMockWebSpeechRecognizer();
   bool isPrinting() const;
-  bool shouldDumpAsTextWithPixelResults();
   bool shouldDumpAsCustomText() const;
   std:: string customDumpText() const;
   void ShowDevTools(const std::string& settings,
@@ -110,7 +109,6 @@ class TestRunner : public WebTestRunner,
   void setCustomTextOutput(const std::string& text);
   void setShouldGeneratePixelResults(bool);
   void setShouldDumpFrameLoadCallbacks(bool);
-  void setShouldDumpPingLoaderCallbacks(bool);
   void setShouldEnableViewSource(bool);
   bool shouldDumpEditingCallbacks() const;
   bool shouldDumpFrameLoadCallbacks() const;
@@ -121,7 +119,6 @@ class TestRunner : public WebTestRunner,
   bool shouldDumpCreateView() const;
   bool canOpenWindows() const;
   bool shouldDumpResourceLoadCallbacks() const;
-  bool shouldDumpResourceRequestCallbacks() const;
   bool shouldDumpResourceResponseMIMETypes() const;
   bool shouldDumpStatusCallbacks() const;
   bool shouldDumpSpellCheckCallbacks() const;
