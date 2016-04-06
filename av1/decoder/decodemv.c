@@ -661,7 +661,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf);
   }
 
-  for (ref_frame = LAST_FRAME; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     av1_find_mv_refs(cm, xd, mi, ref_frame,
 #if CONFIG_REF_MV
                      &xd->ref_mv_count[ref_frame],
@@ -672,6 +672,26 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
 #if CONFIG_REF_MV
+  for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
+    av1_find_mv_refs(cm, xd, mi, ref_frame,
+                     &xd->ref_mv_count[ref_frame],
+                     xd->ref_mv_stack[ref_frame],
+                     ref_mvs[ref_frame], mi_row, mi_col,
+                     fpm_sync, (void *)pbi, inter_mode_ctx);
+
+    if (xd->ref_mv_count[ref_frame] < 2) {
+      MV_REFERENCE_FRAME rf[2];
+      av1_set_ref_frame(rf, ref_frame);
+      for (ref = 0; ref < 2; ++ref) {
+        lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp);
+        lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp);
+      }
+
+      if (ref_mvs[rf[0]][0].as_int != 0 || ref_mvs[rf[0]][1].as_int != 0 ||
+          ref_mvs[rf[1]][0].as_int != 0 || ref_mvs[rf[1]][1].as_int != 0)
+        inter_mode_ctx[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
+    }
+  }
   mode_ctx = av1_mode_context_analyzer(inter_mode_ctx,
                                        mbmi->ref_frame, bsize, -1);
   mbmi->ref_mv_idx = 0;

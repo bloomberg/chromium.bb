@@ -3029,6 +3029,16 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                      mbmi_ext->ref_mv_stack[ref_frame],
                      candidates, mi_row, mi_col,
                      NULL, NULL, mbmi_ext->mode_context);
+
+    if (mbmi_ext->ref_mv_count[ref_frame] < 2) {
+      MV_REFERENCE_FRAME rf[2];
+      av1_set_ref_frame(rf, ref_frame);
+      if (mbmi_ext->ref_mvs[rf[0]][0].as_int != 0 ||
+          mbmi_ext->ref_mvs[rf[0]][1].as_int != 0 ||
+          mbmi_ext->ref_mvs[rf[1]][0].as_int != 0 ||
+          mbmi_ext->ref_mvs[rf[1]][1].as_int != 0)
+        mbmi_ext->mode_context[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
+    }
   }
 #endif
 
@@ -3642,9 +3652,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   if (best_mbmode.ref_frame[0] > INTRA_FRAME &&
       best_mbmode.mv[0].as_int == 0 &&
       (best_mbmode.ref_frame[1] == NONE || best_mbmode.mv[1].as_int == 0)) {
-    int16_t mode_ctx = mbmi_ext->mode_context[best_mbmode.ref_frame[0]];
-    if (best_mbmode.ref_frame[1] > NONE)
-      mode_ctx &= (mbmi_ext->mode_context[best_mbmode.ref_frame[1]] | 0x00ff);
+    int8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
+    int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET))
       best_mbmode.mode = ZEROMV;
   }

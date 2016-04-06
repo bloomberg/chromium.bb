@@ -361,6 +361,8 @@ static int16_t av1_mode_context_analyzer(const int16_t *const mode_context,
                                          const MV_REFERENCE_FRAME *const rf,
                                          BLOCK_SIZE bsize, int block) {
   int16_t mode_ctx = 0;
+  int8_t ref_frame_type = av1_ref_frame_type(rf);
+
   if (block >= 0) {
     mode_ctx = mode_context[rf[0]] & 0x00ff;
 
@@ -370,12 +372,7 @@ static int16_t av1_mode_context_analyzer(const int16_t *const mode_context,
     return mode_ctx;
   }
 
-  if (rf[1] > INTRA_FRAME)
-    return mode_context[rf[0]] & (mode_context[rf[1]] | 0x00ff);
-  else if (rf[0] != ALTREF_FRAME)
-    return mode_context[rf[0]] & ~(mode_context[ALTREF_FRAME] & 0xfe00);
-  else
-    return mode_context[rf[0]];
+  return mode_context[ref_frame_type];
 }
 
 static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
