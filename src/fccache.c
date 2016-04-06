@@ -587,33 +587,6 @@ FcCacheTimeValid (FcConfig *config, FcCache *cache, struct stat *dir_stat)
     return cache->checksum == (int) dir_stat->st_mtime && fnano;
 }
 
-static FcBool
-FcCacheDirsValid (FcConfig *config, FcCache *cache)
-{
-    FcStrSet *dirs = FcStrSetCreateEx (FCSS_GROW_BY_64);
-    FcBool ret = FcFalse;
-    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
-    FcChar8 *d;
-
-    if (!dirs)
-	goto bail;
-    if (sysroot)
-	d = FcStrBuildFilename (sysroot, FcCacheDir (cache), NULL);
-    else
-	d = FcStrdup (FcCacheDir (cache));
-    if (!FcDirScanOnly (dirs, d, config))
-	goto bail1;
-    ret = cache->dirs_count == dirs->num;
-    if (FcDebug () & FC_DBG_CACHE)
-	printf ("%s: cache: %d, fs: %d\n", d, cache->dirs_count, dirs->num);
-
-bail1:
-    FcStrSetDestroy (dirs);
-    FcStrFree (d);
-bail:
-    return ret;
-}
-
 /*
  * Map a cache file into memory
  */
@@ -628,8 +601,7 @@ FcDirCacheMapFd (FcConfig *config, int fd, struct stat *fd_stat, struct stat *di
     cache = FcCacheFindByStat (fd_stat);
     if (cache)
     {
-	if (FcCacheTimeValid (config, cache, dir_stat) &&
-	    FcCacheDirsValid (config, cache))
+	if (FcCacheTimeValid (config, cache, dir_stat))
 	    return cache;
 	FcDirCacheUnload (cache);
 	cache = NULL;
@@ -681,7 +653,6 @@ FcDirCacheMapFd (FcConfig *config, int fd, struct stat *fd_stat, struct stat *di
 	cache->version < FC_CACHE_VERSION_NUMBER ||
 	cache->size != (intptr_t) fd_stat->st_size ||
 	!FcCacheTimeValid (config, cache, dir_stat) ||
-	!FcCacheDirsValid (config, cache) ||
 	!FcCacheInsert (cache, fd_stat))
     {
 	if (allocated)
