@@ -269,9 +269,6 @@ void WorkerThread::performShutdownTask()
     // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
     // If Oilpan is enabled, we detach of the context/global scope, with the final heap cleanup below sweeping it out.
     m_workerGlobalScope->notifyContextDestroyed();
-#if !ENABLE(OILPAN)
-    ASSERT(m_workerGlobalScope->hasOneRef());
-#endif
     m_workerGlobalScope = nullptr;
 
     willDestroyIsolate();

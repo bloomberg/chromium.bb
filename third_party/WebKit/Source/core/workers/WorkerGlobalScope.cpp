@@ -225,6 +225,9 @@ void WorkerGlobalScope::dispose()
     // being carried out on the right thread. We therefore cannot clear
     // the thread field before all references to the worker global
     // scope are gone.
+    //
+    // TODO(haraken): It's nasty to keep a raw pointer to WorkerThread
+    // after disposing WorkerGlobalScope. m_thread should be cleared here.
 }
 
 void WorkerGlobalScope::didEvaluateWorkerScript()

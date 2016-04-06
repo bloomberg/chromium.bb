@@ -162,11 +162,6 @@ protected:
     void removeURLFromMemoryCache(const KURL&) override;
 
 private:
-#if !ENABLE(OILPAN)
-    void refExecutionContext() final { ref(); }
-    void derefExecutionContext() final { deref(); }
-#endif
-
     const KURL& virtualURL() const final;
     KURL virtualCompleteURL(const String&) const final;
 
