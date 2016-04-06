@@ -25,7 +25,9 @@ const NSTimeInterval kAnimationDuration = 0.18;
 
 - (void)showSheetForWindow:(NSWindow*)window {
   base::scoped_nsobject<NSAnimation> animation;
-  if (!useSimpleAnimations_) {
+  if (useSimpleAnimations_) {
+    [customWindow_ setAlphaValue:0.0];
+  } else {
     animation.reset(
         [[ConstrainedWindowAnimationShow alloc] initWithWindow:customWindow_]);
   }
@@ -36,7 +38,6 @@ const NSTimeInterval kAnimationDuration = 0.18;
   [customWindow_ makeKeyAndOrderFront:nil];
 
   if (useSimpleAnimations_) {
-    [customWindow_ setAlphaValue:0.0];
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
     [[customWindow_ animator] setAlphaValue:1.0];
