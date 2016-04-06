@@ -33,6 +33,9 @@ const char kBrowserStatesNumCreated[] = "profile.profiles_created";
 const char kBrowsingDataMigrationHasBeenPossible[] =
     "ios.browsing_data_migration_controller.migration_has_been_possible";
 
+const char kClearBrowsingDataHistoryNoticeShownTimes[] =
+    "browser.clear_data.history_notice_shown_times";
+
 // String indicating the Contextual Search enabled state.
 // "false" - opt-out (disabled)
 // "" (empty string) - undecided

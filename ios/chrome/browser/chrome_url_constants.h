@@ -78,7 +78,16 @@ extern const char kSyncEncryptionHelpURL[];
 // "Learn more" URL for the Clear Browsing Data under Privacy Options.
 extern const char kClearBrowsingDataLearnMoreURL[];
 
+// Google history URL for the footer in the Clear Browsing Data under Privacy
+// Options.
+extern const char kClearBrowsingDataMyActivityUrlInFooterURL[];
+
+// Google history URL for the dialog that informs the user that the history data
+// in the Clear Browsing Data under Privacy Options.
+extern const char kClearBrowsingDataMyActivityUrlInDialogURL[];
+
 // Google history URL for the Clear Browsing Data under Privacy Options.
+// Obsolete: This is no longer used and will removed.
 extern const char kGoogleHistoryURL[];
 
 // Google my account URL for the sign-in confirmation screen.
