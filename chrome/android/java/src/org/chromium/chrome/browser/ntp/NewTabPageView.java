@@ -130,6 +130,9 @@ public class NewTabPageView extends FrameLayout
         /** @return Whether the toolbar at the bottom of the NTP is enabled and should be shown. */
         boolean isToolbarEnabled();
 
+        /** @return Whether the omnibox 'Search or type URL' text should be shown. */
+        boolean isFakeOmniboxTextEnabledTablet();
+
         /** Opens the bookmarks page in the current tab. */
         void navigateToBookmarks();
 

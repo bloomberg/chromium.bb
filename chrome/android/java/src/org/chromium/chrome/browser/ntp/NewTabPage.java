@@ -247,6 +247,11 @@ public class NewTabPage
                     && !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS);
         }
 
+        @Override
+        public boolean isFakeOmniboxTextEnabledTablet() {
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_FAKE_OMNIBOX_TEXT);
+        }
+
         private void recordOpenedMostVisitedItem(MostVisitedItem item) {
             if (mIsDestroyed) return;
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_MOST_VISITED_ENTRY);
@@ -638,7 +643,8 @@ public class NewTabPage
     }
 
     private boolean isInSingleUrlBarMode(Context context) {
-        if (DeviceFormFactor.isTablet(context)) return false;
+        if (DeviceFormFactor.isTablet(context)
+                && !mNewTabPageManager.isFakeOmniboxTextEnabledTablet()) return false;
 
         return mSearchProviderHasLogo;
     }

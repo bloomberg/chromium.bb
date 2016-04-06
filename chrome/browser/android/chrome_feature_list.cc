@@ -29,6 +29,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPOfflinePagesFeature,
     &kNTPSnippetsFeature,
     &kNTPToolbarFeature,
+    &kNTPFakeOmniboxTextFeature,
     &kPhysicalWebFeature,
     &features::kSimplifiedFullscreenUI,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
@@ -46,6 +47,10 @@ const base::Feature kNTPSnippetsFeature {
 
 const base::Feature kNTPToolbarFeature {
   "NTPToolbar", base::FEATURE_ENABLED_BY_DEFAULT
+};
+
+const base::Feature kNTPFakeOmniboxTextFeature {
+  "NTPFakeOmniboxText", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 const base::Feature kPhysicalWebFeature {

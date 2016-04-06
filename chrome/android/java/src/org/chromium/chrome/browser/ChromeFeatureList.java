@@ -31,6 +31,7 @@ public abstract class ChromeFeatureList {
 
     public static final String NTP_SNIPPETS = "NTPSnippets";
     public static final String NTP_TOOLBAR = "NTPToolbar";
+    public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
 
     private static native boolean nativeIsEnabled(String featureName);
 }
