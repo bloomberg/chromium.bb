@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_math.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -78,6 +79,57 @@ Layer* UpdateAndGetLayer(Layer* current_layer,
     current_layer->SetLayerTreeHost(nullptr);
 
   return layer_it->second;
+}
+
+scoped_ptr<base::trace_event::TracedValue>
+ComputeLayerTreeHostProtoSizeSplitAsValue(proto::LayerTreeHost* proto) {
+  scoped_ptr<base::trace_event::TracedValue> value(
+      new base::trace_event::TracedValue());
+  base::CheckedNumeric<int> base_layer_properties_size = 0;
+  base::CheckedNumeric<int> picture_layer_properties_size = 0;
+  base::CheckedNumeric<int> display_item_list_size = 0;
+  base::CheckedNumeric<int> drawing_display_items_size = 0;
+
+  const proto::LayerUpdate& layer_update_proto = proto->layer_updates();
+  for (int i = 0; i < layer_update_proto.layers_size(); ++i) {
+    const proto::LayerProperties layer_properties_proto =
+        layer_update_proto.layers(i);
+    base_layer_properties_size += layer_properties_proto.base().ByteSize();
+
+    if (layer_properties_proto.has_picture()) {
+      const proto::PictureLayerProperties& picture_proto =
+          layer_properties_proto.picture();
+      picture_layer_properties_size += picture_proto.ByteSize();
+
+      const proto::RecordingSource& recording_source_proto =
+          picture_proto.recording_source();
+      const proto::DisplayItemList& display_list_proto =
+          recording_source_proto.display_list();
+      display_item_list_size += display_list_proto.ByteSize();
+
+      for (int j = 0; j < display_list_proto.items_size(); ++j) {
+        const proto::DisplayItem& display_item = display_list_proto.items(j);
+        if (display_item.type() == proto::DisplayItem::Type_Drawing)
+          drawing_display_items_size += display_item.ByteSize();
+      }
+    }
+  }
+
+  value->SetInteger("TotalLayerTreeHostProtoSize", proto->ByteSize());
+  value->SetInteger("LayerTreeHierarchySize", proto->root_layer().ByteSize());
+  value->SetInteger("LayerUpdatesSize", proto->layer_updates().ByteSize());
+  value->SetInteger("PropertyTreesSize", proto->property_trees().ByteSize());
+
+  // LayerUpdate size breakdown.
+  value->SetInteger("TotalBasePropertiesSize",
+                    base_layer_properties_size.ValueOrDefault(-1));
+  value->SetInteger("PictureLayerPropertiesSize",
+                    picture_layer_properties_size.ValueOrDefault(-1));
+  value->SetInteger("DisplayItemListSize",
+                    display_item_list_size.ValueOrDefault(-1));
+  value->SetInteger("DrawingDisplayItemsSize",
+                    drawing_display_items_size.ValueOrDefault(-1));
+  return value;
 }
 
 }  // namespace
@@ -1440,6 +1492,7 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
   //   will need special handling outside of the serialization of the
   //   LayerTreeHost.
   // TODO(nyquist): Figure out how to support animations. See crbug.com/570376.
+  TRACE_EVENT0("cc.remote", "LayerTreeHost::ToProtobufForCommit");
   proto->set_needs_full_tree_sync(needs_full_tree_sync_);
   proto->set_needs_meta_info_recomputation(needs_meta_info_recomputation_);
   proto->set_source_frame_number(source_frame_number_);
@@ -1496,6 +1549,10 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
   property_trees_.ToProtobuf(proto->mutable_property_trees());
   proto->set_surface_id_namespace(surface_id_namespace_);
   proto->set_next_surface_sequence(next_surface_sequence_);
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      "cc.remote", "LayerTreeHostProto", source_frame_number_,
+      ComputeLayerTreeHostProtoSizeSplitAsValue(proto));
 }
 
 void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
