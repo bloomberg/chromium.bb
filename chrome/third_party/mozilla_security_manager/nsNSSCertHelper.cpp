@@ -55,8 +55,7 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "crypto/scoped_nss_types.h"
-#include "net/base/address_family.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -548,12 +547,9 @@ std::string ProcessGeneralName(PRArenaPool* arena,
     case certIPAddress: {
       key = l10n_util::GetStringUTF8(IDS_CERT_GENERAL_NAME_IP_ADDRESS);
 
-      net::IPAddressNumber ip(
-          current->name.other.data,
-          current->name.other.data + current->name.other.len);
-
-      if (net::GetAddressFamily(ip) != net::ADDRESS_FAMILY_UNSPECIFIED) {
-        value = net::IPAddressToString(ip);
+      net::IPAddress ip(current->name.other.data, current->name.other.len);
+      if (ip.IsValid()) {
+        value = ip.ToString();
       } else {
         // Invalid IP address.
         value = ProcessRawBytes(&current->name.other);
