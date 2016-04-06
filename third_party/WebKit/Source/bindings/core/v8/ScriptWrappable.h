@@ -140,18 +140,9 @@ public:
 
     bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
 
-#if !ENABLE(OILPAN)
-protected:
-    virtual ~ScriptWrappable()
-    {
-        // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
-        // counting somewhere. Crash here instead of crashing during a later gc cycle.
-        SECURITY_CHECK(!containsWrapper());
-    }
-#endif
     // With Oilpan we don't need a ScriptWrappable destructor.
     //
-    // - 'RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper())' is not needed
+    // 'RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper())' is not needed
     // because Oilpan is not using reference counting at all. If containsWrapper() is true,
     // it means that ScriptWrappable still has a wrapper. In this case, the destructor
     // must not be called since the wrapper has a persistent handle back to this ScriptWrappable object.

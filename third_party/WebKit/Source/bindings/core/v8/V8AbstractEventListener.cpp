@@ -106,11 +106,7 @@ void V8AbstractEventListener::setListenerObject(v8::Local<v8::Object> listener)
     if (m_workerGlobalScope) {
         m_workerGlobalScope->registerEventListener(this);
     } else {
-#if ENABLE(OILPAN)
         m_keepAlive = this;
-#else
-        ref();
-#endif
     }
     m_listener.set(isolate(), listener);
     m_listener.setWeak(this, &setWeakCallback);
@@ -199,11 +195,7 @@ void V8AbstractEventListener::clearListenerObject()
     if (m_workerGlobalScope) {
         m_workerGlobalScope->deregisterEventListener(this);
     } else {
-#if ENABLE(OILPAN)
         m_keepAlive.clear();
-#else
-        deref();
-#endif
     }
 }
 
@@ -218,11 +210,7 @@ void V8AbstractEventListener::secondWeakCallback(const v8::WeakCallbackInfo<V8Ab
     if (data.GetParameter()->m_workerGlobalScope) {
         data.GetParameter()->m_workerGlobalScope->deregisterEventListener(data.GetParameter());
     } else {
-#if ENABLE(OILPAN)
         data.GetParameter()->m_keepAlive.clear();
-#else
-        data.GetParameter()->deref();
-#endif
     }
 }
 

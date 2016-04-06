@@ -63,7 +63,6 @@ public:
     void didProcessTask() override
     {
         Microtask::performCheckpoint(mainThreadIsolate());
-        V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());
         V8Initializer::reportRejectedPromisesOnMainThread();
     }
 };

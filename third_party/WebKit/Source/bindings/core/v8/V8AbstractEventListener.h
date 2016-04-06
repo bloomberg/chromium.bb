@@ -150,9 +150,7 @@ private:
     // nullptr unless this listener belongs to a worker.
     Member<WorkerGlobalScope> m_workerGlobalScope;
 
-#if ENABLE(OILPAN)
     SelfKeepAlive<V8AbstractEventListener> m_keepAlive;
-#endif
 };
 
 } // namespace blink

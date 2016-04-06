@@ -396,25 +396,6 @@ void V8GCController::collectAllGarbageForTesting(v8::Isolate* isolate)
         isolate->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
 }
 
-void V8GCController::reportDOMMemoryUsageToV8(v8::Isolate* isolate)
-{
-    // TODO(haraken): Oilpan should report the amount of memory used
-    // by DOM nodes as well. Currently Partitions::currentDOMMemoryUsage()
-    // just returns 0.
-#if !ENABLE(OILPAN)
-    if (!isMainThread())
-        return;
-
-    static size_t lastUsageReportedToV8 = 0;
-
-    size_t currentUsage = WTF::Partitions::currentDOMMemoryUsage();
-    int64_t diff = static_cast<int64_t>(currentUsage) - static_cast<int64_t>(lastUsageReportedToV8);
-    isolate->AdjustAmountOfExternalAllocatedMemory(diff);
-
-    lastUsageReportedToV8 = currentUsage;
-#endif
-}
-
 class DOMWrapperTracer : public v8::PersistentHandleVisitor {
 public:
     explicit DOMWrapperTracer(Visitor* visitor)
