@@ -299,14 +299,14 @@ SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
 SkCanvas* CreatePlatformCanvas(CGContextRef ctx, int width, int height,
                                bool is_opaque, OnFailureType failureType) {
   const bool do_clear = false;
-  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
+  sk_sp<SkBaseDevice> dev(
       BitmapPlatformDevice::Create(ctx, width, height, is_opaque, do_clear));
   return CreateCanvas(dev, failureType);
 }
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
+  sk_sp<SkBaseDevice> dev(
       BitmapPlatformDevice::CreateWithData(data, width, height, is_opaque));
   return CreateCanvas(dev, failureType);
 }

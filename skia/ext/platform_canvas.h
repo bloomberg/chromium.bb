@@ -12,7 +12,6 @@
 // to get the surface type.
 #include "build/build_config.h"
 #include "skia/ext/platform_surface.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -90,7 +89,7 @@ static inline SkCanvas* CreatePlatformCanvas(int width,
   return CreatePlatformCanvas(width, height, is_opaque, 0, CRASH_ON_FAILURE);
 }
 
-SK_API SkCanvas* CreateCanvas(const skia::RefPtr<SkBaseDevice>& device,
+SK_API SkCanvas* CreateCanvas(const sk_sp<SkBaseDevice>& device,
                               OnFailureType failure_type);
 
 static inline SkCanvas* CreateBitmapCanvas(int width,

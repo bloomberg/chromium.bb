@@ -476,7 +476,7 @@ SkCanvas* CreatePlatformCanvas(int width,
                                bool is_opaque,
                                HANDLE shared_section,
                                OnFailureType failureType) {
-  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
+  sk_sp<SkBaseDevice> dev(
       BitmapPlatformDevice::Create(width, height, is_opaque, shared_section));
   return CreateCanvas(dev, failureType);
 }

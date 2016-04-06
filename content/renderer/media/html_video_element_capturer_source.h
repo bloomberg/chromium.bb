@@ -14,6 +14,7 @@
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 
 namespace blink {

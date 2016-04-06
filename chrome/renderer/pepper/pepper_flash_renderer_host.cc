@@ -29,6 +29,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"

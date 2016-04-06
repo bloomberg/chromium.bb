@@ -69,7 +69,8 @@ size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }
 
-SkCanvas* CreateCanvas(const skia::RefPtr<SkBaseDevice>& device, OnFailureType failureType) {
+SkCanvas* CreateCanvas(const sk_sp<SkBaseDevice>& device,
+                       OnFailureType failureType) {
   if (!device) {
     if (CRASH_ON_FAILURE == failureType)
       SK_CRASH();

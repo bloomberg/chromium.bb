@@ -95,8 +95,8 @@ void CapturePixelsForPrinting(scoped_ptr<PixelsDumpRequest> dump_request) {
   int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;
 
   bool is_opaque = false;
-  skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::TryCreateBitmapCanvas(
-      page_size_in_pixels.width, totalHeight, is_opaque)));
+  sk_sp<SkCanvas> canvas(skia::TryCreateBitmapCanvas(
+      page_size_in_pixels.width, totalHeight, is_opaque));
   if (!canvas) {
     dump_request->callback.Run(SkBitmap());
     return;

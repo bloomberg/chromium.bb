@@ -190,7 +190,7 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
+  sk_sp<SkBaseDevice> dev(
       BitmapPlatformDevice::Create(width, height, is_opaque, data));
   return CreateCanvas(dev, failureType);
 }
