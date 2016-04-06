@@ -5,8 +5,8 @@
 #ifndef GPU_VULKAN_VULKAN_RENDER_PASS_H_
 #define GPU_VULKAN_VULKAN_RENDER_PASS_H_
 
-#include <vulkan/vulkan.h>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_export.h"

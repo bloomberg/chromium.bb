@@ -5,8 +5,8 @@
 #ifndef GPU_VULKAN_VULKAN_SWAP_CHAIN_H_
 #define GPU_VULKAN_VULKAN_SWAP_CHAIN_H_
 
-#include <vulkan/vulkan.h>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "gpu/vulkan/vulkan_export.h"

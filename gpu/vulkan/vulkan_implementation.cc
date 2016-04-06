@@ -6,8 +6,6 @@
 
 #include <unordered_set>
 #include <vector>
-#include <vulkan/vulkan.h>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_platform.h"

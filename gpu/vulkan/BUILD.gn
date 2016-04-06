@@ -5,6 +5,10 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+config("vulkan_config") {
+  defines = [ "ENABLE_VULKAN" ]
+}
+
 if (enable_vulkan) {
   component("vulkan") {
     output_name = "vulkan_wrapper"
@@ -35,9 +39,12 @@ if (enable_vulkan) {
       configs += [ "//build/config:precompiled_headers" ]
       defines = [ "VULKAN_IMPLEMENTATION" ]
 
+      all_dependent_configs = [
+        ":vulkan_config",
+        "//third_party/vulkan:vulkan_headers",
+      ]
       libs = [ "vulkan" ]
 
-      include_dirs = [ "/usr/include" ]
       if (target_cpu == "x64") {
         lib_dirs = [ "/usr/lib/x86_64-linux-gnu" ]
       } else {

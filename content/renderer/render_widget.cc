@@ -107,6 +107,10 @@
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #endif
 
+#if defined(ENABLE_VULKAN)
+#include "cc/output/vulkan_in_process_context_provider.h"
+#endif
+
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 using blink::WebCompositionUnderline;
@@ -735,9 +739,23 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
       use_software = true;
   }
 
+#if defined(ENABLE_VULKAN)
+  scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
+#endif
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider;
   if (!use_software) {
+#if defined(ENABLE_VULKAN)
+    vulkan_context_provider = cc::VulkanInProcessContextProvider::Create();
+    if (vulkan_context_provider) {
+      uint32_t output_surface_id = next_output_surface_id_++;
+      return scoped_ptr<cc::OutputSurface>(new DelegatedCompositorOutputSurface(
+          routing_id(), output_surface_id, context_provider,
+          worker_context_provider, vulkan_context_provider,
+          frame_swap_message_queue_));
+    }
+#endif
+
     context_provider = ContextProviderCommandBuffer::Create(
         CreateGraphicsContext3D(gpu_channel_host.get()),
         RENDER_COMPOSITOR_CONTEXT);
@@ -776,7 +794,11 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     DCHECK(compositor_deps_->GetCompositorImplThreadTaskRunner());
     return make_scoped_ptr(new DelegatedCompositorOutputSurface(
         routing_id(), output_surface_id, context_provider,
-        worker_context_provider, frame_swap_message_queue_));
+        worker_context_provider,
+#if defined(ENABLE_VULKAN)
+        vulkan_context_provider,
+#endif
+        frame_swap_message_queue_));
   }
 
   if (!context_provider.get()) {
@@ -785,6 +807,9 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
     return make_scoped_ptr(new CompositorOutputSurface(
         routing_id(), output_surface_id, nullptr, nullptr,
+#if defined(ENABLE_VULKAN)
+        nullptr,
+#endif
         std::move(software_device), frame_swap_message_queue_, true));
   }
 

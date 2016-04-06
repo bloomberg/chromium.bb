@@ -33,6 +33,9 @@ MailboxOutputSurface::MailboxOutputSurface(
                               output_surface_id,
                               context_provider,
                               worker_context_provider,
+#if defined(ENABLE_VULKAN)
+                              nullptr,
+#endif
                               nullptr,
                               swap_frame_message_queue,
                               true),

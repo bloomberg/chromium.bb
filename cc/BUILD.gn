@@ -570,25 +570,15 @@ component("cc") {
   }
 
   if (enable_vulkan) {
-    deps += [ ":vulkan_cc" ]
-  }
-}
-
-if (enable_vulkan) {
-  source_set("vulkan_cc") {
-    include_dirs = [ "/usr/include" ]
-    sources = [
+    sources += [
       "output/vulkan_context_provider.h",
       "output/vulkan_in_process_context_provider.cc",
       "output/vulkan_in_process_context_provider.h",
+      "output/vulkan_renderer.cc",
+      "output/vulkan_renderer.h",
     ]
 
-    configs += [ "//build/config:precompiled_headers" ]
-    defines = [ "CC_IMPLEMENTATION=1" ]
-
-    deps = [
-      "//gpu/vulkan",
-    ]
+    deps += [ "//gpu/vulkan" ]
   }
 }
 
