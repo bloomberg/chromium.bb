@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,7 @@
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "jni/SnippetsBridge_jni.h"
 
+using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaLongArray;
@@ -50,6 +52,13 @@ NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
+}
+
+void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       const JavaParamRef<jstring>& url) {
+  ntp_snippets_service_->DiscardSnippet(
+      GURL(ConvertJavaStringToUTF8(env, url)));
 }
 
 void NTPSnippetsBridge::NTPSnippetsServiceLoaded(NTPSnippetsService* service) {

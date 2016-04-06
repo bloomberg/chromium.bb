@@ -92,4 +92,9 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
         item.setThumbnailOnView(mThumbnailView);
     }
+
+    @Override
+    public boolean isDismissable() {
+        return true;
+    }
 }

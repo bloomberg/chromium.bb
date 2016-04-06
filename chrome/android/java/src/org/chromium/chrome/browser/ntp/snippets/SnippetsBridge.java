@@ -47,6 +47,17 @@ public class SnippetsBridge {
     }
 
     /**
+     * Tells the native service to discard a snippet. It will be removed from the native side
+     * storage and will also be discarded from subsequent fetch results.
+     *
+     * @param snippet snippet to discard.
+     */
+    public void discardSnippet(SnippetArticle snippet) {
+        assert mNativeSnippetsBridge != 0;
+        nativeDiscardSnippet(mNativeSnippetsBridge, snippet.mUrl);
+    }
+
+    /**
      * Sets the recipient for the fetched snippets. This method should be called only once.
      *
      * Before the observer is set, the native code will not attempt to transmit them to java. Upon
@@ -79,5 +90,6 @@ public class SnippetsBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
+    private native void nativeDiscardSnippet(long nativeNTPSnippetsBridge, String snippetUrl);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }

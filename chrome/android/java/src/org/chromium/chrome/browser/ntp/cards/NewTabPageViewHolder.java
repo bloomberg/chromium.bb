@@ -30,4 +30,12 @@ public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
      */
     public void onBindViewHolder(NewTabPageListItem item) {
     }
+
+    /**
+     * Whether this item can be swiped and dismissed. The default implementation disallows it.
+     * @return {@code true} if the item can be swiped and dismissed, {@code false} otherwise.
+     */
+    public boolean isDismissable() {
+        return false;
+    }
 }

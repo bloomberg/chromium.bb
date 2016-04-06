@@ -23,6 +23,11 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_observer);
 
+  // Discards the snippet with the given URL.
+  void DiscardSnippet(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jstring>& url);
+
   static bool Register(JNIEnv* env);
 
  private:

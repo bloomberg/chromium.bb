@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -529,6 +530,12 @@ public class NewTabPage
             }
 
             SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
+        }
+
+        @Override
+        public void onSnippetDismissed(SnippetArticle dismissedSnippet) {
+            if (mIsDestroyed) return;
+            mSnippetsBridge.discardSnippet(dismissedSnippet);
         }
     };
 

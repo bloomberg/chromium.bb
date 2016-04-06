@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetItemDecoration;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -216,6 +218,11 @@ public class NewTabPageView extends FrameLayout
          * @param mostVisitedItems The MostVisitedItem shown on the NTP. Used to record metrics.
          */
         void onLoadingComplete(MostVisitedItem[] mostVisitedItems);
+
+        /**
+         * Called when a snippet has been dismissed by the user.
+         */
+        void onSnippetDismissed(SnippetArticle dismissedSnippet);
     }
 
     /**
@@ -372,6 +379,10 @@ public class NewTabPageView extends FrameLayout
         if (mUseCardsUi) {
             mNtpAdapter = new NewTabPageAdapter(mManager, mContentView);
             mRecyclerView.setAdapter(mNtpAdapter);
+
+            // Set up swipe-to-dismiss
+            ItemTouchHelper helper = new ItemTouchHelper(mNtpAdapter.getItemTouchCallbacks());
+            helper.attachToRecyclerView(mRecyclerView);
 
             NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
