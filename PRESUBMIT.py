@@ -2057,7 +2057,6 @@ def GetTryServerMasterForBot(bot):
   # Potentially ambiguous bot names are listed explicitly.
   master_map = {
       'chromium_presubmit': 'tryserver.chromium.linux',
-      'blink_presubmit': 'tryserver.chromium.linux',
       'tools_build_presubmit': 'tryserver.chromium.linux',
   }
   master = master_map.get(bot)

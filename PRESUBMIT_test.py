@@ -738,7 +738,6 @@ class TryServerMasterTest(unittest.TestCase):
             'android_x86_dbg',
             'blink_android_compile_dbg',
             'blink_android_compile_rel',
-            'blink_presubmit',
             'chromium_presubmit',
             'linux_arm_cross_compile',
             'linux_arm_tester',
