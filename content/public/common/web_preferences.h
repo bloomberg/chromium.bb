@@ -218,6 +218,9 @@ struct CONTENT_EXPORT WebPreferences {
   bool clobber_user_agent_initial_scale_quirk;
   bool ignore_main_frame_overflow_hidden_quirk;
   bool report_screen_size_in_physical_pixels_quirk;
+  // Used by Android_WebView only to support legacy apps that inject script into
+  // a top-level initial empty document and expect it to persist on navigation.
+  bool resue_global_for_unowned_main_frame;
   std::string autoplay_experiment_mode;
 #endif
 

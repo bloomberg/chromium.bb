@@ -96,6 +96,7 @@ public class AwSettings {
     private boolean mAcceptThirdPartyCookies = false;
 
     private final boolean mSupportLegacyQuirks;
+    private final boolean mAllowEmptyDocumentPersistence;
 
     private final boolean mPasswordEchoEnabled;
 
@@ -208,7 +209,8 @@ public class AwSettings {
 
     public AwSettings(Context context,
             boolean isAccessFromFileURLsGrantedByDefault,
-            boolean supportsLegacyQuirks) {
+            boolean supportsLegacyQuirks,
+            boolean allowEmptyDocumentPersistence) {
         boolean hasInternetPermission = context.checkPermission(
                 android.Manifest.permission.INTERNET,
                 Process.myPid(),
@@ -237,6 +239,7 @@ public class AwSettings {
             mTextSizePercent *= context.getResources().getConfiguration().fontScale;
 
             mSupportLegacyQuirks = supportsLegacyQuirks;
+            mAllowEmptyDocumentPersistence = allowEmptyDocumentPersistence;
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }
@@ -1244,6 +1247,12 @@ public class AwSettings {
     private boolean getSupportLegacyQuirksLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mSupportLegacyQuirks;
+    }
+
+    @CalledByNative
+    private boolean getAllowEmptyDocumentPersistenceLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mAllowEmptyDocumentPersistence;
     }
 
     /**

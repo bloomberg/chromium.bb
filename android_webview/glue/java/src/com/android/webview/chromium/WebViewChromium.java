@@ -234,11 +234,13 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         final boolean isAccessFromFileURLsGrantedByDefault =
                 mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN;
         final boolean areLegacyQuirksEnabled = mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT;
+        final boolean allowEmptyDocumentPersistence = mAppTargetSdkVersion <= Build.VERSION_CODES.M;
 
         mContentsClientAdapter =
                 new WebViewContentsClientAdapter(mWebView, mContext, mFactory.getWebViewDelegate());
-        mWebSettings = new ContentSettingsAdapter(new AwSettings(
-                mContext, isAccessFromFileURLsGrantedByDefault, areLegacyQuirksEnabled));
+        mWebSettings = new ContentSettingsAdapter(
+                new AwSettings(mContext, isAccessFromFileURLsGrantedByDefault,
+                        areLegacyQuirksEnabled, allowEmptyDocumentPersistence));
 
         if (mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP) {
             // Prior to Lollipop we always allowed third party cookies and mixed content.
