@@ -30,6 +30,7 @@ def RunSteps(api):
   oauth2 = api.properties.get('oauth2', False)
   root_solution_revision = api.properties.get('root_solution_revision')
   suffix = api.properties.get('suffix')
+  gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
   api.bot_update.ensure_checkout(force=force,
                                  no_shallow=no_shallow,
                                  patch=patch,
@@ -38,7 +39,8 @@ def RunSteps(api):
                                  refs=refs, patch_oauth2=oauth2,
                                  clobber=clobber,
                                  root_solution_revision=root_solution_revision,
-                                 suffix=suffix)
+                                 suffix=suffix,
+                                 gerrit_no_reset=gerrit_no_reset)
 
 
 def GenTests(api):
@@ -142,6 +144,12 @@ def GenTests(api):
       buildername='Experimental Builder',
       slavename='somehost',
       root_solution_revision='revision',
+  )
+  yield api.test('gerrit_no_reset') + api.properties(
+      mastername='experimental',
+      buildername='Experimental Builder',
+      slavename='somehost',
+      gerrit_no_reset=1
   )
   yield api.test('tryjob_v8') + api.properties(
       mastername='tryserver.chromium.linux',

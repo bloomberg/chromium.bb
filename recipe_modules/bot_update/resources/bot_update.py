@@ -1132,14 +1132,15 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
   except SubprocessFailed as e:
     raise PatchFailed(e.message, e.code, e.output)
 
-def apply_gerrit_ref(gerrit_repo, gerrit_ref, root):
+def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset):
   gerrit_repo = gerrit_repo or 'origin'
   assert gerrit_ref
   try:
     base_rev = git('rev-parse', 'HEAD', cwd=root).strip()
     git('retry', 'fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
     git('checkout', 'FETCH_HEAD', cwd=root)
-    git('reset', '--soft', base_rev, cwd=root)
+    if gerrit_reset:
+      git('reset', '--soft', base_rev, cwd=root)
   except SubprocessFailed as e:
     raise PatchFailed(e.message, e.code, e.output)
 
@@ -1297,7 +1298,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     patch_root, issue, patchset, patch_url, rietveld_server,
                     gerrit_repo, gerrit_ref, revision_mapping,
                     apply_issue_email_file, apply_issue_key_file, buildspec,
-                    gyp_env, shallow, runhooks, refs, git_cache_dir):
+                    gyp_env, shallow, runhooks, refs, git_cache_dir,
+                    gerrit_reset):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -1363,7 +1365,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                          revision_mapping, git_ref, apply_issue_email_file,
                          apply_issue_key_file, blacklist=already_patched)
   elif gerrit_ref:
-    apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root)
+    apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset)
 
   # Reset the deps_file point in the solutions so that hooks get run properly.
   for sln in solutions:
@@ -1442,6 +1444,8 @@ def parse_args():
   parse.add_option('--gerrit_repo',
                    help='Gerrit repository to pull the ref from.')
   parse.add_option('--gerrit_ref', help='Gerrit ref to apply.')
+  parse.add_option('--gerrit_no_reset', action='store_true',
+                   help='Bypass calling reset after applying a gerrit ref.')
   parse.add_option('--specs', help='Gcilent spec.')
   parse.add_option('--master', help='Master name.')
   parse.add_option('-f', '--force', action='store_true',
@@ -1611,7 +1615,8 @@ def checkout(options, git_slns, specs, buildspec, master,
           # Finally, extra configurations such as shallowness of the clone.
           shallow=options.shallow,
           refs=options.refs,
-          git_cache_dir=options.git_cache_dir)
+          git_cache_dir=options.git_cache_dir,
+          gerrit_reset=not options.gerrit_no_reset)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'

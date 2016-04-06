@@ -60,7 +60,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch_project_roots=None, patch_oauth2=False,
                       output_manifest=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
-                      patchset=None, **kwargs):
+                      patchset=None, gerrit_no_reset=False, **kwargs):
     """
     Args:
       gclient_config: The gclient configuration to use when running bot_update.
@@ -200,6 +200,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--output_manifest')
     if with_branch_heads or cfg.with_branch_heads:
       cmd.append('--with_branch_heads')
+    if gerrit_no_reset:
+      cmd.append('--gerrit_no_reset')
 
     # Inject Json output for testing.
     git_mode = self._mastername not in SVN_MASTERS
