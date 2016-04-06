@@ -8,10 +8,21 @@ import re
 import threading
 import time
 import subprocess
+import sys
 
 from gcloud import storage
 from gcloud.exceptions import NotFound
 from oauth2client.client import GoogleCredentials
+
+# NOTE: The parent directory needs to be first in sys.path to avoid conflicts
+# with catapult modules that have colliding names, as catapult inserts itself
+# into the path as the second element. This is an ugly and fragile hack.
+sys.path.insert(0,
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+import controller
+import loading_trace
+import options
+
 
 class ServerApp(object):
   """Simple web server application, collecting traces and writing them in
@@ -45,9 +56,11 @@ class ServerApp(object):
          if not self._base_path_in_bucket.endswith('/'):
            self._base_path_in_bucket += '/'
 
-       self._chrome_path = config['chrome_path']
        self._src_path = config['src_path']
 
+    # Initialize the global options that will be used during trace generation.
+    options.OPTIONS.ParseArgs([])
+    options.OPTIONS.local_binary = config['chrome_path']
 
   def _GetStorageClient(self):
     return storage.Client(project = self._project_name,
@@ -91,8 +104,7 @@ class ServerApp(object):
 
   def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
                      log_filename):
-    """ Generates a trace using analyze.py
-    Runs on _thread.
+    """ Generates a trace on _thread.
 
     Args:
       url: URL as a string.
@@ -108,18 +120,43 @@ class ServerApp(object):
       os.remove(filename)  # Remove any existing trace for this URL.
     except OSError:
       pass  # Nothing to remove.
-    analyze_path = self._src_path + '/tools/android/loading/analyze.py'
-    command_line = ['python', analyze_path, 'log_requests', '--local_noisy',
-        '--clear_cache', '--local', '--headless', '--local_binary',
-        self._chrome_path, '--url', url, '--output', filename]
-    if len(emulate_device):
-      command_line += ['--emulate_device', emulate_device]
-    if len(emulate_network):
-      command_line += ['--emulate_network', emulate_network]
-    with open(log_filename, 'w') as log_file:
-      ret = subprocess.call(command_line , stderr = subprocess.STDOUT,
-                            stdout = log_file)
-    return ret == 0
+
+    if not url.startswith('http') and not url.startswith('file'):
+      url = 'http://' + url
+
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+
+    succeeded = True
+    try:
+      with open(log_filename, 'w') as sys.stdout:
+        sys.stderr = sys.stdout
+
+        # Set up the controller.
+        chrome_ctl = controller.LocalChromeController()
+        chrome_ctl.SetHeadless(True)
+        if emulate_device:
+          chrome_ctl.SetDeviceEmulation(emulate_device)
+        if emulate_network:
+          chrome_ctl.SetNetworkEmulation(emulate_network)
+
+        # Record and write the trace.
+        with chrome_ctl.OpenWithRedirection(sys.stdout,
+                                            sys.stderr) as connection:
+          connection.ClearCache()
+          trace = loading_trace.LoadingTrace.RecordUrlNavigation(
+              url, connection, chrome_ctl.ChromeMetadata())
+    except Exception as e:
+      succeeded = False
+      sys.stderr.write(e)
+
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+
+    with open(filename, 'w') as f:
+      json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
+
+    return succeeded
 
   def _GetCurrentTaskCount(self):
     """Returns the number of remaining tasks. Thread safe."""
@@ -129,9 +166,8 @@ class ServerApp(object):
     return task_count
 
   def _ProcessTasks(self, tasks, repeat_count, emulate_device, emulate_network):
-    """Iterates over _tasks and runs analyze.py on each of them. Uploads the
-    resulting traces to Google Cloud Storage.
-    Runs on _thread.
+    """Iterates over _task, generating a trace for each of them. Uploads the
+    resulting traces to Google Cloud Storage.  Runs on _thread.
 
     Args:
       tasks: The list of URLs to process.
@@ -146,6 +182,8 @@ class ServerApp(object):
     self._tasks_lock.release()
     failures_dir = self._base_path_in_bucket + 'failures/'
     traces_dir = self._base_path_in_bucket + 'traces/'
+
+    # TODO(blundell): Fix this up.
     logs_dir = self._base_path_in_bucket + 'analyze_logs/'
     log_filename = 'analyze.log'
     # Avoid special characters in storage object names
@@ -161,13 +199,13 @@ class ServerApp(object):
           print 'Uploading: %s' % remote_filename
           self._UploadFile(local_filename, traces_dir + remote_filename)
         else:
-          print 'analyze.py failed for URL: %s' % url
+          print 'Trace generation failed for URL: %s' % url
           self._tasks_lock.acquire()
           self._failed_tasks.append({ "url": url, "repeat": repeat})
           self._tasks_lock.release()
           if os.path.isfile(local_filename):
             self._UploadFile(local_filename, failures_dir + remote_filename)
-        print 'Uploading analyze log'
+        print 'Uploading log'
         self._UploadFile(log_filename, logs_dir + remote_filename)
       # Pop once task is finished, for accurate status tracking.
       self._tasks_lock.acquire()

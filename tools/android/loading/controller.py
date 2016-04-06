@@ -299,8 +299,9 @@ class LocalChromeController(ChromeControllerBase):
     self._headless = headless
 
   @contextlib.contextmanager
-  def Open(self):
-    """Override for connection context."""
+  def OpenWithRedirection(self, stdout, stderr):
+    """Override for connection context. stdout and stderr are passed to the
+       child processes used to run Chrome and XVFB."""
     chrome_cmd = [OPTIONS.local_binary]
     chrome_cmd.extend(self._GetChromeArguments())
     chrome_cmd.append('--user-data-dir=%s' % self._profile_dir)
@@ -309,16 +310,16 @@ class LocalChromeController(ChromeControllerBase):
     #   - To find the correct target descriptor at devtool connection;
     #   - To avoid cache and WPR pollution by the NTP.
     chrome_cmd.append('about:blank')
-    chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
     environment = os.environ.copy()
     if self._headless:
       environment['DISPLAY'] = 'localhost:99'
       xvfb_process = subprocess.Popen(
           ['Xvfb', ':99', '-screen', '0', '1600x1200x24'], shell=False,
-          stderr=chrome_out)
+          stdout=stdout, stderr=stderr)
     logging.debug(subprocess.list2cmdline(chrome_cmd))
     chrome_process = subprocess.Popen(chrome_cmd, shell=False,
-                                      stderr=chrome_out, env=environment)
+                                      stdout=stdout, stderr=stderr,
+                                      env=environment)
     connection = None
     try:
       time.sleep(10)
@@ -339,6 +340,13 @@ class LocalChromeController(ChromeControllerBase):
         chrome_process.kill()
       if self._headless:
         xvfb_process.kill()
+
+  def Open(self):
+    """Wrapper around the more-specialized version of Open() above that sets
+    the value of stdout/stderr based on the value of OPTIONS.local_noisy."""
+    stdout = None if OPTIONS.local_noisy else file('/dev/null', 'w')
+    stderr = stdout
+    return self.OpenWithRedirection(self, stdout, stderr)
 
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
