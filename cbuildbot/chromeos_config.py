@@ -923,6 +923,12 @@ def GetConfig():
       hw_tests=[],
   )
 
+  # An anchor of Laktiu' test customizations.
+  lakitu_test_customizations = config_lib.BuildConfig(
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      run_gce_tests=True,
+  )
+
   moblab = config_lib.BuildConfig(
       image_test=False,
       vm_tests=[],
@@ -1096,7 +1102,6 @@ def GetConfig():
       master=True,
       push_overlays=constants.BOTH_OVERLAYS,
   )
-
 
   # A base config for each board.
   _base_configs = dict()
@@ -1799,6 +1804,7 @@ def GetConfig():
         if board in _paladin_smoke_vmtest_boards:
           vm_tests.append(
               config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE))
+
         customizations.update(vm_tests=vm_tests)
 
         if paladin.vm_tests_override is not None:
@@ -1816,10 +1822,27 @@ def GetConfig():
             description=paladin['description'] + ' (internal)')
       else:
         customizations.update(prebuilts=constants.PUBLIC)
-      site_config.Add(
-          config_name, paladin,
-          customizations,
-          base_config)
+
+      if board in _lakitu_boards:
+        # Note: Because |customizations| precedes |base_config|, it will be
+        # overridden by |base_config|. So we have to append lakitu
+        # customizations after |base_config| is applied.
+        # TODO(crbug.com/553749)
+        # Also, I can't do
+        # `lakitu_test_customizations if xxx else None` because the Add function
+        # doesn't allow optional args to be None.
+        site_config.Add(
+            config_name, paladin,
+            customizations,
+            base_config,
+            lakitu_test_customizations,
+        )
+      else:
+        site_config.Add(
+            config_name, paladin,
+            customizations,
+            base_config,
+        )
 
   _CreatePaladinConfigs()
 
@@ -1898,8 +1921,7 @@ def GetConfig():
   site_config.Add(
       'lakitu-pre-cq', pre_cq,
       _base_configs['lakitu'],
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
-      run_gce_tests=True,
+      lakitu_test_customizations,
   )
 
   _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
@@ -1986,15 +2008,13 @@ def GetConfig():
   site_config.Add(
       'lakitu-incremental', internal_incremental,
       _base_configs['lakitu'],
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
-      run_gce_tests=True,
+      lakitu_test_customizations,
   )
 
   site_config.Add(
       'lakitu_next-incremental', internal_incremental,
       _base_configs['lakitu_next'],
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
-      run_gce_tests=True,
+      lakitu_test_customizations,
   )
 
   site_config.Add(
@@ -2482,8 +2502,7 @@ def GetConfig():
   site_config.Add(
       'lakitu-release', _release,
       _base_configs['lakitu'],
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
-      run_gce_tests=True,
+      lakitu_test_customizations,
       sign_types=['base'],
       important=True,
   )
@@ -2491,8 +2510,7 @@ def GetConfig():
   site_config.Add(
       'lakitu_next-release', _release,
       _base_configs['lakitu_next'],
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
-      run_gce_tests=True,
+      lakitu_test_customizations,
       signer_tests=False,
   )
 

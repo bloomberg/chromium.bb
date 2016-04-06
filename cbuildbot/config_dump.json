@@ -10431,11 +10431,11 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [],
         "vm_tests_override": null
     },
     "lakitu-payloads": {
@@ -10600,11 +10600,11 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [],
         "vm_tests_override": null
     },
     "lakitu_mobbuild-payloads": {
@@ -10783,11 +10783,11 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [],
         "vm_tests_override": null
     },
     "lakitu_next-payloads": {
