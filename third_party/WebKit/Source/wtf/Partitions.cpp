@@ -42,9 +42,6 @@ bool Partitions::s_initialized = false;
 
 PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
 PartitionAllocatorGeneric Partitions::m_bufferAllocator;
-#if !ENABLE(OILPAN)
-SizeSpecificPartitionAllocator<3328> Partitions::m_nodeAllocator;
-#endif
 SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
 Partitions::ReportPartitionAllocSizeFunction Partitions::m_reportSizeFunction = nullptr;
 
@@ -56,9 +53,6 @@ void Partitions::initialize(ReportPartitionAllocSizeFunction reportSizeFunction)
         partitionAllocGlobalInit(&Partitions::handleOutOfMemory);
         m_fastMallocAllocator.init();
         m_bufferAllocator.init();
-#if !ENABLE(OILPAN)
-        m_nodeAllocator.init();
-#endif
         m_layoutAllocator.init();
         m_reportSizeFunction = reportSizeFunction;
         s_initialized = true;
@@ -74,9 +68,6 @@ void Partitions::shutdown()
     // the valgrind and heapcheck bots, which run without partitions.
     if (s_initialized) {
         (void) m_layoutAllocator.shutdown();
-#if !ENABLE(OILPAN)
-        (void) m_nodeAllocator.shutdown();
-#endif
         (void) m_bufferAllocator.shutdown();
         (void) m_fastMallocAllocator.shutdown();
     }
@@ -90,9 +81,6 @@ void Partitions::decommitFreeableMemory()
 
     partitionPurgeMemoryGeneric(bufferPartition(), PartitionPurgeDecommitEmptyPages);
     partitionPurgeMemoryGeneric(fastMallocPartition(), PartitionPurgeDecommitEmptyPages);
-#if !ENABLE(OILPAN)
-    partitionPurgeMemory(nodePartition(), PartitionPurgeDecommitEmptyPages);
-#endif
     partitionPurgeMemory(layoutPartition(), PartitionPurgeDecommitEmptyPages);
 }
 
@@ -122,9 +110,6 @@ void Partitions::dumpMemoryStats(bool isLightDump, PartitionStatsDumper* partiti
     decommitFreeableMemory();
     partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc", isLightDump, partitionStatsDumper);
     partitionDumpStatsGeneric(bufferPartition(), "buffer", isLightDump, partitionStatsDumper);
-#if !ENABLE(OILPAN)
-    partitionDumpStats(nodePartition(), "node", isLightDump, partitionStatsDumper);
-#endif
     partitionDumpStats(layoutPartition(), "layout", isLightDump, partitionStatsDumper);
 }
 

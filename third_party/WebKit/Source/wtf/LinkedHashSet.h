@@ -775,14 +775,6 @@ inline void swap(LinkedHashSetNode<T, Allocator>& a, LinkedHashSetNode<T, Alloca
     Allocator::leaveGCForbiddenScope();
 }
 
-#if !ENABLE(OILPAN)
-template<typename T, typename U, typename V>
-struct NeedsTracing<LinkedHashSet<T, U, V>> {
-    STATIC_ONLY(NeedsTracing);
-    static const bool value = false;
-};
-#endif
-
 } // namespace WTF
 
 using WTF::LinkedHashSet;

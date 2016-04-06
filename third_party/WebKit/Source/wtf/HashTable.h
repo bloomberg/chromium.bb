@@ -1005,13 +1005,11 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     // false for a pair of two types, even if one of the components is
     // polymorphic.
     static_assert(!Traits::emptyValueIsZero || !std::is_polymorphic<KeyType>::value, "empty value cannot be zero for things with a vtable");
-
-#if ENABLE(OILPAN)
     static_assert(Allocator::isGarbageCollected
         || ((!AllowsOnlyPlacementNew<KeyType>::value || !NeedsTracing<KeyType>::value)
         && (!AllowsOnlyPlacementNew<ValueType>::value || !NeedsTracing<ValueType>::value))
         , "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap HashTable");
-#endif
+
     if (Traits::emptyValueIsZero) {
         result = Allocator::template allocateZeroedHashTableBacking<ValueType, HashTable>(allocSize);
     } else {

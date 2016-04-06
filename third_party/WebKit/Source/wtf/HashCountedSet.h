@@ -159,13 +159,6 @@ inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allo
         vector[i] = (*it).key;
 }
 
-#if !ENABLE(OILPAN)
-template <typename T, typename U, typename V>
-struct NeedsTracing<HashCountedSet<T, U, V>> {
-    static const bool value = false;
-};
-#endif
-
 } // namespace WTF
 
 using WTF::HashCountedSet;

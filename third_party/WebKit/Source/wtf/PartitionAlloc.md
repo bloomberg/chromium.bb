@@ -14,11 +14,9 @@ PartitionAlloc or Oilpan (but not yet done).
 
 ## Partitions and buckets
 
-PartitionAlloc has four partitions. A partition is a heap that contains
+PartitionAlloc has three partitions. A partition is a heap that contains
 certain types of objects. Specifically, PartitionAlloc allocates objects
-on either of the following four partitions depending on their types.
-
-* Node partition: A partition to allocate Nodes.
+on either of the following three partitions depending on their types:
 
 * LayoutObject partition: A partition to allocate LayoutObjects.
 
@@ -36,10 +34,9 @@ with the closest bucket size. For example, if a partition has three buckets
 for 64 bytes, 256 bytes and 1024 bytes, then an object of 128 bytes is
 rounded up to 256 bytes and allocated on the second bucket.
 
-The Node partition and the LayoutObject partition have buckets for all
-N * sizeof(void*) (N = 1, 2, ..., N_max). This means that no extra padding
-is needed to allocate a Node object. Different sizes of Node objects are
-allocated on different buckets.
+The LayoutObject partition has buckets for all N * sizeof(void*) (N = 1, 2, ..., N_max).
+This means that no extra padding is needed to allocate a LayoutObject object.
+Different sizes of LayoutObjects are allocated in different buckets.
 
 The Buffer partition and the FastMalloc partition have many buckets.
 They support any arbitrary size of allocations but padding may be added
@@ -50,9 +47,9 @@ Large allocations (> 1 MB) are realized by direct memory mmapping.
 
 ## Performance
 
-PartitionAlloc doesn't acquire a lock when allocating on the Node partition and
-the LayoutObject partition, because it's guaranteed that Nodes and LayoutObjects
-are allocated only by the main thread.
+PartitionAlloc doesn't acquire a lock when allocating on the LayoutObject
+partition, because it's guaranteed that LayoutObjects are allocated
+only by the main thread.
 
 PartitionAlloc acquires a lock when allocating on the Buffer partition and
 the FastMalloc partition. PartitionAlloc uses a spin lock because thread contention
@@ -63,8 +60,8 @@ PartitionAlloc is designed to be extremely fast in fast paths. Just two
 allocation and deallocation. The number of operations in the fast paths
 is minimized, leading to the possibility of inlining.
 
-Having the dedicated partitions for Nodes and LayoutObjects is helpful
-to improve cache locality and thus improve performance.
+Having a dedicated partition for LayoutObjects is helpful to improve cache
+locality and thus help improve performance.
 
 ## Security
 
@@ -74,8 +71,8 @@ Different partitions are guaranteed to exist in separate address spaces.
 When objects contained in a page in a partition are all freed,
 the physical memory is returned to the system but the address space
 remains reserved. The address space may be reused later only for the partition.
-Remember that PartitionAlloc puts Nodes into a dedicated partition.
-This is because Nodes are likely to be a source of use-after-free.
+Remember that PartitionAlloc puts LayoutObjects into a dedicated partition.
+This is because LayoutObjects are likely to be a source of use-after-free.
 Simiarly, PartitionAlloc puts Strings, Vectors etc into the Buffer partition
 because the length and/or contents may be exploited by user scripts.
 This means that PartitionAlloc greedily uses virtual address spaces in favor of
