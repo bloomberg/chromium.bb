@@ -180,7 +180,8 @@ Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& reques
     case Resource::Font:
         resource = FontResource::fetch(request, fetcher());
         // This is needed for fonts as loading doesn't start until there's usage.
-        toFontResource(resource)->beginLoadIfNeeded(fetcher());
+        if (resource)
+            toFontResource(resource)->beginLoadIfNeeded(fetcher());
         break;
     case Resource::Media:
         resource = RawResource::fetchMedia(request, fetcher());
