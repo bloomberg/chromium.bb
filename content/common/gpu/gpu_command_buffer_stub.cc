@@ -23,11 +23,11 @@
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -1003,20 +1003,19 @@ void GpuCommandBufferStub::OnCreateImage(
     return;
   }
 
-  if (!gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
-          format, decoder_->GetCapabilities())) {
+  if (!gpu::IsGpuMemoryBufferFormatSupported(format,
+                                             decoder_->GetCapabilities())) {
     LOG(ERROR) << "Format is not supported.";
     return;
   }
 
-  if (!gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(size,
-                                                                   format)) {
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, format)) {
     LOG(ERROR) << "Invalid image size for format.";
     return;
   }
 
-  if (!gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-          internalformat, format)) {
+  if (!gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(internalformat,
+                                                             format)) {
     LOG(ERROR) << "Incompatible image format.";
     return;
   }

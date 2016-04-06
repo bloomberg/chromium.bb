@@ -15,11 +15,11 @@
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -222,21 +222,20 @@ void CommandBufferDriver::CreateImage(int32_t id,
   }
 
   gfx::BufferFormat gpu_format = static_cast<gfx::BufferFormat>(format);
-  if (!gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
-          gpu_format, decoder_->GetCapabilities())) {
+  if (!gpu::IsGpuMemoryBufferFormatSupported(gpu_format,
+                                             decoder_->GetCapabilities())) {
     LOG(ERROR) << "Format is not supported.";
     return;
   }
 
   gfx::Size gfx_size = size.To<gfx::Size>();
-  if (!gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
-          gfx_size, gpu_format)) {
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(gfx_size, gpu_format)) {
     LOG(ERROR) << "Invalid image size for format.";
     return;
   }
 
-  if (!gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-          internal_format, gpu_format)) {
+  if (!gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(internal_format,
+                                                             gpu_format)) {
     LOG(ERROR) << "Incompatible image format.";
     return;
   }

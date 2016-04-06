@@ -41,6 +41,8 @@ source_set("common_sources") {
     "gles2_cmd_format_autogen.h",
     "gles2_cmd_ids.h",
     "gles2_cmd_ids_autogen.h",
+    "gpu_memory_buffer_support.cc",
+    "gpu_memory_buffer_support.h",
     "id_allocator.cc",
     "id_allocator.h",
     "id_type.h",
@@ -57,6 +59,11 @@ source_set("common_sources") {
   ]
 
   configs += [ "//gpu:gpu_implementation" ]
+
+  public_deps = [
+    "//ui/gfx:memory_buffer",
+    "//ui/gfx/geometry",
+  ]
 
   deps = [
     ":gles2_utils",

@@ -15,31 +15,10 @@ class GLImage;
 }
 
 namespace gpu {
-struct Capabilities;
 
 class GPU_EXPORT ImageFactory {
  public:
   ImageFactory();
-
-  // Returns a valid GpuMemoryBuffer format given a valid internalformat as
-  // defined by CHROMIUM_gpu_memory_buffer_image.
-  static gfx::BufferFormat DefaultBufferFormatForImageFormat(
-      unsigned internalformat);
-
-  // Returns true if |internalformat| is compatible with |format|.
-  static bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-      unsigned internalformat,
-      gfx::BufferFormat format);
-
-  // Returns true if |format| is supported by |capabilities|.
-  static bool IsGpuMemoryBufferFormatSupported(
-      gfx::BufferFormat format,
-      const Capabilities& capabilities);
-
-  // Returns true if |size| is valid for |format|.
-  static bool IsImageSizeValidForGpuMemoryBufferFormat(
-      const gfx::Size& size,
-      gfx::BufferFormat format);
 
   // Creates a GLImage instance for GPU memory buffer identified by |handle|.
   // |client_id| should be set to the client requesting the creation of instance

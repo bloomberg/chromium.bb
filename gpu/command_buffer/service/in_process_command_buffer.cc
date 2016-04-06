@@ -23,6 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -685,9 +686,9 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
   int32_t new_id = next_image_id_.GetNext();
 
-  DCHECK(gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
-      gpu_memory_buffer->GetFormat(), capabilities_));
-  DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+  DCHECK(gpu::IsGpuMemoryBufferFormatSupported(gpu_memory_buffer->GetFormat(),
+                                               capabilities_));
+  DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       internalformat, gpu_memory_buffer->GetFormat()));
 
   // This handle is owned by the GPU thread and must be passed to it or it
@@ -824,7 +825,7 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
-          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
+          gpu::DefaultBufferFormatForImageFormat(internalformat),
           gfx::BufferUsage::SCANOUT));
   if (!buffer)
     return -1;

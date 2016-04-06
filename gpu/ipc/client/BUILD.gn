@@ -49,13 +49,11 @@ source_set("ipc_client_sources") {
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//gpu:gpu_implementation",
-    "//third_party/khronos:khronos_headers",
   ]
   deps = [
     "//base",
     "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/common:common_sources",
-    "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",
     "//gpu/ipc/common:ipc_common_sources",
     "//ipc",

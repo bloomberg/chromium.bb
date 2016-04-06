@@ -55,9 +55,5 @@ component("gles2") {
     "//mojo/public/cpp/system",
   ]
 
-  if (!is_component_build) {
-    deps += [ "//gpu/command_buffer/service" ]
-  }
-
   include_dirs = [ ".." ]
 }

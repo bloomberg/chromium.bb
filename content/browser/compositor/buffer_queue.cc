@@ -12,6 +12,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -223,8 +224,7 @@ scoped_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
 
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBufferForScanout(
-          size_, gpu::ImageFactory::DefaultBufferFormatForImageFormat(
-                     internal_format_),
+          size_, gpu::DefaultBufferFormatForImageFormat(internal_format_),
           surface_id_));
   if (!buffer.get()) {
     gl->DeleteTextures(1, &texture);

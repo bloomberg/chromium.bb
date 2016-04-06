@@ -18,8 +18,8 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
@@ -430,11 +430,11 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     DCHECK_LE(image_fence_sync - 1, flushed_fence_sync_release_);
   }
 
-  DCHECK(gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
-      gpu_memory_buffer->GetFormat(), capabilities_));
-  DCHECK(gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
+  DCHECK(gpu::IsGpuMemoryBufferFormatSupported(gpu_memory_buffer->GetFormat(),
+                                               capabilities_));
+  DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
       gfx::Size(width, height), gpu_memory_buffer->GetFormat()));
-  DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+  DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       internal_format, gpu_memory_buffer->GetFormat()));
 
   GpuCommandBufferMsg_CreateImage_Params params;
@@ -479,7 +479,7 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
-          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internal_format),
+          gpu::DefaultBufferFormatForImageFormat(internal_format),
           gfx::BufferUsage::SCANOUT));
   if (!buffer)
     return -1;

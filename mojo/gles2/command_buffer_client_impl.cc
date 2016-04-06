@@ -17,8 +17,8 @@
 #include "components/mus/gles2/mojo_buffer_backing.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 
 namespace gles2 {
@@ -270,7 +270,7 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
     unsigned usage) {
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(mus::MojoGpuMemoryBufferImpl::Create(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
-      gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
+      gpu::DefaultBufferFormatForImageFormat(internalformat),
       gfx::BufferUsage::SCANOUT));
   if (!buffer)
     return -1;
