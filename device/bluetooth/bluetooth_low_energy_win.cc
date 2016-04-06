@@ -469,7 +469,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
           device_info_handle, &device_info_data, result, error)) {
     // Only fail if not the GATT service device interface, which doesn't have a
     // friendly name.
-    if (device_info_data.ClassGuid !=
+    if (device_interface_data->InterfaceClassGuid !=
         GUID_BLUETOOTH_GATT_SERVICE_DEVICE_INTERFACE)
       return false;
   }
