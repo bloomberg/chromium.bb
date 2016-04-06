@@ -282,11 +282,6 @@ test("app_list_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  # TODO: Add to data_deps instead once GN has rolled past #339778.
-  data = [
-    "$root_out_dir/ui_test.pak",
-  ]
-
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
@@ -302,11 +297,11 @@ test("app_list_unittests") {
     "//ui/gfx:test_support",
     "//ui/gl:test_support",
     "//ui/resources",
-    "//ui/resources:ui_test_pak",
   ]
 
   data_deps = [
     "//third_party/mesa:osmesa",
+    "//ui/resources:ui_test_pak_data",
   ]
 
   if (toolkit_views) {

@@ -49,11 +49,6 @@ test("app_list_shower_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  # TODO: Add to data_deps instead once GN has rolled past #339778.
-  data = [
-    "$root_out_dir/ui_test.pak",
-  ]
-
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
@@ -67,7 +62,10 @@ test("app_list_shower_unittests") {
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/gl:test_support",
-    "//ui/resources:ui_test_pak",
     "//ui/wm:wm",
+  ]
+
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
   ]
 }
