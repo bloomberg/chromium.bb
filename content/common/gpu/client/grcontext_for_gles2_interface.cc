@@ -20,8 +20,8 @@ namespace content {
 
 GrContextForGLES2Interface::GrContextForGLES2Interface(
     gpu::gles2::GLES2Interface* gl) {
-  skia::RefPtr<GrGLInterface> interface =
-      skia_bindings::CreateGLES2InterfaceBindings(gl);
+  sk_sp<GrGLInterface> interface(
+      skia_bindings::CreateGLES2InterfaceBindings(gl));
   gr_context_ = skia::AdoptRef(
       GrContext::Create(kOpenGL_GrBackend,
                         // GrContext takes ownership of |interface|.

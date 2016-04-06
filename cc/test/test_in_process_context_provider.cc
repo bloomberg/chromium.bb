@@ -89,8 +89,8 @@ class GrContext* TestInProcessContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<GrGLInterface> interface =
-      skia_bindings::CreateGLES2InterfaceBindings(ContextGL());
+  sk_sp<GrGLInterface> interface(
+      skia_bindings::CreateGLES2InterfaceBindings(ContextGL()));
 
   gr_context_ = skia::AdoptRef(GrContext::Create(
       // GrContext takes ownership of |interface|.

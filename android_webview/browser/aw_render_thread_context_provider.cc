@@ -100,9 +100,9 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<GrGLInterface> interface =
-      skia_bindings::CreateGLES2InterfaceBindings(ContextGL());
-  gr_context_ = skia::AdoptRef(GrContext::Create(
+  sk_sp<GrGLInterface> interface(
+      skia_bindings::CreateGLES2InterfaceBindings(ContextGL()));
+  gr_context_ = sk_sp<::GrContext>(GrContext::Create(
       // GrContext takes ownership of |interface|.
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
   return gr_context_.get();

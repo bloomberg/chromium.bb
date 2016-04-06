@@ -14,7 +14,8 @@
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 
 namespace gfx {
 class GLSurface;
@@ -56,7 +57,7 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
   base::ThreadChecker main_thread_checker_;
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
-  skia::RefPtr<class GrContext> gr_context_;
+  sk_sp<class GrContext> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
 
