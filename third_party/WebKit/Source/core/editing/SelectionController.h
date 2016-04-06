@@ -70,8 +70,9 @@ private:
     explicit SelectionController(LocalFrame&);
 
     enum class AppendTrailingWhitespace { ShouldAppend, DontAppend };
+    enum class SelectInputEventType { GestureLongPress, Mouse };
 
-    void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
+    void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace, SelectInputEventType);
     void selectClosestMisspellingFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);

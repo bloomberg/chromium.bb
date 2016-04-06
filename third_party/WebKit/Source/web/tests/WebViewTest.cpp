@@ -1615,7 +1615,6 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
     localFrame->close();
 }
 
-#if OS(ANDROID)
 TEST_F(WebViewTest, LongPressSelection)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_selection.html"));
@@ -1635,6 +1634,7 @@ TEST_F(WebViewTest, LongPressSelection)
     EXPECT_EQ("testword", std::string(frame->selectionAsText().utf8().data()));
 }
 
+#if !OS(MACOSX)
 TEST_F(WebViewTest, LongPressEmptyTextarea)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_textarea.html"));
@@ -1649,6 +1649,25 @@ TEST_F(WebViewTest, LongPressEmptyTextarea)
 
     EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, blanklinestextbox));
     EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
+}
+#endif
+
+TEST_F(WebViewTest, LongPressImageTextarea)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_image_contenteditable.html"));
+
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "longpress_image_contenteditable.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebString image = WebString::fromUTF8("purpleimage");
+
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, image));
+    size_t location, length;
+    EXPECT_TRUE(toWebViewImpl(webView)->caretOrSelectionRange(&location, &length));
+    EXPECT_EQ(0UL, location);
+    EXPECT_EQ(1UL, length);
 }
 
 TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
@@ -1673,7 +1692,6 @@ TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
     webView->handleInputEvent(keyEvent);
     EXPECT_FALSE(mainFrame->frame()->selection().isCaretBlinkingSuspended());
 }
-#endif
 
 TEST_F(WebViewTest, BlinkCaretOnClosingContextMenu)
 {

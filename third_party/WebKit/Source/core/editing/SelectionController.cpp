@@ -288,7 +288,7 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node
     return true;
 }
 
-void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult& result, AppendTrailingWhitespace appendTrailingWhitespace)
+void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult& result, AppendTrailingWhitespace appendTrailingWhitespace, SelectInputEventType selectInputEventType)
 {
     Node* innerNode = result.innerNode();
     VisibleSelectionInFlatTree newSelection;
@@ -296,20 +296,28 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
     if (!innerNode || !innerNode->layoutObject())
         return;
 
-    const VisiblePositionInFlatTree& pos = visiblePositionOfHitTestResult(result);
+    // Special-case image local offset to always be zero, to avoid triggering
+    // LayoutReplaced::positionFromPoint's advancement of the position at the
+    // mid-point of the the image (which was intended for mouse-drag selection
+    // and isn't desirable for long-press).
+    HitTestResult adjustedHitTestResult = result;
+    if (selectInputEventType == SelectInputEventType::GestureLongPress && result.image())
+        adjustedHitTestResult.setNodeAndPosition(result.innerNode(), LayoutPoint(0, 0));
+
+    const VisiblePositionInFlatTree& pos = visiblePositionOfHitTestResult(adjustedHitTestResult);
     if (pos.isNotNull()) {
         newSelection = VisibleSelectionInFlatTree(pos);
         newSelection.expandUsingGranularity(WordGranularity);
     }
 
-#if OS(ANDROID)
-    // If node doesn't have text except space, tab or line break, do not
-    // select that 'empty' area.
-    EphemeralRangeInFlatTree range = EphemeralRangeInFlatTree(newSelection.start(), newSelection.end());
-    const String& str = plainText(range, TextIteratorDefaultBehavior);
-    if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
-        return;
-#endif
+    if (selectInputEventType == SelectInputEventType::GestureLongPress) {
+        // If node doesn't have text except space, tab or line break, do not
+        // select that 'empty' area.
+        EphemeralRangeInFlatTree range(newSelection.start(), newSelection.end());
+        const String& str = plainText(range, TextIteratorEmitsObjectReplacementCharacter);
+        if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
+            return;
+    }
 
     if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
         newSelection.appendTrailingWhitespace();
@@ -350,7 +358,7 @@ void SelectionController::selectClosestWordFromMouseEvent(const MouseEventWithHi
 
     AppendTrailingWhitespace appendTrailingWhitespace = (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend;
 
-    return selectClosestWordFromHitTestResult(result.hitTestResult(), appendTrailingWhitespace);
+    return selectClosestWordFromHitTestResult(result.hitTestResult(), appendTrailingWhitespace, SelectInputEventType::Mouse);
 }
 
 void SelectionController::selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults& result)
@@ -542,15 +550,11 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
         return false;
 
     Node* innerNode = hitTestResult.innerNode();
-#if OS(ANDROID)
     bool innerNodeIsSelectable = innerNode && (innerNode->isContentEditable() || innerNode->isTextNode() || innerNode->canStartSelection());
-#else
-    bool innerNodeIsSelectable = innerNode && (innerNode->isContentEditable() || innerNode->isTextNode());
-#endif
     if (!innerNodeIsSelectable)
         return false;
 
-    selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend);
+    selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend, SelectInputEventType::GestureLongPress);
     return selection().isRange();
 }
 
