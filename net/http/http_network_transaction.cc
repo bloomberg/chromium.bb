@@ -163,11 +163,10 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
     response_.unused_since_prefetch = true;
 
   // Channel ID is disabled if privacy mode is enabled for this request.
-  if (request_->privacy_mode == PRIVACY_MODE_ENABLED)
+  if (request_->privacy_mode == PRIVACY_MODE_ENABLED) {
     server_ssl_config_.channel_id_enabled = false;
-
-  if (session_->params().enable_token_binding &&
-      session_->params().channel_id_service) {
+  } else if (session_->params().enable_token_binding &&
+             session_->params().channel_id_service) {
     server_ssl_config_.token_binding_params.push_back(TB_PARAM_ECDSAP256);
   }
 
