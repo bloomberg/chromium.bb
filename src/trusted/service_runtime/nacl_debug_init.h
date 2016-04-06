@@ -34,6 +34,7 @@ void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket);
  * NaClDebugStubSetPipe() takes a named pipe on windows or a socket
  * pair descriptor on posix. This sets up the debug stub to talk over the
  * pipe with chrome.
+ * TODO(leslieb): Implement for windows.
  */
 void NaClDebugStubSetPipe(NaClHandle handle);
 

@@ -113,6 +113,16 @@ struct NaClChromeMainArgs {
    */
   uint32_t initial_nexe_max_code_bytes;
 
+#if NACL_LINUX || NACL_OSX
+  /*
+   * Server socket that will be used by debug stub to accept connections
+   * from NaCl GDB.  This socket descriptor has already had bind() and listen()
+   * called on it.  Optional; may be -1.
+   * TODO(leslieb): Deprecated when debug_stub_pipe_fd is fully implemented in
+   * chrome.
+   */
+  int debug_stub_server_bound_socket_fd;
+
   /*
    * Socketpair fd sent from the embedder. This will be used to send information
    * between a server socket set up in the embedder and the debug stub.
@@ -124,24 +134,12 @@ struct NaClChromeMainArgs {
    * Optional; may be -1. This will be used over
    * debug_stub_server_bound_socket_fd if both are set.
    */
-  NaClHandle debug_stub_pipe_fd;
-
-#if NACL_LINUX || NACL_OSX
-  /*
-   * Server socket that will be used by debug stub to accept connections
-   * from NaCl GDB.  This socket descriptor has already had bind() and listen()
-   * called on it.  Optional; may be -1.
-   * TODO(leslieb): Deprecated when debug_stub_pipe_fd is fully implemented in
-   * chrome.
-   */
-  int debug_stub_server_bound_socket_fd;
+  int debug_stub_pipe_fd;
 #endif
 
 #if NACL_WINDOWS
   /*
    * Callback called when debug stub port is known.  Optional; may be NULL.
-   * TODO(leslieb): Deprecated when debug_stub_pipe_fd is fully implemented in
-   * chrome.
    */
   void (*debug_stub_server_port_selected_handler_func)(uint16_t port);
 #endif
