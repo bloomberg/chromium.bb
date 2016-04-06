@@ -5,6 +5,7 @@
 #include "core/loader/HttpEquiv.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/UseCounter.h"
@@ -12,6 +13,8 @@
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/origin_trials/OriginTrialContext.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
 
@@ -42,6 +45,9 @@ void HttpEquiv::process(Document& document, const AtomicString& equiv, const Ato
             document.contentSecurityPolicy()->reportMetaOutsideHead(content);
     } else if (equalIgnoringCase(equiv, "suborigin")) {
         document.addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Error with Suborigin header: Suborigin header with value '" + content + "' was delivered via a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored."));
+    } else if (equalIgnoringCase(equiv, HTTPNames::Origin_Trial)) {
+        if (inDocumentHeadElement)
+            OriginTrialContext::from(&document)->addToken(content);
     }
 }
 

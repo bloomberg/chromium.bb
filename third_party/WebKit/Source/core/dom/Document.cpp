@@ -186,7 +186,6 @@
 #include "core/loader/ImageLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/origin_trials/DocumentOriginTrialContext.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
@@ -5967,11 +5966,6 @@ void Document::enforceStrictMixedContentChecking()
     securityContext().setShouldEnforceStrictMixedContentChecking(true);
     if (frame())
         frame()->loader().client()->didEnforceStrictMixedContentChecking();
-}
-
-RawPtr<OriginTrialContext> Document::createOriginTrialContext()
-{
-    return new DocumentOriginTrialContext(this);
 }
 
 LayoutViewItem Document::layoutViewItem() const

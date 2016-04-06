@@ -1,22 +1,35 @@
 // The sample API integrates origin trial checks at various entry points.
 
 // These tests verify that any gated parts of the API are not available.
-expect_failure = () => {
-test(() => {
-    assert_idl_attribute(window.internals, 'frobulate');
-    assert_throws("NotSupportedError", () => { window.internals.frobulate; },
-       'Accessing attribute should throw error');
-  }, 'Attribute should throw API unavailable error');
+expect_failure = (t) => {
+  tests = [{
+    desc: 'Accessing attribute should throw error',
+    code: () => {
+        assert_idl_attribute(window.internals, 'frobulate');
+        assert_throws("NotSupportedError", () => { window.internals.frobulate; },
+            'Accessing attribute should throw error');
+      }
+  }, {
+    desc: 'Attribute should exist and return value, with trial disabled',
+    code: () => {
+        assert_idl_attribute(window.internals, 'frobulateNoEnabledCheck');
+        assert_true(window.internals.frobulateNoEnabledCheck,
+            'Attribute should return boolean value');
+      }
+  }, {
+    desc: 'Attribute should not exist, with trial disabled',
+    code: () => {
+        assert_not_exists(window.internals, 'frobulateBindings');
+        assert_equals(window.internals['frobulateBindings'], undefined);
+      }
+  }];
 
-test(() => {
-    assert_idl_attribute(window.internals, 'frobulateNoEnabledCheck');
-    assert_true(window.internals.frobulateNoEnabledCheck,
-        'Attribute should return boolean value');
-  }, 'Attribute should exist and return value, with trial disabled');
-
-test(() => {
-    assert_not_exists(window.internals, 'frobulateBindings');
-  }, 'Attribute should not exist, with trial disabled');
+  for (var i = 0; i < tests.length; ++i) {
+    if (t)
+      t.step(tests[i].code);
+    else
+      test(tests[i].code, tests[i].desc);
+  }
 };
 
 

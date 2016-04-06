@@ -68,60 +68,15 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MockTokenValidator);
 };
 
-// Concrete subclass of OriginTrialContext which simply maintains a vector of
-// token strings to use for tests.
-class TestOriginTrialContext : public OriginTrialContext {
-public:
-    TestOriginTrialContext()
-        : m_parent(new NullExecutionContext())
-    {
-    }
-
-    ~TestOriginTrialContext() override = default;
-
-    ExecutionContext* getExecutionContext() override { return m_parent.get(); }
-
-    void addToken(const String& token)
-    {
-        m_tokens.append(token);
-    }
-
-    void updateSecurityOrigin(const String& origin)
-    {
-        KURL pageURL(ParsedURLString, origin);
-        RefPtr<SecurityOrigin> pageOrigin = SecurityOrigin::create(pageURL);
-        m_parent->setSecurityOrigin(pageOrigin);
-        m_parent->setIsSecureContext(SecurityOrigin::isSecure(pageURL));
-    }
-
-    Vector<String> getTokens() override
-    {
-        Vector<String> tokens;
-        for (String token : m_tokens) {
-            tokens.append(token);
-        }
-        return tokens;
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_parent);
-        OriginTrialContext::trace(visitor);
-    }
-
-private:
-    Member<NullExecutionContext> m_parent;
-    Vector<String> m_tokens;
-};
-
 } // namespace
 
 class OriginTrialContextTest : public ::testing::Test {
 protected:
     OriginTrialContextTest()
         : m_frameworkWasEnabled(RuntimeEnabledFeatures::experimentalFrameworkEnabled())
+        , m_executionContext(new NullExecutionContext())
         , m_tokenValidator(adoptPtr(new MockTokenValidator()))
-        , m_originTrialContext(new TestOriginTrialContext)
+        , m_originTrialContext(new OriginTrialContext(m_executionContext.get()))
     {
         RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
     }
@@ -133,9 +88,17 @@ protected:
 
     MockTokenValidator* tokenValidator() { return m_tokenValidator.get(); }
 
+    void updateSecurityOrigin(const String& origin)
+    {
+        KURL pageURL(ParsedURLString, origin);
+        RefPtr<SecurityOrigin> pageOrigin = SecurityOrigin::create(pageURL);
+        m_executionContext->setSecurityOrigin(pageOrigin);
+        m_executionContext->setIsSecureContext(SecurityOrigin::isSecure(pageURL));
+    }
+
     bool isFeatureEnabled(const String& origin, const String& featureName, const String& token, String* errorMessage)
     {
-        m_originTrialContext->updateSecurityOrigin(origin);
+        updateSecurityOrigin(origin);
         m_originTrialContext->addToken(token);
         return m_originTrialContext->isFeatureEnabled(featureName, errorMessage, tokenValidator());
     }
@@ -147,8 +110,9 @@ protected:
 
 private:
     const bool m_frameworkWasEnabled;
+    Persistent<NullExecutionContext> m_executionContext;
     OwnPtr<MockTokenValidator> m_tokenValidator;
-    Persistent<TestOriginTrialContext> m_originTrialContext;
+    Persistent<OriginTrialContext> m_originTrialContext;
 };
 
 TEST_F(OriginTrialContextTest, EnabledNonExistingFeature)

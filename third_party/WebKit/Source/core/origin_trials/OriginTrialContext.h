@@ -6,8 +6,7 @@
 #define OriginTrialContext_h
 
 #include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
+#include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -21,7 +20,7 @@ class WebTrialTokenValidator;
 // features, on a per-origin basis (origin trials). This class provides the
 // implementation to check if the experimental feature should be enabled for the
 // current context.  This class is not for direct use by feature implementers.
-// Instead, the OriginTrials generated class provides a static method for each
+// Instead, the OriginTrials generated namespace provides a method for each
 // feature to check if it is enabled. Experimental features must be defined in
 // RuntimeEnabledFeatures.in, which is used to generate OriginTrials.h/cpp.
 //
@@ -30,26 +29,16 @@ class WebTrialTokenValidator;
 // feature names. Instead, the EF validates the name provided by the feature
 // implementation against any provided tokens.
 //
-// This class is abstract, and should be subclassed for each execution context
-// which supports origin trials.
-//
 // TODO(chasej): Link to documentation, or provide more detail on keys, .etc
-class CORE_EXPORT OriginTrialContext : public GarbageCollectedFinalized<OriginTrialContext> {
+class CORE_EXPORT OriginTrialContext final : public GarbageCollectedFinalized<OriginTrialContext>, public Supplement<ExecutionContext> {
+USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
 public:
-    static const char kTrialHeaderName[];
-    virtual ~OriginTrialContext() = default;
+    explicit OriginTrialContext(ExecutionContext*);
 
-    virtual ExecutionContext* getExecutionContext() = 0;
-    virtual Vector<String> getTokens() = 0;
+    static const char* supplementName();
+    static OriginTrialContext* from(ExecutionContext*);
 
-    DECLARE_VIRTUAL_TRACE();
-
-protected:
-    OriginTrialContext();
-
-private:
-    friend class OriginTrialContextTest;
-    friend class OriginTrials;
+    void addToken(const String& token);
 
     // Returns true if the feature should be considered enabled for the current
     // execution context. This method usually makes use of the token validator
@@ -57,7 +46,11 @@ private:
     // is required (for testing, for instance).
     bool isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
 
-    bool hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator*);
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    Member<ExecutionContext> m_host;
+    Vector<String> m_tokens;
 
     // Records whether an error message has been generated, for each feature
     // name. Since these messages are generally written to the console, this is

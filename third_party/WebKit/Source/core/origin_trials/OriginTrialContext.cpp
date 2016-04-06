@@ -4,10 +4,7 @@
 
 #include "core/origin_trials/OriginTrialContext.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLMetaElement.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -31,9 +28,31 @@ String getInvalidTokenMessage(const String& featureName)
 
 } // namespace
 
-const char OriginTrialContext::kTrialHeaderName[] = "origin-trial";
+OriginTrialContext::OriginTrialContext(ExecutionContext* host) : m_host(host)
+{
+}
 
-OriginTrialContext::OriginTrialContext() {}
+// static
+const char* OriginTrialContext::supplementName()
+{
+    return "OriginTrialContext";
+}
+
+// static
+OriginTrialContext* OriginTrialContext::from(ExecutionContext* host)
+{
+    OriginTrialContext* originTrials = static_cast<OriginTrialContext*>(Supplement<ExecutionContext>::from(host, supplementName()));
+    if (!originTrials) {
+        originTrials = new OriginTrialContext(host);
+        Supplement<ExecutionContext>::provideTo(*host, supplementName(), originTrials);
+    }
+    return originTrials;
+}
+
+void OriginTrialContext::addToken(const String& token)
+{
+    m_tokens.append(token);
+}
 
 bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
@@ -45,8 +64,8 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
 
     // Feature trials are only enabled for secure origins
     bool isSecure = errorMessage
-        ? getExecutionContext()->isSecureContext(*errorMessage)
-        : getExecutionContext()->isSecureContext();
+        ? m_host->isSecureContext(*errorMessage)
+        : m_host->isSecureContext();
     if (!isSecure) {
         // The execution context should always set a message here, if a valid
         // pointer was passed in. If it does not, then we should find out why
@@ -65,14 +84,9 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
         }
     }
 
-    return hasValidToken(getTokens(), featureName, errorMessage, validator);
-}
 
-bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
-{
-    WebSecurityOrigin origin(getExecutionContext()->getSecurityOrigin());
-
-    for (const String& token : tokens) {
+    WebSecurityOrigin origin(m_host->getSecurityOrigin());
+    for (const String& token : m_tokens) {
         // Check with the validator service to verify the signature.
         if (validator->validateToken(token, origin, featureName)) {
             return true;
@@ -90,7 +104,7 @@ bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& feat
         return false;
     }
 
-    if (tokens.size()) {
+    if (m_tokens.size()) {
         *errorMessage = getInvalidTokenMessage(featureName);
     } else {
         *errorMessage = getDisabledMessage(featureName);
@@ -101,6 +115,7 @@ bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& feat
 
 DEFINE_TRACE(OriginTrialContext)
 {
+    visitor->trace(m_host);
 }
 
 } // namespace blink
