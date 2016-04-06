@@ -52,6 +52,8 @@ void Usage() {
   printf("  -copy_tags <int>            >0 Copies the tags\n");
   printf("  -accurate_cluster_duration <int> ");
   printf(">0 Writes the last frame in each cluster with Duration\n");
+  printf("  -fixed_size_cluster_timecode <int> ");
+  printf(">0 Writes the cluster timecode using exactly 8 bytes\n");
   printf("\n");
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
@@ -163,6 +165,7 @@ int main(int argc, char* argv[]) {
   bool copy_tags = false;
   const char* chunk_name = NULL;
   bool accurate_cluster_duration = false;
+  bool fixed_size_cluster_timecode = false;
 
   bool output_cues_block_number = true;
 
@@ -220,6 +223,10 @@ int main(int argc, char* argv[]) {
     } else if (!strcmp("-accurate_cluster_duration", argv[i]) &&
                i < argc_check) {
       accurate_cluster_duration =
+          strtol(argv[++i], &end, 10) == 0 ? false : true;
+    } else if (!strcmp("-fixed_size_cluster_timecode", argv[i]) &&
+               i < argc_check) {
+      fixed_size_cluster_timecode =
           strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-display_width", argv[i]) && i < argc_check) {
       display_width = strtol(argv[++i], &end, 10);
@@ -297,6 +304,7 @@ int main(int argc, char* argv[]) {
   }
 
   muxer_segment.AccurateClusterDuration(accurate_cluster_duration);
+  muxer_segment.UseFixedSizeClusterTimecode(fixed_size_cluster_timecode);
 
   if (live_mode)
     muxer_segment.set_mode(mkvmuxer::Segment::kLive);

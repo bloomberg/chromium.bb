@@ -246,11 +246,15 @@ uint64_t EbmlElementSize(uint64_t type, int64_t value) {
 }
 
 uint64_t EbmlElementSize(uint64_t type, uint64_t value) {
+  return EbmlElementSize(type, value, 0);
+}
+
+uint64_t EbmlElementSize(uint64_t type, uint64_t value, uint64_t fixed_size) {
   // Size of EBML ID
   int32_t ebml_size = GetUIntSize(type);
 
   // Datasize
-  ebml_size += GetUIntSize(value);
+  ebml_size += (fixed_size > 0) ? fixed_size : GetUIntSize(value);
 
   // Size of Datasize
   ebml_size++;
@@ -432,13 +436,23 @@ bool WriteEbmlMasterElement(IMkvWriter* writer, uint64_t type, uint64_t size) {
 }
 
 bool WriteEbmlElement(IMkvWriter* writer, uint64_t type, uint64_t value) {
+  return WriteEbmlElement(writer, type, value, 0);
+}
+
+bool WriteEbmlElement(IMkvWriter* writer, uint64_t type, uint64_t value,
+                      uint64_t fixed_size) {
   if (!writer)
     return false;
 
   if (WriteID(writer, type))
     return false;
 
-  const uint64_t size = GetUIntSize(value);
+  uint64_t size = GetUIntSize(value);
+  if (fixed_size > 0) {
+    if (size > fixed_size)
+      return false;
+    size = fixed_size;
+  }
   if (WriteUInt(writer, size))
     return false;
 

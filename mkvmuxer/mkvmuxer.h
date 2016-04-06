@@ -993,7 +993,8 @@ class Cluster {
   // position for the cluster within the segment that should be written in
   // the cues element. |timecode_scale| is the timecode scale of the segment.
   Cluster(uint64_t timecode, int64_t cues_pos, uint64_t timecode_scale,
-          bool write_last_frame_with_duration = false);
+          bool write_last_frame_with_duration = false,
+          bool fixed_size_timecode = false);
   ~Cluster();
 
   bool Init(IMkvWriter* ptr_writer);
@@ -1136,6 +1137,10 @@ class Cluster {
 
   // Flag telling if the cluster has been closed.
   bool finalized_;
+
+  // Flag indicating whether the cluster's timecode will always be written out
+  // using 8 bytes.
+  bool fixed_size_timecode_;
 
   // Flag telling if the cluster's header has been written.
   bool header_written_;
@@ -1448,6 +1453,9 @@ class Segment {
   // Toggles whether to write the last frame in each Cluster with Duration.
   void AccurateClusterDuration(bool accurate_cluster_duration);
 
+  // Toggles whether to write the Cluster Timecode using exactly 8 bytes.
+  void UseFixedSizeClusterTimecode(bool fixed_size_cluster_timecode);
+
   // Sets if the muxer will output files in chunks or not. |chunking| is a
   // flag telling whether or not to turn on chunking. |filename| is the base
   // filename for the chunk files. The header chunk file will be named
@@ -1653,6 +1661,9 @@ class Segment {
   // Flag whether or not the last frame in each Cluster will have a Duration
   // element in it.
   bool accurate_cluster_duration_;
+
+  // Flag whether or not to write the Cluster Timecode using exactly 8 bytes.
+  bool fixed_size_cluster_timecode_;
 
   // The size of the EBML header, used to validate the header if
   // WriteEbmlHeader() is called more than once.

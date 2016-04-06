@@ -33,6 +33,11 @@ uint64_t EbmlElementSize(uint64_t type, const char* value);
 uint64_t EbmlElementSize(uint64_t type, const uint8_t* value, uint64_t size);
 uint64_t EbmlDateElementSize(uint64_t type);
 
+// Returns the size in bytes of the element assuming that the element was
+// written using |fixed_size| bytes. If |fixed_size| is set to zero, then it
+// computes the necessary number of bytes based on |value|.
+uint64_t EbmlElementSize(uint64_t type, uint64_t value, uint64_t fixed_size);
+
 // Creates an EBML coded number from |value| and writes it out. The size of
 // the coded number is determined by the value of |value|. |value| must not
 // be in a coded form. Returns 0 on success.
@@ -58,6 +63,13 @@ bool WriteEbmlElement(IMkvWriter* writer, uint64_t type, const char* value);
 bool WriteEbmlElement(IMkvWriter* writer, uint64_t type, const uint8_t* value,
                       uint64_t size);
 bool WriteEbmlDateElement(IMkvWriter* writer, uint64_t type, int64_t value);
+
+// Output an Mkv non-master element using fixed size. The element will be
+// written out using exactly |fixed_size| bytes. If |fixed_size| is set to zero
+// then it computes the necessary number of bytes based on |value|. Returns true
+// if the element was written.
+bool WriteEbmlElement(IMkvWriter* writer, uint64_t type, uint64_t value,
+                      uint64_t fixed_size);
 
 // Output a Mkv Frame. It decides the correct element to write (Block vs
 // SimpleBlock) based on the parameters of the Frame.
