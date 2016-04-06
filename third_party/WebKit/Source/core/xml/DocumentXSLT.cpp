@@ -28,11 +28,6 @@ public:
         return new DOMContentLoadedListener(scriptState, pi);
     }
 
-#if !ENABLE(OILPAN)
-    using V8AbstractEventListener::ref;
-    using V8AbstractEventListener::deref;
-#endif
-
     bool operator==(const EventListener&) const override
     {
         return true;
@@ -83,11 +78,6 @@ private:
         , m_processingInstruction(pi)
     {
     }
-
-#if !ENABLE(OILPAN)
-    void refDetachableEventListener() override { ref(); }
-    void derefDetachableEventListener() override { deref(); }
-#endif
 
     virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*)
     {

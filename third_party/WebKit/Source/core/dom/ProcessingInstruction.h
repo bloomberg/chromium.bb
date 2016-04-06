@@ -60,15 +60,6 @@ public:
         virtual void detach() = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
-
-#if !ENABLE(OILPAN)
-        void ref() { refDetachableEventListener(); }
-        void deref() { derefDetachableEventListener(); }
-
-    private:
-        virtual void refDetachableEventListener() = 0;
-        virtual void derefDetachableEventListener() = 0;
-#endif
     };
 
     void setEventListenerForXSLT(RawPtr<DetachableEventListener> listener) { m_listenerForXSLT = listener; }

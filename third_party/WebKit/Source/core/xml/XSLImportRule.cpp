@@ -41,10 +41,6 @@ XSLImportRule::XSLImportRule(XSLStyleSheet* parent, const String& href)
 
 XSLImportRule::~XSLImportRule()
 {
-#if !ENABLE(OILPAN)
-    if (m_styleSheet)
-        m_styleSheet->setParentStyleSheet(0);
-#endif
 }
 
 void XSLImportRule::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)

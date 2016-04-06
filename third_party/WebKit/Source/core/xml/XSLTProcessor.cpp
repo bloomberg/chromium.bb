@@ -54,10 +54,6 @@ static inline void transformTextStringToXHTMLDocumentString(String& text)
 
 XSLTProcessor::~XSLTProcessor()
 {
-#if !ENABLE(OILPAN)
-    // Stylesheet shouldn't outlive its root node.
-    ASSERT(!m_stylesheetRootNode || !m_stylesheet || m_stylesheet->hasOneRef());
-#endif
 }
 
 RawPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourceString,
