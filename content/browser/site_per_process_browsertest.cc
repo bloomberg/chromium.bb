@@ -4137,7 +4137,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Since the SwapOut ACK for A->B is dropped, the first page's
   // RenderFrameHost and RenderViewHost should be pending deletion after the
   // last navigation.
-  EXPECT_TRUE(root->render_manager()->IsPendingDeletion(rfh));
+  EXPECT_FALSE(rfh->IsRFHStateActive(rfh->rfh_state()));
   EXPECT_TRUE(root->render_manager()->IsViewPendingDeletion(rvh));
 
   // Wait for process A to exit so we can reinitialize it cleanly for the next

@@ -363,9 +363,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     if (old_rfh != active_rfh && !rfh_observer.deleted()) {
       EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT,
                 old_rfh->rfh_state());
-      EXPECT_TRUE(
-            old_rfh->frame_tree_node()->render_manager()->IsPendingDeletion(
-                old_rfh));
     }
 
     // Simulate the swap out ACK coming from the pending renderer.  This should
@@ -1791,8 +1788,6 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
   EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
-  EXPECT_TRUE(
-      rfh1->frame_tree_node()->render_manager()->IsPendingDeletion(rfh1));
 
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();

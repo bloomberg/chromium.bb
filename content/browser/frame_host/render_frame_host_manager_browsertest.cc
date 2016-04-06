@@ -2397,7 +2397,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // The previous RFH should still be pending deletion, as we wait for either
   // the SwapOut ACK or a timeout.
-  ASSERT_TRUE(root->render_manager()->IsPendingDeletion(rfh_a));
+  ASSERT_TRUE(rfh_a->IsRenderFrameLive());
+  ASSERT_FALSE(rfh_a->IsRFHStateActive(rfh_a->rfh_state()));
 
   // The corresponding RVH should not be pending deletion due to the proxy.
   EXPECT_FALSE(root->render_manager()->IsViewPendingDeletion(
@@ -2454,7 +2455,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // The previous RFH and RVH should still be pending deletion, as we wait for
   // either the SwapOut ACK or a timeout.
-  ASSERT_TRUE(root->render_manager()->IsPendingDeletion(rfh_a));
+  ASSERT_TRUE(rfh_a->IsRenderFrameLive());
+  ASSERT_FALSE(rfh_a->IsRFHStateActive(rfh_a->rfh_state()));
   EXPECT_TRUE(root->render_manager()->IsViewPendingDeletion(
                   rfh_a->render_view_host()));
 

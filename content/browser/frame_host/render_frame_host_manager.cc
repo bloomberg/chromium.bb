@@ -708,15 +708,6 @@ void RenderFrameHostManager::MoveToPendingDeleteHosts(
   pending_delete_hosts_.push_back(std::move(render_frame_host));
 }
 
-bool RenderFrameHostManager::IsPendingDeletion(
-    RenderFrameHostImpl* render_frame_host) {
-  for (const auto& rfh : pending_delete_hosts_) {
-    if (rfh.get() == render_frame_host)
-      return true;
-  }
-  return false;
-}
-
 bool RenderFrameHostManager::IsViewPendingDeletion(
     RenderViewHostImpl* render_view_host) {
   // Only safe to call this on the main frame.
@@ -2115,11 +2106,8 @@ void RenderFrameHostManager::CommitPending() {
   }
 
   // Swap out the old frame now that the new one is visible.
-  // This will swap it out and then put it on the proxy list (if there are other
-  // active views in its SiteInstance) or schedule it for deletion when the swap
-  // out ack arrives (or immediately if the process isn't live).
-  // In the --site-per-process case, old subframe RFHs are not kept alive inside
-  // the proxy.
+  // This will swap it out and schedule it for deletion when the swap out ack
+  // arrives (or immediately if the process isn't live).
   SwapOutOldFrame(std::move(old_render_frame_host));
 
   // Since the new RenderFrameHost is now committed, there must be no proxies

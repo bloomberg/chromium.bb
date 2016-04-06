@@ -1340,7 +1340,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // If the process has died, we don't need to wait for the swap out ack from
   // this RenderFrame if it is pending deletion.  Complete the swap out to
   // destroy it.
-  if (frame_tree_node_->render_manager()->IsPendingDeletion(this))
+  if (!IsRFHStateActive(rfh_state()))
     OnSwappedOut();
 
   // Note: don't add any more code at this point in the function because
@@ -1361,8 +1361,7 @@ void RenderFrameHostImpl::OnSwappedOut() {
   // If this is a main frame RFH that's about to be deleted, update its RVH's
   // swapped-out state here, since SetState won't be called once this RFH is
   // deleted below. https://crbug.com/505887
-  if (frame_tree_node_->IsMainFrame() &&
-      frame_tree_node_->render_manager()->IsPendingDeletion(this)) {
+  if (frame_tree_node_->IsMainFrame()) {
     render_view_host_->set_is_active(false);
     render_view_host_->set_is_swapped_out(true);
   }
