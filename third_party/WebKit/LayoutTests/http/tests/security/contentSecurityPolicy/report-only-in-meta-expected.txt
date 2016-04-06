@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 8: The report-only Content Security Policy 'sandbox allow-scripts; frame-ancestors 'none'; report-uri http://foo.test' was delivered via a <meta> element, which is disallowed. The policy has been ignored.
+

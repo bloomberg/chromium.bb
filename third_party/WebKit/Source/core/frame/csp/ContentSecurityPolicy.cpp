@@ -258,7 +258,7 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecuri
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
     // If this is a report-only header inside a <meta> element, bail out.
-    if (source == ContentSecurityPolicyHeaderSourceMeta && type == ContentSecurityPolicyHeaderTypeReport && experimentalFeaturesEnabled()) {
+    if (source == ContentSecurityPolicyHeaderSourceMeta && type == ContentSecurityPolicyHeaderTypeReport) {
         reportReportOnlyInMeta(header);
         return;
     }

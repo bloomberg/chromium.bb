@@ -7,8 +7,6 @@ header("Content-Security-Policy-Report-Only: script-src 'self' 'unsafe-inline'")
     <script>
         if (window.testRunner)
             testRunner.dumpAsText();
-        if (window.internals)
-            internals.settings.setExperimentalContentSecurityPolicyFeaturesEnabled(false);
     </script>
 </head>
 <body>
