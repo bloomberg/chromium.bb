@@ -295,6 +295,16 @@ struct TypeConverter<std::set<E>, Array<T>> {
   }
 };
 
+// Less than operator to allow Arrays as keys in std maps and sets.
+template <typename T>
+inline bool operator<(const Array<T>& a, const Array<T>& b) {
+  if (a.is_null())
+    return !b.is_null();
+  if (b.is_null())
+    return false;
+  return a.storage() < b.storage();
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_

@@ -65,6 +65,9 @@ class LocalStorageCachedArea : public mojom::LevelDBObserver,
   ~LocalStorageCachedArea() override;
 
   // LevelDBObserver:
+  void KeyAdded(mojo::Array<uint8_t> key,
+                mojo::Array<uint8_t> value,
+                const mojo::String& source) override;
   void KeyChanged(mojo::Array<uint8_t> key,
                   mojo::Array<uint8_t> new_value,
                   mojo::Array<uint8_t> old_value,
@@ -73,16 +76,21 @@ class LocalStorageCachedArea : public mojom::LevelDBObserver,
                   mojo::Array<uint8_t> old_value,
                   const mojo::String& source) override;
   void AllDeleted(const mojo::String& source) override;
+  void GetAllComplete(const mojo::String& source) override;
+
+  // Common helper for KeyAdded() and KeyChanged()
+  void KeyAddedOrChanged(mojo::Array<uint8_t> key,
+                         mojo::Array<uint8_t> new_value,
+                         const base::NullableString16& old_value,
+                         const mojo::String& source);
 
   // Synchronously fetches the origin's local storage data if it hasn't been
   // fetched already.
   void EnsureLoaded();
 
-  void OnSetItemComplete(const base::string16& key,
-                         leveldb::DatabaseError result);
-  void OnRemoveItemComplete(const base::string16& key,
-                            leveldb::DatabaseError result);
-  void OnClearComplete(leveldb::DatabaseError result);
+  void OnSetItemComplete(const base::string16& key, bool success);
+  void OnRemoveItemComplete(const base::string16& key, bool success);
+  void OnClearComplete(bool success);
 
   // Resets the object back to its newly constructed state.
   void Reset();
@@ -90,10 +98,13 @@ class LocalStorageCachedArea : public mojom::LevelDBObserver,
   url::Origin origin_;
   scoped_refptr<DOMStorageMap> map_;
   std::map<base::string16, int> ignore_key_mutations_;
+  bool ignore_all_mutations_ = false;
+  std::string get_all_request_id_;
   mojom::LevelDBWrapperPtr leveldb_;
   mojo::Binding<mojom::LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
   std::map<std::string, LocalStorageArea*> areas_;
+  base::WeakPtrFactory<LocalStorageCachedArea> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageCachedArea);
 };

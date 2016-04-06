@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "content/common/dom_storage/dom_storage_map.h"
@@ -41,9 +43,10 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     const url::Origin& origin,
     mojom::StoragePartitionService* storage_partition_service,
     LocalStorageCachedAreas* cached_areas)
-    : origin_(origin), binding_(this), cached_areas_(cached_areas) {
+    : origin_(origin), binding_(this),
+      cached_areas_(cached_areas), weak_factory_(this) {
   storage_partition_service->OpenLocalStorage(
-      origin_, mojo::GetProxy(&leveldb_));
+      origin_, binding_.CreateInterfacePtrAndBind(), mojo::GetProxy(&leveldb_));
 }
 
 LocalStorageCachedArea::~LocalStorageCachedArea() {
@@ -86,7 +89,7 @@ bool LocalStorageCachedArea::SetItem(const base::string16& key,
                 mojo::Array<uint8_t>::From(value),
                 PackSource(page_url, storage_area_id),
                 base::Bind(&LocalStorageCachedArea::OnSetItemComplete,
-                           base::Unretained(this), key));
+                           weak_factory_.GetWeakPtr(), key));
   return true;
 }
 
@@ -103,7 +106,7 @@ void LocalStorageCachedArea::RemoveItem(const base::string16& key,
   leveldb_->Delete(mojo::Array<uint8_t>::From(key),
                    PackSource(page_url, storage_area_id),
                    base::Bind(&LocalStorageCachedArea::OnRemoveItemComplete,
-                              base::Unretained(this), key));
+                              weak_factory_.GetWeakPtr(), key));
 }
 
 void LocalStorageCachedArea::Clear(const GURL& page_url,
@@ -112,11 +115,10 @@ void LocalStorageCachedArea::Clear(const GURL& page_url,
 
   Reset();
   map_ = new DOMStorageMap(kPerStorageAreaQuota);
-
-  leveldb_->DeleteAll(binding_.CreateInterfacePtrAndBind(),
-                      PackSource(page_url, storage_area_id),
+  ignore_all_mutations_ = true;
+  leveldb_->DeleteAll(PackSource(page_url, storage_area_id),
                       base::Bind(&LocalStorageCachedArea::OnClearComplete,
-                                  base::Unretained(this)));
+                                  weak_factory_.GetWeakPtr()));
 }
 
 void LocalStorageCachedArea::AreaCreated(LocalStorageArea* area) {
@@ -127,39 +129,21 @@ void LocalStorageCachedArea::AreaDestroyed(LocalStorageArea* area) {
   areas_.erase(area->id());
 }
 
+void LocalStorageCachedArea::KeyAdded(mojo::Array<uint8_t> key,
+                                      mojo::Array<uint8_t> value,
+                                      const mojo::String& source) {
+  base::NullableString16 null_value;
+  KeyAddedOrChanged(std::move(key), std::move(value),
+                    null_value, source);
+}
+
 void LocalStorageCachedArea::KeyChanged(mojo::Array<uint8_t> key,
                                         mojo::Array<uint8_t> new_value,
                                         mojo::Array<uint8_t> old_value,
                                         const mojo::String& source) {
-  GURL page_url;
-  std::string storage_area_id;
-  UnpackSource(source, &page_url, &storage_area_id);
-
-  base::string16 key_string = key.To<base::string16>();
-  base::string16 new_value_string = new_value.To<base::string16>();
-
-  blink::WebStorageArea* originating_area = nullptr;
-  if (areas_.find(storage_area_id) != areas_.end()) {
-    // The source storage area is in this process.
-    originating_area = areas_[storage_area_id];
-  } else {
-    // This was from another process or the storage area is gone. If the former,
-    // apply it to our cache if we haven't already changed it and are waiting
-    // for the confirmation callback. In the latter case, we won't do anything
-    // because ignore_key_mutations_ won't be updated until the callback runs.
-    if (ignore_key_mutations_.find(key_string) != ignore_key_mutations_.end()) {
-      // We turn off quota checking here to accomodate the over budget allowance
-      // that's provided in the browser process.
-      base::NullableString16 unused;
-      map_->set_quota(std::numeric_limits<int32_t>::max());
-      map_->SetItem(key_string, new_value_string, &unused);
-      map_->set_quota(kPerStorageAreaQuota);
-    }
-  }
-
-  blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
-      key_string, old_value.To<base::string16>(), new_value_string,
-      GURL(origin_.Serialize()), page_url, originating_area);
+  base::NullableString16 old_value_str(old_value.To<base::string16>(), false);
+  KeyAddedOrChanged(std::move(key), std::move(new_value),
+                    old_value_str, source);
 }
 
 void LocalStorageCachedArea::KeyDeleted(mojo::Array<uint8_t> key,
@@ -175,7 +159,7 @@ void LocalStorageCachedArea::KeyDeleted(mojo::Array<uint8_t> key,
   if (areas_.find(storage_area_id) != areas_.end()) {
     // The source storage area is in this process.
     originating_area = areas_[storage_area_id];
-  } else {
+  } else if (map_ && !ignore_all_mutations_) {
     // This was from another process or the storage area is gone. If the former,
     // remove it from our cache if we haven't already changed it and are waiting
     // for the confirmation callback. In the latter case, we won't do anything
@@ -200,7 +184,7 @@ void LocalStorageCachedArea::AllDeleted(const mojo::String& source) {
   if (areas_.find(storage_area_id) != areas_.end()) {
     // The source storage area is in this process.
     originating_area = areas_[storage_area_id];
-  } else {
+  } else if (map_ && !ignore_all_mutations_) {
     scoped_refptr<DOMStorageMap> old = map_;
     map_ = new DOMStorageMap(kPerStorageAreaQuota);
 
@@ -223,14 +207,65 @@ void LocalStorageCachedArea::AllDeleted(const mojo::String& source) {
       originating_area);
 }
 
+void LocalStorageCachedArea::GetAllComplete(const mojo::String& source) {
+  // Since the GetAll method is synchronous, we need this asynchronously
+  // delivered notification to avoid applying changes to the returned array
+  // that we already have.
+  if (source.To<std::string>() == get_all_request_id_) {
+    DCHECK(ignore_all_mutations_);
+    DCHECK(!get_all_request_id_.empty());
+    ignore_all_mutations_ = false;
+    get_all_request_id_.clear();
+  }
+}
+
+void LocalStorageCachedArea::KeyAddedOrChanged(
+    mojo::Array<uint8_t> key,
+    mojo::Array<uint8_t> new_value,
+    const base::NullableString16& old_value,
+    const mojo::String& source) {
+  GURL page_url;
+  std::string storage_area_id;
+  UnpackSource(source, &page_url, &storage_area_id);
+
+  base::string16 key_string = key.To<base::string16>();
+  base::string16 new_value_string = new_value.To<base::string16>();
+
+  blink::WebStorageArea* originating_area = nullptr;
+  if (areas_.find(storage_area_id) != areas_.end()) {
+    // The source storage area is in this process.
+    originating_area = areas_[storage_area_id];
+  } else if (map_ && !ignore_all_mutations_) {
+    // This was from another process or the storage area is gone. If the former,
+    // apply it to our cache if we haven't already changed it and are waiting
+    // for the confirmation callback. In the latter case, we won't do anything
+    // because ignore_key_mutations_ won't be updated until the callback runs.
+    if (ignore_key_mutations_.find(key_string) != ignore_key_mutations_.end()) {
+      // We turn off quota checking here to accomodate the over budget allowance
+      // that's provided in the browser process.
+      base::NullableString16 unused;
+      map_->set_quota(std::numeric_limits<int32_t>::max());
+      map_->SetItem(key_string, new_value_string, &unused);
+      map_->set_quota(kPerStorageAreaQuota);
+    }
+  }
+
+  blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
+      key_string, old_value, new_value_string,
+      GURL(origin_.Serialize()), page_url, originating_area);
+
+}
+
 void LocalStorageCachedArea::EnsureLoaded() {
   if (map_)
     return;
 
   base::TimeTicks before = base::TimeTicks::Now();
+  ignore_all_mutations_ = true;
+  get_all_request_id_ = base::Uint64ToString(base::RandUint64());
   leveldb::DatabaseError status = leveldb::DatabaseError::OK;
   mojo::Array<content::mojom::KeyValuePtr> data;
-  leveldb_->GetAll(binding_.CreateInterfacePtrAndBind(), &status, &data);
+  leveldb_->GetAll(get_all_request_id_, &status, &data);
 
   DOMStorageValuesMap values;
   for (size_t i = 0; i < data.size(); ++i) {
@@ -264,8 +299,8 @@ void LocalStorageCachedArea::EnsureLoaded() {
 }
 
 void LocalStorageCachedArea::OnSetItemComplete(const base::string16& key,
-                                               leveldb::DatabaseError result) {
-  if (result != leveldb::DatabaseError::OK) {
+                                               bool success) {
+  if (!success) {
     Reset();
     return;
   }
@@ -277,22 +312,25 @@ void LocalStorageCachedArea::OnSetItemComplete(const base::string16& key,
 }
 
 void LocalStorageCachedArea::OnRemoveItemComplete(
-    const base::string16& key, leveldb::DatabaseError result) {
-  DCHECK_EQ(result, leveldb::DatabaseError::OK);
+    const base::string16& key, bool success) {
+  DCHECK(success);
   auto found = ignore_key_mutations_.find(key);
   DCHECK(found != ignore_key_mutations_.end());
   if (--found->second == 0)
     ignore_key_mutations_.erase(found);
 }
 
-void LocalStorageCachedArea::OnClearComplete(leveldb::DatabaseError result) {
-  DCHECK_EQ(result, leveldb::DatabaseError::OK);
+void LocalStorageCachedArea::OnClearComplete(bool success) {
+  DCHECK(success);
+  DCHECK(ignore_all_mutations_);
+  ignore_all_mutations_ = false;
 }
 
 void LocalStorageCachedArea::Reset() {
-  binding_.Close();
   map_ = NULL;
   ignore_key_mutations_.clear();
+  ignore_all_mutations_ = false;
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 }  // namespace content

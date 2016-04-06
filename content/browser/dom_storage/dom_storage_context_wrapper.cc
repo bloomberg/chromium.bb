@@ -84,10 +84,11 @@ class DOMStorageContextWrapper::MojoState {
         weak_ptr_factory_(this) {}
 
   void OpenLocalStorage(const url::Origin& origin,
+                        mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
  private:
-  void LevelDBWrapperImplHasNoBindings(const url::Origin& origin) {
+  void OnLevelDDWrapperHasNoBindings(const url::Origin& origin) {
     DCHECK(level_db_wrappers_.find(origin) != level_db_wrappers_.end());
     level_db_wrappers_.erase(origin);
   }
@@ -99,6 +100,7 @@ class DOMStorageContextWrapper::MojoState {
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
+                        mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
   // Maps between an origin and its prefixed LevelDB view.
@@ -127,6 +129,7 @@ class DOMStorageContextWrapper::MojoState {
 
 void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     const url::Origin& origin,
+    mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
@@ -158,11 +161,11 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     // Queue this OpenLocalStorage call for when we have a level db pointer.
     on_database_opened_callbacks_.push_back(
         base::Bind(&MojoState::BindLocalStorage, weak_ptr_factory_.GetWeakPtr(),
-                   origin, base::Passed(&request)));
+                   origin, base::Passed(&observer), base::Passed(&request)));
     return;
   }
 
-  BindLocalStorage(origin, std::move(request));
+  BindLocalStorage(origin, std::move(observer), std::move(request));
 }
 
 void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
@@ -208,17 +211,22 @@ void DOMStorageContextWrapper::MojoState::OnDatabaseOpened(
 
 void DOMStorageContextWrapper::MojoState::BindLocalStorage(
     const url::Origin& origin,
+    mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
-  if (level_db_wrappers_.find(origin) == level_db_wrappers_.end()) {
+  auto found = level_db_wrappers_.find(origin);
+  if (found == level_db_wrappers_.end()) {
     level_db_wrappers_[origin] = make_scoped_ptr(new LevelDBWrapperImpl(
         database_.get(),
         origin.Serialize(),
-        base::Bind(&MojoState::LevelDBWrapperImplHasNoBindings,
+        kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+        base::Bind(&MojoState::OnLevelDDWrapperHasNoBindings,
                    base::Unretained(this),
                    origin)));
+    found = level_db_wrappers_.find(origin);
   }
 
-  level_db_wrappers_[origin]->Bind(std::move(request));
+  found->second->Bind(std::move(request));
+  found->second->AddObserver(std::move(observer));
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
@@ -336,8 +344,10 @@ void DOMStorageContextWrapper::Flush() {
 
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
+    mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
-  mojo_state_->OpenLocalStorage(origin, std::move(request));
+  mojo_state_->OpenLocalStorage(
+      origin, std::move(observer), std::move(request));
 }
 
 }  // namespace content

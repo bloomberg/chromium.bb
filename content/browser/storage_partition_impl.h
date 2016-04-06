@@ -65,6 +65,7 @@ class StoragePartitionImpl : public StoragePartition,
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
       const url::Origin& origin,
+      mojom::LevelDBObserverPtr observer,
       mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
 
   void ClearDataForOrigin(uint32_t remove_mask,

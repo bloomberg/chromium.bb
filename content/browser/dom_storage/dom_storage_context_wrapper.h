@@ -66,6 +66,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
+                        mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
  private:
