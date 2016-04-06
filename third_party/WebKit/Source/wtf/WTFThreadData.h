@@ -86,12 +86,8 @@ private:
 
 inline WTFThreadData& wtfThreadData()
 {
-    // WRT WebCore:
-    //    WTFThreadData is used on main thread before it could possibly be used
-    //    on secondary ones, so there is no need for synchronization here.
-    // WRT JavaScriptCore:
-    //    wtfThreadData() is initially called from initializeThreading(), ensuring
-    //    this is initially called in a pthread_once locked context.
+    // WTFThreadData is used on main thread before it could possibly be used
+    // on secondary ones, so there is no need for synchronization here.
     if (!WTFThreadData::staticData)
         WTFThreadData::staticData = new ThreadSpecific<WTFThreadData>;
     return **WTFThreadData::staticData;
