@@ -7,5 +7,14 @@
     android:id="@+id/bottombar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    chrome:maxHeight="@dimen/toolbar_height_no_shadow" />
+    android:orientation="vertical"
+    chrome:maxHeight="@dimen/custom_tabs_bottom_bar_max_height" >
+
+    <View
+        android:id="@+id/bottombar_shadow"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@drawable/toolbar_shadow_normal"
+        android:scaleY="-1" />
+
+</org.chromium.chrome.browser.widget.BoundedLinearLayout>

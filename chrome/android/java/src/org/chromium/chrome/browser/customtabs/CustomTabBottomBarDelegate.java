@@ -9,10 +9,14 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
 import android.widget.RemoteViews;
 
@@ -21,6 +25,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.List;
 
@@ -29,6 +34,7 @@ import java.util.List;
  */
 class CustomTabBottomBarDelegate {
     private static final String TAG = "CustomTab";
+    private static final int SLIDE_ANIMATION_DURATION_MS = 400;
     private ChromeActivity mActivity;
     private ViewGroup mBottomBarView;
     private CustomTabIntentDataProvider mDataProvider;
@@ -96,7 +102,8 @@ class CustomTabBottomBarDelegate {
     }
 
     /**
-     * Updates the RemoteViews on the bottom bar.
+     * Updates the RemoteViews on the bottom bar. If the given remote view is null, animates the
+     * bottom bar out.
      * @param remoteViews The new remote view hierarchy sent from the client.
      * @param clickableIDs Array of view ids, the onclick event of which is intercepcted by chrome.
      * @param pendingIntent The {@link PendingIntent} that will be sent on clicking event.
@@ -107,18 +114,17 @@ class CustomTabBottomBarDelegate {
         // Update only makes sense if we are already showing a RemoteViews.
         if (mDataProvider.getBottomBarRemoteViews() == null) return false;
 
-        // TODO: investigate updating the remoteview without taking down the whole view hierarchy.
+        RecordUserAction.record("CustomTabsRemoteViewsUpdated");
         if (remoteViews == null) {
-            if (mBottomBarView != null) {
-                mBottomBarView.removeAllViews();
-                mBottomBarView.setVisibility(View.GONE);
-            }
+            if (mBottomBarView == null) return false;
+            hideBottomBar();
             mClickableIDs = null;
             mClickPendingIntent = null;
         } else {
+            // TODO: investigate updating the RemoteViews without replacing the entire hierarchy.
             mClickableIDs = clickableIDs;
             mClickPendingIntent = pendingIntent;
-            getBottomBarView().removeAllViews();
+            getBottomBarView().removeViewAt(1);
             showRemoteViews(remoteViews);
         }
         return true;
@@ -131,18 +137,39 @@ class CustomTabBottomBarDelegate {
         if (mBottomBarView == null) {
             ViewStub bottomBarStub = ((ViewStub) mActivity.findViewById(R.id.bottombar_stub));
             bottomBarStub.setLayoutResource(R.layout.custom_tabs_bottombar);
-            bottomBarStub.inflate();
-
-            View shadow = mActivity.findViewById(R.id.bottombar_shadow);
-            shadow.setVisibility(View.VISIBLE);
-
-            mBottomBarView = (ViewGroup) mActivity.findViewById(R.id.bottombar);
+            mBottomBarView = (ViewGroup) bottomBarStub.inflate();
         }
         return mBottomBarView;
     }
 
+    private void hideBottomBar() {
+        if (mBottomBarView == null) return;
+        ((ViewGroup) mBottomBarView.getParent()).removeView(mBottomBarView);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.BOTTOM;
+        final ViewGroup compositorView = mActivity.getCompositorViewHolder();
+        compositorView.addView(mBottomBarView, lp);
+        compositorView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                compositorView.removeOnLayoutChangeListener(this);
+                mBottomBarView.animate().alpha(0f).translationY(mBottomBarView.getHeight())
+                        .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
+                        .setDuration(SLIDE_ANIMATION_DURATION_MS)
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                ((ViewGroup) mBottomBarView.getParent()).removeView(mBottomBarView);
+                                mBottomBarView = null;
+                            }
+                        }).start();
+            }
+        });
+    }
+
     private void showRemoteViews(RemoteViews remoteViews) {
-        RecordUserAction.record("CustomTabsRemoteViewsUpdated");
         View inflatedView = remoteViews.apply(mActivity, getBottomBarView());
         if (mClickableIDs != null && mClickPendingIntent != null) {
             for (int id: mClickableIDs) {
@@ -151,7 +178,7 @@ class CustomTabBottomBarDelegate {
                 if (view != null) view.setOnClickListener(mBottomBarClickListener);
             }
         }
-        getBottomBarView().addView(inflatedView);
+        getBottomBarView().addView(inflatedView, 1);
     }
 
     private static void sendPendingIntentWithUrl(PendingIntent pendingIntent, Intent extraIntent,

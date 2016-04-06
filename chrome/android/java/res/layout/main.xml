@@ -25,18 +25,10 @@
             android:scrollbars="none"
             android:visibility="gone" />
 
-        <View
-            android:id="@+id/bottombar_shadow"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_marginTop="-4dp"
-            android:background="@drawable/toolbar_shadow_normal"
-            android:scaleY="-1"
-            android:visibility="gone" />
-
         <ViewStub
             android:id="@+id/bottombar_stub"
             android:layout_width="match_parent"
+            android:layout_marginTop="-4dp"
             android:layout_height="wrap_content" />
     </LinearLayout>
 
