@@ -23,19 +23,39 @@ BASE_EXPORT extern const Feature kPersistentHistogramsFeature;
 // This class manages histograms created within a PersistentMemoryAllocator.
 class BASE_EXPORT PersistentHistogramAllocator {
  public:
-  // This iterator is used for fetching persistent histograms from an allocator.
-  class Iterator {
+  // A reference to a histogram. While this is implemented as PMA::Reference,
+  // it is not conceptually the same thing. Outside callers should always use
+  // a Reference matching the class it is for and not mix the two.
+  using Reference = PersistentMemoryAllocator::Reference;
+
+  // Iterator used for fetching persistent histograms from an allocator.
+  // It is lock-free and thread-safe.
+  // See PersistentMemoryAllocator::Iterator for more information.
+  class BASE_EXPORT Iterator {
    public:
-    bool is_clear() { return memory_iter.is_clear(); }
+    // Constructs an iterator on a given |allocator|, starting at the beginning.
+    // The allocator must live beyond the lifetime of the iterator.
+    explicit Iterator(PersistentHistogramAllocator* allocator);
+
+    // Gets the next histogram from persistent memory; returns null if there
+    // are no more histograms to be found. This may still be called again
+    // later to retrieve any new histograms added in the meantime.
+    std::unique_ptr<HistogramBase> GetNext() { return GetNextWithIgnore(0); }
+
+    // Gets the next histogram from persistent memory, ignoring one particular
+    // reference in the process. Pass |ignore| of zero (0) to ignore nothing.
+    std::unique_ptr<HistogramBase> GetNextWithIgnore(Reference ignore);
 
    private:
-    friend class PersistentHistogramAllocator;
+    // Weak-pointer to histogram allocator being iterated over.
+    PersistentHistogramAllocator* allocator_;
 
-    // The iterator used for stepping through persistent memory iterables.
-    PersistentMemoryAllocator::Iterator memory_iter;
+    // The iterator used for stepping through objects in persistent memory.
+    // It is lock-free and thread-safe which is why this class is also such.
+    PersistentMemoryAllocator::Iterator memory_iter_;
+
+    DISALLOW_COPY_AND_ASSIGN(Iterator);
   };
-
-  using Reference = PersistentMemoryAllocator::Reference;
 
   // A PersistentHistogramAllocator is constructed from a PersistentMemory-
   // Allocator object of which it takes ownership.
@@ -64,14 +84,6 @@ class BASE_EXPORT PersistentHistogramAllocator {
   // to where the top-level histogram data may be found in this allocator.
   // This method will return null if any problem is detected with the data.
   std::unique_ptr<HistogramBase> GetHistogram(Reference ref);
-
-  // Get the next histogram in persistent data based on iterator.
-  std::unique_ptr<HistogramBase> GetNextHistogram(Iterator* iter) {
-    return GetNextHistogramWithIgnore(iter, 0);
-  }
-
-  // Create an iterator for going through all histograms in an allocator.
-  void CreateIterator(Iterator* iter);
 
   // Allocate a new persistent histogram. The returned histogram will not
   // be able to be located by other allocators until it is "finalized".

@@ -174,13 +174,12 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromFile(
     base::HistogramSnapshotManager* snapshot_manager,
     FileInfo* file) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::PersistentHistogramAllocator::Iterator histogram_iter;
-  file->allocator->CreateIterator(&histogram_iter);
+  base::PersistentHistogramAllocator::Iterator histogram_iter(
+      file->allocator.get());
 
   int histogram_count = 0;
   while (true) {
-    scoped_ptr<base::HistogramBase> histogram =
-        file->allocator->GetNextHistogram(&histogram_iter);
+    scoped_ptr<base::HistogramBase> histogram = histogram_iter.GetNext();
     if (!histogram)
       break;
     if (file->type == FILE_HISTOGRAMS_ATOMIC)

@@ -111,15 +111,25 @@ struct PersistentHistogramAllocator::PersistentHistogramData {
   char name[1];
 };
 
+PersistentHistogramAllocator::Iterator::Iterator(
+    PersistentHistogramAllocator* allocator)
+    : allocator_(allocator), memory_iter_(allocator->memory_allocator()) {}
+
+std::unique_ptr<HistogramBase>
+PersistentHistogramAllocator::Iterator::GetNextWithIgnore(Reference ignore) {
+  PersistentMemoryAllocator::Reference ref;
+  while ((ref = memory_iter_.GetNextOfType(kTypeIdHistogram)) != 0) {
+    if (ref != ignore)
+      return allocator_->GetHistogram(ref);
+  }
+  return nullptr;
+}
+
 PersistentHistogramAllocator::PersistentHistogramAllocator(
     std::unique_ptr<PersistentMemoryAllocator> memory)
     : memory_allocator_(std::move(memory)) {}
 
 PersistentHistogramAllocator::~PersistentHistogramAllocator() {}
-
-void PersistentHistogramAllocator::CreateIterator(Iterator* iter) {
-  memory_allocator_->CreateIterator(&iter->memory_iter);
-}
 
 void PersistentHistogramAllocator::CreateTrackingHistograms(StringPiece name) {
   memory_allocator_->CreateTrackingHistograms(name);
@@ -318,21 +328,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::GetHistogram(
     return nullptr;
   }
   return CreateHistogram(histogram_data);
-}
-
-std::unique_ptr<HistogramBase>
-PersistentHistogramAllocator::GetNextHistogramWithIgnore(Iterator* iter,
-                                                         Reference ignore) {
-  PersistentMemoryAllocator::Reference ref;
-  uint32_t type_id;
-  while ((ref = memory_allocator_->GetNextIterable(&iter->memory_iter,
-                                                   &type_id)) != 0) {
-    if (ref == ignore)
-      continue;
-    if (type_id == kTypeIdHistogram)
-      return GetHistogram(ref);
-  }
-  return nullptr;
 }
 
 void PersistentHistogramAllocator::FinalizeHistogram(Reference ref,
@@ -543,27 +538,23 @@ GlobalHistogramAllocator::ReleaseForTesting() {
   // Before releasing the memory, it's necessary to have the Statistics-
   // Recorder forget about the histograms contained therein; otherwise,
   // some operations will try to access them and the released memory.
-  PersistentMemoryAllocator::Iterator iter;
+  PersistentMemoryAllocator::Iterator iter(memory_allocator);
   PersistentMemoryAllocator::Reference ref;
-  uint32_t type_id;
-  memory_allocator->CreateIterator(&iter);
-  while ((ref = memory_allocator->GetNextIterable(&iter, &type_id)) != 0) {
-    if (type_id == kTypeIdHistogram) {
-      PersistentHistogramData* histogram_data =
-          memory_allocator->GetAsObject<PersistentHistogramData>(
-              ref, kTypeIdHistogram);
-      DCHECK(histogram_data);
-      StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
+  while ((ref = iter.GetNextOfType(kTypeIdHistogram)) != 0) {
+    PersistentHistogramData* histogram_data =
+        memory_allocator->GetAsObject<PersistentHistogramData>(
+            ref, kTypeIdHistogram);
+    DCHECK(histogram_data);
+    StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
 
-      // If a test breaks here then a memory region containing a histogram
-      // actively used by this code is being released back to the test.
-      // If that memory segment were to be deleted, future calls to create
-      // persistent histograms would crash. To avoid this, have the test call
-      // the method GetCreateHistogramResultHistogram() *before* setting
-      // the (temporary) memory allocator via SetGlobalAllocator() so that
-      // histogram is instead allocated from the process heap.
-      DCHECK_NE(kResultHistogram, histogram_data->name);
-    }
+    // If a test breaks here then a memory region containing a histogram
+    // actively used by this code is being released back to the test.
+    // If that memory segment were to be deleted, future calls to create
+    // persistent histograms would crash. To avoid this, have the test call
+    // the method GetCreateHistogramResultHistogram() *before* setting
+    // the (temporary) memory allocator via SetGlobalAllocator() so that
+    // histogram is instead allocated from the process heap.
+    DCHECK_NE(kResultHistogram, histogram_data->name);
   }
 
   g_allocator = nullptr;
@@ -572,9 +563,8 @@ GlobalHistogramAllocator::ReleaseForTesting() {
 
 GlobalHistogramAllocator::GlobalHistogramAllocator(
     std::unique_ptr<PersistentMemoryAllocator> memory)
-    : PersistentHistogramAllocator(std::move(memory)) {
-  CreateIterator(&import_iterator_);
-}
+    : PersistentHistogramAllocator(std::move(memory)),
+      import_iterator_(this) {}
 
 void GlobalHistogramAllocator::ImportHistogramsToStatisticsRecorder() {
   // Skip the import if it's the histogram that was last created. Should a
@@ -589,7 +579,7 @@ void GlobalHistogramAllocator::ImportHistogramsToStatisticsRecorder() {
   // the StatisticsRecorder which has its own lock.
   while (true) {
     std::unique_ptr<HistogramBase> histogram =
-        GetNextHistogramWithIgnore(&import_iterator_, record_to_ignore);
+        import_iterator_.GetNextWithIgnore(record_to_ignore);
     if (!histogram)
       break;
     StatisticsRecorder::RegisterOrDeleteDuplicate(histogram.release());

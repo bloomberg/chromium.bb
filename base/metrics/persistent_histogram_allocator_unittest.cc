@@ -86,40 +86,38 @@ TEST_F(PersistentHistogramAllocatorTest, CreateAndIterateTest) {
   allocator_->GetMemoryInfo(&meminfo4);
   EXPECT_GT(meminfo3.free, meminfo4.free);
 
-  PersistentMemoryAllocator::Iterator iter;
+  PersistentMemoryAllocator::Iterator iter(allocator_);
   uint32_t type;
-  allocator_->CreateIterator(&iter);
-  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // Histogram
-  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // LinearHistogram
-  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // BooleanHistogram
-  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // CustomHistogram
-  EXPECT_EQ(0U, allocator_->GetNextIterable(&iter, &type));
+  EXPECT_NE(0U, iter.GetNext(&type));  // Histogram
+  EXPECT_NE(0U, iter.GetNext(&type));  // LinearHistogram
+  EXPECT_NE(0U, iter.GetNext(&type));  // BooleanHistogram
+  EXPECT_NE(0U, iter.GetNext(&type));  // CustomHistogram
+  EXPECT_EQ(0U, iter.GetNext(&type));
 
   // Create a second allocator and have it access the memory of the first.
   std::unique_ptr<HistogramBase> recovered;
   PersistentHistogramAllocator recovery(
       WrapUnique(new PersistentMemoryAllocator(
           allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false)));
-  PersistentHistogramAllocator::Iterator histogram_iter;
-  recovery.CreateIterator(&histogram_iter);
+  PersistentHistogramAllocator::Iterator histogram_iter(&recovery);
 
-  recovered = recovery.GetNextHistogram(&histogram_iter);
+  recovered = histogram_iter.GetNext();
   ASSERT_TRUE(recovered);
   recovered->CheckName("TestHistogram");
 
-  recovered = recovery.GetNextHistogram(&histogram_iter);
+  recovered = histogram_iter.GetNext();
   ASSERT_TRUE(recovered);
   recovered->CheckName("TestLinearHistogram");
 
-  recovered = recovery.GetNextHistogram(&histogram_iter);
+  recovered = histogram_iter.GetNext();
   ASSERT_TRUE(recovered);
   recovered->CheckName("TestBooleanHistogram");
 
-  recovered = recovery.GetNextHistogram(&histogram_iter);
+  recovered = histogram_iter.GetNext();
   ASSERT_TRUE(recovered);
   recovered->CheckName("TestCustomHistogram");
 
-  recovered = recovery.GetNextHistogram(&histogram_iter);
+  recovered = histogram_iter.GetNext();
   EXPECT_FALSE(recovered);
 }
 

@@ -614,7 +614,7 @@ TEST_P(HistogramTest, FactoryTime) {
   // Calculate cost of creating histograms.
   TimeTicks create_start = TimeTicks::Now();
   for (int i = 0; i < kTestCreateCount; ++i) {
-    Histogram::FactoryGet(histogram_names[i], 0, 100, 10,
+    Histogram::FactoryGet(histogram_names[i], 1, 100, 10,
                           HistogramBase::kNoFlags);
   }
   TimeDelta create_ticks = TimeTicks::Now() - create_start;
@@ -634,7 +634,7 @@ TEST_P(HistogramTest, FactoryTime) {
     const int i_mult = 6007;
     static_assert(i_mult < INT_MAX / kTestCreateCount, "Multiplier too big");
     int index = (i * i_mult) & (kTestCreateCount - 1);
-    Histogram::FactoryGet(histogram_names[index], 0, 100, 10,
+    Histogram::FactoryGet(histogram_names[index], 1, 100, 10,
                           HistogramBase::kNoFlags);
   }
   TimeDelta lookup_ticks = TimeTicks::Now() - lookup_start;
@@ -647,7 +647,7 @@ TEST_P(HistogramTest, FactoryTime) {
 
   // Calculate cost of accessing histograms.
   HistogramBase* histogram = Histogram::FactoryGet(
-      histogram_names[0], 0, 100, 10, HistogramBase::kNoFlags);
+      histogram_names[0], 1, 100, 10, HistogramBase::kNoFlags);
   ASSERT_TRUE(histogram);
   TimeTicks add_start = TimeTicks::Now();
   for (int i = 0; i < kTestAddCount; ++i)

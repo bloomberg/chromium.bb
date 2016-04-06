@@ -96,11 +96,8 @@ PersistentSampleMap::PersistentSampleMap(
     PersistentMemoryAllocator* allocator,
     Metadata* meta)
     : HistogramSamples(id, meta),
-      allocator_(allocator) {
-  // This is created once but will continue to return new iterables even when
-  // it has previously reached the end.
-  allocator->CreateIterator(&sample_iter_);
-
+      allocator_(allocator),
+      sample_iter_(allocator) {
   // Load all existing samples during construction. It's no worse to do it
   // here than at some point in the future and could be better if construction
   // takes place on some background thread. New samples could be created at
@@ -231,35 +228,32 @@ Count* PersistentSampleMap::ImportSamples(Sample until_value) {
   //
   // This will be addressed in a future CL.
 
-  uint32_t type_id;
   PersistentMemoryAllocator::Reference ref;
-  while ((ref = allocator_->GetNextIterable(&sample_iter_, &type_id)) != 0) {
-    if (type_id == kTypeIdSampleRecord) {
-      SampleRecord* record =
-          allocator_->GetAsObject<SampleRecord>(ref, kTypeIdSampleRecord);
-      if (!record)
-        continue;
+  while ((ref = sample_iter_.GetNextOfType(kTypeIdSampleRecord)) != 0) {
+    SampleRecord* record =
+        allocator_->GetAsObject<SampleRecord>(ref, kTypeIdSampleRecord);
+    if (!record)
+      continue;
 
-      // A sample record has been found but may not be for this histogram.
-      if (record->id != id())
-        continue;
+    // A sample record has been found but may not be for this histogram.
+    if (record->id != id())
+      continue;
 
-      // Check if the record's value is already known.
-      if (!ContainsKey(sample_counts_, record->value)) {
-        // No: Add it to map of known values if the value is valid.
-        if (record->value >= 0)
-          sample_counts_[record->value] = &record->count;
-      } else {
-        // Yes: Ignore it; it's a duplicate caused by a race condition -- see
-        // code & comment in GetOrCreateSampleCountStorage() for details.
-        // Check that nothing ever operated on the duplicate record.
-        DCHECK_EQ(0, record->count);
-      }
-
-      // Stop if it's the value being searched for.
-      if (record->value == until_value)
-        return &record->count;
+    // Check if the record's value is already known.
+    if (!ContainsKey(sample_counts_, record->value)) {
+      // No: Add it to map of known values if the value is valid.
+      if (record->value >= 0)
+        sample_counts_[record->value] = &record->count;
+    } else {
+      // Yes: Ignore it; it's a duplicate caused by a race condition -- see
+      // code & comment in GetOrCreateSampleCountStorage() for details.
+      // Check that nothing ever operated on the duplicate record.
+      DCHECK_EQ(0, record->count);
     }
+
+    // Stop if it's the value being searched for.
+    if (record->value == until_value)
+      return &record->count;
   }
 
   return nullptr;
