@@ -71,6 +71,12 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_FONTS_BROWSER_PROXY_HTML"
+                 file="appearance_page/fonts_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_FONTS_BROWSER_PROXY_JS"
+                 file="appearance_page/fonts_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ON_STARTUP_PAGE_HTML"
                  file="on_startup_page/on_startup_page.html"
                  type="chrome_html" />

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_FONT_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_FONT_HANDLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -17,6 +19,8 @@ class ListValue;
 namespace content {
 class WebUI;
 }
+
+class Profile;
 
 namespace settings {
 
@@ -34,7 +38,10 @@ class FontHandler : public SettingsPageUIHandler {
   void HandleFetchFontsData(const base::ListValue* args);
 
   // Callback to handle fonts loading.
-  void FontListHasLoaded(scoped_ptr<base::ListValue> list);
+  void FontListHasLoaded(std::string callback_id,
+                         scoped_ptr<base::ListValue> list);
+
+  Profile* profile_;  // Weak pointer.
 
   base::WeakPtrFactory<FontHandler> weak_ptr_factory_;
 

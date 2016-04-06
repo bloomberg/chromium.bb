@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/webui/settings/font_handler.h"
 
 #include <stddef.h>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
@@ -21,10 +23,10 @@
 namespace settings {
 
 FontHandler::FontHandler(content::WebUI* webui)
-    : weak_ptr_factory_(this) {
+    : profile_(Profile::FromWebUI(webui)),
+      weak_ptr_factory_(this) {
   // Perform validation for saved fonts.
-  PrefService* pref_service = Profile::FromWebUI(webui)->GetPrefs();
-  options::FontSettingsUtilities::ValidateSavedFonts(pref_service);
+  options::FontSettingsUtilities::ValidateSavedFonts(profile_->GetPrefs());
 }
 
 FontHandler::~FontHandler() {}
@@ -35,13 +37,19 @@ void FontHandler::RegisterMessages() {
                                    base::Unretained(this)));
 }
 
-void FontHandler::HandleFetchFontsData(
-    const base::ListValue* /*args*/) {
+void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
   content::GetFontListAsync(base::Bind(&FontHandler::FontListHasLoaded,
-                                       weak_ptr_factory_.GetWeakPtr()));
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       callback_id));
 }
 
-void FontHandler::FontListHasLoaded(scoped_ptr<base::ListValue> list) {
+void FontHandler::FontListHasLoaded(
+    std::string callback_id,
+    scoped_ptr<base::ListValue> list) {
   // Font list. Selects the directionality for the fonts in the given list.
   for (size_t i = 0; i < list->GetSize(); i++) {
     base::ListValue* font;
@@ -65,7 +73,7 @@ void FontHandler::FontListHasLoaded(scoped_ptr<base::ListValue> list) {
       pref_service->GetString(prefs::kRecentlySelectedEncoding));
   DCHECK(!encodings->empty());
 
-  base::ListValue encoding_list;
+  scoped_ptr<base::ListValue> encoding_list(new base::ListValue());
   for (const auto& it : *encodings) {
     scoped_ptr<base::ListValue> option(new base::ListValue());
     if (it.encoding_id) {
@@ -81,11 +89,14 @@ void FontHandler::FontListHasLoaded(scoped_ptr<base::ListValue> list) {
       // Add empty value to indicate a separator item.
       option->AppendString(std::string());
     }
-    encoding_list.Append(std::move(option));
+    encoding_list->Append(std::move(option));
   }
 
-  web_ui()->CallJavascriptFunction("Settings.setFontsData", *list,
-                                   encoding_list);
+  base::DictionaryValue response;
+  response.Set("fontList", std::move(list));
+  response.Set("encodingList", std::move(encoding_list));
+
+  ResolveJavascriptCallback(base::StringValue(callback_id), response);
 }
 
 }  // namespace settings
