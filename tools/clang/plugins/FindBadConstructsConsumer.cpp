@@ -7,6 +7,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/AST/Attr.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Sema/Sema.h"
 #include "llvm/Support/raw_ostream.h"
 
 using namespace clang;
@@ -91,11 +92,32 @@ bool IsPodOrTemplateType(const CXXRecordDecl& record) {
          record.isDependentType();
 }
 
+// Use a local RAV implementation to simply collect all FunctionDecls marked for
+// late template parsing. This happens with the flag -fdelayed-template-parsing,
+// which is on by default in MSVC-compatible mode.
+std::set<FunctionDecl*> GetLateParsedFunctionDecls(TranslationUnitDecl* decl) {
+  struct Visitor : public RecursiveASTVisitor<Visitor> {
+    bool VisitFunctionDecl(FunctionDecl* function_decl) {
+      if (function_decl->isLateTemplateParsed())
+        late_parsed_decls.insert(function_decl);
+      return true;
+    }
+
+    std::set<FunctionDecl*> late_parsed_decls;
+  } v;
+  v.TraverseDecl(decl);
+  return v.late_parsed_decls;
+}
+
 }  // namespace
 
 FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
                                                      const Options& options)
     : ChromeClassTester(instance, options) {
+  if (options.check_ipc) {
+    ipc_visitor_.reset(new CheckIPCVisitor(instance));
+  }
+
   // Messages for virtual method specifiers.
   diag_method_requires_override_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kMethodRequiresOverride);
@@ -129,10 +151,37 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
       DiagnosticsEngine::Note, kNoteProtectedNonVirtualDtor);
 }
 
+void FindBadConstructsConsumer::Traverse(ASTContext& context) {
+  if (ipc_visitor_) {
+    ipc_visitor_->set_context(&context);
+    ParseFunctionTemplates(context.getTranslationUnitDecl());
+  }
+  RecursiveASTVisitor::TraverseDecl(context.getTranslationUnitDecl());
+  if (ipc_visitor_) ipc_visitor_->set_context(nullptr);
+}
+
+bool FindBadConstructsConsumer::TraverseDecl(Decl* decl) {
+  if (ipc_visitor_) ipc_visitor_->BeginDecl(decl);
+  bool result = RecursiveASTVisitor::TraverseDecl(decl);
+  if (ipc_visitor_) ipc_visitor_->EndDecl();
+  return result;
+}
+
 bool FindBadConstructsConsumer::VisitDecl(clang::Decl* decl) {
   clang::TagDecl* tag_decl = dyn_cast<clang::TagDecl>(decl);
   if (tag_decl && tag_decl->isCompleteDefinition())
     CheckTag(tag_decl);
+  return true;
+}
+
+bool FindBadConstructsConsumer::VisitTemplateSpecializationType(
+    TemplateSpecializationType* spec) {
+  if (ipc_visitor_) ipc_visitor_->VisitTemplateSpecializationType(spec);
+  return true;
+}
+
+bool FindBadConstructsConsumer::VisitCallExpr(CallExpr* call_expr) {
+  if (ipc_visitor_) ipc_visitor_->VisitCallExpr(call_expr);
   return true;
 }
 
@@ -875,6 +924,28 @@ void FindBadConstructsConsumer::CheckWeakPtrFactoryMembers(
       diagnostic().Report(weak_ptr_factory_location,
                           diag_weak_ptr_factory_order_);
     }
+  }
+}
+
+// Copied from BlinkGCPlugin, see crrev.com/1135333007
+void FindBadConstructsConsumer::ParseFunctionTemplates(
+    TranslationUnitDecl* decl) {
+  if (!instance().getLangOpts().DelayedTemplateParsing)
+    return;  // Nothing to do.
+
+  std::set<FunctionDecl*> late_parsed_decls = GetLateParsedFunctionDecls(decl);
+  clang::Sema& sema = instance().getSema();
+
+  for (const FunctionDecl* fd : late_parsed_decls) {
+    assert(fd->isLateTemplateParsed());
+
+    if (instance().getSourceManager().isInSystemHeader(
+            instance().getSourceManager().getSpellingLoc(fd->getLocation())))
+      continue;
+
+    // Parse and build AST for yet-uninstantiated template functions.
+    clang::LateParsedTemplate* lpt = sema.LateParsedTemplateMap[fd];
+    sema.LateTemplateParser(sema.OpaqueParser, *lpt);
   }
 }
 
