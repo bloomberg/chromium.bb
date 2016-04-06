@@ -19,6 +19,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/sysroot.gni")
@@ -1018,7 +1019,7 @@ component("base") {
 
   # Allow more direct string conversions on platforms with native utf8
   # strings
-  if (is_mac || is_ios || is_chromeos) {
+  if (is_mac || is_ios || is_chromeos || is_chromecast) {
     defines += [ "SYSTEM_NATIVE_UTF8" ]
   }
 
