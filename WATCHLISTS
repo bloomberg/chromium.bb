@@ -1226,6 +1226,9 @@
                   '|third_party/WebKit/Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
                   '|third_party/WebKit/Source/bindings/v8/CustomElementHelpers'
     },
+    'blink_tools': {
+      'filepath': 'third_party/WebKit/Tools/'
+    },
     'blink_webp': {
       'filepath': 'third_party/WebKit/Source/platform/image-decoders/webp' \
                   '|third_party/WebKit/Source/platform/image-encoders/skia/WEBP'
@@ -1309,6 +1312,7 @@
                'marcinjb+watch-blimp@chromium.org',
                'nyquist+watch-blimp@chromium.org',
                'sriramsr+watch-blimp@chromium.org'],
+    'blink_tools': ['dpranke@chromium.org'],
     'bookmarks': ['noyau+watch@chromium.org', 'tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
@@ -1405,7 +1409,7 @@
                     'mlamouri+watch-geolocation@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
-    'gn': ['tfarina@chromium.org'],
+    'gn': ['dpranke@chromium.org', 'tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
     'history_ui': ['dbeam+watch-history@chromium.org',
                    'dubroy@chromium.org',
