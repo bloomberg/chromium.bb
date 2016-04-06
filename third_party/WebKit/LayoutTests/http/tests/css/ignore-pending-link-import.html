@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<h1 id="h1"></h1>
+<pre id="res"></pre>
+<script>
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    var result = "";
+
+    function expectComputedOnH1(name, expected) {
+        var value = getComputedStyle(h1)[name];
+        result += name + ": ";
+        if (value == expected)
+            result += "PASS\n";
+        else
+            result += "FAIL - " + value + ", expected " + expected + "\n";
+    }
+
+    function sheetLoaded() {
+        // Need to remove the stylesheet used to trigger the ignore-pending-stylesheet
+        // behavior in order to not have pending stylesheets here.
+        document.head.removeChild(document.head.querySelector("style"));
+
+        expectComputedOnH1("backgroundColor", "rgb(0, 128, 0)");
+        expectComputedOnH1("color", "rgb(0, 128, 0)");
+
+        res.innerHTML = result;
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+
+    // This style element is required to trigger updateLayoutTreeIgnorePendingStylesheets
+    // while the main link css file has loaded while its import has not.
+    var style = document.createElement("style");
+    style.appendChild(document.createTextNode("@import url(resources/slow-loading-sheet.php?sleep=10000&color=pink);"));
+    document.head.appendChild(style);
+
+    var link = document.createElement("link");
+    link.setAttribute("onload", "sheetLoaded()");
+    link.setAttribute("rel", "stylesheet");
+    link.setAttribute("href", "data:text/css,@import url(http://localhost:8080/css/resources/slow-loading-sheet.php?color=green); h1{color:green}");
+    document.head.appendChild(link);
+
+    document.body.offsetTop;
+    expectComputedOnH1("backgroundColor", "rgba(0, 0, 0, 0)");
+    expectComputedOnH1("color", "rgb(0, 0, 0)");
+
+</script>
