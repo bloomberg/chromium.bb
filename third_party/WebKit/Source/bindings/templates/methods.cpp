@@ -538,12 +538,9 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
 {% macro origin_safe_method_getter(method, world_suffix) %}
 static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {% set signature = 'v8::Local<v8::Signature>()'
-                       if method.is_do_not_check_signature else
-                       'v8::Signature::New(info.GetIsolate(), %s::domTemplate(info.GetIsolate()))' % v8_class %}
+    {% set signature = 'v8::Signature::New(info.GetIsolate(), %s::domTemplate(info.GetIsolate()))' % v8_class %}
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
     v8::Local<v8::FunctionTemplate> domTemplate = data->domTemplate(&domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
 
     // It is unsafe to use info.Holder() because OriginSafeMethodGetter is called
@@ -691,7 +688,7 @@ V8DOMConfiguration::installMethod(isolate, {{instance_template}}, {{prototype_te
 {% macro install_conditionally_enabled_methods() %}
 {% if conditionally_enabled_methods %}
 {# Define operations with limited exposure #}
-v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
+v8::Local<v8::Signature> signature = v8::Signature::New(isolate, domTemplate(isolate));
 ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
 ASSERT(executionContext);
 {% for method in conditionally_enabled_methods %}
@@ -702,7 +699,7 @@ ASSERT(executionContext);
                           if method.overloads else
                           method.runtime_enabled_function) %}
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
-V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, defaultSignature, {{method.name}}MethodConfiguration);
+V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, {{method.name}}MethodConfiguration);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfor %}

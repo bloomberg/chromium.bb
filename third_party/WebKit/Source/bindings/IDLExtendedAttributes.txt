@@ -48,7 +48,6 @@ DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants
 DoNotCheckSecurity=|Setter
-DoNotCheckSignature
 EnforceRange
 Exposed=*
 FlexibleArrayBufferView

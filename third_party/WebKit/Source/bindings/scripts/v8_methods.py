@@ -47,7 +47,6 @@ from v8_utilities import (has_extended_attribute_value, is_unforgeable,
 # interface's configure*Template() function.
 CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
     'DoNotCheckSecurity',
-    'DoNotCheckSignature',
 ])
 
 
@@ -171,7 +170,6 @@ def method_context(interface, method, is_visible=True):
         'is_custom_call_epilogue': is_custom_call_epilogue,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': is_do_not_check_security,
-        'is_do_not_check_signature': 'DoNotCheckSignature' in extended_attributes,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_implemented_in_private_script': is_implemented_in_private_script,
         'is_partial_interface_member':

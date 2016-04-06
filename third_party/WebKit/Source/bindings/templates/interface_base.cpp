@@ -376,8 +376,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     {% if method.is_do_not_check_security %}
     {{install_do_not_check_security_method(method, '', 'instanceTemplate', 'prototypeTemplate') | indent}}
     {% else %}
-    {% set signature = 'v8::Local<v8::Signature>()' if method.is_do_not_check_signature else 'signature' %}
-    {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'interfaceTemplate', signature) | indent}}
+    {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'interfaceTemplate', 'signature') | indent}}
     {% endif %}
     {% endfilter %}
     {% endfilter %}

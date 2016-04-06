@@ -518,7 +518,6 @@ interface TestObject {
     [Custom=CallEpilogue] void customCallEpilogueVoidMethod();
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
-    [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
     [MeasureAs=TestFeature] void measureAsVoidMethod();
     [Measure] void measureMethod();

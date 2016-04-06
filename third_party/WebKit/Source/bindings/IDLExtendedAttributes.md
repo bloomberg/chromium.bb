@@ -1537,15 +1537,9 @@ Usage: The possible usage is `[ImplementedAs=XXX]`, where XXX is a method name i
 
 Method names in Blink default to being the same as the name in an IDL file. In some cases this is not possible, e.g., `delete` is a C++ reserved word. In such cases, you can explicitly specify the method name in Blink by `[ImplementedAs]`. Generally the `[ImplementedAs]` name should be in lowerCamelCase. You should _not_ use `[ImplementedAs]` simply to avoid renaming Blink methods.
 
-
 ## Deprecated Blink-specific IDL Extended Attributes
 
 These extended attributes are _deprecated_, or are under discussion for deprecation. They should be avoided.
-
-### [DoNotCheckSignature] _(m)_
-
-Might be deprecated. Discussion is on-going. Used only 1 place: Window.
-
 
 ## Internal-use Blink-specific IDL Extended Attributes
 

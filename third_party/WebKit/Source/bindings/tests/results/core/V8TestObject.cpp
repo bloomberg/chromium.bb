@@ -9281,17 +9281,6 @@ static void deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8
     TestObjectV8Internal::deprecatedVoidMethodMethod(info);
 }
 
-static void doNotCheckSignatureVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    impl->doNotCheckSignatureVoidMethod();
-}
-
-static void doNotCheckSignatureVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::doNotCheckSignatureVoidMethodMethod(info);
-}
-
 static void implementedAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -11892,8 +11881,6 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> interfac
         const V8DOMConfiguration::MethodConfiguration unscopeableRuntimeEnabledVoidMethodMethodConfiguration = {"unscopeableRuntimeEnabledVoidMethod", TestObjectV8Internal::unscopeableRuntimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
         V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, unscopeableRuntimeEnabledVoidMethodMethodConfiguration);
     }
-    const V8DOMConfiguration::MethodConfiguration doNotCheckSignatureVoidMethodMethodConfiguration = {"doNotCheckSignatureVoidMethod", TestObjectV8Internal::doNotCheckSignatureVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-    V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, v8::Local<v8::Signature>(), doNotCheckSignatureVoidMethodMethodConfiguration);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {"runtimeEnabledVoidMethod", TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
         V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledVoidMethodMethodConfiguration);

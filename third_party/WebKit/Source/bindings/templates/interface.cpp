@@ -618,7 +618,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
        'static_cast<v8::PropertyAttribute>(%s)' %
        ' | '.join(method.property_attributes or ['v8::None']) %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-{% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder' if method.is_do_not_check_signature else 'V8DOMConfiguration::CheckHolder' %}
+{% set holder_check = 'V8DOMConfiguration::CheckHolder' %}
 const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
     "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}, {{holder_check}},
 };
