@@ -676,6 +676,10 @@ LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate)
         // We don't always have an entered DOM window, for example during microtask callbacks from V8
         // (where the entered context may be the DOM-in-JS context). In that case, we fall back
         // to the current context.
+        //
+        // TODO(haraken): It's nasty to return a current window from enteredDOMWindow.
+        // All call sites should be updated so that it works even if it doesn't have
+        // an entered window.
         window = currentDOMWindow(isolate);
         ASSERT(window);
     }

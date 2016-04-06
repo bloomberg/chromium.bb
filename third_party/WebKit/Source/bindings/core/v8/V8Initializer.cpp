@@ -137,7 +137,8 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
     ASSERT(isMainThread());
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // If called during context initialization, there will be no entered window.
-    LocalDOMWindow* enteredWindow = enteredDOMWindow(isolate);
+    // TODO(haraken): Add a helper method to get an entered window that may be null.
+    LocalDOMWindow* enteredWindow = toLocalDOMWindow(toDOMWindow(isolate->GetEnteredContext()));
     if (!enteredWindow || !enteredWindow->isCurrentlyDisplayedInFrame())
         return;
 
