@@ -128,7 +128,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     public static final String TAG = "ClearBrowsingDataPreferences";
 
     /** The my activity URL. */
-    private static final String URL_MY_ACTIVITY = "https://history.google.com";
+    private static final String URL_MY_ACTIVITY =
+            "https://history.google.com/history/?utm_source=chrome_cbd";
 
     /**
      * The various data types that can be cleared via this screen.
