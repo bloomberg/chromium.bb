@@ -2874,6 +2874,37 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                              base::ASCIIToUTF16("new_pw"));
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       NoCrashWhenNavigatingWithOpenAccountPicker) {
+  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
+  // Save credentials with 'skip_zero_click'.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.password_value = base::ASCIIToUTF16("password");
+  signin_form.username_value = base::ASCIIToUTF16("user");
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.skip_zero_click = true;
+  password_store->AddLogin(signin_form);
+
+  NavigateToFile("/password/password_form.html");
+
+  // Call the API to trigger the notification to the client, which raises the
+  // account picker dialog.
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "navigator.credentials.get({password: true})"));
+
+  // Navigate while the picker is open.
+  NavigateToFile("/password/password_form.html");
+
+  // No crash!
+}
+
 // Tests that the prompt to save the password is still shown if the fields have
 // the "autocomplete" attribute set off.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,

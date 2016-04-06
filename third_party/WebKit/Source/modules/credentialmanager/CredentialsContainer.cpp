@@ -55,7 +55,7 @@ public:
     void onSuccess() override
     {
         Frame* frame = toDocument(m_resolver->getScriptState()->getExecutionContext())->frame();
-        SECURITY_CHECK(frame == frame->tree().top());
+        SECURITY_CHECK(!frame || frame == frame->tree().top());
 
         m_resolver->resolve();
     }
@@ -78,10 +78,10 @@ public:
     void onSuccess(WebPassOwnPtr<WebCredential> webCredential) override
     {
         Frame* frame = toDocument(m_resolver->getScriptState()->getExecutionContext())->frame();
-        SECURITY_CHECK(frame == frame->tree().top());
+        SECURITY_CHECK(!frame || frame == frame->tree().top());
 
         OwnPtr<WebCredential> credential = webCredential.release();
-        if (!credential) {
+        if (!credential || !frame) {
             m_resolver->resolve();
             return;
         }
