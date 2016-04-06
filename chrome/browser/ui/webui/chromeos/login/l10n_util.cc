@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <iterator>
 #include <map>
 #include <set>
@@ -18,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -153,9 +153,7 @@ scoped_ptr<base::ListValue> GetLanguageList(
     if (lang.empty() || lang == language_id)
       continue;
 
-    if (std::find(base_language_codes.begin(),
-                  base_language_codes.end(),
-                  language_id) != base_language_codes.end()) {
+    if (ContainsValue(base_language_codes, language_id)) {
       // Language is supported. No need to replace
       continue;
     }
@@ -163,9 +161,7 @@ scoped_ptr<base::ListValue> GetLanguageList(
     if (!l10n_util::CheckAndResolveLocale(language_id, &resolved_locale))
       continue;
 
-    if (std::find(base_language_codes.begin(),
-                  base_language_codes.end(),
-                  resolved_locale) == base_language_codes.end()) {
+    if (!ContainsValue(base_language_codes, resolved_locale)) {
       // Resolved locale is not supported.
       continue;
     }
@@ -188,11 +184,8 @@ scoped_ptr<base::ListValue> GetLanguageList(
        it != language_codes.end(); ++it) {
      // Exclude the language which is not in |base_langauge_codes| even it has
      // input methods.
-    if (std::find(base_language_codes.begin(),
-                  base_language_codes.end(),
-                  *it) == base_language_codes.end()) {
+    if (!ContainsValue(base_language_codes, *it))
       continue;
-    }
 
     const base::string16 display_name =
         l10n_util::GetDisplayNameForLocale(*it, app_locale, true);

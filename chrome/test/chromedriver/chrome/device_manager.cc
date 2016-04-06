@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/chromedriver/chrome/adb.h"
@@ -182,7 +183,7 @@ Status DeviceManager::AcquireSpecificDevice(
   if (status.IsError())
     return status;
 
-  if (std::find(devices.begin(), devices.end(), device_serial) == devices.end())
+  if (!ContainsValue(devices, device_serial))
     return Status(kUnknownError,
         "Device " + device_serial + " is not online");
 
@@ -210,6 +211,5 @@ Device* DeviceManager::LockDevice(const std::string& device_serial) {
 }
 
 bool DeviceManager::IsDeviceLocked(const std::string& device_serial) {
-  return std::find(active_devices_.begin(), active_devices_.end(),
-                   device_serial) != active_devices_.end();
+  return ContainsValue(active_devices_, device_serial);
 }

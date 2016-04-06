@@ -889,10 +889,8 @@ BrowserThemePack::BrowserThemePack()
       source_images_(NULL) {
   scale_factors_ = ui::GetSupportedScaleFactors();
   // On Windows HiDPI SCALE_FACTOR_100P may not be supported by default.
-  if (std::find(scale_factors_.begin(), scale_factors_.end(),
-                ui::SCALE_FACTOR_100P) == scale_factors_.end()) {
+  if (!ContainsValue(scale_factors_, ui::SCALE_FACTOR_100P))
     scale_factors_.push_back(ui::SCALE_FACTOR_100P);
-  }
 }
 
 void BrowserThemePack::BuildHeader(const Extension* extension) {

@@ -14,6 +14,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -205,10 +206,8 @@ Thumbnail* ThumbnailCache::Get(TabId tab_id,
   }
 
   if (force_disk_read &&
-      std::find(visible_ids_.begin(), visible_ids_.end(), tab_id) !=
-          visible_ids_.end() &&
-      std::find(read_queue_.begin(), read_queue_.end(), tab_id) ==
-          read_queue_.end()) {
+      ContainsValue(visible_ids_, tab_id) &&
+      !ContainsValue(read_queue_, tab_id)) {
     read_queue_.push_back(tab_id);
     ReadNextThumbnail();
   }
@@ -297,10 +296,8 @@ void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority) {
     TabId tab_id = *iter;
     visible_ids_.push_back(tab_id);
     if (!cache_.Get(tab_id) &&
-        std::find(read_queue_.begin(), read_queue_.end(), tab_id) ==
-            read_queue_.end()) {
+        !ContainsValue(read_queue_, tab_id))
       read_queue_.push_back(tab_id);
-    }
     iter++;
     count++;
   }
@@ -407,8 +404,7 @@ void ThumbnailCache::ReadNextThumbnail() {
 
 void ThumbnailCache::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
   if (cache_.Get(tab_id) ||
-      std::find(visible_ids_.begin(), visible_ids_.end(), tab_id) ==
-          visible_ids_.end() ||
+      !ContainsValue(visible_ids_, tab_id) ||
       cache_.size() < cache_.MaximumCacheSize()) {
     return;
   }
@@ -420,8 +416,7 @@ void ThumbnailCache::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
   for (ExpiringThumbnailCache::iterator iter = cache_.begin();
        iter != cache_.end();
        iter++) {
-    if (std::find(visible_ids_.begin(), visible_ids_.end(), iter->first) ==
-        visible_ids_.end()) {
+    if (!ContainsValue(visible_ids_, iter->first)) {
       key_to_remove = iter->first;
       found_key_to_remove = true;
       break;

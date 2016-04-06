@@ -8,7 +8,6 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -325,10 +325,8 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
         continue;
 
       std::vector<int> list_ids_for_url = badurls_it->second.list_ids;
-      if (std::find(list_ids_for_url.begin(), list_ids_for_url.end(), list_id0)
-              != list_ids_for_url.end() ||
-          std::find(list_ids_for_url.begin(), list_ids_for_url.end(), list_id1)
-              != list_ids_for_url.end()) {
+      if (ContainsValue(list_ids_for_url, list_id0) ||
+          ContainsValue(list_ids_for_url, list_id1)) {
         prefix_hits->insert(prefix_hits->end(),
                             badurls_it->second.prefix_hits.begin(),
                             badurls_it->second.prefix_hits.end());

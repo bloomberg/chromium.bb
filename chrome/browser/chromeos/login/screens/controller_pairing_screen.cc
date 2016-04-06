@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -152,10 +153,8 @@ void ControllerPairingScreen::DiscoveredDevicesListChanged() {
       kContextKeyPage,
       devices.empty() ? kPageDevicesDiscovery : kPageDeviceSelect);
   std::string selected_device = context_.GetString(kContextKeySelectedDevice);
-  if (std::find(devices.begin(), devices.end(), selected_device) ==
-      devices.end()) {
+  if (!ContainsValue(devices, selected_device))
     selected_device.clear();
-  }
   if (devices.empty()) {
     device_preselected_ = false;
   } else if (!device_preselected_) {

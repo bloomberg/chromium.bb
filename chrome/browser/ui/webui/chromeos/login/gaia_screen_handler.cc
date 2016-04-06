@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -160,8 +161,7 @@ void PushFrontIMIfNotExists(const std::string& input_method,
   if (input_method.empty())
     return;
 
-  if (std::find(input_methods->begin(), input_methods->end(), input_method) ==
-      input_methods->end())
+  if (!ContainsValue(*input_methods, input_method))
     input_methods->insert(input_methods->begin(), input_method);
 }
 

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
@@ -362,8 +363,7 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
   std::vector<AccountInfo> accounts_info =
       account_tracker_service_->GetAccounts();
   for (const AccountInfo& info : accounts_info) {
-    if (std::find(curr_ids.begin(), curr_ids.end(), info.account_id) ==
-        curr_ids.end())
+    if (!ContainsValue(curr_ids, info.account_id))
       account_tracker_service_->RemoveAccount(info.account_id);
   }
 
@@ -382,15 +382,13 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     std::vector<std::string>* refreshed_ids,
     std::vector<std::string>* revoked_ids,
     bool force_notifications) {
-  bool currently_signed_in = std::find(curr_ids.begin(), curr_ids.end(),
-                                       signed_in_id) != curr_ids.end();
+  bool currently_signed_in = ContainsValue(curr_ids, signed_in_id);
   if (currently_signed_in) {
     // Revoke token for ids that have been removed from the device.
     for (const std::string& prev_id : prev_ids) {
       if (prev_id == signed_in_id)
         continue;
-      if (std::find(curr_ids.begin(), curr_ids.end(), prev_id) ==
-          curr_ids.end()) {
+      if (!ContainsValue(curr_ids,  prev_id)) {
         DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                  << "revoked=" << prev_id;
         revoked_ids->push_back(prev_id);
@@ -399,8 +397,7 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
 
     // Refresh token for new ids or all ids if |force_notifications|.
     if (force_notifications ||
-        std::find(prev_ids.begin(), prev_ids.end(), signed_in_id) ==
-            prev_ids.end()) {
+        !ContainsValue(prev_ids, signed_in_id)) {
       // Always fire the primary signed in account first.
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "refreshed=" << signed_in_id;
@@ -410,16 +407,14 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
       if (curr_id == signed_in_id)
         continue;
       if (force_notifications ||
-          std::find(prev_ids.begin(), prev_ids.end(), curr_id) ==
-              prev_ids.end()) {
+          !ContainsValue(prev_ids, curr_id)) {
         DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                  << "refreshed=" << curr_id;
         refreshed_ids->push_back(curr_id);
       }
     }
   } else {
-    if (std::find(prev_ids.begin(), prev_ids.end(), signed_in_id) !=
-        prev_ids.end()) {
+    if (ContainsValue(prev_ids, signed_in_id)) {
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "revoked=" << signed_in_id;
       revoked_ids->push_back(signed_in_id);

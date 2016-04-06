@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "content/public/browser/browser_thread.h"
@@ -423,10 +424,8 @@ class PlatformKeysService::SelectTask : public Task {
             certificate->os_cert_handle(), &unused_key_size, &actual_key_type);
         const std::vector<net::X509Certificate::PublicKeyType>& accepted_types =
             request_.certificate_key_types;
-        if (std::find(accepted_types.begin(), accepted_types.end(),
-                      actual_key_type) == accepted_types.end()) {
+        if (!ContainsValue(accepted_types, actual_key_type))
           continue;
-        }
       }
 
       matches_.push_back(std::move(certificate));

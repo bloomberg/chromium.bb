@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
@@ -194,8 +195,7 @@ void SpellCheck::FillSuggestions(
 
     const base::string16& suggestion = suggestions_list[language][index];
     // Only add the suggestion if it's unique.
-    if (std::find(optional_suggestions->begin(), optional_suggestions->end(),
-                  suggestion) == optional_suggestions->end()) {
+    if (!ContainsValue(*optional_suggestions, suggestion)) {
         optional_suggestions->push_back(suggestion);
     }
     if (optional_suggestions->size() >=

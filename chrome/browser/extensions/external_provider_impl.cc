@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -246,8 +247,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
         if (supported_locales->GetString(j, &current_locale) &&
             l10n_util::IsValidLocaleSyntax(current_locale)) {
           current_locale = l10n_util::NormalizeLocale(current_locale);
-          if (std::find(browser_locales.begin(), browser_locales.end(),
-                        current_locale) != browser_locales.end()) {
+          if (ContainsValue(browser_locales, current_locale)) {
             locale_supported = true;
             break;
           }

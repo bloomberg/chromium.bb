@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
@@ -251,9 +252,7 @@ void ExecuteSessionCommandOnSessionThread(
         if (status_tmp.IsError() && status_tmp.code() != kChromeNotReachable) {
           status.AddDetails(
               "failed to check if window was closed: " + status_tmp.message());
-        } else if (std::find(web_view_ids.begin(),
-                             web_view_ids.end(),
-                             session->window) == web_view_ids.end()) {
+        } else if (!ContainsValue(web_view_ids, session->window)) {
           status = Status(kOk);
         }
       }

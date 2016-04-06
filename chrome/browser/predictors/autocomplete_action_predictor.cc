@@ -14,6 +14,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -128,10 +129,8 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
   }
 
   for (const auto& i : result) {
-    if (std::find(match_it->urls.begin(), match_it->urls.end(),
-                  i.destination_url) == match_it->urls.end()) {
+    if (!ContainsValue(match_it->urls, i.destination_url))
       match_it->urls.push_back(i.destination_url);
-    }
   }
 }
 

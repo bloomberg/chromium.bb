@@ -4,11 +4,11 @@
 
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -81,7 +81,7 @@ void TCPDeviceProvider::QueryDevices(const SerialsCallback& callback) {
   std::vector<std::string> result;
   for (const net::HostPortPair& target : targets_) {
     const std::string& host = target.host();
-    if (std::find(result.begin(), result.end(), host) != result.end())
+    if (ContainsValue(result, host))
       continue;
     result.push_back(host);
   }

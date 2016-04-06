@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/stl_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
@@ -112,9 +113,7 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
       user_specified_settings_to_display;
 
   for (const auto& permission : permission_info_list) {
-    if (std::find(permissions_to_display.begin(),
-                  permissions_to_display.end(),
-                  permission.type) != permissions_to_display.end() &&
+    if (ContainsValue(permissions_to_display, permission.type) &&
         permission.setting != CONTENT_SETTING_DEFAULT) {
       user_specified_settings_to_display[permission.type] = permission.setting;
     }
