@@ -74,11 +74,6 @@ public:
     void updateBaseComputedStyle(const ComputedStyle*);
     void clearBaseComputedStyle();
 
-#if !ENABLE(OILPAN)
-    void addEffect(KeyframeEffect* effect) { m_effects.add(effect); }
-    void dispose();
-#endif
-
     DECLARE_TRACE();
 
 private:
@@ -89,12 +84,6 @@ private:
     AnimationCountedSet m_animations;
     bool m_animationStyleChange;
     RefPtr<ComputedStyle> m_baseComputedStyle;
-
-#if !ENABLE(OILPAN)
-    // TODO(oilpan): This is to avoid a reference cycle that keeps Elements
-    // alive and won't be needed once the Node hierarchy becomes traceable.
-    HeapHashSet<WeakMember<KeyframeEffect>> m_effects;
-#endif
 
     // CSSAnimations and DeferredLegacyStyleInterpolation checks if a style change is due to animation.
     friend class CSSAnimations;

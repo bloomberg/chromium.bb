@@ -47,11 +47,7 @@ public:
 
     const FilterOperations& operations() const
     {
-#if ENABLE(OILPAN)
         return m_operationWrapper->operations();
-#else
-        return m_operations;
-#endif
     }
 
 protected:
@@ -60,22 +56,14 @@ protected:
 
 private:
     AnimatableFilterOperations(const FilterOperations& operations)
-#if ENABLE(OILPAN)
         : m_operationWrapper(FilterOperationsWrapper::create(operations))
-#else
-        : m_operations(operations)
-#endif
     {
     }
 
     bool equalTo(const AnimatableValue*) const override;
     AnimatableType type() const override { return TypeFilterOperations; }
 
-#if ENABLE(OILPAN)
     Persistent<FilterOperationsWrapper> m_operationWrapper;
-#else
-    FilterOperations m_operations;
-#endif
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations, isFilterOperations());

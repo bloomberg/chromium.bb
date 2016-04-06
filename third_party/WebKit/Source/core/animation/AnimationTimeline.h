@@ -97,9 +97,6 @@ public:
     CompositorAnimationTimeline* compositorTimeline() const { return m_compositorTimeline.get(); }
 
     Document* document() { return m_document.get(); }
-#if !ENABLE(OILPAN)
-    void detachFromDocument();
-#endif
     void wake();
     void resetForTesting();
 

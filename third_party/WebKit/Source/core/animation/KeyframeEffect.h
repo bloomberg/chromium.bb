@@ -73,9 +73,6 @@ public:
     Element* target() const { return m_target; }
 
     void notifySampledEffectRemovedFromAnimationStack();
-#if !ENABLE(OILPAN)
-    void notifyElementDestroyed();
-#endif
 
     bool isCandidateForAnimationOnCompositor(double animationPlaybackRate) const;
     // Must only be called once.

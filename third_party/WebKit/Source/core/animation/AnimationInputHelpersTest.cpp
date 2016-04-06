@@ -28,9 +28,7 @@ protected:
     void TearDown() override
     {
         document.release();
-#if ENABLE(OILPAN)
         Heap::collectAllGarbage();
-#endif
     }
 
     OwnPtr<DummyPageHolder> pageHolder;

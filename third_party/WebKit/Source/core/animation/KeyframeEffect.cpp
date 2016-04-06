@@ -82,10 +82,6 @@ KeyframeEffect::KeyframeEffect(Element* target, EffectModel* model, const Timing
     , m_sampledEffect(nullptr)
     , m_priority(priority)
 {
-#if !ENABLE(OILPAN)
-    if (m_target)
-        m_target->ensureElementAnimations().addEffect(this);
-#endif
 }
 
 KeyframeEffect::~KeyframeEffect()
@@ -267,21 +263,6 @@ void KeyframeEffect::notifySampledEffectRemovedFromAnimationStack()
 {
     m_sampledEffect = nullptr;
 }
-
-#if !ENABLE(OILPAN)
-void KeyframeEffect::notifyElementDestroyed()
-{
-    // If our animation is kept alive just by the sampledEffect, we might get our
-    // destructor called when we call SampledEffect::clear(), so we need to
-    // clear m_sampledEffect first.
-    m_target = nullptr;
-    clearEventDelegate();
-    SampledEffect* sampledEffect = m_sampledEffect;
-    m_sampledEffect = nullptr;
-    if (sampledEffect)
-        sampledEffect->clear();
-}
-#endif
 
 bool KeyframeEffect::isCandidateForAnimationOnCompositor(double animationPlaybackRate) const
 {

@@ -347,14 +347,6 @@ double AnimationTimeline::playbackRate() const
     return m_playbackRate;
 }
 
-#if !ENABLE(OILPAN)
-void AnimationTimeline::detachFromDocument()
-{
-    // FIXME: AnimationTimeline should keep Document alive.
-    m_document = nullptr;
-}
-#endif
-
 DEFINE_TRACE(AnimationTimeline)
 {
     visitor->trace(m_document);

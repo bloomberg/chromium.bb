@@ -51,13 +51,8 @@ PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const Anim
     size_t toSize = target->operations().size();
     size_t size = std::max(fromSize, toSize);
     for (size_t i = 0; i < size; i++) {
-#if ENABLE(OILPAN)
         FilterOperation* from = (i < fromSize) ? m_operationWrapper->operations().operations()[i].get() : 0;
         FilterOperation* to = (i < toSize) ? target->m_operationWrapper->operations().operations()[i].get() : 0;
-#else
-        FilterOperation* from = (i < fromSize) ? m_operations.operations()[i].get() : 0;
-        FilterOperation* to = (i < toSize) ? target->m_operations.operations()[i].get() : 0;
-#endif
         FilterOperation* blendedOp = FilterOperation::blend(from, to, fraction);
         if (blendedOp)
             result.operations().append(blendedOp);

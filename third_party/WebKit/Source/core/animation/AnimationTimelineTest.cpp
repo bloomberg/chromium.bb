@@ -75,9 +75,7 @@ protected:
         document.release();
         element.release();
         timeline.release();
-#if ENABLE(OILPAN)
         Heap::collectAllGarbage();
-#endif
     }
 
     void updateClockAndService(double time)
