@@ -11,8 +11,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -26,7 +27,7 @@ struct DIRCloser {
   }
 };
 
-typedef scoped_ptr<DIR, DIRCloser> ScopedDIR;
+typedef std::unique_ptr<DIR, DIRCloser> ScopedDIR;
 
 base::ScopedFD OpenDirectory(const char* path) {
   DCHECK(path);

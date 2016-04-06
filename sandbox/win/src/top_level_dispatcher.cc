@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/filesystem_dispatcher.h"
 #include "sandbox/win/src/handle_dispatcher.h"

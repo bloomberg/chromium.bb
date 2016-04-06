@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +38,8 @@ TEST(AppContainerTest, SecurityCapabilities) {
   if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
     return;
 
-  scoped_ptr<AppContainerAttributes> attributes(new AppContainerAttributes);
+  std::unique_ptr<AppContainerAttributes> attributes(
+      new AppContainerAttributes);
   std::vector<base::string16> capabilities;
   EXPECT_EQ(SBOX_ERROR_INVALID_APP_CONTAINER,
             attributes->SetAppContainer(L"S-1-foo", capabilities));

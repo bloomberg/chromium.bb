@@ -6,11 +6,12 @@
 
 #include <AclAPI.h>
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
@@ -474,7 +475,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // the job object generates notifications using the completion port.
   policy_base->AddRef();
   if (job.IsValid()) {
-    scoped_ptr<JobTracker> tracker(new JobTracker(std::move(job), policy_base));
+    std::unique_ptr<JobTracker> tracker(
+        new JobTracker(std::move(job), policy_base));
 
     // There is no obvious recovery after failure here. Previous version with
     // SpawnCleanup() caused deletion of TargetProcess twice. crbug.com/480639
@@ -524,8 +526,8 @@ VOID CALLBACK BrokerServicesBase::RemovePeer(PVOID parameter, BOOLEAN timeout) {
 }
 
 ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
-  scoped_ptr<PeerTracker> peer(new PeerTracker(::GetProcessId(peer_process),
-                                               job_port_.Get()));
+  std::unique_ptr<PeerTracker> peer(
+      new PeerTracker(::GetProcessId(peer_process), job_port_.Get()));
   if (!peer->id)
     return SBOX_ERROR_GENERIC;
 

@@ -8,8 +8,9 @@
 #include <AccCtrl.h>
 #include <windows.h>
 
+#include <memory>
+
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/sid.h"
 
 namespace sandbox {
@@ -17,7 +18,7 @@ namespace sandbox {
 // Returns the default dacl from the token passed in.
 bool GetDefaultDacl(
     HANDLE token,
-    scoped_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl);
+    std::unique_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl);
 
 // Appends an ACE represented by |sid|, |access_mode|, and |access| to
 // |old_dacl|. If the function succeeds, new_dacl contains the new dacl and

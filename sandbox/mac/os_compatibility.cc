@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/ptr_util.h"
 #include "sandbox/mac/xpc.h"
 
 namespace sandbox {
@@ -179,11 +180,11 @@ class OSCompatibility_10_10 : public OSCompatibility {
 }  // namespace
 
 // static
-scoped_ptr<OSCompatibility> OSCompatibility::CreateForPlatform() {
+std::unique_ptr<OSCompatibility> OSCompatibility::CreateForPlatform() {
   if (base::mac::IsOSLionOrLater() && base::mac::IsOSMavericksOrEarlier())
-    return make_scoped_ptr(new OSCompatibility_10_7());
+    return base::WrapUnique(new OSCompatibility_10_7());
   else
-    return make_scoped_ptr(new OSCompatibility_10_10());
+    return base::WrapUnique(new OSCompatibility_10_10());
 }
 
 OSCompatibility::~OSCompatibility() {}

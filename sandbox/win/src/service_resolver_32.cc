@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bit_cast.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -175,7 +176,7 @@ NTSTATUS ServiceResolverThunk::Setup(const void* target_module,
 
   relative_jump_ = 0;
   size_t thunk_bytes = GetThunkSize();
-  scoped_ptr<char[]> thunk_buffer(new char[thunk_bytes]);
+  std::unique_ptr<char[]> thunk_buffer(new char[thunk_bytes]);
   ServiceFullThunk* thunk = reinterpret_cast<ServiceFullThunk*>(
                                 thunk_buffer.get());
 

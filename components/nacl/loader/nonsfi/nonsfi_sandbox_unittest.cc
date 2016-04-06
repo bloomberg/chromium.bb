@@ -25,6 +25,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -607,14 +609,14 @@ class TgkillDelegate : public sandbox::BPFTesterDelegate {
   TgkillDelegate() {}
   ~TgkillDelegate() override {}
 
-  scoped_ptr<sandbox::bpf_dsl::Policy> GetSandboxBPFPolicy() override {
+  std::unique_ptr<sandbox::bpf_dsl::Policy> GetSandboxBPFPolicy() override {
     // These two values must be obtained when running in the sandboxed process.
     // They cannot be set in the constructor and are also not available from
     // within |RunTestFunction|.
     pid_ = getpid();
     tid_ = syscall(__NR_gettid);
 
-    return scoped_ptr<sandbox::bpf_dsl::Policy>(
+    return std::unique_ptr<sandbox::bpf_dsl::Policy>(
         new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy());
   }
 

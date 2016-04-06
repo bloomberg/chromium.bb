@@ -10,11 +10,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
@@ -155,10 +155,10 @@ class PolicyBase final : public TargetPolicy {
   // given type.
   HandleCloser handle_closer_;
   std::vector<base::string16> capabilities_;
-  scoped_ptr<AppContainerAttributes> appcontainer_list_;
+  std::unique_ptr<AppContainerAttributes> appcontainer_list_;
   PSID lowbox_sid_;
   base::win::ScopedHandle lowbox_directory_;
-  scoped_ptr<Dispatcher> dispatcher_;
+  std::unique_ptr<Dispatcher> dispatcher_;
   bool lockdown_default_dacl_;
 
   static HDESK alternate_desktop_handle_;

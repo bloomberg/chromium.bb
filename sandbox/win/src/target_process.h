@@ -9,9 +9,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -119,13 +120,13 @@ class TargetProcess {
   // Job object containing the target process.
   HANDLE job_;
   // Reference to the IPC subsystem.
-  scoped_ptr<SharedMemIPCServer> ipc_server_;
+  std::unique_ptr<SharedMemIPCServer> ipc_server_;
   // Provides the threads used by the IPC. This class does not own this pointer.
   ThreadProvider* thread_pool_;
   // Base address of the main executable
   void* base_address_;
   // Full name of the target executable.
-  scoped_ptr<wchar_t, base::FreeDeleter> exe_name_;
+  std::unique_ptr<wchar_t, base::FreeDeleter> exe_name_;
 
   // Function used for testing.
   friend TargetProcess* MakeTestTargetProcess(HANDLE process,

@@ -5,10 +5,11 @@
 #ifndef SANDBOX_MAC_LAUNCHD_INTERCEPTION_SERVER_H_
 #define SANDBOX_MAC_LAUNCHD_INTERCEPTION_SERVER_H_
 
+#include <memory>
+
 #include <dispatch/dispatch.h>
 
 #include "base/mac/scoped_mach_port.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
 
 namespace sandbox {
@@ -54,7 +55,7 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   const BootstrapSandbox* sandbox_;
 
   // The Mach IPC server.
-  scoped_ptr<MessageServer> message_server_;
+  std::unique_ptr<MessageServer> message_server_;
 
   // Whether or not the system is using an XPC-based launchd.
   bool xpc_launchd_;
@@ -68,7 +69,7 @@ class LaunchdInterceptionServer : public MessageDemuxer {
 
   // The compatibility shim that handles differences in message header IDs and
   // request/reply structures between different OS X versions.
-  scoped_ptr<OSCompatibility> compat_shim_;
+  std::unique_ptr<OSCompatibility> compat_shim_;
 };
 
 }  // namespace sandbox

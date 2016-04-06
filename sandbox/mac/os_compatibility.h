@@ -15,9 +15,9 @@
 #include <mach/mach.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
 
 namespace sandbox {
@@ -25,7 +25,7 @@ namespace sandbox {
 class OSCompatibility {
  public:
   // Creates an OSCompatibility instance for the current OS X version.
-  static scoped_ptr<OSCompatibility> CreateForPlatform();
+  static std::unique_ptr<OSCompatibility> CreateForPlatform();
 
   virtual ~OSCompatibility();
 

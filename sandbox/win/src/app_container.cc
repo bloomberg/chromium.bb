@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/startup_information.h"
 #include "sandbox/win/src/internal_types.h"
 

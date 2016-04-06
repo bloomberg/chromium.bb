@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "sandbox/mac/launchd_interception_server.h"
@@ -55,9 +56,9 @@ class ScopedCallMachMsgDestroy {
 }  // namespace
 
 // static
-scoped_ptr<BootstrapSandbox> BootstrapSandbox::Create() {
-  scoped_ptr<BootstrapSandbox> null;  // Used for early returns.
-  scoped_ptr<BootstrapSandbox> sandbox(new BootstrapSandbox());
+std::unique_ptr<BootstrapSandbox> BootstrapSandbox::Create() {
+  std::unique_ptr<BootstrapSandbox> null;  // Used for early returns.
+  std::unique_ptr<BootstrapSandbox> sandbox(new BootstrapSandbox());
   sandbox->launchd_server_.reset(new LaunchdInterceptionServer(sandbox.get()));
 
   // Check in with launchd to get the receive right for the server that is
@@ -143,7 +144,8 @@ void BootstrapSandbox::RegisterSandboxPolicy(
   policies_.insert(std::make_pair(sandbox_policy_id, policy));
 }
 
-scoped_ptr<PreExecDelegate> BootstrapSandbox::NewClient(int sandbox_policy_id) {
+std::unique_ptr<PreExecDelegate> BootstrapSandbox::NewClient(
+    int sandbox_policy_id) {
   base::AutoLock lock(lock_);
 
   DCHECK(policies_.find(sandbox_policy_id) != policies_.end());
@@ -156,7 +158,7 @@ scoped_ptr<PreExecDelegate> BootstrapSandbox::NewClient(int sandbox_policy_id) {
   }
 
   awaiting_processes_[token] = sandbox_policy_id;
-  return make_scoped_ptr(new PreExecDelegate(server_bootstrap_name_, token));
+  return base::WrapUnique(new PreExecDelegate(server_bootstrap_name_, token));
 }
 
 void BootstrapSandbox::RevokeToken(uint64_t token) {

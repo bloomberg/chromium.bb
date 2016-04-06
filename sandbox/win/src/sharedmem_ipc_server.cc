@@ -5,9 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -175,7 +176,7 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
       ipc_params->args[i] = type;
       switch (type) {
         case WCHAR_TYPE: {
-          scoped_ptr<base::string16> data(new base::string16);
+          std::unique_ptr<base::string16> data(new base::string16);
           if (!params->GetParameterStr(i, data.get())) {
             args[i] = 0;
             ReleaseArgs(ipc_params, args);
@@ -228,10 +229,8 @@ bool SharedMemIPCServer::InvokeCallback(const ServerControl* service_context,
   // Parse, verify and copy the message. The handler operates on a copy
   // of the message so the client cannot play dirty tricks by changing the
   // data in the channel while the IPC is being processed.
-  scoped_ptr<CrossCallParamsEx> params(
-      CrossCallParamsEx::CreateFromBuffer(ipc_buffer,
-                                          service_context->channel_size,
-                                          &output_size));
+  std::unique_ptr<CrossCallParamsEx> params(CrossCallParamsEx::CreateFromBuffer(
+      ipc_buffer, service_context->channel_size, &output_size));
   if (!params.get())
     return false;
 

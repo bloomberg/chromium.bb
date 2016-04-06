@@ -8,11 +8,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -63,7 +63,7 @@ class InitializedOpenBroker {
 
  private:
   bool initialized_;
-  scoped_ptr<class syscall_broker::BrokerProcess> broker_process_;
+  std::unique_ptr<class syscall_broker::BrokerProcess> broker_process_;
   DISALLOW_COPY_AND_ASSIGN(InitializedOpenBroker);
 };
 

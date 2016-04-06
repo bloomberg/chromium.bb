@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
@@ -31,7 +30,7 @@ sandbox::SboxTestResult CreateProcessHelper(const base::string16& exe,
   if (!exe.empty())
     exe_name = exe.c_str();
 
-  scoped_ptr<wchar_t, base::FreeDeleter>  writable_command(
+  std::unique_ptr<wchar_t, base::FreeDeleter> writable_command(
       _wcsdup(command.c_str()));
 
   // Create the process with the unicode version of the API.

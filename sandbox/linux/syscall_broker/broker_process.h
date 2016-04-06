@@ -5,12 +5,12 @@
 #ifndef SANDBOX_LINUX_SERVICES_BROKER_PROCESS_H_
 #define SANDBOX_LINUX_SERVICES_BROKER_PROCESS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/process/process.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
@@ -82,7 +82,7 @@ class SANDBOX_EXPORT BrokerProcess {
   const bool quiet_failures_for_tests_;
   pid_t broker_pid_;                     // The PID of the broker (child).
   syscall_broker::BrokerPolicy policy_;  // The sandboxing policy.
-  scoped_ptr<syscall_broker::BrokerClient> broker_client_;
+  std::unique_ptr<syscall_broker::BrokerClient> broker_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcess);
 };

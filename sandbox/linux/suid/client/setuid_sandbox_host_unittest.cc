@@ -4,11 +4,11 @@
 
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 
+#include <memory>
 #include <string>
 
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +17,7 @@ namespace sandbox {
 
 TEST(SetuidSandboxHost, SetupLaunchEnvironment) {
   const char kTestValue[] = "This is a test";
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   EXPECT_TRUE(env != NULL);
 
   std::string saved_ld_preload;
@@ -28,7 +28,7 @@ TEST(SetuidSandboxHost, SetupLaunchEnvironment) {
   EXPECT_TRUE(env->SetVar("LD_PRELOAD", kTestValue));
   EXPECT_TRUE(env->UnSetVar("LD_ORIGIN_PATH"));
 
-  scoped_ptr<SetuidSandboxHost> sandbox_host(SetuidSandboxHost::Create());
+  std::unique_ptr<SetuidSandboxHost> sandbox_host(SetuidSandboxHost::Create());
   EXPECT_TRUE(sandbox_host != NULL);
 
   // Make sure the environment is clean.
@@ -64,7 +64,7 @@ TEST(SetuidSandboxHost, SetupLaunchEnvironment) {
 // This test doesn't accomplish much, but will make sure that analysis tools
 // will run this codepath.
 TEST(SetuidSandboxHost, GetSandboxBinaryPath) {
-  scoped_ptr<SetuidSandboxHost> setuid_sandbox_host(
+  std::unique_ptr<SetuidSandboxHost> setuid_sandbox_host(
       SetuidSandboxHost::Create());
   ignore_result(setuid_sandbox_host->GetSandboxBinaryPath());
 }

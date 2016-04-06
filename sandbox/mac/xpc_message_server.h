@@ -7,10 +7,11 @@
 
 #include <AvailabilityMacros.h>
 
+#include <memory>
+
 #include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
 #include "sandbox/mac/xpc.h"
 #include "sandbox/sandbox_export.h"
@@ -51,7 +52,7 @@ class SANDBOX_EXPORT XPCMessageServer : public MessageServer {
   base::mac::ScopedMachReceiveRight server_port_;
 
   // MACH_RECV dispatch source that handles the |server_port_|.
-  scoped_ptr<base::DispatchSourceMach> dispatch_source_;
+  std::unique_ptr<base::DispatchSourceMach> dispatch_source_;
 
   // The reply message, if one has been created.
   xpc_object_t reply_message_;

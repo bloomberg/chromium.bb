@@ -5,6 +5,8 @@
 #ifndef MOJO_SHELL_RUNNER_HOST_LINUX_SANDBOX_H_
 #define MOJO_SHELL_RUNNER_HOST_LINUX_SANDBOX_H_
 
+#include <memory>
+
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -39,8 +41,8 @@ class LinuxSandbox {
  private:
   bool warmed_up_;
   base::ScopedFD proc_fd_;
-  scoped_ptr<sandbox::syscall_broker::BrokerProcess> broker_;
-  scoped_ptr<sandbox::bpf_dsl::Policy> policy_;
+  std::unique_ptr<sandbox::syscall_broker::BrokerProcess> broker_;
+  std::unique_ptr<sandbox::bpf_dsl::Policy> policy_;
 
   DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
 };

@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "sandbox/mac/policy.h"
@@ -48,7 +48,7 @@ class PreExecDelegate;
 class SANDBOX_EXPORT BootstrapSandbox {
  public:
   // Creates a new sandbox manager. Returns NULL on failure.
-  static scoped_ptr<BootstrapSandbox> Create();
+  static std::unique_ptr<BootstrapSandbox> Create();
 
   // For use in newly created child processes. Checks in with the bootstrap
   // sandbox manager running in the parent process. |sandbox_server_port| is
@@ -69,7 +69,7 @@ class SANDBOX_EXPORT BootstrapSandbox {
 
   // Creates a new PreExecDelegate to pass to base::LaunchOptions. This will
   // enforce the policy with |sandbox_policy_id| on the new process.
-  scoped_ptr<PreExecDelegate> NewClient(int sandbox_policy_id);
+  std::unique_ptr<PreExecDelegate> NewClient(int sandbox_policy_id);
 
   // If a client did not launch properly, the sandbox provided to the
   // PreExecDelegate should be invalidated using this method.
@@ -118,12 +118,12 @@ class SANDBOX_EXPORT BootstrapSandbox {
 
   // A Mach IPC message server that is used to intercept and filter bootstrap
   // requests.
-  scoped_ptr<LaunchdInterceptionServer> launchd_server_;
+  std::unique_ptr<LaunchdInterceptionServer> launchd_server_;
 
   // The port and dispatch source for receiving client check in messages sent
   // via ClientCheckIn().
   base::mac::ScopedMachReceiveRight check_in_port_;
-  scoped_ptr<base::DispatchSourceMach> check_in_server_;
+  std::unique_ptr<base::DispatchSourceMach> check_in_server_;
 };
 
 }  // namespace sandbox

@@ -98,7 +98,7 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
   void RunChildWithPolicy(int policy_id,
                           const char* child_name,
                           base::ProcessHandle* out_pid) {
-    scoped_ptr<PreExecDelegate> pre_exec_delegate(
+    std::unique_ptr<PreExecDelegate> pre_exec_delegate(
         sandbox_->NewClient(policy_id));
 
     base::LaunchOptions options;
@@ -114,7 +114,7 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
   }
 
  protected:
-  scoped_ptr<BootstrapSandbox> sandbox_;
+  std::unique_ptr<BootstrapSandbox> sandbox_;
 };
 
 const char kNotificationTestMain[] = "PostNotification";
@@ -434,7 +434,7 @@ TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
   sandbox_->RegisterSandboxPolicy(kTestPolicyId, policy);
 
   // Launch the child.
-  scoped_ptr<PreExecDelegate> pre_exec_delegate(
+  std::unique_ptr<PreExecDelegate> pre_exec_delegate(
       sandbox_->NewClient(kTestPolicyId));
   base::LaunchOptions options;
   options.pre_exec_delegate = pre_exec_delegate.get();

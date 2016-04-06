@@ -5,9 +5,10 @@
 #ifndef SANDBOX_LINUX_SUID_SETUID_SANDBOX_CLIENT_H_
 #define SANDBOX_LINUX_SUID_SETUID_SANDBOX_CLIENT_H_
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
@@ -60,7 +61,7 @@ class SANDBOX_EXPORT SetuidSandboxClient {
   explicit SetuidSandboxClient(base::Environment* env);
 
   // Holds the environment. Will never be NULL.
-  scoped_ptr<base::Environment> env_;
+  std::unique_ptr<base::Environment> env_;
   bool sandboxed_;
 
   DISALLOW_COPY_AND_ASSIGN(SetuidSandboxClient);

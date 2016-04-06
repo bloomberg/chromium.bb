@@ -14,7 +14,7 @@ namespace sandbox {
 
 bool GetDefaultDacl(
     HANDLE token,
-    scoped_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl) {
+    std::unique_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl) {
   if (token == NULL)
     return false;
 
@@ -64,7 +64,7 @@ bool AddSidToDefaultDacl(HANDLE token,
   if (token == NULL)
     return false;
 
-  scoped_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter> default_dacl;
+  std::unique_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter> default_dacl;
   if (!GetDefaultDacl(token, &default_dacl))
     return false;
 
@@ -86,7 +86,7 @@ bool RevokeLogonSidFromDefaultDacl(HANDLE token) {
   DWORD size = sizeof(TOKEN_GROUPS) + SECURITY_MAX_SID_SIZE;
   TOKEN_GROUPS* logon_sid = reinterpret_cast<TOKEN_GROUPS*>(malloc(size));
 
-  scoped_ptr<TOKEN_GROUPS, base::FreeDeleter> logon_sid_ptr(logon_sid);
+  std::unique_ptr<TOKEN_GROUPS, base::FreeDeleter> logon_sid_ptr(logon_sid);
 
   if (!::GetTokenInformation(token, TokenLogonSid, logon_sid, size, &size))
     return false;
@@ -103,7 +103,7 @@ bool AddUserSidToDefaultDacl(HANDLE token, ACCESS_MASK access) {
   DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
   TOKEN_USER* token_user = reinterpret_cast<TOKEN_USER*>(malloc(size));
 
-  scoped_ptr<TOKEN_USER, base::FreeDeleter> token_user_ptr(token_user);
+  std::unique_ptr<TOKEN_USER, base::FreeDeleter> token_user_ptr(token_user);
 
   if (!::GetTokenInformation(token, TokenUser, token_user, size, &size))
     return false;

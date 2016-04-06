@@ -6,8 +6,9 @@
 
 #include <aclapi.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/sid.h"
 
@@ -130,7 +131,7 @@ base::string16 GetWindowObjectName(HANDLE handle) {
   }
 
   // Create the buffer that will hold the name.
-  scoped_ptr<wchar_t[]> name_buffer(new wchar_t[size]);
+  std::unique_ptr<wchar_t[]> name_buffer(new wchar_t[size]);
 
   // Query the name of the object.
   if (!::GetUserObjectInformation(handle, UOI_NAME, name_buffer.get(), size,

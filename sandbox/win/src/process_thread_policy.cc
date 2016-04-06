@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
@@ -79,7 +79,7 @@ namespace sandbox {
 bool ProcessPolicy::GenerateRules(const wchar_t* name,
                                   TargetPolicy::Semantics semantics,
                                   LowLevelPolicy* policy) {
-  scoped_ptr<PolicyRule> process;
+  std::unique_ptr<PolicyRule> process;
   switch (semantics) {
     case TargetPolicy::PROCESS_MIN_EXEC: {
       process.reset(new PolicyRule(GIVE_READONLY));
@@ -226,8 +226,8 @@ DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
 
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
-  scoped_ptr<wchar_t, base::FreeDeleter>
-      cmd_line(_wcsdup(command_line.c_str()));
+  std::unique_ptr<wchar_t, base::FreeDeleter> cmd_line(
+      _wcsdup(command_line.c_str()));
 
   BOOL should_give_full_access = (GIVE_ALLACCESS == eval_result);
   if (!CreateProcessExWHelper(client_info.process, should_give_full_access,

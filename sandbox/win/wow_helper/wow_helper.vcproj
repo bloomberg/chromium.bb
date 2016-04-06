@@ -178,14 +178,6 @@
 	</References>
 	<Files>
 		<Filter
-			Name="base"
-			>
-			<File
-				RelativePath="..\..\base\scoped_ptr.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="sandbox"
 			>
 			<File

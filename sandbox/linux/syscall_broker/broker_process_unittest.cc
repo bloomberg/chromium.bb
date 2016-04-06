@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "sandbox/linux/syscall_broker/broker_client.h"
@@ -58,7 +58,8 @@ TEST(BrokerProcess, CreateAndDestroy) {
   std::vector<BrokerFilePermission> permissions;
   permissions.push_back(BrokerFilePermission::ReadOnly("/proc/cpuinfo"));
 
-  scoped_ptr<BrokerProcess> open_broker(new BrokerProcess(EPERM, permissions));
+  std::unique_ptr<BrokerProcess> open_broker(
+      new BrokerProcess(EPERM, permissions));
   ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
 
   ASSERT_TRUE(TestUtils::CurrentProcessHasChildren());
@@ -251,7 +252,7 @@ void TestBadPaths(bool fast_check_in_client) {
   std::vector<BrokerFilePermission> permissions;
 
   permissions.push_back(BrokerFilePermission::ReadOnlyRecursive("/proc/"));
-  scoped_ptr<BrokerProcess> open_broker(
+  std::unique_ptr<BrokerProcess> open_broker(
       new BrokerProcess(EPERM, permissions, fast_check_in_client));
   ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
   // Open cpuinfo via the broker.
@@ -310,7 +311,7 @@ void TestOpenCpuinfo(bool fast_check_in_client, bool recursive) {
   else
     permissions.push_back(BrokerFilePermission::ReadOnly(kFileCpuInfo));
 
-  scoped_ptr<BrokerProcess> open_broker(
+  std::unique_ptr<BrokerProcess> open_broker(
       new BrokerProcess(EPERM, permissions, fast_check_in_client));
   ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
 

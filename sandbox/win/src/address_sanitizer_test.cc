@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,7 +34,7 @@ class AddressSanitizerTests : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<base::Environment> env_;
+  std::unique_ptr<base::Environment> env_;
   bool had_asan_options_;
   std::string old_asan_options_;
 };

@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -20,7 +21,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
@@ -79,7 +79,8 @@ void SaveSUIDUnsafeEnvironmentVariables(base::Environment* env) {
   for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
     const char* env_var = kSUIDUnsafeEnvironmentVariables[i];
     // Get the saved environment variable corresponding to envvar.
-    scoped_ptr<std::string> saved_env_var(CreateSavedVariableName(env_var));
+    std::unique_ptr<std::string> saved_env_var(
+        CreateSavedVariableName(env_var));
     if (saved_env_var == NULL)
       continue;
 

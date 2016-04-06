@@ -5,10 +5,11 @@
 #ifndef SANDBOX_LINUX_SUID_SETUID_SANDBOX_HOST_H_
 #define SANDBOX_LINUX_SUID_SETUID_SANDBOX_HOST_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "sandbox/sandbox_export.h"
 
@@ -60,7 +61,7 @@ class SANDBOX_EXPORT SetuidSandboxHost {
   explicit SetuidSandboxHost(base::Environment* env);
 
   // Holds the environment. Will never be NULL.
-  scoped_ptr<base::Environment> env_;
+  std::unique_ptr<base::Environment> env_;
 
   DISALLOW_COPY_AND_ASSIGN(SetuidSandboxHost);
 };

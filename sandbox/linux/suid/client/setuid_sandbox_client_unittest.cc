@@ -4,8 +4,9 @@
 
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
+#include <memory>
+
 #include "base/environment.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,11 +14,11 @@
 namespace sandbox {
 
 TEST(SetuidSandboxClient, SandboxedClientAPI) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   EXPECT_TRUE(env != NULL);
 
-  scoped_ptr<SetuidSandboxClient>
-      sandbox_client(SetuidSandboxClient::Create());
+  std::unique_ptr<SetuidSandboxClient> sandbox_client(
+      SetuidSandboxClient::Create());
   EXPECT_TRUE(sandbox_client != NULL);
 
   // Set-up a fake environment as if we went through the setuid sandbox.
