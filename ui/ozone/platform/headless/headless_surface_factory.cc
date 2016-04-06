@@ -39,10 +39,10 @@ class FileSurface : public SurfaceOzoneCanvas {
 
   // SurfaceOzoneCanvas overrides:
   void ResizeCanvas(const gfx::Size& viewport_size) override {
-    surface_ = skia::AdoptRef(SkSurface::NewRaster(SkImageInfo::MakeN32Premul(
-        viewport_size.width(), viewport_size.height())));
+    surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(
+        viewport_size.width(), viewport_size.height()));
   }
-  skia::RefPtr<SkSurface> GetSurface() override { return surface_; }
+  sk_sp<SkSurface> GetSurface() override { return surface_; }
   void PresentCanvas(const gfx::Rect& damage) override {
     if (location_.empty())
       return;
@@ -62,7 +62,7 @@ class FileSurface : public SurfaceOzoneCanvas {
 
  private:
   base::FilePath location_;
-  skia::RefPtr<SkSurface> surface_;
+  sk_sp<SkSurface> surface_;
 };
 
 class TestPixmap : public ui::NativePixmap {

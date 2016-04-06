@@ -73,7 +73,7 @@ private:
         : Image(0)
         , m_size(size)
     {
-        RefPtr<SkSurface> surface = adoptRef(createSkSurface(size, opaque));
+        sk_sp<SkSurface> surface = createSkSurface(size, opaque);
         if (!surface)
             return;
 
@@ -81,9 +81,9 @@ private:
         m_image = adoptRef(surface->newImageSnapshot());
     }
 
-    static SkSurface* createSkSurface(IntSize size, bool opaque)
+    static sk_sp<SkSurface> createSkSurface(IntSize size, bool opaque)
     {
-        return SkSurface::NewRaster(SkImageInfo::MakeN32(size.width(), size.height(), opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
+        return SkSurface::MakeRaster(SkImageInfo::MakeN32(size.width(), size.height(), opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
     }
 
     IntSize m_size;

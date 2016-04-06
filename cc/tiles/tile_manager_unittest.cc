@@ -1744,8 +1744,8 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     SCOPED_TRACE(resolutions[i]);
 
     // Make a RasterSource that will draw a blue bitmap image.
-    skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-        SkSurface::NewRasterN32Premul(size.width(), size.height()));
+    sk_sp<SkSurface> surface =
+        SkSurface::MakeRasterN32Premul(size.width(), size.height());
     ASSERT_NE(surface, nullptr);
     surface->getCanvas()->clear(SK_ColorBLUE);
     skia::RefPtr<SkImage> blue_image =

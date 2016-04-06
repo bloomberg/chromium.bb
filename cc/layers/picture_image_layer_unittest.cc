@@ -29,8 +29,8 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   unsigned char image_pixels[4 * 200 * 200] = {0};
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
-  skia::RefPtr<SkSurface> image_surface = skia::AdoptRef(
-      SkSurface::NewRasterDirect(info, image_pixels, info.minRowBytes()));
+  sk_sp<SkSurface> image_surface =
+      SkSurface::MakeRasterDirect(info, image_pixels, info.minRowBytes());
   SkCanvas* image_canvas = image_surface->getCanvas();
   image_canvas->clear(SK_ColorRED);
   SkPaint blue_paint;

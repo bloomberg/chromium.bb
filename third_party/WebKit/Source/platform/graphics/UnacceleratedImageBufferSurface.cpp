@@ -43,7 +43,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& 
     SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
     SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    m_surface = adoptRef(SkSurface::NewRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps));
+    m_surface = SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
 
     if (initializationMode == InitializeImagePixels) {
         if (m_surface)

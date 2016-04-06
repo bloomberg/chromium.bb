@@ -9,7 +9,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/raster_source.h"
 #include "cc/raster/texture_compressor.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -92,8 +91,8 @@ void TileTaskWorkerPool::PlaybackToMemory(
   switch (format) {
     case RGBA_8888:
     case BGRA_8888: {
-      skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-          SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
+      sk_sp<SkSurface> surface =
+          SkSurface::MakeRasterDirect(info, memory, stride, &surface_props);
       raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
                                       canvas_playback_rect, scale,
                                       playback_settings);
@@ -101,8 +100,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
     }
     case RGBA_4444:
     case ETC1: {
-      skia::RefPtr<SkSurface> surface =
-          skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
+      sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &surface_props);
       // TODO(reveman): Improve partial raster support by reducing the size of
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
       raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
@@ -127,8 +125,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
         SkImageInfo dst_info = SkImageInfo::Make(
             info.width(), info.height(), ResourceFormatToSkColorType(format),
             info.alphaType(), info.profileType());
-        bool rv =
-            surface->getCanvas()->readPixels(dst_info, memory, stride, 0, 0);
+        bool rv = surface->readPixels(dst_info, memory, stride, 0, 0);
         DCHECK(rv);
       }
       return;

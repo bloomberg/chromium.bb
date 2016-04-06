@@ -57,8 +57,8 @@ sk_sp<SkShader> ImagePattern::createShader() const
     // Create a transparent image 1 pixel wider and/or taller than the
     // original, then copy the orignal into it.
     // FIXME: Is there a better way to pad (not scale) an image in skia?
-    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(
-        m_tileImage->width() + expandW, m_tileImage->height() + expandH));
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
+        m_tileImage->width() + expandW, m_tileImage->height() + expandH);
     if (!surface)
         return SkShader::MakeColorShader(SK_ColorTRANSPARENT);
 

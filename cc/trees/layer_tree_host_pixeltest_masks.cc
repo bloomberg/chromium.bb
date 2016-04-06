@@ -102,8 +102,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetIsMask(true);
   mask->SetBounds(mask_bounds);
 
-  skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRasterN32Premul(200, 200));
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
   SkCanvas* canvas = surface->getCanvas();
   canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);

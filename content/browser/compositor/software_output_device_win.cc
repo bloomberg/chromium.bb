@@ -122,7 +122,7 @@ void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_pixel_size,
   viewport_pixel_size_ = viewport_pixel_size;
   if (backing_)
     backing_->Resized();
-  contents_.clear();
+  contents_.reset();
 }
 
 SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
@@ -141,7 +141,7 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
       }
     }
     if (can_create_contents) {
-      contents_ = skia::AdoptRef(skia::CreatePlatformCanvas(
+      contents_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(
           viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
           shared_section, skia::CRASH_ON_FAILURE));
     }
@@ -196,7 +196,7 @@ void SoftwareOutputDeviceWin::EndPaint() {
 void SoftwareOutputDeviceWin::ReleaseContents() {
   DCHECK(!contents_ || contents_->unique());
   DCHECK(!in_paint_);
-  contents_.clear();
+  contents_.reset();
 }
 
 }  // namespace content

@@ -96,7 +96,7 @@ private:
     explicit TestImage(IntSize size)
         : m_image(nullptr)
     {
-        RefPtr<SkSurface> surface = adoptRef(createSkSurface(size));
+        sk_sp<SkSurface> surface = createSkSurface(size);
         if (!surface)
             return;
 
@@ -104,9 +104,9 @@ private:
         m_image = adoptRef(surface->newImageSnapshot());
     }
 
-    static SkSurface* createSkSurface(IntSize size)
+    static sk_sp<SkSurface> createSkSurface(IntSize size)
     {
-        return SkSurface::NewRaster(SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType));
+        return SkSurface::MakeRaster(SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType));
     }
 
     RefPtr<SkImage> m_image;

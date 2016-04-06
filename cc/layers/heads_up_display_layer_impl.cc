@@ -179,8 +179,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       !hud_surface_) {
     TRACE_EVENT0("cc", "ResizeHudCanvas");
 
-    hud_surface_ = skia::AdoptRef(SkSurface::NewRasterN32Premul(
-        internal_content_bounds_.width(), internal_content_bounds_.height()));
+    hud_surface_ = SkSurface::MakeRasterN32Premul(
+        internal_content_bounds_.width(), internal_content_bounds_.height());
   }
 
   UpdateHudContents();
@@ -200,7 +200,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   TRACE_EVENT0("cc", "UploadHudTexture");
   SkImageInfo info;
   size_t row_bytes = 0;
-  const void* pixels = hud_surface_->getCanvas()->peekPixels(&info, &row_bytes);
+  const void* pixels = hud_surface_->peekPixels(&info, &row_bytes);
   DCHECK(pixels);
   DCHECK(info.colorType() == kN32_SkColorType);
   resource_provider->CopyToResource(resources_.back()->id(),

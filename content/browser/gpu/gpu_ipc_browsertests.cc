@@ -237,16 +237,16 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   skia::RefPtr<GrContext> gr_context = skia::SharePtr(provider->GrContext());
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-  skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
-      gr_context.get(), SkBudgeted::kNo, info));
+  sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
+      gr_context.get(), SkBudgeted::kNo, info);
   EXPECT_TRUE(surface);
 
   // Destroy the GL context after we made a surface.
   provider = nullptr;
 
   // New surfaces will fail to create now.
-  skia::RefPtr<SkSurface> surface2 = skia::AdoptRef(
-      SkSurface::NewRenderTarget(gr_context.get(), SkBudgeted::kNo, info));
+  sk_sp<SkSurface> surface2 =
+      SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info);
   EXPECT_FALSE(surface2);
 
   // Drop our reference to the gr_context also.

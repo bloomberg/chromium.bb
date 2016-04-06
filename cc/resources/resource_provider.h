@@ -357,7 +357,7 @@ class CC_EXPORT ResourceProvider
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
     base::ThreadChecker thread_checker_;
-    skia::RefPtr<SkSurface> sk_surface_;
+    sk_sp<SkSurface> sk_surface_;
     bool set_sync_token_;
     gpu::SyncToken sync_token_;
 

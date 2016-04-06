@@ -126,7 +126,7 @@ bool canCreateImageBuffer(const IntSize& size)
 PassRefPtr<Image> createTransparentImage(const IntSize& size)
 {
     ASSERT(canCreateImageBuffer(size));
-    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(size.width(), size.height()));
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
     surface->getCanvas()->clear(SK_ColorTRANSPARENT);
     return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 }

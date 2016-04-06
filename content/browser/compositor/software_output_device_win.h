@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/output/software_output_device.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace base {
 class SharedMemory;
@@ -61,7 +63,7 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
 
  private:
   HWND hwnd_;
-  skia::RefPtr<SkCanvas> contents_;
+  sk_sp<SkCanvas> contents_;
   bool is_hwnd_composited_;
   OutputDeviceBacking* backing_;
   bool in_paint_;

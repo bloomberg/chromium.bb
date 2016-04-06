@@ -234,10 +234,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_IMAGEFACTORY
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_NEW_SURFACE_API
-#   define SK_SUPPORT_LEGACY_NEW_SURFACE_API
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_IMAGEFILTER_PTR
 #   define SK_SUPPORT_LEGACY_IMAGEFILTER_PTR
 #endif

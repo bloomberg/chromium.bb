@@ -52,7 +52,7 @@ public:
 
 private:
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
-    OwnPtr<SkSurface> m_surface; // Uses m_contextProvider.
+    sk_sp<SkSurface> m_surface; // Uses m_contextProvider.
 };
 
 

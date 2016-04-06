@@ -104,7 +104,7 @@ public:
         m_actualDecoder = decoder.get();
         m_actualDecoder->setSize(1, 1);
         m_lazyDecoder = DeferredImageDecoder::createForTesting(decoder.release());
-        m_surface.reset(SkSurface::NewRasterN32Premul(100, 100));
+        m_surface = SkSurface::MakeRasterN32Premul(100, 100);
         ASSERT_TRUE(m_surface.get());
         m_decodeRequestCount = 0;
         m_repetitionCount = cAnimationNone;
@@ -162,7 +162,7 @@ protected:
     // Don't own this but saves the pointer to query states.
     MockImageDecoder* m_actualDecoder;
     OwnPtr<DeferredImageDecoder> m_lazyDecoder;
-    SkAutoTUnref<SkSurface> m_surface;
+    sk_sp<SkSurface> m_surface;
     int m_decodeRequestCount;
     RefPtr<SharedBuffer> m_data;
     size_t m_frameCount;

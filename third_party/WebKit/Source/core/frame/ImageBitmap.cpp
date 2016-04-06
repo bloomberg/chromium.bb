@@ -141,7 +141,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         return StaticBitmapImage::create(adoptRef(croppedSkImage));
     }
 
-    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(cropRect.width(), cropRect.height());
     if (!surface)
         return nullptr;
     if (srcRect.isEmpty())

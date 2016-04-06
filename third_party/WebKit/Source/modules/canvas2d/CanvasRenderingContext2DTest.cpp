@@ -55,7 +55,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
     : m_size(size)
     , m_isOpaque(opacity == OpaqueBitmap)
 {
-    SkAutoTUnref<SkSurface> surface(SkSurface::NewRasterN32Premul(m_size.width(), m_size.height()));
+    sk_sp<SkSurface> surface(SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height()));
     surface->getCanvas()->clear(opacity == OpaqueBitmap ? SK_ColorWHITE : SK_ColorTRANSPARENT);
     RefPtr<SkImage> image = adoptRef(surface->newImageSnapshot());
     m_image = StaticBitmapImage::create(image);

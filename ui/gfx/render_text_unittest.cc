@@ -3017,8 +3017,8 @@ TEST_F(RenderTextTest, TextDoesntClip) {
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 
-  skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-      SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
   Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
@@ -3108,8 +3108,8 @@ TEST_F(RenderTextTest, TextDoesClip) {
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 
-  skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-      SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
   Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);

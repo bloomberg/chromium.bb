@@ -48,11 +48,11 @@ class DummySurface : public SurfaceOzoneCanvas {
   ~DummySurface() override {}
 
   // SurfaceOzoneCanvas implementation:
-  skia::RefPtr<SkSurface> GetSurface() override { return surface_; }
+  sk_sp<SkSurface> GetSurface() override { return surface_; }
 
   void ResizeCanvas(const gfx::Size& viewport_size) override {
-    surface_ = skia::AdoptRef(SkSurface::NewRaster(SkImageInfo::MakeN32Premul(
-        viewport_size.width(), viewport_size.height())));
+    surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(
+        viewport_size.width(), viewport_size.height()));
   }
 
   void PresentCanvas(const gfx::Rect& damage) override {}
@@ -62,7 +62,7 @@ class DummySurface : public SurfaceOzoneCanvas {
   }
 
  private:
-  skia::RefPtr<SkSurface> surface_;
+  sk_sp<SkSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySurface);
 };

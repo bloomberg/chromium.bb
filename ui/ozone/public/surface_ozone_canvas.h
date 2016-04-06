@@ -27,7 +27,7 @@ class OZONE_BASE_EXPORT SurfaceOzoneCanvas {
   virtual ~SurfaceOzoneCanvas() {}
 
   // Returns an SkSurface for drawing on the window.
-  virtual skia::RefPtr<SkSurface> GetSurface() = 0;
+  virtual sk_sp<SkSurface> GetSurface() = 0;
 
   // Attempts to resize the canvas to match the viewport size. After
   // resizing, the compositor must call GetCanvas() to get the next

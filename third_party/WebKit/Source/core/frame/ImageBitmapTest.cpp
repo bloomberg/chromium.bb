@@ -53,11 +53,11 @@ class ImageBitmapTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(10, 10));
+        sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
         surface->getCanvas()->clear(0xFFFFFFFF);
         m_image = adoptRef(surface->newImageSnapshot());
 
-        RefPtr<SkSurface> surface2 = adoptRef(SkSurface::NewRasterN32Premul(5, 5));
+        sk_sp<SkSurface> surface2 = SkSurface::MakeRasterN32Premul(5, 5);
         surface2->getCanvas()->clear(0xAAAAAAAA);
         m_image2 = adoptRef(surface2->newImageSnapshot());
 

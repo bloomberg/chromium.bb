@@ -636,8 +636,7 @@ skia::RefPtr<SkImage> SoftwareRenderer::ApplyImageFilter(
 
   SkImageInfo dst_info =
       SkImageInfo::MakeN32Premul(to_filter->width(), to_filter->height());
-  skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRaster(dst_info));
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(dst_info);
 
   SkMatrix localM;
   localM.setTranslate(SkIntToScalar(-quad->rect.origin().x()),

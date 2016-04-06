@@ -1139,14 +1139,14 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
     surface_props =
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
-  sk_surface_ = skia::AdoptRef(SkSurface::NewFromBackendTextureAsRenderTarget(
-      gr_context, desc, &surface_props));
+  sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      gr_context, desc, &surface_props);
 }
 
 void ResourceProvider::ScopedWriteLockGr::ReleaseSkSurface() {
   DCHECK(sk_surface_);
   sk_surface_->prepareForExternalIO();
-  sk_surface_.clear();
+  sk_surface_.reset();
 }
 
 ResourceProvider::SynchronousFence::SynchronousFence(

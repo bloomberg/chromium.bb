@@ -96,7 +96,7 @@ PassRefPtr<SkImage> DragImage::resizeAndOrientImage(PassRefPtr<SkImage> image, I
         return image;
     }
 
-    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(size.width(), size.height()));
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
     if (!surface)
         return nullptr;
 

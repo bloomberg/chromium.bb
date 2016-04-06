@@ -44,8 +44,7 @@ bool DrmConsoleBuffer::Initialize() {
     return false;
   }
 
-  surface_ =
-      skia::AdoptRef(SkSurface::NewRasterDirect(info, mmap_base_, stride_));
+  surface_ = SkSurface::MakeRasterDirect(info, mmap_base_, stride_);
   if (!surface_)
     return false;
 

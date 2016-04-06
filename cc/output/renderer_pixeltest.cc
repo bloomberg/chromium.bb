@@ -2486,8 +2486,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
 
-  skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRasterN32Premul(2, 2));
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(2, 2);
   ASSERT_NE(surface, nullptr);
   SkCanvas* canvas = surface->getCanvas();
   canvas->drawPoint(0, 0, SK_ColorGREEN);
@@ -2536,8 +2535,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
 
-  skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRasterN32Premul(2, 2));
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(2, 2);
   ASSERT_NE(surface, nullptr);
   SkCanvas* canvas = surface->getCanvas();
   canvas->drawPoint(0, 0, SK_ColorGREEN);

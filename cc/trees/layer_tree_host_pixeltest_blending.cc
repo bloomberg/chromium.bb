@@ -131,8 +131,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     // Draw the backdrop with horizontal lanes.
     const int kLaneWidth = width;
     const int kLaneHeight = height / kCSSTestColorsCount;
-    skia::RefPtr<SkSurface> backing_store =
-        skia::AdoptRef(SkSurface::NewRasterN32Premul(width, height));
+    sk_sp<SkSurface> backing_store =
+        SkSurface::MakeRasterN32Premul(width, height);
     SkCanvas* canvas = backing_store->getCanvas();
     canvas->clear(SK_ColorTRANSPARENT);
     for (int i = 0; i < kCSSTestColorsCount; ++i) {
@@ -158,8 +158,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     mask->SetIsMask(true);
     mask->SetBounds(bounds);
 
-    skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-        SkSurface::NewRasterN32Premul(bounds.width(), bounds.height()));
+    sk_sp<SkSurface> surface =
+        SkSurface::MakeRasterN32Premul(bounds.width(), bounds.height());
     SkCanvas* canvas = surface->getCanvas();
     SkPaint paint;
     paint.setColor(SK_ColorWHITE);

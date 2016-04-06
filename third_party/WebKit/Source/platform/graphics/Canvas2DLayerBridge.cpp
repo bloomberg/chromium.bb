@@ -74,16 +74,16 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
     SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
     SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    RefPtr<SkSurface> surface;
+    sk_sp<SkSurface> surface;
 
     if (gr) {
         *surfaceIsAccelerated = true;
-        surface = adoptRef(SkSurface::NewRenderTarget(gr, SkBudgeted::kNo, info, msaaSampleCount, Opaque == opacityMode ? 0 : &disableLCDProps));
+        surface = SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info, msaaSampleCount, Opaque == opacityMode ? 0 : &disableLCDProps);
     }
 
     if (!surface) {
         *surfaceIsAccelerated = false;
-        surface = adoptRef(SkSurface::NewRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps));
+        surface = SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
     }
 
     if (surface) {
@@ -93,7 +93,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
             surface->getCanvas()->clear(SK_ColorTRANSPARENT);
         }
     }
-    return surface;
+    return fromSkSp(surface);
 }
 
 PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
@@ -428,7 +428,7 @@ void Canvas2DLayerBridge::hibernate()
     }
 
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::hibernate");
-    RefPtr<SkSurface> tempHibernationSurface = adoptRef(SkSurface::NewRasterN32Premul(m_size.width(), m_size.height()));
+    sk_sp<SkSurface> tempHibernationSurface = SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
     if (!tempHibernationSurface) {
         m_logger->reportHibernationEvent(HibernationAbortedDueToAllocationFailure);
         return;

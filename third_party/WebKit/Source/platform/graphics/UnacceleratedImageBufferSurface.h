@@ -49,7 +49,7 @@ public:
 
     PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
 private:
-    RefPtr<SkSurface> m_surface;
+    sk_sp<SkSurface> m_surface;
 };
 
 } // namespace blink

@@ -64,7 +64,7 @@ class DrmBuffer : public ScanoutBuffer {
   uint32_t fb_pixel_format_ = 0;
 
   // Wrapper around the native pixel memory.
-  skia::RefPtr<SkSurface> surface_;
+  sk_sp<SkSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmBuffer);
 };

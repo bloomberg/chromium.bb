@@ -38,8 +38,6 @@ DrmBuffer::DrmBuffer(const scoped_refptr<DrmDevice>& drm) : drm_(drm) {
 }
 
 DrmBuffer::~DrmBuffer() {
-  surface_.clear();
-
   if (framebuffer_ && !drm_->RemoveFramebuffer(framebuffer_))
     PLOG(ERROR) << "DrmBuffer: RemoveFramebuffer: fb " << framebuffer_;
 
@@ -78,8 +76,7 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
     }
   }
 
-  surface_ =
-      skia::AdoptRef(SkSurface::NewRasterDirect(info, mmap_base_, stride_));
+  surface_ = SkSurface::MakeRasterDirect(info, mmap_base_, stride_);
   if (!surface_) {
     LOG(ERROR) << "DrmBuffer: Failed to create SkSurface: handle " << handle_;
     return false;

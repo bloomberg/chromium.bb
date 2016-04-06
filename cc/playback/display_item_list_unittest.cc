@@ -423,8 +423,7 @@ TEST(DisplayItemListTest, FilterItem) {
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(layer_rect, settings);
 
-  skia::RefPtr<SkSurface> source_surface =
-      skia::AdoptRef(SkSurface::NewRasterN32Premul(50, 50));
+  sk_sp<SkSurface> source_surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* source_canvas = source_surface->getCanvas();
   source_canvas->clear(SkColorSetRGB(128, 128, 128));
   skia::RefPtr<SkImage> source_image =

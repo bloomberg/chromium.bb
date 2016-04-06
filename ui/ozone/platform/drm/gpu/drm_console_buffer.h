@@ -40,7 +40,7 @@ class DrmConsoleBuffer {
   scoped_refptr<DrmDevice> drm_;
 
   // Wrapper around the native pixel memory.
-  skia::RefPtr<SkSurface> surface_;
+  sk_sp<SkSurface> surface_;
 
   // Length of a row of pixels.
   uint32_t stride_ = 0;
