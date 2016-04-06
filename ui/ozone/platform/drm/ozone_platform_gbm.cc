@@ -149,6 +149,7 @@ class OzonePlatformGbm : public OzonePlatform {
       gl_api_loader_.reset(new GlApiLoader());
       mus_thread_proxy_.reset(new MusThreadProxy());
       adapter = mus_thread_proxy_.get();
+      cursor_->SetDrmCursorProxy(mus_thread_proxy_.get());
     } else {
       gpu_platform_support_host_.reset(
           new DrmGpuPlatformSupportHost(cursor_.get()));

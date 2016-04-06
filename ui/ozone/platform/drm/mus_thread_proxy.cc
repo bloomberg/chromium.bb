@@ -133,8 +133,8 @@ void MusThreadProxy::CursorSet(gfx::AcceleratedWidget widget,
 
 void MusThreadProxy::Move(gfx::AcceleratedWidget widget,
                           const gfx::Point& location) {
+  // NOTE: Input events skip the main thread to avoid jank.
   DCHECK(drm_thread_->IsRunning());
-  DCHECK(on_window_server_thread_.CalledOnValidThread());
   drm_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&DrmThread::MoveCursor,
                             base::Unretained(drm_thread_), widget, location));
