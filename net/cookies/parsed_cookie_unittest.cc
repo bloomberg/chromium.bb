@@ -460,27 +460,43 @@ TEST(ParsedCookieTest, SetSameSite) {
   EXPECT_TRUE(pc.SetSameSite("strict"));
   EXPECT_EQ("name=value; samesite=strict", pc.ToCookieLine());
   EXPECT_EQ(CookieSameSite::STRICT_MODE, pc.SameSite());
+  EXPECT_TRUE(pc.IsValid());
 
   EXPECT_TRUE(pc.SetSameSite("lAx"));
   EXPECT_EQ("name=value; samesite=lAx", pc.ToCookieLine());
   EXPECT_EQ(CookieSameSite::LAX_MODE, pc.SameSite());
+  EXPECT_TRUE(pc.IsValid());
 
   EXPECT_TRUE(pc.SetSameSite("LAX"));
   EXPECT_EQ("name=value; samesite=LAX", pc.ToCookieLine());
   EXPECT_EQ(CookieSameSite::LAX_MODE, pc.SameSite());
-
-  // Interpret invalid priority values as CookieSameSite::DEFAULT_MODE.
-  EXPECT_TRUE(pc.SetSameSite("Blah"));
-  EXPECT_EQ("name=value; samesite=Blah", pc.ToCookieLine());
-  EXPECT_EQ(CookieSameSite::DEFAULT_MODE, pc.SameSite());
-
-  EXPECT_TRUE(pc.SetSameSite("lowerest"));
-  EXPECT_EQ("name=value; samesite=lowerest", pc.ToCookieLine());
-  EXPECT_EQ(CookieSameSite::DEFAULT_MODE, pc.SameSite());
+  EXPECT_TRUE(pc.IsValid());
 
   EXPECT_TRUE(pc.SetSameSite(""));
   EXPECT_EQ("name=value", pc.ToCookieLine());
   EXPECT_EQ(CookieSameSite::DEFAULT_MODE, pc.SameSite());
+  EXPECT_TRUE(pc.IsValid());
+
+  EXPECT_TRUE(pc.SetSameSite("Blah"));
+  EXPECT_FALSE(pc.IsValid());
+}
+
+TEST(ParsedCookieTest, InvalidSameSiteValue) {
+  struct TestCase {
+    const char* cookie;
+    bool valid;
+    CookieSameSite mode;
+  } cases[]{{"n=v; samesite=strict", true, CookieSameSite::STRICT_MODE},
+            {"n=v; samesite=lax", true, CookieSameSite::LAX_MODE},
+            {"n=v; samesite=boo", false, CookieSameSite::DEFAULT_MODE},
+            {"n=v; samesite", false, CookieSameSite::DEFAULT_MODE}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.cookie);
+    ParsedCookie pc(test.cookie);
+    EXPECT_EQ(test.valid, pc.IsValid());
+    EXPECT_EQ(test.mode, pc.SameSite());
+  }
 }
 
 TEST(ParsedCookieTest, InvalidNonAlphanumericChars) {

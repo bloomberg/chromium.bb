@@ -93,12 +93,6 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", creation_time,
                                    same_site_options);
-  EXPECT_TRUE(cookie.get());
-  EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
-  cookie = CanonicalCookie::Create(url, "A=2; SameSite", creation_time,
-                                   same_site_options);
-  EXPECT_TRUE(cookie.get());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
 
   // Test the creating cookies using specific parameter instead of a cookie
   // string.
@@ -127,6 +121,23 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_FALSE(cookie->IsSecure());
   EXPECT_FALSE(cookie->IsHttpOnly());
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+}
+
+TEST(CanonicalCookieTest, CreateInvalidSameSite) {
+  GURL url("http://www.example.com/test/foo.html");
+  base::Time now = base::Time::Now();
+  scoped_ptr<CanonicalCookie> cookie;
+  CookieOptions options;
+
+  // Invalid 'SameSite' attribute values.
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Invalid", now, options);
+  EXPECT_EQ(nullptr, cookie.get());
+
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite", now, options);
+  EXPECT_EQ(nullptr, cookie.get());
 }
 
 TEST(CanonicalCookieTest, EmptyExpiry) {
