@@ -271,6 +271,15 @@ media::MediaResourceTracker* CastBrowserMainParts::media_resource_tracker() {
   }
   return media_resource_tracker_;
 }
+
+media::MediaPipelineBackendManager*
+CastBrowserMainParts::media_pipeline_backend_manager() {
+  if (!media_pipeline_backend_manager_) {
+    media_pipeline_backend_manager_.reset(
+        new media::MediaPipelineBackendManager(GetMediaTaskRunner()));
+  }
+  return media_pipeline_backend_manager_.get();
+}
 #endif
 
 void CastBrowserMainParts::PreMainMessageLoopStart() {
@@ -337,7 +346,8 @@ int CastBrowserMainParts::PreCreateThreads() {
 
   // AudioManager is created immediately after threads are created, requiring
   // AudioManagerFactory to be set beforehand.
-  ::media::AudioManager::SetFactory(new media::CastAudioManagerFactory());
+  ::media::AudioManager::SetFactory(
+      new media::CastAudioManagerFactory(media_pipeline_backend_manager()));
 
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.
@@ -485,6 +495,7 @@ void CastBrowserMainParts::PostDestroyThreads() {
 #if !defined(OS_ANDROID)
   media_resource_tracker_->FinalizeAndDestroy();
   media_resource_tracker_ = nullptr;
+  media_pipeline_backend_manager_.reset();
 #endif
 }
 

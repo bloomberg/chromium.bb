@@ -33,6 +33,7 @@ class CastService;
 
 namespace media {
 class MediaPipelineBackend;
+class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 class MediaResourceTracker;
 class VideoPlaneController;
@@ -76,6 +77,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       const media::MediaPipelineDeviceParams& params);
 
   media::MediaResourceTracker* media_resource_tracker();
+
+  media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 #endif
 
   // Invoked when the metrics client ID changes.

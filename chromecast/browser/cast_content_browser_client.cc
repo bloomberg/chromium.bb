@@ -114,15 +114,20 @@ CastContentBrowserClient::GetMediaTaskRunner() {
 scoped_ptr<media::MediaPipelineBackend>
 CastContentBrowserClient::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
-  return make_scoped_ptr(
-      media::MediaPipelineBackendManager::CreateMediaPipelineBackend(params));
+  return media_pipeline_backend_manager()->CreateMediaPipelineBackend(params);
 }
 
 media::MediaResourceTracker*
 CastContentBrowserClient::media_resource_tracker() {
   return cast_browser_main_parts_->media_resource_tracker();
 }
-#endif  // OS_ANDROID
+
+media::MediaPipelineBackendManager*
+CastContentBrowserClient::media_pipeline_backend_manager() {
+  DCHECK(cast_browser_main_parts_);
+  return cast_browser_main_parts_->media_pipeline_backend_manager();
+}
+#endif  // !defined(OS_ANDROID)
 
 void CastContentBrowserClient::SetMetricsClientId(
     const std::string& client_id) {
