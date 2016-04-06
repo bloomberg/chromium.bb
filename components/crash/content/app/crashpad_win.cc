@@ -57,6 +57,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
   bool result;
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
+  const char kServerUrlVar[] = "CHROME_CRASHPAD_SERVER_URL";
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   if (initial_client) {
@@ -71,6 +72,10 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 #else
     std::string url;
 #endif
+
+    // Allow the crash server to be overridden for testing. If the variable
+    // isn't present in the environment then the default URL will remain.
+    env->GetVar(kServerUrlVar, &url);
 
     base::FilePath exe_file;
     CHECK(PathService::Get(base::FILE_EXE, &exe_file));
