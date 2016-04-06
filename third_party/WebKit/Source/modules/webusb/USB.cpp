@@ -75,7 +75,7 @@ public:
 } // namespace
 
 USB::USB(LocalFrame& frame)
-    : LocalFrameLifecycleObserver(&frame)
+    : ContextLifecycleObserver(frame.document())
     , m_client(USBController::from(frame).client())
 {
     if (m_client)
@@ -128,7 +128,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
 
 ExecutionContext* USB::getExecutionContext() const
 {
-    return frame() ? frame()->document() : nullptr;
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 const AtomicString& USB::interfaceName() const
@@ -136,7 +136,7 @@ const AtomicString& USB::interfaceName() const
     return EventTargetNames::USB;
 }
 
-void USB::willDetachFrameHost()
+void USB::contextDestroyed()
 {
     if (m_client)
         m_client->removeObserver(this);
@@ -156,7 +156,7 @@ void USB::onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice> device)
 DEFINE_TRACE(USB)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<USB>::trace(visitor);
-    LocalFrameLifecycleObserver::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

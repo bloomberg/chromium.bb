@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBDevice.h"
