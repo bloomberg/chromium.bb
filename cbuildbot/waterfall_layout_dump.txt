@@ -157,6 +157,7 @@ samus-release
   peppy-release
   wolf-release
 smaug-cheets-release
+smaug-kasan-kernel-3_18
 smaug-paladin
 smaug-release
 storm-paladin
