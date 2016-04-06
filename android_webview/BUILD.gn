@@ -358,14 +358,29 @@ grit("generate_components_strings") {
   ]
 }
 
-shared_library("libwebviewchromium") {
+source_set("webview_entry_point") {
   deps = [
     ":common",
   ]
   sources = [
     "lib/main/webview_entry_point.cc",
   ]
+}
+
+shared_library("libwebviewchromium") {
+  deps = [
+    ":webview_entry_point",
+  ]
   configs -= [ "//build/config/android:hide_native_jni_exports" ]
+}
+
+if (defined(webview_only_libmonochrome) && webview_only_libmonochrome) {
+  shared_library("libmonochrome") {
+    deps = [
+      ":webview_entry_point",
+    ]
+    configs -= [ "//build/config/android:hide_native_jni_exports" ]
+  }
 }
 
 source_set("common") {
