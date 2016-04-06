@@ -55,10 +55,10 @@ const char kDefaultURL[] = "http://www.example.org/";
 const char kUploadData[] = "hello!";
 const int kUploadDataSize = arraysize(kUploadData)-1;
 
-// Chop a SpdyFrame into an array of MockWrites.
+// Chop a SpdySerializedFrame into an array of MockWrites.
 // |frame| is the frame to chop.
 // |num_chunks| is the number of chunks to create.
-MockWrite* ChopWriteFrame(const SpdyFrame& frame, int num_chunks);
+MockWrite* ChopWriteFrame(const SpdySerializedFrame& frame, int num_chunks);
 
 // Adds headers and values to a map.
 // |extra_headers| is an array of { name, value } pairs, arranged as strings
@@ -69,25 +69,26 @@ void AppendToHeaderBlock(const char* const extra_headers[],
                          int extra_header_count,
                          SpdyHeaderBlock* headers);
 
-// Create an async MockWrite from the given SpdyFrame.
-MockWrite CreateMockWrite(const SpdyFrame& req);
+// Create an async MockWrite from the given SpdySerializedFrame.
+MockWrite CreateMockWrite(const SpdySerializedFrame& req);
 
-// Create an async MockWrite from the given SpdyFrame and sequence number.
-MockWrite CreateMockWrite(const SpdyFrame& req, int seq);
+// Create an async MockWrite from the given SpdySerializedFrame and sequence
+// number.
+MockWrite CreateMockWrite(const SpdySerializedFrame& req, int seq);
 
-MockWrite CreateMockWrite(const SpdyFrame& req, int seq, IoMode mode);
+MockWrite CreateMockWrite(const SpdySerializedFrame& req, int seq, IoMode mode);
 
-// Create a MockRead from the given SpdyFrame.
-MockRead CreateMockRead(const SpdyFrame& resp);
+// Create a MockRead from the given SpdySerializedFrame.
+MockRead CreateMockRead(const SpdySerializedFrame& resp);
 
-// Create a MockRead from the given SpdyFrame and sequence number.
-MockRead CreateMockRead(const SpdyFrame& resp, int seq);
+// Create a MockRead from the given SpdySerializedFrame and sequence number.
+MockRead CreateMockRead(const SpdySerializedFrame& resp, int seq);
 
-MockRead CreateMockRead(const SpdyFrame& resp, int seq, IoMode mode);
+MockRead CreateMockRead(const SpdySerializedFrame& resp, int seq, IoMode mode);
 
-// Combines the given SpdyFrames into the given char array and returns
+// Combines the given SpdySerializedFrame into the given char array and returns
 // the total length.
-int CombineFrames(const SpdyFrame** frames,
+int CombineFrames(const SpdySerializedFrame** frames,
                   int num_frames,
                   char* buf,
                   int buf_len);
@@ -95,7 +96,7 @@ int CombineFrames(const SpdyFrame** frames,
 // Returns the SpdyPriority embedded in the given frame.  Returns true
 // and fills in |priority| on success.
 bool GetSpdyPriority(SpdyMajorVersion version,
-                     const SpdyFrame& frame,
+                     const SpdySerializedFrame& frame,
                      SpdyPriority* priority);
 
 // Tries to create a stream in |session| synchronously. Returns NULL
@@ -306,7 +307,7 @@ class SpdyTestUtil {
   // Construct a SPDY frame.  If it is a SYN_STREAM or SYN_REPLY frame (as
   // specified in header_info.kind), the provided headers are included in the
   // frame.
-  SpdyFrame* ConstructSpdyFrame(
+  SpdySerializedFrame* ConstructSpdyFrame(
       const SpdyHeaderInfo& header_info,
       scoped_ptr<SpdyHeaderBlock> headers) const;
 
@@ -314,11 +315,11 @@ class SpdyTestUtil {
   // specified in header_info.kind), the headers provided in extra_headers and
   // (if non-NULL) tail_headers are concatenated and included in the frame.
   // (extra_headers must always be non-NULL.)
-  SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
-                                const char* const extra_headers[],
-                                int extra_header_count,
-                                const char* const tail_headers[],
-                                int tail_header_count) const;
+  SpdySerializedFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
+                                          const char* const extra_headers[],
+                                          int extra_header_count,
+                                          const char* const tail_headers[],
+                                          int tail_header_count) const;
 
   // Construct an expected SPDY reply string from the given headers.
   std::string ConstructSpdyReplyString(const SpdyHeaderBlock& headers) const;
@@ -326,181 +327,189 @@ class SpdyTestUtil {
   // Construct an expected SPDY SETTINGS frame.
   // |settings| are the settings to set.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdySettings(const SettingsMap& settings);
+  SpdySerializedFrame* ConstructSpdySettings(const SettingsMap& settings);
 
   // Constructs an expected SPDY SETTINGS acknowledgement frame, if the protocol
   // version is SPDY4 or higher, or an empty placeholder frame otherwise.
-  SpdyFrame* ConstructSpdySettingsAck();
+  SpdySerializedFrame* ConstructSpdySettingsAck();
 
   // Construct a SPDY PING frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyPing(uint32_t ping_id, bool is_ack);
+  SpdySerializedFrame* ConstructSpdyPing(uint32_t ping_id, bool is_ack);
 
   // Construct a SPDY GOAWAY frame with last_good_stream_id = 0.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyGoAway();
+  SpdySerializedFrame* ConstructSpdyGoAway();
 
   // Construct a SPDY GOAWAY frame with the specified last_good_stream_id.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id);
+  SpdySerializedFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id);
 
   // Construct a SPDY GOAWAY frame with the specified last_good_stream_id,
   // status, and description. Returns the constructed frame. The caller takes
   // ownership of the frame.
-  SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id,
-                                 SpdyGoAwayStatus status,
-                                 const std::string& desc);
+  SpdySerializedFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id,
+                                           SpdyGoAwayStatus status,
+                                           const std::string& desc);
 
   // Construct a SPDY WINDOW_UPDATE frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyWindowUpdate(SpdyStreamId stream_id,
-                                       uint32_t delta_window_size);
+  SpdySerializedFrame* ConstructSpdyWindowUpdate(SpdyStreamId stream_id,
+                                                 uint32_t delta_window_size);
 
   // Construct a SPDY RST_STREAM frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
-                                    SpdyRstStreamStatus status);
+  SpdySerializedFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
+                                              SpdyRstStreamStatus status);
 
   // Constructs a standard SPDY GET SYN frame for |url| with header compression.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyGet(const char* const url,
-                              SpdyStreamId stream_id,
-                              RequestPriority request_priority);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyGet(const char* const url,
+                                        SpdyStreamId stream_id,
+                                        RequestPriority request_priority);
 
   // Constructs a standard SPDY GET SYN frame with header compression.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.  If |direct| is false, the
   // the full url will be used instead of simply the path.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
-                              int extra_header_count,
-                              int stream_id,
-                              RequestPriority request_priority,
-                              bool direct);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyGet(const char* const extra_headers[],
+                                        int extra_header_count,
+                                        int stream_id,
+                                        RequestPriority request_priority,
+                                        bool direct);
 
   // Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
-  SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
-                                  int extra_header_count,
-                                  int stream_id,
-                                  RequestPriority priority,
-                                  const HostPortPair& host_port_pair);
+  SpdySerializedFrame* ConstructSpdyConnect(const char* const extra_headers[],
+                                            int extra_header_count,
+                                            int stream_id,
+                                            RequestPriority priority,
+                                            const HostPortPair& host_port_pair);
 
   // Constructs a standard SPDY push SYN frame.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
-                               int extra_header_count,
-                               int stream_id,
-                               int associated_stream_id,
-                               const char* url);
-  SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
-                               int extra_header_count,
-                               int stream_id,
-                               int associated_stream_id,
-                               const char* url,
-                               const char* status,
-                               const char* location);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyPush(const char* const extra_headers[],
+                                         int extra_header_count,
+                                         int stream_id,
+                                         int associated_stream_id,
+                                         const char* url);
+  SpdySerializedFrame* ConstructSpdyPush(const char* const extra_headers[],
+                                         int extra_header_count,
+                                         int stream_id,
+                                         int associated_stream_id,
+                                         const char* url,
+                                         const char* status,
+                                         const char* location);
 
-  SpdyFrame* ConstructInitialSpdyPushFrame(scoped_ptr<SpdyHeaderBlock> headers,
-                                           int stream_id,
-                                           int associated_stream_id);
+  SpdySerializedFrame* ConstructInitialSpdyPushFrame(
+      scoped_ptr<SpdyHeaderBlock> headers,
+      int stream_id,
+      int associated_stream_id);
 
-  SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
-                                      const char* const extra_headers[],
-                                      int extra_header_count);
+  SpdySerializedFrame* ConstructSpdyPushHeaders(
+      int stream_id,
+      const char* const extra_headers[],
+      int extra_header_count);
 
   // Constructs a SPDY header frame with the request header compression context
   // with END_STREAM flag set to |fin|.
-  SpdyFrame* ConstructSpdyResponseHeaders(int stream_id,
-                                          const SpdyHeaderBlock& headers,
-                                          bool fin);
+  SpdySerializedFrame* ConstructSpdyResponseHeaders(
+      int stream_id,
+      const SpdyHeaderBlock& headers,
+      bool fin);
 
   // Construct a SPDY syn (HEADERS or SYN_STREAM, depending on protocol
   // version) carrying exactly the given headers and priority.
-  SpdyFrame* ConstructSpdySyn(int stream_id,
-                              const SpdyHeaderBlock& headers,
-                              RequestPriority priority,
-                              bool fin);
+  SpdySerializedFrame* ConstructSpdySyn(int stream_id,
+                                        const SpdyHeaderBlock& headers,
+                                        RequestPriority priority,
+                                        bool fin);
 
   // Construct a SPDY reply (HEADERS or SYN_REPLY, depending on protocol
   // version) carrying exactly the given headers, and the default priority
   // (or no priority, depending on protocol version).
-  SpdyFrame* ConstructSpdyReply(int stream_id, const SpdyHeaderBlock& headers);
+  SpdySerializedFrame* ConstructSpdyReply(int stream_id,
+                                          const SpdyHeaderBlock& headers);
 
   // Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
-                                      int extra_header_count,
-                                      int stream_id);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyGetSynReply(
+      const char* const extra_headers[],
+      int extra_header_count,
+      int stream_id);
 
   // Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyGetSynReplyRedirect(int stream_id);
 
   // Constructs a standard SPDY SYN_REPLY frame with an Internal Server
   // Error status code.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdySynReplyError(int stream_id);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdySynReplyError(int stream_id);
 
   // Constructs a standard SPDY SYN_REPLY frame with the specified status code.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdySynReplyError(const char* const status,
-                                        const char* const* const extra_headers,
-                                        int extra_header_count,
-                                        int stream_id);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdySynReplyError(
+      const char* const status,
+      const char* const* const extra_headers,
+      int extra_header_count,
+      int stream_id);
 
   // Constructs a standard SPDY POST SYN frame.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyPost(const char* url,
-                               SpdyStreamId stream_id,
-                               int64_t content_length,
-                               RequestPriority priority,
-                               const char* const extra_headers[],
-                               int extra_header_count);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyPost(const char* url,
+                                         SpdyStreamId stream_id,
+                                         int64_t content_length,
+                                         RequestPriority priority,
+                                         const char* const extra_headers[],
+                                         int extra_header_count);
 
   // Constructs a chunked transfer SPDY POST SYN frame.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
-                                      int extra_header_count);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructChunkedSpdyPost(
+      const char* const extra_headers[],
+      int extra_header_count);
 
   // Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdyFrame.
-  SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
-                                       int extra_header_count);
+  // Returns a SpdySerializedFrame.
+  SpdySerializedFrame* ConstructSpdyPostSynReply(
+      const char* const extra_headers[],
+      int extra_header_count);
 
   // Constructs a single SPDY data frame with the contents "hello!"
-  SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
-                                    bool fin);
+  SpdySerializedFrame* ConstructSpdyBodyFrame(int stream_id, bool fin);
 
   // Constructs a single SPDY data frame with the given content.
-  SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
-                                    const char* data,
-                                    uint32_t len,
-                                    bool fin);
+  SpdySerializedFrame* ConstructSpdyBodyFrame(int stream_id,
+                                              const char* data,
+                                              uint32_t len,
+                                              bool fin);
 
   // Constructs a single SPDY data frame with the given content and padding.
-  SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
-                                    const char* data,
-                                    uint32_t len,
-                                    bool fin,
-                                    int padding_length);
+  SpdySerializedFrame* ConstructSpdyBodyFrame(int stream_id,
+                                              const char* data,
+                                              uint32_t len,
+                                              bool fin,
+                                              int padding_length);
 
   // Wraps |frame| in the payload of a data frame in stream |stream_id|.
-  SpdyFrame* ConstructWrappedSpdyFrame(const scoped_ptr<SpdyFrame>& frame,
-                                       int stream_id);
+  SpdySerializedFrame* ConstructWrappedSpdyFrame(
+      const scoped_ptr<SpdySerializedFrame>& frame,
+      int stream_id);
 
   // Called when necessary (when it will affect stream dependency specification
   // when setting dependencies based on priorioties) to notify the utility

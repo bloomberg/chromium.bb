@@ -118,13 +118,13 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     goaway_debug_data_.assign(debug_data.data(), debug_data.size());
   }
 
-  void OnDataFrameHeader(const SpdyFrame* frame) {
+  void OnDataFrameHeader(const SpdySerializedFrame* frame) {
     LOG(FATAL) << "Unexpected OnDataFrameHeader call.";
   }
 
-  void OnRstStream(const SpdyFrame& frame) {}
-  void OnGoAway(const SpdyFrame& frame) {}
-  void OnPing(const SpdyFrame& frame) {}
+  void OnRstStream(const SpdySerializedFrame& frame) {}
+  void OnGoAway(const SpdySerializedFrame& frame) {}
+  void OnPing(const SpdySerializedFrame& frame) {}
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {}
 
   void OnPushPromise(SpdyStreamId stream_id,
@@ -208,12 +208,12 @@ TEST_P(BufferedSpdyFramerTest, OnSetting) {
   SpdySettingsIR settings_ir;
   settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, false, false, 2);
   settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, false, false, 3);
-  scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
+  SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
   TestBufferedSpdyVisitor visitor(spdy_version());
 
   visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->size());
+      reinterpret_cast<unsigned char*>(control_frame.data()),
+      control_frame.size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(2, visitor.setting_count_);
 }
@@ -227,12 +227,11 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
   headers["aa"] = "vv";
   headers["bb"] = "ww";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateSynStream(1,                        // stream_id
-                             0,                        // associated_stream_id
-                             1,                        // priority
-                             CONTROL_FLAG_NONE,
-                             &headers));
+  scoped_ptr<SpdySerializedFrame> control_frame(
+      framer.CreateSynStream(1,  // stream_id
+                             0,  // associated_stream_id
+                             1,  // priority
+                             CONTROL_FLAG_NONE, &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -256,10 +255,9 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateSynReply(1,                        // stream_id
-                            CONTROL_FLAG_NONE,
-                            &headers));
+  scoped_ptr<SpdySerializedFrame> control_frame(
+      framer.CreateSynReply(1,  // stream_id
+                            CONTROL_FLAG_NONE, &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -284,10 +282,10 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateHeaders(1,                        // stream_id
+  scoped_ptr<SpdySerializedFrame> control_frame(
+      framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
-                           0,                        // priority
+                           0,  // priority
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
@@ -310,7 +308,7 @@ TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdyFrame> control_frame(
+  scoped_ptr<SpdySerializedFrame> control_frame(
       framer.CreatePushPromise(1, 2, &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
@@ -332,7 +330,7 @@ TEST_P(BufferedSpdyFramerTest, GoAwayDebugData) {
   if (spdy_version() < HTTP2)
     return;
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdyFrame> goaway_frame(
+  scoped_ptr<SpdySerializedFrame> goaway_frame(
       framer.CreateGoAway(2u, GOAWAY_FRAME_SIZE_ERROR, "foo"));
 
   TestBufferedSpdyVisitor visitor(spdy_version());

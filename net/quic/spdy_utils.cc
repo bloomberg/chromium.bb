@@ -28,8 +28,8 @@ string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
   SpdyFrameBuilder builder(length, spdy_version);
   SpdyFramer framer(spdy_version);
   framer.SerializeHeaderBlockWithoutCompression(&builder, headers);
-  scoped_ptr<SpdyFrame> block(builder.take());
-  return string(block->data(), length);
+  SpdySerializedFrame block(builder.take());
+  return string(block.data(), length);
 }
 
 // static

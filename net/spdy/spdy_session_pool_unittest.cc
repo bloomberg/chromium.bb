@@ -526,7 +526,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  scoped_ptr<SpdyFrame> req(
+  scoped_ptr<SpdySerializedFrame> req(
       spdy_util.ConstructSpdyGet("http://www.a.com", 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(*req, 1)};
 

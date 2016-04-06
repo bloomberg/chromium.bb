@@ -223,11 +223,10 @@ size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
     headers_frame.set_has_priority(true);
     headers_frame.set_priority(priority);
   }
-  scoped_ptr<SpdySerializedFrame> frame(
-      spdy_framer_.SerializeFrame(headers_frame));
-  WriteOrBufferData(StringPiece(frame->data(), frame->size()), false,
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
+  WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,
                     ack_listener);
-  return frame->size();
+  return frame.size();
 }
 
 size_t QuicHeadersStream::WritePushPromise(
@@ -246,11 +245,10 @@ size_t QuicHeadersStream::WritePushPromise(
   // response headers.
   push_promise.set_fin(false);
 
-  scoped_ptr<SpdySerializedFrame> frame(
-      spdy_framer_.SerializeFrame(push_promise));
-  WriteOrBufferData(StringPiece(frame->data(), frame->size()), false,
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(push_promise));
+  WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,
                     ack_listener);
-  return frame->size();
+  return frame.size();
 }
 
 void QuicHeadersStream::OnDataAvailable() {

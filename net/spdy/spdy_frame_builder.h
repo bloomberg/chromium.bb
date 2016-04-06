@@ -74,13 +74,13 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
                      SpdyStreamId stream_id);
 
   // Takes the buffer from the SpdyFrameBuilder.
-  SpdyFrame* take() {
+  SpdySerializedFrame take() {
     if (version_ == HTTP2) {
       DLOG_IF(DFATAL, SpdyConstants::GetFrameMaximumSize(version_) < length_)
           << "Frame length " << length_
           << " is longer than the maximum allowed length.";
     }
-    SpdyFrame* rv = new SpdyFrame(buffer_.release(), length(), true);
+    SpdySerializedFrame rv(buffer_.release(), length(), true);
     capacity_ = 0;
     length_ = 0;
     offset_ = 0;

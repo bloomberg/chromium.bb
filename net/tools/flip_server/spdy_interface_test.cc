@@ -236,7 +236,8 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData) {
   SpdyHeaderBlock block;
   testing::MockFunction<void(int)> checkpoint;  // NOLINT
 
-  scoped_ptr<SpdyFrame> frame(spdy_framer_->CreatePingFrame(12, false));
+  scoped_ptr<SpdySerializedFrame> frame(
+      spdy_framer_->CreatePingFrame(12, false));
   block[":method"] = "GET";
   block[":host"] = "www.example.com";
   block[":path"] = "/path";

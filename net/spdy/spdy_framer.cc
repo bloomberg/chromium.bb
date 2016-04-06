@@ -1719,13 +1719,13 @@ void SpdyFramer::DeliverHpackBlockAsSpdy3Block(size_t compressed_len) {
   SpdyFrameBuilder builder(payload_len, SPDY3);
 
   SerializeHeaderBlockWithoutCompression(&builder, block);
-  scoped_ptr<SpdyFrame> frame(builder.take());
+  SpdySerializedFrame frame = builder.take();
 
   // Preserve padding length, and reset it after the re-entrant call.
   size_t remaining_padding = remaining_padding_payload_length_;
 
   remaining_padding_payload_length_ = 0;
-  remaining_data_length_ = frame->size();
+  remaining_data_length_ = frame.size();
 
   if (payload_len != 0) {
     int compression_pct = 100 - (100 * compressed_len) / payload_len;
@@ -1734,7 +1734,7 @@ void SpdyFramer::DeliverHpackBlockAsSpdy3Block(size_t compressed_len) {
                              compression_pct);
   }
 
-  ProcessControlFrameHeaderBlock(frame->data(), frame->size(), false);
+  ProcessControlFrameHeaderBlock(frame.data(), frame.size(), false);
 
   remaining_padding_payload_length_ = remaining_padding;
   remaining_data_length_ = remaining_padding;
@@ -2206,8 +2206,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
   return true;
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeData(
-    const SpdyDataIR& data_ir) const {
+SpdySerializedFrame SpdyFramer::SerializeData(const SpdyDataIR& data_ir) const {
   uint8_t flags = DATA_FLAG_NONE;
   if (data_ir.fin()) {
     flags = DATA_FLAG_FIN;
@@ -2245,7 +2244,7 @@ SpdySerializedFrame* SpdyFramer::SerializeData(
   }
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
+SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
     const SpdyDataIR& data_ir) const {
   uint8_t flags = DATA_FLAG_NONE;
   if (data_ir.fin()) {
@@ -2277,7 +2276,7 @@ SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeSynStream(
+SpdySerializedFrame SpdyFramer::SerializeSynStream(
     const SpdySynStreamIR& syn_stream) {
   DCHECK_EQ(SPDY3, protocol_version_);
   uint8_t flags = 0;
@@ -2320,7 +2319,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeSynReply(
+SpdySerializedFrame SpdyFramer::SerializeSynReply(
     const SpdySynReplyIR& syn_reply) {
   DCHECK_EQ(SPDY3, protocol_version_);
   uint8_t flags = 0;
@@ -2350,7 +2349,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeRstStream(
+SpdySerializedFrame SpdyFramer::SerializeRstStream(
     const SpdyRstStreamIR& rst_stream) const {
   // TODO(jgraettinger): For now, Chromium will support parsing RST_STREAM
   // payloads, but will not emit them. SPDY4 is used for draft HTTP/2,
@@ -2375,7 +2374,7 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeSettings(
+SpdySerializedFrame SpdyFramer::SerializeSettings(
     const SpdySettingsIR& settings) const {
   uint8_t flags = 0;
 
@@ -2437,7 +2436,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
+SpdySerializedFrame SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
   SpdyFrameBuilder builder(GetPingSize(), protocol_version_);
   if (protocol_version_ == SPDY3) {
     builder.WriteControlFrameHeader(*this, PING, kNoFlags);
@@ -2454,9 +2453,8 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeGoAway(
+SpdySerializedFrame SpdyFramer::SerializeGoAway(
     const SpdyGoAwayIR& goaway) const {
-
   // Compute the output buffer size, take opaque data into account.
   size_t expected_length = GetGoAwayMinimumSize();
   if (protocol_version_ == HTTP2) {
@@ -2488,8 +2486,7 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeHeaders(
-    const SpdyHeadersIR& headers) {
+SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
   uint8_t flags = 0;
   if (headers.fin()) {
     flags |= CONTROL_FLAG_FIN;
@@ -2589,7 +2586,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   return builder.take();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
+SpdySerializedFrame SpdyFramer::SerializeWindowUpdate(
     const SpdyWindowUpdateIR& window_update) const {
   SpdyFrameBuilder builder(GetWindowUpdateSize(), protocol_version_);
   if (protocol_version_ == SPDY3) {
@@ -2606,14 +2603,15 @@ SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked) const {
+SpdySerializedFrame SpdyFramer::SerializeBlocked(
+    const SpdyBlockedIR& blocked) const {
   DCHECK_EQ(HTTP2, protocol_version_);
   SpdyFrameBuilder builder(GetBlockedSize(), protocol_version_);
   builder.BeginNewFrame(*this, BLOCKED, kNoFlags, blocked.stream_id());
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializePushPromise(
+SpdySerializedFrame SpdyFramer::SerializePushPromise(
     const SpdyPushPromiseIR& push_promise) {
   DCHECK_EQ(HTTP2, protocol_version_);
   uint8_t flags = 0;
@@ -2685,7 +2683,7 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
 // TODO(jgraettinger): This implementation is incorrect. The continuation
 // frame continues a previously-begun HPACK encoding; it doesn't begin a
 // new one. Figure out whether it makes sense to keep SerializeContinuation().
-SpdyFrame* SpdyFramer::SerializeContinuation(
+SpdySerializedFrame SpdyFramer::SerializeContinuation(
     const SpdyContinuationIR& continuation) {
   CHECK_EQ(HTTP2, protocol_version_);
   uint8_t flags = 0;
@@ -2714,7 +2712,7 @@ SpdyFrame* SpdyFramer::SerializeContinuation(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc_ir) {
+SpdySerializedFrame SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc_ir) {
   DCHECK_EQ(HTTP2, protocol_version_);
 
   size_t size = GetAltSvcMinimumSize();
@@ -2733,7 +2731,8 @@ SpdyFrame* SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc_ir) {
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializePriority(const SpdyPriorityIR& priority) const {
+SpdySerializedFrame SpdyFramer::SerializePriority(
+    const SpdyPriorityIR& priority) const {
   DCHECK_EQ(HTTP2, protocol_version_);
   size_t size = GetPrioritySize();
 
@@ -2751,62 +2750,63 @@ namespace {
 
 class FrameSerializationVisitor : public SpdyFrameVisitor {
  public:
-  explicit FrameSerializationVisitor(SpdyFramer* framer) : framer_(framer) {}
+  explicit FrameSerializationVisitor(SpdyFramer* framer)
+      : framer_(framer), frame_() {}
   ~FrameSerializationVisitor() override {}
 
-  SpdySerializedFrame* ReleaseSerializedFrame() { return frame_.release(); }
+  SpdySerializedFrame ReleaseSerializedFrame() { return std::move(frame_); }
 
   void VisitData(const SpdyDataIR& data) override {
-    frame_.reset(framer_->SerializeData(data));
+    frame_ = framer_->SerializeData(data);
   }
   void VisitSynStream(const SpdySynStreamIR& syn_stream) override {
-    frame_.reset(framer_->SerializeSynStream(syn_stream));
+    frame_ = framer_->SerializeSynStream(syn_stream);
   }
   void VisitSynReply(const SpdySynReplyIR& syn_reply) override {
-    frame_.reset(framer_->SerializeSynReply(syn_reply));
+    frame_ = framer_->SerializeSynReply(syn_reply);
   }
   void VisitRstStream(const SpdyRstStreamIR& rst_stream) override {
-    frame_.reset(framer_->SerializeRstStream(rst_stream));
+    frame_ = framer_->SerializeRstStream(rst_stream);
   }
   void VisitSettings(const SpdySettingsIR& settings) override {
-    frame_.reset(framer_->SerializeSettings(settings));
+    frame_ = framer_->SerializeSettings(settings);
   }
   void VisitPing(const SpdyPingIR& ping) override {
-    frame_.reset(framer_->SerializePing(ping));
+    frame_ = framer_->SerializePing(ping);
   }
   void VisitGoAway(const SpdyGoAwayIR& goaway) override {
-    frame_.reset(framer_->SerializeGoAway(goaway));
+    frame_ = framer_->SerializeGoAway(goaway);
   }
   void VisitHeaders(const SpdyHeadersIR& headers) override {
-    frame_.reset(framer_->SerializeHeaders(headers));
+    frame_ = framer_->SerializeHeaders(headers);
   }
   void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) override {
-    frame_.reset(framer_->SerializeWindowUpdate(window_update));
+    frame_ = framer_->SerializeWindowUpdate(window_update);
   }
   void VisitBlocked(const SpdyBlockedIR& blocked) override {
-    frame_.reset(framer_->SerializeBlocked(blocked));
+    frame_ = framer_->SerializeBlocked(blocked);
   }
   void VisitPushPromise(const SpdyPushPromiseIR& push_promise) override {
-    frame_.reset(framer_->SerializePushPromise(push_promise));
+    frame_ = framer_->SerializePushPromise(push_promise);
   }
   void VisitContinuation(const SpdyContinuationIR& continuation) override {
-    frame_.reset(framer_->SerializeContinuation(continuation));
+    frame_ = framer_->SerializeContinuation(continuation);
   }
   void VisitAltSvc(const SpdyAltSvcIR& altsvc) override {
-    frame_.reset(framer_->SerializeAltSvc(altsvc));
+    frame_ = framer_->SerializeAltSvc(altsvc);
   }
   void VisitPriority(const SpdyPriorityIR& priority) override {
-    frame_.reset(framer_->SerializePriority(priority));
+    frame_ = framer_->SerializePriority(priority);
   }
 
  private:
   SpdyFramer* framer_;
-  scoped_ptr<SpdySerializedFrame> frame_;
+  SpdySerializedFrame frame_;
 };
 
 }  // namespace
 
-SpdySerializedFrame* SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
+SpdySerializedFrame SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
   FrameSerializationVisitor visitor(this);
   frame.Visit(&visitor);
   return visitor.ReleaseSerializedFrame();
@@ -3097,7 +3097,7 @@ void SpdyFramer::SerializeHeaderBlock(SpdyFrameBuilder* builder,
   SpdyFrameBuilder uncompressed_builder(uncompressed_len, protocol_version_);
   SerializeHeaderBlockWithoutCompression(&uncompressed_builder,
                                          frame.header_block());
-  scoped_ptr<SpdyFrame> uncompressed_payload(uncompressed_builder.take());
+  SpdySerializedFrame uncompressed_payload(uncompressed_builder.take());
 
   z_stream* compressor = GetHeaderCompressor();
   if (!compressor) {
@@ -3116,7 +3116,7 @@ void SpdyFramer::SerializeHeaderBlock(SpdyFrameBuilder* builder,
   // TODO(phajdan.jr): Clean up after we no longer need
   // to workaround http://crbug.com/139744.
 #if defined(USE_SYSTEM_ZLIB)
-  compressor->next_in = reinterpret_cast<Bytef*>(uncompressed_payload->data());
+  compressor->next_in = reinterpret_cast<Bytef*>(uncompressed_payload.data());
   compressor->avail_in = uncompressed_len;
 #endif  // defined(USE_SYSTEM_ZLIB)
   compressor->next_out = reinterpret_cast<Bytef*>(

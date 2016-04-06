@@ -22,14 +22,15 @@ std::string SpdySM::forward_ip_header_;
 
 class SpdyFrameDataFrame : public DataFrame {
  public:
-  explicit SpdyFrameDataFrame(SpdyFrame* spdy_frame) : frame(spdy_frame) {
+  explicit SpdyFrameDataFrame(SpdySerializedFrame* spdy_frame)
+      : frame(spdy_frame) {
     data = spdy_frame->data();
     size = spdy_frame->size();
   }
 
   ~SpdyFrameDataFrame() override { delete frame; }
 
-  const SpdyFrame* frame;
+  const SpdySerializedFrame* frame;
 };
 
 SpdySM::SpdySM(SMConnection* connection,
@@ -344,7 +345,8 @@ int SpdySM::PostAcceptHook() {
   SettingsMap settings;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 100);
-  SpdyFrame* settings_frame = buffered_spdy_framer_->CreateSettings(settings);
+  SpdySerializedFrame* settings_frame =
+      buffered_spdy_framer_->CreateSettings(settings);
 
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";
   EnqueueDataFrame(new SpdyFrameDataFrame(settings_frame));
@@ -467,7 +469,7 @@ size_t SpdySM::SendSynStreamImpl(uint32_t stream_id,
   }
 
   DCHECK(buffered_spdy_framer_);
-  SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
+  SpdySerializedFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
       stream_id, 0, 0, CONTROL_FLAG_NONE, &block);
   size_t df_size = fsrcf->size();
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
@@ -486,7 +488,7 @@ size_t SpdySM::SendSynReplyImpl(uint32_t stream_id,
   block[":version"] = headers.response_version().as_string();
 
   DCHECK(buffered_spdy_framer_);
-  SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
+  SpdySerializedFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
       stream_id, CONTROL_FLAG_NONE, &block);
   size_t df_size = fsrcf->size();
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
@@ -506,7 +508,7 @@ void SpdySM::SendDataFrameImpl(uint32_t stream_id,
   //                 priority queue.  Compression needs to be done
   //                 with late binding.
   if (len == 0) {
-    SpdyFrame* fdf =
+    SpdySerializedFrame* fdf =
         buffered_spdy_framer_->CreateDataFrame(stream_id, data, len, flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
     return;
@@ -523,7 +525,7 @@ void SpdySM::SendDataFrameImpl(uint32_t stream_id,
     if ((size < len) && (flags & DATA_FLAG_FIN))
       chunk_flags = static_cast<SpdyDataFlags>(chunk_flags & ~DATA_FLAG_FIN);
 
-    SpdyFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
+    SpdySerializedFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
         stream_id, data, size, chunk_flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
 

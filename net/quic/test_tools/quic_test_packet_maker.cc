@@ -341,34 +341,34 @@ scoped_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     size_t* spdy_headers_frame_length,
     QuicStreamOffset* offset) {
   InitializeHeader(packet_number, should_include_version);
-  scoped_ptr<SpdySerializedFrame> spdy_frame;
+  SpdySerializedFrame spdy_frame;
   if (spdy_request_framer_.protocol_version() == SPDY3) {
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_header_block(headers);
     syn_stream.set_fin(fin);
     syn_stream.set_priority(priority);
-    spdy_frame.reset(spdy_request_framer_.SerializeSynStream(syn_stream));
+    spdy_frame = spdy_request_framer_.SerializeSynStream(syn_stream);
   } else {
     SpdyHeadersIR headers_frame(stream_id);
     headers_frame.set_header_block(headers);
     headers_frame.set_fin(fin);
     headers_frame.set_priority(priority);
     headers_frame.set_has_priority(true);
-    spdy_frame.reset(spdy_request_framer_.SerializeFrame(headers_frame));
+    spdy_frame = spdy_request_framer_.SerializeFrame(headers_frame);
   }
   if (spdy_headers_frame_length) {
-    *spdy_headers_frame_length = spdy_frame->size();
+    *spdy_headers_frame_length = spdy_frame.size();
   }
   if (offset != nullptr) {
     QuicStreamFrame frame(
         kHeadersStreamId, false, *offset,
-        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
-    *offset += spdy_frame->size();
+        base::StringPiece(spdy_frame.data(), spdy_frame.size()));
+    *offset += spdy_frame.size();
     return MakePacket(header_, QuicFrame(&frame));
   } else {
     QuicStreamFrame frame(
         kHeadersStreamId, false, 0,
-        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
+        base::StringPiece(spdy_frame.data(), spdy_frame.size()));
 
     return MakePacket(header_, QuicFrame(&frame));
   }
@@ -401,31 +401,31 @@ scoped_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
     size_t* spdy_headers_frame_length,
     QuicStreamOffset* offset) {
   InitializeHeader(packet_number, should_include_version);
-  scoped_ptr<SpdySerializedFrame> spdy_frame;
+  SpdySerializedFrame spdy_frame;
   if (spdy_response_framer_.protocol_version() == SPDY3) {
     SpdySynReplyIR syn_reply(stream_id);
     syn_reply.set_header_block(headers);
     syn_reply.set_fin(fin);
-    spdy_frame.reset(spdy_response_framer_.SerializeSynReply(syn_reply));
+    spdy_frame = spdy_response_framer_.SerializeSynReply(syn_reply);
   } else {
     SpdyHeadersIR headers_frame(stream_id);
     headers_frame.set_header_block(headers);
     headers_frame.set_fin(fin);
-    spdy_frame.reset(spdy_response_framer_.SerializeFrame(headers_frame));
+    spdy_frame = spdy_response_framer_.SerializeFrame(headers_frame);
   }
   if (spdy_headers_frame_length) {
-    *spdy_headers_frame_length = spdy_frame->size();
+    *spdy_headers_frame_length = spdy_frame.size();
   }
   if (offset != nullptr) {
     QuicStreamFrame frame(
         kHeadersStreamId, false, *offset,
-        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
-    *offset += spdy_frame->size();
+        base::StringPiece(spdy_frame.data(), spdy_frame.size()));
+    *offset += spdy_frame.size();
     return MakePacket(header_, QuicFrame(&frame));
   } else {
     QuicStreamFrame frame(
         kHeadersStreamId, false, 0,
-        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
+        base::StringPiece(spdy_frame.data(), spdy_frame.size()));
     return MakePacket(header_, QuicFrame(&frame));
   }
 }

@@ -203,7 +203,7 @@ void SpdyStream::PushedStreamReplay() {
   }
 }
 
-scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
+scoped_ptr<SpdySerializedFrame> SpdyStream::ProduceSynStreamFrame() {
   CHECK_EQ(io_state_, STATE_IDLE);
   CHECK(request_headers_);
   CHECK_GT(stream_id_, 0u);
@@ -211,7 +211,7 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
   SpdyControlFlags flags =
       (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
-  scoped_ptr<SpdyFrame> frame(session_->CreateSynStream(
+  scoped_ptr<SpdySerializedFrame> frame(session_->CreateSynStream(
       stream_id_, priority_, flags, *request_headers_));
   send_time_ = base::TimeTicks::Now();
   return frame;

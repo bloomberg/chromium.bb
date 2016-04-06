@@ -162,12 +162,13 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
 }
 
 TEST_P(SpdyHttpStreamTest, SendRequest) {
-  scoped_ptr<SpdyFrame> req(
+  scoped_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
       CreateMockWrite(*req.get(), 0),
   };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
@@ -222,21 +223,21 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 }
 
 TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
-  scoped_ptr<SpdyFrame> req1(
+  scoped_ptr<SpdySerializedFrame> req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> req2(
+  scoped_ptr<SpdySerializedFrame> req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
     CreateMockWrite(*req2, 1),
   };
-  scoped_ptr<SpdyFrame> resp1(
+  scoped_ptr<SpdySerializedFrame> resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> body1(
+  scoped_ptr<SpdySerializedFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
-  scoped_ptr<SpdyFrame> resp2(
+  scoped_ptr<SpdySerializedFrame> resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdyFrame> body2(
+  scoped_ptr<SpdySerializedFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, "", 0, true));
   MockRead reads[] = {
     CreateMockRead(*resp1, 2),
@@ -324,16 +325,17 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
-  scoped_ptr<SpdyFrame> req(
+  scoped_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> body(
+  scoped_ptr<SpdySerializedFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),  // request
       CreateMockWrite(*body, 1)  // POST upload frame
   };
 
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
       CreateMockRead(*resp, 2),
       CreateMockRead(*body, 3),
@@ -388,15 +390,17 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> body(
+  scoped_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_NONE));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),  // Request
       CreateMockWrite(*body, 1)  // First POST upload frame
   };
 
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
       MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2)  // Server hangs up early.
   };
@@ -457,19 +461,22 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   const char kUploadData1[] = "12345678";
   const int kUploadData1Size = arraysize(kUploadData1)-1;
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, false));
-  scoped_ptr<SpdyFrame> chunk2(
-      spdy_util_.ConstructSpdyBodyFrame(
-          1, kUploadData1, kUploadData1Size, false));
-  scoped_ptr<SpdyFrame> chunk3(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  scoped_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> chunk1(
+      spdy_util_.ConstructSpdyBodyFrame(1, false));
+  scoped_ptr<SpdySerializedFrame> chunk2(spdy_util_.ConstructSpdyBodyFrame(
+      1, kUploadData1, kUploadData1Size, false));
+  scoped_ptr<SpdySerializedFrame> chunk3(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*chunk1, 1),  // POST upload frames
     CreateMockWrite(*chunk2, 2),
     CreateMockWrite(*chunk3, 3),
   };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 4),
     CreateMockRead(*chunk1, 5),
@@ -557,16 +564,19 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
 // Test that the SpdyStream state machine can handle sending a final empty data
 // frame when uploading a chunked data stream.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, false));
-  scoped_ptr<SpdyFrame> chunk2(
+  scoped_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> chunk1(
+      spdy_util_.ConstructSpdyBodyFrame(1, false));
+  scoped_ptr<SpdySerializedFrame> chunk2(
       spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*chunk1, 1),  // POST upload frames
     CreateMockWrite(*chunk2, 2),
   };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 3),
     CreateMockRead(*chunk1, 4),
@@ -646,14 +656,16 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
 // Test that the SpdyStream state machine handles a chunked upload with no
 // payload. Unclear if this is a case worth supporting.
 TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk(
+  scoped_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> chunk(
       spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*chunk, 1),
   };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 2),
     CreateMockRead(*chunk, 3),
@@ -716,11 +728,13 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
 TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   const char* const full_url = "http://www.example.org/foo?query=what#anchor";
   const char* const base_url = "http://www.example.org/foo?query=what";
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyGet(base_url, 1, LOWEST));
+  scoped_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructSpdyGet(base_url, 1, LOWEST));
   MockWrite writes[] = {
       CreateMockWrite(*req.get(), 0),
   };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
@@ -762,14 +776,17 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
 // made available is handled correctly.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  scoped_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> chunk1(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*chunk1, 1),
   };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  scoped_ptr<SpdyFrame> window_update(
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdySerializedFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   MockRead reads[] = {
       CreateMockRead(*window_update, 2),

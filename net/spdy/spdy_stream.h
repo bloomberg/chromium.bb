@@ -481,11 +481,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Produces the SYN_STREAM frame for the stream. The stream must
   // already be activated.
-  scoped_ptr<SpdyFrame> ProduceSynStreamFrame();
+  scoped_ptr<SpdySerializedFrame> ProduceSynStreamFrame();
 
   // Produce the initial HEADER frame for the stream with the given
   // block. The stream must already be activated.
-  scoped_ptr<SpdyFrame> ProduceHeaderFrame(
+  scoped_ptr<SpdySerializedFrame> ProduceHeaderFrame(
       scoped_ptr<SpdyHeaderBlock> header_block);
 
   // Queues the send for next frame of the remaining data in

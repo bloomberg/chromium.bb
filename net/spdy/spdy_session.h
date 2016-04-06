@@ -366,7 +366,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                           scoped_ptr<SpdyBufferProducer> producer);
 
   // Creates and returns a SYN frame for |stream_id|.
-  scoped_ptr<SpdyFrame> CreateSynStream(
+  scoped_ptr<SpdySerializedFrame> CreateSynStream(
       SpdyStreamId stream_id,
       RequestPriority priority,
       SpdyControlFlags flags,
@@ -789,7 +789,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // queue for the session.
   void EnqueueSessionWrite(RequestPriority priority,
                            SpdyFrameType frame_type,
-                           scoped_ptr<SpdyFrame> frame);
+                           scoped_ptr<SpdySerializedFrame> frame);
 
   // Puts |producer| associated with |stream| onto the write queue
   // with the given priority.

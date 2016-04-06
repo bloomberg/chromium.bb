@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
  public:
   BufferedSpdyFramerVisitorInterface() {}
 
-  // Called if an error is detected in the SpdyFrame protocol.
+  // Called if an error is detected in the SpdySerializedFrame protocol.
   virtual void OnError(SpdyFramer::SpdyError error_code) = 0;
 
   // Called if an error is detected in a SPDY stream.
@@ -213,37 +213,37 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFramer::SpdyState state() const;
   bool MessageFullyRead();
   bool HasError();
-  SpdyFrame* CreateSynStream(SpdyStreamId stream_id,
-                             SpdyStreamId associated_stream_id,
-                             SpdyPriority priority,
-                             SpdyControlFlags flags,
-                             const SpdyHeaderBlock* headers);
-  SpdyFrame* CreateSynReply(SpdyStreamId stream_id,
-                            SpdyControlFlags flags,
-                            const SpdyHeaderBlock* headers);
-  SpdyFrame* CreateRstStream(SpdyStreamId stream_id,
-                             SpdyRstStreamStatus status) const;
-  SpdyFrame* CreateSettings(const SettingsMap& values) const;
-  SpdyFrame* CreatePingFrame(SpdyPingId unique_id, bool is_ack) const;
-  SpdyFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
-                          SpdyGoAwayStatus status,
-                          base::StringPiece debug_data) const;
-  SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
-                           SpdyControlFlags flags,
-                           SpdyPriority priority,
-                           const SpdyHeaderBlock* headers);
-  SpdyFrame* CreateWindowUpdate(SpdyStreamId stream_id,
-                                uint32_t delta_window_size) const;
-  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id,
-                             const char* data,
-                             uint32_t len,
-                             SpdyDataFlags flags);
-  SpdyFrame* CreatePushPromise(SpdyStreamId stream_id,
-                               SpdyStreamId promised_stream_id,
-                               const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* CreateSynStream(SpdyStreamId stream_id,
+                                       SpdyStreamId associated_stream_id,
+                                       SpdyPriority priority,
+                                       SpdyControlFlags flags,
+                                       const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* CreateSynReply(SpdyStreamId stream_id,
+                                      SpdyControlFlags flags,
+                                      const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* CreateRstStream(SpdyStreamId stream_id,
+                                       SpdyRstStreamStatus status) const;
+  SpdySerializedFrame* CreateSettings(const SettingsMap& values) const;
+  SpdySerializedFrame* CreatePingFrame(SpdyPingId unique_id, bool is_ack) const;
+  SpdySerializedFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
+                                    SpdyGoAwayStatus status,
+                                    base::StringPiece debug_data) const;
+  SpdySerializedFrame* CreateHeaders(SpdyStreamId stream_id,
+                                     SpdyControlFlags flags,
+                                     SpdyPriority priority,
+                                     const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* CreateWindowUpdate(SpdyStreamId stream_id,
+                                          uint32_t delta_window_size) const;
+  SpdySerializedFrame* CreateDataFrame(SpdyStreamId stream_id,
+                                       const char* data,
+                                       uint32_t len,
+                                       SpdyDataFlags flags);
+  SpdySerializedFrame* CreatePushPromise(SpdyStreamId stream_id,
+                                         SpdyStreamId promised_stream_id,
+                                         const SpdyHeaderBlock* headers);
 
   // Serialize a frame of unknown type.
-  SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame) {
+  SpdySerializedFrame SerializeFrame(const SpdyFrameIR& frame) {
     return spdy_framer_.SerializeFrame(frame);
   }
 

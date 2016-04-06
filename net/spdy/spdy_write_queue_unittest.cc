@@ -35,12 +35,9 @@ class SpdyWriteQueueTest : public ::testing::Test {};
 scoped_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
   scoped_ptr<char[]> data(new char[s.size()]);
   std::memcpy(data.get(), s.data(), s.size());
-  return scoped_ptr<SpdyBufferProducer>(
-      new SimpleBufferProducer(
-          scoped_ptr<SpdyBuffer>(
-              new SpdyBuffer(
-                  scoped_ptr<SpdyFrame>(
-                      new SpdyFrame(data.release(), s.size(), true))))));
+  return scoped_ptr<SpdyBufferProducer>(new SimpleBufferProducer(
+      scoped_ptr<SpdyBuffer>(new SpdyBuffer(scoped_ptr<SpdySerializedFrame>(
+          new SpdySerializedFrame(data.release(), s.size(), true))))));
 }
 
 // Makes a SpdyBufferProducer producing a frame with the data in the

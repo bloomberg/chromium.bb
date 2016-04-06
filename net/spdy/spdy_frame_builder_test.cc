@@ -29,11 +29,11 @@ TEST_P(SpdyFrameBuilderTest, GetWritableBuffer) {
   char* writable_buffer = builder.GetWritableBuffer(builder_size);
   memset(writable_buffer, ~1, builder_size);
   EXPECT_TRUE(builder.Seek(builder_size));
-  scoped_ptr<SpdyFrame> frame(builder.take());
+  SpdySerializedFrame frame(builder.take());
   char expected[builder_size];
   memset(expected, ~1, builder_size);
   EXPECT_EQ(base::StringPiece(expected, builder_size),
-            base::StringPiece(frame->data(), builder_size));
+            base::StringPiece(frame.data(), builder_size));
 }
 
 TEST_P(SpdyFrameBuilderTest, RewriteLength) {
@@ -42,8 +42,8 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   // then is corrected via RewriteLength().
   SpdyFramer framer(spdy_version_);
   SpdySettingsIR settings_ir;
-  scoped_ptr<SpdyFrame> expected(framer.SerializeSettings(settings_ir));
-  SpdyFrameBuilder builder(expected->size() + 1, spdy_version_);
+  SpdySerializedFrame expected(framer.SerializeSettings(settings_ir));
+  SpdyFrameBuilder builder(expected.size() + 1, spdy_version_);
   if (spdy_version_ == SPDY3) {
     builder.WriteControlFrameHeader(framer, SETTINGS, 0);
     builder.WriteUInt32(0);  // Write the number of settings.
@@ -52,9 +52,9 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   }
   EXPECT_TRUE(builder.GetWritableBuffer(1) != NULL);
   builder.RewriteLength(framer);
-  scoped_ptr<SpdyFrame> built(builder.take());
-  EXPECT_EQ(base::StringPiece(expected->data(), expected->size()),
-            base::StringPiece(built->data(), expected->size()));
+  SpdySerializedFrame built(builder.take());
+  EXPECT_EQ(base::StringPiece(expected.data(), expected.size()),
+            base::StringPiece(built.data(), expected.size()));
 }
 
 TEST_P(SpdyFrameBuilderTest, OverwriteFlags) {
@@ -65,13 +65,13 @@ TEST_P(SpdyFrameBuilderTest, OverwriteFlags) {
     return;
   }
   SpdyHeadersIR headers_ir(1);
-  scoped_ptr<SpdyFrame> expected(framer.SerializeHeaders(headers_ir));
-  SpdyFrameBuilder builder(expected->size(), spdy_version_);
+  SpdySerializedFrame expected(framer.SerializeHeaders(headers_ir));
+  SpdyFrameBuilder builder(expected.size(), spdy_version_);
   builder.BeginNewFrame(framer, HEADERS, 0, 1);
   builder.OverwriteFlags(framer, HEADERS_FLAG_END_HEADERS);
-  scoped_ptr<SpdyFrame> built(builder.take());
-  EXPECT_EQ(base::StringPiece(expected->data(), expected->size()),
-            base::StringPiece(built->data(), built->size()));
+  SpdySerializedFrame built(builder.take());
+  EXPECT_EQ(base::StringPiece(expected.data(), expected.size()),
+            base::StringPiece(built.data(), built.size()));
 }
 
 }  // namespace net

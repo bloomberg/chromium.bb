@@ -17,7 +17,7 @@
 namespace net {
 
 class IOBuffer;
-class SpdyFrame;
+class SpdySerializedFrame;
 
 // SpdyBuffer is a class to hold data read from or to be written to a
 // SPDY connection. It is similar to a DrainableIOBuffer but is not
@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
 
   // Construct with the data in the given frame. Assumes that data is
   // owned by |frame| or outlives it.
-  explicit SpdyBuffer(scoped_ptr<SpdyFrame> frame);
+  explicit SpdyBuffer(scoped_ptr<SpdySerializedFrame> frame);
 
   // Construct with a copy of the given raw data. |data| must be
   // non-NULL and |size| must be non-zero.
@@ -86,9 +86,9 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
  private:
   void ConsumeHelper(size_t consume_size, ConsumeSource consume_source);
 
-  // Ref-count the passed-in SpdyFrame to support the semantics of
+  // Ref-count the passed-in SpdySerializedFrame to support the semantics of
   // |GetIOBufferForRemainingData()|.
-  typedef base::RefCountedData<scoped_ptr<SpdyFrame> > SharedFrame;
+  typedef base::RefCountedData<scoped_ptr<SpdySerializedFrame>> SharedFrame;
 
   class SharedFrameIOBuffer;
 
