@@ -986,9 +986,7 @@ void XMLHttpRequest::clearVariablesForLoading()
 
     if (m_responseDocumentParser) {
         m_responseDocumentParser->removeClient(this);
-#if !ENABLE(OILPAN)
         m_responseDocumentParser->detach();
-#endif
         m_responseDocumentParser = nullptr;
     }
 
