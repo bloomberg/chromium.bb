@@ -2719,6 +2719,7 @@ Segment::Segment()
       mode_(kFile),
       new_cuepoint_(false),
       output_cues_(true),
+      accurate_cluster_duration_(false),
       payload_pos_(0),
       size_position_(0),
       doc_type_version_(kDefaultDocTypeVersion),
