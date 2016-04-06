@@ -5,8 +5,9 @@
 #ifndef BLIMP_ENGINE_APP_BLIMP_BROWSER_MAIN_PARTS_H_
 #define BLIMP_ENGINE_APP_BLIMP_BROWSER_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
@@ -40,10 +41,10 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
   SettingsManager* GetSettingsManager();
 
  private:
-  scoped_ptr<BlimpEngineConfig> engine_config_;
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<SettingsManager> settings_manager_;
-  scoped_ptr<BlimpEngineSession> engine_session_;
+  std::unique_ptr<BlimpEngineConfig> engine_config_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<SettingsManager> settings_manager_;
+  std::unique_ptr<BlimpEngineSession> engine_session_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpBrowserMainParts);
 };

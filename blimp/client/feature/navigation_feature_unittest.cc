@@ -4,8 +4,10 @@
 
 #include "blimp/client/feature/navigation_feature.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/test_common.h"
@@ -38,7 +40,7 @@ void SendMockNavigationStateChangedMessage(BlimpMessageProcessor* processor,
                                            const std::string* title,
                                            const bool* loading) {
   NavigationMessage* navigation_message;
-  scoped_ptr<BlimpMessage> message =
+  std::unique_ptr<BlimpMessage> message =
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
   NavigationStateChangeMessage* state =
@@ -84,7 +86,7 @@ class NavigationFeatureTest : public testing::Test {
 
   void SetUp() override {
     out_processor_ = new MockBlimpMessageProcessor();
-    feature_.set_outgoing_message_processor(make_scoped_ptr(out_processor_));
+    feature_.set_outgoing_message_processor(base::WrapUnique(out_processor_));
 
     feature_.SetDelegate(1, &delegate1_);
     feature_.SetDelegate(2, &delegate2_);

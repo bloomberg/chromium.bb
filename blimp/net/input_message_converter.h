@@ -5,8 +5,9 @@
 #ifndef BLIMP_NET_INPUT_MESSAGE_CONVERTER_H_
 #define BLIMP_NET_INPUT_MESSAGE_CONVERTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/ime.pb.h"
 #include "blimp/net/blimp_net_export.h"
 #include "ui/base/ime/text_input_type.h"
@@ -32,7 +33,7 @@ class BLIMP_NET_EXPORT InputMessageConverter {
 
   // Process an InputMessage and create a WebGestureEvent from it.  This might
   // make use of state from previous messages.
-  scoped_ptr<blink::WebGestureEvent> ProcessMessage(
+  std::unique_ptr<blink::WebGestureEvent> ProcessMessage(
       const InputMessage& message);
 
   // Converts a ui::TextInputType to ImeMessage proto.

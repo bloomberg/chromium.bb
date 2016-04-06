@@ -5,8 +5,9 @@
 #ifndef BLIMP_NET_INPUT_MESSAGE_GENERATOR_H_
 #define BLIMP_NET_INPUT_MESSAGE_GENERATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "net/base/completion_callback.h"
 
@@ -32,7 +33,8 @@ class BLIMP_NET_EXPORT InputMessageGenerator {
   // populated.  This might make use of state sent from previous
   // BlimpMessage::INPUT messages.  It is up to the caller to populate the
   // non-input fields and to send the BlimpMessage.
-  scoped_ptr<BlimpMessage> GenerateMessage(const blink::WebGestureEvent& event);
+  std::unique_ptr<BlimpMessage> GenerateMessage(
+      const blink::WebGestureEvent& event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMessageGenerator);

@@ -4,9 +4,11 @@
 
 #include "blimp/net/tcp_engine_transport.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/net/stream_socket_connection.h"
 #include "net/socket/stream_socket.h"
@@ -54,10 +56,10 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
                                          base::Bind(callback, result));
 }
 
-scoped_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
+std::unique_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
   DCHECK(connect_callback_.is_null());
   DCHECK(accepted_socket_);
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new StreamSocketConnection(std::move(accepted_socket_)));
 }
 

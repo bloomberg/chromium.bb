@@ -5,6 +5,7 @@
 #include "blimp/net/blimp_message_multiplexer.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 
@@ -19,7 +20,7 @@ class MultiplexedSender : public BlimpMessageProcessor {
 
   // BlimpMessageProcessor implementation.
   // |message.type|, if set, must match the sender's type.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
@@ -37,7 +38,7 @@ MultiplexedSender::MultiplexedSender(
 MultiplexedSender::~MultiplexedSender() {}
 
 void MultiplexedSender::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   if (message->has_type()) {
     DCHECK_EQ(type_, message->type());
@@ -55,9 +56,9 @@ BlimpMessageMultiplexer::BlimpMessageMultiplexer(
 
 BlimpMessageMultiplexer::~BlimpMessageMultiplexer() {}
 
-scoped_ptr<BlimpMessageProcessor> BlimpMessageMultiplexer::CreateSenderForType(
-    BlimpMessage::Type type) {
-  return make_scoped_ptr(
+std::unique_ptr<BlimpMessageProcessor>
+BlimpMessageMultiplexer::CreateSenderForType(BlimpMessage::Type type) {
+  return base::WrapUnique(
       new MultiplexedSender(output_weak_factory_.GetWeakPtr(), type));
 }
 }  // namespace blimp

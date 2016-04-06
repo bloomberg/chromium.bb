@@ -5,7 +5,8 @@
 #ifndef BLIMP_NET_STREAM_SOCKET_CONNECTION_H_
 #define BLIMP_NET_STREAM_SOCKET_CONNECTION_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "blimp/net/blimp_connection.h"
 #include "net/socket/stream_socket.h"
 
@@ -18,12 +19,12 @@ namespace blimp {
 // BlimpConnection specialization for StreamSocket-based connections.
 class StreamSocketConnection : public BlimpConnection {
  public:
-  explicit StreamSocketConnection(scoped_ptr<net::StreamSocket> socket);
+  explicit StreamSocketConnection(std::unique_ptr<net::StreamSocket> socket);
 
   ~StreamSocketConnection() override;
 
  private:
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
 };
 
 }  // namespace blimp

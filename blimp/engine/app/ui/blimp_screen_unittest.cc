@@ -4,13 +4,14 @@
 
 #include "blimp/engine/app/ui/blimp_screen.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "blimp/engine/app/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,12 +45,12 @@ class MockDisplayObserver : public gfx::DisplayObserver {
 class BlimpScreenTest : public testing::Test {
  protected:
   void SetUp() override {
-    screen_ = make_scoped_ptr(new BlimpScreen);
+    screen_ = base::WrapUnique(new BlimpScreen);
     screen_->AddObserver(&observer1_);
     screen_->AddObserver(&observer2_);
   }
 
-  scoped_ptr<BlimpScreen> screen_;
+  std::unique_ptr<BlimpScreen> screen_;
   testing::StrictMock<MockDisplayObserver> observer1_;
   testing::StrictMock<MockDisplayObserver> observer2_;
 };

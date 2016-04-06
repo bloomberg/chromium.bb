@@ -5,8 +5,9 @@
 #ifndef BLIMP_NET_BLIMP_MESSAGE_THREAD_PIPE_H_
 #define BLIMP_NET_BLIMP_MESSAGE_THREAD_PIPE_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 
@@ -45,7 +46,7 @@ class BLIMP_NET_EXPORT BlimpMessageThreadPipe {
   // has been set, but cannot be used until it has after been set -
   // see the class-level comment on usage.
   // Proxies must be deleted on the thread on which they are used.
-  scoped_ptr<BlimpMessageProcessor> CreateProxy();
+  std::unique_ptr<BlimpMessageProcessor> CreateProxy();
 
   // Sets/gets the target MessageProcessor on the target thread.
   void set_target_processor(BlimpMessageProcessor* processor);

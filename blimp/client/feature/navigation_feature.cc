@@ -21,7 +21,7 @@ NavigationFeature::NavigationFeature() {}
 NavigationFeature::~NavigationFeature() {}
 
 void NavigationFeature::set_outgoing_message_processor(
-    scoped_ptr<BlimpMessageProcessor> processor) {
+    std::unique_ptr<BlimpMessageProcessor> processor) {
   outgoing_message_processor_ = std::move(processor);
 }
 
@@ -40,7 +40,7 @@ void NavigationFeature::RemoveDelegate(int tab_id) {
 void NavigationFeature::NavigateToUrlText(int tab_id,
                                           const std::string& url_text) {
   NavigationMessage* navigation_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::LOAD_URL);
   navigation_message->mutable_load_url()->set_url(url_text);
@@ -50,7 +50,7 @@ void NavigationFeature::NavigateToUrlText(int tab_id,
 
 void NavigationFeature::Reload(int tab_id) {
   NavigationMessage* navigation_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::RELOAD);
 
@@ -60,7 +60,7 @@ void NavigationFeature::Reload(int tab_id) {
 
 void NavigationFeature::GoForward(int tab_id) {
   NavigationMessage* navigation_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::GO_FORWARD);
 
@@ -70,7 +70,7 @@ void NavigationFeature::GoForward(int tab_id) {
 
 void NavigationFeature::GoBack(int tab_id) {
   NavigationMessage* navigation_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::GO_BACK);
 
@@ -79,7 +79,7 @@ void NavigationFeature::GoBack(int tab_id) {
 }
 
 void NavigationFeature::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::NAVIGATION);

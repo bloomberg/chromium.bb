@@ -5,9 +5,10 @@
 #ifndef BLIMP_ENGINE_COMMON_BLIMP_BROWSER_CONTEXT_H_
 #define BLIMP_ENGINE_COMMON_BLIMP_BROWSER_CONTEXT_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/engine/app/blimp_url_request_context_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -31,7 +32,7 @@ class BlimpBrowserContext : public content::BrowserContext {
   ~BlimpBrowserContext() override;
 
   // content::BrowserContext implementation.
-  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   base::FilePath GetPath() const override;
   bool IsOffTheRecord() const override;
@@ -62,9 +63,9 @@ class BlimpBrowserContext : public content::BrowserContext {
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
-  scoped_ptr<BlimpResourceContext> resource_context_;
+  std::unique_ptr<BlimpResourceContext> resource_context_;
   bool ignore_certificate_errors_;
-  scoped_ptr<content::PermissionManager> permission_manager_;
+  std::unique_ptr<content::PermissionManager> permission_manager_;
   bool off_the_record_;
   net::NetLog* net_log_;
   base::FilePath path_;

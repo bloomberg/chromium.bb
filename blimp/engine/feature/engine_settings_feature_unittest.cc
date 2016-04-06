@@ -29,7 +29,7 @@ TEST_F(EngineSettingsFeatureTest, UpdatesSettingsCorrectly) {
   EXPECT_FALSE(settings_manager_.GetEngineSettings().record_whole_document);
 
   EngineSettingsMessage* engine_settings;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
   engine_settings->set_record_whole_document(true);
 
   net::TestCompletionCallback cb;

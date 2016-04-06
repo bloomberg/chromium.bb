@@ -5,11 +5,11 @@
 #ifndef BLIMP_NET_THREAD_PIPE_MANAGER_H_
 #define BLIMP_NET_THREAD_PIPE_MANAGER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_net_export.h"
 
@@ -41,7 +41,7 @@ class BLIMP_NET_EXPORT ThreadPipeManager {
   // Registers a message processor |incoming_processor| which will receive all
   // messages of the |type| specified. Returns a BlimpMessageProcessor object
   // for sending messages of type |type|.
-  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
+  std::unique_ptr<BlimpMessageProcessor> RegisterFeature(
       BlimpMessage::Type type,
       BlimpMessageProcessor* incoming_processor);
 
@@ -50,12 +50,12 @@ class BLIMP_NET_EXPORT ThreadPipeManager {
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // Container for BlimpMessageThreadPipes that are destroyed on IO thread.
-  scoped_ptr<IoThreadPipeManager> io_pipe_manager_;
+  std::unique_ptr<IoThreadPipeManager> io_pipe_manager_;
 
   // Pipes for routing messages from the IO to the UI thread.
   // Incoming messages are only routed to the UI thread since all features run
   // there.
-  std::vector<scoped_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
+  std::vector<std::unique_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadPipeManager);
 };

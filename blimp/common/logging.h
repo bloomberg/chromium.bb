@@ -6,12 +6,12 @@
 #define BLIMP_COMMON_LOGGING_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/blimp_common_export.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 
@@ -48,11 +48,12 @@ class BLIMP_COMMON_EXPORT BlimpMessageLogger {
   // |type_name|: The human readable name of |type|.
   void AddHandler(const std::string& type_name,
                   BlimpMessage::Type type,
-                  scoped_ptr<LogExtractor> extractor);
+                  std::unique_ptr<LogExtractor> extractor);
 
   // Registry of log extractors. Map structure is:
   // {message type => (human readable message type, LogExtractor*)}
-  std::map<BlimpMessage::Type, std::pair<std::string, scoped_ptr<LogExtractor>>>
+  std::map<BlimpMessage::Type,
+           std::pair<std::string, std::unique_ptr<LogExtractor>>>
       extractors_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpMessageLogger);

@@ -39,7 +39,8 @@ const char* SSLClientTransport::GetName() const {
 void SSLClientTransport::OnTCPConnectComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
 
-  scoped_ptr<net::StreamSocket> tcp_socket = TCPClientTransport::TakeSocket();
+  std::unique_ptr<net::StreamSocket> tcp_socket =
+      TCPClientTransport::TakeSocket();
 
   DVLOG(1) << "TCP connection result=" << result;
   if (result != net::OK) {
@@ -48,7 +49,7 @@ void SSLClientTransport::OnTCPConnectComplete(int result) {
   }
 
   // Construct arguments to use for the SSL socket factory.
-  scoped_ptr<net::ClientSocketHandle> socket_handle(
+  std::unique_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle);
   socket_handle->SetSocket(std::move(tcp_socket));
 
@@ -59,7 +60,7 @@ void SSLClientTransport::OnTCPConnectComplete(int result) {
   create_context.cert_verifier = cert_verifier_.get();
   create_context.transport_security_state = &transport_security_state_;
 
-  scoped_ptr<net::StreamSocket> ssl_socket(
+  std::unique_ptr<net::StreamSocket> ssl_socket(
       socket_factory()->CreateSSLClientSocket(std::move(socket_handle),
                                               host_port_pair, net::SSLConfig(),
                                               create_context));

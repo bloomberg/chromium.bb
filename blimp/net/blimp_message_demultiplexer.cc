@@ -28,7 +28,7 @@ void BlimpMessageDemultiplexer::AddProcessor(BlimpMessage::Type type,
 }
 
 void BlimpMessageDemultiplexer::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DVLOG(2) << "ProcessMessage : " << *message;
   auto receiver_iter = feature_receiver_map_.find(message->type());

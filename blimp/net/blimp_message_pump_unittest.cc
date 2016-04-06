@@ -43,13 +43,13 @@ class BlimpMessagePumpTest : public testing::Test {
   void NullMessageProcessor() { message_pump_->SetMessageProcessor(nullptr); }
 
  protected:
-  scoped_ptr<BlimpMessage> message1_;
-  scoped_ptr<BlimpMessage> message2_;
+  std::unique_ptr<BlimpMessage> message1_;
+  std::unique_ptr<BlimpMessage> message2_;
 
   testing::StrictMock<MockPacketReader> reader_;
   testing::StrictMock<MockConnectionErrorObserver> error_observer_;
   testing::StrictMock<MockBlimpMessageProcessor> receiver_;
-  scoped_ptr<BlimpMessagePump> message_pump_;
+  std::unique_ptr<BlimpMessagePump> message_pump_;
 };
 
 // Reader completes reading one packet asynchronously.

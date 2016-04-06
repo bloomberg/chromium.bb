@@ -44,12 +44,12 @@ class BlimpMessageMultiplexerTest : public testing::Test {
  protected:
   MockBlimpMessageProcessor mock_output_processor_;
   BlimpMessageMultiplexer multiplexer_;
-  scoped_ptr<BlimpMessage> input_message_;
-  scoped_ptr<BlimpMessage> navigation_message_;
+  std::unique_ptr<BlimpMessage> input_message_;
+  std::unique_ptr<BlimpMessage> navigation_message_;
   BlimpMessage captured_message_;
   net::CompletionCallback captured_cb_;
-  scoped_ptr<BlimpMessageProcessor> input_processor_;
-  scoped_ptr<BlimpMessageProcessor> navigation_processor_;
+  std::unique_ptr<BlimpMessageProcessor> input_processor_;
+  std::unique_ptr<BlimpMessageProcessor> navigation_processor_;
 };
 
 // Verify that each sender propagates its types and copies the message payload
@@ -100,7 +100,7 @@ TEST_F(BlimpMessageMultiplexerTest, SenderTransience) {
 // Verify that there is no limit on the number of senders for a given type.
 TEST_F(BlimpMessageMultiplexerTest, SenderMultiplicity) {
   net::TestCompletionCallback cb_4;
-  scoped_ptr<BlimpMessageProcessor> input_processor_2 =
+  std::unique_ptr<BlimpMessageProcessor> input_processor_2 =
       multiplexer_.CreateSenderForType(BlimpMessage::INPUT);
   input_processor_2->ProcessMessage(std::move(input_message_), cb_4.callback());
   EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());

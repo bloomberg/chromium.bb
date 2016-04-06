@@ -45,7 +45,7 @@ class BLIMP_CLIENT_EXPORT ImeFeature : public BlimpMessageProcessor {
   // Set the BlimpMessageProcessor that will be used to send BlimpMessage::IME
   // messages to the engine.
   void set_outgoing_message_processor(
-      scoped_ptr<BlimpMessageProcessor> processor) {
+      std::unique_ptr<BlimpMessageProcessor> processor) {
     outgoing_message_processor_ = std::move(processor);
   }
 
@@ -58,7 +58,7 @@ class BLIMP_CLIENT_EXPORT ImeFeature : public BlimpMessageProcessor {
 
  private:
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
   // Delegate for processing the text input related messages. |delegate_| must
@@ -74,7 +74,7 @@ class BLIMP_CLIENT_EXPORT ImeFeature : public BlimpMessageProcessor {
   int render_widget_id_ = 0;
 
   // Used to send BlimpMessage::IME messages to the engine.
-  scoped_ptr<BlimpMessageProcessor> outgoing_message_processor_;
+  std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeFeature);
 };

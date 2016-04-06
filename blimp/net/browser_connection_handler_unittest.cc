@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "blimp/net/browser_connection_handler.h"
+
 #include <stddef.h>
+
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
-#include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/common.h"
 #include "blimp/net/connection_error_observer.h"
 #include "blimp/net/test_common.h"
@@ -63,7 +66,7 @@ class FakeFeature {
 
  private:
   testing::StrictMock<MockBlimpMessageProcessor> incoming_message_processor_;
-  scoped_ptr<BlimpMessageProcessor> outgoing_message_processor_;
+  std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 };
 
 class FakeBlimpConnection : public BlimpConnection,
@@ -88,13 +91,13 @@ class FakeBlimpConnection : public BlimpConnection,
   BlimpMessageProcessor* GetOutgoingMessageProcessor() override { return this; }
 
  private:
-  void ForwardMessage(scoped_ptr<BlimpMessage> message) {
+  void ForwardMessage(std::unique_ptr<BlimpMessage> message) {
     other_end_->incoming_message_processor_->ProcessMessage(
         std::move(message), net::CompletionCallback());
   }
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&FakeBlimpConnection::ForwardMessage,
@@ -108,15 +111,15 @@ class FakeBlimpConnection : public BlimpConnection,
   BlimpMessageProcessor* incoming_message_processor_ = nullptr;
 };
 
-scoped_ptr<BlimpMessage> CreateInputMessage(int tab_id) {
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+std::unique_ptr<BlimpMessage> CreateInputMessage(int tab_id) {
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::INPUT);
   output->set_target_tab_id(tab_id);
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateControlMessage(int tab_id) {
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+std::unique_ptr<BlimpMessage> CreateControlMessage(int tab_id) {
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::TAB_CONTROL);
   output->set_target_tab_id(tab_id);
   return output;
@@ -149,9 +152,9 @@ class BrowserConnectionHandlerTest : public testing::Test {
     client_connection_->set_other_end(engine_connection_);
     engine_connection_->set_other_end(client_connection_);
     client_connection_handler_->HandleConnection(
-        make_scoped_ptr(client_connection_));
+        base::WrapUnique(client_connection_));
     engine_connection_handler_->HandleConnection(
-        make_scoped_ptr(engine_connection_));
+        base::WrapUnique(engine_connection_));
   }
 
   base::MessageLoop message_loop_;
@@ -159,19 +162,21 @@ class BrowserConnectionHandlerTest : public testing::Test {
   FakeBlimpConnection* client_connection_;
   FakeBlimpConnection* engine_connection_;
 
-  scoped_ptr<BrowserConnectionHandler> client_connection_handler_;
-  scoped_ptr<BrowserConnectionHandler> engine_connection_handler_;
+  std::unique_ptr<BrowserConnectionHandler> client_connection_handler_;
+  std::unique_ptr<BrowserConnectionHandler> engine_connection_handler_;
 
-  scoped_ptr<FakeFeature> client_input_feature_;
-  scoped_ptr<FakeFeature> engine_input_feature_;
-  scoped_ptr<FakeFeature> client_control_feature_;
-  scoped_ptr<FakeFeature> engine_control_feature_;
+  std::unique_ptr<FakeFeature> client_input_feature_;
+  std::unique_ptr<FakeFeature> engine_input_feature_;
+  std::unique_ptr<FakeFeature> client_control_feature_;
+  std::unique_ptr<FakeFeature> engine_control_feature_;
 };
 
 TEST_F(BrowserConnectionHandlerTest, ExchangeMessages) {
-  scoped_ptr<BlimpMessage> client_input_message = CreateInputMessage(1);
-  scoped_ptr<BlimpMessage> client_control_message = CreateControlMessage(1);
-  scoped_ptr<BlimpMessage> engine_control_message = CreateControlMessage(2);
+  std::unique_ptr<BlimpMessage> client_input_message = CreateInputMessage(1);
+  std::unique_ptr<BlimpMessage> client_control_message =
+      CreateControlMessage(1);
+  std::unique_ptr<BlimpMessage> engine_control_message =
+      CreateControlMessage(2);
 
   EXPECT_CALL(
       *(engine_input_feature_->incoming_message_processor()),
@@ -197,13 +202,13 @@ TEST_F(BrowserConnectionHandlerTest, ExchangeMessages) {
 TEST_F(BrowserConnectionHandlerTest, ConnectionError) {
   // Engine will not get message after connection error.
   client_connection_->error_observer()->OnConnectionError(net::ERR_FAILED);
-  scoped_ptr<BlimpMessage> client_input_message = CreateInputMessage(1);
+  std::unique_ptr<BlimpMessage> client_input_message = CreateInputMessage(1);
   client_input_feature_->outgoing_message_processor()->ProcessMessage(
       std::move(client_input_message), net::CompletionCallback());
 }
 
 TEST_F(BrowserConnectionHandlerTest, ReconnectionAfterError) {
-  scoped_ptr<BlimpMessage> client_input_message = CreateInputMessage(1);
+  std::unique_ptr<BlimpMessage> client_input_message = CreateInputMessage(1);
   EXPECT_CALL(
       *(engine_input_feature_->incoming_message_processor()),
       MockableProcessMessage(EqualsMessageIgnoringId(*client_input_message), _))

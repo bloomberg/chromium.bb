@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "blimp/common/proto/blimp_message.pb.h"
@@ -242,24 +243,24 @@ class NullLogExtractor : public LogExtractor {
 
 BlimpMessageLogger::BlimpMessageLogger() {
   AddHandler("COMPOSITOR", BlimpMessage::COMPOSITOR,
-             make_scoped_ptr(new CompositorLogExtractor));
+             base::WrapUnique(new CompositorLogExtractor));
   AddHandler("INPUT", BlimpMessage::INPUT,
-             make_scoped_ptr(new InputLogExtractor));
+             base::WrapUnique(new InputLogExtractor));
   AddHandler("NAVIGATION", BlimpMessage::NAVIGATION,
-             make_scoped_ptr(new NavigationLogExtractor));
+             base::WrapUnique(new NavigationLogExtractor));
   AddHandler("PROTOCOL_CONTROL", BlimpMessage::PROTOCOL_CONTROL,
-             make_scoped_ptr(new ProtocolControlLogExtractor));
+             base::WrapUnique(new ProtocolControlLogExtractor));
   AddHandler("RENDER_WIDGET", BlimpMessage::RENDER_WIDGET,
-             make_scoped_ptr(new RenderWidgetLogExtractor));
+             base::WrapUnique(new RenderWidgetLogExtractor));
   AddHandler("TAB_CONTROL", BlimpMessage::TAB_CONTROL,
-             make_scoped_ptr(new TabControlLogExtractor));
+             base::WrapUnique(new TabControlLogExtractor));
 }
 
 BlimpMessageLogger::~BlimpMessageLogger() {}
 
 void BlimpMessageLogger::AddHandler(const std::string& type_name,
                                     BlimpMessage::Type type,
-                                    scoped_ptr<LogExtractor> extractor) {
+                                    std::unique_ptr<LogExtractor> extractor) {
   DCHECK(extractors_.find(type) == extractors_.end());
   DCHECK(!type_name.empty());
   extractors_[type] = make_pair(type_name, std::move(extractor));

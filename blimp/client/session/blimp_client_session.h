@@ -5,11 +5,11 @@
 #ifndef BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
 #define BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "blimp/client/blimp_client_export.h"
 #include "blimp/client/session/assignment_source.h"
@@ -90,21 +90,21 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession : public NetworkEventObserver {
   void OnDisconnected(int result) override;
 
   base::Thread io_thread_;
-  scoped_ptr<TabControlFeature> tab_control_feature_;
-  scoped_ptr<NavigationFeature> navigation_feature_;
-  scoped_ptr<ImeFeature> ime_feature_;
-  scoped_ptr<RenderWidgetFeature> render_widget_feature_;
-  scoped_ptr<SettingsFeature> settings_feature_;
+  std::unique_ptr<TabControlFeature> tab_control_feature_;
+  std::unique_ptr<NavigationFeature> navigation_feature_;
+  std::unique_ptr<ImeFeature> ime_feature_;
+  std::unique_ptr<RenderWidgetFeature> render_widget_feature_;
+  std::unique_ptr<SettingsFeature> settings_feature_;
 
   // The AssignmentSource is used when the user of BlimpClientSession calls
   // Connect() to get a valid assignment and later connect to the engine.
-  scoped_ptr<AssignmentSource> assignment_source_;
+  std::unique_ptr<AssignmentSource> assignment_source_;
 
   // Container struct for network components.
   // Must be deleted on the IO thread.
-  scoped_ptr<ClientNetworkComponents> net_components_;
+  std::unique_ptr<ClientNetworkComponents> net_components_;
 
-  scoped_ptr<ThreadPipeManager> thread_pipe_manager_;
+  std::unique_ptr<ThreadPipeManager> thread_pipe_manager_;
 
   base::WeakPtrFactory<BlimpClientSession> weak_factory_;
 

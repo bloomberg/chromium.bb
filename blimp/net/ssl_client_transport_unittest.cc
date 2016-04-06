@@ -67,9 +67,9 @@ class SSLClientTransportTest : public testing::Test {
   base::MessageLoop message_loop;
   net::NetLog net_log_;
   net::StaticSocketDataProvider tcp_connect_;
-  scoped_ptr<net::SSLSocketDataProvider> ssl_connect_;
+  std::unique_ptr<net::SSLSocketDataProvider> ssl_connect_;
   net::MockClientSocketFactory socket_factory_;
-  scoped_ptr<SSLClientTransport> transport_;
+  std::unique_ptr<SSLClientTransport> transport_;
 };
 
 TEST_F(SSLClientTransportTest, ConnectSyncOK) {

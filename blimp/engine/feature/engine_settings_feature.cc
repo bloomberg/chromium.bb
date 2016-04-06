@@ -22,7 +22,7 @@ EngineSettingsFeature::EngineSettingsFeature(SettingsManager* settings_manager)
 EngineSettingsFeature::~EngineSettingsFeature() {}
 
 void EngineSettingsFeature::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK_EQ(message->type(), BlimpMessage::SETTINGS);
   DCHECK(message->has_settings());

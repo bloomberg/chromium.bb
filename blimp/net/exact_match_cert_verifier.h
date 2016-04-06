@@ -35,7 +35,7 @@ class BLIMP_NET_EXPORT ExactMatchCertVerifier : public net::CertVerifier {
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
+             std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override;
 
  private:

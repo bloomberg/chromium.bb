@@ -5,6 +5,7 @@
 #include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
 #include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
@@ -70,10 +71,10 @@ void BlimpCompositorManager::GenerateLayerTreeSettings(
   PopulateCommonLayerTreeSettings(settings);
 }
 
-scoped_ptr<BlimpCompositor> BlimpCompositorManager::CreateBlimpCompositor(
-    int render_widget_id, BlimpCompositorClient* client) {
-  return make_scoped_ptr(
-      new BlimpCompositor(render_widget_id, client));
+std::unique_ptr<BlimpCompositor> BlimpCompositorManager::CreateBlimpCompositor(
+    int render_widget_id,
+    BlimpCompositorClient* client) {
+  return base::WrapUnique(new BlimpCompositor(render_widget_id, client));
 }
 
 void BlimpCompositorManager::OnRenderWidgetCreated(int render_widget_id) {
@@ -115,7 +116,7 @@ void BlimpCompositorManager::OnRenderWidgetDeleted(int render_widget_id) {
 
 void BlimpCompositorManager::OnCompositorMessageReceived(
     int render_widget_id,
-    scoped_ptr<cc::proto::CompositorMessage> message) {
+    std::unique_ptr<cc::proto::CompositorMessage> message) {
   BlimpCompositor* compositor = GetCompositor(render_widget_id);
   DCHECK(compositor);
 

@@ -23,7 +23,7 @@ class EngineSettingsFeature : public BlimpMessageProcessor {
   ~EngineSettingsFeature() override;
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:

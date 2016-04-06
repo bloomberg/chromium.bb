@@ -26,7 +26,7 @@ ClientConnectionManager::ClientConnectionManager(
 ClientConnectionManager::~ClientConnectionManager() {}
 
 void ClientConnectionManager::AddTransport(
-    scoped_ptr<BlimpTransport> transport) {
+    std::unique_ptr<BlimpTransport> transport) {
   DCHECK(transport);
   transports_.push_back(std::move(transport));
 }
@@ -54,7 +54,7 @@ void ClientConnectionManager::OnConnectResult(int transport_index, int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
   const auto& transport = transports_[transport_index];
   if (result == net::OK) {
-    scoped_ptr<BlimpConnection> connection = transport->TakeConnection();
+    std::unique_ptr<BlimpConnection> connection = transport->TakeConnection();
     connection->AddConnectionErrorObserver(this);
     SendAuthenticationMessage(std::move(connection));
   } else {
@@ -65,7 +65,7 @@ void ClientConnectionManager::OnConnectResult(int transport_index, int result) {
 }
 
 void ClientConnectionManager::SendAuthenticationMessage(
-    scoped_ptr<BlimpConnection> connection) {
+    std::unique_ptr<BlimpConnection> connection) {
   DVLOG(1) << "Sending authentication message.";
   connection->GetOutgoingMessageProcessor()->ProcessMessage(
       CreateStartConnectionMessage(client_token_, kProtocolVersion),
@@ -75,7 +75,7 @@ void ClientConnectionManager::SendAuthenticationMessage(
 }
 
 void ClientConnectionManager::OnAuthenticationMessageSent(
-    scoped_ptr<BlimpConnection> connection,
+    std::unique_ptr<BlimpConnection> connection,
     int result) {
   DVLOG(1) << "AuthenticationMessageSent, result=" << result;
   if (result != net::OK) {

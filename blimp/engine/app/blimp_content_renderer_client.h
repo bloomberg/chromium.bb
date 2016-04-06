@@ -5,8 +5,9 @@
 #ifndef BLIMP_ENGINE_APP_BLIMP_CONTENT_RENDERER_CLIENT_H_
 #define BLIMP_ENGINE_APP_BLIMP_CONTENT_RENDERER_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace web_cache {
@@ -29,10 +30,11 @@ class BlimpContentRendererClient : public content::ContentRendererClient {
 
  private:
   // This observer manages the process-global web cache.
-  scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
+  std::unique_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
 
   // Provides the functionality to serialize images in SkPicture.
-  scoped_ptr<cc::ImageSerializationProcessor> image_serialization_processor_;
+  std::unique_ptr<cc::ImageSerializationProcessor>
+      image_serialization_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentRendererClient);
 };

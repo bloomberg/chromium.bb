@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/small_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/input_message_converter.h"
@@ -45,7 +45,7 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
     // Called when the client is sending a WebGestureEvent to the engine.
     virtual void OnWebGestureEvent(
         content::RenderWidgetHost* render_widget_host,
-        scoped_ptr<blink::WebGestureEvent> event) = 0;
+        std::unique_ptr<blink::WebGestureEvent> event) = 0;
 
     // Called when the client sent a CompositorMessage.  These messages should
     // be sent to the engine's render process so they can be processed by the
@@ -59,16 +59,16 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
   ~EngineRenderWidgetFeature() override;
 
   void set_render_widget_message_sender(
-      scoped_ptr<BlimpMessageProcessor> message_processor);
+      std::unique_ptr<BlimpMessageProcessor> message_processor);
 
   void set_input_message_sender(
-      scoped_ptr<BlimpMessageProcessor> message_processor);
+      std::unique_ptr<BlimpMessageProcessor> message_processor);
 
   void set_compositor_message_sender(
-      scoped_ptr<BlimpMessageProcessor> message_processor);
+      std::unique_ptr<BlimpMessageProcessor> message_processor);
 
   void set_ime_message_sender(
-      scoped_ptr<BlimpMessageProcessor> message_processor);
+      std::unique_ptr<BlimpMessageProcessor> message_processor);
 
   // Notifes the client that a new RenderWidget for a particular WebContents has
   // been created. This will trigger the creation of the BlimpCompositor for
@@ -109,7 +109,7 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
   void RemoveDelegate(const int tab_id);
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
   // Settings::Observer implementation.
@@ -175,10 +175,10 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
   SettingsManager* settings_manager_;
 
   // Outgoing message processors for RENDER_WIDGET, COMPOSITOR and INPUT types.
-  scoped_ptr<BlimpMessageProcessor> render_widget_message_sender_;
-  scoped_ptr<BlimpMessageProcessor> compositor_message_sender_;
-  scoped_ptr<BlimpMessageProcessor> input_message_sender_;
-  scoped_ptr<BlimpMessageProcessor> ime_message_sender_;
+  std::unique_ptr<BlimpMessageProcessor> render_widget_message_sender_;
+  std::unique_ptr<BlimpMessageProcessor> compositor_message_sender_;
+  std::unique_ptr<BlimpMessageProcessor> input_message_sender_;
+  std::unique_ptr<BlimpMessageProcessor> ime_message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetFeature);
 };

@@ -4,6 +4,7 @@
 
 #include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +42,7 @@ class MockBlimpCompositor : public BlimpCompositor {
   MOCK_METHOD1(OnTouchEvent, bool(const ui::MotionEvent& motion_event));
 
   void OnCompositorMessageReceived(
-      scoped_ptr<cc::proto::CompositorMessage> message) override {
+      std::unique_ptr<cc::proto::CompositorMessage> message) override {
     MockableOnCompositorMessageReceived(*message);
   }
   MOCK_METHOD1(MockableOnCompositorMessageReceived,
@@ -56,9 +57,10 @@ class BlimpCompositorManagerForTesting : public BlimpCompositorManager {
 
   using BlimpCompositorManager::GetCompositor;
 
-  scoped_ptr<BlimpCompositor> CreateBlimpCompositor(
-      int render_widget_id, BlimpCompositorClient* client) override {
-    return make_scoped_ptr(new MockBlimpCompositor(render_widget_id));
+  std::unique_ptr<BlimpCompositor> CreateBlimpCompositor(
+      int render_widget_id,
+      BlimpCompositorClient* client) override {
+    return base::WrapUnique(new MockBlimpCompositor(render_widget_id));
   }
 };
 
@@ -98,7 +100,7 @@ class BlimpCompositorManagerTest : public testing::Test {
         (compositor_manager_.get());
   }
 
-  scoped_ptr<BlimpCompositorManagerForTesting> compositor_manager_;
+  std::unique_ptr<BlimpCompositorManagerForTesting> compositor_manager_;
   MockRenderWidgetFeature render_widget_feature_;
   MockBlimpCompositor* mock_compositor1_;
   MockBlimpCompositor* mock_compositor2_;
@@ -119,12 +121,12 @@ TEST_F(BlimpCompositorManagerTest, ForwardsMessagesToCorrectCompositor) {
                 SetAcceleratedWidget(gfx::kNullAcceleratedWidget)).Times(1);
 
   delegate()->OnCompositorMessageReceived(
-      1, make_scoped_ptr(new cc::proto::CompositorMessage));
+      1, base::WrapUnique(new cc::proto::CompositorMessage));
   delegate()->OnRenderWidgetInitialized(1);
   delegate()->OnCompositorMessageReceived(
-      2, make_scoped_ptr(new cc::proto::CompositorMessage));
+      2, base::WrapUnique(new cc::proto::CompositorMessage));
   delegate()->OnCompositorMessageReceived(
-      1, make_scoped_ptr(new cc::proto::CompositorMessage));
+      1, base::WrapUnique(new cc::proto::CompositorMessage));
 
   delegate()->OnRenderWidgetDeleted(1);
   EXPECT_EQ(compositor_manager_->GetCompositor(1), nullptr);

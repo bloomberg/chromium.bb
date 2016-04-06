@@ -5,6 +5,7 @@
 #include "blimp/net/thread_pipe_manager.h"
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -23,8 +24,8 @@ using testing::SaveArg;
 namespace blimp {
 namespace {
 
-scoped_ptr<BlimpMessage> CreateMessage(BlimpMessage::Type type) {
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+std::unique_ptr<BlimpMessage> CreateMessage(BlimpMessage::Type type) {
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(type);
   return output;
 }
@@ -49,7 +50,7 @@ class FakeFeature {
 
  private:
   testing::StrictMock<MockBlimpMessageProcessor> incoming_message_processor_;
-  scoped_ptr<BlimpMessageProcessor> outgoing_message_processor_;
+  std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 };
 
 // A feature peer on |thread_| that forwards incoming messages to
@@ -66,14 +67,14 @@ class FakeFeaturePeer : public BlimpMessageProcessor {
   ~FakeFeaturePeer() override {}
 
  private:
-  void ForwardMessage(scoped_ptr<BlimpMessage> message) {
+  void ForwardMessage(std::unique_ptr<BlimpMessage> message) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     message_processor_->ProcessMessage(std::move(message),
                                        net::CompletionCallback());
   }
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     ASSERT_EQ(type_, message->type());
@@ -97,11 +98,11 @@ class FakeBrowserConnectionHandler : public BrowserConnectionHandler {
   FakeBrowserConnectionHandler(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : task_runner_(task_runner) {}
-  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
+  std::unique_ptr<BlimpMessageProcessor> RegisterFeature(
       BlimpMessage::Type type,
       BlimpMessageProcessor* incoming_processor) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new FakeFeaturePeer(type, incoming_processor, task_runner_));
   }
 
@@ -119,9 +120,9 @@ class ThreadPipeManagerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(thread_.Start());
-    connection_handler_ = make_scoped_ptr(
+    connection_handler_ = base::WrapUnique(
         new FakeBrowserConnectionHandler(thread_.task_runner()));
-    pipe_manager_ = make_scoped_ptr(new ThreadPipeManager(
+    pipe_manager_ = base::WrapUnique(new ThreadPipeManager(
         thread_.task_runner(), base::SequencedTaskRunnerHandle::Get(),
         connection_handler_.get()));
 
@@ -144,19 +145,20 @@ class ThreadPipeManagerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<BrowserConnectionHandler> connection_handler_;
-  scoped_ptr<ThreadPipeManager> pipe_manager_;
+  std::unique_ptr<BrowserConnectionHandler> connection_handler_;
+  std::unique_ptr<ThreadPipeManager> pipe_manager_;
   base::Thread thread_;
 
-  scoped_ptr<FakeFeature> input_feature_;
-  scoped_ptr<FakeFeature> tab_control_feature_;
+  std::unique_ptr<FakeFeature> input_feature_;
+  std::unique_ptr<FakeFeature> tab_control_feature_;
 };
 
 // Features send out message and receive the same message due to
 // |FakeFeaturePeer| loops the message back on |thread_|.
 TEST_F(ThreadPipeManagerTest, MessageSentIsReceived) {
-  scoped_ptr<BlimpMessage> input_message = CreateMessage(BlimpMessage::INPUT);
-  scoped_ptr<BlimpMessage> tab_control_message =
+  std::unique_ptr<BlimpMessage> input_message =
+      CreateMessage(BlimpMessage::INPUT);
+  std::unique_ptr<BlimpMessage> tab_control_message =
       CreateMessage(BlimpMessage::TAB_CONTROL);
 
   EXPECT_CALL(*(input_feature_->incoming_message_processor()),

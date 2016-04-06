@@ -198,7 +198,7 @@ TEST_F(StreamPacketWriterTest, DeletedDuringHeaderWrite) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
-  scoped_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
+  std::unique_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
 
   // Write header.
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
@@ -218,7 +218,7 @@ TEST_F(StreamPacketWriterTest, DeletedDuringPayloadWrite) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
-  scoped_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
+  std::unique_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
 
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))

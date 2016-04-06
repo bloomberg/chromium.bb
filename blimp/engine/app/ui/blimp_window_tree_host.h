@@ -5,8 +5,9 @@
 #ifndef BLIMP_ENGINE_APP_UI_BLIMP_WINDOW_TREE_HOST_H_
 #define BLIMP_ENGINE_APP_UI_BLIMP_WINDOW_TREE_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_tree_host_platform.h"
 
 namespace blimp {

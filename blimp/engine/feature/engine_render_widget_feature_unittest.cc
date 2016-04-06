@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "blimp/engine/feature/engine_render_widget_feature.h"
+
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
-#include "blimp/engine/feature/engine_render_widget_feature.h"
 #include "blimp/net/input_message_generator.h"
 #include "blimp/net/test_common.h"
 #include "content/public/browser/render_widget_host.h"
@@ -36,7 +39,7 @@ class MockHostRenderWidgetMessageDelegate
   // EngineRenderWidgetFeature implementation.
   void OnWebGestureEvent(
       content::RenderWidgetHost* render_widget_host,
-      scoped_ptr<blink::WebGestureEvent> event) override {
+      std::unique_ptr<blink::WebGestureEvent> event) override {
     MockableOnWebGestureEvent(render_widget_host);
   }
 
@@ -201,7 +204,8 @@ void SendInputMessage(BlimpMessageProcessor* processor,
   input_event.type = blink::WebGestureEvent::Type::GestureTap;
 
   InputMessageGenerator generator;
-  scoped_ptr<BlimpMessage> message = generator.GenerateMessage(input_event);
+  std::unique_ptr<BlimpMessage> message =
+      generator.GenerateMessage(input_event);
   message->set_type(BlimpMessage::INPUT);
   message->set_target_tab_id(tab_id);
   message->mutable_input()->set_render_widget_id(rw_id);
@@ -216,7 +220,7 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
                            int rw_id,
                            const std::vector<uint8_t>& payload) {
   CompositorMessage* details;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_render_widget_id(rw_id);
   details->set_payload(payload.data(), base::checked_cast<int>(payload.size()));
   net::TestCompletionCallback cb;
@@ -233,12 +237,12 @@ class EngineRenderWidgetFeatureTest : public testing::Test {
   void SetUp() override {
     render_widget_message_sender_ = new MockBlimpMessageProcessor;
     feature_.set_render_widget_message_sender(
-        make_scoped_ptr(render_widget_message_sender_));
+        base::WrapUnique(render_widget_message_sender_));
     compositor_message_sender_ = new MockBlimpMessageProcessor;
     feature_.set_compositor_message_sender(
-        make_scoped_ptr(compositor_message_sender_));
+        base::WrapUnique(compositor_message_sender_));
     ime_message_sender_ = new MockBlimpMessageProcessor;
-    feature_.set_ime_message_sender(make_scoped_ptr(ime_message_sender_));
+    feature_.set_ime_message_sender(base::WrapUnique(ime_message_sender_));
     feature_.SetDelegate(1, &delegate1_);
     feature_.SetDelegate(2, &delegate2_);
   }

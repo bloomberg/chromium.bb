@@ -4,13 +4,13 @@
 
 #include "blimp/engine/app/blimp_engine_config.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "blimp/engine/app/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"

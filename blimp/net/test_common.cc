@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection.h"
@@ -22,8 +23,8 @@ MockTransport::MockTransport() {}
 
 MockTransport::~MockTransport() {}
 
-scoped_ptr<BlimpConnection> MockTransport::TakeConnection() {
-  return make_scoped_ptr(TakeConnectionPtr());
+std::unique_ptr<BlimpConnection> MockTransport::TakeConnection() {
+  return base::WrapUnique(TakeConnectionPtr());
 }
 
 const char* MockTransport::GetName() const {
@@ -35,7 +36,7 @@ MockConnectionHandler::MockConnectionHandler() {}
 MockConnectionHandler::~MockConnectionHandler() {}
 
 void MockConnectionHandler::HandleConnection(
-    scoped_ptr<BlimpConnection> connection) {
+    std::unique_ptr<BlimpConnection> connection) {
   HandleConnectionPtr(connection.get());
 }
 
@@ -60,13 +61,13 @@ MockBlimpMessageProcessor::MockBlimpMessageProcessor() {}
 MockBlimpMessageProcessor::~MockBlimpMessageProcessor() {}
 
 void MockBlimpMessageProcessor::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   MockableProcessMessage(*message, callback);
 }
 
 std::string EncodeHeader(size_t size) {
-  scoped_ptr<char[]> serialized(new char[kPacketHeaderSizeBytes]);
+  std::unique_ptr<char[]> serialized(new char[kPacketHeaderSizeBytes]);
   uint32_t net_size = base::HostToNet32(size);
   memcpy(serialized.get(), &net_size, sizeof(net_size));
   return std::string(serialized.get(), kPacketHeaderSizeBytes);

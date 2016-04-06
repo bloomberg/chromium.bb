@@ -313,7 +313,7 @@ TEST_F(StreamPacketReaderTest, ReadPayloadErrorAsync) {
 TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
   net::CompletionCallback cb;
   net::TestCompletionCallback test_cb;
-  scoped_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
+  std::unique_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
@@ -328,7 +328,7 @@ TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
 // StreamPacketReader object was destroyed.
 TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncPayloadRead) {
   net::CompletionCallback cb;
-  scoped_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
+  std::unique_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),

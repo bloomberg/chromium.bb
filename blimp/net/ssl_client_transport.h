@@ -5,10 +5,11 @@
 #ifndef BLIMP_NET_SSL_CLIENT_TRANSPORT_H_
 #define BLIMP_NET_SSL_CLIENT_TRANSPORT_H_
 
+#include <memory>
 #include <string>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/exact_match_cert_verifier.h"
@@ -53,7 +54,7 @@ class BLIMP_NET_EXPORT SSLClientTransport : public TCPClientTransport {
   void OnSSLConnectComplete(int result);
 
   net::IPEndPoint ip_endpoint_;
-  scoped_ptr<ExactMatchCertVerifier> cert_verifier_;
+  std::unique_ptr<ExactMatchCertVerifier> cert_verifier_;
   net::TransportSecurityState transport_security_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientTransport);

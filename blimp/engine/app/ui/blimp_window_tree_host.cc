@@ -4,13 +4,14 @@
 
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/platform_window/stub/stub_window.h"
 
 namespace blimp {
 namespace engine {
 
 BlimpWindowTreeHost::BlimpWindowTreeHost() : aura::WindowTreeHostPlatform() {
-  SetPlatformWindow(make_scoped_ptr(new ui::StubWindow(this)));
+  SetPlatformWindow(base::WrapUnique(new ui::StubWindow(this)));
 }
 
 BlimpWindowTreeHost::~BlimpWindowTreeHost() {}

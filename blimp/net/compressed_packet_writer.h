@@ -25,7 +25,7 @@ namespace blimp {
 class BLIMP_NET_EXPORT CompressedPacketWriter : public PacketWriter {
  public:
   // |source|: The PacketWriter which will receive compressed packets.
-  explicit CompressedPacketWriter(scoped_ptr<PacketWriter> sink);
+  explicit CompressedPacketWriter(std::unique_ptr<PacketWriter> sink);
   ~CompressedPacketWriter() override;
 
   // PacketWriter implementation.
@@ -42,7 +42,7 @@ class BLIMP_NET_EXPORT CompressedPacketWriter : public PacketWriter {
                const scoped_refptr<net::GrowableIOBuffer>& dest_buf);
 
   z_stream zlib_stream_;
-  scoped_ptr<PacketWriter> sink_;
+  std::unique_ptr<PacketWriter> sink_;
   scoped_refptr<net::GrowableIOBuffer> compressed_buf_;
   size_t uncompressed_size_total_ = 0u;
   size_t compressed_size_total_ = 0u;

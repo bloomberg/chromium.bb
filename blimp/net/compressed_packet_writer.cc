@@ -22,7 +22,8 @@ const int kZlibMemoryLevel = 9;
 
 }  // namespace
 
-CompressedPacketWriter::CompressedPacketWriter(scoped_ptr<PacketWriter> sink)
+CompressedPacketWriter::CompressedPacketWriter(
+    std::unique_ptr<PacketWriter> sink)
     : sink_(std::move(sink)), compressed_buf_(new net::GrowableIOBuffer) {
   DCHECK(sink_);
 

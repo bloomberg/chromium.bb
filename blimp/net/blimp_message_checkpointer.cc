@@ -33,7 +33,7 @@ BlimpMessageCheckpointer::BlimpMessageCheckpointer(
 BlimpMessageCheckpointer::~BlimpMessageCheckpointer() {}
 
 void BlimpMessageCheckpointer::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   if (message->type() == BlimpMessage::PROTOCOL_CONTROL &&
       message->protocol_control().type() ==

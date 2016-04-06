@@ -5,10 +5,10 @@
 #ifndef BLIMP_ENGINE_APP_BLIMP_ENGINE_CONFIG_H_
 #define BLIMP_ENGINE_APP_BLIMP_ENGINE_CONFIG_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class CommandLine;
@@ -31,14 +31,14 @@ class BlimpEngineConfig {
   ~BlimpEngineConfig();
 
   // Attempts to create a BlimpEngineConfig based on the parameters in the
-  // specified CommandLine. This validates all of the command line switches
-  // and parses all files specified. Returns a non-null scoped_ptr on success.
-  static scoped_ptr<BlimpEngineConfig> Create(
+  // specified CommandLine. This validates all of the command line switches and
+  // parses all files specified. Returns a non-null std::unique_ptr on success.
+  static std::unique_ptr<BlimpEngineConfig> Create(
       const base::CommandLine& cmd_line);
 
   // Creates a BlimpEngineConfig based on individual components. Should only
   // be used for testing.
-  static scoped_ptr<BlimpEngineConfig> CreateForTest(
+  static std::unique_ptr<BlimpEngineConfig> CreateForTest(
       const std::string& client_token);
 
   // Returns the client token.

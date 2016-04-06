@@ -4,8 +4,10 @@
 
 #include "blimp/client/feature/render_widget_feature.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
@@ -41,7 +43,7 @@ class MockRenderWidgetFeatureDelegate
   }
   void OnCompositorMessageReceived(
       int render_widget_id,
-      scoped_ptr<cc::proto::CompositorMessage> message) override {
+      std::unique_ptr<cc::proto::CompositorMessage> message) override {
     MockableOnCompositorMessageReceived(render_widget_id, *message);
   }
 
@@ -63,7 +65,7 @@ void SendRenderWidgetMessage(BlimpMessageProcessor* processor,
                              int rw_id,
                              RenderWidgetMessage::Type message_type) {
   RenderWidgetMessage* details;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_type(message_type);
   details->set_render_widget_id(rw_id);
   net::TestCompletionCallback cb;
@@ -75,7 +77,7 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
                            int tab_id,
                            int rw_id) {
   CompositorMessage* details;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_render_widget_id(rw_id);
   net::TestCompletionCallback cb;
   processor->ProcessMessage(std::move(message), cb.callback());
@@ -93,9 +95,9 @@ class RenderWidgetFeatureTest : public testing::Test {
     out_input_processor_ = new MockBlimpMessageProcessor();
     out_compositor_processor_ = new MockBlimpMessageProcessor();
     feature_.set_outgoing_input_message_processor(
-        make_scoped_ptr(out_input_processor_));
+        base::WrapUnique(out_input_processor_));
     feature_.set_outgoing_compositor_message_processor(
-        make_scoped_ptr(out_compositor_processor_));
+        base::WrapUnique(out_compositor_processor_));
 
     feature_.SetDelegate(1, &delegate1_);
     feature_.SetDelegate(2, &delegate2_);

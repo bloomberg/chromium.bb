@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
@@ -112,7 +113,7 @@ class EngineNetworkComponents : public ConnectionHandler,
 
  private:
   // ConnectionHandler implementation.
-  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+  void HandleConnection(std::unique_ptr<BlimpConnection> connection) override;
 
   // ConnectionErrorObserver implementation.
   // Signals the engine session that an authenticated connection was
@@ -122,9 +123,9 @@ class EngineNetworkComponents : public ConnectionHandler,
   net::NetLog* net_log_;
   base::Closure quit_closure_;
 
-  scoped_ptr<BrowserConnectionHandler> connection_handler_;
-  scoped_ptr<EngineAuthenticationHandler> authentication_handler_;
-  scoped_ptr<EngineConnectionManager> connection_manager_;
+  std::unique_ptr<BrowserConnectionHandler> connection_handler_;
+  std::unique_ptr<EngineAuthenticationHandler> authentication_handler_;
+  std::unique_ptr<EngineConnectionManager> connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineNetworkComponents);
 };
@@ -147,20 +148,20 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
   // Plumb authenticated connections from the authentication handler
   // to |this| (which will then pass it to |connection_handler_|.
   authentication_handler_ =
-      make_scoped_ptr(new EngineAuthenticationHandler(this, client_token));
+      base::WrapUnique(new EngineAuthenticationHandler(this, client_token));
 
   // Plumb unauthenticated connections to |authentication_handler_|.
-  connection_manager_ = make_scoped_ptr(
+  connection_manager_ = base::WrapUnique(
       new EngineConnectionManager(authentication_handler_.get()));
 
   // Adds BlimpTransports to connection_manager_.
   net::IPEndPoint address(GetIPv4AnyAddress(), kDefaultPort);
   connection_manager_->AddTransport(
-      make_scoped_ptr(new TCPEngineTransport(address, net_log_)));
+      base::WrapUnique(new TCPEngineTransport(address, net_log_)));
 }
 
 void EngineNetworkComponents::HandleConnection(
-    scoped_ptr<BlimpConnection> connection) {
+    std::unique_ptr<BlimpConnection> connection) {
   // Observe |connection| for disconnection events.
   connection->AddConnectionErrorObserver(this);
   connection_handler_->HandleConnection(std::move(connection));
@@ -177,7 +178,7 @@ EngineNetworkComponents::GetBrowserConnectionHandler() {
 }
 
 BlimpEngineSession::BlimpEngineSession(
-    scoped_ptr<BlimpBrowserContext> browser_context,
+    std::unique_ptr<BlimpBrowserContext> browser_context,
     net::NetLog* net_log,
     BlimpEngineConfig* engine_config,
     SettingsManager* settings_manager)
@@ -290,8 +291,8 @@ bool BlimpEngineSession::CreateWebContents(const int target_tab_id) {
 
   content::WebContents::CreateParams create_params(browser_context_.get(),
                                                    nullptr);
-  scoped_ptr<content::WebContents> new_contents =
-      make_scoped_ptr(content::WebContents::Create(create_params));
+  std::unique_ptr<content::WebContents> new_contents =
+      base::WrapUnique(content::WebContents::Create(create_params));
   PlatformSetContents(std::move(new_contents));
   return true;
 }
@@ -350,8 +351,7 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
 
 void BlimpEngineSession::OnWebGestureEvent(
     content::RenderWidgetHost* render_widget_host,
-    scoped_ptr<blink::WebGestureEvent> event) {
-
+    std::unique_ptr<blink::WebGestureEvent> event) {
   render_widget_host->ForwardGestureEvent(*event);
 }
 
@@ -409,7 +409,7 @@ void BlimpEngineSession::OnShowImeIfNeeded() {
 }
 
 void BlimpEngineSession::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::TAB_CONTROL ||
@@ -524,7 +524,7 @@ void BlimpEngineSession::NavigationStateChanged(
     return;
 
   NavigationMessage* navigation_message;
-  scoped_ptr<BlimpMessage> message =
+  std::unique_ptr<BlimpMessage> message =
       CreateBlimpMessage(&navigation_message, kDummyTabId);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
   NavigationStateChangeMessage* details =
@@ -562,8 +562,8 @@ void BlimpEngineSession::LoadProgressChanged(
     return;
 
   NavigationMessage* navigation_message = nullptr;
-  scoped_ptr<BlimpMessage> message =
-        CreateBlimpMessage(&navigation_message, kDummyTabId);
+  std::unique_ptr<BlimpMessage> message =
+      CreateBlimpMessage(&navigation_message, kDummyTabId);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
   NavigationStateChangeMessage* details =
       navigation_message->mutable_navigation_state_changed();
@@ -597,7 +597,7 @@ void BlimpEngineSession::RenderViewDeleted(
 }
 
 void BlimpEngineSession::PlatformSetContents(
-    scoped_ptr<content::WebContents> new_contents) {
+    std::unique_ptr<content::WebContents> new_contents) {
   new_contents->SetDelegate(this);
   Observe(new_contents.get());
   web_contents_ = std::move(new_contents);

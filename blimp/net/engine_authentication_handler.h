@@ -30,7 +30,7 @@ class BLIMP_NET_EXPORT EngineAuthenticationHandler : public ConnectionHandler {
   ~EngineAuthenticationHandler() override;
 
   // ConnectionHandler implementation.
-  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+  void HandleConnection(std::unique_ptr<BlimpConnection> connection) override;
 
  private:
   // Used to abandon pending authenticated connections if |this| is deleted.

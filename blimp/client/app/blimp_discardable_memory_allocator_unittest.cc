@@ -19,7 +19,7 @@ const size_t kOneMegabyte = 1024 * kOneKilobyte;
 
 TEST(BlimpDiscardableMemoryAllocator, Basic) {
   BlimpDiscardableMemoryAllocator allocator(kOneMegabyte);
-  scoped_ptr<base::DiscardableMemory> chunk;
+  std::unique_ptr<base::DiscardableMemory> chunk;
   // Make sure the chunk is locked when allocated. In debug mode, we will
   // dcheck.
   chunk = allocator.AllocateLockedDiscardableMemory(kOneKilobyte);
@@ -33,13 +33,13 @@ TEST(BlimpDiscardableMemoryAllocator, Basic) {
 TEST(BlimpDiscardableMemoryAllocator, DiscardChunks) {
   BlimpDiscardableMemoryAllocator allocator(kOneMegabyte);
 
-  scoped_ptr<base::DiscardableMemory> chunk_to_remove =
+  std::unique_ptr<base::DiscardableMemory> chunk_to_remove =
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
   chunk_to_remove->Unlock();
 
   // Allocating a second chunk should deallocate the first one due to memory
   // pressure, since we only have one megabyte available.
-  scoped_ptr<base::DiscardableMemory> chunk_to_keep =
+  std::unique_ptr<base::DiscardableMemory> chunk_to_keep =
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
 
   // Fail to get a lock because allocating the second chunk removed the first.
@@ -51,10 +51,10 @@ TEST(BlimpDiscardableMemoryAllocator, DiscardChunks) {
 TEST(BlimpDiscardableMemoyAllocator, DiscardChunksOnUnlock) {
   BlimpDiscardableMemoryAllocator allocator(kOneMegabyte);
 
-  scoped_ptr<base::DiscardableMemory> chunk_to_remove =
+  std::unique_ptr<base::DiscardableMemory> chunk_to_remove =
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
-  scoped_ptr<base::DiscardableMemory> chunk_to_keep =
-        allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
+  std::unique_ptr<base::DiscardableMemory> chunk_to_keep =
+      allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
 
   // We should have both the allocated chunks.
   EXPECT_NE(nullptr, chunk_to_remove->data());
@@ -70,11 +70,11 @@ TEST(BlimpDiscardableMemoyAllocator, DiscardChunksOnUnlock) {
 TEST(BlimpDiscardableMemoryAllocator, DontDiscardLiveChunks) {
   BlimpDiscardableMemoryAllocator allocator(kOneMegabyte);
 
-  scoped_ptr<base::DiscardableMemory> chunk_one =
+  std::unique_ptr<base::DiscardableMemory> chunk_one =
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
-  scoped_ptr<base::DiscardableMemory> chunk_two =
+  std::unique_ptr<base::DiscardableMemory> chunk_two =
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
-  scoped_ptr<base::DiscardableMemory> chunk_three =
+  std::unique_ptr<base::DiscardableMemory> chunk_three =
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
 
   // These accesses will fail if the underlying weak ptr has been deallocated.

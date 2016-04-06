@@ -33,7 +33,7 @@ const int kAuthTimeoutDurationInSeconds = 10;
 class Authenticator : public ConnectionErrorObserver,
                       public BlimpMessageProcessor {
  public:
-  explicit Authenticator(scoped_ptr<BlimpConnection> connection,
+  explicit Authenticator(std::unique_ptr<BlimpConnection> connection,
                          base::WeakPtr<ConnectionHandler> connection_handler,
                          const std::string& client_token);
   ~Authenticator() override;
@@ -49,11 +49,11 @@ class Authenticator : public ConnectionErrorObserver,
   void OnConnectionError(int error) override;
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
   // The connection to be authenticated.
-  scoped_ptr<BlimpConnection> connection_;
+  std::unique_ptr<BlimpConnection> connection_;
 
   // Handler to pass successfully authenticated connections to.
   base::WeakPtr<ConnectionHandler> connection_handler_;
@@ -68,7 +68,7 @@ class Authenticator : public ConnectionErrorObserver,
 };
 
 Authenticator::Authenticator(
-    scoped_ptr<BlimpConnection> connection,
+    std::unique_ptr<BlimpConnection> connection,
     base::WeakPtr<ConnectionHandler> connection_handler,
     const std::string& client_token)
     : connection_(std::move(connection)),
@@ -109,7 +109,7 @@ void Authenticator::OnConnectionError(int error) {
   OnConnectionAuthenticated(false);
 }
 
-void Authenticator::ProcessMessage(scoped_ptr<BlimpMessage> message,
+void Authenticator::ProcessMessage(std::unique_ptr<BlimpMessage> message,
                                    const net::CompletionCallback& callback) {
   if (message->type() == BlimpMessage::PROTOCOL_CONTROL &&
       message->protocol_control().type() ==
@@ -144,7 +144,7 @@ EngineAuthenticationHandler::EngineAuthenticationHandler(
 EngineAuthenticationHandler::~EngineAuthenticationHandler() {}
 
 void EngineAuthenticationHandler::HandleConnection(
-    scoped_ptr<BlimpConnection> connection) {
+    std::unique_ptr<BlimpConnection> connection) {
   // Authenticator manages its own lifetime.
   new Authenticator(std::move(connection),
                     connection_handler_weak_factory_.GetWeakPtr(),

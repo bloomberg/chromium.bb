@@ -5,11 +5,11 @@
 #ifndef BLIMP_NET_TCP_CLIENT_TRANSPORT_H_
 #define BLIMP_NET_TCP_CLIENT_TRANSPORT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/blimp_transport.h"
 #include "net/base/address_list.h"
@@ -36,7 +36,7 @@ class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
 
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
-  scoped_ptr<BlimpConnection> TakeConnection() override;
+  std::unique_ptr<BlimpConnection> TakeConnection() override;
   const char* GetName() const override;
 
  protected:
@@ -49,8 +49,8 @@ class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
 
   // Methods for taking and setting |socket_|. Can be used by subclasses to
   // swap out a socket for an upgraded one, e.g. adding SSL encryption.
-  scoped_ptr<net::StreamSocket> TakeSocket();
-  void SetSocket(scoped_ptr<net::StreamSocket> socket);
+  std::unique_ptr<net::StreamSocket> TakeSocket();
+  void SetSocket(std::unique_ptr<net::StreamSocket> socket);
 
   // Gets the socket factory instance.
   net::ClientSocketFactory* socket_factory() const;
@@ -60,7 +60,7 @@ class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
   net::NetLog* net_log_;
   net::CompletionCallback connect_callback_;
   net::ClientSocketFactory* socket_factory_ = nullptr;
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientTransport);
 };

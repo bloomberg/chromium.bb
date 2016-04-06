@@ -32,25 +32,25 @@ EngineRenderWidgetFeature::~EngineRenderWidgetFeature() {
 }
 
 void EngineRenderWidgetFeature::set_render_widget_message_sender(
-    scoped_ptr<BlimpMessageProcessor> message_processor) {
+    std::unique_ptr<BlimpMessageProcessor> message_processor) {
   DCHECK(message_processor);
   render_widget_message_sender_ = std::move(message_processor);
 }
 
 void EngineRenderWidgetFeature::set_input_message_sender(
-    scoped_ptr<BlimpMessageProcessor> message_processor) {
+    std::unique_ptr<BlimpMessageProcessor> message_processor) {
   DCHECK(message_processor);
   input_message_sender_ = std::move(message_processor);
 }
 
 void EngineRenderWidgetFeature::set_ime_message_sender(
-    scoped_ptr<BlimpMessageProcessor> message_processor) {
+    std::unique_ptr<BlimpMessageProcessor> message_processor) {
   DCHECK(message_processor);
   ime_message_sender_ = std::move(message_processor);
 }
 
 void EngineRenderWidgetFeature::set_compositor_message_sender(
-    scoped_ptr<BlimpMessageProcessor> message_processor) {
+    std::unique_ptr<BlimpMessageProcessor> message_processor) {
   DCHECK(message_processor);
   compositor_message_sender_ = std::move(message_processor);
 }
@@ -64,7 +64,7 @@ void EngineRenderWidgetFeature::OnRenderWidgetCreated(
   DCHECK_GT(render_widget_id, 0);
 
   RenderWidgetMessage* render_widget_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&render_widget_message, tab_id);
   render_widget_message->set_type(RenderWidgetMessage::CREATED);
   render_widget_message->set_render_widget_id(render_widget_id);
@@ -82,7 +82,7 @@ void EngineRenderWidgetFeature::OnRenderWidgetInitialized(
   DCHECK_GT(render_widget_id, 0);
 
   RenderWidgetMessage* render_widget_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&render_widget_message, tab_id);
   render_widget_message->set_type(RenderWidgetMessage::INITIALIZE);
   render_widget_message->set_render_widget_id(render_widget_id);
@@ -100,7 +100,7 @@ void EngineRenderWidgetFeature::OnRenderWidgetDeleted(
   DCHECK_GT(render_widget_id, 0);
 
   RenderWidgetMessage* render_widget_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&render_widget_message, tab_id);
   render_widget_message->set_type(RenderWidgetMessage::DELETED);
   render_widget_message->set_render_widget_id(render_widget_id);
@@ -114,7 +114,7 @@ void EngineRenderWidgetFeature::SendCompositorMessage(
     content::RenderWidgetHost* render_widget_host,
     const std::vector<uint8_t>& message) {
   CompositorMessage* compositor_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&compositor_message, tab_id);
 
   int render_widget_id = GetRenderWidgetId(tab_id, render_widget_host);
@@ -137,7 +137,7 @@ void EngineRenderWidgetFeature::SendShowImeRequest(
   DCHECK(client);
 
   ImeMessage* ime_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&ime_message, tab_id);
 
   int render_widget_id = GetRenderWidgetId(tab_id, render_widget_host);
@@ -161,7 +161,7 @@ void EngineRenderWidgetFeature::SendHideImeRequest(
     const int tab_id,
     content::RenderWidgetHost* render_widget_host) {
   ImeMessage* ime_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&ime_message, tab_id);
 
   int render_widget_id = GetRenderWidgetId(tab_id, render_widget_host);
@@ -187,7 +187,7 @@ void EngineRenderWidgetFeature::RemoveDelegate(const int tab_id) {
 }
 
 void EngineRenderWidgetFeature::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
@@ -207,7 +207,7 @@ void EngineRenderWidgetFeature::ProcessMessage(
       render_widget_host = GetRenderWidgetHost(target_tab_id,
                               message->input().render_widget_id());
       if (render_widget_host) {
-        scoped_ptr<blink::WebGestureEvent> event =
+        std::unique_ptr<blink::WebGestureEvent> event =
             input_message_converter_.ProcessMessage(message->input());
         if (event)
           delegate->OnWebGestureEvent(render_widget_host, std::move(event));

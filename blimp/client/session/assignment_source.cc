@@ -79,13 +79,13 @@ class SimpleURLRequestContextGetter : public net::URLRequestContextGetter {
   ~SimpleURLRequestContextGetter() override {}
 
   scoped_refptr<base::SingleThreadTaskRunner> io_loop_task_runner_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
 
   // Temporary storage for the ProxyConfigService, which needs to be created on
   // the main thread but cleared on the IO thread.  This will be built in the
   // constructor and cleared on the IO thread.  Due to the usage of this class
   // this is safe.
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleURLRequestContextGetter);
 };
@@ -315,7 +315,7 @@ void AssignmentSource::ParseAssignerResponse() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void AssignmentSource::OnJsonParsed(scoped_ptr<base::Value> json) {
+void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
   const base::DictionaryValue* dict;
   if (!json->GetAsDictionary(&dict)) {
     base::ResetAndReturn(&callback_)

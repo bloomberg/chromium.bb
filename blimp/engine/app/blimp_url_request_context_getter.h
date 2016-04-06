@@ -5,9 +5,10 @@
 #ifndef BLIMP_ENGINE_APP_BLIMP_URL_REQUEST_CONTEXT_GETTER_H_
 #define BLIMP_ENGINE_APP_BLIMP_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -55,8 +56,8 @@ class BlimpURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> file_loop_task_runner_;
   net::NetLog* net_log_;
 
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
 

@@ -5,8 +5,9 @@
 #ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_OUTPUT_SURFACE_H_
 #define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/output_surface.h"
 

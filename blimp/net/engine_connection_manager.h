@@ -5,11 +5,11 @@
 #ifndef BLIMP_NET_ENGINE_CONNECTION_MANAGER_H_
 #define BLIMP_NET_ENGINE_CONNECTION_MANAGER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/connection_handler.h"
 
@@ -32,7 +32,7 @@ class BLIMP_NET_EXPORT EngineConnectionManager {
 
   // Adds a transport and accepts new BlimpConnections from it as fast as they
   // arrive.
-  void AddTransport(scoped_ptr<BlimpTransport> transport);
+  void AddTransport(std::unique_ptr<BlimpTransport> transport);
 
  private:
   // Invokes transport->Connect to listen for a connection.
@@ -43,7 +43,7 @@ class BLIMP_NET_EXPORT EngineConnectionManager {
   void OnConnectResult(BlimpTransport* transport, int result);
 
   ConnectionHandler* connection_handler_;
-  std::vector<scoped_ptr<BlimpTransport>> transports_;
+  std::vector<std::unique_ptr<BlimpTransport>> transports_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineConnectionManager);
 };

@@ -5,9 +5,10 @@
 #ifndef BLIMP_CLIENT_APP_ANDROID_BLIMP_VIEW_H_
 #define BLIMP_CLIENT_APP_ANDROID_BLIMP_VIEW_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -96,7 +97,7 @@ class BlimpView {
 
   const float device_scale_factor_;
 
-  scoped_ptr<BlimpCompositorManagerAndroid> compositor_manager_;
+  std::unique_ptr<BlimpCompositorManagerAndroid> compositor_manager_;
 
   // The format of the current surface owned by |compositor_|.  See
   // android.graphics.PixelFormat.java.

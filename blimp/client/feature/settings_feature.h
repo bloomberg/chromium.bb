@@ -21,17 +21,17 @@ class BLIMP_CLIENT_EXPORT SettingsFeature : public BlimpMessageProcessor {
   // Set the BlimpMessageProcessor that will be used to send
   // BlimpMessage::SETTINGS messages to the engine.
   void set_outgoing_message_processor(
-      scoped_ptr<BlimpMessageProcessor> processor);
+      std::unique_ptr<BlimpMessageProcessor> processor);
 
   void SetRecordWholeDocument(bool record_whole_document);
 
  private:
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
   // Used to send BlimpMessage::TAB_CONTROL messages to the engine.
-  scoped_ptr<BlimpMessageProcessor> outgoing_message_processor_;
+  std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 
   // Used to avoid sending unnecessary messages to engine.
   bool record_whole_document_;

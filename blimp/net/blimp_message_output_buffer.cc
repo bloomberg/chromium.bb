@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
@@ -58,7 +59,7 @@ int BlimpMessageOutputBuffer::GetUnacknowledgedMessageCountForTest() const {
 }
 
 void BlimpMessageOutputBuffer::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DVLOG(2) << "OutputBuffer::ProcessMessage " << *message;
 
@@ -71,7 +72,7 @@ void BlimpMessageOutputBuffer::ProcessMessage(
                   << " bytes.";
 
   write_buffer_.push_back(
-      make_scoped_ptr(new BufferEntry(std::move(message), callback)));
+      base::WrapUnique(new BufferEntry(std::move(message), callback)));
 
   // Write the message
   if (write_buffer_.size() == 1 && output_processor_) {
@@ -118,7 +119,7 @@ void BlimpMessageOutputBuffer::OnMessageCheckpoint(int64_t message_id) {
 }
 
 BlimpMessageOutputBuffer::BufferEntry::BufferEntry(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     net::CompletionCallback callback)
     : message(std::move(message)), callback(callback) {}
 
@@ -131,7 +132,7 @@ void BlimpMessageOutputBuffer::WriteNextMessageIfReady() {
     return;
   }
 
-  scoped_ptr<BlimpMessage> message_to_write(
+  std::unique_ptr<BlimpMessage> message_to_write(
       new BlimpMessage(*write_buffer_.front()->message));
   DVLOG(3) << "Writing message (id="
            << write_buffer_.front()->message->message_id()

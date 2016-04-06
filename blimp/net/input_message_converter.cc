@@ -12,10 +12,10 @@
 namespace blimp {
 namespace {
 
-scoped_ptr<blink::WebGestureEvent> BuildCommonWebGesture(
+std::unique_ptr<blink::WebGestureEvent> BuildCommonWebGesture(
     const InputMessage& proto,
     blink::WebInputEvent::Type type) {
-  scoped_ptr<blink::WebGestureEvent> event(new blink::WebGestureEvent);
+  std::unique_ptr<blink::WebGestureEvent> event(new blink::WebGestureEvent);
   event->type = type;
   event->timeStampSeconds = proto.timestamp_seconds();
 
@@ -28,11 +28,10 @@ scoped_ptr<blink::WebGestureEvent> BuildCommonWebGesture(
   return event;
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGestureScrollBegin(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGestureScrollBegin(
     const InputMessage& proto) {
-  scoped_ptr<blink::WebGestureEvent> event(
-      BuildCommonWebGesture(proto,
-                            blink::WebInputEvent::Type::GestureScrollBegin));
+  std::unique_ptr<blink::WebGestureEvent> event(BuildCommonWebGesture(
+      proto, blink::WebInputEvent::Type::GestureScrollBegin));
 
   const GestureScrollBegin& details = proto.gesture_scroll_begin();
   event->data.scrollBegin.deltaXHint = details.delta_x_hint();
@@ -42,17 +41,16 @@ scoped_ptr<blink::WebGestureEvent> ProtoToGestureScrollBegin(
   return event;
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGestureScrollEnd(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGestureScrollEnd(
     const InputMessage& proto) {
   return BuildCommonWebGesture(proto,
                                blink::WebInputEvent::Type::GestureScrollEnd);
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGestureScrollUpdate(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGestureScrollUpdate(
     const InputMessage& proto) {
-  scoped_ptr<blink::WebGestureEvent> event(
-        BuildCommonWebGesture(proto,
-                              blink::WebInputEvent::Type::GestureScrollUpdate));
+  std::unique_ptr<blink::WebGestureEvent> event(BuildCommonWebGesture(
+      proto, blink::WebInputEvent::Type::GestureScrollUpdate));
 
   const GestureScrollUpdate& details = proto.gesture_scroll_update();
   event->data.scrollUpdate.deltaX = details.delta_x();
@@ -67,11 +65,10 @@ scoped_ptr<blink::WebGestureEvent> ProtoToGestureScrollUpdate(
   return event;
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGestureFlingStart(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGestureFlingStart(
     const InputMessage& proto) {
-  scoped_ptr<blink::WebGestureEvent> event(
-        BuildCommonWebGesture(proto,
-                              blink::WebInputEvent::Type::GestureFlingStart));
+  std::unique_ptr<blink::WebGestureEvent> event(BuildCommonWebGesture(
+      proto, blink::WebInputEvent::Type::GestureFlingStart));
 
   const GestureFlingStart& details = proto.gesture_fling_start();
   event->data.flingStart.velocityX = details.velocity_x();
@@ -81,11 +78,10 @@ scoped_ptr<blink::WebGestureEvent> ProtoToGestureFlingStart(
   return event;
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGestureFlingCancel(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGestureFlingCancel(
     const InputMessage& proto) {
-  scoped_ptr<blink::WebGestureEvent> event(
-        BuildCommonWebGesture(proto,
-                              blink::WebInputEvent::Type::GestureFlingCancel));
+  std::unique_ptr<blink::WebGestureEvent> event(BuildCommonWebGesture(
+      proto, blink::WebInputEvent::Type::GestureFlingCancel));
 
   const GestureFlingCancel& details = proto.gesture_fling_cancel();
   event->data.flingCancel.preventBoosting = details.prevent_boosting();
@@ -93,11 +89,10 @@ scoped_ptr<blink::WebGestureEvent> ProtoToGestureFlingCancel(
   return event;
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGestureTap(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGestureTap(
     const InputMessage& proto) {
-  scoped_ptr<blink::WebGestureEvent> event(
-        BuildCommonWebGesture(proto,
-                              blink::WebInputEvent::Type::GestureTap));
+  std::unique_ptr<blink::WebGestureEvent> event(
+      BuildCommonWebGesture(proto, blink::WebInputEvent::Type::GestureTap));
 
   const GestureTap& details = proto.gesture_tap();
   event->data.tap.tapCount = details.tap_count();
@@ -107,23 +102,22 @@ scoped_ptr<blink::WebGestureEvent> ProtoToGestureTap(
   return event;
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGesturePinchBegin(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGesturePinchBegin(
     const InputMessage& proto) {
   return BuildCommonWebGesture(proto,
                                blink::WebInputEvent::Type::GesturePinchBegin);
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGesturePinchEnd(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGesturePinchEnd(
     const InputMessage& proto) {
   return BuildCommonWebGesture(proto,
                                blink::WebInputEvent::Type::GesturePinchEnd);
 }
 
-scoped_ptr<blink::WebGestureEvent> ProtoToGesturePinchUpdate(
+std::unique_ptr<blink::WebGestureEvent> ProtoToGesturePinchUpdate(
     const InputMessage& proto) {
-  scoped_ptr<blink::WebGestureEvent> event(
-        BuildCommonWebGesture(proto,
-                              blink::WebInputEvent::Type::GesturePinchUpdate));
+  std::unique_ptr<blink::WebGestureEvent> event(BuildCommonWebGesture(
+      proto, blink::WebInputEvent::Type::GesturePinchUpdate));
 
   const GesturePinchUpdate& details = proto.gesture_pinch_update();
   event->data.pinchUpdate.zoomDisabled = details.zoom_disabled();
@@ -138,9 +132,9 @@ InputMessageConverter::InputMessageConverter() {}
 
 InputMessageConverter::~InputMessageConverter() {}
 
-scoped_ptr<blink::WebGestureEvent> InputMessageConverter::ProcessMessage(
+std::unique_ptr<blink::WebGestureEvent> InputMessageConverter::ProcessMessage(
     const InputMessage& message) {
-  scoped_ptr<blink::WebGestureEvent> event;
+  std::unique_ptr<blink::WebGestureEvent> event;
 
   switch (message.type()) {
     case InputMessage::Type_GestureScrollBegin:

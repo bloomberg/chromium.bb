@@ -4,9 +4,10 @@
 
 #include "blimp/net/exact_match_cert_verifier.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -39,7 +40,7 @@ int ExactMatchCertVerifier::Verify(net::X509Certificate* cert,
                                    net::CRLSet* crl_set,
                                    net::CertVerifyResult* verify_result,
                                    const net::CompletionCallback& callback,
-                                   scoped_ptr<Request>* out_req,
+                                   std::unique_ptr<Request>* out_req,
                                    const net::BoundNetLog& net_log) {
   verify_result->Reset();
   verify_result->verified_cert = engine_cert_;

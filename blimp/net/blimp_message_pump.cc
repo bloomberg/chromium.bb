@@ -54,7 +54,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
   DCHECK(read_inflight_);
   read_inflight_ = false;
   if (result >= 0) {
-    scoped_ptr<BlimpMessage> message(new BlimpMessage);
+    std::unique_ptr<BlimpMessage> message(new BlimpMessage);
     if (message->ParseFromArray(buffer_->data(), result)) {
       VLOG(1) << "Received " << *message;
       processor_->ProcessMessage(

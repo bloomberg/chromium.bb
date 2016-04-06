@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "blimp/net/client_connection_manager.h"
+
 #include <stddef.h>
+
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/protocol_version.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_transport.h"
-#include "blimp/net/client_connection_manager.h"
 #include "blimp/net/test_common.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -38,8 +41,8 @@ class ClientConnectionManagerTest : public testing::Test {
         transport2_(new testing::StrictMock<MockTransport>),
         reader_(new MockPacketReader),
         writer_(new MockPacketWriter),
-        connection_(new BlimpConnection(make_scoped_ptr(reader_),
-                                        make_scoped_ptr(writer_))),
+        connection_(new BlimpConnection(base::WrapUnique(reader_),
+                                        base::WrapUnique(writer_))),
         start_connection_message_(
             CreateStartConnectionMessage(kDummyClientToken, kProtocolVersion)) {
     manager_->set_client_token(kDummyClientToken);
@@ -50,13 +53,13 @@ class ClientConnectionManagerTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   testing::StrictMock<MockConnectionHandler> connection_handler_;
-  scoped_ptr<ClientConnectionManager> manager_;
-  scoped_ptr<testing::StrictMock<MockTransport>> transport1_;
-  scoped_ptr<testing::StrictMock<MockTransport>> transport2_;
+  std::unique_ptr<ClientConnectionManager> manager_;
+  std::unique_ptr<testing::StrictMock<MockTransport>> transport1_;
+  std::unique_ptr<testing::StrictMock<MockTransport>> transport2_;
   MockPacketReader* reader_;
   MockPacketWriter* writer_;
-  scoped_ptr<BlimpConnection> connection_;
-  scoped_ptr<BlimpMessage> start_connection_message_;
+  std::unique_ptr<BlimpConnection> connection_;
+  std::unique_ptr<BlimpMessage> start_connection_message_;
 };
 
 // The 1st transport connects, and the 2nd transport is not used.

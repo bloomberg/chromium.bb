@@ -70,7 +70,7 @@ BlimpBrowserContext::~BlimpBrowserContext() {
 
 void BlimpBrowserContext::InitWhileIOAllowed() {
   // Ensures ~/.config/blimp_engine directory exists.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::FilePath config_dir(base::nix::GetXDGDirectory(
       env.get(), base::nix::kXdgConfigHomeEnvVar, base::nix::kDotConfigDir));
   path_ = config_dir.Append("blimp_engine");
@@ -79,7 +79,7 @@ void BlimpBrowserContext::InitWhileIOAllowed() {
   BrowserContext::Initialize(this, path_);
 }
 
-scoped_ptr<content::ZoomLevelDelegate>
+std::unique_ptr<content::ZoomLevelDelegate>
 BlimpBrowserContext::CreateZoomLevelDelegate(const base::FilePath&) {
   return nullptr;
 }

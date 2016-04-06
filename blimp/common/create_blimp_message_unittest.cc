@@ -18,7 +18,7 @@ const int kTabId = 1234;
 
 TEST(CreateBlimpMessageTest, CompositorMessage) {
   CompositorMessage* details = nullptr;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, kTabId);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details, kTabId);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_compositor());
@@ -27,7 +27,7 @@ TEST(CreateBlimpMessageTest, CompositorMessage) {
 
 TEST(CreateBlimpMessageTest, TabControlMessage) {
   TabControlMessage* details = nullptr;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_tab_control());
@@ -35,7 +35,7 @@ TEST(CreateBlimpMessageTest, TabControlMessage) {
 
 TEST(CreateBlimpMessageTest, InputMessage) {
   InputMessage* details = nullptr;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_input());
@@ -43,7 +43,7 @@ TEST(CreateBlimpMessageTest, InputMessage) {
 
 TEST(CreateBlimpMessageTest, NavigationMessage) {
   NavigationMessage* details = nullptr;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, kTabId);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details, kTabId);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_navigation());
@@ -52,7 +52,7 @@ TEST(CreateBlimpMessageTest, NavigationMessage) {
 
 TEST(CreateBlimpMessageTest, RenderWidgetMessage) {
   RenderWidgetMessage* details = nullptr;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, kTabId);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details, kTabId);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_render_widget());
@@ -61,7 +61,7 @@ TEST(CreateBlimpMessageTest, RenderWidgetMessage) {
 
 TEST(CreateBlimpMessageTest, SizeMessage) {
   SizeMessage* details = nullptr;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(TabControlMessage::SIZE, message->mutable_tab_control()->type());
@@ -70,7 +70,7 @@ TEST(CreateBlimpMessageTest, SizeMessage) {
 
 TEST(CreateBlimpMessageTest, EngineSettingsMessage) {
   EngineSettingsMessage* details;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(details, message->mutable_settings()->mutable_engine_settings());
@@ -79,7 +79,7 @@ TEST(CreateBlimpMessageTest, EngineSettingsMessage) {
 TEST(CreateBlimpMessageTest, StartConnectionMessage) {
   const char* client_token = "token";
   const int protocol_version = 1;
-  scoped_ptr<BlimpMessage> message =
+  std::unique_ptr<BlimpMessage> message =
       CreateStartConnectionMessage(client_token, protocol_version);
   EXPECT_NE(nullptr, message);
   EXPECT_EQ(BlimpMessage::PROTOCOL_CONTROL, message->type());

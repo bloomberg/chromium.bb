@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/blimp_common_export.h"
 
 namespace blimp {
@@ -38,39 +38,39 @@ class TabControlMessage;
 // Additional initialization arguments may be taken depending on the
 // message type.
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     CompositorMessage** compositor_message,
     int target_tab_id);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     TabControlMessage** control_message);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     InputMessage** input_message);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     NavigationMessage** navigation_message,
     int target_tab_id);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     ImeMessage** ime_message,
     int target_tab_id);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     RenderWidgetMessage** render_widget_message,
     int target_tab_id);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     SizeMessage** size_message);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     EngineSettingsMessage** engine_settings);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
     const std::string& client_token,
     int protocol_version);
 
-BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateCheckpointAckMessage(
     int64_t checkpoint_id);
 
 }  // namespace blimp

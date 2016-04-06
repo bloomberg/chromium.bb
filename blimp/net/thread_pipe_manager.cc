@@ -25,21 +25,22 @@ class IoThreadPipeManager {
   // using |incoming_proxy| as the incoming message processor, and connecting
   // |outgoing_pipe| to the actual message sender.
   void RegisterFeature(BlimpMessage::Type type,
-                       scoped_ptr<BlimpMessageThreadPipe> outgoing_pipe,
-                       scoped_ptr<BlimpMessageProcessor> incoming_proxy);
+                       std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe,
+                       std::unique_ptr<BlimpMessageProcessor> incoming_proxy);
 
  private:
   BrowserConnectionHandler* connection_handler_;
 
   // Container for the feature-specific MessageProcessors.
   // IO-side proxy for sending messages to UI thread.
-  std::vector<scoped_ptr<BlimpMessageProcessor>> incoming_proxies_;
+  std::vector<std::unique_ptr<BlimpMessageProcessor>> incoming_proxies_;
 
   // Containers for the MessageProcessors used to write feature-specific
   // messages to the network, and the thread-pipe endpoints through which
   // they are used from the UI thread.
-  std::vector<scoped_ptr<BlimpMessageProcessor>> outgoing_message_processors_;
-  std::vector<scoped_ptr<BlimpMessageThreadPipe>> outgoing_pipes_;
+  std::vector<std::unique_ptr<BlimpMessageProcessor>>
+      outgoing_message_processors_;
+  std::vector<std::unique_ptr<BlimpMessageThreadPipe>> outgoing_pipes_;
 
   DISALLOW_COPY_AND_ASSIGN(IoThreadPipeManager);
 };
@@ -54,12 +55,12 @@ IoThreadPipeManager::~IoThreadPipeManager() {}
 
 void IoThreadPipeManager::RegisterFeature(
     BlimpMessage::Type type,
-    scoped_ptr<BlimpMessageThreadPipe> outgoing_pipe,
-    scoped_ptr<BlimpMessageProcessor> incoming_proxy) {
+    std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe,
+    std::unique_ptr<BlimpMessageProcessor> incoming_proxy) {
   // Registers |incoming_proxy| as the message processor for incoming
   // messages with |type|. Sets the returned outgoing message processor as the
   // target of the |outgoing_pipe|.
-  scoped_ptr<BlimpMessageProcessor> outgoing_message_processor =
+  std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor =
       connection_handler_->RegisterFeature(type, incoming_proxy.get());
   outgoing_pipe->set_target_processor(outgoing_message_processor.get());
 
@@ -81,22 +82,22 @@ ThreadPipeManager::~ThreadPipeManager() {
   io_task_runner_->DeleteSoon(FROM_HERE, io_pipe_manager_.release());
 }
 
-scoped_ptr<BlimpMessageProcessor> ThreadPipeManager::RegisterFeature(
+std::unique_ptr<BlimpMessageProcessor> ThreadPipeManager::RegisterFeature(
     BlimpMessage::Type type,
     BlimpMessageProcessor* incoming_processor) {
   // Creates an outgoing pipe and a proxy for forwarding messages
   // from features on the UI thread to network components on the IO thread.
-  scoped_ptr<BlimpMessageThreadPipe> outgoing_pipe(
+  std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe(
       new BlimpMessageThreadPipe(io_task_runner_));
-  scoped_ptr<BlimpMessageProcessor> outgoing_proxy =
+  std::unique_ptr<BlimpMessageProcessor> outgoing_proxy =
       outgoing_pipe->CreateProxy();
 
   // Creates an incoming pipe and a proxy for receiving messages
   // from network components on the IO thread.
-  scoped_ptr<BlimpMessageThreadPipe> incoming_pipe(
+  std::unique_ptr<BlimpMessageThreadPipe> incoming_pipe(
       new BlimpMessageThreadPipe(ui_task_runner_));
   incoming_pipe->set_target_processor(incoming_processor);
-  scoped_ptr<BlimpMessageProcessor> incoming_proxy =
+  std::unique_ptr<BlimpMessageProcessor> incoming_proxy =
       incoming_pipe->CreateProxy();
 
   // Finishes registration on IO thread.

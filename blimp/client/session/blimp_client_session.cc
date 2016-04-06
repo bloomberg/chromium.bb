@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -71,7 +72,8 @@ class ClientNetworkComponents : public ConnectionHandler,
                                 public ConnectionErrorObserver {
  public:
   // Can be created on any thread.
-  explicit ClientNetworkComponents(scoped_ptr<NetworkEventObserver> observer);
+  explicit ClientNetworkComponents(
+      std::unique_ptr<NetworkEventObserver> observer);
   ~ClientNetworkComponents() override;
 
   // Sets up network components.
@@ -85,20 +87,20 @@ class ClientNetworkComponents : public ConnectionHandler,
 
  private:
   // ConnectionHandler implementation.
-  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+  void HandleConnection(std::unique_ptr<BlimpConnection> connection) override;
 
   // ConnectionErrorObserver implementation.
   void OnConnectionError(int error) override;
 
-  scoped_ptr<BrowserConnectionHandler> connection_handler_;
-  scoped_ptr<ClientConnectionManager> connection_manager_;
-  scoped_ptr<NetworkEventObserver> network_observer_;
+  std::unique_ptr<BrowserConnectionHandler> connection_handler_;
+  std::unique_ptr<ClientConnectionManager> connection_manager_;
+  std::unique_ptr<NetworkEventObserver> network_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNetworkComponents);
 };
 
 ClientNetworkComponents::ClientNetworkComponents(
-    scoped_ptr<NetworkEventObserver> network_observer)
+    std::unique_ptr<NetworkEventObserver> network_observer)
     : connection_handler_(new BrowserConnectionHandler),
       network_observer_(std::move(network_observer)) {}
 
@@ -106,7 +108,7 @@ ClientNetworkComponents::~ClientNetworkComponents() {}
 
 void ClientNetworkComponents::Initialize() {
   DCHECK(!connection_manager_);
-  connection_manager_ = make_scoped_ptr(new ClientConnectionManager(this));
+  connection_manager_ = base::WrapUnique(new ClientConnectionManager(this));
 }
 
 void ClientNetworkComponents::ConnectWithAssignment(
@@ -117,11 +119,11 @@ void ClientNetworkComponents::ConnectWithAssignment(
   switch (assignment.transport_protocol) {
     case Assignment::SSL:
       DCHECK(assignment.cert);
-      connection_manager_->AddTransport(make_scoped_ptr(new SSLClientTransport(
+      connection_manager_->AddTransport(base::WrapUnique(new SSLClientTransport(
           assignment.engine_endpoint, std::move(assignment.cert), nullptr)));
       break;
     case Assignment::TCP:
-      connection_manager_->AddTransport(make_scoped_ptr(
+      connection_manager_->AddTransport(base::WrapUnique(
           new TCPClientTransport(assignment.engine_endpoint, nullptr)));
       break;
     case Assignment::UNKNOWN:
@@ -138,7 +140,7 @@ ClientNetworkComponents::GetBrowserConnectionHandler() {
 }
 
 void ClientNetworkComponents::HandleConnection(
-    scoped_ptr<BlimpConnection> connection) {
+    std::unique_ptr<BlimpConnection> connection) {
   connection->AddConnectionErrorObserver(this);
   network_observer_->OnConnected();
   connection_handler_->HandleConnection(std::move(connection));
@@ -157,7 +159,7 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
       settings_feature_(new SettingsFeature),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
-      make_scoped_ptr(new CrossThreadNetworkEventObserver(
+      base::WrapUnique(new CrossThreadNetworkEventObserver(
           weak_factory_.GetWeakPtr(),
           base::SequencedTaskRunnerHandle::Get()))));
   base::Thread::Options options;
@@ -205,7 +207,7 @@ void BlimpClientSession::OnAssignmentConnectionAttempted(
     AssignmentSource::Result result) {}
 
 void BlimpClientSession::RegisterFeatures() {
-  thread_pipe_manager_ = make_scoped_ptr(new ThreadPipeManager(
+  thread_pipe_manager_ = base::WrapUnique(new ThreadPipeManager(
       io_thread_.task_runner(), base::SequencedTaskRunnerHandle::Get(),
       net_components_->GetBrowserConnectionHandler()));
 

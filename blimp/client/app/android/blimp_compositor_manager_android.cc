@@ -5,9 +5,10 @@
 #include "blimp/client/app/android/blimp_compositor_manager_android.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -20,7 +21,8 @@ namespace blimp {
 namespace client {
 
 // static
-scoped_ptr<BlimpCompositorManagerAndroid> BlimpCompositorManagerAndroid::Create(
+std::unique_ptr<BlimpCompositorManagerAndroid>
+BlimpCompositorManagerAndroid::Create(
     const gfx::Size& real_size,
     const gfx::Size& size,
     RenderWidgetFeature* render_widget_feature) {
@@ -30,7 +32,7 @@ scoped_ptr<BlimpCompositorManagerAndroid> BlimpCompositorManagerAndroid::Create(
     real_size_supported = false;
     device_size = size;
   }
-  return make_scoped_ptr(new BlimpCompositorManagerAndroid(
+  return base::WrapUnique(new BlimpCompositorManagerAndroid(
       device_size, real_size_supported, render_widget_feature));
 }
 

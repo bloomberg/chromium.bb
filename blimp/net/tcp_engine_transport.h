@@ -5,9 +5,10 @@
 #ifndef BLIMP_NET_TCP_ENGINE_TRANSPORT_H_
 #define BLIMP_NET_TCP_ENGINE_TRANSPORT_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/blimp_transport.h"
 #include "net/base/ip_endpoint.h"
@@ -32,7 +33,7 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
 
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
-  scoped_ptr<BlimpConnection> TakeConnection() override;
+  std::unique_ptr<BlimpConnection> TakeConnection() override;
   const char* GetName() const override;
 
   int GetLocalAddressForTesting(net::IPEndPoint* address) const;
@@ -42,8 +43,8 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
 
   const net::IPEndPoint address_;
   net::NetLog* net_log_;
-  scoped_ptr<net::ServerSocket> server_socket_;
-  scoped_ptr<net::StreamSocket> accepted_socket_;
+  std::unique_ptr<net::ServerSocket> server_socket_;
+  std::unique_ptr<net::StreamSocket> accepted_socket_;
   net::CompletionCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPEngineTransport);

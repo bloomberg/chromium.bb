@@ -22,7 +22,7 @@ void ImeFeature::OnImeTextEntered(const std::string& text) {
   DCHECK_LT(0, render_widget_id_);
 
   ImeMessage* ime_message;
-  scoped_ptr<BlimpMessage> blimp_message =
+  std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&ime_message, tab_id_);
   ime_message->set_render_widget_id(render_widget_id_);
   ime_message->set_type(ImeMessage::SET_TEXT);
@@ -32,7 +32,7 @@ void ImeFeature::OnImeTextEntered(const std::string& text) {
                                               net::CompletionCallback());
 }
 
-void ImeFeature::ProcessMessage(scoped_ptr<BlimpMessage> message,
+void ImeFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
                                 const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK_EQ(BlimpMessage::IME, message->type());

@@ -4,6 +4,7 @@
 
 #include "blimp/net/blimp_message_checkpointer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -31,8 +32,8 @@ class MockCheckpointObserver : public BlimpMessageCheckpointObserver {
 
 }  // namespace
 
-static scoped_ptr<BlimpMessage> CreateExpectedAckMessage(int64_t id) {
-  scoped_ptr<BlimpMessage> message = make_scoped_ptr(new BlimpMessage);
+static std::unique_ptr<BlimpMessage> CreateExpectedAckMessage(int64_t id) {
+  std::unique_ptr<BlimpMessage> message = base::WrapUnique(new BlimpMessage);
   message->set_type(BlimpMessage::PROTOCOL_CONTROL);
   ProtocolControlMessage* protocol_control =
       message->mutable_protocol_control();
@@ -51,7 +52,7 @@ class BlimpMessageCheckpointerTest : public testing::Test {
   ~BlimpMessageCheckpointerTest() override {}
 
   int64_t SimulateIncomingMessage() {
-    scoped_ptr<BlimpMessage> message(new BlimpMessage);
+    std::unique_ptr<BlimpMessage> message(new BlimpMessage);
     message->set_message_id(++message_id_);
     message->set_type(BlimpMessage::INPUT);
     checkpointer_->ProcessMessage(
@@ -62,7 +63,7 @@ class BlimpMessageCheckpointerTest : public testing::Test {
   }
 
   void SetUp() override {
-    checkpointer_ = make_scoped_ptr(new BlimpMessageCheckpointer(
+    checkpointer_ = base::WrapUnique(new BlimpMessageCheckpointer(
         &incoming_processor_, &outgoing_processor_, &checkpoint_observer_));
   }
 
@@ -80,7 +81,7 @@ class BlimpMessageCheckpointerTest : public testing::Test {
   testing::StrictMock<MockCheckpointObserver> checkpoint_observer_;
   net::CompletionCallback captured_cb_;
 
-  scoped_ptr<BlimpMessageCheckpointer> checkpointer_;
+  std::unique_ptr<BlimpMessageCheckpointer> checkpointer_;
 };
 
 TEST_F(BlimpMessageCheckpointerTest, CallbackPropagates) {
@@ -112,7 +113,7 @@ TEST_F(BlimpMessageCheckpointerTest, DeleteWhileProcessing) {
 TEST_F(BlimpMessageCheckpointerTest, SingleMessageAck) {
   EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
       .WillOnce(SaveArg<1>(&captured_cb_));
-  scoped_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(1);
+  std::unique_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(1);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack), _));
   EXPECT_CALL(*this, IncomingCompletionCallback(net::OK));
@@ -129,7 +130,7 @@ TEST_F(BlimpMessageCheckpointerTest, BatchMessageAck) {
   EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
       .Times(10)
       .WillRepeatedly(SaveArg<1>(&captured_cb_));
-  scoped_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(10);
+  std::unique_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(10);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack), _));
   EXPECT_CALL(*this, IncomingCompletionCallback(net::OK)).Times(10);
@@ -148,10 +149,10 @@ TEST_F(BlimpMessageCheckpointerTest, MultipleAcks) {
   EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
       .Times(2)
       .WillRepeatedly(SaveArg<1>(&captured_cb_));
-  scoped_ptr<BlimpMessage> expected_ack1 = CreateExpectedAckMessage(1);
+  std::unique_ptr<BlimpMessage> expected_ack1 = CreateExpectedAckMessage(1);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack1), _));
-  scoped_ptr<BlimpMessage> expected_ack2 = CreateExpectedAckMessage(2);
+  std::unique_ptr<BlimpMessage> expected_ack2 = CreateExpectedAckMessage(2);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack2), _));
   EXPECT_CALL(*this, IncomingCompletionCallback(net::OK)).Times(2);
@@ -172,7 +173,7 @@ TEST_F(BlimpMessageCheckpointerTest, IncomingAckMessage) {
   EXPECT_CALL(checkpoint_observer_, OnMessageCheckpoint(10));
 
   // Simulate an incoming message.
-  scoped_ptr<BlimpMessage> ack_message = CreateCheckpointAckMessage(10);
+  std::unique_ptr<BlimpMessage> ack_message = CreateCheckpointAckMessage(10);
   checkpointer_->ProcessMessage(
       std::move(ack_message),
       base::Bind(&BlimpMessageCheckpointerTest::IncomingCompletionCallback,

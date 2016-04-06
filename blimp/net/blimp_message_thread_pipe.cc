@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/common/proto/blimp_message.pb.h"
@@ -24,7 +25,7 @@ class BlimpMessageThreadProxy : public BlimpMessageProcessor {
   ~BlimpMessageThreadProxy() override;
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
@@ -46,7 +47,7 @@ BlimpMessageThreadProxy::BlimpMessageThreadProxy(
 BlimpMessageThreadProxy::~BlimpMessageThreadProxy() {}
 
 void DispatchProcessMessage(const base::WeakPtr<BlimpMessageThreadPipe> pipe,
-                            scoped_ptr<BlimpMessage> message,
+                            std::unique_ptr<BlimpMessage> message,
                             const net::CompletionCallback& callback) {
   // Process the message only if the pipe is still active.
   if (pipe) {
@@ -74,7 +75,7 @@ void DispatchProcessMessageCallback(
 }
 
 void BlimpMessageThreadProxy::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   // If |callback| is non-null then wrap it to be called on this thread, iff
   // this proxy instance is still alive at the time.
@@ -101,8 +102,8 @@ BlimpMessageThreadPipe::~BlimpMessageThreadPipe() {
   DCHECK(target_task_runner_->RunsTasksOnCurrentThread());
 }
 
-scoped_ptr<BlimpMessageProcessor> BlimpMessageThreadPipe::CreateProxy() {
-  return make_scoped_ptr(new BlimpMessageThreadProxy(
+std::unique_ptr<BlimpMessageProcessor> BlimpMessageThreadPipe::CreateProxy() {
+  return base::WrapUnique(new BlimpMessageThreadProxy(
       target_task_runner_, weak_factory_.GetWeakPtr()));
 }
 

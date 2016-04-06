@@ -5,8 +5,9 @@
 #ifndef BLIMP_COMMON_COMPOSITOR_BLIMP_IMAGE_SERIALIZATION_PROCESSOR_H_
 #define BLIMP_COMMON_COMPOSITOR_BLIMP_IMAGE_SERIALIZATION_PROCESSOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/blimp_common_export.h"
 #include "cc/proto/image_serialization_processor.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -31,7 +32,7 @@ class BLIMP_COMMON_EXPORT BlimpImageSerializationProcessor
   SkPicture::InstallPixelRefProc GetPixelDeserializer() override;
 
  private:
-  scoped_ptr<SkPixelSerializer> pixel_serializer_;
+  std::unique_ptr<SkPixelSerializer> pixel_serializer_;
   SkPicture::InstallPixelRefProc pixel_deserializer_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpImageSerializationProcessor);

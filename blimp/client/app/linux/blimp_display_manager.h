@@ -5,8 +5,9 @@
 #ifndef BLIMP_CLIENT_APP_LINUX_BLIMP_DISPLAY_MANAGER_H_
 #define BLIMP_CLIENT_APP_LINUX_BLIMP_DISPLAY_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
@@ -56,8 +57,8 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   BlimpDisplayManagerDelegate* delegate_;
   TabControlFeature* tab_control_feature_;
 
-  scoped_ptr<BlimpCompositorManager> blimp_compositor_manager_;
-  scoped_ptr<ui::PlatformWindow> platform_window_;
+  std::unique_ptr<BlimpCompositorManager> blimp_compositor_manager_;
+  std::unique_ptr<ui::PlatformWindow> platform_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpDisplayManager);
 };

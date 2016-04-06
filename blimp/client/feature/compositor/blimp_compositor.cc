@@ -6,6 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -112,8 +113,10 @@ void BlimpCompositor::DidCompleteSwapBuffers() {}
 void BlimpCompositor::DidCompletePageScaleAnimation() {}
 
 void BlimpCompositor::RecordFrameTimingEvents(
-    scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events) {}
+    std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+        composite_events,
+    std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+        main_frame_events) {}
 
 void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
   remote_proto_channel_receiver_ = receiver;
@@ -125,7 +128,7 @@ void BlimpCompositor::SendCompositorProto(
 }
 
 void BlimpCompositor::OnCompositorMessageReceived(
-    scoped_ptr<cc::proto::CompositorMessage> message) {
+    std::unique_ptr<cc::proto::CompositorMessage> message) {
   DCHECK(message->has_to_impl());
   const cc::proto::CompositorMessageToImpl& to_impl_proto =
       message->to_impl();
@@ -257,7 +260,7 @@ void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
                                    client_->GetGpuMemoryBufferManager());
 
   host_->SetOutputSurface(
-      make_scoped_ptr(new BlimpOutputSurface(context_provider)));
+      base::WrapUnique(new BlimpOutputSurface(context_provider)));
   output_surface_request_pending_ = false;
 }
 

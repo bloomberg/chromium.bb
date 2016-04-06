@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/test_common.h"
@@ -58,7 +59,7 @@ class BlimpMessageOutputBufferTest : public testing::Test {
   base::MessageLoop message_loop_;
   net::CompletionCallback captured_cb_;
   MockBlimpMessageProcessor output_processor_;
-  scoped_ptr<BlimpMessageOutputBuffer> buffer_;
+  std::unique_ptr<BlimpMessageOutputBuffer> buffer_;
   testing::InSequence s;
 };
 
@@ -71,9 +72,9 @@ TEST_F(BlimpMessageOutputBufferTest, SeparatelyBufferWriteAck) {
   AddOutputExpectation(compositor_msg_);
 
   // Accumulate two messages.
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(input_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(input_msg_)),
                           complete_cb_1.callback());
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(compositor_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(compositor_msg_)),
                           complete_cb_2.callback());
   ASSERT_EQ(2, buffer_->GetBufferByteSizeForTest());
 
@@ -111,7 +112,7 @@ TEST_F(BlimpMessageOutputBufferTest, WritesFromEmptyBuffer) {
   buffer_->SetOutputProcessor(&output_processor_);
 
   // Message #0 is buffered, sent, acknowledged.
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(input_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(input_msg_)),
                           complete_cb_1.callback());
   ASSERT_EQ(1, buffer_->GetBufferByteSizeForTest());
   ASSERT_FALSE(captured_cb_.is_null());
@@ -122,7 +123,7 @@ TEST_F(BlimpMessageOutputBufferTest, WritesFromEmptyBuffer) {
   ASSERT_EQ(0, buffer_->GetBufferByteSizeForTest());
   ASSERT_EQ(0, buffer_->GetUnacknowledgedMessageCountForTest());
 
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(compositor_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(compositor_msg_)),
                           complete_cb_2.callback());
   ASSERT_EQ(1, buffer_->GetBufferByteSizeForTest());
   ASSERT_FALSE(captured_cb_.is_null());
@@ -143,7 +144,7 @@ TEST_F(BlimpMessageOutputBufferTest, SharedCheckpoint) {
   AddOutputExpectation(compositor_msg_);
 
   // Message #1 is written but unacknowledged.
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(input_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(input_msg_)),
                           complete_cb_1.callback());
   ASSERT_EQ(1, buffer_->GetBufferByteSizeForTest());
   ASSERT_TRUE(captured_cb_.is_null());
@@ -154,7 +155,7 @@ TEST_F(BlimpMessageOutputBufferTest, SharedCheckpoint) {
   ASSERT_EQ(1, buffer_->GetUnacknowledgedMessageCountForTest());
 
   // Message #2 is written but unacknowledged.
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(compositor_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(compositor_msg_)),
                           complete_cb_2.callback());
   ASSERT_EQ(2, buffer_->GetBufferByteSizeForTest());
   ASSERT_FALSE(captured_cb_.is_null());
@@ -180,7 +181,7 @@ TEST_F(BlimpMessageOutputBufferTest, WriteError) {
   AddOutputExpectation(input_msg_);
 
   // Accumulate two messages.
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(input_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(input_msg_)),
                           complete_cb_1.callback());
   ASSERT_EQ(1, buffer_->GetBufferByteSizeForTest());
 
@@ -218,9 +219,9 @@ TEST_F(BlimpMessageOutputBufferTest, MessageRetransmit) {
   AddOutputExpectation(compositor_msg_);  // Retransmitted message.
 
   // Accumulate two messages.
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(input_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(input_msg_)),
                           complete_cb_1.callback());
-  buffer_->ProcessMessage(make_scoped_ptr(new BlimpMessage(compositor_msg_)),
+  buffer_->ProcessMessage(base::WrapUnique(new BlimpMessage(compositor_msg_)),
                           complete_cb_2.callback());
   ASSERT_EQ(2, buffer_->GetBufferByteSizeForTest());
 

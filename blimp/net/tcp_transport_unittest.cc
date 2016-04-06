@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
@@ -42,7 +42,7 @@ class TCPTransportTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<TCPEngineTransport> engine_;
+  std::unique_ptr<TCPEngineTransport> engine_;
 };
 
 TEST_F(TCPTransportTest, Connect) {
@@ -96,11 +96,11 @@ TEST_F(TCPTransportTest, ExchangeMessages) {
   MockBlimpMessageProcessor engine_incoming_processor;
   MockBlimpMessageProcessor client_incoming_processor;
   net::CompletionCallback engine_process_message_cb;
-  scoped_ptr<BlimpMessage> client_message1 =
+  std::unique_ptr<BlimpMessage> client_message1 =
       CreateStartConnectionMessage("", 0);
   int client_message1_size = client_message1->ByteSize();
-  scoped_ptr<BlimpMessage> client_message2 = CreateCheckpointAckMessage(5);
-  scoped_ptr<BlimpMessage> engine_message = CreateCheckpointAckMessage(10);
+  std::unique_ptr<BlimpMessage> client_message2 = CreateCheckpointAckMessage(5);
+  std::unique_ptr<BlimpMessage> engine_message = CreateCheckpointAckMessage(10);
   EXPECT_CALL(engine_incoming_processor,
               MockableProcessMessage(EqualsProto(*client_message1), _))
       .WillOnce(SaveArg<1>(&engine_process_message_cb));
@@ -112,8 +112,9 @@ TEST_F(TCPTransportTest, ExchangeMessages) {
       .Times(1);
 
   // Attach the ends of the connection to our mock message-processors.
-  scoped_ptr<BlimpConnection> engine_connnection = engine_->TakeConnection();
-  scoped_ptr<BlimpConnection> client_connnection = client.TakeConnection();
+  std::unique_ptr<BlimpConnection> engine_connnection =
+      engine_->TakeConnection();
+  std::unique_ptr<BlimpConnection> client_connnection = client.TakeConnection();
   engine_connnection->SetIncomingMessageProcessor(&engine_incoming_processor);
   client_connnection->SetIncomingMessageProcessor(&client_incoming_processor);
 

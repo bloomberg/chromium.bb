@@ -17,7 +17,7 @@ SettingsFeature::SettingsFeature() : record_whole_document_(false) {}
 SettingsFeature::~SettingsFeature() {}
 
 void SettingsFeature::set_outgoing_message_processor(
-    scoped_ptr<BlimpMessageProcessor> processor) {
+    std::unique_ptr<BlimpMessageProcessor> processor) {
   outgoing_message_processor_ = std::move(processor);
 }
 
@@ -28,13 +28,13 @@ void SettingsFeature::SetRecordWholeDocument(bool record_whole_document) {
   record_whole_document_ = record_whole_document;
 
   EngineSettingsMessage* engine_settings;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
   engine_settings->set_record_whole_document(record_whole_document_);
   outgoing_message_processor_->ProcessMessage(std::move(message),
                                               net::CompletionCallback());
 }
 
-void SettingsFeature::ProcessMessage(scoped_ptr<BlimpMessage> message,
+void SettingsFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
                                      const net::CompletionCallback& callback) {
   // We don't receive any messages from the engine yet.
   NOTREACHED() << "Invalid settings message received from the engine.";

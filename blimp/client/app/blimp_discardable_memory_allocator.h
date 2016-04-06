@@ -6,10 +6,10 @@
 #define BLIMP_CLIENT_APP_BLIMP_DISCARDABLE_MEMORY_ALLOCATOR_H_
 
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 namespace blimp {
@@ -26,7 +26,7 @@ class BlimpDiscardableMemoryAllocator :
   ~BlimpDiscardableMemoryAllocator() override;
 
   // Overridden from DiscardableMemoryAllocator:
-  scoped_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
+  std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
 
  private:

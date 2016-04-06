@@ -114,7 +114,7 @@ class AssignmentSourceTest : public testing::Test {
     EXPECT_EQ(kAssignerUrl, fetcher->GetOriginalURL().spec());
 
     // Check that the request has a valid protocol_version.
-    scoped_ptr<base::Value> json =
+    std::unique_ptr<base::Value> json =
         base::JSONReader::Read(fetcher->upload_data());
     EXPECT_NE(nullptr, json.get());
 
@@ -150,7 +150,7 @@ class AssignmentSourceTest : public testing::Test {
   Assignment BuildSslAssignment();
 
   // Builds simulated JSON response from the Assigner service.
-  scoped_ptr<base::DictionaryValue> BuildAssignerResponse();
+  std::unique_ptr<base::DictionaryValue> BuildAssignerResponse();
 
   // Used to drive all AssignmentSource tasks.
   // MessageLoop is required by TestingJsonParser's self-deletion logic.
@@ -185,9 +185,9 @@ Assignment AssignmentSourceTest::BuildSslAssignment() {
   return assignment;
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 AssignmentSourceTest::BuildAssignerResponse() {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("clientToken", kTestClientToken);
   dict->SetString("host", kTestIpAddressString);
   dict->SetInteger("port", kTestPort);
@@ -342,7 +342,7 @@ TEST_F(AssignmentSourceTest, TestInvalidJsonResponse) {
 }
 
 TEST_F(AssignmentSourceTest, TestMissingResponsePort) {
-  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->Remove("port", nullptr);
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
@@ -352,7 +352,7 @@ TEST_F(AssignmentSourceTest, TestMissingResponsePort) {
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
-  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->SetString("host", "happywhales.test");
 
   EXPECT_CALL(*this, AssignmentResponse(
@@ -363,7 +363,7 @@ TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
 }
 
 TEST_F(AssignmentSourceTest, TestMissingCert) {
-  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->Remove("certificate", nullptr);
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
@@ -373,7 +373,7 @@ TEST_F(AssignmentSourceTest, TestMissingCert) {
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidCert) {
-  scoped_ptr<base::DictionaryValue> response = BuildAssignerResponse();
+  std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->SetString("certificate", "h4x0rz!");
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_INVALID_CERT, _));

@@ -32,8 +32,8 @@ class BlimpMessageDemultiplexerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<BlimpMessage> input_msg_;
-  scoped_ptr<BlimpMessage> compositor_msg_;
+  std::unique_ptr<BlimpMessage> input_msg_;
+  std::unique_ptr<BlimpMessage> compositor_msg_;
   MockBlimpMessageProcessor receiver1_;
   MockBlimpMessageProcessor receiver2_;
   net::CompletionCallback captured_cb_;
@@ -60,7 +60,7 @@ TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageFailed) {
 
 TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageNoRegisteredHandler) {
   net::TestCompletionCallback cb;
-  scoped_ptr<BlimpMessage> unknown_message(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> unknown_message(new BlimpMessage);
   unknown_message->set_type(BlimpMessage::UNKNOWN);
   demux_.ProcessMessage(std::move(unknown_message), cb.callback());
   EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, cb.WaitForResult());

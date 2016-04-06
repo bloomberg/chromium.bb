@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -136,7 +136,7 @@ class MockTransport : public BlimpTransport {
   MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
   MOCK_METHOD0(TakeConnectionPtr, BlimpConnection*());
 
-  scoped_ptr<BlimpConnection> TakeConnection() override;
+  std::unique_ptr<BlimpConnection> TakeConnection() override;
   const char* GetName() const override;
 };
 
@@ -146,7 +146,7 @@ class MockConnectionHandler : public ConnectionHandler {
   ~MockConnectionHandler() override;
 
   MOCK_METHOD1(HandleConnectionPtr, void(BlimpConnection* connection));
-  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+  void HandleConnection(std::unique_ptr<BlimpConnection> connection) override;
 };
 
 class MockPacketReader : public PacketReader {
@@ -202,8 +202,8 @@ class MockBlimpMessageProcessor : public BlimpMessageProcessor {
   ~MockBlimpMessageProcessor() override;
 
   // Adapts calls from ProcessMessage to MockableProcessMessage by
-  // unboxing the |message| scoped_ptr for GMock compatibility.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  // unboxing the |message| std::unique_ptr for GMock compatibility.
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
   MOCK_METHOD2(MockableProcessMessage,

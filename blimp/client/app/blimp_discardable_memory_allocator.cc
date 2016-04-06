@@ -97,7 +97,7 @@ class BlimpDiscardableMemoryAllocator::DiscardableMemoryChunkImpl
  private:
   bool is_locked_;
   size_t size_;
-  scoped_ptr<uint8_t[]> data_;
+  std::unique_ptr<uint8_t[]> data_;
   BlimpDiscardableMemoryAllocator* allocator_;
 
   MemoryChunkList::iterator unlocked_position_;
@@ -120,10 +120,10 @@ BlimpDiscardableMemoryAllocator::~BlimpDiscardableMemoryAllocator() {
   STLDeleteElements(&live_unlocked_chunks_);
 }
 
-scoped_ptr<base::DiscardableMemory>
+std::unique_ptr<base::DiscardableMemory>
 BlimpDiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
   base::AutoLock lock(lock_);
-  scoped_ptr<DiscardableMemoryChunkImpl> chunk(
+  std::unique_ptr<DiscardableMemoryChunkImpl> chunk(
       new DiscardableMemoryChunkImpl(size, this));
   total_live_memory_ += size;
   locked_chunks_++;

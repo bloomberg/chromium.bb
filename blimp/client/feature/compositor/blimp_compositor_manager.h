@@ -42,8 +42,9 @@ class BlimpCompositorManager
   virtual void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);
 
   // virtual for testing.
-  virtual scoped_ptr<BlimpCompositor> CreateBlimpCompositor(
-      int render_widget_id, BlimpCompositorClient* client);
+  virtual std::unique_ptr<BlimpCompositor> CreateBlimpCompositor(
+      int render_widget_id,
+      BlimpCompositorClient* client);
 
   // Returns the compositor for the |render_widget_id|. Will return nullptr if
   // no compositor is found.
@@ -57,7 +58,7 @@ class BlimpCompositorManager
   void OnRenderWidgetDeleted(int render_widget_id) override;
   void OnCompositorMessageReceived(
       int render_widget_id,
-      scoped_ptr<cc::proto::CompositorMessage> message) override;
+      std::unique_ptr<cc::proto::CompositorMessage> message) override;
 
   // BlimpCompositorClient implementation.
   cc::LayerTreeSettings* GetLayerTreeSettings() override;
@@ -77,15 +78,16 @@ class BlimpCompositorManager
 
   gfx::AcceleratedWidget window_;
 
-  scoped_ptr<cc::LayerTreeSettings> settings_;
+  std::unique_ptr<cc::LayerTreeSettings> settings_;
 
-  scoped_ptr<BlimpGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<BlimpGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   // Provides the functionality to deserialize images in SkPicture.
-  scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor_;
+  std::unique_ptr<BlimpImageSerializationProcessor>
+      image_serialization_processor_;
 
   // A map of render_widget_ids to the BlimpCompositor instance.
-  typedef std::map<int, scoped_ptr<BlimpCompositor>> CompositorMap;
+  typedef std::map<int, std::unique_ptr<BlimpCompositor>> CompositorMap;
   CompositorMap compositors_;
 
   // The |active_compositor_| represents the compositor from the CompositorMap
@@ -95,7 +97,7 @@ class BlimpCompositorManager
 
   // Lazily created thread that will run the compositor rendering tasks and will
   // be shared by all compositor instances.
-  scoped_ptr<base::Thread> compositor_thread_;
+  std::unique_ptr<base::Thread> compositor_thread_;
 
   // The bridge to the network layer that does the proto/RenderWidget id work.
   // BlimpCompositorManager does not own this and it is expected to outlive this

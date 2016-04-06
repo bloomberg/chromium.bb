@@ -20,7 +20,7 @@ EngineConnectionManager::EngineConnectionManager(
 EngineConnectionManager::~EngineConnectionManager() {}
 
 void EngineConnectionManager::AddTransport(
-    scoped_ptr<BlimpTransport> transport) {
+    std::unique_ptr<BlimpTransport> transport) {
   BlimpTransport* transport_ptr = transport.get();
   transports_.push_back(std::move(transport));
   Connect(transport_ptr);

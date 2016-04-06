@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "blimp/net/common.h"
 #include "blimp/net/compressed_packet_reader.h"
@@ -48,9 +49,9 @@ class CompressedPacketTest : public testing::Test {
       : mock_reader_(new MockPacketReader),
         mock_writer_(new MockPacketWriter),
         compressed_reader_(
-            new CompressedPacketReader(make_scoped_ptr(mock_reader_))),
+            new CompressedPacketReader(base::WrapUnique(mock_reader_))),
         compressed_writer_(
-            new CompressedPacketWriter(make_scoped_ptr(mock_writer_))) {}
+            new CompressedPacketWriter(base::WrapUnique(mock_writer_))) {}
   ~CompressedPacketTest() override {}
 
  protected:
@@ -98,8 +99,8 @@ class CompressedPacketTest : public testing::Test {
 
   MockPacketReader* mock_reader_;
   MockPacketWriter* mock_writer_;
-  scoped_ptr<CompressedPacketReader> compressed_reader_;
-  scoped_ptr<CompressedPacketWriter> compressed_writer_;
+  std::unique_ptr<CompressedPacketReader> compressed_reader_;
+  std::unique_ptr<CompressedPacketWriter> compressed_writer_;
   testing::InSequence s;
 };
 

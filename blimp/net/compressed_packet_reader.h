@@ -21,7 +21,7 @@ namespace blimp {
 class BLIMP_NET_EXPORT CompressedPacketReader : public PacketReader {
  public:
   // |source|: The source which from which compressed packets are read.
-  explicit CompressedPacketReader(scoped_ptr<PacketReader> source);
+  explicit CompressedPacketReader(std::unique_ptr<PacketReader> source);
 
   ~CompressedPacketReader() override;
 
@@ -49,7 +49,7 @@ class BLIMP_NET_EXPORT CompressedPacketReader : public PacketReader {
   int DecompressPacket(const scoped_refptr<net::GrowableIOBuffer>& decompressed,
                        int size);
 
-  scoped_ptr<PacketReader> source_;
+  std::unique_ptr<PacketReader> source_;
   scoped_refptr<net::GrowableIOBuffer> compressed_buf_;
   z_stream zlib_stream_;
 

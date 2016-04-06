@@ -5,7 +5,7 @@
 #ifndef BLIMP_NET_CONNECTION_HANDLER_H_
 #define BLIMP_NET_CONNECTION_HANDLER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace blimp {
 
@@ -16,7 +16,8 @@ class ConnectionHandler {
  public:
   virtual ~ConnectionHandler() {}
 
-  virtual void HandleConnection(scoped_ptr<BlimpConnection> connection) = 0;
+  virtual void HandleConnection(
+      std::unique_ptr<BlimpConnection> connection) = 0;
 };
 
 }  // namespace blimp

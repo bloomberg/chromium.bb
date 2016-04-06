@@ -7,21 +7,20 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace blimp {
 namespace client {
 
-scoped_ptr<BlimpInputManager> BlimpInputManager::Create(
-      BlimpInputManagerClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      const base::WeakPtr<cc::InputHandler>& input_handler) {
-  return make_scoped_ptr(new BlimpInputManager(client,
-                                               main_task_runner,
-                                               compositor_task_runner,
-                                               input_handler));
+std::unique_ptr<BlimpInputManager> BlimpInputManager::Create(
+    BlimpInputManagerClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+    const base::WeakPtr<cc::InputHandler>& input_handler) {
+  return base::WrapUnique(new BlimpInputManager(
+      client, main_task_runner, compositor_task_runner, input_handler));
 }
 
 BlimpInputManager::BlimpInputManager(
@@ -113,10 +112,8 @@ void BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread(
     return;
 
   DCHECK(!input_handler_wrapper_);
-  input_handler_wrapper_ = make_scoped_ptr(
-      new BlimpInputHandlerWrapper(main_task_runner_,
-                                   input_manager_weak_ptr,
-                                   input_handler.get()));
+  input_handler_wrapper_ = base::WrapUnique(new BlimpInputHandlerWrapper(
+      main_task_runner_, input_manager_weak_ptr, input_handler.get()));
 }
 
 void BlimpInputManager::HandleWebGestureEventOnCompositorThread(

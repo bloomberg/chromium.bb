@@ -112,10 +112,10 @@ InputMessageGenerator::InputMessageGenerator() {}
 
 InputMessageGenerator::~InputMessageGenerator() {}
 
-scoped_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
+std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     const blink::WebGestureEvent& event) {
   InputMessage* details;
-  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
 
   switch (event.type) {
     case blink::WebInputEvent::Type::GestureScrollBegin:

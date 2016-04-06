@@ -4,8 +4,9 @@
 
 #include "blimp/common/create_blimp_message.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/input.pb.h"
@@ -15,88 +16,88 @@
 
 namespace blimp {
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     CompositorMessage** compositor_message,
     int target_tab_id) {
   DCHECK(compositor_message);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::COMPOSITOR);
   output->set_target_tab_id(target_tab_id);
   *compositor_message = output->mutable_compositor();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     TabControlMessage** control_message) {
   DCHECK(control_message);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::TAB_CONTROL);
   *control_message = output->mutable_tab_control();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(InputMessage** input_message) {
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(InputMessage** input_message) {
   DCHECK(input_message);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::INPUT);
   *input_message = output->mutable_input();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     NavigationMessage** navigation_message,
     int target_tab_id) {
   DCHECK(navigation_message);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::NAVIGATION);
   output->set_target_tab_id(target_tab_id);
   *navigation_message = output->mutable_navigation();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(ImeMessage** ime_message,
-                                            int target_tab_id) {
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(ImeMessage** ime_message,
+                                                 int target_tab_id) {
   DCHECK(ime_message);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::IME);
   output->set_target_tab_id(target_tab_id);
   *ime_message = output->mutable_ime();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     RenderWidgetMessage** render_widget_message,
     int target_tab_id) {
   DCHECK(render_widget_message);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::RENDER_WIDGET);
   output->set_target_tab_id(target_tab_id);
   *render_widget_message = output->mutable_render_widget();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(SizeMessage** size_message) {
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(SizeMessage** size_message) {
   DCHECK(size_message);
   TabControlMessage* control_message;
-  scoped_ptr<BlimpMessage> output = CreateBlimpMessage(&control_message);
+  std::unique_ptr<BlimpMessage> output = CreateBlimpMessage(&control_message);
   control_message->set_type(TabControlMessage::SIZE);
   *size_message = control_message->mutable_size();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     EngineSettingsMessage** engine_settings) {
   DCHECK(engine_settings);
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::SETTINGS);
   *engine_settings = output->mutable_settings()->mutable_engine_settings();
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
+std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
     const std::string& client_token,
     int protocol_version) {
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::PROTOCOL_CONTROL);
 
   ProtocolControlMessage* control_message = output->mutable_protocol_control();
@@ -110,8 +111,9 @@ scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(int64_t checkpoint_id) {
-  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+std::unique_ptr<BlimpMessage> CreateCheckpointAckMessage(
+    int64_t checkpoint_id) {
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::PROTOCOL_CONTROL);
 
   ProtocolControlMessage* control_message = output->mutable_protocol_control();

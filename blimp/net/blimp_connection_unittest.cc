@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "blimp/net/blimp_connection.h"
+
 #include <stddef.h>
+
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/common/proto/blimp_message.pb.h"
-#include "blimp/net/blimp_connection.h"
 #include "blimp/net/common.h"
 #include "blimp/net/connection_error_observer.h"
 #include "blimp/net/test_common.h"
@@ -30,11 +33,11 @@ namespace {
 class BlimpConnectionTest : public testing::Test {
  public:
   BlimpConnectionTest() {
-    scoped_ptr<testing::StrictMock<MockPacketWriter>> writer(
+    std::unique_ptr<testing::StrictMock<MockPacketWriter>> writer(
         new testing::StrictMock<MockPacketWriter>);
     writer_ = writer.get();
-    connection_.reset(new BlimpConnection(make_scoped_ptr(new MockPacketReader),
-                                          std::move(writer)));
+    connection_.reset(new BlimpConnection(
+        base::WrapUnique(new MockPacketReader), std::move(writer)));
     connection_->AddConnectionErrorObserver(&error_observer1_);
     connection_->AddConnectionErrorObserver(&error_observer2_);
     connection_->AddConnectionErrorObserver(&error_observer3_);
@@ -44,14 +47,14 @@ class BlimpConnectionTest : public testing::Test {
   ~BlimpConnectionTest() override {}
 
  protected:
-  scoped_ptr<BlimpMessage> CreateInputMessage() {
-    scoped_ptr<BlimpMessage> msg(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> CreateInputMessage() {
+    std::unique_ptr<BlimpMessage> msg(new BlimpMessage);
     msg->set_type(BlimpMessage::INPUT);
     return msg;
   }
 
-  scoped_ptr<BlimpMessage> CreateControlMessage() {
-    scoped_ptr<BlimpMessage> msg(new BlimpMessage);
+  std::unique_ptr<BlimpMessage> CreateControlMessage() {
+    std::unique_ptr<BlimpMessage> msg(new BlimpMessage);
     msg->set_type(BlimpMessage::TAB_CONTROL);
     return msg;
   }
@@ -66,7 +69,7 @@ class BlimpConnectionTest : public testing::Test {
   testing::StrictMock<MockConnectionErrorObserver> error_observer3_;
 
   testing::StrictMock<MockBlimpMessageProcessor> receiver_;
-  scoped_ptr<BlimpConnection> connection_;
+  std::unique_ptr<BlimpConnection> connection_;
 };
 
 // Write completes writing two packets asynchronously.

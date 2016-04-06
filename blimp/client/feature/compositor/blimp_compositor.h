@@ -5,11 +5,11 @@
 #ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 #define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -124,7 +124,7 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // LayerTreeHost of the render widget for this compositor.
   // virtual for testing.
   virtual void OnCompositorMessageReceived(
-      scoped_ptr<cc::proto::CompositorMessage> message);
+      std::unique_ptr<cc::proto::CompositorMessage> message);
 
   int render_widget_id() const { return render_widget_id_; }
 
@@ -151,9 +151,10 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override;
   void RecordFrameTimingEvents(
-      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override;
+      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+          composite_events,
+      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) override;
 
   // RemoteProtoChannel implementation.
   void SetProtoReceiver(ProtoReceiver* receiver) override;
@@ -185,7 +186,7 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
 
   BlimpCompositorClient* client_;
 
-  scoped_ptr<cc::LayerTreeHost> host_;
+  std::unique_ptr<cc::LayerTreeHost> host_;
 
   gfx::AcceleratedWidget window_;
 
@@ -209,7 +210,7 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // cc::InputHandler. The input events are forwarded to this input handler by
   // the manager to be handled by the client compositor for the current render
   // widget.
-  scoped_ptr<BlimpInputManager> input_manager_;
+  std::unique_ptr<BlimpInputManager> input_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };

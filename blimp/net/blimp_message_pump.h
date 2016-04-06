@@ -5,9 +5,10 @@
 #ifndef BLIMP_NET_BLIMP_MESSAGE_PUMP_H_
 #define BLIMP_NET_BLIMP_MESSAGE_PUMP_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "net/base/completion_callback.h"

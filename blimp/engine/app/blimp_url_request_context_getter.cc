@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "blimp/engine/app/blimp_network_delegate.h"
 #include "blimp/engine/common/blimp_content_client.h"
@@ -56,19 +57,20 @@ net::URLRequestContext* BlimpURLRequestContextGetter::GetURLRequestContext() {
     builder.set_accept_language("en-us,en");
     builder.set_user_agent(GetBlimpEngineUserAgent());
     builder.set_proxy_config_service(std::move(proxy_config_service_));
-    builder.set_network_delegate(make_scoped_ptr(new BlimpNetworkDelegate));
+    builder.set_network_delegate(base::WrapUnique(new BlimpNetworkDelegate));
     builder.set_net_log(net_log_);
     builder.set_data_enabled(true);
     for (auto& scheme_handler : protocol_handlers_) {
       builder.SetProtocolHandler(
           scheme_handler.first,
-          make_scoped_ptr(scheme_handler.second.release()));
+          base::WrapUnique(scheme_handler.second.release()));
     }
     protocol_handlers_.clear();
 
-    std::vector<scoped_ptr<net::URLRequestInterceptor>> request_interceptors;
+    std::vector<std::unique_ptr<net::URLRequestInterceptor>>
+        request_interceptors;
     for (auto i : request_interceptors_) {
-      request_interceptors.push_back(make_scoped_ptr(i));
+      request_interceptors.push_back(base::WrapUnique(i));
     }
     request_interceptors_.weak_clear();
     builder.SetInterceptors(std::move(request_interceptors));

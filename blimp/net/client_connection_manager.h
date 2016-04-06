@@ -5,11 +5,11 @@
 #ifndef BLIMP_NET_CLIENT_CONNECTION_MANAGER_H_
 #define BLIMP_NET_CLIENT_CONNECTION_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/connection_error_observer.h"
@@ -36,7 +36,7 @@ class BLIMP_NET_EXPORT ClientConnectionManager
 
   // Adds a transport. All transports are expected to be added before invoking
   // |Connect|.
-  void AddTransport(scoped_ptr<BlimpTransport> transport);
+  void AddTransport(std::unique_ptr<BlimpTransport> transport);
 
   // Attempts to create a connection using any of the BlimpTransports in
   // |transports_|.
@@ -60,11 +60,11 @@ class BLIMP_NET_EXPORT ClientConnectionManager
   void OnConnectResult(int transport_index, int result);
 
   // Sends authentication message to the engine via |connection|.
-  void SendAuthenticationMessage(scoped_ptr<BlimpConnection> connection);
+  void SendAuthenticationMessage(std::unique_ptr<BlimpConnection> connection);
 
   // Invoked after the authentication message is sent to |connection|.
   // The result of the write operation is passed via |result|.
-  void OnAuthenticationMessageSent(scoped_ptr<BlimpConnection> connection,
+  void OnAuthenticationMessageSent(std::unique_ptr<BlimpConnection> connection,
                                    int result);
 
   // ConnectionErrorObserver implementation.
@@ -72,7 +72,7 @@ class BLIMP_NET_EXPORT ClientConnectionManager
 
   std::string client_token_;
   ConnectionHandler* connection_handler_;
-  std::vector<scoped_ptr<BlimpTransport>> transports_;
+  std::vector<std::unique_ptr<BlimpTransport>> transports_;
   base::WeakPtrFactory<ClientConnectionManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionManager);

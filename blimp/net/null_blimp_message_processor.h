@@ -18,7 +18,7 @@ class BLIMP_NET_EXPORT NullBlimpMessageProcessor
  public:
   ~NullBlimpMessageProcessor() override;
 
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 };
 

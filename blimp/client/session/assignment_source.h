@@ -111,7 +111,7 @@ class BLIMP_CLIENT_EXPORT AssignmentSource : public net::URLFetcherDelegate {
                                           Assignment parsed_assignment);
   void QueryAssigner(const std::string& client_auth_token);
   void ParseAssignerResponse();
-  void OnJsonParsed(scoped_ptr<base::Value> json);
+  void OnJsonParsed(std::unique_ptr<base::Value> json);
   void OnJsonParseError(const std::string& error);
 
   // net::URLFetcherDelegate implementation:
@@ -123,7 +123,7 @@ class BLIMP_CLIENT_EXPORT AssignmentSource : public net::URLFetcherDelegate {
   const GURL assigner_endpoint_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   base::WeakPtrFactory<AssignmentSource> weak_factory_;
 

@@ -5,8 +5,9 @@
 #ifndef BLIMP_ENGINE_APP_BLIMP_CONTENT_MAIN_DELEGATE_H_
 #define BLIMP_ENGINE_APP_BLIMP_CONTENT_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/engine/common/blimp_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -30,8 +31,8 @@ class BlimpContentMainDelegate : public content::ContentMainDelegate {
  private:
   void InitializeResourceBundle();
 
-  scoped_ptr<BlimpContentBrowserClient> browser_client_;
-  scoped_ptr<BlimpContentRendererClient> renderer_client_;
+  std::unique_ptr<BlimpContentBrowserClient> browser_client_;
+  std::unique_ptr<BlimpContentRendererClient> renderer_client_;
   BlimpContentClient content_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentMainDelegate);

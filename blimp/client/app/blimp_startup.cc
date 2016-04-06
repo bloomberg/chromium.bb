@@ -18,8 +18,8 @@
 class SkImageGenerator;
 
 namespace {
-base::LazyInstance<scoped_ptr<base::MessageLoopForUI>> g_main_message_loop =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<base::MessageLoopForUI>>
+    g_main_message_loop = LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<blimp::client::BlimpDiscardableMemoryAllocator>
     g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;

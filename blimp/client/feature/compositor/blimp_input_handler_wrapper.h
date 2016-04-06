@@ -59,7 +59,7 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
   // BlimpInputManager is destroyed.
   base::WeakPtr<BlimpInputManager> input_manager_weak_ptr_;
 
-  scoped_ptr<ui::InputHandlerProxy> input_handler_proxy_;
+  std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpInputHandlerWrapper);
 };

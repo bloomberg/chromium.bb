@@ -5,8 +5,9 @@
 #ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_INPUT_MANAGER_H_
 #define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_INPUT_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "blimp/client/feature/compositor/blimp_input_handler_wrapper.h"
@@ -43,7 +44,7 @@ class BlimpInputManagerClient {
 
 class BlimpInputManager : public ui::GestureProviderClient {
  public:
-  static scoped_ptr<BlimpInputManager> Create(
+  static std::unique_ptr<BlimpInputManager> Create(
       BlimpInputManagerClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -95,7 +96,7 @@ class BlimpInputManager : public ui::GestureProviderClient {
   // read in ShutdownOnCompositorThread.
   bool main_thread_blocked_;
 
-  scoped_ptr<BlimpInputHandlerWrapper> input_handler_wrapper_;
+  std::unique_ptr<BlimpInputHandlerWrapper> input_handler_wrapper_;
 
   base::WeakPtrFactory<BlimpInputManager> weak_factory_;
 

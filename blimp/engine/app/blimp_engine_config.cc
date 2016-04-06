@@ -4,12 +4,13 @@
 
 #include "blimp/engine/app/blimp_engine_config.h"
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "blimp/engine/app/switches.h"
 
@@ -33,19 +34,19 @@ std::string GetClientToken(const base::CommandLine& cmd_line) {
 BlimpEngineConfig::~BlimpEngineConfig() {}
 
 // static
-scoped_ptr<BlimpEngineConfig> BlimpEngineConfig::Create(
+std::unique_ptr<BlimpEngineConfig> BlimpEngineConfig::Create(
     const base::CommandLine& cmd_line) {
   const std::string client_token = GetClientToken(cmd_line);
   if (!client_token.empty()) {
-    return make_scoped_ptr(new BlimpEngineConfig(client_token));
+    return base::WrapUnique(new BlimpEngineConfig(client_token));
   }
   return nullptr;
 }
 
 // static
-scoped_ptr<BlimpEngineConfig> BlimpEngineConfig::CreateForTest(
+std::unique_ptr<BlimpEngineConfig> BlimpEngineConfig::CreateForTest(
     const std::string& client_token) {
-  return make_scoped_ptr(new BlimpEngineConfig(client_token));
+  return base::WrapUnique(new BlimpEngineConfig(client_token));
 }
 
 const std::string& BlimpEngineConfig::client_token() const {

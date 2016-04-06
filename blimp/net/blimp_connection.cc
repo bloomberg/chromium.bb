@@ -33,7 +33,7 @@ class BlimpMessageSender : public BlimpMessageProcessor {
   }
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+  void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
@@ -60,7 +60,7 @@ BlimpMessageSender::~BlimpMessageSender() {
 }
 
 void BlimpMessageSender::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(error_observer_);
   VLOG(1) << "Sending " << *message;
@@ -99,8 +99,8 @@ void BlimpMessageSender::OnWritePacketComplete(int result) {
 
 }  // namespace
 
-BlimpConnection::BlimpConnection(scoped_ptr<PacketReader> reader,
-                                 scoped_ptr<PacketWriter> writer)
+BlimpConnection::BlimpConnection(std::unique_ptr<PacketReader> reader,
+                                 std::unique_ptr<PacketWriter> writer)
     : reader_(std::move(reader)),
       message_pump_(new BlimpMessagePump(reader_.get())),
       writer_(std::move(writer)),

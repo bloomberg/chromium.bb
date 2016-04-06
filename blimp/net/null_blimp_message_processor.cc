@@ -12,7 +12,7 @@ namespace blimp {
 NullBlimpMessageProcessor::~NullBlimpMessageProcessor() {}
 
 void NullBlimpMessageProcessor::ProcessMessage(
-    scoped_ptr<BlimpMessage> message,
+    std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DVLOG(2) << "Dropped message: " << *message;
   if (!callback.is_null())

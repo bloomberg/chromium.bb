@@ -96,7 +96,7 @@ class BlimpCompositorTest : public testing::Test {
   ~BlimpCompositorTest() override {}
 
   void SendInitializeMessage() {
-    scoped_ptr<cc::proto::CompositorMessage> message;
+    std::unique_ptr<cc::proto::CompositorMessage> message;
     message.reset(new cc::proto::CompositorMessage);
     cc::proto::CompositorMessageToImpl* to_impl =
         message->mutable_to_impl();
@@ -110,7 +110,7 @@ class BlimpCompositorTest : public testing::Test {
   }
 
   void SendShutdownMessage() {
-    scoped_ptr<cc::proto::CompositorMessage> message;
+    std::unique_ptr<cc::proto::CompositorMessage> message;
     message.reset(new cc::proto::CompositorMessage);
     cc::proto::CompositorMessageToImpl* to_impl =
         message->mutable_to_impl();
@@ -119,9 +119,9 @@ class BlimpCompositorTest : public testing::Test {
   }
 
   int render_widget_id_;
-  scoped_ptr<base::MessageLoop> loop_;
+  std::unique_ptr<base::MessageLoop> loop_;
   MockBlimpCompositorClient compositor_client_;
-  scoped_ptr<BlimpCompositorForTesting> compositor_;
+  std::unique_ptr<BlimpCompositorForTesting> compositor_;
   gfx::AcceleratedWidget window_;
 };
 

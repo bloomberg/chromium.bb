@@ -18,7 +18,8 @@
 
 namespace blimp {
 
-CompressedPacketReader::CompressedPacketReader(scoped_ptr<PacketReader> source)
+CompressedPacketReader::CompressedPacketReader(
+    std::unique_ptr<PacketReader> source)
     : source_(std::move(source)),
       compressed_buf_(new net::GrowableIOBuffer),
       weak_factory_(this) {

@@ -4,9 +4,11 @@
 
 #include "blimp/net/tcp_client_transport.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/net/stream_socket_connection.h"
 #include "net/socket/client_socket_factory.h"
@@ -47,10 +49,10 @@ void TCPClientTransport::Connect(const net::CompletionCallback& callback) {
   OnTCPConnectComplete(result);
 }
 
-scoped_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
+std::unique_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
   DCHECK(connect_callback_.is_null());
   DCHECK(socket_);
-  return make_scoped_ptr(new StreamSocketConnection(std::move(socket_)));
+  return base::WrapUnique(new StreamSocketConnection(std::move(socket_)));
 }
 
 const char* TCPClientTransport::GetName() const {
@@ -69,11 +71,11 @@ void TCPClientTransport::OnConnectComplete(int result) {
   base::ResetAndReturn(&connect_callback_).Run(result);
 }
 
-scoped_ptr<net::StreamSocket> TCPClientTransport::TakeSocket() {
+std::unique_ptr<net::StreamSocket> TCPClientTransport::TakeSocket() {
   return std::move(socket_);
 }
 
-void TCPClientTransport::SetSocket(scoped_ptr<net::StreamSocket> socket) {
+void TCPClientTransport::SetSocket(std::unique_ptr<net::StreamSocket> socket) {
   DCHECK(socket);
   socket_ = std::move(socket);
 }

@@ -33,7 +33,8 @@ BrowserConnectionHandler::BrowserConnectionHandler()
 
 BrowserConnectionHandler::~BrowserConnectionHandler() {}
 
-scoped_ptr<BlimpMessageProcessor> BrowserConnectionHandler::RegisterFeature(
+std::unique_ptr<BlimpMessageProcessor>
+BrowserConnectionHandler::RegisterFeature(
     BlimpMessage::Type type,
     BlimpMessageProcessor* incoming_processor) {
   demultiplexer_->AddProcessor(type, incoming_processor);
@@ -41,7 +42,7 @@ scoped_ptr<BlimpMessageProcessor> BrowserConnectionHandler::RegisterFeature(
 }
 
 void BrowserConnectionHandler::HandleConnection(
-    scoped_ptr<BlimpConnection> connection) {
+    std::unique_ptr<BlimpConnection> connection) {
   DCHECK(connection);
   VLOG(1) << "HandleConnection " << connection.get();
 
