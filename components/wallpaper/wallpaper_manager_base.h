@@ -391,7 +391,6 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // Resize and save customized default wallpaper.
   static void ResizeCustomizedDefaultWallpaper(
       scoped_ptr<gfx::ImageSkia> image,
-      const user_manager::UserImage::Bytes& image_bytes,
       const CustomizedWallpaperRescaledFiles* rescaled_files,
       bool* success,
       gfx::ImageSkia* small_wallpaper_image,

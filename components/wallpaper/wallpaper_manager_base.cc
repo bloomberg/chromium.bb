@@ -931,8 +931,7 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
   // TODO(bshe): This may break if Bytes becomes RefCountedMemory.
   base::Closure resize_closure = base::Bind(
       &WallpaperManagerBase::ResizeCustomizedDefaultWallpaper,
-      // TODO(crbug.com/593251): Remove the data copy via image_bytes().
-      base::Passed(&deep_copy), wallpaper->image_bytes(),
+      base::Passed(&deep_copy),
       base::Unretained(rescaled_files.get()), base::Unretained(success.get()),
       base::Unretained(small_wallpaper_image.get()),
       base::Unretained(large_wallpaper_image.get()));
@@ -951,7 +950,6 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
 
 void WallpaperManagerBase::ResizeCustomizedDefaultWallpaper(
     scoped_ptr<gfx::ImageSkia> image,
-    const user_manager::UserImage::Bytes& image_bytes,
     const CustomizedWallpaperRescaledFiles* rescaled_files,
     bool* success,
     gfx::ImageSkia* small_wallpaper_image,
