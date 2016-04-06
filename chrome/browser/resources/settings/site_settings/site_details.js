@@ -34,14 +34,6 @@ Polymer({
      * The type of storage for the origin.
      */
     storageType_: Number,
-
-    /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
   },
 
   listeners: {

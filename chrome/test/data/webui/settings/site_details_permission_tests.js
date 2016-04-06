@@ -122,7 +122,7 @@ cr.define('site_details_permission', function() {
           assertFalse(testElement.$.details.hidden);
 
           browserProxy.setPrefs(prefsEmpty);
-          browserProxy.whenCalled('getExceptionList').then(function() {
+          return browserProxy.whenCalled('getExceptionList').then(function() {
             assertTrue(testElement.$.details.hidden);
           }.bind(this));
         }.bind(this));

@@ -17,10 +17,7 @@ Polymer({
      * The site that this widget is showing details for.
      * @type {SiteException}
      */
-    site: {
-      type: Object,
-      observer: 'siteChanged_',
-    },
+    site: Object,
 
     i18n_: {
       readOnly: true,
@@ -33,6 +30,8 @@ Polymer({
       },
     },
   },
+
+  observers: ['siteChanged_(site, category)'],
 
   /** @override */
   attached: function() {

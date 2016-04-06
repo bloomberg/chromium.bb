@@ -215,13 +215,12 @@
         </settings-subpage>
       </template>
 
-      <!-- TODO(finnur): switch to settings-subpage (crbug.com/597314). -->
-      <neon-animatable id="site-details">
-        <site-details
-            site="{{selectedSite}}"
-            current-route="{{currentRoute}}">
-        </site-details>
-      </neon-animatable>
+      <template is="dom-if" name="site-details">
+        <settings-subpage
+            page-title="[[i18n('siteSettingsSiteDetailsPageTitle')]]">
+          <site-details site="[[selectedSite]]"></site-details>
+        </settings-subpage>
+      </template>
     </settings-animated-pages>
   </template>
   <script src="privacy_page.js"></script>

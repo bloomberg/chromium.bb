@@ -7,7 +7,10 @@
 }
 
 .origin {
-  font-weight: bold;
+  font-size: 110%;
+  font-weight: 500;
+  margin-bottom: 20px;
+  margin-top: 35px;
 }
 
 .reset-button {
