@@ -116,7 +116,7 @@
 
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif  // defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -39,7 +40,7 @@ extern "C" {
 #define Status int
 }
 #include "ui/base/x/x11_util_internal.h"
-#include "ui/gfx/x/x11_switches.h"
+#include "ui/gfx/x/x11_switches.h"  // nogncheck
 #endif
 
 #if !defined(EGL_FIXED_SIZE_ANGLE)

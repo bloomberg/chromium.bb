@@ -37,7 +37,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_connection.h"
+#include "ui/gfx/x/x11_connection.h"  // nogncheck
 #endif
 
 int main(int argc, char** argv) {

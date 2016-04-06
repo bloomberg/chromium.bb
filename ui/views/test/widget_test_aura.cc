@@ -7,17 +7,13 @@
 #include "build/build_config.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_X11)
 #include <X11/Xutil.h>
-#include "ui/gfx/x/x11_types.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
+#include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
 namespace views {

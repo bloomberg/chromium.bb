@@ -6,16 +6,15 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash_switches.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
