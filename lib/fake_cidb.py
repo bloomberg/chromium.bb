@@ -147,6 +147,13 @@ class FakeCIDBConnection(object):
     self.buildStageTable[build_stage_id]['status'] = (
         constants.BUILDER_STATUS_INFLIGHT)
 
+  def WaitBuildStage(self, build_stage_id):
+    if build_stage_id > len(self.buildStageTable):
+      return
+
+    self.buildStageTable[build_stage_id]['status'] = (
+        constants.BUILDER_STATUS_WAITING)
+
   def ExtendDeadline(self, build_id, timeout):
     # No sanity checking in fake object.
     now = datetime.datetime.now()

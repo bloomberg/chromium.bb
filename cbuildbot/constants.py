@@ -121,6 +121,7 @@ BUILDER_STATUS_MISSING = 'missing'
 BUILDER_STATUS_ABORTED = 'aborted'
 # The following statuses are currently only used for build stages.
 BUILDER_STATUS_PLANNED = 'planned'
+BUILDER_STATUS_WAITING = 'waiting'
 BUILDER_STATUS_SKIPPED = 'skipped'
 BUILDER_STATUS_FORGIVEN = 'forgiven'
 BUILDER_COMPLETED_STATUSES = (BUILDER_STATUS_PASSED,
@@ -133,6 +134,7 @@ BUILDER_ALL_STATUSES = (BUILDER_STATUS_FAILED,
                         BUILDER_STATUS_INFLIGHT,
                         BUILDER_STATUS_MISSING,
                         BUILDER_STATUS_ABORTED,
+                        BUILDER_STATUS_WAITING,
                         BUILDER_STATUS_PLANNED,
                         BUILDER_STATUS_SKIPPED,
                         BUILDER_STATUS_FORGIVEN)

@@ -202,6 +202,18 @@ class BuilderStage(object):
     if self._build_stage_id is not None and db is not None:
       db.FinishBuildStage(self._build_stage_id, status)
 
+  def _StartBuildStageInCIDB(self):
+    """Mark the stage as inflight in cidb."""
+    _, db = self._run.GetCIDBHandle()
+    if self._build_stage_id is not None and db is not None:
+      db.StartBuildStage(self._build_stage_id)
+
+  def _WaitBuildStageInCIDB(self):
+    """Mark the stage as waiting in cidb."""
+    _, db = self._run.GetCIDBHandle()
+    if self._build_stage_id is not None and db is not None:
+      db.WaitBuildStage(self._build_stage_id)
+
   def _TranslateResultToCIDBStatus(self, result):
     """Translates the different result_lib.Result results to builder statuses.
 
@@ -333,6 +345,18 @@ class BuilderStage(object):
     self._PrintLoudly('Finished Stage %s - %s' %
                       (self.name, cros_build_lib.UserDateTimeFormat()))
 
+  def WaitUntilReady(self):
+    """Wait until all the preconditions for the stage are satisfied.
+
+    Can be overridden by stages.
+
+    Returns:
+      By default it just returns True. Subclass can override it
+        to return the boolean indicating if Wait succeeds and
+        if PerformStage should be run
+    """
+    return True
+
   def PerformStage(self):
     """Run the actual commands needed for this stage.
 
@@ -431,13 +455,11 @@ class BuilderStage(object):
 
   def Run(self):
     """Have the builder execute the stage."""
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.StartBuildStage(self._build_stage_id)
 
     # See if this stage should be skipped.
     if (self.option_name and not getattr(self._run.options, self.option_name) or
         self.config_name and not getattr(self._run.config, self.config_name)):
+      self._StartBuildStageInCIDB()
       self._PrintLoudly('Not running Stage %s' % self.name)
       self.HandleSkip()
       self._RecordResult(self.name, results_lib.Results.SKIPPED,
@@ -447,6 +469,7 @@ class BuilderStage(object):
 
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)
     if record:
+      self._StartBuildStageInCIDB()
       # Success is stored in the results log for a stage that completed
       # successfully in a previous run.
       self._PrintLoudly('Stage %s processed previously' % self.name)
@@ -456,6 +479,22 @@ class BuilderStage(object):
                          time=float(record.time))
       self._FinishBuildStageInCIDB(constants.BUILDER_STATUS_SKIPPED)
       return
+
+    self._WaitBuildStageInCIDB()
+    ready = self.WaitUntilReady()
+
+    if not ready:
+      # If WaitUntilReady returns false, mark stage as failed in CIDB
+      self._PrintLoudly('Stage %s precondition failed while waiting to start.'
+                        % self.name)
+      # TODO(nxia):we might want to record a failure. The catch block
+      # for PerformStage can use a refactor actually
+      # (see crbug.com/425249 also, which would be a similar concern)
+      self._FinishBuildStageInCIDB(constants.BUILDER_STATUS_FAILED)
+      return
+
+    #  Ready to start, mark buildStage as inflight in CIDB
+    self._StartBuildStageInCIDB()
 
     start_time = time.time()
 

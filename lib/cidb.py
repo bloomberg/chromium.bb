@@ -858,6 +858,18 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         {'status': constants.BUILDER_STATUS_INFLIGHT,
          'start_time': current_timestamp})
 
+  @minimum_schema(46)
+  def WaitBuildStage(self, build_stage_id):
+    """Marks a build stage as waiting, in the database.
+
+    Args:
+      build_stage_id: primary key of the build stage in buildStageTable.
+    """
+    return self._Update(
+        'buildStageTable',
+        build_stage_id,
+        {'status': constants.BUILDER_STATUS_WAITING})
+
   @minimum_schema(28)
   def FinishBuildStage(self, build_stage_id, status):
     """Marks a build stage as finished, in the database.

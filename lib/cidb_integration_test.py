@@ -527,6 +527,12 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     values = bot_db._Select('buildStageTable', build_stage_id, ['start_time'])
     self.assertEqual(None, values['start_time'])
 
+    bot_db.WaitBuildStage(build_stage_id)
+    values = bot_db._Select('buildStageTable', build_stage_id,
+                            ['start_time', 'status'])
+    self.assertEqual(None, values['start_time'])
+    self.assertEqual(constants.BUILDER_STATUS_WAITING, values['status'])
+
     bot_db.StartBuildStage(build_stage_id)
     values = bot_db._Select('buildStageTable', build_stage_id,
                             ['start_time', 'status'])

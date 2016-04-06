@@ -400,6 +400,20 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
+  def testRunWithWaitFailure(self):
+    """Test Run when WaitUntilReady returns False"""
+    stage = self.ConstructStage()
+    self.PatchObject(generic_stages.BuilderStage,
+                     'WaitUntilReady',
+                     return_value=False)
+    stage.Run()
+    self.mock_cidb.WaitBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID)
+    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID,
+        constants.BUILDER_STATUS_FAILED)
+    self.assertFalse(self.mock_cidb.StartBuildStage.called)
+
   def testHandleExceptionException(self):
     """Verify exceptions in HandleException handlers are themselves handled."""
     class TestError(Exception):
