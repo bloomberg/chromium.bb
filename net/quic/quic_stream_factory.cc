@@ -65,6 +65,7 @@
 #endif
 
 using std::min;
+using std::vector;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {
@@ -1712,12 +1713,18 @@ void QuicStreamFactory::MaybeInitialize() {
   if (http_server_properties_->max_server_configs_stored_in_properties() == 0)
     return;
   // Create a temporary QuicServerInfo object to deserialize and to populate the
-  // in-memory crypto server config cache.
+  // in-memory crypto server config cache in the MRU order.
   scoped_ptr<QuicServerInfo> server_info;
   CompletionCallback callback;
-  for (const auto& key_value :
-       http_server_properties_->quic_server_info_map()) {
-    const QuicServerId& server_id = key_value.first;
+  // Get the list of servers to be deserialized first because WaitForDataReady
+  // touches quic_server_info_map.
+  const QuicServerInfoMap& quic_server_info_map =
+      http_server_properties_->quic_server_info_map();
+  vector<QuicServerId> server_list(quic_server_info_map.size());
+  for (const auto& key_value : quic_server_info_map)
+    server_list.push_back(key_value.first);
+  for (auto it = server_list.rbegin(); it != server_list.rend(); ++it) {
+    const QuicServerId& server_id = *it;
     server_info.reset(quic_server_info_factory_->GetForServer(server_id));
     if (server_info->WaitForDataReady(callback) == OK) {
       DVLOG(1) << "Initialized server config for: " << server_id.ToString();

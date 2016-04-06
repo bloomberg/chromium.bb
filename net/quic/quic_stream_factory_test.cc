@@ -3801,6 +3801,16 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
 
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);
+
+  HostPortPair host_port_pair2(kServer2HostName, kDefaultServerPort);
+  const AlternativeService alternative_service2(QUIC, host_port_pair2.host(),
+                                                host_port_pair2.port());
+  AlternativeServiceInfoVector alternative_service_info_vector2;
+  alternative_service_info_vector2.push_back(
+      AlternativeServiceInfo(alternative_service2, expiration));
+  http_server_properties_.SetAlternativeServices(
+      host_port_pair2, alternative_service_info_vector2);
+
   http_server_properties_.SetMaxServerConfigsStoredInProperties(
       kMaxQuicServersToPersist);
 
@@ -3848,8 +3858,58 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
 
   quic_server_info->Persist();
 
+  QuicServerId quic_server_id2(kServer2HostName, 80, PRIVACY_MODE_DISABLED);
+  scoped_ptr<QuicServerInfo> quic_server_info2(
+      quic_server_info_factory->GetForServer(quic_server_id2));
+
+  // Update quic_server_info2's server_config and persist it.
+  QuicServerInfo::State* state2 = quic_server_info2->mutable_state();
+
+  // Minimum SCFG that passes config validation checks.
+  const char scfg2[] = {// SCFG
+                        0x53, 0x43, 0x46, 0x47,
+                        // num entries
+                        0x01, 0x00,
+                        // padding
+                        0x00, 0x00,
+                        // EXPY
+                        0x45, 0x58, 0x50, 0x59,
+                        // EXPY end offset
+                        0x08, 0x00, 0x00, 0x00,
+                        // Value
+                        '8', '7', '3', '4', '5', '6', '2', '1'};
+
+  // Create temporary strings becasue Persist() clears string data in |state2|.
+  string server_config2(reinterpret_cast<const char*>(&scfg2), sizeof(scfg2));
+  string source_address_token2("test_source_address_token2");
+  string cert_sct2("test_cert_sct2");
+  string chlo_hash2("test_chlo_hash2");
+  string signature2("test_signature2");
+  string test_cert2("test_cert2");
+  vector<string> certs2;
+  certs2.push_back(test_cert2);
+  state2->server_config = server_config2;
+  state2->source_address_token = source_address_token2;
+  state2->cert_sct = cert_sct2;
+  state2->chlo_hash = chlo_hash2;
+  state2->server_config_sig = signature2;
+  state2->certs = certs2;
+
+  quic_server_info2->Persist();
+
   QuicStreamFactoryPeer::MaybeInitialize(factory_.get());
   EXPECT_TRUE(QuicStreamFactoryPeer::HasInitializedData(factory_.get()));
+
+  // Verify the MRU order is maintained.
+  const QuicServerInfoMap& quic_server_info_map =
+      http_server_properties_.quic_server_info_map();
+  EXPECT_EQ(2u, quic_server_info_map.size());
+  QuicServerInfoMap::const_iterator quic_server_info_map_it =
+      quic_server_info_map.begin();
+  EXPECT_EQ(quic_server_info_map_it->first, quic_server_id2);
+  ++quic_server_info_map_it;
+  EXPECT_EQ(quic_server_info_map_it->first, quic_server_id);
+
   EXPECT_TRUE(QuicStreamFactoryPeer::SupportsQuicAtStartUp(factory_.get(),
                                                            host_port_pair_));
   EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(factory_.get(),
@@ -3867,6 +3927,22 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   EXPECT_EQ(signature, cached->signature());
   ASSERT_EQ(1U, cached->certs().size());
   EXPECT_EQ(test_cert, cached->certs()[0]);
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::SupportsQuicAtStartUp(factory_.get(),
+                                                           host_port_pair2));
+  EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
+      factory_.get(), quic_server_id2));
+  QuicCryptoClientConfig::CachedState* cached2 =
+      crypto_config->LookupOrCreate(quic_server_id2);
+  EXPECT_FALSE(cached2->server_config().empty());
+  EXPECT_TRUE(cached2->GetServerConfig());
+  EXPECT_EQ(server_config2, cached2->server_config());
+  EXPECT_EQ(source_address_token2, cached2->source_address_token());
+  EXPECT_EQ(cert_sct2, cached2->cert_sct());
+  EXPECT_EQ(chlo_hash2, cached2->chlo_hash());
+  EXPECT_EQ(signature2, cached2->signature());
+  ASSERT_EQ(1U, cached->certs().size());
+  EXPECT_EQ(test_cert2, cached2->certs()[0]);
 }
 
 TEST_P(QuicStreamFactoryTest, QuicDoingZeroRTT) {
