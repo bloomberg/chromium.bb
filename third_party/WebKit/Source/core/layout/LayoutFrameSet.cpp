@@ -418,8 +418,11 @@ void LayoutFrameSet::positionFrames()
             child->setLocation(position);
             size.setWidth(LayoutUnit(m_cols.m_sizes[c]));
 
-            // has to be resized and itself resize its contents
-            if (size != child->size()) {
+            // If we have a new size, we need to resize and layout the child. If the size is 0x0 we
+            // also need to lay out, since this may mean that we're dealing with a child frameset
+            // that wasn't previously initialized properly, because it was previously hidden, but
+            // no longer is, because rows * cols may have increased.
+            if (size != child->size() || size.isEmpty()) {
                 child->setSize(size);
                 child->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
                 child->layout();
