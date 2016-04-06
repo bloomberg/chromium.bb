@@ -10,8 +10,8 @@ source_set("browser") {
     "content_password_manager_driver.h",
     "content_password_manager_driver_factory.cc",
     "content_password_manager_driver_factory.h",
-    "credential_manager_impl.cc",
-    "credential_manager_impl.h",
+    "credential_manager_dispatcher.cc",
+    "credential_manager_dispatcher.h",
     "password_manager_internals_service_factory.cc",
     "password_manager_internals_service_factory.h",
   ]
@@ -22,15 +22,13 @@ source_set("browser") {
     "//components/autofill/content/common",
     "//components/autofill/core/common",
     "//components/keyed_service/content",
-    "//components/password_manager/content/public/cpp",
-    "//components/password_manager/content/public/interfaces",
+    "//components/password_manager/content/common",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
-    "//mojo/common:url_type_converters",
     "//net",
   ]
 }
@@ -39,7 +37,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_password_manager_driver_unittest.cc",
-    "credential_manager_impl_unittest.cc",
+    "credential_manager_dispatcher_unittest.cc",
   ]
   deps = [
     ":browser",
