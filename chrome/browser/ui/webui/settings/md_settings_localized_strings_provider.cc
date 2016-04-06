@@ -324,13 +324,23 @@ void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
 
 #if defined(OS_CHROMEOS)
 void AddDeviceStrings(content::WebUIDataSource* html_source) {
-  LocalizedString localized_strings[] = {
+  LocalizedString device_strings[] = {
       {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
+      {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
+      {"traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, device_strings,
+                          arraysize(device_strings));
+
+  LocalizedString touchpad_strings[] = {
       {"touchpadTitle", IDS_SETTINGS_TOUCHPAD_TITLE},
       {"touchpadTapToClickEnabledLabel",
        IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL},
-      {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
-      {"traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, touchpad_strings,
+                          arraysize(touchpad_strings));
+
+  LocalizedString keyboard_strings[] = {
       {"keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE},
       {"keyboardKeySearch", IDS_SETTINGS_KEYBOARD_KEY_SEARCH},
       {"keyboardKeyCtrl", IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL},
@@ -343,8 +353,21 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"keyboardSendFunctionKeysDescription",
        IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION},
   };
-  AddLocalizedStringsBulk(html_source, localized_strings,
-                          arraysize(localized_strings));
+  AddLocalizedStringsBulk(html_source, keyboard_strings,
+                          arraysize(keyboard_strings));
+
+  LocalizedString display_strings[] = {
+      {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
+      {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},
+      {"displayArrangement", IDS_SETTINGS_DISPLAY_ARRANGEMENT},
+      {"displayMirror", IDS_SETTINGS_DISPLAY_MIRROR},
+      {"displayMakePrimary", IDS_SETTINGS_DISPLAY_MAKE_PRIMARY},
+      {"displayResolution", IDS_SETTINGS_DISPLAY_RESOLUTION},
+      {"displayOrientation", IDS_SETTINGS_DISPLAY_ORIENTATION},
+      {"displayOrientationStandard", IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD},
+  };
+  AddLocalizedStringsBulk(html_source, display_strings,
+                          arraysize(display_strings));
 
   html_source->AddString(
       "naturalScrollLabel",

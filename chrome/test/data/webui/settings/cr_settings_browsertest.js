@@ -279,6 +279,7 @@ CrSettingsDevicePageTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../fake_chrome_event.js',
     'fake_settings_private.js',
+    'fake_system_display.js',
     'device_page_tests.js',
   ]),
 };

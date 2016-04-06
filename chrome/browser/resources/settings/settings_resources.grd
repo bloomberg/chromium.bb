@@ -286,6 +286,12 @@
                    type="chrome_html" />
       </if>
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_DEVICE_DISPLAY_HTML"
+                   file="device_page/display.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_DISPLAY_JS"
+                   file="device_page/display.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_KEYBOARD_HTML"
                    file="device_page/keyboard.html"
                    type="chrome_html" />

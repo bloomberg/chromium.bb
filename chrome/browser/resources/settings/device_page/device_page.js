@@ -9,10 +9,6 @@
 Polymer({
   is: 'settings-device-page',
 
-  behaviors: [
-    I18nBehavior,
-  ],
-
   properties: {
     /** The current active route. */
     currentRoute: {
@@ -41,5 +37,13 @@ Polymer({
    */
   onKeyboardTap_: function() {
     this.$.pages.setSubpageChain(['keyboard']);
+  },
+
+  /**
+   * Handler for tapping the Display settings menu item.
+   * @private
+   */
+  onDisplayTap_: function() {
+    this.$.pages.setSubpageChain(['display']);
   },
 });

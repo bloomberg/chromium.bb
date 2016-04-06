@@ -353,6 +353,12 @@ Polymer({
       section: 'device',
       subpage: ['keyboard'],
     },
+    {
+      url: '/display-overlay',
+      page: 'basic',
+      section: 'device',
+      subpage: ['display'],
+    },
 </if>
   ],
 

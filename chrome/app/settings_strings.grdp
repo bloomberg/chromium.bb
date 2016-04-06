@@ -1168,6 +1168,28 @@
     <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
       Hold the Search key to switch the behavior of the top-row keys.
     </message>
+    <!-- Display -->
+    <message name="IDS_SETTINGS_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">
+      Displays
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_ARRANGEMENT" desc="In Device Settings > Displays, the label for the display arrangement section.">
+      Arrangement
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_MIRROR" desc="In Device Settings > Displays, the label for the control for mirroring.">
+      Mirror displays
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_MAKE_PRIMARY" desc="In Device Settings > Displays, the label for the control for making a display primary.">
+      Make primary
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION" desc="In Device Settings > Displays, the label for the control for changing a display's resolution.">
+      Resolution
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_ORIENTATION" desc="In Device Settings > Displays, the label for the control for changing a display's orientation.">
+      Orientation
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD" desc="In Device Settings > Displays, the label for standard orientation (0 rotation).">
+      Standard
+    </message>
   </if>
 
   <!-- System Page -->
