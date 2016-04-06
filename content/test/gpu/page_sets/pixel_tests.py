@@ -74,8 +74,8 @@ class PixelTestsStorySet(story_set_module.StorySet):
       self.AddStory(PixelTestsPage(
         url='file://../../data/gpu/pixel_canvas2d_webgl.html',
         name=base_name + '.IOSurface2DCanvasWebGL',
-        test_rect=[0, 0, 400, 400],
-        revision=1,
+        test_rect=[0, 0, 300, 300],
+        revision=2,
         story_set=self,
         shared_page_state_class=IOSurface2DCanvasSharedPageState,
         expectations=expectations))
@@ -128,8 +128,8 @@ class PixelTestsStorySet(story_set_module.StorySet):
     self.AddStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d_webgl.html',
       name=base_name + '.2DCanvasWebGL',
-      test_rect=[0, 0, 400, 400],
-      revision=1,
+      test_rect=[0, 0, 300, 300],
+      revision=2,
       story_set=self,
       shared_page_state_class=shared_page_state_class,
       expectations=expectations))
