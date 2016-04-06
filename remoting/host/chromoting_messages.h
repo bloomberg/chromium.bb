@@ -87,12 +87,13 @@ IPC_MESSAGE_CONTROL2(ChromotingNetworkDaemonMsg_SetScreenResolution,
 
 // Serialized remoting::protocol::TransportRoute structure.
 IPC_STRUCT_BEGIN(SerializedTransportRoute)
-  IPC_STRUCT_MEMBER(int, type)
-  IPC_STRUCT_MEMBER(net::IPAddressNumber, remote_address)
-  IPC_STRUCT_MEMBER(uint16_t, remote_port)
-  IPC_STRUCT_MEMBER(net::IPAddressNumber, local_address)
-  IPC_STRUCT_MEMBER(uint16_t, local_port)
+  IPC_STRUCT_MEMBER(remoting::protocol::TransportRoute::RouteType, type)
+  IPC_STRUCT_MEMBER(net::IPEndPoint, remote_address)
+  IPC_STRUCT_MEMBER(net::IPEndPoint, local_address)
 IPC_STRUCT_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(remoting::protocol::TransportRoute::RouteType,
+                          remoting::protocol::TransportRoute::ROUTE_TYPE_MAX)
 
 // Hosts status notifications (see HostStatusObserver interface) sent by
 // IpcHostEventLogger.

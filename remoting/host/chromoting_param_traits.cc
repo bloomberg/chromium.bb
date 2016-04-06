@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/strings/stringprintf.h"
+#include "ipc/ipc_message_utils.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace IPC {
@@ -186,6 +187,56 @@ void ParamTraits<remoting::ScreenResolution>::Log(
   l->append(base::StringPrintf("webrtc::ScreenResolution(%d, %d, %d, %d)",
                                p.dimensions().width(), p.dimensions().height(),
                                p.dpi().x(), p.dpi().y()));
+}
+
+// static
+void ParamTraits<net::IPAddress>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.bytes());
+}
+
+// static
+bool ParamTraits<net::IPAddress>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
+  std::vector<uint8_t> bytes;
+  if (!ReadParam(m, iter, &bytes))
+    return false;
+
+  net::IPAddress address(bytes);
+  if (address.empty() || address.IsValid()) {
+    *p = address;
+    return true;
+  }
+  return false;
+}
+
+// static
+void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
+  l->append("IPAddress:" + (p.empty() ? "(empty)" : p.ToString()));
+}
+
+// static
+void ParamTraits<net::IPEndPoint>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.address());
+  WriteParam(m, p.port());
+}
+
+// static
+bool ParamTraits<net::IPEndPoint>::Read(const base::Pickle* m,
+                                        base::PickleIterator* iter,
+                                        param_type* p) {
+  net::IPAddress address;
+  uint16_t port;
+  if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
+    return false;
+
+  *p = net::IPEndPoint(address, port);
+  return true;
+}
+
+// static
+void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
+  l->append("IPEndPoint: " + p.ToString());
 }
 
 }  // namespace IPC

@@ -16,6 +16,7 @@
 #include "crypto/secure_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -99,8 +100,7 @@ class NetStreamSocketAdapter : public net::StreamSocket {
   bool IsConnectedAndIdle() const override { return true; }
   int GetPeerAddress(net::IPEndPoint* address) const override {
     // SSL sockets call this function so it must return some result.
-    net::IPAddressNumber ip_address(net::kIPv4AddressSize);
-    *address = net::IPEndPoint(ip_address, 0);
+    *address = net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0);
     return net::OK;
   }
   int GetLocalAddress(net::IPEndPoint* address) const override {

@@ -40,6 +40,7 @@ struct TransportRoute {
     DIRECT,
     STUN,
     RELAY,
+    ROUTE_TYPE_MAX = RELAY,
   };
 
   // Helper method to get string representation of the type.

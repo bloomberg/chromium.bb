@@ -7,6 +7,8 @@
 
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "remoting/host/screen_resolution.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -61,6 +63,26 @@ struct ParamTraits<remoting::ScreenResolution> {
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<net::IPAddress> {
+  typedef net::IPAddress param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<net::IPEndPoint> {
+  typedef net::IPEndPoint param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
