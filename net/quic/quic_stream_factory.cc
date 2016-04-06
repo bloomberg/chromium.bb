@@ -135,10 +135,9 @@ class QuicStreamFactory::Job {
  public:
   Job(QuicStreamFactory* factory,
       HostResolver* host_resolver,
-      const HostPortPair& host_port_pair,
+      const QuicServerId& server_id,
       bool server_and_origin_have_same_host,
       bool was_alternative_service_recently_broken,
-      PrivacyMode privacy_mode,
       int cert_verify_flags,
       bool is_post,
       QuicServerInfo* server_info,
@@ -212,10 +211,9 @@ class QuicStreamFactory::Job {
 
 QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             HostResolver* host_resolver,
-                            const HostPortPair& host_port_pair,
+                            const QuicServerId& server_id,
                             bool server_and_origin_have_same_host,
                             bool was_alternative_service_recently_broken,
-                            PrivacyMode privacy_mode,
                             int cert_verify_flags,
                             bool is_post,
                             QuicServerInfo* server_info,
@@ -223,7 +221,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
     : io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
       host_resolver_(host_resolver),
-      server_id_(host_port_pair, privacy_mode),
+      server_id_(server_id),
       cert_verify_flags_(cert_verify_flags),
       server_and_origin_have_same_host_(server_and_origin_have_same_host),
       is_post_(is_post),
@@ -833,8 +831,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   if (quic_server_info_factory_.get()) {
     bool load_from_disk_cache = !disable_disk_cache_;
     MaybeInitialize();
-    if (!ContainsKey(quic_supported_servers_at_startup_,
-                     server_id.host_port_pair())) {
+    if (!ContainsKey(quic_supported_servers_at_startup_, host_port_pair)) {
       // If there is no entry for QUIC, consider that as a new server and
       // don't wait for Cache thread to load the data for that server.
       load_from_disk_cache = false;
@@ -845,10 +842,10 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   }
 
   bool server_and_origin_have_same_host = host_port_pair.host() == url.host();
-  scoped_ptr<Job> job(new Job(
-      this, host_resolver_, host_port_pair, server_and_origin_have_same_host,
-      WasQuicRecentlyBroken(server_id), privacy_mode, cert_verify_flags,
-      method == "POST" /* is_post */, quic_server_info, net_log));
+  scoped_ptr<Job> job(
+      new Job(this, host_resolver_, server_id, server_and_origin_have_same_host,
+              WasQuicRecentlyBroken(server_id), cert_verify_flags,
+              method == "POST" /* is_post */, quic_server_info, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -879,10 +876,10 @@ void QuicStreamFactory::CreateAuxilaryJob(const QuicServerId server_id,
                                           bool server_and_origin_have_same_host,
                                           bool is_post,
                                           const BoundNetLog& net_log) {
-  Job* aux_job = new Job(
-      this, host_resolver_, server_id.host_port_pair(),
-      server_and_origin_have_same_host, WasQuicRecentlyBroken(server_id),
-      server_id.privacy_mode(), cert_verify_flags, is_post, nullptr, net_log);
+  Job* aux_job =
+      new Job(this, host_resolver_, server_id, server_and_origin_have_same_host,
+              WasQuicRecentlyBroken(server_id), cert_verify_flags, is_post,
+              nullptr, net_log);
   active_jobs_[server_id].insert(aux_job);
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&QuicStreamFactory::Job::RunAuxilaryJob,
