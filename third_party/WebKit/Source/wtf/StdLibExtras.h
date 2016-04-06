@@ -115,7 +115,8 @@ public:
 #define DEFINE_STATIC_LOCAL(Type, Name, Arguments)                    \
     DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name);                \
     using WrappedTypeFor##Name = StaticLocalWrapper<Type>::WrapType;  \
-    static Type& Name = StaticLocalWrapper<Type>::unwrap(LEAK_SANITIZER_REGISTER_STATIC_LOCAL(WrappedTypeFor##Name, new WrappedTypeFor##Name Arguments))
+    static WrappedTypeFor##Name* WrappedInstanceFor##Name = LEAK_SANITIZER_REGISTER_STATIC_LOCAL(WrappedTypeFor##Name, new WrappedTypeFor##Name Arguments); \
+    Type& Name = StaticLocalWrapper<Type>::unwrap(WrappedInstanceFor##Name);
 
 // Use this to declare and define a static local pointer to a ref-counted object so that
 // it is leaked so that the object's destructors are not called at exit.
