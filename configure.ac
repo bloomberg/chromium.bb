@@ -75,7 +75,7 @@ dnl bump revision when fixing bugs
 dnl bump current and age, reset revision to zero when adding APIs
 dnl bump current, leave age, reset revision to zero when changing/removing APIS
 LIBT_CURRENT=10
-LIBT_REVISION=0
+LIBT_REVISION=1
 AC_SUBST(LIBT_CURRENT)
 AC_SUBST(LIBT_REVISION)
 LIBT_AGE=9
