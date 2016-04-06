@@ -6,6 +6,7 @@ package org.chromium.net;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
 
@@ -20,7 +21,8 @@ import java.util.Arrays;
  * Test CronetEngine disk storage.
  */
 public class DiskStorageTest extends CronetTestBase {
-    CronetTestFramework mTestFramework;
+    private CronetTestFramework mTestFramework;
+    private String mReadOnlyStoragePath;
 
     @Override
     protected void setUp() throws Exception {
@@ -31,6 +33,9 @@ public class DiskStorageTest extends CronetTestBase {
 
     @Override
     protected void tearDown() throws Exception {
+        if (mReadOnlyStoragePath != null) {
+            FileUtils.recursivelyDeleteFile(new File(mReadOnlyStoragePath));
+        }
         NativeTestServer.shutdownNativeTestServer();
         super.tearDown();
     }
@@ -39,13 +44,13 @@ public class DiskStorageTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testReadOnlyStorageDirectory() throws Exception {
-        String readOnlyStoragePath = PathUtils.getDataDirectory(getContext()) + "/read_only";
-        File readOnlyStorage = new File(readOnlyStoragePath);
+        mReadOnlyStoragePath = PathUtils.getDataDirectory(getContext()) + "/read_only";
+        File readOnlyStorage = new File(mReadOnlyStoragePath);
         assertTrue(readOnlyStorage.mkdir());
         // Setting the storage directory as readonly has no effect.
         assertTrue(readOnlyStorage.setReadOnly());
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
-        builder.setStoragePath(readOnlyStoragePath);
+        builder.setStoragePath(mReadOnlyStoragePath);
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
 
         mTestFramework = new CronetTestFramework(null, null, getContext(), builder);
@@ -60,7 +65,7 @@ public class DiskStorageTest extends CronetTestBase {
         mTestFramework.mCronetEngine.shutdown();
         FileInputStream newVersionFile = null;
         // Make sure that version file is in readOnlyStoragePath.
-        File versionFile = new File(readOnlyStoragePath + "/version");
+        File versionFile = new File(mReadOnlyStoragePath + "/version");
         try {
             newVersionFile = new FileInputStream(versionFile);
             byte[] buffer = new byte[] {0, 0, 0, 0};
@@ -72,9 +77,9 @@ public class DiskStorageTest extends CronetTestBase {
                 newVersionFile.close();
             }
         }
-        File diskCacheDir = new File(readOnlyStoragePath + "/disk_cache");
+        File diskCacheDir = new File(mReadOnlyStoragePath + "/disk_cache");
         assertTrue(diskCacheDir.exists());
-        File prefsDir = new File(readOnlyStoragePath + "/prefs");
+        File prefsDir = new File(mReadOnlyStoragePath + "/prefs");
         assertTrue(prefsDir.exists());
     }
 
