@@ -577,6 +577,7 @@
           'type': 'none',
           'dependencies': [
             '<(icu_gyp_path):icudata',
+            'remote_security_key',
             'remoting_core',
             'remoting_desktop',
             'remoting_it2me_native_messaging_host',
@@ -586,6 +587,7 @@
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remote_assistance_host.exe',
+            '<(PRODUCT_DIR)/remote_security_key.exe',
             '<(PRODUCT_DIR)/remoting_core.dll',
             '<(PRODUCT_DIR)/remoting_desktop.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
@@ -593,6 +595,7 @@
           ],
           'compiled_inputs_dst': [
             'files/remote_assistance_host.exe',
+            'files/remote_security_key.exe',
             'files/remoting_core.dll',
             'files/remoting_desktop.exe',
             'files/remoting_host.exe',

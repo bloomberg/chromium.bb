@@ -37,6 +37,7 @@
 
   <?define CoreBinary = "remoting_core.dll" ?>
   <?define HostBinary = "remoting_host.exe" ?>
+  <?define RemoteSecurityKeyBinary = "remote_security_key.exe" ?>
 
   <?define ChromotingTypelib = "{b6396c45-b0cc-456b-9f49-f12964ee6df4}" ?>
 
@@ -277,6 +278,25 @@
                                 Profile="all"
                                 Program="[#remoting_host.exe]"
                                 Scope="any" />
+      </Component>
+
+      <Component Id="remote_security_key" Guid="*">
+        <File Id="$(var.RemoteSecurityKeyBinary)"
+              DiskId="1"
+              KeyPath="yes"
+              Name="$(var.RemoteSecurityKeyBinary)"
+              Vital="yes"/>
+      </Component>
+
+      <Component Id="remote_security_key_registration" Guid="*">
+        <RegistryKey Id="remote_security_key_reg_key"
+                     Root="HKLM"
+                     Key="SOFTWARE\Google\SecurityKey"
+                     Action="create">
+          <RegistryValue Type="string"
+                         Name="RemoteSecurityKeyPath"
+                         Value="[binaries]$(var.RemoteSecurityKeyBinary)"/>
+        </RegistryKey>
       </Component>
 
       <?if $(var.OfficialBuild) != 0 ?>
@@ -618,6 +638,8 @@
       <ComponentRef Id="remoting_host"/>
       <ComponentRef Id="remoting_lib"/>
       <ComponentRef Id="remoting_pairing_registry"/>
+      <ComponentRef Id="remote_security_key"/>
+      <ComponentRef Id="remote_security_key_registration"/>
       <ComponentRef Id="sas"/>
       <ComponentRef Id="sawbuck_provider"/>
     </Feature>
