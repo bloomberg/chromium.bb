@@ -143,6 +143,12 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Returns the maximum resolution for H264 video.
   static std::pair<int, int> GetMaxH264Resolution();
 
+  // Certain AMD GPU drivers like R600, R700, Evergreen and Cayman and
+  // some second generation Intel GPU drivers crash if we create a video
+  // device with a resolution higher then 1920 x 1088. This function
+  // checks if the GPU is in this list and if yes returns true.
+  static bool IsLegacyGPU(ID3D11Device* device);
+
   // Creates and initializes an instance of the D3D device and the
   // corresponding device manager. The device manager instance is eventually
   // passed to the IMFTransform interface implemented by the decoder.
