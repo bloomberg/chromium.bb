@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.58",
+  "version": "8.59",
   "entries": [
     {
       "id": 1,
@@ -1878,6 +1878,25 @@ LONG_STRING_CONST(
       "gl_renderer": "PowerVR SGX 544MP",
       "features": [
         "avda_dont_copy_pictures"
+      ]
+    },
+    {
+      "id": 157,
+      "description": "Testing fences was broken on Mali ES2 drivers for specific phone models",
+      "cr_bugs": [589814],
+      "os": {
+        "type": "android"
+      },
+      "machine_model_name": ["SM-G361H", "SM-G531H"],
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
+      "disabled_extensions": [
+        "EGL_KHR_fence_sync"
       ]
     }
   ]
