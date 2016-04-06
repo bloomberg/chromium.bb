@@ -50,6 +50,8 @@ def main(args):
   parser.add_argument('--depfile',
                       help='Path to the depfile. This must be specified as '
                            "the action's first output.")
+  parser.add_argument('--test-runner-path',
+                      help='Path to test_runner.py (optional).')
   # We need to intercept any test runner path arguments and make all
   # of the paths relative to the output script directory.
   group = parser.add_argument_group('Test runner path arguments.')
@@ -70,7 +72,7 @@ def main(args):
     """Returns the path relative to the output script directory."""
     return os.path.relpath(path, os.path.dirname(args.script_output_path))
 
-  test_runner_path = os.path.join(
+  test_runner_path = args.test_runner_path or os.path.join(
       os.path.dirname(__file__), os.path.pardir, 'test_runner.py')
   test_runner_path = RelativizePathToScript(test_runner_path)
 
