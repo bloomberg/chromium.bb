@@ -20,7 +20,7 @@ class PrefRegistrySyncable;
 
 class PluginsHandler;
 
-class PluginsUI : public MojoWebUIController<PluginsHandlerMojo> {
+class PluginsUI : public MojoWebUIController<mojom::PluginsHandlerMojo> {
  public:
   explicit PluginsUI(content::WebUI* web_ui);
   ~PluginsUI() override;
@@ -32,7 +32,7 @@ class PluginsUI : public MojoWebUIController<PluginsHandlerMojo> {
  private:
   // MojoWebUIController overrides:
   void BindUIHandler(
-      mojo::InterfaceRequest<PluginsHandlerMojo> request) override;
+      mojo::InterfaceRequest<mojom::PluginsHandlerMojo> request) override;
 
   scoped_ptr<PluginsHandler> plugins_handler_;
 

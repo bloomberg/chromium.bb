@@ -129,10 +129,11 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
 static const int kWaitForWorkersStatsTimeoutMS = 20;
 
-class ResourceUsageReporterImpl : public ResourceUsageReporter {
+class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  public:
-  ResourceUsageReporterImpl(base::WeakPtr<ChromeRenderProcessObserver> observer,
-                            mojo::InterfaceRequest<ResourceUsageReporter> req)
+  ResourceUsageReporterImpl(
+      base::WeakPtr<ChromeRenderProcessObserver> observer,
+      mojo::InterfaceRequest<mojom::ResourceUsageReporter> req)
       : workers_to_go_(0),
         binding_(this, std::move(req)),
         observer_(observer),
@@ -173,11 +174,11 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     workers_to_go_ = 0;
   }
 
-  void GetUsageData(
-      const mojo::Callback<void(ResourceUsageDataPtr)>& callback) override {
+  void GetUsageData(const mojo::Callback<void(mojom::ResourceUsageDataPtr)>&
+                        callback) override {
     DCHECK(callback_.is_null());
     weak_factory_.InvalidateWeakPtrs();
-    usage_data_ = ResourceUsageData::New();
+    usage_data_ = mojom::ResourceUsageData::New();
     usage_data_->reports_v8_stats = true;
     callback_ = callback;
 
@@ -191,7 +192,7 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
 
     WebCache::ResourceTypeStats stats;
     WebCache::getResourceTypeStats(&stats);
-    usage_data_->web_cache_stats = ResourceTypeStats::From(stats);
+    usage_data_->web_cache_stats = mojom::ResourceTypeStats::From(stats);
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (isolate) {
@@ -217,10 +218,10 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     }
   }
 
-  ResourceUsageDataPtr usage_data_;
-  mojo::Callback<void(ResourceUsageDataPtr)> callback_;
+  mojom::ResourceUsageDataPtr usage_data_;
+  mojo::Callback<void(mojom::ResourceUsageDataPtr)> callback_;
   int workers_to_go_;
-  mojo::StrongBinding<ResourceUsageReporter> binding_;
+  mojo::StrongBinding<mojom::ResourceUsageReporter> binding_;
   base::WeakPtr<ChromeRenderProcessObserver> observer_;
 
   base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
@@ -230,7 +231,7 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
 
 void CreateResourceUsageReporter(
     base::WeakPtr<ChromeRenderProcessObserver> observer,
-    mojo::InterfaceRequest<ResourceUsageReporter> request) {
+    mojo::InterfaceRequest<mojom::ResourceUsageReporter> request) {
   new ResourceUsageReporterImpl(observer, std::move(request));
 }
 
@@ -275,7 +276,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
 
-  thread->GetServiceRegistry()->AddService<ResourceUsageReporter>(
+  thread->GetServiceRegistry()->AddService(
       base::Bind(CreateResourceUsageReporter, weak_factory_.GetWeakPtr()));
 
   // Configure modules that need access to resources.

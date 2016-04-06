@@ -20,29 +20,31 @@
 
 namespace {
 
-// Implementation of SiteEngagementUIHandler that gets information from the
+// Implementation of mojom::SiteEngagementUIHandler that gets information from
+// the
 // SiteEngagementService to provide data for the WebUI.
-class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
+class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
  public:
   // SiteEngagementUIHandlerImpl is deleted when the supplied pipe is destroyed.
   SiteEngagementUIHandlerImpl(
       Profile* profile,
-      mojo::InterfaceRequest<SiteEngagementUIHandler> request)
+      mojo::InterfaceRequest<mojom::SiteEngagementUIHandler> request)
       : profile_(profile), binding_(this, std::move(request)) {
     DCHECK(profile_);
   }
 
   ~SiteEngagementUIHandlerImpl() override {}
 
-  // SiteEngagementUIHandler overrides:
+  // mojom::SiteEngagementUIHandler overrides:
   void GetSiteEngagementInfo(
       const GetSiteEngagementInfoCallback& callback) override {
-    mojo::Array<SiteEngagementInfoPtr> engagement_info;
+    mojo::Array<mojom::SiteEngagementInfoPtr> engagement_info;
 
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
 
     for (const std::pair<GURL, double>& info : service->GetScoreMap()) {
-      SiteEngagementInfoPtr origin_info(SiteEngagementInfo::New());
+      mojom::SiteEngagementInfoPtr origin_info(
+          mojom::SiteEngagementInfo::New());
       origin_info->origin = mojo::String::From(info.first);
       origin_info->score = info.second;
       engagement_info.push_back(std::move(origin_info));
@@ -67,7 +69,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  mojo::Binding<SiteEngagementUIHandler> binding_;
+  mojo::Binding<mojom::SiteEngagementUIHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementUIHandlerImpl);
 };
@@ -75,7 +77,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
 }  // namespace
 
 SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
-    : MojoWebUIController<SiteEngagementUIHandler>(web_ui) {
+    : MojoWebUIController<mojom::SiteEngagementUIHandler>(web_ui) {
   // Incognito profiles will not have a site engagement service.
   Profile* profile = Profile::FromWebUI(web_ui);
   if (!SiteEngagementService::Get(profile))
@@ -95,7 +97,7 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
 SiteEngagementUI::~SiteEngagementUI() {}
 
 void SiteEngagementUI::BindUIHandler(
-    mojo::InterfaceRequest<SiteEngagementUIHandler> request) {
+    mojo::InterfaceRequest<mojom::SiteEngagementUIHandler> request) {
   ui_handler_.reset(new SiteEngagementUIHandlerImpl(
       Profile::FromWebUI(web_ui()), std::move(request)));
 }

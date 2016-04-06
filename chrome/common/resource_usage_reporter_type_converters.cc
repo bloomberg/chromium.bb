@@ -12,8 +12,9 @@ namespace mojo {
 
 namespace {
 
-ResourceTypeStatPtr StatToMojo(const blink::WebCache::ResourceTypeStat& obj) {
-  ResourceTypeStatPtr stat = ResourceTypeStat::New();
+mojom::ResourceTypeStatPtr StatToMojo(
+    const blink::WebCache::ResourceTypeStat& obj) {
+  mojom::ResourceTypeStatPtr stat = mojom::ResourceTypeStat::New();
   stat->count = obj.count;
   stat->size = obj.size;
   stat->live_size = obj.liveSize;
@@ -21,7 +22,8 @@ ResourceTypeStatPtr StatToMojo(const blink::WebCache::ResourceTypeStat& obj) {
   return stat;
 }
 
-blink::WebCache::ResourceTypeStat StatFromMojo(const ResourceTypeStat& obj) {
+blink::WebCache::ResourceTypeStat StatFromMojo(
+    const mojom::ResourceTypeStat& obj) {
   blink::WebCache::ResourceTypeStat stat;
   stat.count = base::saturated_cast<size_t>(obj.count);
   stat.size = base::saturated_cast<size_t>(obj.size);
@@ -33,10 +35,10 @@ blink::WebCache::ResourceTypeStat StatFromMojo(const ResourceTypeStat& obj) {
 }  // namespace
 
 // static
-ResourceTypeStatsPtr
-TypeConverter<ResourceTypeStatsPtr, blink::WebCache::ResourceTypeStats>::
+mojom::ResourceTypeStatsPtr
+TypeConverter<mojom::ResourceTypeStatsPtr, blink::WebCache::ResourceTypeStats>::
     Convert(const blink::WebCache::ResourceTypeStats& obj) {
-  ResourceTypeStatsPtr stats = ResourceTypeStats::New();
+  mojom::ResourceTypeStatsPtr stats = mojom::ResourceTypeStats::New();
   stats->images = StatToMojo(obj.images);
   stats->css_style_sheets = StatToMojo(obj.cssStyleSheets);
   stats->scripts = StatToMojo(obj.scripts);
@@ -47,9 +49,9 @@ TypeConverter<ResourceTypeStatsPtr, blink::WebCache::ResourceTypeStats>::
 }
 
 // static
-blink::WebCache::ResourceTypeStats
-TypeConverter<blink::WebCache::ResourceTypeStats, ResourceTypeStats>::Convert(
-    const ResourceTypeStats& obj) {
+blink::WebCache::ResourceTypeStats TypeConverter<
+    blink::WebCache::ResourceTypeStats,
+    mojom::ResourceTypeStats>::Convert(const mojom::ResourceTypeStats& obj) {
   if (!obj.images || !obj.css_style_sheets || !obj.scripts ||
       !obj.xsl_style_sheets || !obj.fonts || !obj.other) {
     return {};

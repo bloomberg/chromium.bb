@@ -74,17 +74,17 @@ void CreateProxyResolverFactory(
   new net::MojoProxyResolverFactoryImpl(std::move(request));
 }
 
-class ResourceUsageReporterImpl : public ResourceUsageReporter {
+class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  public:
   explicit ResourceUsageReporterImpl(
-      mojo::InterfaceRequest<ResourceUsageReporter> req)
+      mojo::InterfaceRequest<mojom::ResourceUsageReporter> req)
       : binding_(this, std::move(req)) {}
   ~ResourceUsageReporterImpl() override {}
 
  private:
-  void GetUsageData(
-      const mojo::Callback<void(ResourceUsageDataPtr)>& callback) override {
-    ResourceUsageDataPtr data = ResourceUsageData::New();
+  void GetUsageData(const mojo::Callback<void(mojom::ResourceUsageDataPtr)>&
+                        callback) override {
+    mojom::ResourceUsageDataPtr data = mojom::ResourceUsageData::New();
     size_t total_heap_size = net::ProxyResolverV8::GetTotalHeapSize();
     if (total_heap_size) {
       data->reports_v8_stats = true;
@@ -94,11 +94,11 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     callback.Run(std::move(data));
   }
 
-  mojo::StrongBinding<ResourceUsageReporter> binding_;
+  mojo::StrongBinding<mojom::ResourceUsageReporter> binding_;
 };
 
 void CreateResourceUsageReporter(
-    mojo::InterfaceRequest<ResourceUsageReporter> request) {
+    mojo::InterfaceRequest<mojom::ResourceUsageReporter> request) {
   new ResourceUsageReporterImpl(std::move(request));
 }
 #endif  // OS_ANDROID
@@ -198,8 +198,7 @@ void ChromeContentUtilityClient::RegisterMojoServices(
 #if !defined(OS_ANDROID)
   registry->AddService<net::interfaces::ProxyResolverFactory>(
       base::Bind(CreateProxyResolverFactory));
-  registry->AddService<ResourceUsageReporter>(
-      base::Bind(CreateResourceUsageReporter));
+  registry->AddService(base::Bind(CreateResourceUsageReporter));
 #endif
   registry->AddService(base::Bind(&CreateImageDecoder));
 }

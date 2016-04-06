@@ -64,7 +64,8 @@ class ChildProcessResource : public Resource {
   base::string16 GetLocalizedTitle() const;
 
   static void ConnectResourceReporterOnIOThread(
-      int id, mojo::InterfaceRequest<ResourceUsageReporter> req);
+      int id,
+      mojo::InterfaceRequest<mojom::ResourceUsageReporter> req);
 
   int process_type_;
   base::string16 name_;
@@ -87,7 +88,8 @@ gfx::ImageSkia* ChildProcessResource::default_icon_ = NULL;
 
 // static
 void ChildProcessResource::ConnectResourceReporterOnIOThread(
-    int id, mojo::InterfaceRequest<ResourceUsageReporter> req) {
+    int id,
+    mojo::InterfaceRequest<mojom::ResourceUsageReporter> req) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::BrowserChildProcessHost* host =
       content::BrowserChildProcessHost::FromID(id);
@@ -118,8 +120,8 @@ ChildProcessResource::ChildProcessResource(int process_type,
     default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
     // TODO(jabdelmalek): use different icon for web workers.
   }
-  ResourceUsageReporterPtr service;
-  mojo::InterfaceRequest<ResourceUsageReporter> request =
+  mojom::ResourceUsageReporterPtr service;
+  mojo::InterfaceRequest<mojom::ResourceUsageReporter> request =
       mojo::GetProxy(&service);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

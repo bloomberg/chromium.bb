@@ -31,7 +31,7 @@ namespace {
 // |render_process_host|.
 ProcessResourceUsage* CreateRendererResourcesSampler(
     content::RenderProcessHost* render_process_host) {
-  ResourceUsageReporterPtr service;
+  mojom::ResourceUsageReporterPtr service;
   content::ServiceRegistry* service_registry =
       render_process_host->GetServiceRegistry();
   if (service_registry)

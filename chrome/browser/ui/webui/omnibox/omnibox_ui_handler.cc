@@ -38,15 +38,16 @@ using bookmarks::BookmarkModel;
 namespace mojo {
 
 template <>
-struct TypeConverter<mojo::Array<AutocompleteAdditionalInfoPtr>,
+struct TypeConverter<mojo::Array<mojom::AutocompleteAdditionalInfoPtr>,
                      AutocompleteMatch::AdditionalInfo> {
-  static mojo::Array<AutocompleteAdditionalInfoPtr> Convert(
+  static mojo::Array<mojom::AutocompleteAdditionalInfoPtr> Convert(
       const AutocompleteMatch::AdditionalInfo& input) {
-    mojo::Array<AutocompleteAdditionalInfoPtr> array(input.size());
+    mojo::Array<mojom::AutocompleteAdditionalInfoPtr> array(input.size());
     size_t index = 0;
     for (AutocompleteMatch::AdditionalInfo::const_iterator i = input.begin();
          i != input.end(); ++i, index++) {
-      AutocompleteAdditionalInfoPtr item(AutocompleteAdditionalInfo::New());
+      mojom::AutocompleteAdditionalInfoPtr item(
+          mojom::AutocompleteAdditionalInfo::New());
       item->key = i->first;
       item->value = i->second;
       array[index] = std::move(item);
@@ -56,9 +57,10 @@ struct TypeConverter<mojo::Array<AutocompleteAdditionalInfoPtr>,
 };
 
 template <>
-struct TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
-  static AutocompleteMatchMojoPtr Convert(const AutocompleteMatch& input) {
-    AutocompleteMatchMojoPtr result(AutocompleteMatchMojo::New());
+struct TypeConverter<mojom::AutocompleteMatchMojoPtr, AutocompleteMatch> {
+  static mojom::AutocompleteMatchMojoPtr Convert(
+      const AutocompleteMatch& input) {
+    mojom::AutocompleteMatchMojoPtr result(mojom::AutocompleteMatchMojo::New());
     if (input.provider != NULL) {
       result->provider_name = input.provider->GetName();
       result->provider_done = input.provider->done();
@@ -89,21 +91,22 @@ struct TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
     result->from_previous = input.from_previous;
 
     result->additional_info =
-        mojo::Array<AutocompleteAdditionalInfoPtr>::From(input.additional_info);
+        mojo::Array<mojom::AutocompleteAdditionalInfoPtr>::From(
+            input.additional_info);
     return result;
   }
 };
 
 template <>
-struct TypeConverter<AutocompleteResultsForProviderMojoPtr,
-                     scoped_refptr<AutocompleteProvider> > {
-  static AutocompleteResultsForProviderMojoPtr Convert(
+struct TypeConverter<mojom::AutocompleteResultsForProviderMojoPtr,
+                     scoped_refptr<AutocompleteProvider>> {
+  static mojom::AutocompleteResultsForProviderMojoPtr Convert(
       const scoped_refptr<AutocompleteProvider>& input) {
-    AutocompleteResultsForProviderMojoPtr result(
-        AutocompleteResultsForProviderMojo::New());
+    mojom::AutocompleteResultsForProviderMojoPtr result(
+        mojom::AutocompleteResultsForProviderMojo::New());
     result->provider_name = input->GetName();
     result->results =
-        mojo::Array<AutocompleteMatchMojoPtr>::From(input->matches());
+        mojo::Array<mojom::AutocompleteMatchMojoPtr>::From(input->matches());
     return result;
   }
 };
@@ -112,7 +115,7 @@ struct TypeConverter<AutocompleteResultsForProviderMojoPtr,
 
 OmniboxUIHandler::OmniboxUIHandler(
     Profile* profile,
-    mojo::InterfaceRequest<OmniboxUIHandlerMojo> request)
+    mojo::InterfaceRequest<mojom::OmniboxUIHandlerMojo> request)
     : profile_(profile), binding_(this, std::move(request)) {
   ResetController();
 }
@@ -121,7 +124,7 @@ OmniboxUIHandler::~OmniboxUIHandler() {
 }
 
 void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
-  OmniboxResultMojoPtr result(OmniboxResultMojo::New());
+  mojom::OmniboxResultMojoPtr result(mojom::OmniboxResultMojo::New());
   result->done = controller_->done();
   result->time_since_omnibox_started_ms =
       (base::Time::Now() - time_omnibox_started_).InMilliseconds();
@@ -140,10 +143,10 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
     ACMatches matches(controller_->result().begin(),
                       controller_->result().end());
     result->combined_results =
-        mojo::Array<AutocompleteMatchMojoPtr>::From(matches);
+        mojo::Array<mojom::AutocompleteMatchMojoPtr>::From(matches);
   }
   result->results_by_provider =
-      mojo::Array<AutocompleteResultsForProviderMojoPtr>::From(
+      mojo::Array<mojom::AutocompleteResultsForProviderMojoPtr>::From(
           controller_->providers());
 
   // Fill AutocompleteMatchMojo::starred.
@@ -154,7 +157,7 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
           GURL(result->combined_results[i]->destination_url.get()));
     }
     for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
-      const AutocompleteResultsForProviderMojo& result_by_provider =
+      const mojom::AutocompleteResultsForProviderMojo& result_by_provider =
           *result->results_by_provider[i];
       for (size_t j = 0; j < result_by_provider.results.size(); ++j) {
         result_by_provider.results[j]->starred = bookmark_model->IsBookmarked(
@@ -185,7 +188,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
                                          bool prevent_inline_autocomplete,
                                          bool prefer_keyword,
                                          int32_t page_classification,
-                                         OmniboxPagePtr page) {
+                                         mojom::OmniboxPagePtr page) {
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
   // variable (or something else) and some providers will short-circuit

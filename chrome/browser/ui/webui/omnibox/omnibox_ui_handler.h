@@ -26,24 +26,24 @@ class Profile;
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
 class OmniboxUIHandler : public AutocompleteControllerDelegate,
-                         public OmniboxUIHandlerMojo,
+                         public mojom::OmniboxUIHandlerMojo,
                          public MojoWebUIHandler {
  public:
   // OmniboxUIHandler is deleted when the supplied pipe is destroyed.
   OmniboxUIHandler(Profile* profile,
-                   mojo::InterfaceRequest<OmniboxUIHandlerMojo> request);
+                   mojo::InterfaceRequest<mojom::OmniboxUIHandlerMojo> request);
   ~OmniboxUIHandler() override;
 
   // AutocompleteControllerDelegate overrides:
   void OnResultChanged(bool default_match_changed) override;
 
-  // OmniboxUIHandlerMojo overrides:
+  // mojom::OmniboxUIHandlerMojo overrides:
   void StartOmniboxQuery(const mojo::String& input_string,
                          int32_t cursor_position,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
                          int32_t page_classification,
-                         OmniboxPagePtr page) override;
+                         mojom::OmniboxPagePtr page) override;
 
  private:
   // Looks up whether the hostname is a typed host (i.e., has received
@@ -68,12 +68,12 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   AutocompleteInput input_;
 
   // Handle back to the page by which we can pass results.
-  OmniboxPagePtr page_;
+  mojom::OmniboxPagePtr page_;
 
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  mojo::Binding<OmniboxUIHandlerMojo> binding_;
+  mojo::Binding<mojom::OmniboxUIHandlerMojo> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUIHandler);
 };

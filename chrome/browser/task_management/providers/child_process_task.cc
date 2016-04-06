@@ -115,7 +115,7 @@ base::string16 GetLocalizedTitle(const base::string16& title,
 // BrowserChildProcessHost whose unique ID is |unique_child_process_id|.
 void ConnectResourceReporterOnIOThread(
     int unique_child_process_id,
-    mojo::InterfaceRequest<ResourceUsageReporter> resource_reporter) {
+    mojo::InterfaceRequest<mojom::ResourceUsageReporter> resource_reporter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   content::BrowserChildProcessHost* host =
@@ -135,8 +135,8 @@ void ConnectResourceReporterOnIOThread(
 // |unique_child_process_id|.
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
-  ResourceUsageReporterPtr service;
-  mojo::InterfaceRequest<ResourceUsageReporter> usage_reporter =
+  mojom::ResourceUsageReporterPtr service;
+  mojo::InterfaceRequest<mojom::ResourceUsageReporter> usage_reporter =
       mojo::GetProxy(&service);
 
   content::BrowserThread::PostTask(

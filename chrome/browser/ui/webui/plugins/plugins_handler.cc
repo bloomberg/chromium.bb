@@ -87,10 +87,11 @@ base::string16 GetPluginDescription(const WebPluginInfo& plugin) {
   return desc;
 }
 
-mojo::Array<MimeTypePtr> GeneratePluginMimeTypes(const WebPluginInfo& plugin) {
-  mojo::Array<MimeTypePtr> mime_types;
+mojo::Array<mojom::MimeTypePtr> GeneratePluginMimeTypes(
+    const WebPluginInfo& plugin) {
+  mojo::Array<mojom::MimeTypePtr> mime_types;
   for (const auto& plugin_mime_type : plugin.mime_types) {
-    MimeTypePtr mime_type(MimeType::New());
+    mojom::MimeTypePtr mime_type(mojom::MimeType::New());
     mime_type->description = mojo::String::From(plugin_mime_type.description);
 
     mime_type->mime_type = mojo::String::From(plugin_mime_type.mime_type);
@@ -106,7 +107,7 @@ mojo::Array<MimeTypePtr> GeneratePluginMimeTypes(const WebPluginInfo& plugin) {
 
 PluginsHandler::PluginsHandler(
     content::WebUI* web_ui,
-    mojo::InterfaceRequest<PluginsHandlerMojo> request)
+    mojo::InterfaceRequest<mojom::PluginsHandlerMojo> request)
     : web_ui_(web_ui),
       binding_(this, std::move(request)),
       weak_ptr_factory_(this) {
@@ -182,7 +183,7 @@ void PluginsHandler::GetPluginsData(const GetPluginsDataCallback& callback) {
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void PluginsHandler::SetClientPage(PluginsPageMojoPtr page) {
+void PluginsHandler::SetClientPage(mojom::PluginsPageMojoPtr page) {
   page_ = std::move(page);
 }
 
@@ -210,7 +211,7 @@ void PluginsHandler::NotifyWithPluginsData(
     page_->OnPluginsUpdated(GeneratePluginsData(plugins));
 }
 
-mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
+mojo::Array<mojom::PluginDataPtr> PluginsHandler::GeneratePluginsData(
     const std::vector<WebPluginInfo>& plugins) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
@@ -225,11 +226,11 @@ mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
     groups[plugin->identifier()].push_back(&plugins[i]);
   }
 
-  mojo::Array<PluginDataPtr> plugins_data;
+  mojo::Array<mojom::PluginDataPtr> plugins_data;
 
   for (PluginGroups::const_iterator it = groups.begin(); it != groups.end();
        ++it) {
-    PluginDataPtr plugin_data(PluginData::New());
+    mojom::PluginDataPtr plugin_data(mojom::PluginData::New());
     const std::vector<const WebPluginInfo*>& group_plugins = it->second;
 
     scoped_ptr<PluginMetadata> plugin_metadata(
@@ -240,7 +241,7 @@ mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
     const WebPluginInfo* active_plugin = nullptr;
     bool group_enabled = false;
 
-    mojo::Array<PluginFilePtr> plugin_files;
+    mojo::Array<mojom::PluginFilePtr> plugin_files;
     for (const auto& group_plugin : group_plugins) {
       bool plugin_enabled = plugin_prefs->IsPluginEnabled(*group_plugin);
 
@@ -283,11 +284,11 @@ mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
   return plugins_data;
 }
 
-PluginFilePtr PluginsHandler::GeneratePluginFile(
+mojom::PluginFilePtr PluginsHandler::GeneratePluginFile(
     const WebPluginInfo& plugin,
     const base::string16& group_name,
     bool plugin_enabled) const {
-  PluginFilePtr plugin_file(PluginFile::New());
+  mojom::PluginFilePtr plugin_file(mojom::PluginFile::New());
   plugin_file->description = mojo::String::From(GetPluginDescription(plugin));
   plugin_file->enabled_mode = mojo::String::From(
       GetPluginEnabledMode(plugin.name, group_name, plugin_enabled));
@@ -323,7 +324,7 @@ std::string PluginsHandler::GetPluginEnabledMode(
 }
 
 std::string PluginsHandler::GetPluginGroupEnabledMode(
-    const mojo::Array<PluginFilePtr>& plugin_files,
+    const mojo::Array<mojom::PluginFilePtr>& plugin_files,
     bool group_enabled) const {
   bool plugins_enabled_by_policy = true;
   bool plugins_disabled_by_policy = true;

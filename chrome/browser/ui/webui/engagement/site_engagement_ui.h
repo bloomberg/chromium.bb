@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
 
 // The UI for chrome://site-engagement/.
-class SiteEngagementUI : public MojoWebUIController<SiteEngagementUIHandler> {
+class SiteEngagementUI
+    : public MojoWebUIController<mojom::SiteEngagementUIHandler> {
  public:
   explicit SiteEngagementUI(content::WebUI* web_ui);
   ~SiteEngagementUI() override;
@@ -18,9 +19,9 @@ class SiteEngagementUI : public MojoWebUIController<SiteEngagementUIHandler> {
  private:
   // MojoWebUIController overrides:
   void BindUIHandler(
-      mojo::InterfaceRequest<SiteEngagementUIHandler> request) override;
+      mojo::InterfaceRequest<mojom::SiteEngagementUIHandler> request) override;
 
-  scoped_ptr<SiteEngagementUIHandler> ui_handler_;
+  scoped_ptr<mojom::SiteEngagementUIHandler> ui_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementUI);
 };
