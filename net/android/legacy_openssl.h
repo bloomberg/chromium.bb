@@ -78,9 +78,8 @@ struct AndroidRSA_METHOD {
 struct AndroidEVP_PKEY {
   int type;
   int save_type;
-  // Note: this value must NOT be modified using Chromium's CRYPTO_add
-  // function. That may not necessarily use the same locking implementation as
-  // system OpenSSL.
+  // Note: this value is protected by threading functions in the Android system
+  // OpenSSL. It should not be accessed or modified directly.
   int references;
   const AndroidEVP_PKEY_ASN1_METHOD* ameth;
   AndroidENGINE* engine;

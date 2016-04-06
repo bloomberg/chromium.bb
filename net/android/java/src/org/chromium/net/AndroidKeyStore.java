@@ -220,10 +220,10 @@ public class AndroidKeyStore {
      * based on OpenSSL (fortunately, no OEM has apperently changed to
      * a different implementation, according to the Android team).
      *
-     * Note that the object returned was created with the platform version
-     * of OpenSSL, and _not_ the one that comes with Chromium. Whether the
-     * object can be used safely with the Chromium OpenSSL library depends
-     * on differences between their actual ABI / implementation details.
+     * Note that the object returned was created with the platform version of
+     * OpenSSL, and _not_ the one that comes with Chromium. It may not be used
+     * with the Chromium version of OpenSSL (BoringSSL). See AndroidEVP_PKEY in
+     * net/android/legacy_openssl.h.
      *
      * To better understand what's going on below, please refer to the
      * following source files in the Android 4.0.4 and 4.1 source trees:
