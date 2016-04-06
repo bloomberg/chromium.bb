@@ -266,18 +266,20 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
 
   AccountTrackerService* account_tracker =
       AccountTrackerServiceFactory::GetForProfile(profile);
-
-  for (const auto& account: account_tracker->GetAccounts()) {
-    base::ListValue* section_user = AddSection(section_list.get(),
-        "User Information for " + account.full_name);
-    AddSectionEntry(section_user, "Account id", account.account_id);
-    AddSectionEntry(section_user, "Gaia", account.gaia);
-    AddSectionEntry(section_user, "Email", account.email);
-    AddSectionEntry(section_user, "Given name", account.given_name);
-    AddSectionEntry(section_user, "Hosted domain", account.hosted_domain);
-    AddSectionEntry(section_user, "Locale", account.locale);
-    AddSectionEntry(section_user, "Is child", account.is_child_account);
-    AddSectionEntry(section_user, "Is valid", account.IsValid());
+  // |account_tracker| is null in incognito and guest profiles.
+  if (account_tracker) {
+    for (const auto& account: account_tracker->GetAccounts()) {
+      base::ListValue* section_user = AddSection(section_list.get(),
+          "User Information for " + account.full_name);
+      AddSectionEntry(section_user, "Account id", account.account_id);
+      AddSectionEntry(section_user, "Gaia", account.gaia);
+      AddSectionEntry(section_user, "Email", account.email);
+      AddSectionEntry(section_user, "Given name", account.given_name);
+      AddSectionEntry(section_user, "Hosted domain", account.hosted_domain);
+      AddSectionEntry(section_user, "Locale", account.locale);
+      AddSectionEntry(section_user, "Is child", account.is_child_account);
+      AddSectionEntry(section_user, "Is valid", account.IsValid());
+    }
   }
 
   base::DictionaryValue result;
