@@ -14,7 +14,6 @@ namespace switches {
 extern const char kClearDataReductionProxyDataSavings[];
 extern const char kDataReductionProxy[];
 extern const char kDataReductionProxyConfigURL[];
-extern const char kDataReductionProxyDev[];
 extern const char kDataReductionProxyExperiment[];
 extern const char kDataReductionProxyFallback[];
 extern const char kDataReductionProxyHttpProxies[];
@@ -28,11 +27,9 @@ extern const char kDataReductionProxySecureProxyCheckURL[];
 extern const char kDataReductionProxyStartSecureDisabled[];
 extern const char kDataReductionProxyWarmupURL[];
 extern const char kDataReductionSSLProxy[];
-extern const char kDisableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxy[];
 extern const char kEnableDataReductionProxyBypassWarning[];
 extern const char kEnableDataReductionProxyCarrierTest[];
-extern const char kEnableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxyLoFiPreview[];
 
 }  // namespace switches

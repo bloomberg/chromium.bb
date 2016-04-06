@@ -69,9 +69,7 @@ void TestDataReductionProxyConfig::EnableQuic(bool enable) {
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
   config_values_ = make_scoped_ptr(new TestDataReductionProxyParams(
       flags, TestDataReductionProxyParams::HAS_EVERYTHING &
-                 ~TestDataReductionProxyParams::HAS_SSL_ORIGIN &
-                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+                 ~TestDataReductionProxyParams::HAS_SSL_ORIGIN));
 }
 
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {

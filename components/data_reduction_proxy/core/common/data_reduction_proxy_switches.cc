@@ -17,9 +17,6 @@ const char kDataReductionProxy[]         = "spdy-proxy-auth-origin";
 // The URL from which to retrieve the Data Reduction Proxy configuration.
 const char kDataReductionProxyConfigURL[] = "data-reduction-proxy-config-url";
 
-// The origin of the data reduction proxy dev.
-const char kDataReductionProxyDev[]      = "spdy-proxy-dev-auth-origin";
-
 // The name of a Data Reduction Proxy experiment to run. These experiments are
 // defined by the proxy server. Use --force-fieldtrials for Data Reduction
 // Proxy field trials.
@@ -68,10 +65,6 @@ const char kDataReductionProxyWarmupURL[] = "data-reduction-proxy-warmup-url";
 // The origin of the data reduction SSL proxy.
 const char kDataReductionSSLProxy[] = "data-reduction-ssl-proxy";
 
-// Disables the origin of the data reduction proxy dev.
-const char kDisableDataReductionProxyDev[] =
-    "disable-spdy-proxy-dev-auth-origin";
-
 // Enable the data reduction proxy.
 const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 
@@ -82,9 +75,6 @@ const char kEnableDataReductionProxyBypassWarning[] =
 // Enables the origin of the carrier test data reduction proxy.
 const char kEnableDataReductionProxyCarrierTest[] =
     "enable-data-reduction-proxy-carrier-test";
-
-// Enables the origin of the data reduction proxy dev.
-const char kEnableDataReductionProxyDev[] = "enable-spdy-proxy-dev-auth-origin";
 
 // Enables preview mode for Lo-Fi. This means a preview should be requested
 // instead of placeholders whenever Lo-Fi mode is on. Lo-Fi must also be enabled

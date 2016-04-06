@@ -1328,11 +1328,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)},
 #endif
 #if defined(OS_ANDROID)
-    {"enable-data-reduction-proxy-dev", IDS_FLAGS_DATA_REDUCTION_PROXY_DEV_NAME,
-     IDS_FLAGS_DATA_REDUCTION_PROXY_DEV_DESCRIPTION, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(
-         data_reduction_proxy::switches::kEnableDataReductionProxyDev,
-         data_reduction_proxy::switches::kDisableDataReductionProxyDev)},
     {"enable-data-reduction-proxy-carrier-test",
      IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME,
      IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION, kOsAndroid,

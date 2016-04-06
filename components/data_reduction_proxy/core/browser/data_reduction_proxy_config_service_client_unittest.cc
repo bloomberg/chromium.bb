@@ -344,38 +344,25 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfigServiceClientTest);
 };
 
-// Tests the interaction of client config with dev rollout and QUIC field trial.
-TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
+// Tests the interaction of client config with QUIC field trial.
+TEST_F(DataReductionProxyConfigServiceClientTest, QuicFieldTrial) {
   Init(true);
   const struct {
-    bool enable_dev;
     bool enable_quic;
     bool enable_trusted_spdy_proxy_field_trial;
     std::string expected_primary_proxy;
     std::string expected_fallback_proxy;
     net::ProxyServer::Scheme expected_primary_proxy_scheme;
   } tests[] = {
-      {false, false, false, kSuccessOrigin, kSuccessFallback,
+      {false, false, kSuccessOrigin, kSuccessFallback,
        net::ProxyServer::SCHEME_HTTPS},
-      {false, false, true, kSuccessOrigin, kSuccessFallback,
+      {false, true, kSuccessOrigin, kSuccessFallback,
        net::ProxyServer::SCHEME_HTTPS},
-      {false, true, true, kSuccessOrigin, kSuccessFallback,
-       net::ProxyServer::SCHEME_QUIC},
-      {true, false, true, TestDataReductionProxyParams::DefaultDevOrigin(),
-       TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
-       net::ProxyServer::SCHEME_HTTPS},
-      {true, true, true, TestDataReductionProxyParams::DefaultDevOrigin(),
-       TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
+      {true, true, kSuccessOrigin, kSuccessFallback,
        net::ProxyServer::SCHEME_QUIC},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    if (tests[i].enable_dev) {
-      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      command_line->AppendSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyDev);
-    }
-
     base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
     base::FieldTrialList::CreateFieldTrial(
         params::GetTrustedSpdyProxyFieldTrialName(),

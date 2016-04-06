@@ -107,10 +107,6 @@ bool WarnIfNoDataReductionProxy();
 // proxy server as quic://proxy.googlezip.net.
 bool IsIncludedInQuicFieldTrial();
 
-// Returns true if dev rollout is enabled on this client either through command
-// line switch or as a part of field trial.
-bool IsDevRolloutEnabled();
-
 std::string GetQuicFieldTrialName();
 
 // Returns true if the Data Reduction Proxy config client should be used.
@@ -215,11 +211,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   bool holdback() const override;
 
   bool quic_enabled() const { return quic_enabled_; }
-
-  // Returns the corresponding string from preprocessor constants if defined,
-  // and an empty string otherwise.
-  virtual std::string GetDefaultDevOrigin() const;
-  virtual std::string GetDefaultDevFallbackOrigin() const;
 
  protected:
   // Test constructor that optionally won't call Init();

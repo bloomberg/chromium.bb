@@ -6,8 +6,6 @@
 
 namespace {
 // Test values to replace the values specified in preprocessor defines.
-static const char kDefaultDevOrigin[] = "https://dev.net:443";
-static const char kDefaultDevFallbackOrigin[] = "dev.net:80";
 static const char kDefaultOrigin[] = "origin.net:80";
 static const char kDefaultFallbackOrigin[] = "fallback.net:80";
 static const char kDefaultSSLOrigin[] = "ssl.net:1080";
@@ -37,14 +35,6 @@ void TestDataReductionProxyParams::SetProxiesForHttp(
   proxies_for_http_ = proxies;
 }
 // Test values to replace the values specified in preprocessor defines.
-std::string TestDataReductionProxyParams::DefaultDevOrigin() {
-  return kDefaultDevOrigin;
-}
-
-std::string TestDataReductionProxyParams::DefaultDevFallbackOrigin() {
-  return kDefaultDevFallbackOrigin;
-}
-
 std::string TestDataReductionProxyParams::DefaultOrigin() {
   return kDefaultOrigin;
 }
@@ -75,17 +65,6 @@ std::string TestDataReductionProxyParams::FlagSSLOrigin() {
 
 std::string TestDataReductionProxyParams::FlagSecureProxyCheckURL() {
   return kFlagSecureProxyCheckURL;
-}
-
-std::string TestDataReductionProxyParams::GetDefaultDevOrigin() const {
-  return GetDefinition(
-      TestDataReductionProxyParams::HAS_DEV_ORIGIN, kDefaultDevOrigin);
-}
-
-std::string TestDataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
-  return GetDefinition(
-      TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-      kDefaultDevFallbackOrigin);
 }
 
 std::string TestDataReductionProxyParams::GetDefaultOrigin() const {

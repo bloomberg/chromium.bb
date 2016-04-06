@@ -472,16 +472,6 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   std::vector<net::ProxyServer> proxies =
       GetProxiesForHTTP(config.proxy_config());
 
-  if (params_ && params::IsDevRolloutEnabled()) {
-    // If dev rollout is enabled, proxies returned by client config API are
-    // discarded.
-    proxies.clear();
-    proxies.push_back(net::ProxyServer::FromURI(params_->GetDefaultDevOrigin(),
-                                                net::ProxyServer::SCHEME_HTTP));
-    proxies.push_back(net::ProxyServer::FromURI(
-        params_->GetDefaultDevFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
-  }
-
   if (proxies.empty())
     return false;
 

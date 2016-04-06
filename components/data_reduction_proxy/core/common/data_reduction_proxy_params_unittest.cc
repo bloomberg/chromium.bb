@@ -71,21 +71,6 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING);
   CheckParams(params, true, true, true, true);
-  CheckValues(params, TestDataReductionProxyParams::DefaultDevOrigin(),
-              TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultSSLOrigin(),
-              TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
-}
-
-TEST_F(DataReductionProxyParamsTest, NoDevOrigin) {
-  TestDataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING &
-      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
-  CheckParams(params, true, true, true, true);
   CheckValues(params, TestDataReductionProxyParams::DefaultOrigin(),
               TestDataReductionProxyParams::DefaultFallbackOrigin(),
               TestDataReductionProxyParams::DefaultSSLOrigin(),
@@ -142,65 +127,22 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       {true, true, true, TestDataReductionProxyParams::HAS_NOTHING, true},
       {true, false, true, TestDataReductionProxyParams::HAS_NOTHING, true},
       {false, true, true, TestDataReductionProxyParams::HAS_NOTHING, false},
-      {true, true, true, TestDataReductionProxyParams::HAS_ORIGIN, true},
-      {true,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-       false},
-      {true,
-       false,
-       true,
-       TestDataReductionProxyParams::HAS_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-       false},
-      {false,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-       false},
-      {true,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_DEV_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+      {true, true, true, TestDataReductionProxyParams::HAS_ORIGIN, false},
+      {true, false, true, TestDataReductionProxyParams::HAS_ORIGIN, false},
+      {false, true, true, TestDataReductionProxyParams::HAS_ORIGIN, false},
+      {true, true, true, TestDataReductionProxyParams::HAS_NOTHING, true},
+      {true, false, true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
        true},
-      {true,
-       false,
-       true,
-       TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
-       true},
-      {false,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
+      {false, true, true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
        false},
-      {true,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN |
-           TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+      {true, true, true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
        false},
-      {true,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
-       false},
-      {true,
-       false,
-       true,
-       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
-       false},
-      {false,
-       true,
-       true,
-       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
-       false},
+      {true, true, true,
+       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
+      {true, false, true,
+       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
+      {false, true, true,
+       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
       {true, true, true, TestDataReductionProxyParams::HAS_SSL_ORIGIN, true},
       {true, false, true, TestDataReductionProxyParams::HAS_SSL_ORIGIN, true},
       {false, true, true, TestDataReductionProxyParams::HAS_SSL_ORIGIN, false},
