@@ -420,8 +420,8 @@
         {
           'name': 'NetworkPredictionWifiOnly',
           'value': 1,
-          'caption': '''Predict network actions on any network that is not
-          cellular''',
+          'caption': '''Predict network actions on any network that is not cellular.
+          (Deprecated in 50, removed in 52. After 52, if value 1 is set, it will be treated as 0 - predict network actions on any network connection.)''',
         },
         {
           'name': 'NetworkPredictionNever',
