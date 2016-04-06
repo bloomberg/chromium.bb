@@ -70,7 +70,7 @@ void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, Pa
 void MainThreadTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
     if (!task->taskNameForInstrumentation().isEmpty())
-        InspectorInstrumentation::didPostExecutionContextTask(m_context, task.get());
+        InspectorInstrumentation::asyncTaskScheduled(m_context, task->taskNameForInstrumentation(), task.get());
     postTaskInternal(location, task, false);
 }
 
@@ -86,12 +86,8 @@ void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool i
         return;
     }
 
-    const bool instrumenting = !isInspectorTask && !task->taskNameForInstrumentation().isEmpty();
-    if (instrumenting)
-        InspectorInstrumentation::willPerformExecutionContextTask(m_context, task.get());
+    InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(), !isInspectorTask);
     task->performTask(m_context);
-    if (instrumenting)
-        InspectorInstrumentation::didPerformExecutionContextTask(m_context);
 }
 
 void MainThreadTaskRunner::suspend()
@@ -116,11 +112,8 @@ void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
         OwnPtr<ExecutionContextTask> task = m_pendingTasks[0].release();
         m_pendingTasks.remove(0);
         const bool instrumenting = !task->taskNameForInstrumentation().isEmpty();
-        if (instrumenting)
-            InspectorInstrumentation::willPerformExecutionContextTask(m_context, task.get());
+        InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(), instrumenting);
         task->performTask(m_context);
-        if (instrumenting)
-            InspectorInstrumentation::didPerformExecutionContextTask(m_context);
     }
 }
 

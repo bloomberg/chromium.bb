@@ -68,7 +68,7 @@ interface InspectorInstrumentation {
 #include "core/dom/PseudoElement.h"
 
     // We should call PageDebuggerAgent method first otherwise this method resets script cache and removes scripts executed by other agents.
-    [PageDebugger, Page, Animation]
+    [Page, Animation]
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
     [DOMDebugger, Inline=FastReturn]
@@ -131,10 +131,10 @@ interface InspectorInstrumentation {
     [DOMDebugger, Inline=FastReturn]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
+    [DOMDebugger, Inline=FastReturn]
     void didInstallTimer([Keep] ExecutionContext*, int timerId, int timeout, bool singleShot);
 
-    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
+    [DOMDebugger, Inline=FastReturn]
     void didRemoveTimer([Keep] ExecutionContext*, int timerId);
 
     [Debugger, Inline=FastReturn]
@@ -143,49 +143,19 @@ interface InspectorInstrumentation {
     [Debugger, Inline=FastReturn]
     void didExecuteScript(const InspectorInstrumentationCookie&);
 
-    [AsyncCallTracker, Inline=FastReturn]
-    void didEnqueueEvent([Keep] EventTarget*, Event*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didRemoveEvent([Keep] EventTarget*, Event*);
-
-    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
+    [DOMDebugger, Inline=FastReturn]
     InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
 
-    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
+    [DOMDebugger, Inline=FastReturn]
     void didHandleEvent(const InspectorInstrumentationCookie&);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didEnqueueMutationRecord([Keep] ExecutionContext*, MutationObserver*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didClearAllMutationRecords([Keep] ExecutionContext*, MutationObserver*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void willDeliverMutationRecords([Keep] ExecutionContext*, MutationObserver*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didDeliverMutationRecords(ExecutionContext*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didPostExecutionContextTask([Keep] ExecutionContext*, ExecutionContextTask*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didKillAllExecutionContextTasks([Keep] ExecutionContext*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void willPerformExecutionContextTask([Keep] ExecutionContext*, ExecutionContextTask*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didPerformExecutionContextTask(ExecutionContext*);
 
     [DOMDebugger, Inline=FastReturn]
     void willEvaluateScript(ExecutionContext*);
 
-    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
+    [DOMDebugger, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
 
-    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
+    [DOMDebugger, Inline=FastReturn]
     void didFireTimer(const InspectorInstrumentationCookie&);
 
     [Page, Inline=FastReturn]
@@ -193,9 +163,6 @@ interface InspectorInstrumentation {
 
     [Page, Inline=FastReturn]
     void didResizeMainFrame(LocalFrame*);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didDispatchXHRLoadendEvent(ExecutionContext*, XMLHttpRequest*);
 
     [LayerTree, Inline=FastReturn]
     void didPaint([Keep] LayoutObject*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
@@ -254,7 +221,7 @@ interface InspectorInstrumentation {
     [Resource]
     void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
 
-    [AsyncCallTracker, Resource]
+    [Resource]
     void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap& headers, bool includeCredentials);
 
     [Resource]
@@ -323,18 +290,15 @@ interface InspectorInstrumentation {
     [Inline=Forward]
     void removedResourceFromMemoryCache(Resource* cachedResource);
 
-    [AsyncCallTracker, DOMDebugger]
-    void didRequestAnimationFrame([Keep] ExecutionContext*, int callbackId);
-
-    [AsyncCallTracker, DOMDebugger]
-    void didCancelAnimationFrame([Keep] ExecutionContext*, int callbackId);
-
-    [AsyncCallTracker, DOMDebugger]
-    InspectorInstrumentationCookie willFireAnimationFrame([Keep] ExecutionContext*, int callbackId);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void didFireAnimationFrame(const InspectorInstrumentationCookie&);
-
+    [DOMDebugger] 
+    void didRequestAnimationFrame([Keep] ExecutionContext*, int callbackId);   
+   
+    [DOMDebugger]    
+    void didCancelAnimationFrame([Keep] ExecutionContext*, int callbackId);    
+   
+    [DOMDebugger]    
+    void willFireAnimationFrame([Keep] ExecutionContext*, int callbackId);   
+    
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
 
@@ -389,23 +353,17 @@ interface InspectorInstrumentation {
     [DOM, Inline=FastReturn]
     void pseudoElementDestroyed([Keep] PseudoElement*);
 
-    [AsyncCallTracker, Inline=FastReturn]
-    int traceAsyncOperationStarting([Keep] ExecutionContext*, const String& operationName);
+    [Debugger, Inline=FastReturn]
+    void asyncTaskScheduled(ExecutionContext*, const String& name, void*);
 
-    [AsyncCallTracker, Inline=FastReturn]
-    int traceAsyncOperationStarting([Keep] ExecutionContext*, const String& operationName, int prevOperationId);
+    [Debugger, Inline=FastReturn]
+    void asyncTaskScheduled(ExecutionContext*, const String& name, void*, bool recurring);
 
-    [AsyncCallTracker, Inline=FastReturn]
-    void traceAsyncOperationCompleted([Keep] ExecutionContext*, int operationId);
+    [Debugger, Inline=FastReturn]
+    void asyncTaskCanceled(ExecutionContext*, void*);
 
-    [AsyncCallTracker, Inline=FastReturn]
-    InspectorInstrumentationCookie traceAsyncOperationCompletedCallbackStarting([Keep] ExecutionContext*, int operationId);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    InspectorInstrumentationCookie traceAsyncCallbackStarting([Keep] ExecutionContext*, int operationId);
-
-    [AsyncCallTracker, Inline=FastReturn]
-    void traceAsyncCallbackCompleted(const InspectorInstrumentationCookie&);
+    [Debugger, Inline=FastReturn]
+    void allAsyncTasksCanceled(ExecutionContext*);
 
     [Animation, Inline=FastReturn]
     void didCreateAnimation(Document*, unsigned);

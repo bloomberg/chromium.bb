@@ -13,7 +13,6 @@
 #include "platform/v8_inspector/MuteConsoleScope.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
-#include "platform/v8_inspector/V8AsyncCallTracker.h"
 #include "platform/v8_inspector/V8InspectorConnectionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
@@ -36,6 +35,12 @@ using blink::protocol::Runtime::ScriptId;
 using blink::protocol::Runtime::StackTrace;
 using blink::protocol::Runtime::RemoteObject;
 
+namespace {
+static const char v8AsyncTaskEventEnqueue[] = "enqueue";
+static const char v8AsyncTaskEventWillHandle[] = "willHandle";
+static const char v8AsyncTaskEventDidHandle[] = "didHandle";
+}
+
 namespace blink {
 
 namespace DebuggerAgentState {
@@ -56,8 +61,6 @@ static const char skipAllPauses[] = "skipAllPauses";
 static const int maxSkipStepFrameCount = 128;
 
 const char V8DebuggerAgent::backtraceObjectGroup[] = "backtrace";
-
-const int V8DebuggerAgent::unknownAsyncOperationId = 0;
 
 static String16 breakpointIdSuffix(V8DebuggerAgentImpl::BreakpointSource source)
 {
@@ -177,17 +180,9 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(V8InspectorConnectionImpl* connection, 
     , m_recursionLevelForStepOut(0)
     , m_recursionLevelForStepFrame(0)
     , m_skipAllPauses(false)
-    , m_lastAsyncOperationId(0)
     , m_maxAsyncCallStackDepth(0)
-    , m_currentAsyncCallChain(nullptr)
-    , m_nestedAsyncCallCount(0)
-    , m_currentAsyncOperationId(unknownAsyncOperationId)
-    , m_pendingTraceAsyncOperationCompleted(false)
 {
     m_connection->setDebuggerAgent(this);
-
-    // FIXME: remove once InjectedScriptManager moves to v8.
-    m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
     clearBreakDetails();
 }
 
@@ -263,11 +258,10 @@ void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
 {
     if (depth <= 0) {
         m_maxAsyncCallStackDepth = 0;
-        resetAsyncCallTracker();
+        allAsyncTasksCanceled();
     } else {
         m_maxAsyncCallStackDepth = depth;
     }
-    m_v8AsyncCallTracker->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
 void V8DebuggerAgentImpl::setInspectorState(protocol::DictionaryValue* state)
@@ -845,13 +839,22 @@ void V8DebuggerAgentImpl::cancelPauseOnNextStatement()
 
 bool V8DebuggerAgentImpl::v8AsyncTaskEventsEnabled() const
 {
-    return trackingAsyncCalls();
+    return m_maxAsyncCallStackDepth;
 }
 
 void V8DebuggerAgentImpl::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context, const String16& eventType, const String16& eventName, int id)
 {
-    ASSERT(trackingAsyncCalls());
-    m_v8AsyncCallTracker->didReceiveV8AsyncTaskEvent(context, eventType, eventName, id);
+    ASSERT(m_maxAsyncCallStackDepth);
+    // The scopes for the ids are defined by the eventName namespaces. There are currently two namespaces: "Object." and "Promise.".
+    void* ptr = reinterpret_cast<void*>(id * 4 + (eventName[0] == 'P' ? 2 : 0) + 1);
+    if (eventType == v8AsyncTaskEventEnqueue)
+        asyncTaskScheduled(eventName, ptr, false);
+    else if (eventType == v8AsyncTaskEventWillHandle)
+        asyncTaskStarted(ptr);
+    else if (eventType == v8AsyncTaskEventDidHandle)
+        asyncTaskFinished(ptr);
+    else
+        ASSERT_NOT_REACHED();
 }
 
 void V8DebuggerAgentImpl::pause(ErrorString* errorString)
@@ -1049,98 +1052,75 @@ void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int d
     internalSetAsyncCallStackDepth(depth);
 }
 
-int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String16& description)
+void V8DebuggerAgentImpl::asyncTaskScheduled(const String16& taskName, void* task, bool recurring)
 {
-    v8::HandleScope scope(m_isolate);
-    OwnPtr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, V8StackTrace::maxCallStackSizeToCapture, description);
-
-    do {
-        ++m_lastAsyncOperationId;
-        if (m_lastAsyncOperationId <= 0)
-            m_lastAsyncOperationId = 1;
-    } while (m_asyncOperations.contains(m_lastAsyncOperationId));
-
-    if (chain)
-        m_asyncOperations.set(m_lastAsyncOperationId, chain.release());
-
-    return m_lastAsyncOperationId;
-}
-
-void V8DebuggerAgentImpl::traceAsyncCallbackStarting(int operationId)
-{
-    ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
-    V8StackTraceImpl* chain = operationId > 0 ? m_asyncOperations.get(operationId) : nullptr;
-    // FIXME: extract recursion check into a delegate.
-    bool hasRecursionLevel = m_debugger->client()->hasRecursionLevel();
-    if (chain && !hasRecursionLevel) {
-        // There can be still an old m_currentAsyncCallChain set if we start running Microtasks
-        // right after executing a JS callback but before the corresponding traceAsyncCallbackCompleted().
-        // In this case just call traceAsyncCallbackCompleted() now, and the subsequent ones will be ignored.
-        //
-        // The nested levels count may be greater than 1, for example, when events are guarded via custom
-        // traceAsync* calls, like in window.postMessage(). In this case there will be a willHandleEvent
-        // instrumentation with unknownAsyncOperationId bumping up the nested levels count.
-        if (m_currentAsyncCallChain) {
-            ASSERT(m_nestedAsyncCallCount >= 1);
-            m_nestedAsyncCallCount = 1;
-            traceAsyncCallbackCompleted();
-        }
-
-        // Current AsyncCallChain corresponds to the bottommost JS call frame.
-        ASSERT(!m_currentAsyncCallChain);
-        m_currentAsyncCallChain = chain->clone();
-        m_currentAsyncOperationId = operationId;
-        m_pendingTraceAsyncOperationCompleted = false;
-        m_nestedAsyncCallCount = 1;
-    } else {
-        if (m_currentAsyncCallChain)
-            ++m_nestedAsyncCallCount;
-    }
-}
-
-void V8DebuggerAgentImpl::traceAsyncCallbackCompleted()
-{
-    if (!m_nestedAsyncCallCount)
+    if (!m_maxAsyncCallStackDepth)
         return;
-    ASSERT(m_currentAsyncCallChain);
-    --m_nestedAsyncCallCount;
-    if (!m_nestedAsyncCallCount)
-        clearCurrentAsyncOperation();
-}
-
-void V8DebuggerAgentImpl::traceAsyncOperationCompleted(int operationId)
-{
-    ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
-    if (operationId > 0) {
-        if (m_currentAsyncOperationId == operationId) {
-            if (m_pendingTraceAsyncOperationCompleted) {
-                m_pendingTraceAsyncOperationCompleted = false;
-            } else {
-                // Delay traceAsyncOperationCompleted() until the last async callback (being currently executed) is done.
-                m_pendingTraceAsyncOperationCompleted = true;
-                return;
-            }
-        }
-        m_asyncOperations.remove(operationId);
+    v8::HandleScope scope(m_isolate);
+    OwnPtr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, V8StackTrace::maxCallStackSizeToCapture, taskName);
+    if (chain) {
+        m_asyncTaskStacks.set(task, chain.release());
+        if (recurring)
+            m_recurringTasks.add(task);
     }
 }
 
-void V8DebuggerAgentImpl::clearCurrentAsyncOperation()
+void V8DebuggerAgentImpl::asyncTaskCanceled(void* task)
 {
-    if (m_pendingTraceAsyncOperationCompleted && m_currentAsyncOperationId != unknownAsyncOperationId)
-        traceAsyncOperationCompleted(m_currentAsyncOperationId);
-
-    m_currentAsyncOperationId = unknownAsyncOperationId;
-    m_pendingTraceAsyncOperationCompleted = false;
-    m_nestedAsyncCallCount = 0;
-    m_currentAsyncCallChain.clear();
+    if (!m_maxAsyncCallStackDepth)
+        return;
+    m_asyncTaskStacks.remove(task);
+    m_recurringTasks.remove(task);
 }
 
-void V8DebuggerAgentImpl::resetAsyncCallTracker()
+void V8DebuggerAgentImpl::asyncTaskStarted(void* task)
 {
-    clearCurrentAsyncOperation();
-    m_v8AsyncCallTracker->resetAsyncOperations();
-    m_asyncOperations.clear();
+    // Not enabled, return.
+    if (!m_maxAsyncCallStackDepth)
+        return;
+
+#if ENABLE(ASSERT)
+    m_currentTasks.append(task);
+#endif
+
+    V8StackTraceImpl* stack = m_asyncTaskStacks.get(task);
+    // Needs to support following order of events:
+    // - asyncTaskScheduled
+    //   <-- attached here -->
+    // - asyncTaskStarted
+    // - asyncTaskCanceled <-- canceled before finished
+    //   <-- async stack requested here -->
+    // - asyncTaskFinished
+    m_currentStacks.append(stack ? stack->clone() : nullptr);
+}
+
+void V8DebuggerAgentImpl::asyncTaskFinished(void* task)
+{
+    if (!m_maxAsyncCallStackDepth)
+        return;
+    // We could start instrumenting half way and the stack is empty.
+    if (!m_currentStacks.size())
+        return;
+
+#if ENABLE(ASSERT)
+    ASSERT(m_currentTasks.last() == task);
+    m_currentTasks.removeLast();
+#endif
+
+    m_currentStacks.removeLast();
+    if (!m_recurringTasks.contains(task))
+        m_asyncTaskStacks.remove(task);
+}
+
+void V8DebuggerAgentImpl::allAsyncTasksCanceled()
+{
+    m_asyncTaskStacks.clear();
+    m_recurringTasks.clear();
+    m_currentStacks.clear();
+
+#if ENABLE(ASSERT)
+    m_currentTasks.clear();
+#endif
 }
 
 void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
@@ -1292,15 +1272,17 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
 
 PassOwnPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
 {
-    if (m_pausedContext.IsEmpty() || !trackingAsyncCalls() || !m_currentAsyncCallChain)
+    if (m_pausedContext.IsEmpty() || !m_maxAsyncCallStackDepth || !m_currentStacks.size() || !m_currentStacks.last())
         return nullptr;
 
-    return m_currentAsyncCallChain->buildInspectorObjectForTail(this);
+    return m_currentStacks.last()->buildInspectorObjectForTail(this);
 }
 
 V8StackTraceImpl* V8DebuggerAgentImpl::currentAsyncCallChain()
 {
-    return trackingAsyncCalls() ? m_currentAsyncCallChain.get() : nullptr;
+    if (!m_currentStacks.size())
+        return nullptr;
+    return m_currentStacks.last().get();
 }
 
 void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)
@@ -1510,7 +1492,7 @@ void V8DebuggerAgentImpl::reset()
     m_scripts.clear();
     m_blackboxedPositions.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
-    resetAsyncCallTracker();
+    allAsyncTasksCanceled();
 }
 
 } // namespace blink

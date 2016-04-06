@@ -93,7 +93,7 @@ public:
         , m_referrerPolicy(referrerPolicy)
     {
         ExecutionContext& context = m_loader->element()->document();
-        m_operationId = InspectorInstrumentation::traceAsyncOperationStarting(&context, "Load image");
+        InspectorInstrumentation::asyncTaskScheduled(&context, "Image", this);
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         v8::HandleScope scope(isolate);
         // If we're invoked from C++ without a V8 context on the stack, we should
@@ -115,14 +115,13 @@ public:
         if (!m_loader)
             return;
         ExecutionContext& context = m_loader->element()->document();
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(&context, m_operationId);
+        InspectorInstrumentation::AsyncTask asyncTask(&context, this);
         if (m_scriptState->contextIsValid()) {
             ScriptState::Scope scope(m_scriptState.get());
             m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
         } else {
             m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
         }
-        InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
     void clearLoader()
@@ -143,7 +142,6 @@ private:
     RefPtr<ScriptState> m_scriptState;
     WeakPtrFactory<Task> m_weakFactory;
     ReferrerPolicy m_referrerPolicy;
-    int m_operationId;
 };
 
 ImageLoader::ImageLoader(Element* element)

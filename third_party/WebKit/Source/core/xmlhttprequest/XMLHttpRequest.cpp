@@ -856,11 +856,15 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
         return;
     }
 
+    ASSERT(getExecutionContext());
+    ExecutionContext& executionContext = *this->getExecutionContext();
+
     // The presence of upload event listeners forces us to use preflighting because POSTing to an URL that does not
     // permit cross origin requests should look exactly like POSTing to an URL that does not respond at all.
     // Also, only async requests support upload progress events.
     bool uploadEvents = false;
     if (m_async) {
+        InspectorInstrumentation::asyncTaskScheduled(&executionContext, "XMLHttpRequest.send", this, true);
         dispatchProgressEvent(EventTypeNames::loadstart, 0, 0);
         if (httpBody && m_upload) {
             uploadEvents = m_upload->hasEventListeners();
@@ -873,9 +877,6 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     // We also remember whether upload events should be allowed for this request in case the upload listeners are
     // added after the request is started.
     m_uploadEventsAllowed = m_sameOriginRequest || uploadEvents || !FetchUtils::isSimpleRequest(m_method, m_requestHeaders);
-
-    ASSERT(getExecutionContext());
-    ExecutionContext& executionContext = *this->getExecutionContext();
 
     ResourceRequest request(m_url);
     request.setHTTPMethod(m_method);
@@ -1068,10 +1069,11 @@ void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type, long long r
     unsigned long long loaded = receivedLength >= 0 ? static_cast<unsigned long long>(receivedLength) : 0;
     unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
+    ExecutionContext* context = getExecutionContext();
+    InspectorInstrumentation::AsyncTask asyncTask(context, this, m_async);
     m_progressEventThrottle->dispatchProgressEvent(type, lengthComputable, loaded, total);
-
-    if (type == EventTypeNames::loadend)
-        InspectorInstrumentation::didDispatchXHRLoadendEvent(getExecutionContext(), this);
+    if (m_async && type == EventTypeNames::loadend)
+        InspectorInstrumentation::asyncTaskCanceled(context, this);
 }
 
 void XMLHttpRequest::dispatchProgressEventFromSnapshot(const AtomicString& type)

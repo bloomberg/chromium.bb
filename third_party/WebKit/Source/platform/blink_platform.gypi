@@ -1049,8 +1049,6 @@
       'v8_inspector/ScriptBreakpoint.h',
       'v8_inspector/RemoteObjectId.cpp',
       'v8_inspector/RemoteObjectId.h',
-      'v8_inspector/V8AsyncCallTracker.cpp',
-      'v8_inspector/V8AsyncCallTracker.h',
       'v8_inspector/V8DebuggerAgentImpl.cpp',
       'v8_inspector/V8DebuggerAgentImpl.h',
       'v8_inspector/V8DebuggerImpl.cpp',

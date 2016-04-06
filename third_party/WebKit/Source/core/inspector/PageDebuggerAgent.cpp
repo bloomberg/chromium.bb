@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -104,14 +103,6 @@ void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
         ErrorString error;
         resume(&error);
     }
-}
-
-void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
-{
-    // FIXME: what about nested objects?
-    if (frame != m_inspectedFrames->root())
-        return;
-    m_asyncCallTracker->resetAsyncOperations();
 }
 
 } // namespace blink

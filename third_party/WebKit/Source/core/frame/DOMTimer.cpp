@@ -76,6 +76,8 @@ DOMTimer::DOMTimer(ExecutionContext* context, ScheduledAction* action, int inter
     if (shouldForwardUserGesture(interval, m_nestingLevel))
         m_userGestureToken = UserGestureIndicator::currentToken();
 
+    InspectorInstrumentation::asyncTaskScheduled(context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);
+
     double intervalMilliseconds = std::max(oneMillisecond, interval * oneMillisecond);
     if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
         intervalMilliseconds = minimumInterval;
@@ -107,6 +109,7 @@ void DOMTimer::fired()
 
     TRACE_EVENT1("devtools.timeline", "TimerFire", "data", InspectorTimerFireEvent::data(context, m_timeoutID));
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireTimer(context, m_timeoutID);
+    InspectorInstrumentation::AsyncTask asyncTask(context, this);
 
     // Simple case for non-one-shot timers.
     if (isActive()) {
@@ -141,6 +144,7 @@ void DOMTimer::fired()
 
 void DOMTimer::stop()
 {
+    InspectorInstrumentation::asyncTaskCanceled(getExecutionContext(), this);
     SuspendableTimer::stop();
     // Need to release JS objects potentially protected by ScheduledAction
     // because they can form circular references back to the ExecutionContext

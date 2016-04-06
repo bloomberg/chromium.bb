@@ -33,13 +33,12 @@ public:
     virtual bool enabled() = 0;
     virtual V8Debugger& debugger() = 0;
 
-    // Async call stacks implementation
-    static const int unknownAsyncOperationId;
-    virtual int traceAsyncOperationStarting(const String16& description) = 0;
-    virtual void traceAsyncCallbackStarting(int operationId) = 0;
-    virtual void traceAsyncCallbackCompleted() = 0;
-    virtual void traceAsyncOperationCompleted(int operationId) = 0;
-    virtual bool trackingAsyncCalls() const = 0;
+    // Async call stacks implementation.
+    virtual void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) = 0;
+    virtual void asyncTaskCanceled(void* task) = 0;
+    virtual void asyncTaskStarted(void* task) = 0;
+    virtual void asyncTaskFinished(void* task) = 0;
+    virtual void allAsyncTasksCanceled() = 0;
 };
 
 } // namespace blink

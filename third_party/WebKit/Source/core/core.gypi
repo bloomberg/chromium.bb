@@ -1784,8 +1784,6 @@
             'imagebitmap/ImageBitmapFactories.h',
             'imagebitmap/ImageBitmapSource.cpp',
             'imagebitmap/ImageBitmapSource.h',
-            'inspector/AsyncCallTracker.cpp',
-            'inspector/AsyncCallTracker.h',
             'inspector/AsyncOperationMap.h',
             'inspector/ConsoleAPITypes.h',
             'inspector/ConsoleMessage.cpp',

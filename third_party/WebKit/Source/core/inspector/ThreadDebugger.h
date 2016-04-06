@@ -26,7 +26,6 @@ public:
     void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
-    bool hasRecursionLevel() override;
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
 

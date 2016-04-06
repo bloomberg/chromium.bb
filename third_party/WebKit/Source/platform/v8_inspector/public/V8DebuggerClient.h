@@ -26,7 +26,6 @@ public:
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
     virtual String16 valueSubtype(v8::Local<v8::Value>) = 0;
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;
-    virtual bool hasRecursionLevel() = 0;
     virtual bool isExecutionAllowed() = 0;
     virtual double currentTimeMS() = 0;
 };

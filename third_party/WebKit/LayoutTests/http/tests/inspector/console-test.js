@@ -119,6 +119,7 @@ InspectorTest.dumpConsoleMessagesIntoArray = function(printOriginatingCommand, d
                 result.push(classNames.join(" > "));
         } else {
             var messageText = formatter(element, message);
+            messageText = messageText.replace(/VM\d+/g, "VM");
             result.push(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 

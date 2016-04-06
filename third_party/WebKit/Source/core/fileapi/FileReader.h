@@ -134,7 +134,6 @@ private:
     OwnPtr<FileReaderLoader> m_loader;
     Member<FileError> m_error;
     double m_lastProgressNotificationTimeMS;
-    int m_asyncOperationId;
 };
 
 } // namespace blink

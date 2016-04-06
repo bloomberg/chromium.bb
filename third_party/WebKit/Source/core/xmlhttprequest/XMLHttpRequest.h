@@ -140,6 +140,7 @@ public:
     void sendForInspectorXHRReplay(PassRefPtr<EncodedFormData>, ExceptionState&);
 
     XMLHttpRequestUpload* upload();
+    bool isAsync() { return m_async; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 

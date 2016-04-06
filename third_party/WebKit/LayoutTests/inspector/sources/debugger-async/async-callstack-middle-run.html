@@ -12,7 +12,7 @@ function testFunction()
 function timeoutOffCapturing()
 {
     setTimeout(timeoutOffCapturing2, 0);
-    debugger; // Will start capturing async stacks from this point.
+    debugger;
     setTimeout(timeoutOnCapturing, 0);
 }
 

@@ -56,7 +56,6 @@ public:
     void restore() final;
 
     void didStartProvisionalLoad(LocalFrame*);
-    void didClearDocumentOfWindowObject(LocalFrame*);
 
 private:
     PageDebuggerAgent(InspectedFrames*, V8RuntimeAgent*);

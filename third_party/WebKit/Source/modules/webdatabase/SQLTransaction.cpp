@@ -65,7 +65,7 @@ SQLTransaction::SQLTransaction(Database* db, SQLTransactionCallback* callback,
     , m_readOnly(readOnly)
 {
     ASSERT(m_database);
-    m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(db->getExecutionContext(), "SQLTransaction");
+    InspectorInstrumentation::asyncTaskScheduled(db->getExecutionContext(), "SQLTransaction", this, true);
 }
 
 SQLTransaction::~SQLTransaction()
@@ -150,13 +150,12 @@ SQLTransactionState SQLTransaction::nextStateForTransactionError()
 SQLTransactionState SQLTransaction::deliverTransactionCallback()
 {
     bool shouldDeliverErrorCallback = false;
+    InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
 
     // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
     if (SQLTransactionCallback* callback = m_callback.release()) {
         m_executeSqlAllowed = true;
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_database->getExecutionContext(), m_asyncOperationId);
         shouldDeliverErrorCallback = !callback->handleEvent(this);
-        InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
         m_executeSqlAllowed = false;
     }
 
@@ -173,7 +172,8 @@ SQLTransactionState SQLTransaction::deliverTransactionCallback()
 
 SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_database->getExecutionContext(), m_asyncOperationId);
+    InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
+    InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(), this);
 
     // Spec 4.3.2.10: If exists, invoke error callback with the last
     // error to have occurred in this transaction.
@@ -192,7 +192,6 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
         m_transactionError = nullptr;
     }
 
-    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     clearCallbacks();
 
     // Spec 4.3.2.10: Rollback the transaction.
@@ -232,13 +231,13 @@ SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 
 SQLTransactionState SQLTransaction::deliverSuccessCallback()
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_database->getExecutionContext(), m_asyncOperationId);
+    InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
+    InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(), this);
 
     // Spec 4.3.2.8: Deliver success callback.
     if (VoidCallback* successCallback = m_successCallback.release())
         successCallback->handleEvent();
 
-    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     clearCallbacks();
 
     // Schedule a "post-success callback" step to return control to the database thread in case there

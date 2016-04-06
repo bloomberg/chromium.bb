@@ -69,13 +69,14 @@ public:
             m_eventQueue->removeEvent(m_event.get());
     }
 
-    void dispatchEvent(ExecutionContext*, RawPtr<Event> prpEvent)
+    void dispatchEvent(ExecutionContext* context, RawPtr<Event> prpEvent)
     {
         // Stash the event on the stack in a RawPtr; trying to do this
         // in a single line causes an optimization bug with MSVC. MSVC generates code
         // that passes the event arg (forcing RawPtr to be released)
         // before the target is queried.
         RawPtr<Event> event = prpEvent;
+        InspectorInstrumentation::AsyncTask asyncTask(context, event);
         event->target()->dispatchEvent(event);
     }
 
@@ -109,7 +110,7 @@ private:
 
 void WorkerEventQueue::removeEvent(Event* event)
 {
-    InspectorInstrumentation::didRemoveEvent(event->target(), event);
+    InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
     m_eventTaskMap.remove(event);
 }
 
@@ -117,7 +118,7 @@ bool WorkerEventQueue::enqueueEvent(Event* event)
 {
     if (m_isClosed)
         return false;
-    InspectorInstrumentation::didEnqueueEvent(event->target(), event);
+    InspectorInstrumentation::asyncTaskScheduled(event->target()->getExecutionContext(), event->type(), event);
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event, task.get());
     m_executionContext->postTask(BLINK_FROM_HERE, task.release());
@@ -140,7 +141,7 @@ void WorkerEventQueue::close()
     for (const auto& entry : m_eventTaskMap) {
         Event* event = entry.key.get();
         EventDispatcherTask* task = entry.value;
-        InspectorInstrumentation::didRemoveEvent(event->target(), event);
+        InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
         task->cancel();
     }
     m_eventTaskMap.clear();

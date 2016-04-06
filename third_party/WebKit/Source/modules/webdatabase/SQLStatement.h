@@ -64,7 +64,6 @@ private:
 
     Member<SQLStatementCallback> m_statementCallback;
     Member<SQLStatementErrorCallback> m_statementErrorCallback;
-    int m_asyncOperationId;
 };
 
 } // namespace blink

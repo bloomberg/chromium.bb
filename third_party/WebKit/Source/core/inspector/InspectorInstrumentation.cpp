@@ -58,6 +58,25 @@ PersistentHeapHashSet<WeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
 }
 
 namespace InspectorInstrumentation {
+
+AsyncTask::AsyncTask(ExecutionContext* context, void* task) : AsyncTask(context, task, true)
+{
+}
+
+AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
+    : m_instrumentingAgents(enabled ? instrumentingAgentsFor(context) : nullptr)
+    , m_task(task)
+{
+    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDebuggerAgent())
+        m_instrumentingAgents->inspectorDebuggerAgent()->asyncTaskStarted(m_task);
+}
+
+AsyncTask::~AsyncTask()
+{
+    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDebuggerAgent())
+        m_instrumentingAgents->inspectorDebuggerAgent()->asyncTaskFinished(m_task);
+}
+
 int FrontendCounter::s_frontendCounter = 0;
 
 // Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc

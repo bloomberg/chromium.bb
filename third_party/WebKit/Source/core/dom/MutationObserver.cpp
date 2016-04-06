@@ -69,8 +69,7 @@ MutationObserver::~MutationObserver()
 #if !ENABLE(OILPAN)
     ASSERT(m_registrations.isEmpty());
 #endif
-    if (!m_records.isEmpty())
-        InspectorInstrumentation::didClearAllMutationRecords(m_callback->getExecutionContext(), this);
+    cancelInspectorAsyncTasks();
 }
 
 void MutationObserver::observe(Node* node, const MutationObserverInit& observerInit, ExceptionState& exceptionState)
@@ -133,15 +132,15 @@ void MutationObserver::observe(Node* node, const MutationObserverInit& observerI
 MutationRecordVector MutationObserver::takeRecords()
 {
     MutationRecordVector records;
+    cancelInspectorAsyncTasks();
     records.swap(m_records);
-    InspectorInstrumentation::didClearAllMutationRecords(m_callback->getExecutionContext(), this);
     return records;
 }
 
 void MutationObserver::disconnect()
 {
+    cancelInspectorAsyncTasks();
     m_records.clear();
-    InspectorInstrumentation::didClearAllMutationRecords(m_callback->getExecutionContext(), this);
     MutationObserverRegistrationSet registrations(m_registrations);
     for (auto& registration : registrations) {
         // The registration may be already unregistered while iteration.
@@ -189,7 +188,7 @@ void MutationObserver::enqueueMutationRecord(RawPtr<MutationRecord> mutation)
     ASSERT(isMainThread());
     m_records.append(mutation);
     activateObserver(this);
-    InspectorInstrumentation::didEnqueueMutationRecord(m_callback->getExecutionContext(), this);
+    InspectorInstrumentation::asyncTaskScheduled(m_callback->getExecutionContext(), mutation->type(), mutation);
 }
 
 void MutationObserver::setHasTransientRegistration()
@@ -209,6 +208,12 @@ HeapHashSet<Member<Node>> MutationObserver::getObservedNodes() const
 bool MutationObserver::shouldBeSuspended() const
 {
     return m_callback->getExecutionContext() && m_callback->getExecutionContext()->activeDOMObjectsAreSuspended();
+}
+
+void MutationObserver::cancelInspectorAsyncTasks()
+{
+    for (auto& record : m_records)
+        InspectorInstrumentation::asyncTaskCanceled(m_callback->getExecutionContext(), record);
 }
 
 void MutationObserver::deliver()
@@ -231,9 +236,9 @@ void MutationObserver::deliver()
     MutationRecordVector records;
     records.swap(m_records);
 
-    InspectorInstrumentation::willDeliverMutationRecords(m_callback->getExecutionContext(), this);
+    // Report the first (earliest) stack as the async cause.
+    InspectorInstrumentation::AsyncTask asyncTask(m_callback->getExecutionContext(), records.first());
     m_callback->call(records, this);
-    InspectorInstrumentation::didDeliverMutationRecords(m_callback->getExecutionContext());
 }
 
 void MutationObserver::resumeSuspendedObservers()

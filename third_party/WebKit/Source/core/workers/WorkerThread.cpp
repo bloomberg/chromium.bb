@@ -116,11 +116,8 @@ void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isIns
         return;
     }
 
-    if (isInstrumented)
-        InspectorInstrumentation::willPerformExecutionContextTask(globalScope, task.get());
+    InspectorInstrumentation::AsyncTask asyncTask(globalScope, task.get(), isInstrumented);
     task->performTask(globalScope);
-    if (isInstrumented)
-        InspectorInstrumentation::didPerformExecutionContextTask(globalScope);
 }
 
 PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
@@ -130,7 +127,7 @@ PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<E
     if (isInstrumented) {
         // TODO(hiroshige): This doesn't work when called on the main thread.
         // https://crbug.com/588497
-        InspectorInstrumentation::didPostExecutionContextTask(workerGlobalScope(), task.get());
+        InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
     }
     return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented);
 }
@@ -347,7 +344,7 @@ void WorkerThread::terminateInternal()
     else
         terminateV8Execution();
 
-    InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
+    InspectorInstrumentation::allAsyncTasksCanceled(m_workerGlobalScope.get());
     m_inspectorTaskRunner->kill();
     backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
 }

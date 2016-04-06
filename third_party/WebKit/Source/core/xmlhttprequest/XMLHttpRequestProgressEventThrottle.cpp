@@ -119,6 +119,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(RawPtr<E
         // the previously dispatched event changes the readyState (e.g. when
         // the event handler calls xhr.abort()). In such cases a
         // readystatechange should have been already dispatched if necessary.
+        InspectorInstrumentation::AsyncTask asyncTask(m_target->getExecutionContext(), m_target, m_target->isAsync());
         m_target->dispatchEvent(event);
     }
 }
@@ -128,6 +129,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(RawPtr<E
     XMLHttpRequest::State state = m_target->readyState();
     if (m_target->readyState() == XMLHttpRequest::LOADING && m_hasDispatchedProgressProgressEvent) {
         TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data", InspectorXhrReadyStateChangeEvent::data(m_target->getExecutionContext(), m_target));
+        InspectorInstrumentation::AsyncTask asyncTask(m_target->getExecutionContext(), m_target, m_target->isAsync());
         m_target->dispatchEvent(Event::create(EventTypeNames::readystatechange));
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
     }
@@ -136,6 +138,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(RawPtr<E
         return;
 
     m_hasDispatchedProgressProgressEvent = true;
+    InspectorInstrumentation::AsyncTask asyncTask(m_target->getExecutionContext(), m_target, m_target->isAsync());
     m_target->dispatchEvent(progressEvent);
 }
 

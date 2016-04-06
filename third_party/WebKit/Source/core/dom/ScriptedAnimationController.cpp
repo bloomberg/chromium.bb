@@ -116,12 +116,11 @@ void ScriptedAnimationController::dispatchEvents(const AtomicString& eventInterf
         // FIXME: we should figure out how to make dispatchEvent properly virtual to avoid
         // special casting window.
         // FIXME: We should not fire events for nodes that are no longer in the tree.
+        InspectorInstrumentation::AsyncTask asyncTask(eventTarget->getExecutionContext(), events[i]);
         if (LocalDOMWindow* window = eventTarget->toDOMWindow())
             window->dispatchEvent(events[i], nullptr);
         else
             eventTarget->dispatchEvent(events[i]);
-
-        InspectorInstrumentation::didRemoveEvent(eventTarget, events[i].get());
     }
 }
 
@@ -170,7 +169,7 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
 
 void ScriptedAnimationController::enqueueEvent(Event* event)
 {
-    InspectorInstrumentation::didEnqueueEvent(event->target(), event);
+    InspectorInstrumentation::asyncTaskScheduled(event->target()->getExecutionContext(), event->type(), event);
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
 }

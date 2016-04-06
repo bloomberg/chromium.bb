@@ -16,7 +16,6 @@ namespace blink {
 
 class JavaScriptCallFrame;
 class PromiseTracker;
-class V8AsyncCallTracker;
 class V8InspectorConnectionImpl;
 class V8StackTraceImpl;
 
@@ -149,12 +148,12 @@ public:
     void setBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String16& condition = String16());
     void removeBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 
-    // Async call stacks implementation
-    int traceAsyncOperationStarting(const String16& description) override;
-    void traceAsyncCallbackStarting(int operationId) override;
-    void traceAsyncCallbackCompleted() override;
-    void traceAsyncOperationCompleted(int operationId) override;
-    bool trackingAsyncCalls() const override { return m_maxAsyncCallStackDepth; }
+    // Async call stacks implementation.
+    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) override;
+    void asyncTaskCanceled(void* task) override;
+    void asyncTaskStarted(void* task) override;
+    void asyncTaskFinished(void* task) override;
+    void allAsyncTasksCanceled() override;
 
     void reset();
 
@@ -180,9 +179,6 @@ private:
 
     PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> currentCallFrames(ErrorString*);
     PassOwnPtr<protocol::Runtime::StackTrace> currentAsyncStackTrace();
-
-    void clearCurrentAsyncOperation();
-    void resetAsyncCallTracker();
 
     void changeJavaScriptRecursionLevel(int step);
 
@@ -237,17 +233,14 @@ private:
     int m_recursionLevelForStepFrame;
     bool m_skipAllPauses;
 
-    // This field must be destroyed before the listeners set above.
-    OwnPtr<V8AsyncCallTracker> m_v8AsyncCallTracker;
-
-    using AsyncOperationIdToStackTrace = protocol::HashMap<int, OwnPtr<V8StackTraceImpl>>;
-    AsyncOperationIdToStackTrace m_asyncOperations;
-    int m_lastAsyncOperationId;
+    using AsyncTaskToStackTrace = protocol::HashMap<void*, OwnPtr<V8StackTraceImpl>>;
+    AsyncTaskToStackTrace m_asyncTaskStacks;
+    protocol::HashSet<void*> m_recurringTasks;
     int m_maxAsyncCallStackDepth;
-    OwnPtr<V8StackTraceImpl> m_currentAsyncCallChain;
-    unsigned m_nestedAsyncCallCount;
-    int m_currentAsyncOperationId;
-    bool m_pendingTraceAsyncOperationCompleted;
+#if ENABLE(ASSERT)
+    Vector<void*> m_currentTasks;
+#endif
+    Vector<OwnPtr<V8StackTraceImpl>> m_currentStacks;
     protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 

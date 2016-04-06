@@ -82,6 +82,18 @@ private:
 
 namespace InspectorInstrumentation {
 
+class CORE_EXPORT AsyncTask {
+    STACK_ALLOCATED();
+public:
+    AsyncTask(ExecutionContext*, void* task);
+    AsyncTask(ExecutionContext*, void* task, bool enabled);
+    ~AsyncTask();
+
+private:
+    Member<InstrumentingAgents> m_instrumentingAgents;
+    void* m_task;
+};
+
 class CORE_EXPORT FrontendCounter {
     STATIC_ONLY(FrontendCounter);
 private:

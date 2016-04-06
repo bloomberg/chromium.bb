@@ -101,6 +101,7 @@ private:
     explicit MutationObserver(RawPtr<MutationCallback>);
     void deliver();
     bool shouldBeSuspended() const;
+    void cancelInspectorAsyncTasks();
 
     Member<MutationCallback> m_callback;
     MutationRecordVector m_records;

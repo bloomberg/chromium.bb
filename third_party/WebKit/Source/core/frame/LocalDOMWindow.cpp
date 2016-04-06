@@ -126,7 +126,7 @@ public:
         , m_userGestureToken(userGestureToken)
         , m_disposalAllowed(true)
     {
-        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(getExecutionContext(), "postMessage");
+        InspectorInstrumentation::asyncTaskScheduled(window.document(), "postMessage", this);
     }
 
     MessageEvent* event() const { return m_event.get(); }
@@ -156,11 +156,10 @@ public:
 private:
     void fired() override
     {
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(getExecutionContext(), m_asyncOperationId);
+        InspectorInstrumentation::AsyncTask asyncTask(m_window->document(), this);
         m_disposalAllowed = false;
         m_window->postMessageTimerFired(this);
         dispose();
-        InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
     void dispose()
@@ -177,7 +176,6 @@ private:
     RefPtr<SecurityOrigin> m_targetOrigin;
     RefPtr<ScriptCallStack> m_stackTrace;
     RefPtr<UserGestureToken> m_userGestureToken;
-    int m_asyncOperationId;
     bool m_disposalAllowed;
 };
 

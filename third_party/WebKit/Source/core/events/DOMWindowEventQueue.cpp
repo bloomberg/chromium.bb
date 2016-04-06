@@ -87,7 +87,7 @@ bool DOMWindowEventQueue::enqueueEvent(Event* event)
         return false;
 
     ASSERT(event->target());
-    InspectorInstrumentation::didEnqueueEvent(event->target(), event);
+    InspectorInstrumentation::asyncTaskScheduled(event->target()->getExecutionContext(), event->type(), event);
 
     bool wasAdded = m_queuedEvents.add(event).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
@@ -103,7 +103,7 @@ bool DOMWindowEventQueue::cancelEvent(Event* event)
     HeapListHashSet<Member<Event>, 16>::iterator it = m_queuedEvents.find(event);
     bool found = it != m_queuedEvents.end();
     if (found) {
-        InspectorInstrumentation::didRemoveEvent(event->target(), event);
+        InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
         m_queuedEvents.remove(it);
     }
     if (m_queuedEvents.isEmpty())
@@ -117,9 +117,8 @@ void DOMWindowEventQueue::close()
     m_pendingEventTimer->stop();
     if (InspectorInstrumentation::hasFrontends()) {
         for (const auto& queuedEvent : m_queuedEvents) {
-            Event* event = queuedEvent;
-            if (event)
-                InspectorInstrumentation::didRemoveEvent(event->target(), event);
+            if (queuedEvent)
+                InspectorInstrumentation::asyncTaskCanceled(queuedEvent->target()->getExecutionContext(), queuedEvent);
         }
     }
     m_queuedEvents.clear();
@@ -142,13 +141,13 @@ void DOMWindowEventQueue::pendingEventTimerFired()
         if (!event)
             break;
         dispatchEvent(event);
-        InspectorInstrumentation::didRemoveEvent(event->target(), event);
     }
 }
 
 void DOMWindowEventQueue::dispatchEvent(Event* event)
 {
     EventTarget* eventTarget = event->target();
+    InspectorInstrumentation::AsyncTask asyncTask(eventTarget->getExecutionContext(), event);
     if (eventTarget->toDOMWindow())
         eventTarget->toDOMWindow()->dispatchEvent(event, nullptr);
     else

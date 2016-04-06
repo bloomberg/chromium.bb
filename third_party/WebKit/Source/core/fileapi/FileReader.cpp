@@ -97,7 +97,7 @@ public:
         if (!controller)
             return;
 
-        reader->m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(context, "FileReader");
+        InspectorInstrumentation::asyncTaskScheduled(context, "FileReader", reader, true);
         controller->pushReader(reader);
     }
 
@@ -112,13 +112,12 @@ public:
 
     static void finishReader(ExecutionContext* context, FileReader* reader, FinishReaderType nextStep)
     {
-        InspectorInstrumentation::traceAsyncOperationCompleted(context, reader->m_asyncOperationId);
-
         ThrottlingController* controller = from(context);
         if (!controller)
             return;
 
         controller->finishReader(reader, nextStep);
+        InspectorInstrumentation::asyncTaskCanceled(context, reader);
     }
 
     DEFINE_INLINE_TRACE()
@@ -206,7 +205,6 @@ FileReader::FileReader(ExecutionContext* context)
     , m_loadingState(LoadingStateNone)
     , m_readType(FileReaderLoader::ReadAsBinaryString)
     , m_lastProgressNotificationTimeMS(0)
-    , m_asyncOperationId(0)
 {
 }
 
@@ -451,10 +449,9 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
 
 void FileReader::fireEvent(const AtomicString& type)
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(getExecutionContext(), m_asyncOperationId);
+    InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
     if (!m_loader) {
         dispatchEvent(ProgressEvent::create(type, false, 0, 0));
-        InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
         return;
     }
 
@@ -462,8 +459,6 @@ void FileReader::fireEvent(const AtomicString& type)
         dispatchEvent(ProgressEvent::create(type, true, m_loader->bytesLoaded(), m_loader->totalBytes()));
     else
         dispatchEvent(ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
-
-    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 DEFINE_TRACE(FileReader)

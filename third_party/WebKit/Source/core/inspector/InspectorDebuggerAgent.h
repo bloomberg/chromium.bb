@@ -80,9 +80,16 @@ public:
     void willExecuteScript(int scriptId);
     void didExecuteScript();
 
+    // Async stack implementation.
+    void asyncTaskScheduled(const String& taskName, void* task);
+    void asyncTaskScheduled(const String& taskName, void* task, bool recurring);
+    void asyncTaskCanceled(void* task);
+    void allAsyncTasksCanceled();
+    void asyncTaskStarted(void* task);
+    void asyncTaskFinished(void* task);
+
     // InspectorBaseAgent overrides.
     void setState(protocol::DictionaryValue*) override;
-    void init() override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
@@ -94,10 +101,6 @@ protected:
     explicit InspectorDebuggerAgent(V8RuntimeAgent*);
 
     OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
-    Member<AsyncCallTracker> m_asyncCallTracker;
-
-private:
-    void setTrackingAsyncCalls(bool);
 };
 
 } // namespace blink

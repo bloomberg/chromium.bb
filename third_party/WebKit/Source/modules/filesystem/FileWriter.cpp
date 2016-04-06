@@ -63,7 +63,6 @@ FileWriter::FileWriter(ExecutionContext* context)
     , m_numAborts(0)
     , m_recursionDepth(0)
     , m_lastProgressNotificationTimeMS(0)
-    , m_asyncOperationId(0)
 {
 }
 
@@ -250,7 +249,7 @@ void FileWriter::completeAbort()
 
 void FileWriter::doOperation(Operation operation)
 {
-    m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(getExecutionContext(), "FileWriter", m_asyncOperationId);
+    InspectorInstrumentation::asyncTaskScheduled(getExecutionContext(), "FileWriter", this);
     switch (operation) {
     case OperationWrite:
         ASSERT(m_operationInProgress == OperationNone);
@@ -299,18 +298,16 @@ void FileWriter::signalCompletion(FileError::ErrorCode code)
         fireEvent(EventTypeNames::write);
     fireEvent(EventTypeNames::writeend);
 
-    InspectorInstrumentation::traceAsyncOperationCompleted(getExecutionContext(), m_asyncOperationId);
-    m_asyncOperationId = 0;
+    InspectorInstrumentation::asyncTaskCanceled(getExecutionContext(), this);
 }
 
 void FileWriter::fireEvent(const AtomicString& type)
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(getExecutionContext(), m_asyncOperationId);
+    InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
     ++m_recursionDepth;
     dispatchEvent(ProgressEvent::create(type, true, m_bytesWritten, m_bytesToWrite));
     --m_recursionDepth;
     ASSERT(m_recursionDepth >= 0);
-    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionState& exceptionState)

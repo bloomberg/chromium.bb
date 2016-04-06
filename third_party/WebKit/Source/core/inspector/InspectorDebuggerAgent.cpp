@@ -30,7 +30,6 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/AsyncCallTracker.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
@@ -57,7 +56,6 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 
 DEFINE_TRACE(InspectorDebuggerAgent)
 {
-    visitor->trace(m_asyncCallTracker);
     InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>::trace(visitor);
 }
 
@@ -71,7 +69,6 @@ void InspectorDebuggerAgent::enable(ErrorString* errorString)
 
 void InspectorDebuggerAgent::disable(ErrorString* errorString)
 {
-    setTrackingAsyncCalls(false);
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
     m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
     m_v8DebuggerAgent->disable(errorString);
@@ -247,7 +244,6 @@ void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,
 void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, int inMaxDepth)
 {
     m_v8DebuggerAgent->setAsyncCallStackDepth(errorString, inMaxDepth);
-    setTrackingAsyncCalls(m_v8DebuggerAgent->trackingAsyncCalls());
 }
 
 void InspectorDebuggerAgent::setBlackboxedRanges(
@@ -280,16 +276,41 @@ void InspectorDebuggerAgent::didExecuteScript()
     m_v8DebuggerAgent->didExecuteScript();
 }
 
+void InspectorDebuggerAgent::asyncTaskScheduled(const String& taskName, void* task)
+{
+    m_v8DebuggerAgent->asyncTaskScheduled(taskName, task, false);
+}
+
+void InspectorDebuggerAgent::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
+{
+    m_v8DebuggerAgent->asyncTaskScheduled(operationName, task, recurring);
+}
+
+void InspectorDebuggerAgent::asyncTaskCanceled(void* task)
+{
+    m_v8DebuggerAgent->asyncTaskCanceled(task);
+}
+
+void InspectorDebuggerAgent::allAsyncTasksCanceled()
+{
+    m_v8DebuggerAgent->allAsyncTasksCanceled();
+}
+
+void InspectorDebuggerAgent::asyncTaskStarted(void* task)
+{
+    m_v8DebuggerAgent->asyncTaskStarted(task);
+}
+
+void InspectorDebuggerAgent::asyncTaskFinished(void* task)
+{
+    m_v8DebuggerAgent->asyncTaskFinished(task);
+}
+
 // InspectorBaseAgent overrides.
 void InspectorDebuggerAgent::setState(protocol::DictionaryValue* state)
 {
     InspectorBaseAgent::setState(state);
     m_v8DebuggerAgent->setInspectorState(m_state);
-}
-
-void InspectorDebuggerAgent::init()
-{
-    m_asyncCallTracker = new AsyncCallTracker(m_v8DebuggerAgent.get(), m_instrumentingAgents.get());
 }
 
 void InspectorDebuggerAgent::setFrontend(protocol::Frontend* frontend)
@@ -311,19 +332,11 @@ void InspectorDebuggerAgent::restore()
     m_v8DebuggerAgent->restore();
     ErrorString errorString;
     enable(&errorString);
-    setTrackingAsyncCalls(m_v8DebuggerAgent->trackingAsyncCalls());
 }
 
 void InspectorDebuggerAgent::discardAgent()
 {
     m_v8DebuggerAgent.clear();
-}
-
-void InspectorDebuggerAgent::setTrackingAsyncCalls(bool tracking)
-{
-    m_asyncCallTracker->asyncCallTrackingStateChanged(tracking);
-    if (!tracking)
-        m_asyncCallTracker->resetAsyncOperations();
 }
 
 } // namespace blink
