@@ -1746,11 +1746,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
-  // This test is disabled because it attaches before the element is appended
-  // to the document. crbug.com/589896.
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
-    return;
-
   LoadAppWithGuest("web_view/simple");
 
   // Verify that OpenURLFromTab with a window disposition of NEW_BACKGROUND_TAB

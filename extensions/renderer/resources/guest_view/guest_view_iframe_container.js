@@ -21,3 +21,10 @@ GuestViewContainer.prototype.attachWindow$ = function() {
   this.onInternalInstanceId(generatedId);
   return true;
 };
+
+GuestViewContainer.prototype.willAttachElement = function () {
+  if (this.deferredAttachCallback) {
+    this.deferredAttachCallback();
+    this.deferredAttachCallback = null;
+  }
+};

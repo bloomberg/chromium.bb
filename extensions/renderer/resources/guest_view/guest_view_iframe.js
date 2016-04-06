@@ -24,6 +24,14 @@ var getIframeContentWindow = function(viewInstanceId) {
 // Internal implementation of attach().
 GuestViewImpl.prototype.attachImpl$ = function(
     internalInstanceId, viewInstanceId, attachParams, callback) {
+  var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
+  if (!view.elementAttached) {
+    // Defer the attachment until the <webview> element is attached.
+    view.deferredAttachCallback = this.attachImpl$.bind(
+        this, internalInstanceId, viewInstanceId, attachParams, callback);
+    return;
+  };
+
   // Check the current state.
   if (!this.checkState('attach')) {
     this.handleCallback(callback);

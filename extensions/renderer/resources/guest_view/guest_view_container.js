@@ -198,6 +198,7 @@ GuestViewContainer.prototype.weakWrapper = function(func) {
 
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
+GuestViewContainer.prototype.willAttachElement = function() {};
 GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {};
 GuestViewContainer.prototype.setupAttributes = function() {};
@@ -253,6 +254,7 @@ function registerGuestViewElement(guestViewContainerType) {
       return;
     }
     internal.elementAttached = true;
+    internal.willAttachElement();
     internal.onElementAttached();
   };
 
