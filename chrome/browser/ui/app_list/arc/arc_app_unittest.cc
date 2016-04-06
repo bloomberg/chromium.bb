@@ -603,7 +603,11 @@ TEST_F(ArcAppModelBuilderTest, IconLoader) {
                     &png_data));
   }
 
-  // Process pending tasks.
+  // Process pending tasks, this installs icons.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  // Allow one more circle to read and decode installed icons.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
