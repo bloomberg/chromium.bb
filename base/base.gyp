@@ -185,14 +185,6 @@
               },
             },
           },
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/',
-              'files': [
-                '../build/win/dbghelp_xp/dbghelp.dll',
-              ],
-            },
-          ],
           'dependencies': [
            'trace_event/etw_manifest/etw_manifest.gyp:etw_manifest',
           ],

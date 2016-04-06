@@ -65,15 +65,6 @@ if (is_win) {
       "/DELAYLOAD:setupapi.dll",
     ]
   }
-
-  copy("copy_dbghelp.dll") {
-    sources = [
-      "../build/win/dbghelp_xp/dbghelp.dll",
-    ]
-    outputs = [
-      "$root_out_dir/{{source_file_part}}",
-    ]
-  }
 }
 
 if (is_nacl_nonsfi) {
@@ -1169,13 +1160,7 @@ component("base") {
       "sha1_win.cc",
     ]
 
-    # Required for base/stack_trace_win.cc to symbolize correctly.
-    data += [ "$root_build_dir/dbghelp.dll" ]
-
     deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
-    if (current_toolchain == default_toolchain) {
-      deps += [ ":copy_dbghelp.dll" ]
-    }
 
     if (is_component_build) {
       # Copy the VS runtime DLLs into the isolate so that they don't have to be

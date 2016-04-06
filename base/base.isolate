@@ -27,14 +27,6 @@
         ],
       },
     }],
-    ['OS=="win"', {
-      # Required for base/stack_trace_win.cc to symbolize correctly.
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/dbghelp.dll',
-        ],
-      },
-    }],
     ['OS=="win" and asan==1 and component=="shared_library"', {
       'variables': {
         'files': [
