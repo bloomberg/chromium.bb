@@ -5,6 +5,7 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include "core/dom/CrossThreadTask.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -24,8 +25,8 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoadTiming.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Assertions.h"
@@ -343,7 +344,7 @@ public:
     void serveRequests()
     {
         m_helper->onServeRequests();
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+        Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     }
 
     void createLoader(CrossOriginRequestPolicy crossOriginRequestPolicy = AllowCrossOriginRequests)
@@ -368,7 +369,8 @@ private:
     void TearDown() override
     {
         m_helper->onTearDown();
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        memoryCache()->evictResources();
         m_client.clear();
     }
 

@@ -7,7 +7,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderClient.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "web/tests/sim/SimNetwork.h"
 
 namespace blink {
@@ -23,7 +23,7 @@ SimRequest::SimRequest(String url, String mimeType)
     WebURLResponse response(fullUrl);
     response.setMIMEType(mimeType);
     response.setHTTPStatusCode(200);
-    Platform::current()->unitTestSupport()->registerMockedURL(fullUrl, response, "");
+    Platform::current()->getURLLoaderMockFactory()->registerURL(fullUrl, response, "");
     SimNetwork::current().addRequest(*this);
 }
 

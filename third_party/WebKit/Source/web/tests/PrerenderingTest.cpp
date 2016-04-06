@@ -34,7 +34,7 @@
 #include "public/platform/WebPrerender.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebPrerendererClient.h"
@@ -169,7 +169,8 @@ class PrerenderingTest : public testing::Test {
 public:
     ~PrerenderingTest() override
     {
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        WebCache::clear();
     }
 
     void initialize(const char* baseURL, const char* fileName)

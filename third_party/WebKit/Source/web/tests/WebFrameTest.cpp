@@ -93,8 +93,8 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebCache.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDataSource.h"
@@ -184,7 +184,8 @@ protected:
 
     ~WebFrameTest() override
     {
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        WebCache::clear();
     }
 
     void registerMockedHttpURLLoad(const std::string& fileName)
@@ -5120,7 +5121,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     WebHistoryItem errorHistoryItem;
     errorHistoryItem.initialize();
     errorHistoryItem.setURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
-    Platform::current()->unitTestSupport()->registerMockedErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
+    Platform::current()->getURLLoaderMockFactory()->registerErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
     FrameTestHelpers::loadHistoryItem(frame, errorHistoryItem, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
     WebString text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ("This should appear", text.utf8());
@@ -5763,12 +5764,12 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect)
     redirectResponse.setMIMEType("text/html");
     redirectResponse.setHTTPStatusCode(302);
     redirectResponse.setHTTPHeaderField("Location", redirect);
-    Platform::current()->unitTestSupport()->registerMockedURL(testURL, redirectResponse, filePath);
+    Platform::current()->getURLLoaderMockFactory()->registerURL(testURL, redirectResponse, filePath);
 
     WebURLResponse finalResponse;
     finalResponse.initialize();
     finalResponse.setMIMEType("text/html");
-    Platform::current()->unitTestSupport()->registerMockedURL(redirectURL, finalResponse, filePath);
+    Platform::current()->getURLLoaderMockFactory()->registerURL(redirectURL, finalResponse, filePath);
 
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "first_party_redirect.html", true);

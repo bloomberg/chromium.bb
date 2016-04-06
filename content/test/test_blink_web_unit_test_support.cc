@@ -27,19 +27,12 @@
 #include "storage/browser/database/vfs_backend.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
-#include "third_party/WebKit/public/platform/WebStorageArea.h"
-#include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebCache.h"
-#include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
@@ -300,41 +293,9 @@ blink::WebGestureCurve* TestBlinkWebUnitTestSupport::createFlingAnimationCurve(
   return new WebGestureCurveMock(velocity, cumulative_scroll);
 }
 
-blink::WebUnitTestSupport* TestBlinkWebUnitTestSupport::unitTestSupport() {
-  return this;
-}
-
-void TestBlinkWebUnitTestSupport::registerMockedURL(
-    const blink::WebURL& url,
-    const blink::WebURLResponse& response,
-    const blink::WebString& file_path) {
-  url_loader_factory_->registerURL(url, response, file_path);
-}
-
-void TestBlinkWebUnitTestSupport::registerMockedErrorURL(
-    const blink::WebURL& url,
-    const blink::WebURLResponse& response,
-    const blink::WebURLError& error) {
-  url_loader_factory_->registerErrorURL(url, response, error);
-}
-
-void TestBlinkWebUnitTestSupport::unregisterMockedURL(
-    const blink::WebURL& url) {
-  url_loader_factory_->unregisterURL(url);
-}
-
-void TestBlinkWebUnitTestSupport::unregisterAllMockedURLs() {
-  url_loader_factory_->unregisterAllURLs();
-  blink::WebCache::clear();
-}
-
-void TestBlinkWebUnitTestSupport::serveAsynchronousMockedRequests() {
-  url_loader_factory_->serveAsynchronousRequests();
-}
-
-void TestBlinkWebUnitTestSupport::setLoaderDelegate(
-    blink::WebURLLoaderTestDelegate* delegate) {
-  url_loader_factory_->setLoaderDelegate(delegate);
+blink::WebURLLoaderMockFactory*
+TestBlinkWebUnitTestSupport::getURLLoaderMockFactory() {
+  return url_loader_factory_.get();
 }
 
 blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {

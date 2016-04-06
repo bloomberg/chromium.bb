@@ -37,9 +37,9 @@
 #include "public/platform/WebData.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebFrameWidget.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebSettings.h"
@@ -78,7 +78,7 @@ TestWebFrameClient* testClientForFrame(WebFrame* frame)
 
 void runServeAsyncRequestsTask(TestWebFrameClient* client)
 {
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     if (client->isLoading())
         Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, client));
     else

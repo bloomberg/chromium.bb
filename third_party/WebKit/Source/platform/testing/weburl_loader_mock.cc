@@ -9,7 +9,6 @@
 #include "public/platform/WebData.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderClient.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

@@ -113,11 +113,10 @@ struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
 class WebTrialTokenValidator;
-class WebURL;
 class WebURLLoader;
+class WebURLLoaderMockFactory;
 class WebURLResponse;
-class WebUnitTestSupport;
-struct WebLocalizedString;
+class WebURLResponse;
 struct WebSize;
 
 class BLINK_PLATFORM_EXPORT Platform {
@@ -412,8 +411,8 @@ public:
 
     // Testing -------------------------------------------------------------
 
-    // Get a pointer to testing support interfaces. Will not be available in production builds.
-    virtual WebUnitTestSupport* unitTestSupport() { return nullptr; }
+    // Gets a pointer to URLLoaderMockFactory for testing. Will not be available in production builds.
+    virtual WebURLLoaderMockFactory* getURLLoaderMockFactory() { return nullptr; }
 
     // Record to a RAPPOR privacy-preserving metric, see: https://www.chromium.org/developers/design-documents/rappor.
     // recordRappor records a sample string, while recordRapporURL records the domain and registry of a url.

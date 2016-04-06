@@ -94,7 +94,6 @@ public:
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
     WebThread* currentThread() override;
-    WebUnitTestSupport* unitTestSupport() override;
     void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name) override {}
     void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) override {}
 

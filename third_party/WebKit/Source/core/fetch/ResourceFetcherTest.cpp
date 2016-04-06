@@ -42,8 +42,8 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -134,12 +134,12 @@ TEST_F(ResourceFetcherTest, Vary)
 
     ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-    Platform::current()->unitTestSupport()->registerMockedURL(url, WebURLResponse(), "");
+    Platform::current()->getURLLoaderMockFactory()->registerURL(url, WebURLResponse(), "");
     Resource* newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
     EXPECT_NE(resource, newResource);
     newResource->loader()->cancel();
     memoryCache()->remove(newResource);
-    Platform::current()->unitTestSupport()->unregisterMockedURL(url);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 
     memoryCache()->remove(resource);
 }
@@ -184,7 +184,7 @@ TEST_F(ResourceFetcherTest, VaryImage)
     FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
     Resource* resource = fetcher->requestResource(fetchRequestOriginal, TestResourceFactory(Resource::Image));
     ASSERT_TRUE(resource);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     ASSERT_TRUE(resource->hasVaryHeader());
 
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
@@ -192,13 +192,13 @@ TEST_F(ResourceFetcherTest, VaryImage)
     EXPECT_EQ(resource, newResource);
 
     memoryCache()->remove(newResource);
-    Platform::current()->unitTestSupport()->unregisterMockedURL(url);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
 {
     KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-    Platform::current()->unitTestSupport()->registerMockedURL(url, WebURLResponse(), "");
+    Platform::current()->getURLLoaderMockFactory()->registerURL(url, WebURLResponse(), "");
 
     ResourceFetcher* fetcher1 = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
     ResourceRequest request1(url);
@@ -222,7 +222,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
 
     // Tidily(?) shut down the ResourceLoader.
     resource1->loader()->cancel();
-    Platform::current()->unitTestSupport()->unregisterMockedURL(url);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl)
@@ -242,7 +242,7 @@ class ServeRequestsOnCompleteClient : public RawResourceClient {
 public:
     void notifyFinished(Resource*) override
     {
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+        Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     }
 
     // No callbacks should be received except for the notifyFinished()
@@ -277,7 +277,7 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel)
     ServeRequestsOnCompleteClient client;
     resource->addClient(&client);
     resource->loader()->cancel();
-    Platform::current()->unitTestSupport()->unregisterMockedURL(url);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
 } // namespace blink

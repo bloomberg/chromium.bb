@@ -32,7 +32,8 @@
 
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/web/WebCache.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -50,7 +51,8 @@ protected:
 
     ~WebSearchableFormDataTest() override
     {
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        WebCache::clear();
     }
 
     FrameTestHelpers::WebViewHelper m_webViewHelper;

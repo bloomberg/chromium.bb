@@ -11,7 +11,6 @@
 #include "core/events/Event.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "public/platform/WebVector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"

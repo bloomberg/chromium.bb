@@ -31,7 +31,6 @@
 #include "public/web/WebSelector.h"
 
 #include "public/platform/WebString.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

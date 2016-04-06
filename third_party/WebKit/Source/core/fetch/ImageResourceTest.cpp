@@ -42,8 +42,8 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -90,7 +90,7 @@ TEST(ImageResourceTest, MultipartImage)
     ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
     cachedImage->load(fetcher);
-    Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 
     MockImageResourceClient client(cachedImage);
     EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
@@ -170,7 +170,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     EXPECT_EQ(Resource::LoadError, cachedImage->getStatus());
     EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
-    Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)

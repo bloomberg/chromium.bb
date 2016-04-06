@@ -42,7 +42,6 @@
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassOwnPtr.h"
 

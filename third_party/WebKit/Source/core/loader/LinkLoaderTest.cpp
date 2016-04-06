@@ -15,7 +15,7 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <base/macros.h>
 
@@ -174,7 +174,7 @@ TEST(LinkLoaderTest, Preload)
             dummyPageHolder->document().fetcher()->clearPreloads();
         }
         memoryCache()->evictResources();
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
     }
 }
 

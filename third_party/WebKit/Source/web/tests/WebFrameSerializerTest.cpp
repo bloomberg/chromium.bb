@@ -36,7 +36,8 @@
 #include "public/platform/WebCString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/web/WebCache.h"
 #include "public/web/WebFrameSerializerClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
@@ -71,7 +72,8 @@ protected:
 
     ~WebFrameSerializerTest() override
     {
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        WebCache::clear();
     }
 
     void registerMockedImageURL(const String& url)

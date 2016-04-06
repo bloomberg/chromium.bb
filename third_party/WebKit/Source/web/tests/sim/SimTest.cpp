@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "public/web/WebCache.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
@@ -33,6 +34,7 @@ SimTest::~SimTest()
     Document::setThreadedParsingEnabledForTesting(true);
     LayoutTestSupport::setMockThemeEnabledForTest(false);
     ScrollbarTheme::setMockScrollbarsEnabled(false);
+    WebCache::clear();
 }
 
 void SimTest::loadURL(const String& url)

@@ -25,8 +25,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderMockFactory.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -60,7 +60,7 @@ class PendingNotificationsTrackerTest : public testing::Test {
             base::ThreadTaskRunnerHandle::Get())) {}
 
   ~PendingNotificationsTrackerTest() override {
-    UnitTestSupport()->unregisterAllMockedURLs();
+    GetURLLoaderMockFactory()->unregisterAllURLs();
   }
 
   void DidFetchResources(size_t index, const NotificationResources& resources) {
@@ -87,8 +87,8 @@ class PendingNotificationsTrackerTest : public testing::Test {
     return tracker_->delegate_to_pending_id_map_.size();
   }
 
-  blink::WebUnitTestSupport* UnitTestSupport() {
-    return blink::Platform::current()->unitTestSupport();
+  blink::WebURLLoaderMockFactory* GetURLLoaderMockFactory() {
+    return blink::Platform::current()->getURLLoaderMockFactory();
   }
 
   // Registers a mocked url. When fetched, |file_name| will be loaded from the
@@ -111,7 +111,7 @@ class PendingNotificationsTrackerTest : public testing::Test {
     blink::WebString string_file_path =
         blink::WebString::fromUTF8(file_path.MaybeAsASCII());
 
-    UnitTestSupport()->registerMockedURL(url, response, string_file_path);
+    GetURLLoaderMockFactory()->registerURL(url, response, string_file_path);
 
     return url;
   }
@@ -127,7 +127,7 @@ class PendingNotificationsTrackerTest : public testing::Test {
     blink::WebURLError error;
     error.reason = 404;
 
-    UnitTestSupport()->registerMockedErrorURL(url, response, error);
+    GetURLLoaderMockFactory()->registerErrorURL(url, response, error);
     return url;
   }
 
@@ -157,7 +157,7 @@ TEST_F(PendingNotificationsTrackerTest, OneNotificationMultipleResources) {
   ASSERT_EQ(0u, CountResources());
 
   base::RunLoop().RunUntilIdle();
-  UnitTestSupport()->serveAsynchronousMockedRequests();
+  GetURLLoaderMockFactory()->serveAsynchronousRequests();
 
   ASSERT_EQ(0u, CountPendingNotifications());
   ASSERT_EQ(1u, CountResources());
@@ -194,7 +194,7 @@ TEST_F(PendingNotificationsTrackerTest, LargeIconsAreScaledDown) {
   ASSERT_EQ(0u, CountResources());
 
   base::RunLoop().RunUntilIdle();
-  UnitTestSupport()->serveAsynchronousMockedRequests();
+  GetURLLoaderMockFactory()->serveAsynchronousRequests();
 
   ASSERT_EQ(0u, CountPendingNotifications());
   ASSERT_EQ(1u, CountResources());
@@ -240,7 +240,7 @@ TEST_F(PendingNotificationsTrackerTest, TwoNotifications) {
   ASSERT_EQ(0u, CountResources());
 
   base::RunLoop().RunUntilIdle();
-  UnitTestSupport()->serveAsynchronousMockedRequests();
+  GetURLLoaderMockFactory()->serveAsynchronousRequests();
 
   ASSERT_EQ(0u, CountPendingNotifications());
   ASSERT_EQ(2u, CountResources());
@@ -265,7 +265,7 @@ TEST_F(PendingNotificationsTrackerTest, FetchError) {
   ASSERT_EQ(0u, CountResources());
 
   base::RunLoop().RunUntilIdle();
-  UnitTestSupport()->serveAsynchronousMockedRequests();
+  GetURLLoaderMockFactory()->serveAsynchronousRequests();
 
   ASSERT_EQ(0u, CountPendingNotifications());
   ASSERT_EQ(1u, CountResources());

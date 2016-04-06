@@ -5,7 +5,8 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderClient.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/web/WebCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
@@ -27,7 +28,8 @@ protected:
 
     void TearDown() override
     {
-        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        WebCache::clear();
     }
 
     WebLocalFrameImpl* mainFrame()
@@ -49,9 +51,9 @@ TEST_F(DocumentLoaderTest, SingleChunk)
         }
     } delegate;
 
-    Platform::current()->unitTestSupport()->setLoaderDelegate(&delegate);
+    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(&delegate);
     FrameTestHelpers::loadFrame(mainFrame(), "https://example.com/foo.html");
-    Platform::current()->unitTestSupport()->setLoaderDelegate(nullptr);
+    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(nullptr);
 
     // TODO(dcheng): How should the test verify that the original callback is
     // invoked? The test currently still passes even if the test delegate
@@ -73,9 +75,9 @@ TEST_F(DocumentLoaderTest, MultiChunkNoReentrancy)
         }
     } delegate;
 
-    Platform::current()->unitTestSupport()->setLoaderDelegate(&delegate);
+    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(&delegate);
     FrameTestHelpers::loadFrame(mainFrame(), "https://example.com/foo.html");
-    Platform::current()->unitTestSupport()->setLoaderDelegate(nullptr);
+    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(nullptr);
 }
 
 // Finally, test reentrant callbacks to DocumentLoader::dataReceived().
@@ -154,9 +156,9 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy)
     // setup a situation where didReceiveData() can be invoked reentrantly.
     FrameTestHelpers::loadHTMLString(mainFrame(), "<iframe></iframe>", URLTestHelpers::toKURL("about:blank"));
 
-    Platform::current()->unitTestSupport()->setLoaderDelegate(&delegate);
+    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(&delegate);
     FrameTestHelpers::loadFrame(mainFrame(), "https://example.com/foo.html");
-    Platform::current()->unitTestSupport()->setLoaderDelegate(nullptr);
+    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(nullptr);
 
     EXPECT_TRUE(delegate.servedReentrantly());
 

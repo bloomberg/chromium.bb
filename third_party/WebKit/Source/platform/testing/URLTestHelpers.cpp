@@ -35,8 +35,8 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoadTiming.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebUnitTestSupport.h"
 
 namespace blink {
 namespace URLTestHelpers {
@@ -79,7 +79,7 @@ void registerMockedErrorURLLoad(const WebURL& fullURL)
 
     WebURLError error;
     error.reason = 404;
-    Platform::current()->unitTestSupport()->registerMockedErrorURL(fullURL, response, error);
+    Platform::current()->getURLLoaderMockFactory()->registerErrorURL(fullURL, response, error);
 }
 
 void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse response)
@@ -90,7 +90,7 @@ void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebStr
     filePath.append(relativeBaseDirectory);
     filePath.append(fileName);
 
-    Platform::current()->unitTestSupport()->registerMockedURL(fullURL, response, filePath);
+    Platform::current()->getURLLoaderMockFactory()->registerURL(fullURL, response, filePath);
 }
 
 } // namespace URLTestHelpers

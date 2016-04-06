@@ -16,7 +16,6 @@
 #include "content/test/mock_webblob_registry_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderMockFactory.h"
-#include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 
 namespace base {
 class StatsTable;
@@ -32,10 +31,8 @@ class RendererScheduler;
 
 namespace content {
 
-// An implementation of blink::WebUnitTestSupport and BlinkPlatformImpl for
-// tests.
-class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
-                                    public BlinkPlatformImpl {
+// An implementation of BlinkPlatformImpl for tests.
+class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  public:
   TestBlinkWebUnitTestSupport();
   ~TestBlinkWebUnitTestSupport() override;
@@ -71,20 +68,8 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
 
-  blink::WebUnitTestSupport* unitTestSupport() override;
+  blink::WebURLLoaderMockFactory* getURLLoaderMockFactory() override;
 
-  // WebUnitTestSupport implementation
-  // TODO(kinuko): Remove these methods.
-  void registerMockedURL(const blink::WebURL& url,
-                         const blink::WebURLResponse& response,
-                         const blink::WebString& filePath) override;
-  void registerMockedErrorURL(const blink::WebURL& url,
-                              const blink::WebURLResponse& response,
-                              const blink::WebURLError& error) override;
-  void unregisterMockedURL(const blink::WebURL& url) override;
-  void unregisterAllMockedURLs() override;
-  void serveAsynchronousMockedRequests() override;
-  void setLoaderDelegate(blink::WebURLLoaderTestDelegate* delegate) override;
   blink::WebThread* currentThread() override;
 
   void getPluginList(bool refresh,

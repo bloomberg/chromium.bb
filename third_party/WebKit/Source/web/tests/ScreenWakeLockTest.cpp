@@ -12,8 +12,9 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPageVisibilityState.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/modules/wake_lock/WebWakeLockClient.h"
+#include "public/web/WebCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
@@ -67,7 +68,8 @@ protected:
 
     void TearDown() override
     {
-        blink::Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+        blink::Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        blink::WebCache::clear();
     }
 
     void loadFrame()

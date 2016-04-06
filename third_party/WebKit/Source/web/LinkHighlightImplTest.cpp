@@ -36,7 +36,8 @@
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebSize.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/web/WebCache.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebInputEvent.h"
@@ -104,7 +105,8 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
     webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
     ASSERT_EQ(0U, webViewImpl->numLinkHighlights());
 
-    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
 }
 
 namespace {
@@ -161,7 +163,8 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
     webViewImpl->updateAllLifecyclePhases();
     ASSERT_EQ(0U, highlightLayer->numLinkHighlights());
 
-    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
 }
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
@@ -202,7 +205,8 @@ TEST(LinkHighlightImplTest, resetLayerTreeView)
     webViewImpl->willCloseLayerTreeView();
     webViewHelper.reset();
 
-    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
 }
 
 TEST(LinkHighlightImplTest, multipleHighlights)
@@ -233,7 +237,8 @@ TEST(LinkHighlightImplTest, multipleHighlights)
     webViewImpl->enableTapHighlights(highlightNodes);
     EXPECT_EQ(2U, webViewImpl->numLinkHighlights());
 
-    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
 }
 
 } // namespace blink
