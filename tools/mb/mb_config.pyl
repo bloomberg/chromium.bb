@@ -61,7 +61,6 @@
     'chromium.chrome': {
       'Google Chrome ChromeOS': 'gyp_official_goma_chromeos',
       'Google Chrome Linux x64': 'gn_official_goma',
-      'Google Chrome Linux': 'gyp_official_goma_x86',
       'Google Chrome Mac': 'gyp_official_goma',
       'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
     },
@@ -83,36 +82,23 @@
     },
 
     'chromium.fyi': {
-      'Android Asan Builder Tests (dbg)':
-          'android_asan_gyp_debug_bot_minimal_symbols',
-      'Android Builder (dbg)': 'android_gyp_debug_static_bot',
-      'Android ChromeDriver Tests (dbg)': 'none',
-      'Android Cloud Tests': 'android_gyp_debug_static_bot_x86',
-      'Android Remoting Tests': 'none',
-      'Android Tests (trial)(dbg)': 'none',
-      'Android Tests (x86 emulator)': 'android_gyp_debug_static_bot_x86',
       'Blink Linux LSan ASan': 'tbd',
       'Browser Side Navigation Linux': 'tbd',
       'Chromium Builder': 'tbd',
       'Chromium Builder (dbg)': 'tbd',
-      'Chromium Linux Buildrunner': 'tbd',
       'Chromium Linux Goma Canary': 'tbd',
       'Chromium Linux Goma Canary (clobber)': 'tbd',
       'Chromium Linux Precise Goma LinkTest': 'tbd',
       'Chromium Linux32 Goma Canary (clobber)': 'tbd',
       'Chromium Mac 10.10 MacViews': 'tbd',
       'Chromium Mac 10.11': 'tbd',
+      'Chromium Mac 10.11 Force Mac Toolchain': 'tbd',
       'Chromium Mac 10.9 Goma Canary': 'tbd',
       'Chromium Mac 10.9 Goma Canary (clobber)': 'tbd',
       'Chromium Mac 10.9 Goma Canary (dbg)': 'tbd',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'tbd',
       'Chromium Win 10': 'tbd',
-      'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 Clobber': 'tbd',
-      'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
-      'Chromium Windows Analyze': 'gn_windows_analyze',
-      'Chromium Windows Buildrunner': 'tbd',
-      'Chromium Windows Instant Extended': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
       'ClangToTAndroidASan': 'tbd',
       'ClangToTLinux': 'tbd',
@@ -158,10 +144,21 @@
       'Windows Builder (DrMemory)': 'tbd',
       'Windows Tests (DrMemory)': 'tbd',
 
+      'Android ChromeDriver Tests (dbg)': 'none',
+      'Android Cloud Tests': 'android_gyp_debug_static_bot_x86',
+      'Android Remoting Tests': 'none',
+      'Android Tests (trial)(dbg)': 'none',
+      'Android Tests (x86 emulator)': 'android_gyp_debug_static_bot_x86',
+      'Android Asan Builder Tests (dbg)':
+          'android_asan_gyp_debug_bot_minimal_symbols',
+      'Android Builder (dbg)': 'android_gyp_debug_static_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux': 'gn_cfi_release_bot',
       'Chromium Win MiniInstaller Tests': 'none',
+      'Chromium Win PGO Builder': 'gyp_official_winpgo',
+      'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
+      'Chromium Windows Analyze': 'gn_windows_analyze',
       'Chromium_iOS_Device': 'ios_gyp',
       'Chromium_iOS_Device_(ninja)': 'ios_gyp',
       'Chromium_iOS_Simulator_(dbg)': 'ios_gyp',
@@ -275,6 +272,7 @@
       'Mac Retina Release': 'none',
       'Win7 Debug (ATI)': 'none',
       'Win7 Debug (NVIDIA)': 'none',
+      'Win7 Debug (New Intel)': 'none',
       'Win7 Release (ATI)': 'none',
       'Win7 Release (Intel)': 'none',
       'Win7 Release (NVIDIA GeForce 730)': 'none',
@@ -604,6 +602,7 @@
 
     'tryserver.blink': {
       'linux_chromium_gn_rel': 'tbd',
+
       'blink_presubmit': 'none',
       'linux_blink_compile_dbg':
         'swarming_gn_debug_bot_minimal_symbols_x64',
@@ -650,8 +649,8 @@
     'tryserver.chromium.android': {
       'android_amp': 'tbd',
       'android_archive_rel_ng': 'tbd',
-      'android_chromium_variable': 'tbd',
       'android_coverage': 'tbd',
+      'android_swarming_rel': 'tbd',
       'cast_shell_android': 'tbd',
 
       'android_arm64_dbg_recipe': 'swarming_android_gyp_debug_trybot_arm64',
@@ -659,6 +658,13 @@
       'android_chromium_gn_compile_dbg': 'android_gn_debug_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'android_chromium_gn_rel': 'android_gn_release_trybot',
+      'android_chromium_variable': 'findit',
+      'android_chromium_variable_archive': 'findit',
+      'android_chromium_variable_arm64': 'findit',
+      'android_chromium_variable_cast_shell': 'findit',
+      'android_chromium_variable_clang': 'findit',
+      'android_chromium_variable_gn': 'findit',
+      'android_chromium_variable_nexus4': 'findit',
       'android_clang_dbg_recipe': 'android_clang_asan_findbugs_gyp_debug_trybot',
       'android_compile_dbg': 'swarming_android_gyp_debug_trybot',
       'android_compile_mips_dbg': 'android_gn_debug_trybot_mipsel',
@@ -692,13 +698,9 @@
       'Chromium Linux Codesearch Builder': 'tbd',
       'ChromiumOS Codesearch Builder': 'tbd',
       'chromeos_amd64-generic_chromium_compile_only_ng': 'tbd',
-      'chromeos_amd64-generic_variable': 'tbd',
       'chromeos_daisy_chromium_compile_only_ng': 'tbd',
       'chromeos_x86-generic_chromium_compile_only_ng': 'tbd',
-      'depot_tools_presubmit': 'tbd',
       'linux_chromium_browser_side_navigation_rel': 'tbd',
-      'linux_chromium_asan_variable': 'tbd',
-      'linux_chromium_cast_variable': 'tbd',
       'linux_chromium_chromeos_asan_rel_ng': 'tbd',
       'linux_chromium_chromeos_asan_variable': 'tbd',
       'linux_chromium_chromeos_compile_dbg_ng': 'tbd',
@@ -709,16 +711,22 @@
       'linux_chromium_variable': 'tbd',
 
       'cast_shell_linux': 'cast_gn_release_trybot',
+      'chromeos_amd64-generic_variable': 'findit',
+      'chromeos_daisy_variable': 'findit',
+      'chromeos_x86-generic_variable': 'findit',
       'chromium_presubmit': 'none',
       'linux_arm': 'swarming_gyp_release_trybot_arm',
       'linux_blink_oilpan_rel':
         'swarming_gn_non_oilpan_release_trybot_minimal_symbols_x64',
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
+      'linux_chromium_asan_variable': 'findit',
+      'linux_chromium_cast_variable': 'findit',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
       'linux_chromium_chromeos_compile_rel_ng':
         'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
+      'linux_chromium_chromeos_variable_chrome': 'findit',
       'linux_chromium_clang_upload': 'gn_release_bot',
       'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
       'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
@@ -728,11 +736,21 @@
       'linux_chromium_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
+      'linux_chromium_gn_chromeos_variable': 'findit',
       'linux_chromium_gn_upload': 'gn_linux_upload',
       'linux_chromium_msan_rel_ng': 'swarming_msan_gyp_release_trybot',
       'linux_chromium_practice_rel_ng': 'gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
+      'linux_chromium_variable_32': 'findit',
+      'linux_chromium_variable_chrome': 'findit',
+      'linux_chromium_variable_clobber': 'findit',
+      'linux_chromium_variable_32_chrome': 'findit',
+      'linux_chromium_variable_32_clobber': 'findit',
+      'linux_chromium_webkit_asan_variable': 'findit',
+      'linux_chromium_webkit_leak_variable': 'findit',
+      'linux_chromium_webkit_msan_variable': 'findit',
+      'linux_chromium_webkit_variable': 'findit',
       'linux_ecs_ozone': 'embedded_gyp_debug_bot',
       'linux_full_bisect_builder': 'swarming_gyp_release_bot',
       'linux_nacl_sdk': 'nacl_annotator',
@@ -752,7 +770,6 @@
       'mac_chromium_compile_rel_ng': 'tbd',
       'mac_chromium_dbg_ng': 'tbd',
       'mac_chromium_rel_ng': 'tbd',
-      'mac_chromium_variable': 'tbd',
       'mac_optional_gpu_tests_rel': 'tbd',
 
       'ios_dbg_simulator': 'ios_gyp',
@@ -765,6 +782,13 @@
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
+      'mac_chromium_variable': 'findit',
+      'mac_chromium_variable_10.10': 'findit',
+      'mac_chromium_variable_10.10_layout': 'findit',
+      'mac_chromium_variable_archive': 'findit',
+      'mac_chromium_variable_chrome': 'findit',
+      'mac_chromium_variable_gn': 'findit',
+      'mac_chromium_variable_layout': 'findit',
       'mac_nacl_sdk': 'nacl_annotator',
       'mac_nacl_sdk_build': 'nacl_annotator',
     },
@@ -813,17 +837,6 @@
     },
 
     'tryserver.chromium.win': {
-      # The *_variable bots are used by FindIt. We need to talk to
-      # the FindIt team to figure out how their recipes interact w/ MB.
-      'win_chromium_variable': 'tbd',
-      'win_chromium_variable_archive': 'tbd',
-      'win_chromium_variable_chrome': 'tbd',
-      'win_chromium_variable_gn': 'tbd',
-      'win_chromium_variable_webkit_builder': 'tbd',
-      'win_chromium_variable_webkit_layout': 'tbd',
-      'win_chromium_variable_webkit_win7_builder': 'tbd',
-      'win_chromium_variable_webkit_win7_builder_x64': 'tbd',
-
       'win10_chromium_x64_rel_ng':
         'swarming_gyp_release_trybot_minimal_symbols_x64',
       'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
@@ -842,6 +855,14 @@
         'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86',
       'win_chromium_syzyasan_rel':
         'swarming_gyp_syzyasan_release_trybot_minimal_symbols_x86',
+      'win_chromium_variable': 'findit',
+      'win_chromium_variable_archive': 'findit',
+      'win_chromium_variable_chrome': 'findit',
+      'win_chromium_variable_gn': 'findit',
+      'win_chromium_variable_webkit_builder': 'findit',
+      'win_chromium_variable_webkit_layout': 'findit',
+      'win_chromium_variable_webkit_win7_builder': 'findit',
+      'win_chromium_variable_webkit_win7_builder_x64': 'findit',
       'win_chromium_x64_rel_ng':
         'swarming_gyp_release_trybot_minimal_symbols_x64',
       'win_clang': 'win_clang_debug_bot',
@@ -1018,6 +1039,15 @@
       'embedded', 'gyp', 'debug_bot',
     ],
 
+    # The 'findit' config is used by the *_variable_* bots, which run
+    # the 'FindIt' recipes and code to bisect failures that happen on the
+    # other waterfall bots. The findit recipes actually override and
+    # re-use the configs from the matching waterfall bots, and so it should
+    # be an error if MB ever sees an actual *_variable_* bot name.
+    'findit': [
+      'error',
+    ],
+
     # This is the "deployment" config for the blimp builds. Currently
     # we want them to be debug, non-optimized builds (and we don't need any
     # chrome branding), so we don't use the "official" mixin.
@@ -1105,10 +1135,6 @@
 
     'gyp_official_goma_chromeos': [
       'gyp', 'official', 'goma', 'chromeos',
-    ],
-
-    'gyp_official_goma_x86': [
-      'gyp', 'official', 'goma', 'x86',
     ],
 
     'gyp_official_goma_minimal_symbols_x64': [
