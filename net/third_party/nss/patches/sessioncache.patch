@@ -1,8 +1,8 @@
 diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
-index 437a822..bc417a5 100644
+index 70665a1..de5078b 100644
 --- a/lib/ssl/ssl.h
 +++ b/lib/ssl/ssl.h
-@@ -992,6 +992,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
+@@ -973,6 +973,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
  SSL_IMPORT SECStatus SSL_InvalidateSession(PRFileDesc *fd);
  
  /*
@@ -22,23 +22,23 @@ index 437a822..bc417a5 100644
  */
  SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);
 diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
-index 572bba9..afab931 100644
+index b100b9b..7649abe 100644
 --- a/lib/ssl/ssl3con.c
 +++ b/lib/ssl/ssl3con.c
-@@ -12058,7 +12058,7 @@ ssl3_FinishHandshake(sslSocket * ss)
+@@ -12397,7 +12397,7 @@ ssl3_FinishHandshake(sslSocket *ss)
          ss->ssl3.hs.receivedNewSessionTicket = PR_FALSE;
      }
  
 -    if (ss->ssl3.hs.cacheSID) {
 +    if (ss->ssl3.hs.cacheSID && ss->sec.isServer) {
- 	PORT_Assert(ss->sec.ci.sid->cached == never_cached);
- 	(*ss->sec.cache)(ss->sec.ci.sid);
- 	ss->ssl3.hs.cacheSID = PR_FALSE;
+         PORT_Assert(ss->sec.ci.sid->cached == never_cached);
+         (*ss->sec.cache)(ss->sec.ci.sid);
+         ss->ssl3.hs.cacheSID = PR_FALSE;
 diff --git a/lib/ssl/sslsecur.c b/lib/ssl/sslsecur.c
-index cca55bb..b4b8e95 100644
+index 7ff0a2c..129f1f3 100644
 --- a/lib/ssl/sslsecur.c
 +++ b/lib/ssl/sslsecur.c
-@@ -1483,6 +1483,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
+@@ -1486,6 +1486,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
      return rv;
  }
  
@@ -48,26 +48,26 @@ index cca55bb..b4b8e95 100644
 +    PORT_Assert(!ss->sec.isServer);
 +
 +    if (ss->ssl3.hs.cacheSID) {
-+	ss->sec.cache(ss->sec.ci.sid);
-+	ss->ssl3.hs.cacheSID = PR_FALSE;
++        ss->sec.cache(ss->sec.ci.sid);
++        ss->ssl3.hs.cacheSID = PR_FALSE;
 +    }
 +}
 +
 +SECStatus
 +SSL_CacheSession(PRFileDesc *fd)
 +{
-+    sslSocket *   ss = ssl_FindSocket(fd);
-+    SECStatus     rv = SECFailure;
++    sslSocket *ss = ssl_FindSocket(fd);
++    SECStatus rv = SECFailure;
 +
 +    if (ss) {
-+	ssl_Get1stHandshakeLock(ss);
-+	ssl_GetSSL3HandshakeLock(ss);
++        ssl_Get1stHandshakeLock(ss);
++        ssl_GetSSL3HandshakeLock(ss);
 +
-+	ssl3_CacheSessionUnlocked(ss);
-+	rv = SECSuccess;
++        ssl3_CacheSessionUnlocked(ss);
++        rv = SECSuccess;
 +
-+	ssl_ReleaseSSL3HandshakeLock(ss);
-+	ssl_Release1stHandshakeLock(ss);
++        ssl_ReleaseSSL3HandshakeLock(ss);
++        ssl_Release1stHandshakeLock(ss);
 +    }
 +    return rv;
 +}
@@ -75,12 +75,12 @@ index cca55bb..b4b8e95 100644
 +SECStatus
 +SSL_CacheSessionUnlocked(PRFileDesc *fd)
 +{
-+    sslSocket *   ss = ssl_FindSocket(fd);
-+    SECStatus     rv = SECFailure;
++    sslSocket *ss = ssl_FindSocket(fd);
++    SECStatus rv = SECFailure;
 +
 +    if (ss) {
-+	ssl3_CacheSessionUnlocked(ss);
-+	rv = SECSuccess;
++        ssl3_CacheSessionUnlocked(ss);
++        rv = SECSuccess;
 +    }
 +    return rv;
 +}

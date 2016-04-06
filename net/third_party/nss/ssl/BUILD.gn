@@ -16,7 +16,6 @@ component("libssl") {
   sources = [
     "SSLerrs.h",
     "authcert.c",
-    "bodge/secitem_array.c",
     "cmpcert.c",
     "derive.c",
     "dtlscon.c",
@@ -42,7 +41,6 @@ component("libssl") {
     "sslmutex.c",
     "sslmutex.h",
     "sslnonce.c",
-    "sslplatf.c",
     "sslproto.h",
     "sslreveal.c",
     "sslsecur.c",
@@ -51,10 +49,12 @@ component("libssl") {
     "sslt.h",
     "ssltrace.c",
     "sslver.c",
+    "tls13con.c",
+    "tls13con.h",
+    "tls13hkdf.c",
+    "tls13hkdf.h",
     "unix_err.c",
     "unix_err.h",
-    "win32err.c",
-    "win32err.h",
   ]
 
   public_configs = [ ":ssl_config" ]
@@ -68,30 +68,6 @@ component("libssl") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  if (is_win) {
-    sources -= [
-      "unix_err.c",
-      "unix_err.h",
-    ]
-    if (is_component_build) {
-      ldflags = [ "/DEF:" + rebase_path("exports_win.def", root_build_dir) ]
-    }
-  } else if (is_linux) {
-    if (is_component_build) {
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-    }
-
-    libs = [ "dl" ]
-
-    include_dirs = [ "bodge" ]
-
-    # Must be after ssl_config since we want our SSL headers to take
-    # precedence.
-    public_configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
-  } else if (is_mac) {
-    libs = [ "Security.framework" ]
-  }
 
   if (is_clang) {
     # SSL triggers some of these Clang warnings.
@@ -108,14 +84,7 @@ component("libssl") {
     }
   }
 
-  if (is_posix) {
-    sources -= [
-      "win32err.c",
-      "win32err.h",
-    ]
-  }
-
-  if (is_mac || is_ios) {
+  if (is_ios) {
     defines += [
       "XP_UNIX",
       "DARWIN",
@@ -123,8 +92,7 @@ component("libssl") {
     ]
   }
 
-  if (is_mac || is_ios || is_win) {
-    sources -= [ "bodge/secitem_array.c" ]
+  if (is_ios) {
     public_deps = [
       "//third_party/nss:nspr",
       "//third_party/nss:nss",

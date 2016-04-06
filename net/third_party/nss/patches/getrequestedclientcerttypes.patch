@@ -1,8 +1,8 @@
 diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
-index 0983b5f..cf9f6db 100644
+index e905aab..9e57220 100644
 --- a/lib/ssl/ssl.h
 +++ b/lib/ssl/ssl.h
-@@ -896,6 +896,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWithTimeout(PRFileDesc *fd,
+@@ -896,6 +896,17 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWithTimeout(PRFileDesc *fd,
                                                  PRBool flushCache,
                                                  PRIntervalTime timeout);
  
@@ -16,76 +16,78 @@ index 0983b5f..cf9f6db 100644
 +*/
 +SSL_IMPORT const SECItem *
 +SSL_GetRequestedClientCertificateTypes(PRFileDesc *fd);
- 
- #ifdef SSL_DEPRECATED_FUNCTION 
++
+ #ifdef SSL_DEPRECATED_FUNCTION
  /* deprecated!
+ ** For the server, request a new handshake.  For the client, begin a new
 diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
-index cc193cd..27038f3 100644
+index b8d4784..784f59b 100644
 --- a/lib/ssl/ssl3con.c
 +++ b/lib/ssl/ssl3con.c
-@@ -7266,6 +7266,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -7674,6 +7674,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      if (rv != SECSuccess)
-     	goto loser;		/* malformed, alert has been sent */
+         goto loser; /* malformed, alert has been sent */
  
 +    PORT_Assert(!ss->requestedCertTypes);
 +    ss->requestedCertTypes = &cert_types;
 +
      if (isTLS12) {
- 	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
- 	if (rv != SECSuccess)
-@@ -7469,6 +7472,7 @@ loser:
+         rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
+         if (rv != SECSuccess)
+@@ -7723,6 +7726,7 @@ loser:
      PORT_SetError(errCode);
      rv = SECFailure;
  done:
 +    ss->requestedCertTypes = NULL;
      if (arena != NULL)
-     	PORT_FreeArena(arena, PR_FALSE);
- #ifdef NSS_PLATFORM_CLIENT_AUTH
+         PORT_FreeArena(arena, PR_FALSE);
+     return rv;
 diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
-index 94bb9f4..c7231a7 100644
+index 10361a0..5f0e6c9 100644
 --- a/lib/ssl/sslimpl.h
 +++ b/lib/ssl/sslimpl.h
-@@ -1265,6 +1265,10 @@ struct sslSocketStr {
-     unsigned int     sizeCipherSpecs;
- const unsigned char *  preferredCipher;
+@@ -1296,6 +1296,10 @@ struct sslSocketStr {
+     unsigned int sizeCipherSpecs;
+     const unsigned char *preferredCipher;
  
 +    /* TLS ClientCertificateTypes requested during HandleCertificateRequest. */
 +    /* Will be NULL at all other times. */
-+    const SECItem      *requestedCertTypes;
++    const SECItem *requestedCertTypes;
 +
-     ssl3KeyPair *         stepDownKeyPair;	/* RSA step down keys */
+     ssl3KeyPair *stepDownKeyPair; /* RSA step down keys */
  
-     const ssl3DHParams *dheParams;          /* DHE param */
+     const ssl3DHParams *dheParams; /* DHE param */
 diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
-index b73f8f6..11e66f2 100644
+index 601df2a..7f97b14 100644
 --- a/lib/ssl/sslsock.c
 +++ b/lib/ssl/sslsock.c
-@@ -2165,6 +2165,20 @@ SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed) {
+@@ -2496,6 +2496,21 @@ SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed)
      return SECSuccess;
  }
  
 +const SECItem *
 +SSL_GetRequestedClientCertificateTypes(PRFileDesc *fd)
 +{
-+  sslSocket *ss = ssl_FindSocket(fd);
++    sslSocket *ss = ssl_FindSocket(fd);
 +
-+  if (!ss) {
-+      SSL_DBG(("%d: SSL[%d]: bad socket in "
-+               "SSL_GetRequestedClientCertificateTypes", SSL_GETPID(), fd));
-+      return NULL;
-+  }
++    if (!ss) {
++        SSL_DBG(("%d: SSL[%d]: bad socket in "
++                 "SSL_GetRequestedClientCertificateTypes",
++                 SSL_GETPID(), fd));
++        return NULL;
++    }
 +
-+  return ss->requestedCertTypes;
++    return ss->requestedCertTypes;
 +}
 +
  /************************************************************************/
  /* The following functions are the TOP LEVEL SSL functions.
  ** They all get called through the NSPRIOMethods table below.
-@@ -3243,6 +3257,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
-             sc->serverKeyBits   = 0;
+@@ -3610,6 +3625,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
+             sc->serverKeyBits = 0;
              ss->certStatusArray[i] = NULL;
          }
 +        ss->requestedCertTypes = NULL;
-         ss->stepDownKeyPair    = NULL;
+         ss->stepDownKeyPair = NULL;
  
          ss->dheParams = NULL;

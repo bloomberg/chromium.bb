@@ -19,10 +19,7 @@ if (is_linux) {
       "-lssl3",
     ]
   }
-} else {
-  include_nss_root_certs = is_ios
-  include_nss_libpkix = is_ios
-
+} else if (is_ios) {
   config("nspr_config") {
     defines = [ "NO_NSPR_10_SUPPORT" ]
     include_dirs = [
@@ -121,10 +118,7 @@ if (is_linux) {
       "nspr/pr/include/prtypes.h",
       "nspr/pr/include/prvrsion.h",
       "nspr/pr/include/prwin16.h",
-      "nspr/pr/src/io/prdir.c",
       "nspr/pr/src/io/prfdcach.c",
-      "nspr/pr/src/io/prfile.c",
-      "nspr/pr/src/io/prio.c",
       "nspr/pr/src/io/priometh.c",
       "nspr/pr/src/io/pripv6.c",
       "nspr/pr/src/io/prlayer.c",
@@ -135,7 +129,6 @@ if (is_linux) {
       "nspr/pr/src/io/prpolevt.c",
       "nspr/pr/src/io/prprf.c",
       "nspr/pr/src/io/prscanf.c",
-      "nspr/pr/src/io/prsocket.c",
       "nspr/pr/src/io/prstdio.c",
       "nspr/pr/src/linking/prlink.c",
       "nspr/pr/src/malloc/prmalloc.c",
@@ -149,21 +142,6 @@ if (is_linux) {
       "nspr/pr/src/md/unix/uxrng.c",
       "nspr/pr/src/md/unix/uxshm.c",
       "nspr/pr/src/md/unix/uxwrap.c",
-      "nspr/pr/src/md/windows/ntgc.c",
-      "nspr/pr/src/md/windows/ntinrval.c",
-      "nspr/pr/src/md/windows/ntmisc.c",
-      "nspr/pr/src/md/windows/ntsec.c",
-      "nspr/pr/src/md/windows/ntsem.c",
-      "nspr/pr/src/md/windows/w32ipcsem.c",
-      "nspr/pr/src/md/windows/w32poll.c",
-      "nspr/pr/src/md/windows/w32rng.c",
-      "nspr/pr/src/md/windows/w32shm.c",
-      "nspr/pr/src/md/windows/w95cv.c",
-      "nspr/pr/src/md/windows/w95dllmain.c",
-      "nspr/pr/src/md/windows/w95io.c",
-      "nspr/pr/src/md/windows/w95sock.c",
-      "nspr/pr/src/md/windows/w95thred.c",
-      "nspr/pr/src/md/windows/win32_errors.c",
       "nspr/pr/src/memory/prseg.c",
       "nspr/pr/src/memory/prshm.c",
       "nspr/pr/src/memory/prshma.c",
@@ -179,7 +157,6 @@ if (is_linux) {
       "nspr/pr/src/misc/prinit.c",
       "nspr/pr/src/misc/prinrval.c",
       "nspr/pr/src/misc/pripc.c",
-      "nspr/pr/src/misc/pripcsem.c",
       "nspr/pr/src/misc/prlog2.c",
       "nspr/pr/src/misc/prlong.c",
       "nspr/pr/src/misc/prnetdb.c",
@@ -194,29 +171,14 @@ if (is_linux) {
       "nspr/pr/src/pthreads/ptmisc.c",
       "nspr/pr/src/pthreads/ptsynch.c",
       "nspr/pr/src/pthreads/ptthread.c",
-      "nspr/pr/src/threads/combined/prucpu.c",
-      "nspr/pr/src/threads/combined/prucv.c",
-      "nspr/pr/src/threads/combined/prulock.c",
-      "nspr/pr/src/threads/combined/prustack.c",
-      "nspr/pr/src/threads/combined/pruthr.c",
       "nspr/pr/src/threads/prcmon.c",
-      "nspr/pr/src/threads/prcthr.c",
-      "nspr/pr/src/threads/prdump.c",
-      "nspr/pr/src/threads/prmon.c",
       "nspr/pr/src/threads/prrwlock.c",
-      "nspr/pr/src/threads/prsem.c",
       "nspr/pr/src/threads/prtpd.c",
     ]
 
     public_configs = [ ":nspr_config" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    if (is_win) {
-      configs -= [
-        "//build/config/win:unicode",  # Requires 8-bit mode.
-        "//build/config/win:lean_and_mean",  # Won"t compile with lean and mean.
-      ]
-    }
     configs += [
       "//build/config/compiler:no_chromium_code",
       "//build/config/compiler:no_size_t_to_int_warning",
@@ -229,98 +191,23 @@ if (is_linux) {
     defines = [
       "_NSPR_BUILD_",
       "FORCE_PR_LOG",
+      "XP_UNIX",
+      "DARWIN",
+      "XP_MACOSX",
+      "_PR_PTHREADS",
+      "HAVE_BSD_FLOCK",
+      "HAVE_DLADDR",
+      "HAVE_LCHOWN",
+      "HAVE_SOCKLEN_T",
+      "HAVE_STRERROR",
     ]
 
     include_dirs = [ "nspr/pr/include/private" ]
-
-    if (is_win) {
-      cflags = [ "/wd4554" ]  # Check precidence.
-      defines += [
-        "XP_PC",
-        "WIN32",
-        "WIN95",
-        "_PR_GLOBAL_THREADS_ONLY",
-        "_CRT_SECURE_NO_WARNINGS",
-      ]
-    } else {
-      sources -= [
-        "nspr/pr/src/md/windows/ntgc.c",
-        "nspr/pr/src/md/windows/ntinrval.c",
-        "nspr/pr/src/md/windows/ntmisc.c",
-        "nspr/pr/src/md/windows/ntsec.c",
-        "nspr/pr/src/md/windows/ntsem.c",
-        "nspr/pr/src/md/windows/w32ipcsem.c",
-        "nspr/pr/src/md/windows/w32poll.c",
-        "nspr/pr/src/md/windows/w32rng.c",
-        "nspr/pr/src/md/windows/w32shm.c",
-        "nspr/pr/src/md/windows/w95cv.c",
-        "nspr/pr/src/md/windows/w95dllmain.c",
-        "nspr/pr/src/md/windows/w95io.c",
-        "nspr/pr/src/md/windows/w95sock.c",
-        "nspr/pr/src/md/windows/w95thred.c",
-        "nspr/pr/src/md/windows/win32_errors.c",
-        "nspr/pr/src/threads/combined/prucpu.c",
-        "nspr/pr/src/threads/combined/prucv.c",
-        "nspr/pr/src/threads/combined/prulock.c",
-        "nspr/pr/src/threads/combined/prustack.c",
-        "nspr/pr/src/threads/combined/pruthr.c",
-      ]
-    }
-
-    if (!is_posix) {
-      sources -= [
-        "nspr/pr/src/md/unix/darwin.c",
-        "nspr/pr/src/md/unix/os_Darwin.s",
-        "nspr/pr/src/md/unix/unix.c",
-        "nspr/pr/src/md/unix/unix_errors.c",
-        "nspr/pr/src/md/unix/uxproces.c",
-        "nspr/pr/src/md/unix/uxrng.c",
-        "nspr/pr/src/md/unix/uxshm.c",
-        "nspr/pr/src/md/unix/uxwrap.c",
-        "nspr/pr/src/pthreads/ptio.c",
-        "nspr/pr/src/pthreads/ptmisc.c",
-        "nspr/pr/src/pthreads/ptsynch.c",
-        "nspr/pr/src/pthreads/ptthread.c",
-      ]
-    }
 
     if (current_cpu == "x86") {
       defines += [ "_X86_" ]
     } else if (current_cpu == "x64") {
       defines += [ "_AMD64_" ]
-    }
-
-    if (is_mac || is_ios) {
-      sources -= [
-        "nspr/pr/src/io/prdir.c",
-        "nspr/pr/src/io/prfile.c",
-        "nspr/pr/src/io/prio.c",
-        "nspr/pr/src/io/prsocket.c",
-        "nspr/pr/src/misc/pripcsem.c",
-        "nspr/pr/src/threads/prcthr.c",
-        "nspr/pr/src/threads/prdump.c",
-        "nspr/pr/src/threads/prmon.c",
-        "nspr/pr/src/threads/prsem.c",
-      ]
-      defines += [
-        "XP_UNIX",
-        "DARWIN",
-        "XP_MACOSX",
-        "_PR_PTHREADS",
-        "HAVE_BSD_FLOCK",
-        "HAVE_DLADDR",
-        "HAVE_LCHOWN",
-        "HAVE_SOCKLEN_T",
-        "HAVE_STRERROR",
-      ]
-    }
-
-    if (is_mac) {
-      defines += [ "HAVE_CRT_EXTERNS_H" ]
-      libs = [
-        "CoreFoundation.framework",
-        "CoreServices.framework",
-      ]
     }
 
     if (is_clang) {
@@ -349,21 +236,8 @@ if (is_linux) {
 
     public_deps = [
       ":nss_static",
+      ":nssckbi",
     ]
-
-    if (include_nss_root_certs) {
-      public_deps += [ ":nssckbi" ]
-    }
-
-    if (is_component_build) {
-      if (is_mac) {
-        ldflags = [ "-all_load" ]
-      } else if (is_win) {
-        # Pass the def file to the linker.
-        ldflags =
-            [ "/DEF:" + rebase_path("nss/exports_win.def", root_build_dir) ]
-      }
-    }
   }
 
   config("nssckbi_config") {
@@ -430,10 +304,6 @@ if (is_linux) {
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-
-    if (is_win) {
-      configs -= [ "//build/config/win:unicode" ]  # Requires 8-bit mode.
-    }
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     include_dirs = [ "nss/lib/ckfw" ]
@@ -450,9 +320,6 @@ if (is_linux) {
       "NSS_USE_STATIC_LIBS",
       "USE_UTIL_DIRECTLY",
     ]
-    if (is_win) {
-      defines += [ "_WINDOWS" ]
-    }
     include_dirs = [
       "nspr/pr/include",
       "nspr/lib/ds",
@@ -498,50 +365,6 @@ if (is_linux) {
     }
   }
 
-  if (is_win && current_cpu == "x86") {
-    source_set("nss_static_avx") {
-      sources = [
-        "nss/lib/freebl/intel-gcm-wrap.c",
-        "nss/lib/freebl/intel-gcm-x86-masm.asm",
-        "nss/lib/freebl/intel-gcm.h",
-      ]
-      defines = [
-        "_WINDOWS",
-        "_X86_",
-        "INTEL_GCM",
-        "MP_API_COMPATIBLE",
-        "MP_ASSEMBLY_DIV_2DX1D",
-        "MP_ASSEMBLY_MULTIPLY",
-        "MP_ASSEMBLY_SQUARE",
-        "MP_NO_MP_WORD",
-        "MP_USE_UINT_DIGIT",
-        "NSS_DISABLE_DBM",
-        "NSS_STATIC",
-        "NSS_USE_STATIC_LIBS",
-        "NSS_X86",
-        "NSS_X86_OR_X64",
-        "RIJNDAEL_INCLUDE_TABLES",
-        "SHLIB_PREFIX=\"\"",
-        "SHLIB_SUFFIX=\"dll\"",
-        "SHLIB_VERSION=\"3\"",
-        "SOFTOKEN_LIB_NAME=\"softokn3.dll\"",
-        "SOFTOKEN_SHLIB_VERSION=\"3\"",
-        "USE_HW_AES",
-        "USE_UTIL_DIRECTLY",
-        "WIN32",
-        "WIN95",
-        "XP_PC",
-      ]
-      include_dirs = [
-        "nspr/pr/include",
-        "nspr/lib/ds",
-        "nspr/lib/libc/include",
-        "nss/lib/freebl/ecl",
-        "nss/lib/util",
-      ]
-    }
-  }
-
   source_set("nss_static") {
     visibility = [ ":*" ]  # Internal implementation detail.
 
@@ -583,6 +406,7 @@ if (is_linux) {
       "nss/lib/certhigh/certhtml.c",
       "nss/lib/certhigh/certreq.c",
       "nss/lib/certhigh/certvfy.c",
+      "nss/lib/certhigh/certvfypkix.c",
       "nss/lib/certhigh/crlv2.c",
       "nss/lib/certhigh/ocsp.c",
       "nss/lib/certhigh/ocsp.h",
@@ -626,9 +450,8 @@ if (is_linux) {
       "nss/lib/freebl/blapit.h",
       "nss/lib/freebl/camellia.c",
       "nss/lib/freebl/camellia.h",
-      "nss/lib/freebl/chacha20/chacha20.c",
-      "nss/lib/freebl/chacha20/chacha20.h",
-      "nss/lib/freebl/chacha20/chacha20_vec.c",
+      "nss/lib/freebl/chacha20.c",
+      "nss/lib/freebl/chacha20.h",
       "nss/lib/freebl/chacha20poly1305.c",
       "nss/lib/freebl/chacha20poly1305.h",
       "nss/lib/freebl/ctr.c",
@@ -667,7 +490,6 @@ if (is_linux) {
       "nss/lib/freebl/gcm.h",
       "nss/lib/freebl/hmacct.c",
       "nss/lib/freebl/hmacct.h",
-      "nss/lib/freebl/intel-aes-x86-masm.asm",
       "nss/lib/freebl/intel-aes.h",
       "nss/lib/freebl/jpake.c",
       "nss/lib/freebl/md2.c",
@@ -681,10 +503,8 @@ if (is_linux) {
       "nss/lib/freebl/mpi/mpi-priv.h",
       "nss/lib/freebl/mpi/mpi.c",
       "nss/lib/freebl/mpi/mpi.h",
-      "nss/lib/freebl/mpi/mpi_amd64.c",
       "nss/lib/freebl/mpi/mpi_arm.c",
       "nss/lib/freebl/mpi/mpi_arm_mac.c",
-      "nss/lib/freebl/mpi/mpi_x86_asm.c",
       "nss/lib/freebl/mpi/mplogic.c",
       "nss/lib/freebl/mpi/mplogic.h",
       "nss/lib/freebl/mpi/mpmontg.c",
@@ -692,9 +512,8 @@ if (is_linux) {
       "nss/lib/freebl/mpi/mpprime.h",
       "nss/lib/freebl/mpi/primes.c",
       "nss/lib/freebl/nss_build_config_mac.h",
-      "nss/lib/freebl/poly1305/poly1305-donna-x64-sse2-incremental-source.c",
-      "nss/lib/freebl/poly1305/poly1305.c",
-      "nss/lib/freebl/poly1305/poly1305.h",
+      "nss/lib/freebl/poly1305.c",
+      "nss/lib/freebl/poly1305.h",
       "nss/lib/freebl/pqg.c",
       "nss/lib/freebl/pqg.h",
       "nss/lib/freebl/rawhash.c",
@@ -717,6 +536,162 @@ if (is_linux) {
       "nss/lib/freebl/tlsprfalg.c",
       "nss/lib/freebl/unix_rand.c",
       "nss/lib/freebl/win_rand.c",
+      "nss/lib/libpkix/include/pkix.h",
+      "nss/lib/libpkix/include/pkix_certsel.h",
+      "nss/lib/libpkix/include/pkix_certstore.h",
+      "nss/lib/libpkix/include/pkix_checker.h",
+      "nss/lib/libpkix/include/pkix_crlsel.h",
+      "nss/lib/libpkix/include/pkix_errorstrings.h",
+      "nss/lib/libpkix/include/pkix_params.h",
+      "nss/lib/libpkix/include/pkix_pl_pki.h",
+      "nss/lib/libpkix/include/pkix_pl_system.h",
+      "nss/lib/libpkix/include/pkix_results.h",
+      "nss/lib/libpkix/include/pkix_revchecker.h",
+      "nss/lib/libpkix/include/pkix_sample_modules.h",
+      "nss/lib/libpkix/include/pkix_util.h",
+      "nss/lib/libpkix/include/pkixt.h",
+      "nss/lib/libpkix/pkix/certsel/pkix_certselector.c",
+      "nss/lib/libpkix/pkix/certsel/pkix_certselector.h",
+      "nss/lib/libpkix/pkix/certsel/pkix_comcertselparams.c",
+      "nss/lib/libpkix/pkix/certsel/pkix_comcertselparams.h",
+      "nss/lib/libpkix/pkix/checker/pkix_basicconstraintschecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_basicconstraintschecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_certchainchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_certchainchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_crlchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_crlchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_ekuchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_ekuchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_expirationchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_expirationchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_namechainingchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_namechainingchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_nameconstraintschecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_nameconstraintschecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_ocspchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_ocspchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_policychecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_policychecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_revocationchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_revocationchecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_revocationmethod.c",
+      "nss/lib/libpkix/pkix/checker/pkix_revocationmethod.h",
+      "nss/lib/libpkix/pkix/checker/pkix_signaturechecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_signaturechecker.h",
+      "nss/lib/libpkix/pkix/checker/pkix_targetcertchecker.c",
+      "nss/lib/libpkix/pkix/checker/pkix_targetcertchecker.h",
+      "nss/lib/libpkix/pkix/crlsel/pkix_comcrlselparams.c",
+      "nss/lib/libpkix/pkix/crlsel/pkix_comcrlselparams.h",
+      "nss/lib/libpkix/pkix/crlsel/pkix_crlselector.c",
+      "nss/lib/libpkix/pkix/crlsel/pkix_crlselector.h",
+      "nss/lib/libpkix/pkix/params/pkix_procparams.c",
+      "nss/lib/libpkix/pkix/params/pkix_procparams.h",
+      "nss/lib/libpkix/pkix/params/pkix_resourcelimits.c",
+      "nss/lib/libpkix/pkix/params/pkix_resourcelimits.h",
+      "nss/lib/libpkix/pkix/params/pkix_trustanchor.c",
+      "nss/lib/libpkix/pkix/params/pkix_trustanchor.h",
+      "nss/lib/libpkix/pkix/params/pkix_valparams.c",
+      "nss/lib/libpkix/pkix/params/pkix_valparams.h",
+      "nss/lib/libpkix/pkix/results/pkix_buildresult.c",
+      "nss/lib/libpkix/pkix/results/pkix_buildresult.h",
+      "nss/lib/libpkix/pkix/results/pkix_policynode.c",
+      "nss/lib/libpkix/pkix/results/pkix_policynode.h",
+      "nss/lib/libpkix/pkix/results/pkix_valresult.c",
+      "nss/lib/libpkix/pkix/results/pkix_valresult.h",
+      "nss/lib/libpkix/pkix/results/pkix_verifynode.c",
+      "nss/lib/libpkix/pkix/results/pkix_verifynode.h",
+      "nss/lib/libpkix/pkix/store/pkix_store.c",
+      "nss/lib/libpkix/pkix/store/pkix_store.h",
+      "nss/lib/libpkix/pkix/top/pkix_build.c",
+      "nss/lib/libpkix/pkix/top/pkix_build.h",
+      "nss/lib/libpkix/pkix/top/pkix_lifecycle.c",
+      "nss/lib/libpkix/pkix/top/pkix_lifecycle.h",
+      "nss/lib/libpkix/pkix/top/pkix_validate.c",
+      "nss/lib/libpkix/pkix/top/pkix_validate.h",
+      "nss/lib/libpkix/pkix/util/pkix_error.c",
+      "nss/lib/libpkix/pkix/util/pkix_error.h",
+      "nss/lib/libpkix/pkix/util/pkix_errpaths.c",
+      "nss/lib/libpkix/pkix/util/pkix_list.c",
+      "nss/lib/libpkix/pkix/util/pkix_list.h",
+      "nss/lib/libpkix/pkix/util/pkix_logger.c",
+      "nss/lib/libpkix/pkix/util/pkix_logger.h",
+      "nss/lib/libpkix/pkix/util/pkix_tools.c",
+      "nss/lib/libpkix/pkix/util/pkix_tools.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_aiamgr.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_aiamgr.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_colcertstore.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_colcertstore.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpcertstore.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpcertstore.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpdefaultclient.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpdefaultclient.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_pk11certstore.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_pk11certstore.h",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c",
+      "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_basicconstraints.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_basicconstraints.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyinfo.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyinfo.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicymap.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicymap.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyqualifier.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyqualifier.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crl.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crl.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crldp.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crldp.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crlentry.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crlentry.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_date.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_date.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_generalname.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_generalname.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_infoaccess.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_infoaccess.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_nameconstraints.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_nameconstraints.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspcertid.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspcertid.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_publickey.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_publickey.h",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_x500name.c",
+      "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_x500name.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bigint.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bigint.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bytearray.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bytearray.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_common.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_common.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_error.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_hashtable.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_hashtable.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_lifecycle.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_lifecycle.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mem.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mem.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_monitorlock.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_monitorlock.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mutex.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mutex.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_object.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_object.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_oid.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_oid.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_primhash.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_primhash.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_rwlock.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_rwlock.h",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_string.c",
+      "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_string.h",
       "nss/lib/nss/nss.h",
       "nss/lib/nss/nssinit.c",
       "nss/lib/nss/nssoptions.c",
@@ -890,8 +865,6 @@ if (is_linux) {
 
     sources -= [
       # mpi_arm.c is included by mpi_arm_mac.c.
-      # NOTE: mpi_arm.c can be used directly on Linux. mpi_arm.c will need
-      # to be excluded conditionally if we start to build NSS on Linux.
       "nss/lib/freebl/mpi/mpi_arm.c",
 
       # primes.c is included by mpprime.c.
@@ -905,10 +878,11 @@ if (is_linux) {
       "nss/lib/pk11wrap/debug_module.c",
     ]
 
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    if (is_win) {
-      configs -= [ "//build/config/win:unicode" ]  # Requires 8-bit mode.
-    }
+    configs -= [
+      "//build/config/compiler:chromium_code",
+      "//build/config/gcc:symbol_visibility_hidden",
+    ]
+
     configs += [
       "//build/config/compiler:no_chromium_code",
       "//build/config/compiler:no_size_t_to_int_warning",
@@ -919,294 +893,44 @@ if (is_linux) {
     ]
     public_configs = [ ":nss_static_config" ]
 
-    cflags = []
+    cflags = [
+      "-include",
+      rebase_path("//third_party/nss/nss/lib/freebl/nss_build_config_mac.h",
+                  root_build_dir),
+    ]
 
     # Only need the defines and includes not in nss_static_config.
     defines = [
       "MP_API_COMPATIBLE",
       "NSS_DISABLE_DBM",
+      "NSS_PKIX_NO_LDAP",
       "RIJNDAEL_INCLUDE_TABLES",
       "SHLIB_VERSION=\"3\"",
       "SOFTOKEN_SHLIB_VERSION=\"3\"",
+      "XP_UNIX",
+      "DARWIN",
+      "HAVE_STRERROR",
+      "HAVE_BSD_FLOCK",
+      "SHLIB_SUFFIX=\"dylib\"",
+      "SHLIB_PREFIX=\"lib\"",
+      "SOFTOKEN_LIB_NAME=\"libsoftokn3.dylib\"",
     ]
     include_dirs = [
       "nss/lib/freebl/mpi",
+      "nss/lib/libpkix/include",
+      "nss/lib/libpkix/pkix/certsel",
+      "nss/lib/libpkix/pkix/checker",
+      "nss/lib/libpkix/pkix/crlsel",
+      "nss/lib/libpkix/pkix/params",
+      "nss/lib/libpkix/pkix/results",
+      "nss/lib/libpkix/pkix/store",
+      "nss/lib/libpkix/pkix/top",
+      "nss/lib/libpkix/pkix/util",
+      "nss/lib/libpkix/pkix_pl_nss/module",
+      "nss/lib/libpkix/pkix_pl_nss/pki",
+      "nss/lib/libpkix/pkix_pl_nss/system",
       "nss/lib/ssl",
     ]
-
-    if (is_win) {
-      cflags += [ "/wd4101" ]  # Unreferenced local variable.
-    }
-
-    if (include_nss_libpkix) {
-      sources += [
-        "nss/lib/certhigh/certvfypkix.c",
-        "nss/lib/libpkix/include/pkix.h",
-        "nss/lib/libpkix/include/pkix_certsel.h",
-        "nss/lib/libpkix/include/pkix_certstore.h",
-        "nss/lib/libpkix/include/pkix_checker.h",
-        "nss/lib/libpkix/include/pkix_crlsel.h",
-        "nss/lib/libpkix/include/pkix_errorstrings.h",
-        "nss/lib/libpkix/include/pkix_params.h",
-        "nss/lib/libpkix/include/pkix_pl_pki.h",
-        "nss/lib/libpkix/include/pkix_pl_system.h",
-        "nss/lib/libpkix/include/pkix_results.h",
-        "nss/lib/libpkix/include/pkix_revchecker.h",
-        "nss/lib/libpkix/include/pkix_sample_modules.h",
-        "nss/lib/libpkix/include/pkix_util.h",
-        "nss/lib/libpkix/include/pkixt.h",
-        "nss/lib/libpkix/pkix/certsel/pkix_certselector.c",
-        "nss/lib/libpkix/pkix/certsel/pkix_certselector.h",
-        "nss/lib/libpkix/pkix/certsel/pkix_comcertselparams.c",
-        "nss/lib/libpkix/pkix/certsel/pkix_comcertselparams.h",
-        "nss/lib/libpkix/pkix/checker/pkix_basicconstraintschecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_basicconstraintschecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_certchainchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_certchainchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_crlchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_crlchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_ekuchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_ekuchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_expirationchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_expirationchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_namechainingchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_namechainingchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_nameconstraintschecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_nameconstraintschecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_ocspchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_ocspchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_policychecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_policychecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_revocationchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_revocationchecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_revocationmethod.c",
-        "nss/lib/libpkix/pkix/checker/pkix_revocationmethod.h",
-        "nss/lib/libpkix/pkix/checker/pkix_signaturechecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_signaturechecker.h",
-        "nss/lib/libpkix/pkix/checker/pkix_targetcertchecker.c",
-        "nss/lib/libpkix/pkix/checker/pkix_targetcertchecker.h",
-        "nss/lib/libpkix/pkix/crlsel/pkix_comcrlselparams.c",
-        "nss/lib/libpkix/pkix/crlsel/pkix_comcrlselparams.h",
-        "nss/lib/libpkix/pkix/crlsel/pkix_crlselector.c",
-        "nss/lib/libpkix/pkix/crlsel/pkix_crlselector.h",
-        "nss/lib/libpkix/pkix/params/pkix_procparams.c",
-        "nss/lib/libpkix/pkix/params/pkix_procparams.h",
-        "nss/lib/libpkix/pkix/params/pkix_resourcelimits.c",
-        "nss/lib/libpkix/pkix/params/pkix_resourcelimits.h",
-        "nss/lib/libpkix/pkix/params/pkix_trustanchor.c",
-        "nss/lib/libpkix/pkix/params/pkix_trustanchor.h",
-        "nss/lib/libpkix/pkix/params/pkix_valparams.c",
-        "nss/lib/libpkix/pkix/params/pkix_valparams.h",
-        "nss/lib/libpkix/pkix/results/pkix_buildresult.c",
-        "nss/lib/libpkix/pkix/results/pkix_buildresult.h",
-        "nss/lib/libpkix/pkix/results/pkix_policynode.c",
-        "nss/lib/libpkix/pkix/results/pkix_policynode.h",
-        "nss/lib/libpkix/pkix/results/pkix_valresult.c",
-        "nss/lib/libpkix/pkix/results/pkix_valresult.h",
-        "nss/lib/libpkix/pkix/results/pkix_verifynode.c",
-        "nss/lib/libpkix/pkix/results/pkix_verifynode.h",
-        "nss/lib/libpkix/pkix/store/pkix_store.c",
-        "nss/lib/libpkix/pkix/store/pkix_store.h",
-        "nss/lib/libpkix/pkix/top/pkix_build.c",
-        "nss/lib/libpkix/pkix/top/pkix_build.h",
-        "nss/lib/libpkix/pkix/top/pkix_lifecycle.c",
-        "nss/lib/libpkix/pkix/top/pkix_lifecycle.h",
-        "nss/lib/libpkix/pkix/top/pkix_validate.c",
-        "nss/lib/libpkix/pkix/top/pkix_validate.h",
-        "nss/lib/libpkix/pkix/util/pkix_error.c",
-        "nss/lib/libpkix/pkix/util/pkix_error.h",
-        "nss/lib/libpkix/pkix/util/pkix_errpaths.c",
-        "nss/lib/libpkix/pkix/util/pkix_list.c",
-        "nss/lib/libpkix/pkix/util/pkix_list.h",
-        "nss/lib/libpkix/pkix/util/pkix_logger.c",
-        "nss/lib/libpkix/pkix/util/pkix_logger.h",
-        "nss/lib/libpkix/pkix/util/pkix_tools.c",
-        "nss/lib/libpkix/pkix/util/pkix_tools.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_aiamgr.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_aiamgr.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_colcertstore.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_colcertstore.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpcertstore.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpcertstore.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpdefaultclient.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpdefaultclient.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_pk11certstore.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_pk11certstore.h",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c",
-        "nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_basicconstraints.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_basicconstraints.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyinfo.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyinfo.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicymap.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicymap.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyqualifier.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_certpolicyqualifier.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crl.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crl.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crldp.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crldp.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crlentry.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_crlentry.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_date.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_date.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_generalname.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_generalname.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_infoaccess.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_infoaccess.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_nameconstraints.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_nameconstraints.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspcertid.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspcertid.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_publickey.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_publickey.h",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_x500name.c",
-        "nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_x500name.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bigint.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bigint.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bytearray.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_bytearray.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_common.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_common.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_error.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_hashtable.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_hashtable.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_lifecycle.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_lifecycle.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mem.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mem.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_monitorlock.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_monitorlock.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mutex.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_mutex.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_object.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_object.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_oid.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_oid.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_primhash.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_primhash.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_rwlock.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_rwlock.h",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_string.c",
-        "nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_string.h",
-      ]
-
-      # Disable the LDAP code in libpkix.
-      defines += [ "NSS_PKIX_NO_LDAP" ]
-
-      include_dirs += [
-        "nss/lib/libpkix/include",
-        "nss/lib/libpkix/pkix/certsel",
-        "nss/lib/libpkix/pkix/checker",
-        "nss/lib/libpkix/pkix/crlsel",
-        "nss/lib/libpkix/pkix/params",
-        "nss/lib/libpkix/pkix/results",
-        "nss/lib/libpkix/pkix/store",
-        "nss/lib/libpkix/pkix/top",
-        "nss/lib/libpkix/pkix/util",
-        "nss/lib/libpkix/pkix_pl_nss/module",
-        "nss/lib/libpkix/pkix_pl_nss/pki",
-        "nss/lib/libpkix/pkix_pl_nss/system",
-      ]
-    } else {
-      defines += [ "NSS_DISABLE_LIBPKIX" ]
-    }
-
-    if (!include_nss_root_certs) {
-      defines += [ "NSS_DISABLE_ROOT_CERTS" ]
-    }
-
-    if (current_cpu == "x64" && !is_win && !is_ios) {
-      sources -= [
-        "nss/lib/freebl/chacha20/chacha20.c",
-        "nss/lib/freebl/poly1305/poly1305.c",
-      ]
-    } else {
-      sources -= [
-        "nss/lib/freebl/chacha20/chacha20_vec.c",
-        "nss/lib/freebl/poly1305/poly1305-donna-x64-sse2-incremental-source.c",
-      ]
-    }
-
-    if (is_mac || is_ios) {
-      sources -= [ "nss/lib/freebl/mpi/mpi_amd64.c" ]
-      cflags += [
-        "-include",
-        rebase_path("//third_party/nss/nss/lib/freebl/nss_build_config_mac.h",
-                    root_build_dir),
-      ]
-      defines += [
-        "XP_UNIX",
-        "DARWIN",
-        "HAVE_STRERROR",
-        "HAVE_BSD_FLOCK",
-        "SHLIB_SUFFIX=\"dylib\"",
-        "SHLIB_PREFIX=\"lib\"",
-        "SOFTOKEN_LIB_NAME=\"libsoftokn3.dylib\"",
-      ]
-
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-    } else {
-      # Not Mac/iOS.
-      sources -= [ "nss/lib/freebl/mpi/mpi_arm_mac.c" ]
-    }
-
-    if (is_win) {
-      defines += [
-        "SHLIB_SUFFIX=\"dll\"",
-        "SHLIB_PREFIX=\"\"",
-        "SOFTOKEN_LIB_NAME=\"softokn3.dll\"",
-        "XP_PC",
-        "WIN32",
-        "WIN95",
-      ]
-
-      if (current_cpu == "x86") {
-        defines += [
-          "NSS_X86_OR_X64",
-          "NSS_X86",
-          "_X86_",
-          "MP_ASSEMBLY_MULTIPLY",
-          "MP_ASSEMBLY_SQUARE",
-          "MP_ASSEMBLY_DIV_2DX1D",
-          "MP_USE_UINT_DIGIT",
-          "MP_NO_MP_WORD",
-          "USE_HW_AES",
-          "INTEL_GCM",
-        ]
-        sources -= [ "nss/lib/freebl/mpi/mpi_amd64.c" ]
-      } else if (current_cpu == "x64") {
-        sources -= [
-          "nss/lib/freebl/intel-aes-x86-masm.asm",
-          "nss/lib/freebl/mpi/mpi_amd64.c",
-          "nss/lib/freebl/mpi/mpi_x86_asm.c",
-        ]
-        defines += [
-          "NSS_USE_64",
-          "NSS_X86_OR_X64",
-          "NSS_X64",
-          "_AMD64_",
-          "MP_CHAR_STORE_SLOW",
-          "MP_IS_LITTLE_ENDIAN",
-          "WIN64",
-        ]
-      }
-    } else {
-      # Not Windows.
-      sources -= [
-        # mpi_x86_asm.c contains MSVC inline assembly code.
-        "nss/lib/freebl/intel-aes-x86-masm.asm",
-        "nss/lib/freebl/mpi/mpi_x86_asm.c",
-      ]
-    }
 
     public_deps = [
       ":nspr",
@@ -1215,9 +939,5 @@ if (is_linux) {
       ":nspr",
       "//third_party/sqlite",
     ]
-
-    if (is_win && current_cpu == "x86") {
-      deps += [ ":nss_static_avx" ]
-    }
   }
-}  # Windows/Mac/iOS.
+}  # iOS.

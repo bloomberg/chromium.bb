@@ -1,19 +1,24 @@
 diff --git a/lib/ssl/ssl3ext.c b/lib/ssl/ssl3ext.c
-index 9cfd541..eb3fb70 100644
+index 2ffe77b..3b48c9e 100644
 --- a/lib/ssl/ssl3ext.c
 +++ b/lib/ssl/ssl3ext.c
-@@ -321,6 +321,10 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
-     { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
-     { ssl_signed_certificate_timestamp_xtn,
-       &ssl3_ClientSendSignedCertTimestampXtn },
-+    /* WebSphere Application Server 7.0 is intolerant to the last extension
-+     * being zero-length. It is not intolerant of TLS 1.2, so ensure that
-+     * signature_algorithms is at the end to guarantee a non-empty
-+     * extension. */
-     { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
-     { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
-     { ssl_extended_master_secret_xtn,       &ssl3_SendExtendedMasterSecretXtn},
-@@ -2546,9 +2550,11 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
+@@ -336,10 +336,14 @@ static const ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS]
+       { ssl_use_srtp_xtn, &ssl3_ClientSendUseSRTPXtn },
+       { ssl_channel_id_xtn, &ssl3_ClientSendChannelIDXtn },
+       { ssl_cert_status_xtn, &ssl3_ClientSendStatusRequestXtn },
+-      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
+       { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
+       { ssl_signed_cert_timestamp_xtn, &ssl3_ClientSendSignedCertTimestampXtn },
+       { ssl_tls13_key_share_xtn, &tls13_ClientSendKeyShareXtn },
++      /* Some servers (e.g. WebSphere Application Server 7.0 and Tomcat) will
++       * time out or terminate the connection if the last extension in the
++       * client hello is empty. They are not intolerant of TLS 1.2, so list
++       * signature_algorithms at the end. See bug 1243641. */
++      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
+       /* any extra entries will appear as { 0, NULL }    */
+     };
+ 
+@@ -2690,9 +2694,11 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
      }
  
      extensionLength = 512 - recordLength;

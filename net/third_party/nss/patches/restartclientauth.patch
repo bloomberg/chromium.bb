@@ -1,24 +1,24 @@
 diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
-index cf9f6db..85ced8a 100644
+index 9e57220..aa4a3e5 100644
 --- a/lib/ssl/ssl.h
 +++ b/lib/ssl/ssl.h
-@@ -502,6 +502,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(PRFileDesc *fd);
+@@ -516,6 +516,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(PRFileDesc *fd);
  SSL_IMPORT SECStatus SSL_ForceHandshakeWithTimeout(PRFileDesc *fd,
                                                     PRIntervalTime timeout);
  
 +SSL_IMPORT SECStatus SSL_RestartHandshakeAfterCertReq(PRFileDesc *fd,
-+					    CERTCertificate *cert,
-+					    SECKEYPrivateKey *key,
-+					    CERTCertificateList *certChain);
++                                                      CERTCertificate *cert,
++                                                      SECKEYPrivateKey *key,
++                                                      CERTCertificateList *certChain);
 +
  /*
  ** Query security status of socket. *on is set to one if security is
  ** enabled. *keySize will contain the stream key size used. *issuer will
 diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
-index 27038f3..304e03b 100644
+index 784f59b..2a2e644 100644
 --- a/lib/ssl/ssl3con.c
 +++ b/lib/ssl/ssl3con.c
-@@ -7482,6 +7482,85 @@ done:
+@@ -7803,6 +7803,85 @@ ssl3_CompleteHandleCertificateRequest(sslSocket *ss, SECItem *algorithms,
      return rv;
  }
  
@@ -50,21 +50,21 @@ index 27038f3..304e03b 100644
 + * Caller holds 1stHandshakeLock.
 + */
 +SECStatus
-+ssl3_RestartHandshakeAfterCertReq(sslSocket *         ss,
-+				CERTCertificate *    cert,
-+				SECKEYPrivateKey *   key,
-+				CERTCertificateList *certChain)
++ssl3_RestartHandshakeAfterCertReq(sslSocket *ss,
++                                  CERTCertificate *cert,
++                                  SECKEYPrivateKey *key,
++                                  CERTCertificateList *certChain)
 +{
-+    SECStatus        rv          = SECSuccess;
++    SECStatus rv = SECSuccess;
 +
 +    /* XXX This code only works on the initial handshake on a connection,
 +    ** XXX It does not work on a subsequent handshake (redo).
 +    */
 +    if (ss->handshake != 0) {
-+	ss->handshake              = ssl_GatherRecord1stHandshake;
-+	ss->ssl3.clientCertificate = cert;
-+	ss->ssl3.clientPrivateKey  = key;
-+	ss->ssl3.clientCertChain   = certChain;
++        ss->handshake = ssl_GatherRecord1stHandshake;
++        ss->ssl3.clientCertificate = cert;
++        ss->ssl3.clientPrivateKey = key;
++        ss->ssl3.clientCertChain = certChain;
 +        if (!cert || !key || !certChain) {
 +            /* we are missing the key, cert, or cert chain */
 +            if (ss->ssl3.clientCertificate) {
@@ -84,19 +84,19 @@ index 27038f3..304e03b 100644
 +            } else {
 +                (void)SSL3_SendAlert(ss, alert_warning, no_certificate);
 +            }
-+	}
++        }
 +    } else {
-+	if (cert) {
-+	    CERT_DestroyCertificate(cert);
-+	}
-+	if (key) {
-+	    SECKEY_DestroyPrivateKey(key);
-+	}
-+	if (certChain) {
-+	    CERT_DestroyCertificateList(certChain);
-+	}
-+	PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
-+	rv = SECFailure;
++        if (cert) {
++            CERT_DestroyCertificate(cert);
++        }
++        if (key) {
++            SECKEY_DestroyPrivateKey(key);
++        }
++        if (certChain) {
++            CERT_DestroyCertificateList(certChain);
++        }
++        PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
++        rv = SECFailure;
 +    }
 +    return rv;
 +}
@@ -105,41 +105,43 @@ index 27038f3..304e03b 100644
  ssl3_CheckFalseStart(sslSocket *ss)
  {
 diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
-index c7231a7..c089889 100644
+index 5f0e6c9..dad75b2 100644
 --- a/lib/ssl/sslimpl.h
 +++ b/lib/ssl/sslimpl.h
-@@ -1629,16 +1629,17 @@ extern  SECStatus ssl3_MasterSecretDeriveBypass( ssl3CipherSpec * pwSpec,
+@@ -1702,16 +1702,16 @@ extern SECStatus ssl3_MasterSecretDeriveBypass(ssl3CipherSpec *pwSpec,
  /* These functions are called from secnav, even though they're "private". */
  
  extern int ssl2_SendErrorMessage(struct sslSocketStr *ss, int error);
 -extern int SSL_RestartHandshakeAfterCertReq(struct sslSocketStr *ss,
--					    CERTCertificate *cert,
--					    SECKEYPrivateKey *key,
--					    CERTCertificateList *certChain);
+-                                            CERTCertificate *cert,
+-                                            SECKEYPrivateKey *key,
+-                                            CERTCertificateList *certChain);
  extern sslSocket *ssl_FindSocket(PRFileDesc *fd);
  extern void ssl_FreeSocket(struct sslSocketStr *ssl);
  extern SECStatus SSL3_SendAlert(sslSocket *ss, SSL3AlertLevel level,
- 				SSL3AlertDescription desc);
+                                 SSL3AlertDescription desc);
  extern SECStatus ssl3_DecodeError(sslSocket *ss);
  
-+extern SECStatus ssl3_RestartHandshakeAfterCertReq(sslSocket *    ss,
-+					     CERTCertificate *    cert, 
-+					     SECKEYPrivateKey *   key,
-+					     CERTCertificateList *certChain);
-+
++extern SECStatus ssl3_RestartHandshakeAfterCertReq(struct sslSocketStr *ss,
++                                                   CERTCertificate *cert,
++                                                   SECKEYPrivateKey *key,
++                                                   CERTCertificateList *certChain);
  extern SECStatus ssl3_AuthCertificateComplete(sslSocket *ss, PRErrorCode error);
  
  /*
 diff --git a/lib/ssl/sslsecur.c b/lib/ssl/sslsecur.c
-index 53b4885..f77d6fa 100644
+index 5773748..a087ffc 100644
 --- a/lib/ssl/sslsecur.c
 +++ b/lib/ssl/sslsecur.c
-@@ -1532,17 +1532,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle)
+@@ -1535,17 +1535,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle)
      return SECSuccess;
  }
  
 -/* DO NOT USE. This function was exported in ssl.def with the wrong signature;
 - * this implementation exists to maintain link-time compatibility.
+- */
+-int
+-SSL_RestartHandshakeAfterCertReq(sslSocket *ss,
 +/*
 + * attempt to restart the handshake after asynchronously handling
 + * a request for the client's certificate.
@@ -165,48 +167,46 @@ index 53b4885..f77d6fa 100644
 + *
 + * XXX This code only works on the initial handshake on a connection, XXX
 + *     It does not work on a subsequent handshake (redo).
-  */
--int
--SSL_RestartHandshakeAfterCertReq(sslSocket *         ss,
++   */
 +SECStatus
-+SSL_RestartHandshakeAfterCertReq(PRFileDesc *        fd,
- 				CERTCertificate *    cert, 
- 				SECKEYPrivateKey *   key,
- 				CERTCertificateList *certChain)
++SSL_RestartHandshakeAfterCertReq(PRFileDesc *fd,
+                                  CERTCertificate *cert,
+                                  SECKEYPrivateKey *key,
+                                  CERTCertificateList *certChain)
  {
 -    PORT_SetError(PR_NOT_IMPLEMENTED_ERROR);
 -    return -1;
-+    sslSocket *   ss = ssl_FindSocket(fd);
-+    SECStatus     ret;
++    sslSocket *ss = ssl_FindSocket(fd);
++    SECStatus ret;
 +
 +    if (!ss) {
-+	SSL_DBG(("%d: SSL[%d]: bad socket in SSL_RestartHandshakeAfterCertReq",
-+		 SSL_GETPID(), fd));
-+	if (cert) {
-+	    CERT_DestroyCertificate(cert);
-+	}
-+	if (key) {
-+	    SECKEY_DestroyPrivateKey(key);
-+	}
-+	if (certChain) {
-+	    CERT_DestroyCertificateList(certChain);
-+	}
-+	return SECFailure;
++        SSL_DBG(("%d: SSL[%d]: bad socket in SSL_RestartHandshakeAfterCertReq",
++                 SSL_GETPID(), fd));
++        if (cert) {
++            CERT_DestroyCertificate(cert);
++        }
++        if (key) {
++            SECKEY_DestroyPrivateKey(key);
++        }
++        if (certChain) {
++            CERT_DestroyCertificateList(certChain);
++        }
++        return SECFailure;
 +    }
 +
-+    ssl_Get1stHandshakeLock(ss);   /************************************/
++    ssl_Get1stHandshakeLock(ss); /************************************/
 +
 +    if (ss->version >= SSL_LIBRARY_VERSION_3_0) {
-+	ret = ssl3_RestartHandshakeAfterCertReq(ss, cert, key, certChain);
++        ret = ssl3_RestartHandshakeAfterCertReq(ss, cert, key, certChain);
 +    } else {
-+	if (certChain != NULL) {
-+	    CERT_DestroyCertificateList(certChain);
-+	}
-+	PORT_SetError(SSL_ERROR_FEATURE_NOT_SUPPORTED_FOR_SSL2);
-+	ret = SECFailure;
++        if (certChain != NULL) {
++            CERT_DestroyCertificateList(certChain);
++        }
++        PORT_SetError(SSL_ERROR_FEATURE_NOT_SUPPORTED_FOR_SSL2);
++        ret = SECFailure;
 +    }
 +
-+    ssl_Release1stHandshakeLock(ss);  /************************************/
++    ssl_Release1stHandshakeLock(ss); /************************************/
 +    return ret;
  }
  

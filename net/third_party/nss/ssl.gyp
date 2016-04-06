@@ -11,12 +11,9 @@
       'sources': [
         'ssl/SSLerrs.h',
         'ssl/authcert.c',
-        'ssl/bodge/secitem_array.c',
         'ssl/cmpcert.c',
         'ssl/derive.c',
         'ssl/dtlscon.c',
-        'ssl/os2_err.c',
-        'ssl/os2_err.h',
         'ssl/preenc.h',
         'ssl/prelib.c',
         'ssl/ssl.h',
@@ -39,7 +36,6 @@
         'ssl/sslmutex.c',
         'ssl/sslmutex.h',
         'ssl/sslnonce.c',
-        'ssl/sslplatf.c',
         'ssl/sslproto.h',
         'ssl/sslreveal.c',
         'ssl/sslsecur.c',
@@ -48,21 +44,18 @@
         'ssl/sslt.h',
         'ssl/ssltrace.c',
         'ssl/sslver.c',
+        'ssl/tls13con.c',
+        'ssl/tls13con.h',
+        'ssl/tls13hkdf.c',
+        'ssl/tls13hkdf.h',
         'ssl/unix_err.c',
         'ssl/unix_err.h',
-        'ssl/win32err.c',
-        'ssl/win32err.h',
-      ],
-      'sources!': [
-        'ssl/os2_err.c',
-        'ssl/os2_err.h',
       ],
       'defines': [
         'NO_PKCS11_BYPASS',
         'NSS_ENABLE_ECC',
         'USE_UTIL_DIRECTLY',
       ],
-      'msvs_disabled_warnings': [4244, 4267],
       'variables': {
         'clang_warning_flags_unset': [
           # ssl uses PR_ASSERT(!"foo") instead of PR_ASSERT(false && "foo")
@@ -72,18 +65,10 @@
       'conditions': [
         ['component == "shared_library"', {
           'conditions': [
-            ['OS == "mac" or OS == "ios"', {
+            ['OS == "ios"', {
               'xcode_settings': {
                 'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
               },
-            }],
-            ['OS == "win"', {
-              'sources': [
-                'ssl/exports_win.def',
-              ],
-            }],
-            ['os_posix == 1 and OS != "mac" and OS != "ios"', {
-              'cflags!': ['-fvisibility=hidden'],
             }],
           ],
         }],
@@ -94,70 +79,14 @@
             '-Wno-header-guard',
           ],
         }],
-        [ 'OS == "linux"', {
-          'link_settings': {
-            'libraries': [
-              '-ldl',
-            ],
-          },
-        }],
-        [ 'OS == "mac" or OS == "ios"', {
+        [ 'OS == "ios"', {
           'defines': [
             'XP_UNIX',
             'DARWIN',
             'XP_MACOSX',
           ],
         }],
-        [ 'OS == "mac"', {
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Security.framework',
-            ],
-          },
-        }],
-        [ 'OS == "win"', {
-            'sources!': [
-              'ssl/unix_err.c',
-              'ssl/unix_err.h',
-            ],
-          },
-          {  # else: OS != "win"
-            'sources!': [
-              'ssl/win32err.c',
-              'ssl/win32err.h',
-            ],
-          },
-        ],
-        [ 'os_posix == 1 and OS != "mac" and OS != "ios"', {
-          'include_dirs': [
-            'ssl/bodge',
-          ],
-          'cflags': [
-            '<!@(<(pkg-config) --cflags nss)',
-          ],
-          'ldflags': [
-            '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
-          ],
-          'libraries': [
-            '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
-          ],
-        }],
-        [ 'OS == "mac" or OS == "ios" or OS == "win"', {
-          'sources/': [
-            ['exclude', 'ssl/bodge/'],
-          ],
-          'conditions': [
-            ['OS != "ios"', {
-              'defines': [
-                'NSS_PLATFORM_CLIENT_AUTH',
-              ],
-              'direct_dependent_settings': {
-                'defines': [
-                  'NSS_PLATFORM_CLIENT_AUTH',
-                ],
-              },
-            }],
-          ],
+        [ 'OS == "ios"', {
           'dependencies': [
             '../../../third_party/nss/nss.gyp:nspr',
             '../../../third_party/nss/nss.gyp:nss',

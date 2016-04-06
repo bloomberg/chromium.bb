@@ -1,8 +1,8 @@
 diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
-index 2533679..ba3d012 100644
+index 1394542..d7d186a 100644
 --- a/lib/ssl/ssl3con.c
 +++ b/lib/ssl/ssl3con.c
-@@ -5921,7 +5921,6 @@ SSL3_ShutdownServerCache(void)
+@@ -6049,7 +6049,6 @@ SSL3_ShutdownServerCache(void)
      }
  
      PZ_Unlock(symWrapKeysLock);
@@ -10,7 +10,7 @@ index 2533679..ba3d012 100644
      return SECSuccess;
  }
  
-@@ -5973,7 +5972,7 @@ getWrappingKey( sslSocket *       ss,
+@@ -6102,7 +6101,7 @@ getWrappingKey(sslSocket *ss,
  
      pSymWrapKey = &symWrapKeys[symWrapMechIndex].symWrapKey[exchKeyType];
  
@@ -20,10 +20,10 @@ index 2533679..ba3d012 100644
      PZ_Lock(symWrapKeysLock);
  
 diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
-index d5f326f..d53c446 100644
+index d47eb28..c0e3a0b 100644
 --- a/lib/ssl/sslimpl.h
 +++ b/lib/ssl/sslimpl.h
-@@ -1957,9 +1957,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
+@@ -2029,9 +2029,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
  
  extern SECStatus ssl_FreeSymWrapKeysLock(void);
  
@@ -32,15 +32,15 @@ index d5f326f..d53c446 100644
 -extern SECStatus ssl_FreeSessionCacheLocks(void);
 +extern SECStatus ssl_InitSessionCacheLocks(void);
  
- /***************** platform client auth ****************/
- 
+ /**************** DTLS-specific functions **************/
+ extern void dtls_FreeQueuedMessage(DTLSQueuedMessage *msg);
 diff --git a/lib/ssl/sslnonce.c b/lib/ssl/sslnonce.c
-index 1326a8b..c45849d 100644
+index 4804cb8..99591cc 100644
 --- a/lib/ssl/sslnonce.c
 +++ b/lib/ssl/sslnonce.c
-@@ -35,91 +35,55 @@ static PZLock *      cacheLock = NULL;
- #define LOCK_CACHE 	lock_cache()
- #define UNLOCK_CACHE	PZ_Unlock(cacheLock)
+@@ -35,93 +35,55 @@ static PZLock *cacheLock = NULL;
+ #define LOCK_CACHE lock_cache()
+ #define UNLOCK_CACHE PZ_Unlock(cacheLock)
  
 -static SECStatus
 -ssl_InitClientSessionCacheLock(void)
@@ -69,12 +69,12 @@ index 1326a8b..c45849d 100644
 + * state. */
  static SECStatus
 -FreeSessionCacheLocks()
-+FreeSessionCacheLocks(void* appData, void* nssData)
++FreeSessionCacheLocks(void *appData, void *nssData)
  {
 -    SECStatus rv1, rv2;
 -    rv1 = ssl_FreeSymWrapKeysLock();
 -    rv2 = ssl_FreeClientSessionCacheLock();
--    if ( (SECSuccess == rv1) && (SECSuccess == rv2) ) {
+-    if ((SECSuccess == rv1) && (SECSuccess == rv2)) {
 -        return SECSuccess;
 -    }
 -    return SECFailure;
@@ -89,7 +89,7 @@ index 1326a8b..c45849d 100644
 -    PRErrorCode rc;
 -    rv1 = ssl_InitSymWrapKeysLock();
 -    rv2 = ssl_InitClientSessionCacheLock();
--    if ( (SECSuccess == rv1) && (SECSuccess == rv2) ) {
+-    if ((SECSuccess == rv1) && (SECSuccess == rv2)) {
 -        return SECSuccess;
 -    }
 -    rc = PORT_GetError();
@@ -118,7 +118,8 @@ index 1326a8b..c45849d 100644
 +    cacheLock = NULL;
  
 -/* free the session cache locks if they were initialized lazily */
--static SECStatus ssl_ShutdownLocks(void* appData, void* nssData)
+-static SECStatus
+-ssl_ShutdownLocks(void *appData, void *nssData)
 -{
 -    PORT_Assert(PR_FALSE == LocksInitializedEarly);
 -    if (LocksInitializedEarly) {
@@ -135,10 +136,10 @@ index 1326a8b..c45849d 100644
      return SECSuccess;
  }
  
--static PRStatus initSessionCacheLocksLazily(void)
 +/* InitSessionCacheLocks is called, protected by lockOnce, to create the
 + * session cache locks. */
-+static PRStatus
+ static PRStatus
+-initSessionCacheLocksLazily(void)
 +InitSessionCacheLocks(void)
  {
 -    SECStatus rv = InitSessionCacheLocks();
@@ -163,7 +164,7 @@ index 1326a8b..c45849d 100644
      PORT_Assert(SECSuccess == rv);
      if (SECSuccess != rv) {
          return PR_FAILURE;
-@@ -127,34 +91,18 @@ static PRStatus initSessionCacheLocksLazily(void)
+@@ -129,35 +91,19 @@ initSessionCacheLocksLazily(void)
      return PR_SUCCESS;
  }
  
@@ -172,7 +173,7 @@ index 1326a8b..c45849d 100644
 - */
  SECStatus
 -ssl_InitSessionCacheLocks(PRBool lazyInit)
-+ssl_InitSessionCacheLocks(void)
++ssl_InitSessionCacheLocks()
  {
 -    if (LocksInitializedEarly) {
 -        return SECSuccess;
@@ -180,10 +181,11 @@ index 1326a8b..c45849d 100644
 -
 -    if (lazyInit) {
 -        return (PR_SUCCESS ==
--                PR_CallOnce(&lockOnce, initSessionCacheLocksLazily)) ?
--               SECSuccess : SECFailure;
+-                PR_CallOnce(&lockOnce, initSessionCacheLocksLazily))
+-                   ? SECSuccess
+-                   : SECFailure;
 -    }
--     
+-
 -    if (SECSuccess == InitSessionCacheLocks()) {
 -        LocksInitializedEarly = PR_TRUE;
 -        return SECSuccess;
@@ -191,12 +193,12 @@ index 1326a8b..c45849d 100644
 -
 -    return SECFailure;
 +    return (PR_SUCCESS ==
-+            PR_CallOnce(&lockOnce, InitSessionCacheLocks)) ?
-+           SECSuccess : SECFailure;
++            PR_CallOnce(&lockOnce, InitSessionCacheLocks))
++               ? SECSuccess
++               : SECFailure;
  }
  
--static void 
-+static void
+ static void
  lock_cache(void)
  {
 -    ssl_InitSessionCacheLocks(PR_TRUE);
@@ -205,33 +207,33 @@ index 1326a8b..c45849d 100644
  }
  
 diff --git a/lib/ssl/sslsnce.c b/lib/ssl/sslsnce.c
-index f31b2e9..3856c13 100644
+index da1f93f..e3f749e 100644
 --- a/lib/ssl/sslsnce.c
 +++ b/lib/ssl/sslsnce.c
-@@ -1363,7 +1363,7 @@ SSL_ConfigServerSessionIDCache(	int      maxCacheEntries,
- 			       	PRUint32 ssl3_timeout, 
- 			  const char *   directory)
+@@ -1344,7 +1344,7 @@ SSL_ConfigServerSessionIDCache(int maxCacheEntries,
+                                PRUint32 ssl3_timeout,
+                                const char *directory)
  {
 -    ssl_InitSessionCacheLocks(PR_FALSE);
 +    ssl_InitSessionCacheLocks();
-     return SSL_ConfigServerSessionIDCacheInstance(&globalCache, 
-     		maxCacheEntries, ssl2_timeout, ssl3_timeout, directory, PR_FALSE);
+     return SSL_ConfigServerSessionIDCacheInstance(&globalCache,
+                                                   maxCacheEntries, ssl2_timeout, ssl3_timeout, directory, PR_FALSE);
  }
-@@ -1477,7 +1477,7 @@ SSL_ConfigServerSessionIDCacheWithOpt(
-                                 PRBool enableMPCache)
+@@ -1458,7 +1458,7 @@ SSL_ConfigServerSessionIDCacheWithOpt(
+     PRBool enableMPCache)
  {
      if (!enableMPCache) {
 -        ssl_InitSessionCacheLocks(PR_FALSE);
 +        ssl_InitSessionCacheLocks();
-         return ssl_ConfigServerSessionIDCacheInstanceWithOpt(&globalCache, 
-            ssl2_timeout, ssl3_timeout, directory, PR_FALSE,
-            maxCacheEntries, maxCertCacheEntries, maxSrvNameCacheEntries);
-@@ -1521,7 +1521,7 @@ SSL_InheritMPServerSIDCacheInstance(cacheDesc *cache, const char * envString)
-     	return SECSuccess;	/* already done. */
+         return ssl_ConfigServerSessionIDCacheInstanceWithOpt(&globalCache,
+                                                              ssl2_timeout, ssl3_timeout, directory, PR_FALSE,
+                                                              maxCacheEntries, maxCertCacheEntries, maxSrvNameCacheEntries);
+@@ -1502,7 +1502,7 @@ SSL_InheritMPServerSIDCacheInstance(cacheDesc *cache, const char *envString)
+         return SECSuccess; /* already done. */
      }
  
 -    ssl_InitSessionCacheLocks(PR_FALSE);
 +    ssl_InitSessionCacheLocks();
  
-     ssl_sid_lookup  = ServerSessionIDLookup;
-     ssl_sid_cache   = ServerSessionIDCache;
+     ssl_sid_lookup = ServerSessionIDLookup;
+     ssl_sid_cache = ServerSessionIDCache;

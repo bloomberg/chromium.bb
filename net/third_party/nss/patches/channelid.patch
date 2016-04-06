@@ -1,25 +1,25 @@
 diff --git a/lib/ssl/SSLerrs.h b/lib/ssl/SSLerrs.h
-index 6028396..3d21ab8 100644
+index 15bf0b4..555e629 100644
 --- a/lib/ssl/SSLerrs.h
 +++ b/lib/ssl/SSLerrs.h
-@@ -440,3 +440,12 @@ ER3(SSL_ERROR_MISSING_EXTENDED_MASTER_SECRET, (SSL_ERROR_BASE + 136),
+@@ -465,3 +465,12 @@ ER3(SSL_ERROR_EXTENSION_DISALLOWED_FOR_VERSION, (SSL_ERROR_BASE + 145),
  
- ER3(SSL_ERROR_UNEXPECTED_EXTENDED_MASTER_SECRET, (SSL_ERROR_BASE + 137),
- "The peer tried to resume with an unexpected extended_master_secret extension")
+ ER3(SSL_ERROR_RX_MALFORMED_ENCRYPTED_EXTENSIONS, (SSL_ERROR_BASE + 146),
+     "SSL received a malformed Encrypted Extensions handshake message.")
 +
-+ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 138),
-+"SSL received a malformed TLS Channel ID extension.")
++ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 147),
++    "SSL received a malformed TLS Channel ID extension.")
 +
-+ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 139),
-+"The application provided an invalid TLS Channel ID key.")
++ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 148),
++    "The application provided an invalid TLS Channel ID key.")
 +
-+ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 140),
-+"The application could not get a TLS Channel ID.")
++ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 149),
++    "The application could not get a TLS Channel ID.")
 diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
-index 85ced8a..120c257 100644
+index aa4a3e5..870a8cc 100644
 --- a/lib/ssl/ssl.h
 +++ b/lib/ssl/ssl.h
-@@ -1135,6 +1135,34 @@ SSL_IMPORT SECStatus SSL_HandshakeNegotiatedExtension(PRFileDesc * socket,
+@@ -1142,6 +1142,34 @@ SSL_IMPORT SECStatus SSL_HandshakeNegotiatedExtension(PRFileDesc *socket,
  SSL_IMPORT SECStatus SSL_HandshakeResumedSession(PRFileDesc *fd,
                                                   PRBool *last_handshake_resumed);
  
@@ -27,7 +27,7 @@ index 85ced8a..120c257 100644
 + * SECWouldBlock then SSL_RestartHandshakeAfterChannelIDReq should be called in
 + * the future to restart the handshake.  On SECSuccess, the callback must have
 + * written a P-256, EC key pair to |*out_public_key| and |*out_private_key|. */
-+typedef SECStatus (PR_CALLBACK *SSLClientChannelIDCallback)(
++typedef SECStatus(PR_CALLBACK *SSLClientChannelIDCallback)(
 +    void *arg,
 +    PRFileDesc *fd,
 +    SECKEYPublicKey **out_public_key,
@@ -55,43 +55,43 @@ index 85ced8a..120c257 100644
  ** How long should we wait before retransmitting the next flight of
  ** the DTLS handshake? Returns SECFailure if not DTLS or not in a
 diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
-index 304e03b..2ae8ce9 100644
+index 2a2e644..a2beec2 100644
 --- a/lib/ssl/ssl3con.c
 +++ b/lib/ssl/ssl3con.c
-@@ -57,6 +57,7 @@ static SECStatus ssl3_SendCertificateStatus( sslSocket *ss);
- static SECStatus ssl3_SendEmptyCertificate(  sslSocket *ss);
+@@ -57,6 +57,7 @@ static SECStatus ssl3_InitState(sslSocket *ss);
+ 
  static SECStatus ssl3_SendCertificateRequest(sslSocket *ss);
- static SECStatus ssl3_SendNextProto(         sslSocket *ss);
-+static SECStatus ssl3_SendEncryptedExtensions(sslSocket *ss);
- static SECStatus ssl3_SendFinished(          sslSocket *ss, PRInt32 flags);
- static SECStatus ssl3_SendServerHello(       sslSocket *ss);
- static SECStatus ssl3_SendServerHelloDone(   sslSocket *ss);
-@@ -6470,6 +6471,15 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+ static SECStatus ssl3_SendNextProto(sslSocket *ss);
++static SECStatus ssl3_SendChannelIDEncryptedExtensions(sslSocket *ss);
+ static SECStatus ssl3_SendFinished(sslSocket *ss, PRInt32 flags);
+ static SECStatus ssl3_SendServerHelloDone(sslSocket *ss);
+ static SECStatus ssl3_SendServerKeyExchange(sslSocket *ss);
+@@ -6762,6 +6763,15 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+         ss->ssl3.clientPrivateKey = NULL;
      }
- #endif  /* NSS_PLATFORM_CLIENT_AUTH */
  
 +    if (ss->ssl3.channelID != NULL) {
-+	SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
-+	ss->ssl3.channelID = NULL;
++        SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
++        ss->ssl3.channelID = NULL;
 +    }
 +    if (ss->ssl3.channelIDPub != NULL) {
-+	SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
-+	ss->ssl3.channelIDPub = NULL;
++        SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
++        ss->ssl3.channelIDPub = NULL;
 +    }
 +
      temp = ssl3_ConsumeHandshakeNumber(ss, 2, &b, &length);
      if (temp < 0) {
-     	goto loser; 	/* alert has been sent */
-@@ -6780,7 +6790,7 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
- 	if (rv != SECSuccess) {
- 	    goto alert_loser;	/* err code was set */
- 	}
--	return SECSuccess;
-+	goto winner;
-     } while (0);
+         goto loser; /* alert has been sent */
+@@ -7111,7 +7121,7 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+             if (rv != SECSuccess) {
+                 goto alert_loser; /* err code was set */
+             }
+-            return SECSuccess;
++            goto winner;
+         } while (0);
  
      if (sid_match)
-@@ -6819,6 +6829,27 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -7166,6 +7176,27 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
          PORT_Assert(ss->ssl3.hs.kea_def->ephemeral);
          ss->ssl3.hs.ws = wait_server_key;
      }
@@ -101,42 +101,42 @@ index 304e03b..2ae8ce9 100644
 +     * allows the handshake to be restarted cleanly if the callback returns
 +     * SECWouldBlock. */
 +    if (ssl3_ExtensionNegotiated(ss, ssl_channel_id_xtn)) {
-+	rv = ss->getChannelID(ss->getChannelIDArg, ss->fd,
-+			      &ss->ssl3.channelIDPub, &ss->ssl3.channelID);
-+	if (rv == SECWouldBlock) {
-+	    ssl3_SetAlwaysBlock(ss);
-+	    return rv;
-+	}
-+	if (rv != SECSuccess ||
-+	    ss->ssl3.channelIDPub == NULL ||
-+	    ss->ssl3.channelID == NULL) {
-+	    PORT_SetError(SSL_ERROR_GET_CHANNEL_ID_FAILED);
-+	    desc = internal_error;
-+	    goto alert_loser;
-+	}
++        rv = ss->getChannelID(ss->getChannelIDArg, ss->fd,
++                              &ss->ssl3.channelIDPub, &ss->ssl3.channelID);
++        if (rv == SECWouldBlock) {
++            ssl3_SetAlwaysBlock(ss);
++            return rv;
++        }
++        if (rv != SECSuccess ||
++            ss->ssl3.channelIDPub == NULL ||
++            ss->ssl3.channelID == NULL) {
++            PORT_SetError(SSL_ERROR_GET_CHANNEL_ID_FAILED);
++            desc = internal_error;
++            goto alert_loser;
++        }
 +    }
 +
      return SECSuccess;
  
  alert_loser:
-@@ -7774,7 +7805,14 @@ ssl3_SendClientSecondRound(sslSocket *ss)
- 	if (rv != SECSuccess) {
- 	    goto loser;	/* err code was set. */
- 	}
+@@ -8096,7 +8127,14 @@ ssl3_SendClientSecondRound(sslSocket *ss)
+         if (rv != SECSuccess) {
+             goto loser; /* err code was set. */
+         }
++    }
+ 
++    rv = ssl3_SendChannelIDEncryptedExtensions(ss);
++    if (rv != SECSuccess) {
++        goto loser; /* err code was set. */
 +    }
 +
-+    rv = ssl3_SendEncryptedExtensions(ss);
-+    if (rv != SECSuccess) {
-+	goto loser; /* err code was set. */
-+    }
- 
 +    if (!ss->firstHsDone) {
- 	if (ss->opt.enableFalseStart) {
- 	    if (!ss->ssl3.hs.authCertificatePending) {
- 		/* When we fix bug 589047, we will need to know whether we are
-@@ -7811,6 +7849,33 @@ ssl3_SendClientSecondRound(sslSocket *ss)
+         if (ss->opt.enableFalseStart) {
+             if (!ss->ssl3.hs.authCertificatePending) {
+                 /* When we fix bug 589047, we will need to know whether we are
+@@ -8133,6 +8171,33 @@ ssl3_SendClientSecondRound(sslSocket *ss)
  
-     ssl_ReleaseXmitBufLock(ss);		/*******************************/
+     ssl_ReleaseXmitBufLock(ss); /*******************************/
  
 +    if (!ss->ssl3.hs.isResuming &&
 +        ssl3_ExtensionNegotiated(ss, ssl_channel_id_xtn)) {
@@ -166,16 +166,16 @@ index 304e03b..2ae8ce9 100644
 +    }
 +
      if (ssl3_ExtensionNegotiated(ss, ssl_session_ticket_xtn))
- 	ss->ssl3.hs.ws = wait_new_session_ticket;
+         ss->ssl3.hs.ws = wait_new_session_ticket;
      else
-@@ -11264,6 +11329,184 @@ ssl3_RecordKeyLog(sslSocket *ss)
+@@ -11763,6 +11828,184 @@ ssl3_RecordKeyLog(sslSocket *ss)
  }
  
  /* called from ssl3_SendClientSecondRound
 + *	     ssl3_HandleFinished
 + */
 +static SECStatus
-+ssl3_SendEncryptedExtensions(sslSocket *ss)
++ssl3_SendChannelIDEncryptedExtensions(sslSocket *ss)
 +{
 +    static const char CHANNEL_ID_MAGIC[] = "TLS Channel ID signature";
 +    static const char CHANNEL_ID_RESUMPTION_MAGIC[] = "Resumption";
@@ -190,10 +190,10 @@ index 304e03b..2ae8ce9 100644
 +     * public key. Following that are the two field elements as 32-byte,
 +     * big-endian numbers, as required by the Channel ID. */
 +    static const unsigned char P256_SPKI_PREFIX[] = {
-+	0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
-+	0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
-+	0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
-+	0x42, 0x00, 0x04
++        0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
++        0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
++        0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
++        0x42, 0x00, 0x04
 +    };
 +    /* ChannelIDs are always 128 bytes long: 64 bytes of P-256 public key and 64
 +     * bytes of ECDSA signature. */
@@ -206,7 +206,7 @@ index 304e03b..2ae8ce9 100644
 +    const unsigned char *pub_bytes;
 +    unsigned char signed_data[sizeof(CHANNEL_ID_MAGIC) +
 +                              sizeof(CHANNEL_ID_RESUMPTION_MAGIC) +
-+                              sizeof(SSL3Hashes)*2];
++                              sizeof(SSL3Hashes) * 2];
 +    size_t signed_data_len;
 +    unsigned char digest[SHA256_LENGTH];
 +    SECItem digest_item;
@@ -217,15 +217,15 @@ index 304e03b..2ae8ce9 100644
 +    PORT_Assert(ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));
 +
 +    if (ss->ssl3.channelID == NULL)
-+	return SECSuccess;
++        return SECSuccess;
 +
 +    PORT_Assert(ssl3_ExtensionNegotiated(ss, ssl_channel_id_xtn));
 +
 +    if (SECKEY_GetPrivateKeyType(ss->ssl3.channelID) != ecKey ||
-+	PK11_SignatureLen(ss->ssl3.channelID) != sizeof(signature)) {
-+	PORT_SetError(SSL_ERROR_INVALID_CHANNEL_ID_KEY);
-+	rv = SECFailure;
-+	goto loser;
++        PK11_SignatureLen(ss->ssl3.channelID) != sizeof(signature)) {
++        PORT_SetError(SSL_ERROR_INVALID_CHANNEL_ID_KEY);
++        rv = SECFailure;
++        goto loser;
 +    }
 +
 +    ssl_GetSpecReadLock(ss);
@@ -233,26 +233,26 @@ index 304e03b..2ae8ce9 100644
 +    ssl_ReleaseSpecReadLock(ss);
 +
 +    if (rv != SECSuccess)
-+	goto loser;
++        goto loser;
 +
-+    rv = ssl3_AppendHandshakeHeader(ss, encrypted_extensions,
-+				    2 + 2 + CHANNEL_ID_LENGTH);
++    rv = ssl3_AppendHandshakeHeader(ss, channelid_encrypted_extensions,
++                                    2 + 2 + CHANNEL_ID_LENGTH);
 +    if (rv != SECSuccess)
-+	goto loser;	/* error code set by AppendHandshakeHeader */
++        goto loser; /* error code set by AppendHandshakeHeader */
 +    rv = ssl3_AppendHandshakeNumber(ss, ssl_channel_id_xtn, 2);
 +    if (rv != SECSuccess)
-+	goto loser;	/* error code set by AppendHandshake */
++        goto loser; /* error code set by AppendHandshake */
 +    rv = ssl3_AppendHandshakeNumber(ss, CHANNEL_ID_LENGTH, 2);
 +    if (rv != SECSuccess)
-+	goto loser;	/* error code set by AppendHandshake */
++        goto loser; /* error code set by AppendHandshake */
 +
 +    spki = SECKEY_EncodeDERSubjectPublicKeyInfo(ss->ssl3.channelIDPub);
 +
 +    if (spki->len != sizeof(P256_SPKI_PREFIX) + CHANNEL_ID_PUBLIC_KEY_LENGTH ||
-+	memcmp(spki->data, P256_SPKI_PREFIX, sizeof(P256_SPKI_PREFIX)) != 0) {
-+	PORT_SetError(SSL_ERROR_INVALID_CHANNEL_ID_KEY);
-+	rv = SECFailure;
-+	goto loser;
++        memcmp(spki->data, P256_SPKI_PREFIX, sizeof(P256_SPKI_PREFIX)) != 0) {
++        PORT_SetError(SSL_ERROR_INVALID_CHANNEL_ID_KEY);
++        rv = SECFailure;
++        goto loser;
 +    }
 +
 +    pub_bytes = spki->data + sizeof(P256_SPKI_PREFIX);
@@ -278,7 +278,7 @@ index 304e03b..2ae8ce9 100644
 +
 +    rv = PK11_HashBuf(SEC_OID_SHA256, digest, signed_data, signed_data_len);
 +    if (rv != SECSuccess)
-+	goto loser;
++        goto loser;
 +
 +    digest_item.data = digest;
 +    digest_item.len = sizeof(digest);
@@ -288,23 +288,23 @@ index 304e03b..2ae8ce9 100644
 +
 +    rv = PK11_Sign(ss->ssl3.channelID, &signature_item, &digest_item);
 +    if (rv != SECSuccess)
-+	goto loser;
++        goto loser;
 +
 +    rv = ssl3_AppendHandshake(ss, pub_bytes, CHANNEL_ID_PUBLIC_KEY_LENGTH);
 +    if (rv != SECSuccess)
-+	goto loser;
++        goto loser;
 +    rv = ssl3_AppendHandshake(ss, signature, sizeof(signature));
 +
 +loser:
 +    if (spki)
-+	SECITEM_FreeItem(spki, PR_TRUE);
++        SECITEM_FreeItem(spki, PR_TRUE);
 +    if (ss->ssl3.channelID) {
-+	SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
-+	ss->ssl3.channelID = NULL;
++        SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
++        ss->ssl3.channelID = NULL;
 +    }
 +    if (ss->ssl3.channelIDPub) {
-+	SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
-+	ss->ssl3.channelIDPub = NULL;
++        SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
++        ss->ssl3.channelIDPub = NULL;
 +    }
 +
 +    return rv;
@@ -317,30 +317,30 @@ index 304e03b..2ae8ce9 100644
 + * waiting in the buffer or we'll get network I/O. */
 +SECStatus
 +ssl3_RestartHandshakeAfterChannelIDReq(sslSocket *ss,
-+				       SECKEYPublicKey *channelIDPub,
-+				       SECKEYPrivateKey *channelID)
++                                       SECKEYPublicKey *channelIDPub,
++                                       SECKEYPrivateKey *channelID)
 +{
 +    if (ss->handshake == 0) {
-+	SECKEY_DestroyPublicKey(channelIDPub);
-+	SECKEY_DestroyPrivateKey(channelID);
-+	PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
-+	return SECFailure;
++        SECKEY_DestroyPublicKey(channelIDPub);
++        SECKEY_DestroyPrivateKey(channelID);
++        PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
++        return SECFailure;
 +    }
 +
 +    if (channelIDPub == NULL ||
-+	channelID == NULL) {
-+	if (channelIDPub)
-+	    SECKEY_DestroyPublicKey(channelIDPub);
-+	if (channelID)
-+	    SECKEY_DestroyPrivateKey(channelID);
-+	PORT_SetError(PR_INVALID_ARGUMENT_ERROR);
-+	return SECFailure;
++        channelID == NULL) {
++        if (channelIDPub)
++            SECKEY_DestroyPublicKey(channelIDPub);
++        if (channelID)
++            SECKEY_DestroyPrivateKey(channelID);
++        PORT_SetError(PR_INVALID_ARGUMENT_ERROR);
++        return SECFailure;
 +    }
 +
 +    if (ss->ssl3.channelID)
-+	SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
++        SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
 +    if (ss->ssl3.channelIDPub)
-+	SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
++        SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
 +
 +    ss->handshake = ssl_GatherRecord1stHandshake;
 +    ss->ssl3.channelID = channelID;
@@ -353,99 +353,99 @@ index 304e03b..2ae8ce9 100644
   *             ssl3_HandleClientHello
   *             ssl3_HandleFinished
   */
-@@ -11531,11 +11774,16 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
- 	    flags = ssl_SEND_FLAG_FORCE_INTO_BUFFER;
- 	}
+@@ -12030,11 +12273,16 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
+             flags = ssl_SEND_FLAG_FORCE_INTO_BUFFER;
+         }
  
--	if (!isServer && !ss->firstHsDone) {
--	    rv = ssl3_SendNextProto(ss);
--	    if (rv != SECSuccess) {
--		goto xmit_loser; /* err code was set. */
-+	if (!isServer) {
-+	    if (!ss->firstHsDone) {
-+		rv = ssl3_SendNextProto(ss);
-+		if (rv != SECSuccess) {
-+		    goto xmit_loser; /* err code was set. */
-+		}
- 	    }
-+	    rv = ssl3_SendEncryptedExtensions(ss);
-+	    if (rv != SECSuccess)
-+		goto xmit_loser; /* err code was set. */
- 	}
+-        if (!isServer && !ss->firstHsDone) {
+-            rv = ssl3_SendNextProto(ss);
+-            if (rv != SECSuccess) {
+-                goto xmit_loser; /* err code was set. */
++        if (!isServer) {
++            if (!ss->firstHsDone) {
++                rv = ssl3_SendNextProto(ss);
++                if (rv != SECSuccess) {
++                    goto xmit_loser; /* err code was set. */
++                }
+             }
++            rv = ssl3_SendChannelIDEncryptedExtensions(ss);
++            if (rv != SECSuccess)
++                goto xmit_loser; /* err code was set. */
+         }
  
- 	if (IS_DTLS(ss)) {
-@@ -13095,6 +13343,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
- 	ssl_FreePlatformKey(ss->ssl3.platformClientKey);
- #endif /* NSS_PLATFORM_CLIENT_AUTH */
+         if (IS_DTLS(ss)) {
+@@ -13658,6 +13906,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+     if (ss->ssl3.clientPrivateKey != NULL)
+         SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
  
 +    if (ss->ssl3.channelID)
-+	SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
++        SECKEY_DestroyPrivateKey(ss->ssl3.channelID);
 +    if (ss->ssl3.channelIDPub)
-+	SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
++        SECKEY_DestroyPublicKey(ss->ssl3.channelIDPub);
 +
      if (ss->ssl3.peerCertArena != NULL)
- 	ssl3_CleanupPeerCerts(ss);
+         ssl3_CleanupPeerCerts(ss);
  
 diff --git a/lib/ssl/ssl3ext.c b/lib/ssl/ssl3ext.c
-index 5661a5c..78825cb 100644
+index 2e99a40..2ffe77b 100644
 --- a/lib/ssl/ssl3ext.c
 +++ b/lib/ssl/ssl3ext.c
-@@ -73,6 +73,10 @@ static SECStatus ssl3_ClientHandleUseSRTPXtn(sslSocket * ss, PRUint16 ex_type,
+@@ -73,6 +73,10 @@ static SECStatus ssl3_ClientHandleUseSRTPXtn(sslSocket *ss, PRUint16 ex_type,
                                               SECItem *data);
- static SECStatus ssl3_ServerHandleUseSRTPXtn(sslSocket * ss, PRUint16 ex_type,
+ static SECStatus ssl3_ServerHandleUseSRTPXtn(sslSocket *ss, PRUint16 ex_type,
                                               SECItem *data);
 +static SECStatus ssl3_ClientHandleChannelIDXtn(sslSocket *ss,
-+    PRUint16 ex_type, SECItem *data);
++                                               PRUint16 ex_type, SECItem *data);
 +static PRInt32 ssl3_ClientSendChannelIDXtn(sslSocket *ss, PRBool append,
-+    PRUint32 maxBytes);
- static PRInt32 ssl3_ServerSendStatusRequestXtn(sslSocket * ss,
-     PRBool append, PRUint32 maxBytes);
++                                           PRUint32 maxBytes);
+ static PRInt32 ssl3_ServerSendStatusRequestXtn(sslSocket *ss,
+                                                PRBool append, PRUint32 maxBytes);
  static SECStatus ssl3_ServerHandleStatusRequestXtn(sslSocket *ss,
-@@ -276,6 +280,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
-     { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
+@@ -298,6 +302,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
+     { ssl_next_proto_nego_xtn, &ssl3_ClientHandleNextProtoNegoXtn },
      { ssl_app_layer_protocol_xtn, &ssl3_ClientHandleAppProtoXtn },
-     { ssl_use_srtp_xtn,           &ssl3_ClientHandleUseSRTPXtn },
-+    { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
-     { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
+     { ssl_use_srtp_xtn, &ssl3_ClientHandleUseSRTPXtn },
++    { ssl_channel_id_xtn, &ssl3_ClientHandleChannelIDXtn },
+     { ssl_cert_status_xtn, &ssl3_ClientHandleStatusRequestXtn },
      { ssl_extended_master_secret_xtn, &ssl3_HandleExtendedMasterSecretXtn },
-     { -1, NULL }
-@@ -304,6 +309,7 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
-     { ssl_next_proto_nego_xtn,    &ssl3_ClientSendNextProtoNegoXtn },
-     { ssl_app_layer_protocol_xtn, &ssl3_ClientSendAppProtoXtn },
-     { ssl_use_srtp_xtn,           &ssl3_ClientSendUseSRTPXtn },
-+    { ssl_channel_id_xtn,         &ssl3_ClientSendChannelIDXtn },
-     { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
-     { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
-     { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
-@@ -945,6 +951,61 @@ ssl3_ServerSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
+     { ssl_signed_cert_timestamp_xtn, &ssl3_ClientHandleSignedCertTimestampXtn },
+@@ -329,6 +334,7 @@ static const ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS]
+       { ssl_next_proto_nego_xtn, &ssl3_ClientSendNextProtoNegoXtn },
+       { ssl_app_layer_protocol_xtn, &ssl3_ClientSendAppProtoXtn },
+       { ssl_use_srtp_xtn, &ssl3_ClientSendUseSRTPXtn },
++      { ssl_channel_id_xtn, &ssl3_ClientSendChannelIDXtn },
+       { ssl_cert_status_xtn, &ssl3_ClientSendStatusRequestXtn },
+       { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
+       { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
+@@ -981,6 +987,61 @@ ssl3_ServerSendAppProtoXtn(sslSocket *ss, PRBool append, PRUint32 maxBytes)
  }
  
  static SECStatus
 +ssl3_ClientHandleChannelIDXtn(sslSocket *ss, PRUint16 ex_type,
-+			     SECItem *data)
++                              SECItem *data)
 +{
 +    PORT_Assert(ss->getChannelID != NULL);
 +
 +    if (data->len) {
-+	PORT_SetError(SSL_ERROR_BAD_CHANNEL_ID_DATA);
-+	return SECFailure;
++        PORT_SetError(SSL_ERROR_BAD_CHANNEL_ID_DATA);
++        return SECFailure;
 +    }
 +    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
 +    return SECSuccess;
 +}
 +
 +static PRInt32
-+ssl3_ClientSendChannelIDXtn(sslSocket * ss, PRBool append,
-+			    PRUint32 maxBytes)
++ssl3_ClientSendChannelIDXtn(sslSocket *ss, PRBool append,
++                            PRUint32 maxBytes)
 +{
 +    PRInt32 extension_length = 4;
 +
 +    if (!ss->getChannelID)
-+	return 0;
++        return 0;
 +
 +    if (maxBytes < extension_length) {
-+	PORT_Assert(0);
-+	return 0;
++        PORT_Assert(0);
++        return 0;
 +    }
 +
 +    if (ss->sec.ci.sid->cached != never_cached &&
@@ -454,19 +454,19 @@ index 5661a5c..78825cb 100644
 +         * do ChannelID on the original connection: without ChannelID on the
 +         * original connection we didn't record the handshake hashes needed for
 +         * the signature. */
-+	return 0;
++        return 0;
 +    }
 +
 +    if (append) {
-+	SECStatus rv;
-+	rv = ssl3_AppendHandshakeNumber(ss, ssl_channel_id_xtn, 2);
-+	if (rv != SECSuccess)
-+	    goto loser;
-+	rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
-+	if (rv != SECSuccess)
-+	    goto loser;
-+	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
-+		ssl_channel_id_xtn;
++        SECStatus rv;
++        rv = ssl3_AppendHandshakeNumber(ss, ssl_channel_id_xtn, 2);
++        if (rv != SECSuccess)
++            goto loser;
++        rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
++        if (rv != SECSuccess)
++            goto loser;
++        ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
++            ssl_channel_id_xtn;
 +    }
 +
 +    return extension_length;
@@ -477,40 +477,41 @@ index 5661a5c..78825cb 100644
 +
 +static SECStatus
  ssl3_ClientHandleStatusRequestXtn(sslSocket *ss, PRUint16 ex_type,
-                                  SECItem *data)
+                                   SECItem *data)
  {
 diff --git a/lib/ssl/ssl3prot.h b/lib/ssl/ssl3prot.h
-index a93bef1..848bdee 100644
+index e637d11..928d059 100644
 --- a/lib/ssl/ssl3prot.h
 +++ b/lib/ssl/ssl3prot.h
-@@ -136,7 +136,8 @@ typedef enum {
+@@ -140,7 +140,8 @@ typedef enum {
      client_key_exchange = 16,
-     finished            = 20,
-     certificate_status  = 22,
--    next_proto          = 67
-+    next_proto          = 67,
-+    encrypted_extensions = 203,
+     finished = 20,
+     certificate_status = 22,
+-    next_proto = 67
++    next_proto = 67,
++    channelid_encrypted_extensions = 203
  } SSL3HandshakeType;
  
  typedef struct {
 diff --git a/lib/ssl/sslauth.c b/lib/ssl/sslauth.c
-index e6981f0..03b23b4 100644
+index 7fb4dc5..e78a513 100644
 --- a/lib/ssl/sslauth.c
 +++ b/lib/ssl/sslauth.c
-@@ -216,6 +216,24 @@ SSL_GetClientAuthDataHook(PRFileDesc *s, SSLGetClientAuthData func,
+@@ -221,6 +221,25 @@ SSL_GetClientAuthDataHook(PRFileDesc *s, SSLGetClientAuthData func,
      return SECSuccess;
  }
  
 +SECStatus
 +SSL_SetClientChannelIDCallback(PRFileDesc *fd,
-+			       SSLClientChannelIDCallback callback,
-+			       void *arg) {
++                               SSLClientChannelIDCallback callback,
++                               void *arg)
++{
 +    sslSocket *ss = ssl_FindSocket(fd);
 +
 +    if (!ss) {
-+	SSL_DBG(("%d: SSL[%d]: bad socket in SSL_SetClientChannelIDCallback",
-+		 SSL_GETPID(), fd));
-+	return SECFailure;
++        SSL_DBG(("%d: SSL[%d]: bad socket in SSL_SetClientChannelIDCallback",
++                 SSL_GETPID(), fd));
++        return SECFailure;
 +    }
 +
 +    ss->getChannelID = callback;
@@ -519,31 +520,32 @@ index e6981f0..03b23b4 100644
 +    return SECSuccess;
 +}
 +
- #ifdef NSS_PLATFORM_CLIENT_AUTH
  /* NEED LOCKS IN HERE.  */
- SECStatus 
+ SECStatus
+ SSL_SetPKCS11PinArg(PRFileDesc *s, void *arg)
 diff --git a/lib/ssl/sslerr.h b/lib/ssl/sslerr.h
-index 192a107..835b812 100644
+index f806359..299951c 100644
 --- a/lib/ssl/sslerr.h
 +++ b/lib/ssl/sslerr.h
-@@ -208,6 +208,10 @@ SSL_ERROR_UNSUPPORTED_SIGNATURE_ALGORITHM = (SSL_ERROR_BASE + 135),
- SSL_ERROR_MISSING_EXTENDED_MASTER_SECRET = (SSL_ERROR_BASE + 136),
- SSL_ERROR_UNEXPECTED_EXTENDED_MASTER_SECRET = (SSL_ERROR_BASE + 137),
- 
-+SSL_ERROR_BAD_CHANNEL_ID_DATA           = (SSL_ERROR_BASE + 138),
-+SSL_ERROR_INVALID_CHANNEL_ID_KEY        = (SSL_ERROR_BASE + 139),
-+SSL_ERROR_GET_CHANNEL_ID_FAILED         = (SSL_ERROR_BASE + 140),
+@@ -220,6 +220,11 @@ typedef enum {
+     SSL_ERROR_KEY_EXCHANGE_FAILURE          = (SSL_ERROR_BASE + 144),
+     SSL_ERROR_EXTENSION_DISALLOWED_FOR_VERSION = (SSL_ERROR_BASE + 145),
+     SSL_ERROR_RX_MALFORMED_ENCRYPTED_EXTENSIONS = (SSL_ERROR_BASE + 146),
 +
- SSL_ERROR_END_OF_LIST   /* let the c compiler determine the value of this. */
++ SSL_ERROR_BAD_CHANNEL_ID_DATA           = (SSL_ERROR_BASE + 147),
++ SSL_ERROR_INVALID_CHANNEL_ID_KEY        = (SSL_ERROR_BASE + 148),
++ SSL_ERROR_GET_CHANNEL_ID_FAILED         = (SSL_ERROR_BASE + 149),
++
+     SSL_ERROR_END_OF_LIST   /* let the c compiler determine the value of this. */
  } SSLErrorCodes;
  #endif /* NO_SECURITY_ERROR_ENUM */
 diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
-index c089889..c286518 100644
+index dad75b2..4607655 100644
 --- a/lib/ssl/sslimpl.h
 +++ b/lib/ssl/sslimpl.h
-@@ -722,6 +722,14 @@ struct sslSessionIDStr {
+@@ -710,6 +710,14 @@ struct sslSessionIDStr {
  
- 	    SECItem           srvName;
+             SECItem srvName;
  
 +            /* originalHandshakeHash contains the hash of the original, full
 +             * handshake prior to the server's final flow. This is either a
@@ -551,34 +553,36 @@ index c089889..c286518 100644
 +             * TLS 1.2). This is recorded and used only when ChannelID is
 +             * negotiated as it's used to bind the ChannelID signature on the
 +             * resumption handshake to the original handshake. */
-+	    SECItem           originalHandshakeHash;
++            SECItem originalHandshakeHash;
 +
- 	    /* This lock is lazily initialized by CacheSID when a sid is first
- 	     * cached. Before then, there is no need to lock anything because
- 	     * the sid isn't being shared by anything.
-@@ -999,6 +1007,9 @@ struct ssl3StateStr {
-     CERTCertificateList *clientCertChain;    /* used by client */
-     PRBool               sendEmptyCert;      /* used by client */
+             /* Signed certificate timestamps received in a TLS extension.
+             ** (used only in client).
+             */
+@@ -1025,6 +1033,9 @@ struct ssl3StateStr {
+     CERTCertificateList *clientCertChain; /* used by client */
+     PRBool sendEmptyCert;                 /* used by client */
  
-+    SECKEYPrivateKey    *channelID;          /* used by client */
-+    SECKEYPublicKey     *channelIDPub;       /* used by client */
++    SECKEYPrivateKey *channelID;   /* used by client */
++    SECKEYPublicKey *channelIDPub; /* used by client */
 +
-     int                  policy;
- 			/* This says what cipher suites we can do, and should 
- 			 * be either SSL_ALLOWED or SSL_RESTRICTED 
-@@ -1294,6 +1305,8 @@ const unsigned char *  preferredCipher;
-     void                     *pkcs11PinArg;
-     SSLNextProtoCallback      nextProtoCallback;
-     void                     *nextProtoArg;
+     int policy;
+     /* This says what cipher suites we can do, and should
+      * be either SSL_ALLOWED or SSL_RESTRICTED
+@@ -1322,6 +1333,9 @@ struct sslSocketStr {
+     SSLNextProtoCallback nextProtoCallback;
+     void *nextProtoArg;
+ 
 +    SSLClientChannelIDCallback getChannelID;
-+    void                     *getChannelIDArg;
- 
-     PRIntervalTime            rTimeout; /* timeout for NSPR I/O */
-     PRIntervalTime            wTimeout; /* timeout for NSPR I/O */
-@@ -1640,6 +1653,11 @@ extern SECStatus ssl3_RestartHandshakeAfterCertReq(sslSocket *    ss,
- 					     SECKEYPrivateKey *   key,
- 					     CERTCertificateList *certChain);
- 
++    void *getChannelIDArg;
++
+     PRIntervalTime rTimeout; /* timeout for NSPR I/O */
+     PRIntervalTime wTimeout; /* timeout for NSPR I/O */
+     PRIntervalTime cTimeout; /* timeout for NSPR I/O */
+@@ -1712,6 +1726,12 @@ extern SECStatus ssl3_RestartHandshakeAfterCertReq(struct sslSocketStr *ss,
+                                                    CERTCertificate *cert,
+                                                    SECKEYPrivateKey *key,
+                                                    CERTCertificateList *certChain);
++
 +extern SECStatus ssl3_RestartHandshakeAfterChannelIDReq(
 +    sslSocket *ss,
 +    SECKEYPublicKey *channelIDPub,
@@ -588,12 +592,12 @@ index c089889..c286518 100644
  
  /*
 diff --git a/lib/ssl/sslnonce.c b/lib/ssl/sslnonce.c
-index be11008..1326a8b 100644
+index 3216892..4804cb8 100644
 --- a/lib/ssl/sslnonce.c
 +++ b/lib/ssl/sslnonce.c
-@@ -180,6 +180,9 @@ ssl_DestroySID(sslSessionID *sid)
-         if (sid->u.ssl3.srvName.data) {
-             SECITEM_FreeItem(&sid->u.ssl3.srvName, PR_FALSE);
+@@ -186,6 +186,9 @@ ssl_DestroySID(sslSessionID *sid)
+         if (sid->u.ssl3.signedCertTimestamps.data) {
+             SECITEM_FreeItem(&sid->u.ssl3.signedCertTimestamps, PR_FALSE);
          }
 +        if (sid->u.ssl3.originalHandshakeHash.data) {
 +            SECITEM_FreeItem(&sid->u.ssl3.originalHandshakeHash, PR_FALSE);
@@ -602,39 +606,38 @@ index be11008..1326a8b 100644
          if (sid->u.ssl3.lock) {
              PR_DestroyRWLock(sid->u.ssl3.lock);
 diff --git a/lib/ssl/sslsecur.c b/lib/ssl/sslsecur.c
-index f77d6fa..cca55bb 100644
+index a087ffc..7ff0a2c 100644
 --- a/lib/ssl/sslsecur.c
 +++ b/lib/ssl/sslsecur.c
-@@ -1598,6 +1598,42 @@ SSL_RestartHandshakeAfterCertReq(PRFileDesc *        fd,
+@@ -1601,6 +1601,41 @@ SSL_RestartHandshakeAfterCertReq(PRFileDesc *fd,
      return ret;
  }
  
 +SECStatus
-+SSL_RestartHandshakeAfterChannelIDReq(PRFileDesc *      fd,
-+				      SECKEYPublicKey * channelIDPub,
-+				      SECKEYPrivateKey *channelID)
++SSL_RestartHandshakeAfterChannelIDReq(PRFileDesc *fd,
++                                      SECKEYPublicKey *channelIDPub,
++                                      SECKEYPrivateKey *channelID)
 +{
-+    sslSocket *   ss = ssl_FindSocket(fd);
-+    SECStatus     ret;
++    sslSocket *ss = ssl_FindSocket(fd);
++    SECStatus ret;
 +
 +    if (!ss) {
-+	SSL_DBG(("%d: SSL[%d]: bad socket in"
-+		 " SSL_RestartHandshakeAfterChannelIDReq",
-+		 SSL_GETPID(), fd));
-+	goto loser;
++        SSL_DBG(("%d: SSL[%d]: bad socket in"
++                 " SSL_RestartHandshakeAfterChannelIDReq",
++                 SSL_GETPID(), fd));
++        goto loser;
 +    }
-+
 +
 +    ssl_Get1stHandshakeLock(ss);
 +
 +    if (ss->version < SSL_LIBRARY_VERSION_3_0) {
-+	PORT_SetError(SSL_ERROR_FEATURE_NOT_SUPPORTED_FOR_SSL2);
-+	ssl_Release1stHandshakeLock(ss);
-+	goto loser;
++        PORT_SetError(SSL_ERROR_FEATURE_NOT_SUPPORTED_FOR_SSL2);
++        ssl_Release1stHandshakeLock(ss);
++        goto loser;
 +    }
 +
 +    ret = ssl3_RestartHandshakeAfterChannelIDReq(ss, channelIDPub,
-+						 channelID);
++                                                 channelID);
 +    ssl_Release1stHandshakeLock(ss);
 +
 +    return ret;
@@ -649,53 +652,53 @@ index f77d6fa..cca55bb 100644
   * this implementation exists to maintain link-time compatibility.
   */
 diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
-index 11e66f2..efba686 100644
+index 7f97b14..84c78b3 100644
 --- a/lib/ssl/sslsock.c
 +++ b/lib/ssl/sslsock.c
-@@ -313,6 +313,8 @@ ssl_DupSocket(sslSocket *os)
+@@ -315,6 +315,8 @@ ssl_DupSocket(sslSocket *os)
              ss->canFalseStartCallback = os->canFalseStartCallback;
              ss->canFalseStartCallbackData = os->canFalseStartCallbackData;
-             ss->pkcs11PinArg          = os->pkcs11PinArg;
-+            ss->getChannelID          = os->getChannelID;
-+            ss->getChannelIDArg       = os->getChannelIDArg;
+             ss->pkcs11PinArg = os->pkcs11PinArg;
++            ss->getChannelID = os->getChannelID;
++            ss->getChannelIDArg = os->getChannelIDArg;
  
              /* Create security data */
              rv = ssl_CopySecurityInfo(ss, os);
-@@ -1987,6 +1989,10 @@ SSL_ReconfigFD(PRFileDesc *model, PRFileDesc *fd)
+@@ -2155,6 +2157,10 @@ SSL_ReconfigFD(PRFileDesc *model, PRFileDesc *fd)
          ss->handshakeCallbackData = sm->handshakeCallbackData;
      if (sm->pkcs11PinArg)
-         ss->pkcs11PinArg          = sm->pkcs11PinArg;
+         ss->pkcs11PinArg = sm->pkcs11PinArg;
 +    if (sm->getChannelID)
-+        ss->getChannelID          = sm->getChannelID;
++        ss->getChannelID = sm->getChannelID;
 +    if (sm->getChannelIDArg)
-+        ss->getChannelIDArg       = sm->getChannelIDArg;
++        ss->getChannelIDArg = sm->getChannelIDArg;
      return fd;
  loser:
      return NULL;
-@@ -3279,6 +3285,8 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
-         ss->badCertArg         = NULL;
-         ss->pkcs11PinArg       = NULL;
+@@ -3643,6 +3649,8 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
+         ss->badCertArg = NULL;
+         ss->pkcs11PinArg = NULL;
          ss->ephemeralECDHKeyPair = NULL;
-+        ss->getChannelID       = NULL;
-+        ss->getChannelIDArg    = NULL;
++        ss->getChannelID = NULL;
++        ss->getChannelIDArg = NULL;
  
          ssl_ChooseOps(ss);
          ssl2_InitSocketPolicy(ss);
 diff --git a/lib/ssl/sslt.h b/lib/ssl/sslt.h
-index cd742bb..b6616e2 100644
+index bf722b5..6f26e5f 100644
 --- a/lib/ssl/sslt.h
 +++ b/lib/ssl/sslt.h
-@@ -238,11 +238,12 @@ typedef enum {
-     ssl_extended_master_secret_xtn   = 23,
-     ssl_session_ticket_xtn           = 35,
-     ssl_next_proto_nego_xtn          = 13172,
-+    ssl_channel_id_xtn               = 30032,
-     ssl_renegotiation_info_xtn       = 0xff01,
-     ssl_tls13_draft_version_xtn      = 0xff02   /* experimental number */
+@@ -249,11 +249,12 @@ typedef enum {
+     ssl_session_ticket_xtn = 35,
+     ssl_tls13_key_share_xtn = 40, /* unofficial TODO(ekr) */
+     ssl_next_proto_nego_xtn = 13172,
++    ssl_channel_id_xtn = 30032,
+     ssl_renegotiation_info_xtn = 0xff01,
+     ssl_tls13_draft_version_xtn = 0xff02 /* experimental number */
  } SSLExtensionType;
  
--#define SSL_MAX_EXTENSIONS             12 /* doesn't include ssl_padding_xtn. */
-+#define SSL_MAX_EXTENSIONS             13 /* doesn't include ssl_padding_xtn. */
+-#define SSL_MAX_EXTENSIONS 14 /* doesn't include ssl_padding_xtn. */
++#define SSL_MAX_EXTENSIONS 15 /* doesn't include ssl_padding_xtn. */
  
  typedef enum {
      ssl_dhe_group_none = 0,
