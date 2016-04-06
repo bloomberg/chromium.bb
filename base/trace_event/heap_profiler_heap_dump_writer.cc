@@ -129,20 +129,14 @@ std::vector<Bucket> BreakDownBy(const Bucket& bucket, BreakDownMode breakBy) {
   std::make_heap(buckets.begin(), buckets.end());
 
   // Keep including buckets until adding one would increase the number of
-  // bytes accounted for by less than 0.8 percent. This simple heuristic works
+  // bytes accounted for by less than 0.8% (1/125). This simple heuristic works
   // quite well. The large buckets end up in [it, end()), [begin(), it) is the
   // part that contains the max-heap of small buckets.
   size_t accounted_for = 0;
   std::vector<Bucket>::iterator it;
   for (it = buckets.end(); it != buckets.begin(); --it) {
-    // Compute the contribution to the number of bytes accounted for as a
-    // fraction of 125 (in increments of 0.8 percent). Anything less than 1/125
-    // is rounded down to 0 due to integer division. Buckets are iterated by
-    // descending size, so later buckets cannot have a larger contribution than
-    // this one.
     accounted_for += buckets.front().size;
-    size_t contribution = buckets.front().size * 125 / accounted_for;
-    if (contribution == 0)
+    if (buckets.front().size < (accounted_for / 125))
       break;
 
     // Put the largest bucket in [begin, it) at |it - 1| and max-heapify
@@ -234,6 +228,7 @@ const std::set<Entry>& HeapDumpWriter::Summarize(
   // contexts stored in |bytes_by_context|.
   Bucket root_bucket;
   for (const auto& context_and_size : bytes_by_context) {
+    DCHECK_GT(context_and_size.second, 0u);
     const AllocationContext* context = &context_and_size.first;
     const size_t size = context_and_size.second;
     root_bucket.bytes_by_context.push_back(std::make_pair(context, size));
