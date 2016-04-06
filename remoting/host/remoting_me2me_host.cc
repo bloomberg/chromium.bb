@@ -162,9 +162,6 @@ const char kEnableVp9SwitchName[] = "enable-vp9";
 const char kWindowIdSwitchName[] = "window-id";
 
 // Command line switch used to enable WebRTC-based protocol.
-const char kEnableWebrtcSwitchName[] = "enable-webrtc";
-
-// Command line switch used to enable WebRTC-based protocol.
 const char kDisableAuthenticationSwitchName[] = "disable-authentication";
 
 // Maximum time to wait for clean shutdown to occur, before forcing termination
@@ -1494,10 +1491,7 @@ void HostProcess::StartHost() {
     protocol_config->DisableAudioChannel();
   if (enable_vp9_)
     protocol_config->set_vp9_experiment_enabled(true);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableWebrtcSwitchName)) {
-    protocol_config->set_webrtc_supported(true);
-  }
+  protocol_config->set_webrtc_supported(true);
   session_manager->set_protocol_config(std::move(protocol_config));
 
   host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
