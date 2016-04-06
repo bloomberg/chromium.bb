@@ -288,6 +288,7 @@
       'credentialmanager/PlatformPasswordCredential.cpp',
       'credentialmanager/PlatformPasswordCredential.h',
       'exported/Platform.cpp',
+      'exported/ServiceRegistry.cpp',
       'exported/WebActiveGestureAnimation.cpp',
       'exported/WebActiveGestureAnimation.h',
       'exported/WebAudioBus.cpp',

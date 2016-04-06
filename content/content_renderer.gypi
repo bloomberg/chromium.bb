@@ -357,6 +357,8 @@
       'renderer/media/webmediaplayer_ms_compositor.h',
       'renderer/menu_item_builder.cc',
       'renderer/menu_item_builder.h',
+      'renderer/mojo/blink_service_registry_impl.cc',
+      'renderer/mojo/blink_service_registry_impl.h',
       'renderer/mojo/service_registry_js_wrapper.cc',
       'renderer/mojo/service_registry_js_wrapper.h',
       'renderer/mojo_bindings_controller.cc',

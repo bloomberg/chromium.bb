@@ -30,6 +30,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
+#include "content/renderer/mojo/blink_service_registry_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
@@ -615,6 +616,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
+  blink::ServiceRegistry* serviceRegistry() override;
 
 #if defined(ENABLE_WEBVR)
   blink::WebVRClient* webVRClient() override;
@@ -1160,6 +1162,7 @@ class CONTENT_EXPORT RenderFrameImpl
   PresentationDispatcher* presentation_dispatcher_;
 
   ServiceRegistryImpl service_registry_;
+  BlinkServiceRegistryImpl blink_service_registry_;
 
   // The shell proxy used to connect to Mojo applications.
   mojo::shell::mojom::ConnectorPtr connector_;

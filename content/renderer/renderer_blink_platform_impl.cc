@@ -67,6 +67,7 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/rtc_certificate_generator.h"
+#include "content/renderer/mojo/blink_service_registry_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
@@ -238,7 +239,8 @@ class RendererBlinkPlatformImpl::SandboxSupport
 //------------------------------------------------------------------------------
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
-    scheduler::RendererScheduler* renderer_scheduler)
+    scheduler::RendererScheduler* renderer_scheduler,
+    base::WeakPtr<ServiceRegistry> service_registry)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
@@ -249,7 +251,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       loading_task_runner_(renderer_scheduler->LoadingTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
-      renderer_scheduler_(renderer_scheduler) {
+      renderer_scheduler_(renderer_scheduler),
+      blink_service_registry_(new BlinkServiceRegistryImpl(service_registry)) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -1194,11 +1197,8 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
   platform_event_observers_.AddWithID(observer.release(), type);
 }
 
-void RendererBlinkPlatformImpl::connectToRemoteService(
-    const char* name,
-    mojo::ScopedMessagePipeHandle handle) {
-  RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
-      name, std::move(handle));
+blink::ServiceRegistry* RendererBlinkPlatformImpl::serviceRegistry() {
+  return blink_service_registry_.get();
 }
 
 void RendererBlinkPlatformImpl::startListening(

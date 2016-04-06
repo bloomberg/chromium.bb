@@ -37,6 +37,7 @@
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/web_memory_dump_provider_adapter.h"
 #include "public/platform/Platform.h"
+#include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -175,6 +176,11 @@ void Platform::unregisterMemoryDumpProvider(WebMemoryDumpProvider* provider)
     base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(adapter);
     adapter->set_is_registered(false);
     memoryDumpProviders().remove(it);
+}
+
+ServiceRegistry* Platform::serviceRegistry()
+{
+    return ServiceRegistry::getEmptyServiceRegistry();
 }
 
 } // namespace blink

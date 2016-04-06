@@ -56,13 +56,11 @@
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/system/core.h"
-
 class GrContext;
 
 namespace blink {
 
+class ServiceRegistry;
 class WebAudioBus;
 class WebBlobRegistry;
 class WebCanvasCaptureHandler;
@@ -543,17 +541,12 @@ public:
 
     virtual WebCrypto* crypto() { return nullptr; }
 
+    // Mojo ---------------------------------------------------------------
+
+    virtual ServiceRegistry* serviceRegistry();
 
     // Platform events -----------------------------------------------------
     // Device Orientation, Device Motion, Device Light, Battery, Gamepad.
-
-    // Connects the mojo handle to the remote service provider.
-    template <typename Interface>
-    void connectToRemoteService(mojo::InterfaceRequest<Interface> ptr)
-    {
-        connectToRemoteService(Interface::Name_, ptr.PassMessagePipe());
-    }
-    virtual void connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle handle) { }
 
     // Request the platform to start listening to the events of the specified
     // type and notify the given listener (if not null) when there is an update.

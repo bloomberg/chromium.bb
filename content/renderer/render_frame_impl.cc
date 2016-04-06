@@ -1020,6 +1020,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
+      blink_service_registry_(service_registry_.GetWeakPtr()),
       screen_orientation_dispatcher_(NULL),
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -6006,6 +6007,10 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
   callback.Run(AudioDeviceFactory::GetOutputDeviceInfo(
                    routing_id_, 0, sink_id.utf8(), security_origin)
                    .device_status());
+}
+
+blink::ServiceRegistry* RenderFrameImpl::serviceRegistry() {
+  return &blink_service_registry_;
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

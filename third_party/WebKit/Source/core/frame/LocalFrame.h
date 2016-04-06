@@ -71,6 +71,7 @@ class Range;
 class LayoutView;
 class TreeScope;
 class ScriptController;
+class ServiceRegistry;
 class SpellChecker;
 class TreeScope;
 class WebFrameHostScheduler;
@@ -80,7 +81,7 @@ template <typename Strategy> class PositionWithAffinityTemplate;
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame>, public DisplayItemClient {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
-    static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*);
+    static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*, ServiceRegistry* = nullptr);
 
     void init();
     void setView(FrameView*);
@@ -189,10 +190,12 @@ public:
 
     bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
 
+    ServiceRegistry* serviceRegistry() { return m_serviceRegistry; }
+
 private:
     friend class FrameNavigationDisabler;
 
-    LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
+    LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*, ServiceRegistry*);
 
     bool shouldScrollTopControls(ScrollGranularity, const FloatSize& delta) const;
 
@@ -229,6 +232,8 @@ private:
     bool m_inViewSourceMode;
 
     Member<InstrumentingAgents> m_instrumentingAgents;
+
+    ServiceRegistry* const m_serviceRegistry;
 };
 
 inline void LocalFrame::init()

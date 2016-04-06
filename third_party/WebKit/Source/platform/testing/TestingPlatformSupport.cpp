@@ -70,11 +70,6 @@ WebUnitTestSupport* TestingPlatformSupport::unitTestSupport()
     return m_oldPlatform ? m_oldPlatform->unitTestSupport() : nullptr;
 }
 
-void TestingPlatformSupport::connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle handle)
-{
-    ASSERT_NOT_REACHED();
-}
-
 class TestingPlatformMockWebTaskRunner : public WebTaskRunner {
     WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebTaskRunner);
 public:

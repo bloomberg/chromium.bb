@@ -60,6 +60,7 @@
 namespace blink {
 
 enum class WebTreeScopeType;
+class ServiceRegistry;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebAppBannerClient;
@@ -722,6 +723,9 @@ public:
     // Checks that the given audio sink exists and is authorized. The result is provided via the callbacks.
     // This method takes ownership of the callbacks pointer.
     virtual void checkIfAudioSinkExistsAndIsAuthorized(const WebString& sinkId, const WebSecurityOrigin&, WebSetSinkIdCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Mojo ----------------------------------------------------------------
+    virtual ServiceRegistry* serviceRegistry() { return nullptr; }
 
 protected:
     virtual ~WebFrameClient() { }

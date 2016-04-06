@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/MojoHelper.h"
 #include "public/platform/Platform.h"
+#include "public/platform/ServiceRegistry.h"
 #include <utility>
 
 namespace mojo {
@@ -172,7 +173,7 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Already called show() once"));
 
     DCHECK(!m_paymentProvider.is_bound());
-    blink::Platform::current()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
+    blink::Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
     m_paymentProvider.set_connection_error_handler(sameThreadBindForMojo(&PaymentRequest::OnError, this));
     m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
     m_paymentProvider->Show(std::move(m_supportedMethods), mojom::wtf::PaymentDetails::From(m_details), mojom::wtf::PaymentOptions::From(m_options), m_stringifiedData.isNull() ? "" : m_stringifiedData);

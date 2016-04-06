@@ -97,7 +97,6 @@ public:
     WebUnitTestSupport* unitTestSupport() override;
     void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name) override {}
     void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) override {}
-    void connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle) override;
 
 protected:
     const Config m_config;

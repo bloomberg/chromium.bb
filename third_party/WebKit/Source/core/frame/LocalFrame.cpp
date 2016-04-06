@@ -79,6 +79,7 @@
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/text/TextStream.h"
+#include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
@@ -165,9 +166,9 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 } // namespace
 
-LocalFrame* LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
+LocalFrame* LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, ServiceRegistry* serviceRegistry)
 {
-    LocalFrame* frame = new LocalFrame(client, host, owner);
+    LocalFrame* frame = new LocalFrame(client, host, owner, serviceRegistry ? serviceRegistry : ServiceRegistry::getEmptyServiceRegistry());
     InspectorInstrumentation::frameAttachedToParent(frame);
     return frame;
 }
@@ -816,7 +817,7 @@ bool LocalFrame::shouldThrottleRendering() const
     return view() && view()->shouldThrottleRendering();
 }
 
-inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
+inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, ServiceRegistry* serviceRegistry)
     : Frame(client, host, owner)
     , m_loader(this)
     , m_navigationScheduler(NavigationScheduler::create(this))
@@ -831,6 +832,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
+    , m_serviceRegistry(serviceRegistry)
 {
     if (isLocalRoot())
         m_instrumentingAgents = InstrumentingAgents::create();

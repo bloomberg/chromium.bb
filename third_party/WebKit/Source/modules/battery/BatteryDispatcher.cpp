@@ -6,6 +6,7 @@
 
 #include "platform/MojoHelper.h"
 #include "public/platform/Platform.h"
+#include "public/platform/ServiceRegistry.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -30,9 +31,7 @@ void BatteryDispatcher::queryNextStatus()
 
 void BatteryDispatcher::onDidChange(device::BatteryStatusPtr batteryStatus)
 {
-    // m_monitor can be null during testing.
-    if (m_monitor)
-        queryNextStatus();
+    queryNextStatus();
 
     ASSERT(batteryStatus);
 
@@ -53,17 +52,14 @@ void BatteryDispatcher::updateBatteryStatus(const BatteryStatus& batteryStatus)
 void BatteryDispatcher::startListening()
 {
     ASSERT(!m_monitor.is_bound());
-    Platform::current()->connectToRemoteService(mojo::GetProxy(&m_monitor));
-    // m_monitor can be null during testing.
-    if (m_monitor)
-        queryNextStatus();
+    Platform::current()->serviceRegistry()->connectToRemoteService(
+        mojo::GetProxy(&m_monitor));
+    queryNextStatus();
 }
 
 void BatteryDispatcher::stopListening()
 {
-    // m_monitor can be null during testing.
-    if (m_monitor)
-        m_monitor.reset();
+    m_monitor.reset();
     m_hasLatestData = false;
 }
 

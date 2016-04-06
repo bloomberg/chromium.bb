@@ -36,6 +36,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
+#include <memory>
 
 namespace blink {
 
@@ -166,7 +167,7 @@ v8::Isolate* V8PerIsolateData::initialize()
 
 void V8PerIsolateData::enableIdleTasks(v8::Isolate* isolate, PassOwnPtr<gin::V8IdleTaskRunner> taskRunner)
 {
-    from(isolate)->m_isolateHolder->EnableIdleTasks(scoped_ptr<gin::V8IdleTaskRunner>(taskRunner.leakPtr()));
+    from(isolate)->m_isolateHolder->EnableIdleTasks(std::unique_ptr<gin::V8IdleTaskRunner>(taskRunner.leakPtr()));
 }
 
 v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()

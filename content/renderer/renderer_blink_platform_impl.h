@@ -50,6 +50,7 @@ class WebThreadImplForRendererScheduler;
 }
 
 namespace content {
+class BlinkServiceRegistryImpl;
 class DeviceLightEventPump;
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
@@ -58,6 +59,7 @@ class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardDelegate;
 class RenderView;
+class ServiceRegistry;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
@@ -65,8 +67,8 @@ class WebFileSystemImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  explicit RendererBlinkPlatformImpl(
-      scheduler::RendererScheduler* renderer_scheduler);
+  RendererBlinkPlatformImpl(scheduler::RendererScheduler* renderer_scheduler,
+                            base::WeakPtr<ServiceRegistry> service_registry);
   ~RendererBlinkPlatformImpl() override;
 
   // Shutdown must be called just prior to shutting down blink.
@@ -178,8 +180,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   createSharedOffscreenGraphicsContext3DProvider() override;
   blink::WebCompositorSupport* compositorSupport() override;
   blink::WebString convertIDNToUnicode(const blink::WebString& host) override;
-  void connectToRemoteService(const char* name,
-                              mojo::ScopedMessagePipeHandle handle) override;
+  blink::ServiceRegistry* serviceRegistry() override;
   void startListening(blink::WebPlatformEventType,
                       blink::WebPlatformEventListener*) override;
   void stopListening(blink::WebPlatformEventType) override;
@@ -300,6 +301,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   WebTrialTokenValidatorImpl trial_token_validator_;
 
   scoped_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
+
+  scoped_ptr<BlinkServiceRegistryImpl> blink_service_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };
