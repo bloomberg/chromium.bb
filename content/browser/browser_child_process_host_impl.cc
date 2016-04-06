@@ -409,8 +409,8 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
 
   mojo::edk::ScopedPlatformHandle client_pipe =
       mojo::edk::ChildProcessLaunched(process.Handle());
-  Send(new ChildProcessMsg_SetMojoParentPipeHandle(IPC::GetFileHandleForProcess(
-      client_pipe.release().handle, process.Handle(), true)));
+  Send(new ChildProcessMsg_SetMojoParentPipeHandle(
+      IPC::GetPlatformFileForTransit(client_pipe.release().handle, true)));
 
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the

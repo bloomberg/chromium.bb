@@ -81,7 +81,7 @@ void MojoApplicationHost::Activate(IPC::Sender* sender,
 
   base::PlatformFile client_file = client_handle_.release().handle;
   did_activate_ = sender->Send(new MojoMsg_Activate(
-      IPC::GetFileHandleForProcess(client_file, process_handle, true)));
+      IPC::GetPlatformFileForTransit(client_file, true)));
 }
 
 void MojoApplicationHost::OverrideIOTaskRunnerForTest(

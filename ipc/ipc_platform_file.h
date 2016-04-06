@@ -55,10 +55,10 @@ inline base::File PlatformFileForTransitToFile(
 #endif
 }
 
-// Returns a file handle equivalent to |file| that can be used in |process|.
-IPC_EXPORT PlatformFileForTransit GetFileHandleForProcess(
+// Creates a new handle that can be passed through IPC. The result must be
+// passed to the IPC layer as part of a message, or else it will leak.
+IPC_EXPORT PlatformFileForTransit GetPlatformFileForTransit(
     base::PlatformFile file,
-    base::ProcessHandle process,
     bool close_source_handle);
 
 // Returns a file handle equivalent to |file| that can be used in |process|.

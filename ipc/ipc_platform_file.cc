@@ -11,9 +11,8 @@
 
 namespace IPC {
 
-PlatformFileForTransit GetFileHandleForProcess(base::PlatformFile handle,
-                                               base::ProcessHandle process,
-                                               bool close_source_handle) {
+PlatformFileForTransit GetPlatformFileForTransit(base::PlatformFile handle,
+                                                 bool close_source_handle) {
 #if defined(OS_WIN)
   HANDLE raw_handle = INVALID_HANDLE_VALUE;
   DWORD options = DUPLICATE_SAME_ACCESS;
@@ -47,7 +46,7 @@ PlatformFileForTransit GetFileHandleForProcess(base::PlatformFile handle,
 
 PlatformFileForTransit TakeFileHandleForProcess(base::File file,
                                                 base::ProcessHandle process) {
-  return GetFileHandleForProcess(file.TakePlatformFile(), process, true);
+  return GetPlatformFileForTransit(file.TakePlatformFile(), true);
 }
 
 }  // namespace IPC

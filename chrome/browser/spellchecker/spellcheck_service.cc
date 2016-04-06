@@ -191,9 +191,9 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
     bdict_languages.back().language = hunspell_dictionary->GetLanguage();
     bdict_languages.back().file =
         hunspell_dictionary->GetDictionaryFile().IsValid()
-            ? IPC::GetFileHandleForProcess(
+            ? IPC::GetPlatformFileForTransit(
                   hunspell_dictionary->GetDictionaryFile().GetPlatformFile(),
-                  process->GetHandle(), false)
+                  false)
             : IPC::InvalidPlatformFileForTransit();
   }
 

@@ -45,14 +45,12 @@ using base::TimeDelta;
 
 namespace {
 
-// Duplicates |key| into |target_process| and returns the value that can be sent
-// over IPC.
+// Duplicates |key| and returns the value that can be sent over IPC.
 IPC::PlatformFileForTransit GetRegistryKeyForTransit(
-    base::ProcessHandle target_process,
     const base::win::RegKey& key) {
   base::PlatformFile handle =
       reinterpret_cast<base::PlatformFile>(key.Handle());
-  return IPC::GetFileHandleForProcess(handle, target_process, false);
+  return IPC::GetPlatformFileForTransit(handle, false);
 }
 
 }  // namespace
@@ -290,9 +288,9 @@ bool DaemonProcessWin::InitializePairingRegistry() {
 
   // Duplicate handles to the network process.
   IPC::PlatformFileForTransit privileged_key = GetRegistryKeyForTransit(
-      network_process_.Get(), pairing_registry_privileged_key_);
+      pairing_registry_privileged_key_);
   IPC::PlatformFileForTransit unprivileged_key = GetRegistryKeyForTransit(
-      network_process_.Get(), pairing_registry_unprivileged_key_);
+      pairing_registry_unprivileged_key_);
   if (!(privileged_key.IsValid() && unprivileged_key.IsValid()))
     return false;
 

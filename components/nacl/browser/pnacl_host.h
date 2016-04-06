@@ -66,8 +66,8 @@ class PnaclHost {
   // TranslationFinished after it finishes translation to allow the nexe to be
   // stored in the cache.
   // The returned temp fd may be closed at any time by PnaclHost, so it should
-  // be duplicated (e.g. with IPC::GetFileHandleForProcess) before the callback
-  // returns.
+  // be duplicated (e.g. with IPC::GetPlatformFileForTransit) before the
+  // callback returns.
   // If |is_incognito| is true, the nexe will not be stored
   // in the cache, but the renderer is still expected to call
   // TranslationFinished.

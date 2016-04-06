@@ -29,7 +29,7 @@ IPC_MESSAGE_ROUTED0(ChromeFrameHostMsg_NeedCldDataFile)
 
 // Informs the renderer process that Compact Language Detector (CLD) data is
 // available and provides an IPC::PlatformFileForTransit obtained from
-// IPC::GetFileHandleForProcess(...)
+// IPC::GetPlatformFileForTransit(...)
 // This message is sent by a DataFileBrowserCldDataProvider to a
 // DataFileRendererCldDataProvider.
 IPC_MESSAGE_ROUTED3(ChromeFrameMsg_CldDataFileAvailable,
