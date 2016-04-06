@@ -380,21 +380,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
-crbug.com/303728 [ Mac Win ] printing/absolute-position-headers-and-footers.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] printing/fixed-positioned-but-static-headers-and-footers.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] printing/fixed-positioned-headers-and-footers-clipped.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] printing/fixed-positioned-headers-and-footers-inside-transform.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] printing/fixed-positioned-headers-and-footers-larger-than-page.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] printing/fixed-positioned-headers-and-footers.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/absolute-position-headers-and-footers.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-clipped.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html  [ NeedsRebaseline ]
-crbug.com/303728 [ Mac Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html  [ NeedsRebaseline ]
-
 # Rebaseline didn't fix this. It's flaking between two different failures due to rounding error.
 # It consistently fails on debug builds and sometiems on release+asserts builds.
 # But consistently passes on release builds.
