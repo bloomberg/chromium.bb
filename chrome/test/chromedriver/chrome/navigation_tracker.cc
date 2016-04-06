@@ -257,9 +257,16 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Runtime.executionContextsCleared") {
     if (!IsExpectingFrameLoadingEvents()) {
-      execution_context_set_.clear();
-      ResetLoadingState(kLoading);
-      load_event_fired_ = false;
+      if (browser_info_->build_no >= 2685 && execution_context_set_.empty()) {
+        // As of crrev.com/382211, DevTools sends an executionContextsCleared
+        // event right before the first execution context is created, but after
+        // Page.loadEventFired.
+        ResetLoadingState(kUnknown);
+      } else {
+        execution_context_set_.clear();
+        ResetLoadingState(kLoading);
+        load_event_fired_ = false;
+      }
     }
   } else if (method == "Runtime.executionContextCreated") {
     if (!IsExpectingFrameLoadingEvents()) {
