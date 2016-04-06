@@ -322,6 +322,16 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data", InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
 
     bool isSameOriginRequest = securityOrigin && securityOrigin->canRequest(baseURL());
+
+    // When the response was fetched via the Service Worker, the original URL may not be same as the base URL.
+    // TODO(horo): When we will use the original URL as the base URL, we can remove this check. crbug.com/553535
+    if (cachedStyleSheet->response().wasFetchedViaServiceWorker()) {
+        const KURL originalURL(cachedStyleSheet->response().originalURLViaServiceWorker());
+        // |originalURL| is empty when the response is created in the SW.
+        if (!originalURL.isEmpty() && !securityOrigin->canRequest(originalURL))
+            isSameOriginRequest = false;
+    }
+
     CSSStyleSheetResource::MIMETypeCheck mimeTypeCheck = isQuirksModeBehavior(m_parserContext.mode()) && isSameOriginRequest ? CSSStyleSheetResource::MIMETypeCheck::Lax : CSSStyleSheetResource::MIMETypeCheck::Strict;
     String sheetText = cachedStyleSheet->sheetText(mimeTypeCheck);
 
