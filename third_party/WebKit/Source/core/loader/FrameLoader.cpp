@@ -1206,10 +1206,6 @@ String FrameLoader::userAgent() const
 
 void FrameLoader::detach()
 {
-#if !ENABLE(OILPAN)
-    // The caller must protect a reference to m_frame.
-    ASSERT(m_frame->refCount() > 1);
-#endif
     detachDocumentLoader(m_documentLoader);
     detachDocumentLoader(m_provisionalDocumentLoader);
 

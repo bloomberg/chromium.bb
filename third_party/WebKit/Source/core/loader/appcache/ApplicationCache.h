@@ -50,9 +50,6 @@ public:
     }
     ~ApplicationCache() override
     {
-#if !ENABLE(OILPAN)
-        ASSERT(!m_frame);
-#endif
     }
 
     void willDestroyGlobalObjectInFrame() override;
