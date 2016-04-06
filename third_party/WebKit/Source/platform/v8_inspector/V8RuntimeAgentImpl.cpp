@@ -107,14 +107,16 @@ void V8RuntimeAgentImpl::evaluate(
         return;
     }
 
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    v8::TryCatch tryCatch(injectedScript->isolate());
+
     v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
     if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
         return;
+    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
 
-    v8::TryCatch tryCatch(injectedScript->isolate());
-    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    v8::MaybeLocal<v8::Value> maybeResultValue = evaluateInternal(injectedScript, doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false), expression, commandLineAPI);
-
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), expression));
     // InjectedScript may be gone after any evaluate call - find it again.
     injectedScript = m_connection->findInjectedScript(errorString, executionContextId.fromJust());
     if (!injectedScript)
@@ -129,13 +131,6 @@ void V8RuntimeAgentImpl::evaluate(
         result,
         wasThrown,
         exceptionDetails);
-}
-
-v8::MaybeLocal<v8::Value> V8RuntimeAgentImpl::evaluateInternal(InjectedScript* injectedScript, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension)
-{
-    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, extension);
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole ? m_debugger : nullptr);
-    return m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), expression));
 }
 
 void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
@@ -185,12 +180,9 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
-    v8::MaybeLocal<v8::Object> remoteObjectAPI = injectedScript->remoteObjectAPI(errorString, objectGroupName);
-    if (remoteObjectAPI.IsEmpty())
-        return;
-
     v8::TryCatch tryCatch(injectedScript->isolate());
-    v8::MaybeLocal<v8::Value> maybeFunctionValue = evaluateInternal(injectedScript, doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false), "(" + expression + ")", remoteObjectAPI);
+
+    v8::MaybeLocal<v8::Value> maybeFunctionValue = m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), "(" + expression + ")"));
     // InjectedScript may be gone after any evaluate call - find it again.
     injectedScript = m_connection->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
@@ -206,6 +198,11 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         *errorString = "Given expression does not evaluate to a function";
         return;
     }
+
+    v8::MaybeLocal<v8::Object> remoteObjectAPI = injectedScript->remoteObjectAPI(errorString, objectGroupName);
+    if (remoteObjectAPI.IsEmpty())
+        return;
+    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, remoteObjectAPI);
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->callFunction(functionValue.As<v8::Function>(), injectedScript->context()->context(), object, argc, argv.get());
     // InjectedScript may be gone after any evaluate call - find it again.

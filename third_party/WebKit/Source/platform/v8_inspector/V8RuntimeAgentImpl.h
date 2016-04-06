@@ -130,8 +130,6 @@ public:
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
 
 private:
-    v8::MaybeLocal<v8::Value> evaluateInternal(InjectedScript*, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension);
-
     // TODO(dgozman): reverse ownership.
     OwnPtr<V8InspectorConnectionImpl> m_connection;
     protocol::DictionaryValue* m_state;

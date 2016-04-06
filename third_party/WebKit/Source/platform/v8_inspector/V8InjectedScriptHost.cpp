@@ -386,6 +386,11 @@ bool V8Debugger::isCommandLineAPIGetter(const String16& name)
     return getters.find(name) != getters.end();
 }
 
+bool V8Debugger::isRemoteObjectAPIMethod(const String16& name)
+{
+    return name == "bindRemoteObject";
+}
+
 namespace {
 
 char hiddenPropertyName[] = "v8inspector::InjectedScriptHost";
