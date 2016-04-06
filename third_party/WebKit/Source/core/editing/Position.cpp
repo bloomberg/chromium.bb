@@ -82,6 +82,12 @@ PositionTemplate<Strategy>::PositionTemplate(RawPtr<Node> anchorNode, PositionAn
         ASSERT(m_anchorType == PositionAnchorType::BeforeAnchor || m_anchorType == PositionAnchorType::AfterAnchor);
         return;
     }
+    if (m_anchorNode->isDocumentNode()) {
+        // Since |RangeBoundaryPoint| can't represent before/after Document, we
+        // should not use them.
+        DCHECK(isBeforeChildren() || isAfterChildren()) << m_anchorType;
+        return;
+    }
     ASSERT(canBeAnchorNode(m_anchorNode.get()));
     ASSERT(m_anchorType != PositionAnchorType::OffsetInAnchor);
 }
