@@ -120,6 +120,7 @@ public:
 
     void setRevalidatingRequest(const ResourceRequest& request) { m_revalidatingRequest = request; }
 
+    // This url can have a fragment, but it can match resources that differ by the fragment only.
     const KURL& url() const { return m_resourceRequest.url();}
     Type getType() const { return static_cast<Type>(m_type); }
     const ResourceLoaderOptions& options() const { return m_options; }
@@ -324,8 +325,6 @@ private:
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CachedMetadataHandler::CacheType);
     void clearCachedMetadata(CachedMetadataHandler::CacheType);
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
-
-    String m_fragmentIdentifierForRequest;
 
 #if !ENABLE(OILPAN)
     WeakPtrFactory<Resource> m_weakPtrFactory;

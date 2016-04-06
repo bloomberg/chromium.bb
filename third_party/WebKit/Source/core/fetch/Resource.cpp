@@ -236,14 +236,6 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     // Currently we support the metadata caching only for HTTP family.
     if (m_resourceRequest.url().protocolIsInHTTPFamily())
         m_cacheHandler = CacheHandler::create(this);
-
-    if (!m_resourceRequest.url().hasFragmentIdentifier())
-        return;
-    KURL urlForCache = MemoryCache::removeFragmentIdentifierIfNeeded(m_resourceRequest.url());
-    if (urlForCache.hasFragmentIdentifier())
-        return;
-    m_fragmentIdentifierForRequest = m_resourceRequest.url().fragmentIdentifier();
-    m_resourceRequest.setURL(urlForCache);
 }
 
 Resource::~Resource()
@@ -268,26 +260,17 @@ void Resource::load(ResourceFetcher* fetcher)
     m_status = Pending;
 
     ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
+    KURL url = request.url();
     if (!accept().isEmpty())
         request.setHTTPAccept(accept());
     request.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
-
-    // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.
-    // We should look into removing the expectation of that knowledge from the platform network stacks.
-    KURL urlWithoutFragment = request.url();
-    if (!m_fragmentIdentifierForRequest.isNull()) {
-        KURL url = request.url();
-        url.setFragmentIdentifier(m_fragmentIdentifierForRequest);
-        request.setURL(url);
-        m_fragmentIdentifierForRequest = String();
-    }
 
     m_loader = ResourceLoader::create(fetcher, this);
     m_loader->start(request);
     // If the request reference is null (i.e., a synchronous revalidation will
     // null the request), don't make the request non-null by setting the url.
     if (!request.isNull())
-        request.setURL(urlWithoutFragment);
+        request.setURL(url);
 }
 
 void Resource::checkNotify()

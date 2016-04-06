@@ -405,17 +405,15 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
     context().addCSPHeaderIfNecessary(factory.type(), request);
 
     KURL url = request.resourceRequest().url();
+    KURL urlWithoutFragment = MemoryCache::removeFragmentIdentifierIfNeeded(url);
     TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url", urlForTraceEvent(url));
 
     WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), Resource::resourceTypeName(factory.type()));
 
-    // If only the fragment identifiers differ, it is the same resource.
-    url = MemoryCache::removeFragmentIdentifierIfNeeded(url);
-
     if (!url.isValid())
         return nullptr;
 
-    if (!context().canRequest(factory.type(), request.resourceRequest(), url, request.options(), request.forPreload(), request.getOriginRestriction()))
+    if (!context().canRequest(factory.type(), request.resourceRequest(), urlWithoutFragment, request.options(), request.forPreload(), request.getOriginRestriction()))
         return nullptr;
 
     if (!request.forPreload()) {
@@ -487,9 +485,10 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
             resource->didChangePriority(priority, 0);
     }
 
-    ASSERT(resource->url() == url.getString());
+    // If only the fragment identifiers differ, it is the same resource.
+    ASSERT(equalIgnoringFragmentIdentifier(resource->url(), url));
     requestLoadStarted(resource, request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
-    m_documentResources.set(resource->url(), resource->asWeakPtr());
+    m_documentResources.set(urlWithoutFragment, resource->asWeakPtr());
 
     if (!resourceNeedsLoad(resource, request, policy))
         return resource;

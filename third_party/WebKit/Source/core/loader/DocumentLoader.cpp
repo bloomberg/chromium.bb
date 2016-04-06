@@ -645,10 +645,6 @@ void DocumentLoader::startLoadingMainResource()
     // A bunch of headers are set when the underlying ResourceLoader is created, and m_request needs to include those.
     // Even when using a cached resource, we may make some modification to the request, e.g. adding the referer header.
     m_request = mainResourceLoader() ? m_mainResource->resourceRequest() : fetchRequest.resourceRequest();
-    // If there was a fragment identifier on m_request, the cache will have stripped it. m_request should include
-    // the fragment identifier, so add that back in.
-    if (equalIgnoringFragmentIdentifier(m_request.url(), fetchRequest.url()))
-        m_request.setURL(fetchRequest.url());
     m_mainResource->addClient(this);
 }
 

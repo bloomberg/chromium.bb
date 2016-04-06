@@ -291,6 +291,7 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
+    // removeFragmentIdentifierIfNeeded() should be called for the url before using it as a key for the map.
     using ResourceMap = HeapHashMap<String, Member<MemoryCacheEntry>>;
     using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
     ResourceMap* ensureResourceMap(const String& cacheIdentifier);

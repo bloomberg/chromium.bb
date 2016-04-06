@@ -158,8 +158,9 @@ void MemoryCache::add(Resource* resource)
     ASSERT(WTF::isMainThread());
     ASSERT(resource->url().isValid());
     ResourceMap* resources = ensureResourceMap(resource->cacheIdentifier());
-    RELEASE_ASSERT(!resources->contains(resource->url()));
-    resources->set(resource->url(), MemoryCacheEntry::create(resource));
+    KURL url = removeFragmentIdentifierIfNeeded(resource->url());
+    RELEASE_ASSERT(!resources->contains(url));
+    resources->set(url, MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
     WTF_LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().getString().latin1().data(), resource);
@@ -373,7 +374,8 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
 
     ResourceMap* resources = m_resourceMaps.get(resource->cacheIdentifier());
     ASSERT(resources);
-    ResourceMap::iterator it = resources->find(resource->url());
+    KURL url = removeFragmentIdentifierIfNeeded(resource->url());
+    ResourceMap::iterator it = resources->find(url);
     ASSERT(it != resources->end());
 
     MemoryCacheEntry* entryPtr = it->value;
@@ -389,7 +391,8 @@ MemoryCacheEntry* MemoryCache::getEntryForResource(const Resource* resource) con
     ResourceMap* resources = m_resourceMaps.get(resource->cacheIdentifier());
     if (!resources)
         return nullptr;
-    MemoryCacheEntry* entry = resources->get(resource->url());
+    KURL url = removeFragmentIdentifierIfNeeded(resource->url());
+    MemoryCacheEntry* entry = resources->get(url);
     if (!entry || entry->m_resource != resource)
         return nullptr;
     return entry;
