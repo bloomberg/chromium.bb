@@ -69,7 +69,7 @@
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
@@ -138,7 +138,7 @@ HeapVector<Member<Element>> elementsFromRect(LayoutRect rect, Document& document
     leftPadding = rightPadding = rect.width() / 2;
     topPadding = bottomPadding = rect.height() / 2;
     HitTestResult result(request, center, topPadding, rightPadding, bottomPadding, leftPadding);
-    document.frame()->contentLayoutObject()->hitTest(result);
+    document.frame()->contentLayoutItem().hitTest(result);
     return document.elementsFromHitTestResult(result);
 }
 
