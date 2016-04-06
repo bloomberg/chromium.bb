@@ -545,7 +545,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.authCompleted_ = false;
       this.lastBackMessageValue_ = false;
 
-      this.updateAuthExtension_(data);
+      $('login-header-bar').showCreateSupervisedButton =
+          data.supervisedUsersCanCreate;
+      $('login-header-bar').showGuestButton = data.guestSignin;
+
+      // Reset SAML
+      this.classList.toggle('full-width', false);
+      $('saml-notice-container').hidden = true;
+      this.samlPasswordConfirmAttempt_ = 0;
+
+      // Screen size could have been changed because of 'full-width' classes.
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
 
       var params = {};
       for (var i in cr.login.GaiaAuthHost.SUPPORTED_PARAMS) {
@@ -557,10 +568,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       params.isNewGaiaFlow = true;
       params.doSamlRedirect =
           (this.screenMode_ == ScreenMode.SAML_INTERSTITIAL);
-
-      // Screen size could have been changed because of 'full-width' classes.
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
 
       this.gaiaAuthParams_ = params;
       switch (this.screenMode_) {
@@ -581,25 +588,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           break;
       }
       this.updateControlsState();
-    },
-
-    /**
-     * Updates the authentication extension with new parameters, if needed.
-     * @param {Object} data New extension parameters bag.
-     * @private
-     */
-    updateAuthExtension_: function(data) {
-      $('login-header-bar').showCreateSupervisedButton =
-          data.supervisedUsersCanCreate;
-      $('login-header-bar').showGuestButton = data.guestSignin;
-
-      this.updateControlsState();
-
-      // Reset SAML
-      this.classList.toggle('full-width', false);
-      this.samlPasswordConfirmAttempt_ = 0;
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
+      chrome.send('authExtensionLoaded');
     },
 
     /**
@@ -893,7 +882,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Reloads extension frame.
      */
     doReload: function() {
-      if (this.isOffline())
+      if (this.screenMode_ != ScreenMode.DEFAULT)
         return;
       this.gaiaAuthHost_.reload();
       this.loading = true;

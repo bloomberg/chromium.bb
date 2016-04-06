@@ -106,6 +106,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   void HandleIdentifierEntered(const std::string& account_identifier);
 
+  void HandleAuthExtensionLoaded();
+
   // Really handles the complete login message.
   void DoCompleteLogin(const std::string& gaia_id,
                        const std::string& typed_email,
@@ -244,6 +246,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // True if offline GAIA is active.
   bool offline_login_is_active_ = false;
+
+  // True if the authentication extension is still loading.
+  bool auth_extension_being_loaded_ = false;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

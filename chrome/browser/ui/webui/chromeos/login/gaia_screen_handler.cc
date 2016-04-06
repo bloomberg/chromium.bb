@@ -291,7 +291,7 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
   }
   VLOG(1) << "Reloading Gaia.";
   frame_state_ = FRAME_STATE_LOADING;
-  CallJS("doReload");
+  LoadAuthExtension(force_reload, false /* offline */);
 }
 
 void GaiaScreenHandler::MonitorOfflineIdle(bool is_online) {
@@ -370,6 +370,8 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
   AddCallback("updateOfflineLogin",
               &GaiaScreenHandler::set_offline_login_is_active);
+  AddCallback("authExtensionLoaded",
+              &GaiaScreenHandler::HandleAuthExtensionLoaded);
 }
 
 void GaiaScreenHandler::OnPortalDetectionCompleted(
@@ -394,6 +396,11 @@ void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
   if (!Delegate()->IsUserWhitelisted(user_manager::known_user::GetAccountId(
           user_email, std::string() /* gaia_id */)))
     ShowWhitelistCheckFailedError();
+}
+
+void GaiaScreenHandler::HandleAuthExtensionLoaded() {
+  VLOG(1) << "Auth extension finished loading";
+  auth_extension_being_loaded_ = false;
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(
@@ -778,6 +785,13 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
                                           bool offline) {
   VLOG(1) << "LoadAuthExtension, force: " << force
           << ", offline: " << offline;
+
+  if (auth_extension_being_loaded_) {
+    VLOG(1) << "Skip loading the Auth extension as it's already being loaded";
+    return;
+  }
+
+  auth_extension_being_loaded_ = true;
   GaiaContext context;
   context.force_reload = force;
   context.use_offline = offline;
