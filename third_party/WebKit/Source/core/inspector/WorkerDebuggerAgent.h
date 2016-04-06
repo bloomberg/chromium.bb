@@ -47,10 +47,6 @@ public:
 private:
     WorkerDebuggerAgent(WorkerGlobalScope*, V8RuntimeAgent*);
 
-    // V8DebuggerAgent::Client implemntation.
-    void muteConsole() override;
-    void unmuteConsole() override;
-
     Member<WorkerGlobalScope> m_inspectedWorkerGlobalScope;
 };
 

@@ -84,9 +84,6 @@ public:
     void compileScript(ErrorString*, const String16& expression, const String16& sourceURL, bool persistScript, int executionContextId, Maybe<String16>* scriptId, Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void runScript(ErrorString*, const String16& scriptId, int executionContextId, const Maybe<String16>& objectGroup, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& includeCommandLineAPI, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
-    virtual void muteConsole() = 0;
-    virtual void unmuteConsole() = 0;
-
     V8RuntimeAgent* v8Agent() { return m_v8RuntimeAgent.get(); }
 
 protected:

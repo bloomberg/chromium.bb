@@ -74,6 +74,8 @@ private:
     void quitMessageLoopOnPause() override;
     void muteWarningsAndDeprecations() override;
     void unmuteWarningsAndDeprecations() override;
+    void muteConsole() override;
+    void unmuteConsole() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
 
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;

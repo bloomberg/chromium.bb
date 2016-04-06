@@ -10,6 +10,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
+#include "platform/v8_inspector/MuteConsoleScope.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8AsyncCallTracker.h"
@@ -983,6 +984,8 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
 
     v8::TryCatch tryCatch(injectedScript->isolate());
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_pausedCallFrames[frameOrdinal].get()->evaluate(toV8String(injectedScript->isolate(), expression));
 

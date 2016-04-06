@@ -60,8 +60,6 @@ public:
 
 private:
     PageDebuggerAgent(InspectedFrames*, V8RuntimeAgent*);
-    void muteConsole() override;
-    void unmuteConsole() override;
 
     // V8DebuggerAgent::Client implemntation.
     bool canExecuteScripts() const;

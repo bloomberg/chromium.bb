@@ -55,14 +55,4 @@ DEFINE_TRACE(WorkerDebuggerAgent)
     InspectorDebuggerAgent::trace(visitor);
 }
 
-void WorkerDebuggerAgent::muteConsole()
-{
-    // We don't need to mute console for workers.
-}
-
-void WorkerDebuggerAgent::unmuteConsole()
-{
-    // We don't need to mute console for workers.
-}
-
 } // namespace blink

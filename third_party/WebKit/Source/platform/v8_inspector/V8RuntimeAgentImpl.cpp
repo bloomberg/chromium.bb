@@ -34,6 +34,7 @@
 #include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/MuteConsoleScope.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorConnectionImpl.h"
@@ -111,6 +112,7 @@ void V8RuntimeAgentImpl::evaluate(
         return;
 
     v8::TryCatch tryCatch(injectedScript->isolate());
+    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     v8::MaybeLocal<v8::Value> maybeResultValue = evaluateInternal(injectedScript, doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false), expression, commandLineAPI);
 
     // InjectedScript may be gone after any evaluate call - find it again.
@@ -181,6 +183,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     }
 
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
     v8::MaybeLocal<v8::Object> remoteObjectAPI = injectedScript->remoteObjectAPI(errorString, objectGroupName);
     if (remoteObjectAPI.IsEmpty())
@@ -233,6 +236,7 @@ void V8RuntimeAgentImpl::getProperties(
         return;
 
     IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
+    MuteConsoleScope muteConsoleScope(m_debugger);
 
     v8::HandleScope handles(injectedScript->isolate());
     v8::Local<v8::Context> context = injectedScript->context()->context();
@@ -368,6 +372,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         return;
 
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
     if (!m_compiledScripts.contains(scriptId)) {
         *errorString = "Script execution failed";

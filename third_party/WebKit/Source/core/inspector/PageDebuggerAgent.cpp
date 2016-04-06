@@ -98,16 +98,6 @@ void PageDebuggerAgent::restore()
 }
 
 
-void PageDebuggerAgent::muteConsole()
-{
-    FrameConsole::mute();
-}
-
-void PageDebuggerAgent::unmuteConsole()
-{
-    FrameConsole::unmute();
-}
-
 void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
 {
     if (frame == m_inspectedFrames->root()) {

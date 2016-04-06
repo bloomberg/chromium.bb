@@ -55,8 +55,6 @@ private:
     PageRuntimeAgent(Client*, V8Debugger*, InspectedFrames*, int contextGroupId);
 
     ScriptState* defaultScriptState() override;
-    void muteConsole() override;
-    void unmuteConsole() override;
 
     Member<InspectedFrames> m_inspectedFrames;
 };

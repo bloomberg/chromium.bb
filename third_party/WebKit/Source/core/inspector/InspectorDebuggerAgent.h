@@ -90,9 +90,6 @@ public:
 
     V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent.get(); }
 
-    virtual void muteConsole() = 0;
-    virtual void unmuteConsole() = 0;
-
 protected:
     explicit InspectorDebuggerAgent(V8RuntimeAgent*);
 

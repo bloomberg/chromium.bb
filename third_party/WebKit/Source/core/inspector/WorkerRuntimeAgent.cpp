@@ -64,14 +64,4 @@ ScriptState* WorkerRuntimeAgent::defaultScriptState()
     return m_workerGlobalScope->scriptController()->getScriptState();
 }
 
-void WorkerRuntimeAgent::muteConsole()
-{
-    // We don't need to mute console for workers.
-}
-
-void WorkerRuntimeAgent::unmuteConsole()
-{
-    // We don't need to mute console for workers.
-}
-
 } // namespace blink

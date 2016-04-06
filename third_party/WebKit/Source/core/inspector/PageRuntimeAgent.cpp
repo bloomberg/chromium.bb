@@ -83,14 +83,4 @@ ScriptState* PageRuntimeAgent::defaultScriptState()
     return scriptState;
 }
 
-void PageRuntimeAgent::muteConsole()
-{
-    FrameConsole::mute();
-}
-
-void PageRuntimeAgent::unmuteConsole()
-{
-    FrameConsole::unmute();
-}
-
 } // namespace blink

@@ -31,7 +31,6 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/AsyncCallTracker.h"
-#include "core/inspector/MuteConsoleScope.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
@@ -227,9 +226,6 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
     Maybe<bool>* optOutWasThrown,
     Maybe<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
 {
-    MuteConsoleScope<InspectorDebuggerAgent> muteScope;
-    if (inDoNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        muteScope.enter(this);
     m_v8DebuggerAgent->evaluateOnCallFrame(errorString, inCallFrameId, inExpression, inObjectGroup, inIncludeCommandLineAPI, inDoNotPauseOnExceptionsAndMuteConsole, inReturnByValue, inGeneratePreview, outResult, optOutWasThrown, optOutExceptionDetails);
 }
 

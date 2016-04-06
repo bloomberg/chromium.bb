@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/MuteConsoleScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -113,9 +112,6 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
         v8::HandleScope handles(defaultScriptState()->isolate());
         executionContextId = V8Debugger::contextId(defaultScriptState()->context());
     }
-    MuteConsoleScope<InspectorRuntimeAgent> muteScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        muteScope.enter(this);
     m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, userGesture, result, wasThrown, exceptionDetails);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
@@ -134,9 +130,6 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
     Optional<UserGestureIndicator> userGestureIndicator;
     if (userGesture.fromMaybe(false))
         userGestureIndicator.emplace(DefinitelyProcessingNewUserGesture);
-    MuteConsoleScope<InspectorRuntimeAgent> muteScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        muteScope.enter(this);
     m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, userGesture, result, wasThrown);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
@@ -150,7 +143,6 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString,
     Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
-    MuteConsoleScope<InspectorRuntimeAgent> muteScope(this);
     m_v8RuntimeAgent->getProperties(errorString, objectId, ownProperties, accessorPropertiesOnly, generatePreview, result, internalProperties, exceptionDetails);
 }
 
@@ -194,9 +186,6 @@ void InspectorRuntimeAgent::runScript(ErrorString* errorString,
     OwnPtr<protocol::Runtime::RemoteObject>* outResult,
     Maybe<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
 {
-    MuteConsoleScope<InspectorRuntimeAgent> muteScope;
-    if (inDoNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
-        muteScope.enter(this);
     m_v8RuntimeAgent->runScript(errorString, inScriptId, inExecutionContextId, inObjectGroup, inDoNotPauseOnExceptionsAndMuteConsole, includeCommandLineAPI, outResult, optOutExceptionDetails);
 }
 

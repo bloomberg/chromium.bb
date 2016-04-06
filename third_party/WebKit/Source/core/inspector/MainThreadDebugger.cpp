@@ -168,6 +168,16 @@ void MainThreadDebugger::unmuteWarningsAndDeprecations()
     UseCounter::unmuteForInspector();
 }
 
+void MainThreadDebugger::muteConsole()
+{
+    FrameConsole::mute();
+}
+
+void MainThreadDebugger::unmuteConsole()
+{
+    FrameConsole::unmute();
+}
+
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
 {
     ExecutionContext* executionContext = toExecutionContext(target);

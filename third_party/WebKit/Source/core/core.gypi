@@ -1859,7 +1859,6 @@
             'inspector/LayoutEditor.h',
             'inspector/MainThreadDebugger.cpp',
             'inspector/MainThreadDebugger.h',
-            'inspector/MuteConsoleScope.h',
             'inspector/NetworkResourcesData.cpp',
             'inspector/NetworkResourcesData.h',
             'inspector/PageConsoleAgent.cpp',
