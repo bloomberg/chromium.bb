@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/frame/FrameView.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
@@ -55,7 +55,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        PaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
+        PaintLayerCompositor* compositor = frame()->contentLayoutItem().compositor();
         DCHECK(compositor);
         DCHECK(compositor->scrollLayer());
 
