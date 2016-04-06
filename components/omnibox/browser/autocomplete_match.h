@@ -340,7 +340,9 @@ struct AutocompleteMatch {
   // It may be empty if there is no possible navigation.
   GURL destination_url;
 
-  // The destination URL with "www." stripped off for better dupe finding.
+  // The destination URL modified for better dupe finding.  The result may not
+  // be navigable or even valid; it's only meant to be used for detecting
+  // duplicates.
   GURL stripped_destination_url;
 
   // The main text displayed in the address bar dropdown.
