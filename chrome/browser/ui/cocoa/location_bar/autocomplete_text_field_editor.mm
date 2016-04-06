@@ -120,7 +120,9 @@ BOOL ThePasteboardIsTooDamnBig() {
         observer->CreatePasteboardItem());
     base::scoped_nsobject<NSDraggingItem> dragItem(
         [[NSDraggingItem alloc] initWithPasteboardWriter:item]);
-    [dragItem setDraggingFrame:[self bounds] contents:image];
+    NSRect draggingFrame =
+        NSMakeRect(0, 0, image.size.width, image.size.height);
+    [dragItem setDraggingFrame:draggingFrame contents:image];
     [self beginDraggingSessionWithItems:@[ dragItem.get() ]
                                   event:event
                                  source:self];
