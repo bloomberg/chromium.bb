@@ -156,11 +156,20 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
   int32_t max_bandwidth_timestamp = bandwidth_recorder.MaxBandwidthTimestamp();
 
   // Fill the proto before passing it to the crypto stream to send.
+  const int32_t bw_estimate_bytes_per_second =
+      BandwidthToCachedParameterBytesPerSecond(
+          bandwidth_estimate_sent_to_client_);
+  const int32_t max_bw_estimate_bytes_per_second =
+      BandwidthToCachedParameterBytesPerSecond(max_bandwidth_estimate);
+  QUIC_BUG_IF(max_bw_estimate_bytes_per_second < 0)
+      << max_bw_estimate_bytes_per_second;
+  QUIC_BUG_IF(bw_estimate_bytes_per_second < 0) << bw_estimate_bytes_per_second;
+
   CachedNetworkParameters cached_network_params;
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      bandwidth_estimate_sent_to_client_.ToBytesPerSecond());
+      bw_estimate_bytes_per_second);
   cached_network_params.set_max_bandwidth_estimate_bytes_per_second(
-      max_bandwidth_estimate.ToBytesPerSecond());
+      max_bw_estimate_bytes_per_second);
   cached_network_params.set_max_bandwidth_timestamp_seconds(
       max_bandwidth_timestamp);
   cached_network_params.set_min_rtt_ms(
@@ -218,6 +227,14 @@ bool QuicServerSessionBase::ShouldCreateOutgoingDynamicStream() {
 
 QuicCryptoServerStreamBase* QuicServerSessionBase::GetCryptoStream() {
   return crypto_stream_.get();
+}
+
+int32_t QuicServerSessionBase::BandwidthToCachedParameterBytesPerSecond(
+    const QuicBandwidth& bandwidth) {
+  int64_t bytes_per_second = bandwidth.ToBytesPerSecond();
+  return (bytes_per_second > static_cast<int64_t>(INT32_MAX)
+              ? INT32_MAX
+              : static_cast<int32_t>(bytes_per_second));
 }
 
 }  // namespace net

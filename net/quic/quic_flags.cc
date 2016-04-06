@@ -71,16 +71,9 @@ bool FLAGS_quic_require_fix = true;
 // If true, headers stream will support receiving PUSH_PROMISE frames.
 bool FLAGS_quic_supports_push_promise = true;
 
-// When turn on, log packet loss into transport connection stats LossEvent.
-bool FLAGS_quic_log_loss_event = true;
-
 // If true, make sure new incoming streams correctly cede to higher
 // priority (or batch) streams when doing QUIC writes.
 bool FLAGS_quic_cede_correctly = true;
-
-// If on, max number of incoming and outgoing streams will be different.
-// Incoming will be a little higher than outgoing to tolerate race condition.
-bool FLAGS_quic_different_max_num_open_streams = true;
 
 // If true, QUIC should correctly report if it supports ChaCha20. Otherwise,
 // QUIC will lie and claim that it does not support ChaCha20. The primary use
@@ -105,13 +98,6 @@ bool FLAGS_quic_ack_decimation2 = true;
 // If true, QUIC connections will defer responding to ACKs to their send alarms.
 bool FLAGS_quic_connection_defer_ack_response = true;
 
-// If true, calls to QuicAlarm::Cancel don't do anything  if the alarm is not
-// set.
-bool FLAGS_quic_only_cancel_set_alarms = true;
-
-// Simplify QUIC's write path for inplace encryption now that FEC is gone.
-bool FLAGS_quic_inplace_encryption2 = true;
-
 // If true, SpdyFramer will call OnStreamEnd from SpdyFramerVisitorInterface
 // instead of empty-data sentinel calls when the stream is to be ended.
 bool FLAGS_spdy_on_stream_end = true;
@@ -123,10 +109,6 @@ bool FLAGS_quic_use_cached_compressed_certs = true;
 // Enable a connection option allowing connections to time out if more than 5
 // consecutive RTOs are sent.
 bool FLAGS_quic_enable_rto_timeout = true;
-
-// Don't copy QuicAckFrame or QuicStopWaitingFrame into the
-// QuicPacketGenerator.
-bool FLAGS_quic_dont_copy_acks = true;
 
 // Use a byte conservation approach instead of packet conservation in the
 // Slow Start Large Reduction experiment.

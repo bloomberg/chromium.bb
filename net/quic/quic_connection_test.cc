@@ -699,13 +699,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   QuicVersion version() { return GetParam().version; }
 
   QuicAckFrame* outgoing_ack() {
-    if (FLAGS_quic_dont_copy_acks) {
-      QuicFrame ack_frame =
-          QuicConnectionPeer::GetUpdatedAckFrame(&connection_);
-      ack_ = *ack_frame.ack_frame;
-    } else {
-      QuicConnectionPeer::PopulateAckFrame(&connection_, &ack_);
-    }
+    QuicFrame ack_frame = QuicConnectionPeer::GetUpdatedAckFrame(&connection_);
+    ack_ = *ack_frame.ack_frame;
     return &ack_;
   }
 

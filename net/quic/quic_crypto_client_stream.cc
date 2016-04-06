@@ -312,6 +312,10 @@ void QuicCryptoClientStream::DoSendCHLO(
   // This call and function should be removed after removing QUIC_VERSION_25.
   AppendFixed(&out);
 
+  // Send a local timestamp to the server.
+  out.SetValue(kCTIM,
+               session()->connection()->clock()->WallNow().ToUNIXSeconds());
+
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(
         server_id_, session()->connection()->supported_versions().front(),

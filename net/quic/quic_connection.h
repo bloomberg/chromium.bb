@@ -455,7 +455,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // QuicPacketGenerator::DelegateInterface
   bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                             IsHandshake handshake) override;
-  void PopulateAckFrame(QuicAckFrame* ack) override;
   const QuicFrame GetUpdatedAckFrame() override;
   void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
 

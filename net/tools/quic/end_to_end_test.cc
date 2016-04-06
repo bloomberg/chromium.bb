@@ -2021,6 +2021,133 @@ class ServerStreamThatDropsBodyFactory : public QuicTestServer::StreamFactory {
   }
 };
 
+// A test server stream that sends response with body size greater than 4GB.
+class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
+ public:
+  ServerStreamThatSendsHugeResponse(QuicStreamId id,
+                                    QuicSpdySession* session,
+                                    int64_t body_bytes)
+      : QuicSimpleServerStream(id, session), body_bytes_(body_bytes) {}
+
+  ~ServerStreamThatSendsHugeResponse() override {}
+
+ protected:
+  void SendResponse() override {
+    QuicInMemoryCache::Response response;
+    string body;
+    test::GenerateBody(&body, body_bytes_);
+    response.set_body(body);
+    SendHeadersAndBodyAndTrailers(response.headers(), response.body(),
+                                  response.trailers());
+  }
+
+ private:
+  // Use a explicit int64 rather than size_t to simulate a 64-bit server talking
+  // to a 32-bit client.
+  int64_t body_bytes_;
+};
+
+class ServerStreamThatSendsHugeResponseFactory
+    : public QuicTestServer::StreamFactory {
+ public:
+  explicit ServerStreamThatSendsHugeResponseFactory(int64_t body_bytes)
+      : body_bytes_(body_bytes) {}
+
+  ~ServerStreamThatSendsHugeResponseFactory() override{};
+
+  QuicSimpleServerStream* CreateStream(QuicStreamId id,
+                                       QuicSpdySession* session) override {
+    return new ServerStreamThatSendsHugeResponse(id, session, body_bytes_);
+  }
+
+  int64_t body_bytes_;
+};
+
+// A test client stream that drops all received body.
+class ClientStreamThatDropsBody : public QuicSpdyClientStream {
+ public:
+  ClientStreamThatDropsBody(QuicStreamId id, QuicClientSession* session)
+      : QuicSpdyClientStream(id, session) {}
+  ~ClientStreamThatDropsBody() override {}
+
+  void OnDataAvailable() override {
+    while (HasBytesToRead()) {
+      struct iovec iov;
+      if (GetReadableRegions(&iov, 1) == 0) {
+        break;
+      }
+      MarkConsumed(iov.iov_len);
+    }
+    if (sequencer()->IsClosed()) {
+      OnFinRead();
+    } else {
+      sequencer()->SetUnblocked();
+    }
+  }
+};
+
+class ClientSessionThatDropsBody : public QuicClientSession {
+ public:
+  ClientSessionThatDropsBody(const QuicConfig& config,
+                             QuicConnection* connection,
+                             const QuicServerId& server_id,
+                             QuicCryptoClientConfig* crypto_config,
+                             QuicClientPushPromiseIndex* push_promise_index)
+      : QuicClientSession(config,
+                          connection,
+                          server_id,
+                          crypto_config,
+                          push_promise_index) {}
+
+  ~ClientSessionThatDropsBody() override {}
+
+  QuicSpdyClientStream* CreateClientStream() override {
+    return new ClientStreamThatDropsBody(GetNextOutgoingStreamId(), this);
+  }
+};
+
+class MockableQuicClientThatDropsBody : public MockableQuicClient {
+ public:
+  MockableQuicClientThatDropsBody(IPEndPoint server_address,
+                                  const QuicServerId& server_id,
+                                  const QuicConfig& config,
+                                  const QuicVersionVector& supported_versions,
+                                  EpollServer* epoll_server)
+      : MockableQuicClient(server_address,
+                           server_id,
+                           config,
+                           supported_versions,
+                           epoll_server) {}
+  ~MockableQuicClientThatDropsBody() override {}
+
+  QuicClientSession* CreateQuicClientSession(
+      QuicConnection* connection) override {
+    auto session =
+        new ClientSessionThatDropsBody(*config(), connection, server_id(),
+                                       crypto_config(), push_promise_index());
+    set_session(session);
+    return session;
+  }
+};
+
+class QuicTestClientThatDropsBody : public QuicTestClient {
+ public:
+  QuicTestClientThatDropsBody(IPEndPoint server_address,
+                              const string& server_hostname,
+                              const QuicConfig& config,
+                              const QuicVersionVector& supported_versions)
+      : QuicTestClient(server_address,
+                       server_hostname,
+                       config,
+                       supported_versions) {
+    set_client(new MockableQuicClientThatDropsBody(
+        server_address, QuicServerId(server_hostname, server_address.port(),
+                                     PRIVACY_MODE_DISABLED),
+        config, supported_versions, epoll_server()));
+  }
+  ~QuicTestClientThatDropsBody() override {}
+};
+
 TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   set_smaller_flow_control_receive_window();
 
@@ -2174,7 +2301,6 @@ class EndToEndTestServerPush : public EndToEndTest {
 
   EndToEndTestServerPush() : EndToEndTest() {
     FLAGS_quic_supports_push_promise = true;
-    FLAGS_quic_different_max_num_open_streams = true;
     client_config_.SetMaxStreamsPerConnection(kNumMaxStreams, kNumMaxStreams);
   }
 
@@ -2215,6 +2341,11 @@ class EndToEndTestServerPush : public EndToEndTest {
         host, path, 200, response_body, push_resources);
   }
 };
+
+// Run all server push end to end tests with all supported versions.
+INSTANTIATE_TEST_CASE_P(EndToEndTestsServerPush,
+                        EndToEndTestServerPush,
+                        ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(EndToEndTestServerPush, ServerPush) {
   ASSERT_TRUE(Initialize());
@@ -2277,7 +2408,6 @@ TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
   // client.
   EXPECT_EQ(kBody, client_->SendSynchronousRequest(
                        "https://example.com/push_example"));
-  EXPECT_EQ(1u + kNumResources, client_->num_responses());
 
   for (string url : push_urls) {
     // Sending subsequent requesets will not actually send anything on the wire,
@@ -2291,6 +2421,7 @@ TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
   // Expect only original request has been sent and push responses have been
   // received as normal response.
   EXPECT_EQ(1u, client_->num_requests());
+  EXPECT_EQ(1u + kNumResources, client_->num_responses());
 }
 
 TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
@@ -2323,9 +2454,6 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
   // client.
   EXPECT_EQ(kBody, client_->SendSynchronousRequest(
                        "https://example.com/push_example"));
-  // The responses to the original request and all the promised resources
-  // should have been received.
-  EXPECT_EQ(12u, client_->num_responses());
 
   for (const string& url : push_urls) {
     // Sending subsequent requesets will not actually send anything on the wire,
@@ -2336,6 +2464,9 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
 
   // Only 1 request should have been sent.
   EXPECT_EQ(1u, client_->num_requests());
+  // The responses to the original request and all the promised resources
+  // should have been received.
+  EXPECT_EQ(12u, client_->num_responses());
 }
 
 TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
@@ -2419,9 +2550,10 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
 }
 
 // TODO(fayang): this test seems to cause net_unittests timeouts :|
-TEST_P(EndToEndTest, DISABLED_TestHugePost) {
-  // This test tests a huge post with body size greater than 4GB, making sure
-  // QUIC code does not broke for 32-bit builds.
+TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
+  // This test tests a huge post with introduced packet loss from client to
+  // server and body size greater than 4GB, making sure QUIC code does not break
+  // for 32-bit builds.
   ServerStreamThatDropsBodyFactory stream_factory;
   SetSpdyStreamFactory(&stream_factory);
   ASSERT_TRUE(Initialize());
@@ -2430,13 +2562,14 @@ TEST_P(EndToEndTest, DISABLED_TestHugePost) {
   client_->epoll_server()->set_timeout_in_us(0);
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
-
+  SetPacketLossPercentage(1);
   // To avoid storing the whole request body in memory, use a loop to repeatedly
   // send body size of kSizeBytes until the whole request body size is reached.
   const int kSizeBytes = 128 * 1024;
   HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
   // Request body size is 4G plus one more kSizeBytes.
   int64_t request_body_size_bytes = pow(2, 32) + kSizeBytes;
+  ASSERT_LT(INT64_C(4294967296), request_body_size_bytes);
   request.AddHeader("content-length", IntToString(request_body_size_bytes));
   request.set_has_complete_message(false);
   string body;
@@ -2448,6 +2581,41 @@ TEST_P(EndToEndTest, DISABLED_TestHugePost) {
     client_->SendData(string(body.data(), kSizeBytes), fin);
     client_->client()->WaitForEvents();
   }
+  VerifyCleanConnection(false);
+}
+
+// TODO(fayang): this test seems to cause net_unittests timeouts :|
+TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
+  // This test tests a huge response with introduced loss from server to client
+  // and body size greater than 4GB, making sure QUIC code does not break for
+  // 32-bit builds.
+  const int kSizeBytes = 128 * 1024;
+  int64_t response_body_size_bytes = pow(2, 32) + kSizeBytes;
+  ASSERT_LT(4294967296, response_body_size_bytes);
+  ServerStreamThatSendsHugeResponseFactory stream_factory(
+      response_body_size_bytes);
+  SetSpdyStreamFactory(&stream_factory);
+
+  StartServer();
+
+  // Use a quic client that drops received body.
+  QuicTestClient* client = new QuicTestClientThatDropsBody(
+      server_address_, server_hostname_, client_config_,
+      client_supported_versions_);
+  client->UseWriter(client_writer_);
+  client->Connect();
+  client_.reset(client);
+  static EpollEvent event(EPOLLOUT, false);
+  client_writer_->Initialize(
+      QuicConnectionPeer::GetHelper(client_->client()->session()->connection()),
+      new ClientDelegate(client_->client()));
+  initialized_ = true;
+  ASSERT_TRUE(client_->client()->connected());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  SetPacketLossPercentage(1);
+  client_->SendRequest("/huge_response");
+  client_->WaitForResponse();
   VerifyCleanConnection(false);
 }
 

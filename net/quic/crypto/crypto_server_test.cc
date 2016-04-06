@@ -1136,7 +1136,7 @@ class AsyncStrikeServerVerificationTest : public CryptoServerTest {
         reinterpret_cast<const uint8_t*>(kOrbit.c_str()),
         StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
     config_.SetStrikeRegisterClient(strike_register_client_);
-    CryptoServerTest::SetUp();
+    ASSERT_NO_FATAL_FAILURE(CryptoServerTest::SetUp());
     strike_register_client_->StartDelayingVerification();
   }
 

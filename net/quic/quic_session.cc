@@ -378,12 +378,6 @@ void QuicSession::OnConfigNegotiated() {
 
   uint32_t max_streams = config_.MaxStreamsPerConnection();
   if (perspective() == Perspective::IS_SERVER) {
-    if (!FLAGS_quic_different_max_num_open_streams) {
-      max_streams =
-          max(max_streams + kMaxStreamsMinimumIncrement,
-              static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
-    }
-
     if (config_.HasReceivedConnectionOptions()) {
       if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
         // The following variations change the initial receive flow control
@@ -404,17 +398,14 @@ void QuicSession::OnConfigNegotiated() {
 
   set_max_open_outgoing_streams(max_streams);
 
-  uint32_t max_incoming_streams = max_streams;
-  if (FLAGS_quic_different_max_num_open_streams) {
-    // A small number of additional incoming streams beyond the limit should be
-    // allowed. This helps avoid early connection termination when FIN/RSTs for
-    // old streams are lost or arrive out of order.
-    // Use a minimum number of additional streams, or a percentage increase,
-    // whichever is larger.
-    max_incoming_streams =
-        max(max_streams + kMaxStreamsMinimumIncrement,
-            static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
-  }
+  // A small number of additional incoming streams beyond the limit should be
+  // allowed. This helps avoid early connection termination when FIN/RSTs for
+  // old streams are lost or arrive out of order.
+  // Use a minimum number of additional streams, or a percentage increase,
+  // whichever is larger.
+  uint32_t max_incoming_streams =
+      max(max_streams + kMaxStreamsMinimumIncrement,
+          static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
   set_max_open_incoming_streams(max_incoming_streams);
 
   if (config_.HasReceivedInitialStreamFlowControlWindowBytes()) {

@@ -139,6 +139,12 @@ class QuicServerSessionBase : public QuicSpdySession {
   // Number of packets sent to the peer, at the time we last sent a SCUP.
   int64_t last_scup_packet_number_;
 
+  // Converts QuicBandwidth to an int32 bytes/second that can be
+  // stored in CachedNetworkParameters.  TODO(jokulik): This function
+  // should go away once we fix http://b//27897982
+  int32_t BandwidthToCachedParameterBytesPerSecond(
+      const QuicBandwidth& bandwidth);
+
   DISALLOW_COPY_AND_ASSIGN(QuicServerSessionBase);
 };
 

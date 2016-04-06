@@ -968,10 +968,8 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   // RTO's use loss detection instead of immediately declaring retransmitted
   // packets lost.
-  if (FLAGS_quic_log_loss_event) {
-    for (int i = 1; i <= 99; ++i) {
-      EXPECT_CALL(debug_delegate, OnPacketLoss(i, LOSS_RETRANSMISSION, _));
-    }
+  for (int i = 1; i <= 99; ++i) {
+    EXPECT_CALL(debug_delegate, OnPacketLoss(i, LOSS_RETRANSMISSION, _));
   }
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 }

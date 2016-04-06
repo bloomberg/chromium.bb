@@ -386,10 +386,6 @@ class QuicSimpleServerSessionServerPushTest
   const size_t kStreamFlowControlWindowSize = 32 * 1024;  // 32KB.
 
   QuicSimpleServerSessionServerPushTest() : QuicSimpleServerSessionTest() {
-    // This flag has to be true for negotiation of max number of outgoing
-    // streams to work correctly.
-    FLAGS_quic_different_max_num_open_streams = true;
-
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
 
     // Reset stream level flow control window to be 32KB.

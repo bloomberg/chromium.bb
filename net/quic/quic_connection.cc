@@ -862,13 +862,11 @@ bool QuicConnection::OnConnectionCloseFrame(
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
-  const string error_details =
-      StringPrintf("CONNECTION_CLOSE_FRAME received for connection: %" PRIu64
-                   " with error: %s %s",
-                   connection_id(), QuicUtils::ErrorToString(frame.error_code),
-                   frame.error_details.c_str());
-  DVLOG(1) << ENDPOINT << error_details;
-  TearDownLocalConnectionState(frame.error_code, error_details,
+  DVLOG(1) << ENDPOINT
+           << "Received ConnectionClose for connection: " << connection_id()
+           << ", with error: " << QuicUtils::ErrorToString(frame.error_code)
+           << " (" << frame.error_details << ")";
+  TearDownLocalConnectionState(frame.error_code, frame.error_details,
                                ConnectionCloseSource::FROM_PEER);
   return connected_;
 }
@@ -1052,11 +1050,6 @@ void QuicConnection::MaybeCloseIfTooManyOutstandingPackets() {
         StringPrintf("More than %" PRIu64 " outstanding.", kMaxTrackedPackets),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
-}
-
-void QuicConnection::PopulateAckFrame(QuicAckFrame* ack) {
-  received_packet_manager_.UpdateReceivedPacketInfo(ack,
-                                                    clock_->ApproximateNow());
 }
 
 const QuicFrame QuicConnection::GetUpdatedAckFrame() {
