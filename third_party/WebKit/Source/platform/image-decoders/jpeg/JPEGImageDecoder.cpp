@@ -219,7 +219,6 @@ static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info)
 {
     if ((DCTSIZE == 8)
         && (info.num_components == 3)
-        && (info.comps_in_scan >= info.num_components)
         && (info.scale_denom <= 8)
         && (info.cur_comp_info[0])
         && (info.cur_comp_info[1])
@@ -856,7 +855,7 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
     bufferraw[1] = &bufferraw2[16]; // U channel rows (8)
     bufferraw[2] = &bufferraw2[24]; // V channel rows (8)
     int yHeight = info->output_height;
-    int v = info->cur_comp_info[0]->v_samp_factor;
+    int v = info->comp_info[0].v_samp_factor;
     IntSize uvSize = reader->uvSize();
     int uvHeight = uvSize.height();
     JSAMPROW outputY = static_cast<JSAMPROW>(imagePlanes->plane(0));
