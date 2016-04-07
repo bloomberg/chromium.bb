@@ -336,6 +336,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   FlushHistoryService();
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "Polymer.dom.flush();"));
   EXPECT_EQ(1, FindInPageASCII(web_contents, download_url.spec(),
                                kFwd, kIgnoreCase, NULL));
 }
