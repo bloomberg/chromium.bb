@@ -377,13 +377,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
-    self.Fail('deqp/functional/gles3/fbostatequery.html',
-        ['linux'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
-        ['linux'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
@@ -395,6 +391,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
         ['linux', 'amd', 'nvidia'], bug=483282)
 
+    # Linux NVIDIA only.
+    self.Fail('deqp/functional/gles3/fbostatequery.html',
+        ['linux', 'nvidia'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['linux', 'nvidia'], bug=483282)
+
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Skip('deqp/data/gles3/shaders/arrays.html',
@@ -403,13 +405,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/buffers/buffer-type-restrictions.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/buffers/buffer-overflow-test.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
-        ['linux', 'amd'], bug=295792)
-    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['linux', 'amd'], bug=295792)
 
     self.Fail('deqp/data/gles3/shaders/conversions.html',
@@ -419,6 +415,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/clipping.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/samplerobject.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderprecision.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['linux', 'amd'], bug=483282)
