@@ -50,24 +50,8 @@ def RunHooks(build_type):
   RunCmd(['gclient', 'runhooks'], halt_on_failure=True)
 
 
-def GenerateBuildFiles(options):
-  cmd = [SrcPath('tools', 'mb', 'mb.py'),
-         'gen',
-         '-m', options.build_properties['mastername'],
-         '-b', options.build_properties['buildername'],
-         '//out/%s' % options.target]
-  bb_annotations.PrintNamedStep('generate_build_files')
-  RunCmd(cmd, halt_on_failure=True)
-
-
 def Compile(options):
-  if options.run_mb:
-    os.environ['GYP_CHROMIUM_NO_ACTION'] = '1'
-    RunHooks(options.target)
-    GenerateBuildFiles(options)
-  else:
-    RunHooks(options.target)
-
+  RunHooks(options.target)
   cmd = [os.path.join(SLAVE_SCRIPTS_DIR, 'compile.py'),
          '--build-tool=ninja',
          '--compiler=goma',
@@ -127,8 +111,6 @@ def GetHostStepsOptParser():
   parser.add_option('--extra_src', default='',
                     help='Path to extra source file. If this is supplied, '
                     'bisect script will use it to override default behavior.')
-  parser.add_option('--run-mb', action='store_true',
-                    help='Use mb to generate build files.')
 
   return parser
 
