@@ -20,8 +20,8 @@ namespace content {
 class BrowsingInstance;
 class RenderProcessHostFactory;
 
-class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
-                                        public RenderProcessHostObserver {
+class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
+                                              public RenderProcessHostObserver {
  public:
   class CONTENT_EXPORT Observer {
    public:
@@ -129,23 +129,16 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   static bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                               const GURL& effective_url);
 
- protected:
+ private:
   friend class BrowsingInstance;
+  friend class SiteInstanceTestBrowserClient;
 
-  // Virtual to allow tests to extend it.
-  ~SiteInstanceImpl() override;
-
-  // Create a new SiteInstance.  Protected to give access to BrowsingInstance
-  // and tests; most callers should use Create or GetRelatedSiteInstance
-  // instead.
+  // Create a new SiteInstance.  Only BrowsingInstance should call this
+  // directly; clients should use Create() or GetRelatedSiteInstance() instead.
   explicit SiteInstanceImpl(BrowsingInstance* browsing_instance);
 
-  // Only BrowsingInstance should call this.
-  void set_is_default_subframe_site_instance() {
-    is_default_subframe_site_instance_ = true;
-  }
+  ~SiteInstanceImpl() override;
 
- private:
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
   void RenderProcessWillExit(RenderProcessHost* host) override;
@@ -155,6 +148,10 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();
+
+  void set_is_default_subframe_site_instance() {
+    is_default_subframe_site_instance_ = true;
+  }
 
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;

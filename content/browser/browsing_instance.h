@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -54,11 +55,19 @@ class SiteInstanceImpl;
 // site_instance_unittest.cc.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class CONTENT_EXPORT BrowsingInstance
+class CONTENT_EXPORT BrowsingInstance final
     : public base::RefCounted<BrowsingInstance> {
- protected:
+ private:
+  friend class base::RefCounted<BrowsingInstance>;
+  friend class SiteInstanceImpl;
+  FRIEND_TEST_ALL_PREFIXES(SiteInstanceTest, OneSiteInstancePerSite);
+  FRIEND_TEST_ALL_PREFIXES(SiteInstanceTest,
+                           OneSiteInstancePerSiteInBrowserContext);
+
   // Create a new BrowsingInstance.
   explicit BrowsingInstance(BrowserContext* context);
+
+  ~BrowsingInstance();
 
   // Get the browser context to which this BrowsingInstance belongs.
   BrowserContext* browser_context() const { return browser_context_; }
@@ -96,14 +105,6 @@ class CONTENT_EXPORT BrowsingInstance
     active_contents_count_--;
   }
 
-  friend class SiteInstanceImpl;
-
-  friend class base::RefCounted<BrowsingInstance>;
-
-  // Virtual to allow tests to extend it.
-  virtual ~BrowsingInstance();
-
- private:
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.
   typedef base::hash_map<std::string, SiteInstanceImpl*> SiteInstanceMap;
