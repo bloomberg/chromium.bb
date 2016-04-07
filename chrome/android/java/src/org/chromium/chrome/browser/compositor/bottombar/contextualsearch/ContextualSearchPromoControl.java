@@ -80,6 +80,11 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater
     private float mPromoViewY;
 
     /**
+     * Whether the Promo was in a state that could be interacted.
+     */
+    private boolean mWasInteractive;
+
+    /**
      * Whether the user's choice has been handled.
      */
     private boolean mHasHandledChoice;
@@ -146,6 +151,8 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater
 
         mIsVisible = true;
         mIsMandatory = isMandatory;
+        mWasInteractive = false;
+
         mHeightPx = mContentHeightPx;
     }
 
@@ -198,6 +205,13 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater
      */
     public boolean isMandatory() {
         return mIsMandatory;
+    }
+
+    /**
+     * @return Whether the Promo reached a state in which it could be interacted.
+     */
+    public boolean wasInteractive() {
+        return mWasInteractive;
     }
 
     /**
@@ -425,7 +439,8 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater
         View view = getView();
         if (view == null
                 || !mIsVisible
-                || (mIsShowingView && mPromoViewY == y)) return;
+                || (mIsShowingView && mPromoViewY == y)
+                || mHeightPx == 0.f) return;
 
         float offsetX = mOverlayPanel.getOffsetX() * mDpToPx;
         if (LocalizationUtils.isLayoutRtl()) {
@@ -442,6 +457,9 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater
 
         mIsShowingView = true;
         mPromoViewY = y;
+
+        // The Promo can only be interacted when the View is being displayed.
+        mWasInteractive = true;
     }
 
     /**

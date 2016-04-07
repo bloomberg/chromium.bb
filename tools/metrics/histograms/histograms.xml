@@ -46200,6 +46200,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchMandatoryPromoOutcomeByGesture"
+    enum="ContextualSearchOutcomeByGesture">
+  <owner>donnd@chromium.org</owner>
+  <owner>pedrosimonetti@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The outcome of the mandatory Promo broken down by original triggering
+    gesture. Logged for each view of the promo. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchNormalPrioritySearchRequestStatus"
     enum="ContextualSearchSearchRequestStatus">
   <owner>donnd@chromium.org</owner>

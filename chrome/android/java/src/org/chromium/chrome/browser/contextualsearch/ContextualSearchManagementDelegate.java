@@ -20,11 +20,6 @@ public interface ContextualSearchManagementDelegate {
     ChromeActivity getChromeActivity();
 
     /**
-     * Called when the promo Panel gets closed, to log the outcome.
-     */
-    void logPromoOutcome();
-
-    /**
      * Promotes the current Content View Core in the Contextual Search Panel to its own Tab.
      */
     void promoteToTab();

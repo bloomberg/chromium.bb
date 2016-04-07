@@ -705,6 +705,13 @@ public class ContextualSearchPanel extends OverlayPanel {
     private ContextualSearchPromoHost mPromoHost;
 
     /**
+     * @return Whether the Promo reached a state in which it could be interacted.
+     */
+    public boolean wasPromoInteractive() {
+        return getPromoControl().wasInteractive();
+    }
+
+    /**
      * @return Height of the promo in pixels.
      */
     private float getPromoHeightPx() {

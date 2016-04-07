@@ -649,17 +649,26 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the outcome of the promo (first run flow).
+     * Logs the outcome of the Promo.
      * Logs multiple histograms; with and without the originating gesture.
      * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     * @param wasMandatory Whether the Promo was mandatory.
      */
-    public static void logPromoOutcome(boolean wasTap) {
+    public static void logPromoOutcome(boolean wasTap, boolean wasMandatory) {
         int preferenceCode = getPreferenceValue();
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunFlowOutcome",
                 preferenceCode, PREFERENCE_HISTOGRAM_BOUNDARY);
+
         int preferenceByGestureCode = getPromoByGestureStateCode(preferenceCode, wasTap);
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPromoOutcomeByGesture",
-                preferenceByGestureCode, PROMO_BY_GESTURE_BOUNDARY);
+        if (wasMandatory) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Search.ContextualSearchMandatoryPromoOutcomeByGesture",
+                    preferenceByGestureCode, PROMO_BY_GESTURE_BOUNDARY);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Search.ContextualSearchPromoOutcomeByGesture",
+                    preferenceByGestureCode, PROMO_BY_GESTURE_BOUNDARY);
+        }
     }
 
     /**

@@ -120,6 +120,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private boolean mIsShowingPeekPromo;
     private boolean mWouldShowPeekPromo;
     private boolean mIsShowingPromo;
+    private boolean mIsMandatoryPromo;
     private boolean mDidLogPromoOutcome;
 
     /**
@@ -343,9 +344,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             mPolicy.logPeekPromoMetrics(mIsShowingPeekPromo, mWouldShowPeekPromo);
         }
 
-        if (mIsShowingPromo && !mDidLogPromoOutcome) {
-            // TODO(pedrosimonetti): add separate metric for the mandatory promo.
-            logPromoOutcome();
+        if (mIsShowingPromo && !mDidLogPromoOutcome && mSearchPanel.wasPromoInteractive()) {
+            ContextualSearchUma.logPromoOutcome(mWasActivatedByTap, mIsMandatoryPromo);
+            mDidLogPromoOutcome = true;
         }
 
         mIsShowingPromo = false;
@@ -459,8 +460,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         // Note: now that the contextual search has properly started, set the promo involvement.
         if (mPolicy.isPromoAvailable()) {
             mIsShowingPromo = true;
+            mIsMandatoryPromo = mPolicy.isMandatoryPromoAvailable();
             mDidLogPromoOutcome = false;
-            mSearchPanel.setIsPromoActive(true, mPolicy.isMandatoryPromoAvailable());
+            mSearchPanel.setIsPromoActive(true, mIsMandatoryPromo);
             mSearchPanel.setDidSearchInvolvePromo();
         }
 
@@ -1007,12 +1009,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         if (ContextualSearchFieldTrial.isEnabled(mActivity)) {
             mPolicy.logCurrentState();
         }
-    }
-
-    @Override
-    public void logPromoOutcome() {
-        ContextualSearchUma.logPromoOutcome(mWasActivatedByTap);
-        mDidLogPromoOutcome = true;
     }
 
     /**
