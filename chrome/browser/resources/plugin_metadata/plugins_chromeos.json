@@ -1,5 +1,5 @@
 {
-  "x-version": 2,
+  "x-version": 3,
   "google-talk": {
     "mime_types": [
     ],
@@ -36,7 +36,7 @@
     "versions": [
       {
         "version": "0",
-        "status": "up_to_date",
+        "status": "fully_trusted",
         "comment": "Google Chrome PDF has no version information."
       }
     ],
@@ -49,8 +49,8 @@
     "versions": [
       {
         "version": "0",
-        "status": "up_to_date",
-        "comment": "Chrome PDF Viewer has no version information."
+        "status": "fully_trusted",
+        "comment": "Chromium PDF Viewer has no version information."
       }
     ],
     "name": "Chromium PDF Viewer",

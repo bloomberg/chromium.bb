@@ -24,6 +24,7 @@ class PluginMetadata {
     SECURITY_STATUS_UP_TO_DATE,
     SECURITY_STATUS_OUT_OF_DATE,
     SECURITY_STATUS_REQUIRES_AUTHORIZATION,
+    SECURITY_STATUS_FULLY_TRUSTED,
   };
 
   // Used by about:plugins to disable Reader plugin when internal PDF viewer is

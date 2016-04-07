@@ -191,7 +191,7 @@
             <input
                 class="always-allow" type="checkbox"
                 jsvalues=
-                    ".identifier:id; id:id + '-always-allowed'; .checked:always_allowed; disabled:!isPluginEnabled($this)">
+                    ".identifier:id; id:id + '-always-allowed'; .checked:always_allowed; disabled:isPluginTrusted($this) || !isPluginEnabled($this)">
             <label jsvalues="for:id + '-always-allowed'"
                 i18n-content="alwaysAllowed"></label>
           </div>

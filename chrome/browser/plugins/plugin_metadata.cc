@@ -89,6 +89,8 @@ bool PluginMetadata::ParseSecurityStatus(
     *status = SECURITY_STATUS_OUT_OF_DATE;
   else if (status_str == "requires_authorization")
     *status = SECURITY_STATUS_REQUIRES_AUTHORIZATION;
+  else if (status_str == "fully_trusted")
+    *status = SECURITY_STATUS_FULLY_TRUSTED;
   else
     return false;
 

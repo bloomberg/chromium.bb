@@ -242,6 +242,15 @@ function isPluginEnabled(plugin) {
 }
 
 /**
+ * @param {Object} plugin An object containing the information about a plugin.
+ *     See returnPluginsData() for the format of this object.
+ * @return {boolean} Whether the plugin is fully trusted.
+ */
+function isPluginTrusted(plugin) {
+ return plugin.trusted == true;
+}
+
+/**
  * Helper to convert callback-based define() API to a promise-based API.
  * @param {!Array<string>} moduleNames
  * @return {!Promise}

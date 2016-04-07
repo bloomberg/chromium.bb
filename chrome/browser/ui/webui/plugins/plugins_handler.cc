@@ -258,11 +258,19 @@ mojo::Array<mojom::PluginDataPtr> PluginsHandler::GeneratePluginsData(
         GetPluginGroupEnabledMode(plugin_files, group_enabled));
 
     plugin_data->always_allowed = false;
+    plugin_data->trusted = false;
+
     if (group_enabled) {
-      const base::DictionaryValue* whitelist =
-          profile->GetPrefs()->GetDictionary(
-              prefs::kContentSettingsPluginWhitelist);
-      whitelist->GetBoolean(group_identifier, &plugin_data->always_allowed);
+      if (plugin_metadata->GetSecurityStatus(*active_plugin) ==
+          PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
+        plugin_data->trusted = true;
+        plugin_data->always_allowed = true;
+      } else {
+        const base::DictionaryValue* whitelist =
+            profile->GetPrefs()->GetDictionary(
+                prefs::kContentSettingsPluginWhitelist);
+        whitelist->GetBoolean(group_identifier, &plugin_data->always_allowed);
+      }
     }
 
     plugin_data->critical = false;

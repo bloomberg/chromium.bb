@@ -330,6 +330,14 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const WebPluginInfo& plugin,
     const PluginMetadata* plugin_metadata,
     ChromeViewHostMsg_GetPluginInfo_Status* status) const {
+  PluginMetadata::SecurityStatus plugin_status =
+      plugin_metadata->GetSecurityStatus(plugin);
+
+  if (plugin_status == PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
+    *status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+    return;
+  }
+
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
   bool is_managed = false;
@@ -348,8 +356,6 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   DCHECK(plugin_setting != CONTENT_SETTING_ASK);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginMetadata::SecurityStatus plugin_status =
-      plugin_metadata->GetSecurityStatus(plugin);
   // Check if the plugin is outdated.
   if (plugin_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
