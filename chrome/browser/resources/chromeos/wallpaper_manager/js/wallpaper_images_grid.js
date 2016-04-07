@@ -163,8 +163,12 @@ cr.define('wallpapers', function() {
             }
           });
           break;
+        case Constants.WallpaperSourceEnum.Daily:
+          // It's impossible to manually select a DAILY type wallpaper.
+          console.error('Unsupported wallpaper source.');
+          break;
         default:
-          console.error('Unsupported image source.');
+          console.error('Unsupported wallpaper source.');
           // Delay dispatching the completion callback until all items have
           // begun loading and are tracked.
           window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);

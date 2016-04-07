@@ -67,8 +67,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Hence,
   //   (a) existing enumerated constants should never be deleted or reordered,
   //   (b) new constants should only be appended at the end of the enumeration.
+  // TODO(xdai): Add THIRDPARTY enum to keep track of third party wallpapers.
+  // See http://crbug.com/563627.
   enum WallpaperType {
-    /* DAILY = 0 */    // Removed.
+    DAILY = 0,         // Surprise wallpaper. Changes once a day if enabled.
     CUSTOMIZED = 1,    // Selected by user.
     DEFAULT = 2,       // Default.
     /* UNKNOWN = 3 */  // Removed.

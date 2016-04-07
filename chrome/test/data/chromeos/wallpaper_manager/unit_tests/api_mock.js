@@ -204,6 +204,7 @@ var chrome = {
         switch (key) {
           case Constants.AccessLocalSurpriseMeEnabledKey:
             items[Constants.AccessLocalSurpriseMeEnabledKey] = true;
+            break;
           case Constants.AccessLocalWallpaperInfoKey:
             if (TestConstants.isPowerwashed) {
               items[Constants.AccessLocalWallpaperInfoKey] = null;
@@ -214,6 +215,18 @@ var chrome = {
                 'source': Constants.WallpaperSourceEnum.Custom
               };
             }
+            break;
+          case Constants.AccessLocalManifestKey:
+            items[Constants.AccessLocalManifestKey] = {
+              'wallpaper_list': [
+                {
+                  'available_for_surprise_me': true,
+                  'base_url': 'dummy',
+                  'default_layout': 'dummy'
+                }
+              ]
+            };
+            break;
         }
         callback(items);
       },
@@ -226,9 +239,11 @@ var chrome = {
         switch (key) {
           case Constants.AccessSyncSurpriseMeEnabledKey:
             items[Constants.AccessSyncSurpriseMeEnabledKey] = true;
+            break;
           case Constants.AccessLastSurpriseWallpaperChangedDate:
             items[Constants.AccessLastSurpriseWallpaperChangedDate] =
                 new Date().toDateString();
+            break;
         }
         callback(items);
       },

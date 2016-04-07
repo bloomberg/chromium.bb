@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -61,6 +62,7 @@ namespace get_thumbnail = wallpaper_private::GetThumbnail;
 namespace save_thumbnail = wallpaper_private::SaveThumbnail;
 namespace get_offline_wallpaper_list =
     wallpaper_private::GetOfflineWallpaperList;
+namespace record_wallpaper_uma = wallpaper_private::RecordWallpaperUMA;
 
 namespace {
 
@@ -267,6 +269,22 @@ void WindowStateManager::OnWindowStackingChanged(aura::Window* window) {
     iter->second.erase(window);
   }
   window->RemoveObserver(this);
+}
+
+user_manager::User::WallpaperType getWallpaperType(
+    wallpaper_private::WallpaperSource source) {
+  switch (source) {
+    case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
+      return user_manager::User::ONLINE;
+    case wallpaper_private::WALLPAPER_SOURCE_DAILY:
+      return user_manager::User::DAILY;
+    case wallpaper_private::WALLPAPER_SOURCE_CUSTOM:
+      return user_manager::User::CUSTOMIZED;
+    case wallpaper_private::WALLPAPER_SOURCE_OEM:
+      return user_manager::User::DEFAULT;
+    default:
+      return user_manager::User::ONLINE;
+  }
 }
 
 }  // namespace
@@ -936,4 +954,15 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete(
   results->AppendStrings(file_list);
   SetResult(results);
   SendResponse(true);
+}
+
+bool WallpaperPrivateRecordWallpaperUMAFunction::RunSync() {
+  scoped_ptr<record_wallpaper_uma::Params> params(
+      record_wallpaper_uma::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  user_manager::User::WallpaperType source = getWallpaperType(params->source);
+  UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
+                            user_manager::User::WALLPAPER_TYPE_COUNT);
+  return true;
 }

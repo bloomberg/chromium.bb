@@ -668,6 +668,9 @@ function WallpaperManager(dialogDom) {
                                  onFailure, self.wallpaperRequest_);
         });
         break;
+      case Constants.WallpaperSourceEnum.Daily:
+        console.error('Unsupported wallpaper source.');
+        break;
       default:
         console.error('Unsupported wallpaper source.');
     }

@@ -307,4 +307,19 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
+// The wallpaper UMA is recorded when a new wallpaper is set, either by the
+// built-in Wallpaper Picker App, or by a third party App.
+class WallpaperPrivateRecordWallpaperUMAFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.recordWallpaperUMA",
+                             WALLPAPERPRIVATE_RECORDWALLPAPERUMA)
+
+ protected:
+  ~WallpaperPrivateRecordWallpaperUMAFunction() override {}
+
+  // SyncExtensionFunction overrides.
+  bool RunSync() override;
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

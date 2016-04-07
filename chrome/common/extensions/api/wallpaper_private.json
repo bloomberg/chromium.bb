@@ -13,7 +13,7 @@
       {
         "id": "WallpaperSource",
         "type": "string",
-        "enum": [ "ONLINE", "OEM" ]
+        "enum": [ "ONLINE", "OEM", "DAILY", "CUSTOM" ]
       }
     ],
     "functions": [
@@ -252,6 +252,18 @@
                 "items": {"type": "string"}
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "recordWallpaperUMA",
+        "type": "function",
+        "description": "Record wallpaper UMA when a new wallpaper is set, either by Wallpaper Picker App, or by a third party App.",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "source",
+            "$ref": "WallpaperSource"
           }
         ]
       }

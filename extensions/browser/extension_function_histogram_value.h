@@ -1172,6 +1172,7 @@ enum HistogramValue {
   INPUT_IME_SHOWWINDOW,
   INPUT_IME_HIDEWINDOW,
   INPUTMETHODPRIVATE_SHOWINPUTVIEW,
+  WALLPAPERPRIVATE_RECORDWALLPAPERUMA,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

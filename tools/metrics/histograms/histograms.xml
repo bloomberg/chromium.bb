@@ -1355,6 +1355,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.Wallpaper.Source" enum="WallpaperType">
+  <owner>xdai@chromium.org</owner>
+  <summary>
+    Recorded when a new wallpaper is set, either by the built-in Wallpaper
+    Picker App, or by a third party App. Note the wallpaper change triggered by
+    Sync file system event doesn't count.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Wallpaper.Type" enum="WallpaperType">
   <owner>kuscher@google.com</owner>
   <summary>The wallpaper type. Recorded at user login.</summary>
@@ -68451,6 +68460,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1111" label="INPUT_IME_SHOWWINDOW"/>
   <int value="1112" label="INPUT_IME_HIDEWINDOW"/>
   <int value="1113" label="INPUTMETHODPRIVATE_SHOWINPUTVIEW"/>
+  <int value="1114" label="WALLPAPERPRIVATE_RECORDWALLPAPERUMA"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

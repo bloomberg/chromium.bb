@@ -5,12 +5,6 @@
 
 var mockController;
 
-WallpaperUtil.enabledSyncThemesCallback = function(callback) {
-  chrome.wallpaperPrivate.getSyncSetting(function(setting) {
-    callback(setting.syncThemes);
-  });
-};
-
 function setUp() {
   mockController = new MockController();
   installMockXMLHttpRequest();
@@ -124,4 +118,21 @@ function testSyncOnlineWallpaper() {
       changes[Constants.AccessSyncWallpaperInfoKey].newValue.url);
 
   chrome.storage.onChanged.dispatch(changes);
+}
+
+// Test the surprise wallpaper's UMA stats is recorded correctly.
+function testSurpriseWallpaper() {
+  var mockSetWallpaperIfExists = mockController.createFunctionMock(
+      chrome.wallpaperPrivate, 'setWallpaperIfExists');
+  mockSetWallpaperIfExists.addExpectation(
+      'dummy_high_resolution.jpg',
+      'dummy');
+  mockSetWallpaperIfExists.callbackData = [true];
+
+  var mockRecordWallpaperUMA = mockController.createFunctionMock(
+      chrome.wallpaperPrivate, 'recordWallpaperUMA');
+  mockRecordWallpaperUMA.addExpectation(Constants.WallpaperSourceEnum.Daily);
+
+  var dateString = new Date().toDateString();
+  SurpriseWallpaper.getInstance().setRandomWallpaper_(dateString);
 }

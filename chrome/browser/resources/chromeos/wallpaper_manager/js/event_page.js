@@ -162,7 +162,7 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
       var wallpaperURL = wallpaper.base_url + Constants.HighResolutionSuffix;
       var onSuccess = function() {
         WallpaperUtil.saveWallpaperInfo(wallpaperURL, wallpaper.default_layout,
-            Constants.WallpaperSourceEnum.Online);
+            Constants.WallpaperSourceEnum.Daily, '');
         WallpaperUtil.saveToLocalStorage(
             Constants.AccessLastSurpriseWallpaperChangedDate,
             dateString, function() {
@@ -198,7 +198,7 @@ SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(item,
                                                  'surprise_wallpaper',
                                                  onSuccess);
       WallpaperUtil.saveWallpaperInfo(url, layout,
-                                      Constants.WallpaperSourceEnum.Online);
+                                      Constants.WallpaperSourceEnum.Daily, '');
       var dateString = new Date().toDateString();
       WallpaperUtil.saveToLocalStorage(
           Constants.AccessLastSurpriseWallpaperChangedDate,
