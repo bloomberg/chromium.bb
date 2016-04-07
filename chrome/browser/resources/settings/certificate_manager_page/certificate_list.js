@@ -67,13 +67,16 @@ Polymer({
   },
 
 
-  /** @private */
-  dispatchImportActionEvent_: function() {
+  /**
+   * @param {?NewCertificateSubNode} subnode
+   * @private
+   */
+  dispatchImportActionEvent_: function(subnode) {
     this.fire(
         settings.CertificateActionEvent,
         /** @type {!CertificateActionEventDetail} */ ({
           action: settings.CertificateAction.IMPORT,
-          subnode: null,
+          subnode: subnode,
           certificateType: this.certificateType,
         }));
   },
@@ -85,13 +88,13 @@ Polymer({
       browserProxy.importPersonalCertificate(false).then(
           function(showPasswordPrompt) {
             if (showPasswordPrompt)
-              this.dispatchImportActionEvent_();
+              this.dispatchImportActionEvent_(null);
           }.bind(this),
           this.onRejected_.bind(this));
     } else if (this.certificateType == settings.CertificateType.CA) {
       browserProxy.importCaCertificate().then(
           function(certificateName) {
-            this.dispatchImportActionEvent_();
+            this.dispatchImportActionEvent_({name: certificateName});
           }.bind(this),
           this.onRejected_.bind(this));
     } else if (this.certificateType == settings.CertificateType.SERVER) {

@@ -103,15 +103,23 @@ Polymer({
   /** @override */
   ready: function() {
     this.addEventListener(settings.CertificateActionEvent, function(event) {
+      this.dialogModel_ = event.detail.subnode;
+      this.dialogModelCertificateType_ = event.detail.certificateType;
+
       if (event.detail.action == settings.CertificateAction.IMPORT) {
-        this.handleImportAction_(event.detail);
+        if (event.detail.certificateType == settings.CertificateType.PERSONAL) {
+          this.openDialog_(
+              'settings-certificate-password-decryption-dialog',
+              'showPasswordDecryptionDialog_');
+        } else if (event.detail.certificateType ==
+            settings.CertificateType.CA) {
+          this.openDialog_(
+              'settings-ca-trust-edit-dialog', 'showCaTrustEditDialog_');
+        }
       } else {
-        this.dialogModel_ = event.detail.subnode;
-        this.dialogModelCertificateType_ = event.detail.certificateType;
         if (event.detail.action == settings.CertificateAction.EDIT) {
           this.openDialog_(
-              'settings-ca-trust-edit-dialog',
-              'showCaTrustEditDialog_');
+              'settings-ca-trust-edit-dialog', 'showCaTrustEditDialog_');
         } else if (event.detail.action == settings.CertificateAction.DELETE) {
           this.openDialog_(
               'settings-certificate-delete-confirmation-dialog',
@@ -134,22 +142,6 @@ Polymer({
           'showErrorDialog_');
       event.stopPropagation();
     }.bind(this));
-  },
-
-  /**
-   * Handles a |CertificateAction.IMPORT| for cases where a dialog needs to be
-   * displayed to the user.
-   * @param {!CertificateActionEventDetail} eventdetail
-   * @private
-   */
-  handleImportAction_: function(actionEvent) {
-    if (actionEvent.certificateType == settings.CertificateType.PERSONAL) {
-      this.openDialog_(
-          'settings-certificate-password-decryption-dialog',
-          'showPasswordDecryptionDialog_');
-    } else if (actionEvent.certificateType == settings.CertificateType.CA) {
-      // TODO(dpapad): Implement this.
-    }
   },
 
   /**

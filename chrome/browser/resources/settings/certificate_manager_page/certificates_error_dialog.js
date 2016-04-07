@@ -31,7 +31,6 @@ Polymer({
    */
   getCertificateErrorText_: function(importError) {
     return loadTimeData.getStringF(
-        'certificateImportErrorFormat',
-        importError.certificateName, importError.error);
+        'certificateImportErrorFormat', importError.name, importError.error);
   },
 });

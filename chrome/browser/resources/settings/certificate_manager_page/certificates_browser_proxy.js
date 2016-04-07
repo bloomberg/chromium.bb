@@ -22,6 +22,15 @@
 var CertificateSubnode;
 
 /**
+ * A data structure describing a certificate that is currently being imported,
+ * therefore it has no ID yet, but it has a name. Used within JS only.
+ * @typedef {{
+ *   name: string,
+ * }}
+ */
+var NewCertificateSubNode;
+
+/**
  * @typedef {{
  *   id: string,
  *   name: string,
@@ -57,7 +66,7 @@ var CertificatesError;
  * @typedef {{
  *   title: string,
  *   description: string
- *   certificateErrors: !Array<{certificateName: string, error: string}>
+ *   certificateErrors: !Array<{name: string, error: string}>
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */

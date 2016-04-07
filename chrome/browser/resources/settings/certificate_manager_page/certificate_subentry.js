@@ -12,7 +12,7 @@
  * component.
  * @typedef {{
  *   action: !settings.CertificateAction,
- *   subnode: ?CertificateSubnode,
+ *   subnode: null|CertificateSubnode|NewCertificateSubNode,
  *   certificateType: !settings.CertificateType
  * }}
  */

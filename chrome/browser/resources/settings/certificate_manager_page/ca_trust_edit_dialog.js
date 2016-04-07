@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview
- * 'settings-ca-trust-edit-dialog' is the a dialog allowing the user to edit the
- * trust lever of a given certificate authority.
- *
- * @group Chrome Settings Elements
- * @element settings-ca-trust-edit-dialog
+ * @fileoverview 'settings-ca-trust-edit-dialog' allows the user to
+ *  - specify the trust level of a certificate authority that is being
+ *    imported.
+ *  - edit the trust level of an already existing certificate authority.
  */
 Polymer({
   is: 'settings-ca-trust-edit-dialog',
@@ -17,7 +15,7 @@ Polymer({
     /** @private {!settings.CertificatesBrowserProxy} */
     browserProxy_: Object,
 
-    /** @type {!CertificateSubnode} */
+    /** @type {!CertificateSubnode|!NewCertificateSubNode} */
     model: Object,
 
     /** @private {?CaTrustInfo} */
@@ -37,12 +35,19 @@ Polymer({
     this.explanationText_ = loadTimeData.getStringF(
         'certificateManagerCaTrustEditDialogExplanation',
         this.model.name);
-    this.browserProxy_.getCaCertificateTrust(this.model.id).then(
-        /** @param {!CaTrustInfo} trustInfo */
-        function(trustInfo) {
-          this.trustInfo_ = trustInfo;
-          this.$.dialog.open();
-        }.bind(this));
+
+    // A non existing |model.id| indicates that a new certificate is being
+    // imported, otherwise an existing certificate is being edited.
+    if (this.model.id) {
+      this.browserProxy_.getCaCertificateTrust(this.model.id).then(
+          /** @param {!CaTrustInfo} trustInfo */
+          function(trustInfo) {
+            this.trustInfo_ = trustInfo;
+            this.$.dialog.open();
+          }.bind(this));
+    } else {
+      this.$.dialog.open();
+    }
   },
 
   /** @private */
@@ -53,17 +58,22 @@ Polymer({
   /** @private */
   onOkTap_: function() {
     this.$.spinner.active = true;
-    this.browserProxy_.editCaCertificateTrust(
-        this.model.id, this.$.ssl.checked,
-        this.$.email.checked, this.$.objSign.checked).then(
-            function() {
-              this.$.spinner.active = false;
-              this.$.dialog.close();
-            }.bind(this),
-            /** @param {!CertificatesError} error */
-            function(error) {
-              this.$.dialog.close();
-              this.fire('certificates-error', error);
-            }.bind(this));
+
+    var whenDone = this.model.id ?
+        this.browserProxy_.editCaCertificateTrust(
+            this.model.id, this.$.ssl.checked,
+            this.$.email.checked, this.$.objSign.checked) :
+        this.browserProxy_.importCaCertificateTrustSelected(
+            this.$.ssl.checked, this.$.email.checked, this.$.objSign.checked);
+
+    whenDone.then(function() {
+      this.$.spinner.active = false;
+      this.$.dialog.close();
+    }.bind(this),
+    /** @param {!CertificatesError} error */
+    function(error) {
+      this.$.dialog.close();
+      this.fire('certificates-error', error);
+    }.bind(this));
   },
 });
