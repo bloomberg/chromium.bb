@@ -1,0 +1,83 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 701
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {html} at (0,0) size 785x701.11
+    LayoutBlockFlow {body} at (47.09,30.72) size 737.89x662.39
+      LayoutBlockFlow {div} at (0,0) size 737.89x662.39
+        LayoutBlockFlow {h1} at (0,0) size 678.86x29
+          LayoutText {#text} at (0,0) size 379x28
+            text run at (0,0) width 379: "rightsizing to percentage width"
+        LayoutBlockFlow {h4} at (0,29) size 737.89x16
+          LayoutText {#text} at (0,0) size 141x16
+            text run at (0,0) width 141: "WICD Core 1.0 #20-2"
+        LayoutBlockFlow (anonymous) at (0,64.14) size 737.89x154
+          LayoutText {#text} at (295,136) size 5x17
+            text run at (295,136) width 5: " "
+          LayoutText {#text} at (447,136) size 5x17
+            text run at (447,136) width 5: " "
+          LayoutText {#text} at (525,136) size 5x17
+            text run at (525,136) width 5: " "
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {p} at (0,221.02) size 678.86x64
+          LayoutText {#text} at (0,0) size 663x32
+            text run at (0,0) width 663: "Above there must be four times the same, square SVG child visible, each referenced by an object element"
+            text run at (0,16) width 423: "with different widths (40%, 20%, 10%, 5%) and no height defined. "
+          LayoutBR {br} at (0,0) size 0x0
+          LayoutBR {br} at (0,32) size 0x16
+          LayoutText {#text} at (0,48) size 409x16
+            text run at (0,48) width 409: "Beyond there is the same, only with PNG images instead of SVG."
+        LayoutBlockFlow (anonymous) at (0,290.77) size 737.89x299
+          LayoutImage {object} at (0,0) size 295.16x295.16 [bgcolor=#FF0000]
+          LayoutText {#text} at (295,281) size 5x17
+            text run at (295,281) width 5: " "
+          LayoutImage {object} at (299.59,147) size 147.58x147.58 [bgcolor=#FF0000]
+          LayoutText {#text} at (447,281) size 5x17
+            text run at (447,281) width 5: " "
+          LayoutImage {object} at (451.61,221) size 73.78x73.78 [bgcolor=#FF0000]
+          LayoutText {#text} at (525,281) size 5x17
+            text run at (525,281) width 5: " "
+          LayoutImage {object} at (529.83,258) size 36.89x36.89 [bgcolor=#FF0000]
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {p} at (0,592.64) size 678.86x32
+          LayoutText {#text} at (0,0) size 675x32
+            text run at (0,0) width 675: "This test has succeeded, if both rows look exactly the same (SVGs must be square!) and no red background"
+            text run at (0,16) width 95: "color is visible."
+        LayoutBlockFlow {p} at (0,630.39) size 678.86x32
+          LayoutBR {br} at (0,0) size 0x16
+          LayoutInline {a} at (0,0) size 31x16 [color=#000066]
+            LayoutText {#text} at (0,16) size 31x16
+              text run at (0,16) width 31: "Back"
+layer at (47,95) size 295x150
+  LayoutEmbeddedObject {object} at (0,0) size 295.16x150 [bgcolor=#FF0000]
+    layer at (0,0) size 295x150
+      LayoutView at (0,0) size 295x150
+    layer at (0,0) size 295x150
+      LayoutBlockFlow {HTML} at (0,0) size 295x150
+        LayoutBlockFlow {BODY} at (8,8) size 279x134
+layer at (347,95) size 147x150
+  LayoutEmbeddedObject {object} at (299.59,0) size 147.58x150 [bgcolor=#FF0000]
+    layer at (0,0) size 148x150
+      LayoutView at (0,0) size 148x150
+    layer at (0,0) size 148x150
+      LayoutBlockFlow {HTML} at (0,0) size 148x150
+        LayoutBlockFlow {BODY} at (8,8) size 132x134
+layer at (499,95) size 73x150
+  LayoutEmbeddedObject {object} at (451.61,0) size 73.78x150 [bgcolor=#FF0000]
+    layer at (0,0) size 74x150
+      LayoutView at (0,0) size 74x150
+    layer at (0,0) size 74x150
+      LayoutBlockFlow {HTML} at (0,0) size 74x150
+        LayoutBlockFlow {BODY} at (8,8) size 58x134
+layer at (577,208) size 37x37
+  LayoutEmbeddedObject {object} at (529.83,113) size 36.89x36.89 [bgcolor=#FF0000]
+    layer at (0,0) size 37x37
+      LayoutView at (0,0) size 37x37
+    layer at (0,0) size 37x37
+      LayoutSVGRoot {svg} at (0,0) size 37x37
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGRect {rect} at (0,0) size 37x37 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
+        LayoutSVGEllipse {circle} at (0,0) size 37x37 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
+        LayoutSVGContainer {g} at (5,11) size 27x16
+          LayoutSVGText {text} at (29,60) size 141x82 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 141x82
+              chunk 1 (middle anchor) text run 1 at (29.98,125.00) startOffset 0 endOffset 3 width 140.03: "SVG"
