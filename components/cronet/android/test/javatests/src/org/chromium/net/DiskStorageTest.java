@@ -44,6 +44,8 @@ public class DiskStorageTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    // Crashing on Android Cronet Builder, see crbug.com/601409.
+    @DisabledTest
     public void testReadOnlyStorageDirectory() throws Exception {
         mReadOnlyStoragePath = PathUtils.getDataDirectory(getContext()) + "/read_only";
         File readOnlyStorage = new File(mReadOnlyStoragePath);
