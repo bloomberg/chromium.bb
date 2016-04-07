@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
@@ -32,6 +33,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -62,18 +64,17 @@ void SigninCreateProfileHandler::GetLocalizedValues(
       "manageProfilesSupervisedSignedInLabel",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL));
-  localized_strings->SetString(
-      "manageProfilesSupervisedNotSignedIn",
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_HTML));
   localized_strings->SetString("createProfileConfirm",
                                l10n_util::GetStringUTF16(IDS_SAVE));
   localized_strings->SetString("learnMore",
                                l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   localized_strings->SetString(
+      "selectAnAccount",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_SUPERVISED_SENTINEL_MENU_ITEM_TEXT));
+  localized_strings->SetString(
       "createProfileTitle",
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_TITLE));
-
   localized_strings->SetString(
       "supervisedUserLearnMoreTitle",
       l10n_util::GetStringUTF16(IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TITLE));
@@ -89,6 +90,18 @@ void SigninCreateProfileHandler::GetLocalizedValues(
               chrome::kLegacySupervisedUserManagementURL),
           base::ASCIIToUTF16(
               chrome::kLegacySupervisedUserManagementDisplayURL)));
+  localized_strings->SetString(
+      "manageProfilesExistingSupervisedUser",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_LEGACY_SUPERVISED_USER_ERROR_EXISTS_REMOTELY));
+  localized_strings->SetString(
+      "managedProfilesExistingLocalSupervisedUser",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_LEGACY_SUPERVISED_USER_ERROR_EXISTS_LOCALLY));
+  localized_strings->SetString(
+      "custodianAccountNotSelectedError",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_NO_CUSTODIAN_ACCOUNT_ERROR));
 }
 
 void SigninCreateProfileHandler::RegisterMessages() {
@@ -130,6 +143,20 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
   web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
                                    base::StringValue("profile-icons-received"),
                                    image_url_list);
+
+  SendNewProfileDefaults();
+}
+
+void SigninCreateProfileHandler::SendNewProfileDefaults() {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  base::DictionaryValue profile_info;
+  profile_info.SetString("name", cache.ChooseNameForNewProfile(0));
+
+  web_ui()->CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue("profile-defaults-received"),
+      profile_info);
 }
 
 void SigninCreateProfileHandler::RequestSignedInProfiles(
@@ -184,13 +211,13 @@ void SigninCreateProfileHandler::CreateProfile(const base::ListValue* args) {
   }
 #if defined(ENABLE_SUPERVISED_USERS)
   std::string supervised_user_id;
-  base::FilePath supervisor_profile_path;
+  base::FilePath custodian_profile_path;
   if (GetSupervisedCreateProfileArgs(args, &supervised_user_id,
-                                     &supervisor_profile_path)) {
-    // Load supervisor profile.
+                                     &custodian_profile_path)) {
+    // Load custodian profile.
     g_browser_process->profile_manager()->CreateProfileAsync(
-        supervisor_profile_path,
-        base::Bind(&SigninCreateProfileHandler::LoadSupervisorProfileCallback,
+        custodian_profile_path,
+        base::Bind(&SigninCreateProfileHandler::LoadCustodianProfileCallback,
                    weak_ptr_factory_.GetWeakPtr(), name, icon_url,
                    create_shortcut, supervised_user_id),
         base::string16(), std::string(), std::string());
@@ -207,21 +234,21 @@ void SigninCreateProfileHandler::DoCreateProfile(
     const std::string& icon_url,
     bool create_shortcut,
     const std::string& supervised_user_id,
-    Profile* supervisor_profile) {
+    Profile* custodian_profile) {
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
 
   profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
       name, icon_url,
       base::Bind(&SigninCreateProfileHandler::OnProfileCreated,
                  weak_ptr_factory_.GetWeakPtr(), create_shortcut,
-                 supervised_user_id, supervisor_profile),
+                 supervised_user_id, custodian_profile),
       supervised_user_id);
 }
 
 void SigninCreateProfileHandler::OnProfileCreated(
     bool create_shortcut,
     const std::string& supervised_user_id,
-    Profile* supervisor_profile,
+    Profile* custodian_profile,
     Profile* profile,
     Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_CREATED)
@@ -238,7 +265,7 @@ void SigninCreateProfileHandler::OnProfileCreated(
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
       HandleProfileCreationSuccess(create_shortcut, supervised_user_id,
-                                   supervisor_profile, profile);
+                                   custodian_profile, profile);
       break;
     }
     // User-initiated cancellation is handled in CancelProfileRegistration and
@@ -257,7 +284,7 @@ void SigninCreateProfileHandler::OnProfileCreated(
 void SigninCreateProfileHandler::HandleProfileCreationSuccess(
     bool create_shortcut,
     const std::string& supervised_user_id,
-    Profile* supervisor_profile,
+    Profile* custodian_profile,
     Profile* profile) {
   switch (profile_creation_type_) {
     case NON_SUPERVISED_PROFILE_CREATION: {
@@ -269,7 +296,7 @@ void SigninCreateProfileHandler::HandleProfileCreationSuccess(
     case SUPERVISED_PROFILE_CREATION:
     case SUPERVISED_PROFILE_IMPORT:
       RegisterSupervisedUser(create_shortcut, supervised_user_id,
-                             supervisor_profile, profile);
+                             custodian_profile, profile);
       break;
 #endif
     case NO_CREATION_IN_PROGRESS:
@@ -329,14 +356,14 @@ void SigninCreateProfileHandler::ShowProfileCreationError(
     Profile* profile,
     const base::string16& error) {
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
-  profile_path_being_created_.clear();
   web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
                                    GetWebUIListenerName(PROFILE_CREATION_ERROR),
                                    base::StringValue(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile)
     webui::DeleteProfileAtPath(profile->GetPath(), web_ui());
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
+  profile_path_being_created_.clear();
 }
 
 void SigninCreateProfileHandler::RecordProfileCreationMetrics(
@@ -408,7 +435,7 @@ base::StringValue SigninCreateProfileHandler::GetWebUIListenerName(
 bool SigninCreateProfileHandler::GetSupervisedCreateProfileArgs(
     const base::ListValue* args,
     std::string* supervised_user_id,
-    base::FilePath* supervisor_profile_path) {
+    base::FilePath* custodian_profile_path) {
   bool supervised_user = false;
   bool success = args->GetBoolean(3, &supervised_user);
   DCHECK(success);
@@ -421,18 +448,18 @@ bool SigninCreateProfileHandler::GetSupervisedCreateProfileArgs(
   const base::Value* path_value;
   success = args->Get(5, &path_value);
   DCHECK(success);
-  success = base::GetValueAsFilePath(*path_value, supervisor_profile_path);
+  success = base::GetValueAsFilePath(*path_value, custodian_profile_path);
   DCHECK(success);
 
-  return !supervisor_profile_path->empty();
+  return !custodian_profile_path->empty();
 }
 
-void SigninCreateProfileHandler::LoadSupervisorProfileCallback(
+void SigninCreateProfileHandler::LoadCustodianProfileCallback(
     const base::string16& name,
     const std::string& icon_url,
     bool create_shortcut,
     const std::string& supervised_user_id,
-    Profile* supervisor_profile,
+    Profile* custodian_profile,
     Profile::CreateStatus status) {
   // This method gets called once before with Profile::CREATE_STATUS_CREATED.
   switch (status) {
@@ -448,8 +475,14 @@ void SigninCreateProfileHandler::LoadSupervisorProfileCallback(
     case Profile::CREATE_STATUS_INITIALIZED: {
       // We are only interested in Profile::CREATE_STATUS_INITIALIZED when
       // everything is ready.
-      // TODO(mahmadi): display proper error message to the user.
-      PrefService* prefs = supervisor_profile->GetPrefs();
+      if (!IsAccountConnected(custodian_profile) ||
+          HasAuthError(custodian_profile)) {
+        ShowProfileCreationError(nullptr, l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR));
+        return;
+      }
+
+      PrefService* prefs = custodian_profile->GetPrefs();
       if (!prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed))
         return;
 
@@ -457,12 +490,12 @@ void SigninCreateProfileHandler::LoadSupervisorProfileCallback(
         profile_creation_type_ = SUPERVISED_PROFILE_IMPORT;
 
         SupervisedUserSyncService* supervised_user_sync_service =
-            SupervisedUserSyncServiceFactory::GetForProfile(supervisor_profile);
+            SupervisedUserSyncServiceFactory::GetForProfile(custodian_profile);
         if (supervised_user_sync_service) {
           supervised_user_sync_service->GetSupervisedUsersAsync(base::Bind(
               &SigninCreateProfileHandler::DoCreateProfileIfPossible,
               weak_ptr_factory_.GetWeakPtr(), name, icon_url, create_shortcut,
-              supervised_user_id, supervisor_profile));
+              supervised_user_id, custodian_profile));
         }
       } else {
         profile_creation_type_ = SUPERVISED_PROFILE_CREATION;
@@ -474,7 +507,7 @@ void SigninCreateProfileHandler::LoadSupervisorProfileCallback(
         // so it won't have the same potential delay.
         ProfileSyncService* sync_service =
             ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-                supervisor_profile);
+                custodian_profile);
         ProfileSyncService::SyncStatusSummary status =
             sync_service->QuerySyncStatusSummary();
         if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED) {
@@ -483,7 +516,7 @@ void SigninCreateProfileHandler::LoadSupervisorProfileCallback(
         }
 
         DoCreateProfile(name, icon_url, create_shortcut, new_supervised_user_id,
-                        supervisor_profile);
+                        custodian_profile);
       }
       break;
     }
@@ -496,12 +529,30 @@ void SigninCreateProfileHandler::LoadSupervisorProfileCallback(
   }
 }
 
+bool SigninCreateProfileHandler::IsAccountConnected(Profile* profile)
+    const {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  return signin_manager && signin_manager->IsAuthenticated();
+}
+
+bool SigninCreateProfileHandler::HasAuthError(Profile* profile)
+    const {
+  SigninErrorController* error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile);
+  if (!error_controller)
+    return true;
+
+  GoogleServiceAuthError::State state = error_controller->auth_error().state();
+  return state != GoogleServiceAuthError::NONE;
+}
+
 void SigninCreateProfileHandler::DoCreateProfileIfPossible(
     const base::string16& name,
     const std::string& icon_url,
     bool create_shortcut,
     const std::string& supervised_user_id,
-    Profile* supervisor_profile,
+    Profile* custodian_profile,
     const base::DictionaryValue* dict) {
   DCHECK(dict);
   if (!dict->HasKey(supervised_user_id))
@@ -520,7 +571,7 @@ void SigninCreateProfileHandler::DoCreateProfileIfPossible(
   }
 
   DoCreateProfile(name, icon_url, create_shortcut, supervised_user_id,
-                  supervisor_profile);
+                  custodian_profile);
 }
 
 void SigninCreateProfileHandler::HandleCancelProfileCreation(
@@ -563,7 +614,7 @@ void SigninCreateProfileHandler::CancelProfileRegistration(
 void SigninCreateProfileHandler::RegisterSupervisedUser(
     bool create_shortcut,
     const std::string& supervised_user_id,
-    Profile* supervisor_profile,
+    Profile* custodian_profile,
     Profile* new_profile) {
   DCHECK_EQ(profile_path_being_created_.value(),
             new_profile->GetPath().value());
@@ -573,9 +624,9 @@ void SigninCreateProfileHandler::RegisterSupervisedUser(
 
   // Register the supervised user using the profile of the custodian.
   supervised_user_registration_utility_ =
-      SupervisedUserRegistrationUtility::Create(supervisor_profile);
+      SupervisedUserRegistrationUtility::Create(custodian_profile);
   supervised_user_service->RegisterAndInitSync(
-      supervised_user_registration_utility_.get(), supervisor_profile,
+      supervised_user_registration_utility_.get(), custodian_profile,
       supervised_user_id,
       base::Bind(&SigninCreateProfileHandler::OnSupervisedUserRegistered,
                  weak_ptr_factory_.GetWeakPtr(), create_shortcut, new_profile));

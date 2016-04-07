@@ -58,6 +58,10 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   // Sends the array of default profile icon URLs to WebUI.
   void RequestDefaultProfileIcons(const base::ListValue* args);
 
+  // Sends an object to WebUI of the form: { "name": profileName } after
+  // "requestDefaultProfileIcons" is fulfilled.
+  void SendNewProfileDefaults();
+
   // Callback for the "requestSignedInProfiles" message.
   // Sends the email address of the signed-in user, or an empty string if the
   // user is not signed in. Also sends information about whether supervised
@@ -73,7 +77,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   //   3: a flag stating whether the user should be supervised
   //      (optional, boolean)
   //   4: a string representing the supervised user ID.
-  //   5: a string representing the supervisor profile path.
+  //   5: a string representing the custodian profile path.
   void CreateProfile(const base::ListValue* args);
 
   // If a local error occurs during profile creation, then show an appropriate
@@ -83,13 +87,13 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   // as the final task after a new profile has been created.
   void OnProfileCreated(bool create_shortcut,
                         const std::string& supervised_user_id,
-                        Profile* supervisor_profile,
+                        Profile* custodian_profile,
                         Profile* profile,
                         Profile::CreateStatus status);
 
   void HandleProfileCreationSuccess(bool create_shortcut,
                                     const std::string& supervised_user_id,
-                                    Profile* supervisor_profile,
+                                    Profile* custodian_profile,
                                     Profile* profile);
 
   // Creates desktop shortcut and updates the UI to indicate success
@@ -131,23 +135,23 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
                        const std::string& icon_url,
                        bool create_shortcut,
                        const std::string& supervised_user_id,
-                       Profile* supervisor_profile);
+                       Profile* custodian_profile);
 
 #if defined(ENABLE_SUPERVISED_USERS)
-  // Extracts the supervised user ID and the supervisor user profile path from
+  // Extracts the supervised user ID and the custodian user profile path from
   // the args passed into CreateProfile.
   bool GetSupervisedCreateProfileArgs(const base::ListValue* args,
                                       std::string* supervised_user_id,
-                                      base::FilePath* supervisor_profile_path);
+                                      base::FilePath* custodian_profile_path);
 
-  // Callback that runs once the supervisor profile has been loaded. It sets
+  // Callback that runs once the custodian profile has been loaded. It sets
   // |profile_creation_type_| if necessary, and calls |DoCreateProfile| if the
   // supervised user id specified in |args| is valid.
-  void LoadSupervisorProfileCallback(const base::string16& name,
+  void LoadCustodianProfileCallback(const base::string16& name,
                                      const std::string& icon_url,
                                      bool create_shortcut,
                                      const std::string& supervised_user_id,
-                                     Profile* supervisor_profile,
+                                     Profile* custodian_profile,
                                      Profile::CreateStatus status);
 
   // Cancels creation of a supervised-user profile currently in progress, as
@@ -166,7 +170,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   // with the management server.
   void RegisterSupervisedUser(bool create_shortcut,
                               const std::string& managed_user_id,
-                              Profile* supervisor_profile,
+                              Profile* custodian_profile,
                               Profile* new_profile);
 
   // Called back with the result of the supervised user registration.
@@ -179,16 +183,23 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   void RecordSupervisedProfileCreationMetrics(
       GoogleServiceAuthError::State error_state);
 
+  // Creates the supervised user with the given |supervised_user_id| if the user
+  // doesn't already exist on the machine.
   void DoCreateProfileIfPossible(const base::string16& name,
                                  const std::string& icon_url,
                                  bool create_shortcut,
                                  const std::string& supervised_user_id,
-                                 Profile* supervisor_profile,
+                                 Profile* custodian_profile,
                                  const base::DictionaryValue* dict);
 
   scoped_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;
 #endif
+
+  // Returns true if profile has signed into chrome.
+  bool IsAccountConnected(Profile* profile) const;
+  // Returns true if profile has authentication error.
+  bool HasAuthError(Profile* profile) const;
 
   base::WeakPtrFactory<SigninCreateProfileHandler> weak_ptr_factory_;
 

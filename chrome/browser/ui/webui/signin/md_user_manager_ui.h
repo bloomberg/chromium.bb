@@ -11,6 +11,10 @@
 class SigninCreateProfileHandler;
 class UserManagerScreenHandler;
 
+#if defined(ENABLE_SUPERVISED_USERS)
+class SigninSupervisedUserImportHandler;
+#endif
+
 namespace base {
 class DictionaryValue;
 }
@@ -31,6 +35,10 @@ class MDUserManagerUI : public content::WebUIController {
 
   SigninCreateProfileHandler* signin_create_profile_handler_;
   UserManagerScreenHandler* user_manager_screen_handler_;
+
+#if defined(ENABLE_SUPERVISED_USERS)
+  SigninSupervisedUserImportHandler* signin_supervised_user_import_handler_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MDUserManagerUI);
 };

@@ -17,7 +17,8 @@ var TestProfileBrowserProxy = function() {
     'createProfile',
     'cancelCreateProfile',
     'initializeUserManager',
-    'launchUser'
+    'launchUser',
+    'getExistingSupervisedUsers',
   ]);
 
   /** @private {!Array<string>} */
@@ -25,6 +26,12 @@ var TestProfileBrowserProxy = function() {
 
   /** @private {!Array<SignedInUser>} */
   this.signedInUsers_ = [];
+
+  /** @private {!ProfileInfo} */
+  this.defaultProfileInfo_ = {};
+
+  /** @private {!Array<SupervisedUser>} */
+  this.existingSupervisedUsers_ = [];
 };
 
 TestProfileBrowserProxy.prototype = {
@@ -44,10 +51,26 @@ TestProfileBrowserProxy.prototype = {
     this.signedInUsers_ = signedInUsers;
   },
 
+  /**
+   * @param {!ProfileInfo} profileInfo
+   */
+  setDefaultProfileInfo: function(profileInfo) {
+    this.defaultProfileInfo_ = profileInfo;
+  },
+
+  /**
+   * @param {!Array<SupervisedUser>} supervisedUsers
+   */
+  setExistingSupervisedUsers: function(supervisedUsers) {
+    this.existingSupervisedUsers_ = supervisedUsers;
+  },
+
   /** @override */
   getAvailableIcons: function() {
     this.methodCalled('getAvailableIcons');
     cr.webUIListenerCallback('profile-icons-received', this.iconUrls_);
+    cr.webUIListenerCallback('profile-defaults-received',
+                             this.defaultProfileInfo_);
   },
 
   /** @override */
@@ -68,16 +91,22 @@ TestProfileBrowserProxy.prototype = {
 
   /** @override */
   createProfile: function(profileName, profileIconUrl, isSupervised,
-        supervisorProfilePath) {
+        custodianProfilePath) {
     this.methodCalled('createProfile',
                       {profileName: profileName,
                        profileIconUrl: profileIconUrl,
                        isSupervised: isSupervised,
-                       supervisorProfilePath: supervisorProfilePath});
+                       custodianProfilePath: custodianProfilePath});
   },
 
   /** @override */
   launchGuestUser: function() {
     this.methodCalled('launchGuestUser');
-  }
+  },
+
+  /** @override */
+  getExistingSupervisedUsers: function() {
+    this.methodCalled('getExistingSupervisedUsers');
+    return Promise.resolve(this.existingSupervisedUsers_);
+  },
 };

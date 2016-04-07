@@ -6,6 +6,13 @@
  * @fileoverview 'create-profile' is a page that contains controls for creating
  * a (optionally supervised) profile, including choosing a name, and an avatar.
  */
+(function() {
+/**
+ * It means the sentinel menu item is selected.
+ * @const {number}
+ */
+var NO_USER_SELECTED = -1;
+
 Polymer({
   is: 'create-profile',
 
@@ -16,22 +23,12 @@ Polymer({
 
   properties: {
     /**
-     * True if supervised user checkbox is disabled.
-     * @private {boolean}
-     */
-    supervisedUserCheckboxDisabled_: {
-      type: Boolean,
-      computed:
-          'isSupervisedUserCheckboxDisabled_(createInProgress_, signedIn_)'
-    },
-
-    /**
      * The current profile name.
      * @private {string}
      */
     profileName_: {
       type: String,
-      value: '',
+      value: ''
     },
 
     /**
@@ -81,7 +78,7 @@ Polymer({
 
     /**
      * The list of usernames and profile paths for currently signed-in users.
-     * @private {!Array<SignedInUser>}
+     * @private {!Array<!SignedInUser>}
      */
     signedInUsers_: {
       type: Array,
@@ -92,9 +89,9 @@ Polymer({
      * Index of the selected signed-in user.
      * @private {number}
      */
-    selectedEmail_: {
+    signedInUserIndex_: {
       type: Number,
-      value: 0
+      value: NO_USER_SELECTED
     },
 
     /** @private {!signin.ProfileBrowserProxy} */
@@ -107,9 +104,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
-    this.resetForm_();
-
+  ready: function() {
     this.addWebUIListener(
       'create-profile-success', this.handleSuccess_.bind(this));
     this.addWebUIListener(
@@ -119,25 +114,15 @@ Polymer({
     this.addWebUIListener(
       'profile-icons-received', this.handleProfileIcons_.bind(this));
     this.addWebUIListener(
+      'profile-defaults-received', this.handleProfileDefaults_.bind(this));
+    this.addWebUIListener(
       'signedin-users-received', this.handleSignedInUsers_.bind(this));
 
     this.browserProxy_.getAvailableIcons();
     this.browserProxy_.getSignedInUsers();
-  },
 
-  /**
-   * Resets the state of the page.
-   * @private
-   */
-  resetForm_: function() {
-    this.profileName_ = '';
-    this.availableIconUrls_ = [];
-    this.profileIconUrl_ = '';
-    this.createInProgress_ = false;
-    this.message_ = '';
-    this.isSupervised_ = false;
-    this.signedInUsers_ = [];
-    this.selectedEmail_ = 0;
+    // Alias on 'this' to use in html.
+    this.NO_USER_SELECTED = NO_USER_SELECTED;
   },
 
   /**
@@ -151,17 +136,34 @@ Polymer({
   },
 
   /**
-   * Updates the signed-in users.
-   * @param {!Array<SignedInUser>} signedInUsers
+   * Handler for when the profile defaults are pushed from the browser.
+   * @param {ProfileInfo} profileInfo Default Info for the new profile.
+   * @private
+   */
+  handleProfileDefaults_: function(profileInfo) {
+    this.profileName_ = profileInfo.name;
+  },
+
+  /**
+   * Handler for when signed-in users are pushed from the browser.
+   * @param {!Array<!SignedInUser>} signedInUsers
    * @private
    */
   handleSignedInUsers_: function(signedInUsers) {
     this.signedInUsers_ = signedInUsers;
-    this.signedIn_ = signedInUsers.length > 0;
   },
 
   /**
-   * Handler for the 'Learn More' button click event.
+   * Returns the currently selected signed-in user.
+   * @return {(!SignedInUser|undefined)}
+   * @private
+   */
+  signedInUser_: function(signedInUserIndex) {
+    return this.signedInUsers_[signedInUserIndex];
+  },
+
+  /**
+   * Handler for the 'Learn More' link tap event.
    * @param {!Event} event
    * @private
    */
@@ -170,19 +172,89 @@ Polymer({
   },
 
   /**
-   * Handler for the 'Ok' button click event.
+   * Handler for the 'Save' button tap event.
    * @param {!Event} event
    * @private
    */
   onSaveTap_: function(event) {
     this.createInProgress_ = true;
-    this.browserProxy_.createProfile(
-        this.profileName_, this.profileIconUrl_, this.isSupervised_,
-        this.signedInUsers_[this.selectedEmail_].profilePath);
+
+    if (!this.isSupervised_) {
+      // The new profile is not supervised. Go ahead and create it.
+      this.createProfile_();
+    } else if (this.signedInUserIndex_ == NO_USER_SELECTED) {
+      // If the new profile is supervised, a custodian must be selected.
+      this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
+      this.createInProgress_ = false;
+    } else {
+      var signedInUser = this.signedInUser_(this.signedInUserIndex_);
+      this.browserProxy_.getExistingSupervisedUsers(
+          signedInUser.profilePath).then(
+            this.createProfileIfValidSupervisedUser_.bind(this),
+            /** @param {*} error */
+            function(error) { this.handleMessage_(error); }.bind(this));
+    }
   },
 
   /**
-   * Handler for the 'Cancel' button click event.
+   * Checks if the entered name matches name of an existing supervised user.
+   * If yes, the user is prompted to import the existing supervised user.
+   * If no, the new supervised profile gets created.
+   * @param {Array<SupervisedUser>} supervisedUsers The list of existing
+   *     supervised users.
+   * @private
+   */
+  createProfileIfValidSupervisedUser_: function(supervisedUsers) {
+    for (var i = 0; i < supervisedUsers.length; ++i) {
+      if (supervisedUsers[i].name != this.profileName_)
+        continue;
+      // Check if another supervised user also exists with that name.
+      var nameIsUnique = true;
+      // Handling the case when multiple supervised users with the same
+      // name exist, but not all of them are on the device.
+      // If at least one is not imported, we want to offer that
+      // option to the user. This could happen due to a bug that allowed
+      // creating SUs with the same name (https://crbug.com/557445).
+      var allOnCurrentDevice = supervisedUsers[i].onCurrentDevice;
+      for (var j = i + 1; j < supervisedUsers.length; ++j) {
+        if (supervisedUsers[j].name == this.profileName_) {
+          nameIsUnique = false;
+          allOnCurrentDevice = allOnCurrentDevice &&
+             supervisedUsers[j].onCurrentDevice;
+        }
+      }
+
+      this.handleMessage_(allOnCurrentDevice ?
+          this.i18n('managedProfilesExistingLocalSupervisedUser') :
+          this.i18n('manageProfilesExistingSupervisedUser',
+               HTMLEscape(elide(this.profileName_, /* maxLength */ 50))));
+
+      this.createInProgress_ = false;
+      return;
+    }
+    // No existing supervised user's name matches the entered profile name.
+    // Continue with creating the new supervised profile.
+    this.createProfile_();
+  },
+
+  /**
+   * Creates the new profile.
+   * @private
+   */
+  createProfile_: function() {
+    var custodianProfilePath = '';
+    if (this.signedInUserIndex_ != NO_USER_SELECTED) {
+      custodianProfilePath =
+          this.signedInUser_(this.signedInUserIndex_).profilePath;
+    }
+
+    this.browserProxy_.createProfile(
+        this.profileName_, this.profileIconUrl_, this.isSupervised_,
+        custodianProfilePath);
+  },
+
+  /**
+   * Handler for the 'Cancel' button tap event.
    * @param {!Event} event
    * @private
    */
@@ -231,6 +303,12 @@ Polymer({
   handleMessage_: function(message) {
     this.createInProgress_ = false;
     this.message_ = message;
+
+    // TODO(mahmadi): attach handler to '#supervised-user-import-existing'
+    // in order to import supervised user with the given name.
+
+    // TODO(mahmadi): attach handler to '#reauth' in order to re-authenticate
+    // custodian.
   },
 
   /**
@@ -245,30 +323,28 @@ Polymer({
   },
 
   /**
-   * Computed binding determining whether 'Ok' button is disabled.
+   * Computed binding determining whether 'Save' button is disabled.
    * @param {boolean} createInProgress Is create in progress?
    * @param {string} profileName Profile Name.
-   * @param {string} message Existing warning/error message.
    * @return {boolean}
    * @private
    */
-  isOkDisabled_: function(createInProgress, profileName, message) {
+  isSaveDisabled_: function(createInProgress, profileName) {
     // TODO(mahmadi): Figure out a way to add 'paper-input-extracted' as a
     // dependency and cast to PaperInputElement instead.
     /** @type {{validate: function():boolean}} */
     var nameInput = this.$.nameInput;
-    return createInProgress || !profileName || message != '' ||
-        !nameInput.validate();
+    return createInProgress || !profileName || !nameInput.validate();
   },
 
   /**
-   * Computed binding determining whether supervised user checkbox is disabled.
-   * @param {boolean} createInProgress Is create in progress?
-   * @param {boolean} signedIn Are there any signed-in users?
+   * Computed binding that returns True if there are any signed-in users.
+   * @param {!Array<!SignedInUser>} signedInUsers signed-in users.
    * @return {boolean}
    * @private
    */
-  isSupervisedUserCheckboxDisabled_: function(createInProgress, signedIn) {
-    return createInProgress || !signedIn;
+  isSignedIn_: function(signedInUsers) {
+    return signedInUsers.length > 0;
   }
 });
+}());

@@ -20,6 +20,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/ui/webui/signin/signin_supervised_user_import_handler.h"
+#endif
+
 MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       signin_create_profile_handler_(new SigninCreateProfileHandler()),
@@ -28,6 +32,11 @@ MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
   // destroy them when it (the WebUI) is destroyed.
   web_ui->AddMessageHandler(signin_create_profile_handler_);
   web_ui->AddMessageHandler(user_manager_screen_handler_);
+#if defined(ENABLE_SUPERVISED_USERS)
+  signin_supervised_user_import_handler_ =
+      new SigninSupervisedUserImportHandler();
+  web_ui->AddMessageHandler(signin_supervised_user_import_handler_);
+#endif
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);

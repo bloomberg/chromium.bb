@@ -3,8 +3,10 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
@@ -12,7 +14,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <dom-module id="create-profile">
   <link rel="import" type="css"
@@ -20,51 +21,60 @@
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <template>
     <style include="shared-styles"></style>
+    <div id="message-container" hidden="[[!message_]]">
+      <iron-icon icon="warning"></iron-icon>
+      <span id="message" inner-h-t-m-l="[[message_]]"></span>
+    </div>
     <div class="container">
       <div id="title-bar" i18n-content="createProfileTitle"></div>
       <paper-input id="nameInput" value="{{profileName_}}" pattern=".*\S.*"
-          auto-validate>
+          no-label-float auto-validate>
       </paper-input>
       <div id="icons">
         <div id="wrapper">
         <template is="dom-repeat" items="[[availableIconUrls_]]">
           <paper-button toggles on-tap="onIconTap_" data-icon-url$="[[item]]"
-              active="{{isActiveIcon_(item, profileIconUrl_)}}">
+              active="[[isActiveIcon_(item, profileIconUrl_)]]">
             <img src="[[item]]">
           </paper-button>
         </template>
         </div>
       </div>
-      <div id="createSupervisedContainer">
-        <template is="dom-if" if="[[signedIn_]]">
-          <paper-checkbox checked="{{isSupervised_}}"
-              disabled="{{supervisedUserCheckboxDisabled_}}">
-            <span>[[i18n('manageProfilesSupervisedSignedInLabel')]]</span>
+      <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
+        <div id="supervised-user-container">
+          <paper-checkbox checked="{{isSupervised_}}">
+            [[i18n('manageProfilesSupervisedSignedInLabel')]]
           </paper-checkbox>
-          <paper-dropdown-menu no-label-float>
-            <paper-menu selected="{{selectedEmail_}}" class="dropdown-content">
-              <template is="dom-repeat" items="[[signedInUsers_]]">
-                <paper-item>[[item.username]]</paper-item>
-              </template>
-            </paper-menu>
-          </paper-dropdown-menu>
-          <a id="learnMore" is="action-link" on-tap="onLearnMoreTap_">
-            [[i18n('learnMore')]]
-          </a>
-        </template>
-        <span id="noSignedInUserContainer"
-            i18n-values=".innerHTML:manageProfilesSupervisedNotSignedIn"
-            hidden="{{signedIn_}}">
-        </span>
-        <div id="messageBubble" inner-h-t-m-l="{{message_}}"></div>
-      </div>
-      <div id="actions" class="layout horizontal end-justified">
+          <div id="learn-more-accounts">
+            <a id="learn-more" is="action-link" on-tap="onLearnMoreTap_">
+              [[i18n('learnMore')]]
+            </a>
+            <template is="dom-if" if="[[isSupervised_]]">
+              <paper-dropdown-menu no-label-float>
+                <paper-menu class="dropdown-content"
+                    selected="{{signedInUserIndex_}}"
+                    attr-for-selected="data-user-index">
+                  <paper-item data-user-index$="[[NO_USER_SELECTED]]">
+                    [[i18n('selectAnAccount')]]
+                  </paper-item>
+                  <template is="dom-repeat" items="[[signedInUsers_]]">
+                    <paper-item data-user-index$="[[index]]">
+                      [[item.username]]
+                    </paper-item>
+                  </template>
+                </paper-menu>
+              </paper-dropdown-menu>
+            </template>
+          </div>
+        </div>
+      </template>
+      <div id="actions">
         <paper-spinner active="[[createInProgress_]]"></paper-spinner>
         <paper-button id="cancel" on-tap="onCancelTap_" i18n-content="cancel">
         </paper-button>
         <paper-button id="save" on-tap="onSaveTap_"
             i18n-content="createProfileConfirm"
-            disabled="{{isOkDisabled_(createInProgress_, profileName_, message_)}}">
+            disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
         </paper-button>
       </div>
     </div>

@@ -1367,6 +1367,8 @@
       'browser/ui/webui/signin/md_user_manager_ui.h',
       'browser/ui/webui/signin/signin_create_profile_handler.cc',
       'browser/ui/webui/signin/signin_create_profile_handler.h',
+      'browser/ui/webui/signin/signin_supervised_user_import_handler.cc',
+      'browser/ui/webui/signin/signin_supervised_user_import_handler.h',
       'browser/ui/webui/signin/sync_confirmation_handler.cc',
       'browser/ui/webui/signin/sync_confirmation_handler.h',
       'browser/ui/webui/signin/sync_confirmation_ui.cc',

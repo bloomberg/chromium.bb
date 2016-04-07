@@ -13,6 +13,13 @@ var SignedInUser;
 /** @typedef {{name: string, filePath: string, isSupervised: boolean}} */
 var ProfileInfo;
 
+/** @typedef {{id: string,
+ *             name: string,
+ *             iconURL: string,
+ *             onCurrentDevice: boolean}}
+ */
+var SupervisedUser;
+
 cr.define('signin', function() {
   /** @interface */
   function ProfileBrowserProxy() {}
@@ -40,16 +47,26 @@ cr.define('signin', function() {
     },
 
     /**
+     * Gets the list of existing supervised users.
+     * @param {string} profilePath Profile Path of the custodian.
+     * @return {Promise} A promise for the requested data.
+     * @private
+     */
+    getExistingSupervisedUsers: function(profilePath) {
+      assertNotReached();
+    },
+
+    /**
      * Creates a profile.
      * @param {string} profileName Name of the new profile.
      * @param {string} profileIconUrl URL of the selected icon of the new
      *     profile.
      * @param {boolean} isSupervised True if the new profile is supervised.
-     * @param {string|undefined} supervisorProfilePath Profile path of the
-     *     supervisor if the new profile is supervised.
+     * @param {string} custodianProfilePath Profile path of the custodian if
+     *     the new profile is supervised.
      */
     createProfile: function(profileName, profileIconUrl, isSupervised,
-        supervisorProfilePath) {
+        custodianProfilePath) {
       assertNotReached();
     },
 
@@ -104,11 +121,16 @@ cr.define('signin', function() {
     },
 
     /** @override */
+    getExistingSupervisedUsers: function(profilePath) {
+      return cr.sendWithPromise('getExistingSupervisedUsers', profilePath);
+    },
+
+    /** @override */
     createProfile: function(profileName, profileIconUrl, isSupervised,
-        supervisorProfilePath) {
+        custodianProfilePath) {
       chrome.send('createProfile',
                   [profileName, profileIconUrl, false, isSupervised, '',
-                   supervisorProfilePath]);
+                   custodianProfilePath]);
     },
 
     /** @override */
