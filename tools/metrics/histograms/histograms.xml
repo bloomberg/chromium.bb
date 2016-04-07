@@ -41382,6 +41382,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer.ViewportZoomBugCount" enum="BooleanHit">
+  <owner>kkhorimoto@chromium.org</owner>
+  <summary>
+    [iOS] A boolean that is used to indicate that the WebKit rendering bug in
+    http://crbug.com/583231 has occurred. This occurs when a page with no
+    viewport tag is rendered with an unusable zoom scale. Only logged on iOS.
+  </summary>
+</histogram>
+
 <histogram name="Renderer2.FinishDocToFinish">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

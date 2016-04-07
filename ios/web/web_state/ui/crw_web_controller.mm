@@ -143,6 +143,9 @@ struct UserInteractionEvent {
 
 namespace {
 
+// Key of UMA IOSFix.ViewportZoomBugCount histogram.
+const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
+
 // A tag for the web view, so that tests can identify it. This is used instead
 // of exposing a getter (and deliberately not exposed in the header) to make it
 // *very* clear that this is a hack which should only be used as a last resort.
@@ -3350,6 +3353,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webViewScrollViewDidZoom:
         (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   _pageHasZoomed = YES;
+
+  base::WeakNSObject<UIScrollView> weakScrollView(self.webScrollView);
+  [self extractViewportTagWithCompletion:^(
+            const web::PageViewportState* viewportState) {
+    if (!weakScrollView)
+      return;
+    base::scoped_nsobject<UIScrollView> scrollView([weakScrollView retain]);
+    if (viewportState && !viewportState->viewport_tag_present() &&
+        [scrollView minimumZoomScale] == [scrollView maximumZoomScale] &&
+        [scrollView zoomScale] > 1.0) {
+      UMA_HISTOGRAM_BOOLEAN(kUMAViewportZoomBugCount, true);
+    }
+  }];
 }
 
 - (void)webViewScrollViewDidResetContentSize:
