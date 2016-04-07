@@ -261,15 +261,6 @@ public:
 
     static bool isDirectiveName(const String&);
 
-    // These functions are used to debug using ResourceContext to apply
-    // CSP directives instead of Resource::Type, by checking that the
-    // ResourceContext is as expected. See crbug.com/474412
-    static bool isScriptResource(const ResourceRequest&);
-    static bool isStyleResource(const ResourceRequest&);
-    static bool isImageResource(const ResourceRequest&);
-    static bool isFontResource(const ResourceRequest&);
-    static bool isMediaResource(const ResourceRequest&);
-
     Document* document() const;
 
 private:

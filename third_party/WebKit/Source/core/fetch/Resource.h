@@ -180,6 +180,10 @@ public:
 
     virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
 
+    // Called when a redirect response was received but a decision has
+    // already been made to not follow it.
+    virtual void willNotFollowRedirect() {}
+
     virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
     void setResponse(const ResourceResponse& response) { m_response = response; }
     const ResourceResponse& response() const { return m_response; }

@@ -133,6 +133,14 @@ void RawResource::willFollowRedirect(ResourceRequest& newRequest, const Resource
         c->redirectReceived(this, newRequest, redirectResponse);
 }
 
+void RawResource::willNotFollowRedirect()
+{
+    RawPtr<RawResource> protect(this);
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
+        c->redirectBlocked();
+}
+
 void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     bool isSuccessfulRevalidation = isCacheValidator() && response.httpStatusCode() == 304;

@@ -35,7 +35,6 @@
 #include "core/CoreExport.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -76,13 +75,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
             LoadAsynchronously
         };
 
-        enum EnforceContentSecurityPolicyDirective {
-            EnforceWorkerDirective,
-            EnforceConnectSrcDirective,
-            EnforceManifestSrcDirective,
-            EnforceMediaSrcDirective,
-        };
-
         DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         void clear();
@@ -102,6 +94,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
         void dataReceived(Resource*, const char* data, size_t dataLength) override;
         void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
+        void redirectBlocked() override;
         void dataDownloaded(Resource*, int) override;
         void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
 
@@ -151,7 +144,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
 
         void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
         bool isAllowedRedirect(const KURL&) const;
-        bool isAllowedByContentSecurityPolicy(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
         // Returns DoNotAllowStoredCredentials
         // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
         // returns allowCredentials value of m_resourceLoaderOptions.
@@ -208,7 +200,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
 
         const bool m_async;
 
-        // Holds the original request context (used for sanity checks and Content Security Policy enforcement).
+        // Holds the original request context (used for sanity checks).
         WebURLRequest::RequestContext m_requestContext;
 
         // Holds the original request for fallback in case the Service Worker

@@ -39,7 +39,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/CrossOriginPreflightResultCache.h"
@@ -441,7 +440,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         return;
     }
 
-    if (m_redirectMode == WebURLRequest::FetchRedirectModeError || !isAllowedByContentSecurityPolicy(request.url(), ContentSecurityPolicy::DidRedirect)) {
+    if (m_redirectMode == WebURLRequest::FetchRedirectModeError) {
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailRedirectCheck();
@@ -527,6 +526,15 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     }
 
     request = ResourceRequest();
+}
+
+void DocumentThreadableLoader::redirectBlocked()
+{
+    // Tells the client that a redirect was received but not followed (for an unknown reason).
+    ThreadableLoaderClient* client = m_client;
+    clear();
+    client->didFailRedirectCheck();
+    // |this| may be dead here
 }
 
 void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -881,7 +889,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     // FIXME: A synchronous request does not tell us whether a redirect happened or not, so we guess by comparing the
     // request and response URLs. This isn't a perfect test though, since a server can serve a redirect to the same URL that was
     // requested. Also comparing the request and response URLs as strings will fail if the requestURL still has its credentials.
-    if (requestURL != response.url() && (!isAllowedByContentSecurityPolicy(response.url(), ContentSecurityPolicy::DidRedirect) || !isAllowedRedirect(response.url()))) {
+    if (requestURL != response.url() && !isAllowedRedirect(response.url())) {
         m_client->didFailRedirectCheck();
         return;
     }
@@ -914,14 +922,6 @@ bool DocumentThreadableLoader::isAllowedRedirect(const KURL& url) const
         return true;
 
     return m_sameOriginRequest && getSecurityOrigin()->canRequest(url);
-}
-
-bool DocumentThreadableLoader::isAllowedByContentSecurityPolicy(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
-{
-    if (m_options.contentSecurityPolicyEnforcement != EnforceContentSecurityPolicy)
-        return true;
-
-    return document().contentSecurityPolicy()->allowRequest(m_requestContext, url, redirectStatus);
 }
 
 StoredCredentials DocumentThreadableLoader::effectiveAllowCredentials() const

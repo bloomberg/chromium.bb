@@ -484,82 +484,30 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     // I believe it's the Resource::Raw case.
     const ContentSecurityPolicy* csp = m_document ? m_document->contentSecurityPolicy() : nullptr;
 
-    // TODO(mkwst): This would be cleaner if moved this switch into an allowFromSource()
-    // helper on this object which took a Resource::Type, then this block would
-    // collapse to about 10 lines for handling Raw and Script special cases.
-    switch (type) {
-    case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        ASSERT(ContentSecurityPolicy::isScriptResource(resourceRequest));
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
+    if (csp) {
+        if (!shouldBypassMainWorldCSP && !csp->allowRequest(resourceRequest.requestContext(), url, redirectStatus, cspReporting))
             return ResourceRequestBlockedReasonCSP;
-        break;
-    case Resource::Script:
-    case Resource::ImportResource:
-        ASSERT(ContentSecurityPolicy::isScriptResource(resourceRequest));
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
+    }
+
+    if (type == Resource::Script || type == Resource::ImportResource) {
         ASSERT(frame());
         if (!frame()->loader().client()->allowScriptFromSource(!frame()->settings() || frame()->settings()->scriptEnabled(), url)) {
             frame()->loader().client()->didNotAllowScript();
+            // TODO(estark): Use a different ResourceRequestBlockedReason
+            // here, since this check has nothing to do with
+            // CSP. https://crbug.com/600795
             return ResourceRequestBlockedReasonCSP;
         }
-        break;
-    case Resource::CSSStyleSheet:
-        ASSERT(ContentSecurityPolicy::isStyleResource(resourceRequest));
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-        break;
-    case Resource::SVGDocument:
-    case Resource::Image:
-        ASSERT(ContentSecurityPolicy::isImageResource(resourceRequest));
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-        break;
-    case Resource::Font: {
-        ASSERT(ContentSecurityPolicy::isFontResource(resourceRequest));
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-        break;
-    }
-    case Resource::LinkPreload:
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowConnectToSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-        break;
-    case Resource::MainResource:
-    case Resource::Raw:
-    case Resource::LinkPrefetch:
-    case Resource::Manifest:
-        break;
-    case Resource::Media:
-    case Resource::TextTrack:
-        ASSERT(ContentSecurityPolicy::isMediaResource(resourceRequest));
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-
+    } else if (type == Resource::Media || type == Resource::TextTrack) {
+        ASSERT(frame());
         if (!frame()->loader().client()->allowMedia(url))
             return ResourceRequestBlockedReasonOther;
-        break;
     }
 
     // SVG Images have unique security rules that prevent all subresource requests
     // except for data urls.
     if (type != Resource::MainResource && frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
         return ResourceRequestBlockedReasonOrigin;
-
-    // FIXME: Once we use RequestContext for CSP (http://crbug.com/390497), remove this extra check.
-    if (resourceRequest.requestContext() == WebURLRequest::RequestContextManifest) {
-        ASSERT(csp);
-        if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-    }
 
     // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
     // ('http://user:password@...') resources embedded as subresources. in the hopes that we can

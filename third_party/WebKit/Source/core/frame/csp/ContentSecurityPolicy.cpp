@@ -1060,31 +1060,6 @@ bool ContentSecurityPolicy::shouldBypassMainWorld(const ExecutionContext* contex
     return false;
 }
 
-bool ContentSecurityPolicy::isScriptResource(const ResourceRequest& resourceRequest)
-{
-    return WebURLRequest::RequestContextScript == resourceRequest.requestContext() || WebURLRequest::RequestContextImport == resourceRequest.requestContext() || WebURLRequest::RequestContextXSLT == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
-}
-
-bool ContentSecurityPolicy::isStyleResource(const ResourceRequest& resourceRequest)
-{
-    return WebURLRequest::RequestContextStyle == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
-}
-
-bool ContentSecurityPolicy::isImageResource(const ResourceRequest& resourceRequest)
-{
-    return WebURLRequest::RequestContextImage == resourceRequest.requestContext() || WebURLRequest::RequestContextFavicon == resourceRequest.requestContext() || WebURLRequest::RequestContextImageSet == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
-}
-
-bool ContentSecurityPolicy::isFontResource(const ResourceRequest& resourceRequest)
-{
-    return WebURLRequest::RequestContextFont == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
-}
-
-bool ContentSecurityPolicy::isMediaResource(const ResourceRequest& resourceRequest)
-{
-    return WebURLRequest::RequestContextAudio == resourceRequest.requestContext() || WebURLRequest::RequestContextVideo == resourceRequest.requestContext() || WebURLRequest::RequestContextTrack == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
-}
-
 bool ContentSecurityPolicy::shouldSendViolationReport(const String& report) const
 {
     // Collisions have no security impact, so we can save space by storing only the string's hash rather than the whole report.

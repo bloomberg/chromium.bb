@@ -215,10 +215,12 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     newRequest.setFollowedRedirect(true);
 
-    if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest, redirectResponse))
+    if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest, redirectResponse)) {
         m_resource->willFollowRedirect(newRequest, redirectResponse);
-    else
+    } else {
+        m_resource->willNotFollowRedirect();
         cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
+    }
 }
 
 void ResourceLoader::didReceiveCachedMetadata(WebURLLoader*, const char* data, int length)
