@@ -89,13 +89,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   VerifyFeedbackAppLaunch();
 }
 
-// http://crbug.com/601306
-#if defined(OS_CHROMEOS)
-#define MAYBE_ShowLoginFeedback DISABLED_ShowLoginFeedback
-#else
-#define MAYBE_ShowLoginFeedback ShowLoginFeedback
-#endif
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
