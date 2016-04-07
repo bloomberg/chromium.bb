@@ -60,7 +60,7 @@ test(function() {
 test(function() {
   var animation = runningAnimation();
   assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
-  assert_equals(animation.currentTime, duration / 2);
+  assert_approx_equals(animation.currentTime, duration / 2, 0.000001);
   assert_equals(animation.playState, 'running');
 }, "running");
 
@@ -204,7 +204,7 @@ test(function() {
   var animation = runningAnimation();
   animation.pause();
   assert_unresolved(animation.startTime);
-  assert_equals(animation.currentTime, duration / 2);
+  assert_approx_equals(animation.currentTime, duration / 2, 0.000001);
   assert_equals(animation.playState, 'pending');
 }, "running -> pause()");
 
@@ -228,7 +228,7 @@ test(function() {
   var animation = runningAnimation();
   animation.reverse();
   assert_unresolved(animation.startTime);
-  assert_equals(animation.currentTime, duration / 2);
+  assert_approx_equals(animation.currentTime, duration / 2, 0.000001);
   assert_equals(animation.playState, 'pending');
 }, "running -> reverse()");
 
