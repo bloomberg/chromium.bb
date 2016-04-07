@@ -43,9 +43,7 @@ void NTPSnippetsBridge::SetObserver(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     const JavaParamRef<jobject>& j_observer) {
   observer_.Reset(env, j_observer);
-
-  if (ntp_snippets_service_->is_loaded())
-    NTPSnippetsServiceLoaded(ntp_snippets_service_);
+  NTPSnippetsServiceLoaded(ntp_snippets_service_);
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}

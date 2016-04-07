@@ -72,9 +72,6 @@ class NTPSnippetsService : public KeyedService {
   // Inherited from KeyedService.
   void Shutdown() override;
 
-  // True once the data is loaded in memory and available to loop over.
-  bool is_loaded() { return loaded_; }
-
   // Fetches snippets from the server and adds them to the current ones.
   void FetchSnippets();
 
@@ -86,11 +83,8 @@ class NTPSnippetsService : public KeyedService {
   void AddObserver(NTPSnippetsServiceObserver* observer);
   void RemoveObserver(NTPSnippetsServiceObserver* observer);
 
-  // Number of snippets available. Can only be called when is_loaded() is true.
-  size_t size() const {
-    DCHECK(loaded_);
-    return snippets_.size();
-  }
+  // Number of snippets available.
+  size_t size() const { return snippets_.size(); }
 
   // The snippets can be iterated upon only via a const_iterator. Recommended
   // way to iterate is as follows:
@@ -99,14 +93,8 @@ class NTPSnippetsService : public KeyedService {
   //  for (auto& snippet : *service) {
   //    // |snippet| here is a const object.
   //  }
-  const_iterator begin() const {
-    DCHECK(loaded_);
-    return const_iterator(snippets_.begin());
-  }
-  const_iterator end() const {
-    DCHECK(loaded_);
-    return const_iterator(snippets_.end());
-  }
+  const_iterator begin() const { return const_iterator(snippets_.begin()); }
+  const_iterator end() const { return const_iterator(snippets_.end()); }
 
  private:
   friend class NTPSnippetsServiceTest;
@@ -143,9 +131,6 @@ class NTPSnippetsService : public KeyedService {
   PrefService* pref_service_;
 
   suggestions::SuggestionsService* suggestions_service_;
-
-  // True if the suggestions are loaded.
-  bool loaded_;
 
   // The SequencedTaskRunner on which file system operations will be run.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
@@ -192,9 +177,9 @@ class NTPSnippetsService : public KeyedService {
 
 class NTPSnippetsServiceObserver {
  public:
-  // Send everytime the service loads a new set of data.
+  // Sent every time the service loads a new set of data.
   virtual void NTPSnippetsServiceLoaded(NTPSnippetsService* service) = 0;
-  // Send when the service is shutting down.
+  // Sent when the service is shutting down.
   virtual void NTPSnippetsServiceShutdown(NTPSnippetsService* service) = 0;
 
  protected:

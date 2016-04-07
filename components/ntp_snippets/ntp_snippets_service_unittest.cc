@@ -79,27 +79,6 @@ void ParseJson(
   }
 }
 
-class SnippetObserver : public NTPSnippetsServiceObserver {
- public:
-  SnippetObserver() : loaded_(false), shutdown_(false) {}
-  ~SnippetObserver() override {}
-
-  void NTPSnippetsServiceLoaded(NTPSnippetsService* service) override {
-    loaded_ = true;
-  }
-
-  void NTPSnippetsServiceShutdown(NTPSnippetsService* service) override {
-    shutdown_ = true;
-    loaded_ = false;
-  }
-
-  bool loaded_;
-  bool shutdown_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SnippetObserver);
-};
-
 }  // namespace
 
 class NTPSnippetsServiceTest : public testing::Test {
@@ -148,20 +127,12 @@ class NTPSnippetsServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
 
-TEST_F(NTPSnippetsServiceTest, Create) {
-  EXPECT_FALSE(service()->is_loaded());
-}
-
 TEST_F(NTPSnippetsServiceTest, Loop) {
-  EXPECT_FALSE(service()->is_loaded());
-
   std::string json_str(
       "{ \"recos\": [ "
       "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
       "]}");
   ASSERT_TRUE(LoadFromJSONString(json_str));
-
-  EXPECT_TRUE(service()->is_loaded());
 
   // The same for loop without the '&' should not compile.
   for (auto& snippet : *service()) {
@@ -200,7 +171,6 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   std::string json_str(
       "{ \"recos\": [ { \"contentInfo\": { \"url\" : \"http://site.com\" }}]}");
   ASSERT_TRUE(LoadFromJSONString(json_str));
-  ASSERT_TRUE(service()->is_loaded());
 
   ASSERT_EQ(1u, service()->size());
 
@@ -246,36 +216,6 @@ TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
 
   ASSERT_TRUE(LoadFromJSONString(json_str));
   EXPECT_EQ(service()->size(), 0u);
-}
-
-TEST_F(NTPSnippetsServiceTest, ObserverNotLoaded) {
-  SnippetObserver observer;
-  ScopedObserver<NTPSnippetsService, SnippetObserver> scoped_observer(
-      &observer);
-  scoped_observer.Add(service());
-  EXPECT_FALSE(observer.loaded_);
-
-  std::string json_str(
-      "{ \"recos\": [ "
-      "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
-      "]}");
-  ASSERT_TRUE(LoadFromJSONString(json_str));
-  EXPECT_TRUE(observer.loaded_);
-}
-
-TEST_F(NTPSnippetsServiceTest, ObserverLoaded) {
-  std::string json_str(
-      "{ \"recos\": [ "
-      "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
-      "]}");
-  ASSERT_TRUE(LoadFromJSONString(json_str));
-
-  SnippetObserver observer;
-  ScopedObserver<NTPSnippetsService, SnippetObserver> scoped_observer(
-      &observer);
-  scoped_observer.Add(service());
-
-  EXPECT_TRUE(observer.loaded_);
 }
 
 }  // namespace ntp_snippets

@@ -122,7 +122,6 @@ NTPSnippetsService::NTPSnippetsService(
     const ParseJSONCallback& parse_json_callback)
     : pref_service_(pref_service),
       suggestions_service_(suggestions_service),
-      loaded_(false),
       file_task_runner_(file_task_runner),
       application_language_code_(application_language_code),
       scheduler_(scheduler),
@@ -175,7 +174,6 @@ void NTPSnippetsService::Init(bool enabled) {
 void NTPSnippetsService::Shutdown() {
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceShutdown(this));
-  loaded_ = false;
 }
 
 void NTPSnippetsService::FetchSnippets() {
@@ -203,8 +201,7 @@ bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
   observers_.AddObserver(observer);
-  if (loaded_)
-    observer->NTPSnippetsServiceLoaded(this);
+  observer->NTPSnippetsServiceLoaded(this);
 }
 
 void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
@@ -305,7 +302,6 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
     else
       snippets_.push_back(std::move(snippet));
   }
-  loaded_ = true;
 
   // Immediately remove any already-expired snippets. This will also notify our
   // observers and schedule the expiry timer.
