@@ -7576,6 +7576,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE" desc="Title of a dialog that informs the user that the deletion of Chrome's browsing data has been completed.">
         Cleared Chrome data
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK" desc="Button in a dialog that informs the user that the deletion of Chrome's browsing data has been completed.">
+        Ok, got it
+      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
         This clears synced data from all devices.
       </message>
