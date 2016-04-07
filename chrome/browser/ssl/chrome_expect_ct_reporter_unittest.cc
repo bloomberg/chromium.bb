@@ -10,12 +10,17 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_data_directory.h"
 #include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -250,6 +255,67 @@ void CheckExpectCTReport(const std::string& serialized_report,
       *report_invalid_scts, *report_valid_scts));
 }
 
+// A test network delegate that allows the user to specify a callback to
+// be run whenever a net::URLRequest is destroyed.
+class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
+ public:
+  TestExpectCTNetworkDelegate()
+      : url_request_destroyed_callback_(base::Bind(&base::DoNothing)) {}
+
+  void set_url_request_destroyed_callback(const base::Closure& callback) {
+    url_request_destroyed_callback_ = callback;
+  }
+
+  // net::NetworkDelegateImpl:
+  void OnURLRequestDestroyed(net::URLRequest* request) override {
+    url_request_destroyed_callback_.Run();
+  }
+
+ private:
+  base::Closure url_request_destroyed_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestExpectCTNetworkDelegate);
+};
+
+// A test fixture that allows tests to send a report and wait until the
+// net::URLRequest that sent the report is destroyed.
+class ChromeExpectCTReporterWaitTest : public ::testing::Test {
+ public:
+  ChromeExpectCTReporterWaitTest()
+      : context_(true),
+        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+    context_.set_network_delegate(&network_delegate_);
+    context_.Init();
+  }
+
+  void SetUp() override { net::URLRequestFailedJob::AddUrlHandler(); }
+
+  void TearDown() override {
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
+  }
+
+  net::TestURLRequestContext* context() { return &context_; }
+
+ protected:
+  void SendReport(ChromeExpectCTReporter* reporter,
+                  const net::HostPortPair& host_port,
+                  const GURL& report_uri,
+                  const net::SSLInfo& ssl_info) {
+    base::RunLoop run_loop;
+    network_delegate_.set_url_request_destroyed_callback(
+        run_loop.QuitClosure());
+    reporter->OnExpectCTFailed(host_port, report_uri, ssl_info);
+    run_loop.Run();
+  }
+
+ private:
+  TestExpectCTNetworkDelegate network_delegate_;
+  net::TestURLRequestContext context_;
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporterWaitTest);
+};
+
 void EnableFeature() {
   base::FeatureList::ClearInstanceForTesting();
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
@@ -297,6 +363,31 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
                             net::SSLInfo());
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
+}
+
+// Test that if a report fails to send, the UMA metric is recorded.
+TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
+  EnableFeature();
+  base::HistogramTester histograms;
+  const std::string histogram_name = "SSL.ExpectCTReportFailure";
+  histograms.ExpectTotalCount(histogram_name, 0);
+
+  ChromeExpectCTReporter reporter(context());
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  net::HostPortPair host_port("example.test", 443);
+  GURL report_uri(
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
+
+  SendReport(&reporter, host_port, report_uri, ssl_info);
+
+  histograms.ExpectTotalCount(histogram_name, 1);
+  histograms.ExpectBucketCount(histogram_name, net::ERR_CONNECTION_FAILED, 1);
 }
 
 // Test that a sent report has the right format.

@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -101,13 +103,20 @@ void AddValidSCT(const net::SignedCertificateTimestampAndStatus& sct_and_status,
   list->Append(std::move(list_item));
 }
 
+// Records an UMA histogram of the net errors when Expect CT reports
+// fails to send.
+void RecordUMAOnFailure(const GURL& report_uri, int net_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure", net_error);
+}
+
 }  // namespace
 
 ChromeExpectCTReporter::ChromeExpectCTReporter(
     net::URLRequestContext* request_context)
     : report_sender_(new net::CertificateReportSender(
           request_context,
-          net::CertificateReportSender::DO_NOT_SEND_COOKIES)) {}
+          net::CertificateReportSender::DO_NOT_SEND_COOKIES,
+          base::Bind(RecordUMAOnFailure))) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 
