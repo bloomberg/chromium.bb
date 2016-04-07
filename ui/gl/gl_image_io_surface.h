@@ -73,7 +73,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   unsigned program_ = 0;
   int size_location_ = -1;
   unsigned vertex_buffer_ = 0;
-  unsigned yuv_textures_[2] = {};
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };

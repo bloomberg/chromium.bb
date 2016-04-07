@@ -6,7 +6,9 @@
 
 #include <map>
 
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
@@ -227,7 +229,6 @@ void GLImageIOSurface::Destroy(bool have_context) {
     glDeleteShader(fragment_shader_);
     glDeleteBuffersARB(1, &vertex_buffer_);
     glDeleteFramebuffersEXT(1, &framebuffer_);
-    glDeleteTextures(2, yuv_textures_);
   }
   io_surface_.reset();
 }
@@ -282,6 +283,19 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     return false;
   }
 
+  // Ensure that all textures bound to IOSurfaces be destroyed before the
+  // function exits. If they are not destroyed they may cause deadlocks between
+  // VTDecompressionSession at CGLContextDestroy.
+  // https://crbug.com/598388
+  unsigned y_texture = 0;
+  glGenTextures(1, &y_texture);
+  unsigned uv_texture = 0;
+  glGenTextures(1, &uv_texture);
+  base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
+    glDeleteTextures(1, &y_texture);
+    glDeleteTextures(1, &uv_texture);
+  }));
+
   if (!framebuffer_) {
     glGenFramebuffersEXT(1, &framebuffer_);
     vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
@@ -305,10 +319,6 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
 
     glUniform1i(y_sampler_location, 0);
     glUniform1i(uv_sampler_location, 1);
-
-    glGenTextures(2, yuv_textures_);
-    DCHECK(yuv_textures_[0]);
-    DCHECK(yuv_textures_[1]);
   }
 
   CGLContextObj cgl_context =
@@ -326,7 +336,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
 
     gfx::ScopedActiveTexture active_texture0(GL_TEXTURE0);
     gfx::ScopedTextureBinder texture_y_binder(GL_TEXTURE_RECTANGLE_ARB,
-                                              yuv_textures_[0]);
+                                              y_texture);
     cgl_error = CGLTexImageIOSurface2D(
         cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RED, size_.width(),
         size_.height(), GL_RED, GL_UNSIGNED_BYTE, io_surface_.get(), 0);
@@ -338,7 +348,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     {
       gfx::ScopedActiveTexture active_texture1(GL_TEXTURE1);
       gfx::ScopedTextureBinder texture_uv_binder(GL_TEXTURE_RECTANGLE_ARB,
-                                                 yuv_textures_[1]);
+                                                 uv_texture);
       cgl_error = CGLTexImageIOSurface2D(
           cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RG, size_.width() / 2,
           size_.height() / 2, GL_RG, GL_UNSIGNED_BYTE, io_surface_.get(), 1);
