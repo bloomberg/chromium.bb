@@ -20,6 +20,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/supervised_user/experimental/safe_search_url_reporter.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
@@ -36,7 +37,6 @@
 #endif
 
 class Browser;
-class FileDownloader;
 class GoogleServiceAuthError;
 class PermissionRequestCreator;
 class Profile;
@@ -336,7 +336,8 @@ class SupervisedUserService : public KeyedService,
   // it to the URL filters.
   void LoadBlacklistFromFile(const base::FilePath& path);
 
-  void OnBlacklistDownloadDone(const base::FilePath& path, bool success);
+  void OnBlacklistDownloadDone(const base::FilePath& path,
+                               FileDownloader::Result result);
 
   void OnBlacklistLoaded();
 

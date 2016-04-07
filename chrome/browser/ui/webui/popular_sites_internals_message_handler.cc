@@ -26,7 +26,8 @@ std::string ReadFileToString(const base::FilePath& path) {
     result.clear();
   return result;
 }
-}
+
+}  // namespace
 
 PopularSitesInternalsMessageHandler::PopularSitesInternalsMessageHandler()
     : weak_ptr_factory_(this) {}
@@ -115,6 +116,8 @@ void PopularSitesInternalsMessageHandler::SendSites() {
 
   base::DictionaryValue result;
   result.Set("sites", std::move(sites_list));
+  result.SetString("country", popular_sites_->GetCountry());
+  result.SetString("version", popular_sites_->GetVersion());
   web_ui()->CallJavascriptFunction(
       "chrome.popular_sites_internals.receiveSites", result);
 }

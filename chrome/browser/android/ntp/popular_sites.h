@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
 #define CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -13,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/net/file_downloader.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -23,7 +25,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class FileDownloader;
 class Profile;
 
 // Downloads and provides a list of suggested popular sites, for display on
@@ -70,7 +71,11 @@ class PopularSites {
 
   const std::vector<Site>& sites() const { return sites_; }
 
-  const base::FilePath& local_path() const { return popular_sites_local_path_; }
+  // The country/version of the file that was last downloaded.
+  std::string GetCountry() const;
+  std::string GetVersion() const;
+
+  const base::FilePath& local_path() const { return local_path_; }
 
   // Register preferences used by this class.
   static void RegisterProfilePrefs(
@@ -78,9 +83,13 @@ class PopularSites {
 
  private:
   PopularSites(Profile* profile,
-               const GURL& url,
+               const std::string& country,
+               const std::string& version,
+               const GURL& override_url,
                bool force_download,
                const FinishedCallback& callback);
+
+  GURL GetPopularSitesURL() const;
 
   // Fetch the popular sites at the given URL. |force_download| should be true
   // if any previously downloaded site list should be overwritten.
@@ -90,7 +99,7 @@ class PopularSites {
 
   // If the download was not successful and it was not a fallback, attempt to
   // download the fallback suggestions.
-  void OnDownloadDone(bool success, bool is_fallback);
+  void OnDownloadDone(bool is_fallback, FileDownloader::Result result);
 
   void ParseSiteList(const base::FilePath& path);
   void OnJsonParsed(scoped_ptr<std::vector<Site>> sites);
@@ -98,8 +107,10 @@ class PopularSites {
   FinishedCallback callback_;
   scoped_ptr<FileDownloader> downloader_;
   std::vector<Site> sites_;
+  std::string pending_country_;
+  std::string pending_version_;
 
-  base::FilePath popular_sites_local_path_;
+  base::FilePath local_path_;
 
   Profile* profile_;
 

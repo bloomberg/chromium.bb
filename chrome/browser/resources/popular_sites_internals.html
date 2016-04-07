@@ -48,14 +48,28 @@ found in the LICENSE file.
     </table>
   </div>
 
-  <div id="sites" class="section">
+  <div class="section">
+    <h2>Info</h2>
+    <table class="section-details">
+      <tr>
+        <td class="detail">Country</td>
+        <td class="value" jscontent="country"></td>
+      </tr>
+      <tr>
+        <td class="detail">Version</td>
+        <td class="value" jscontent="version"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
     <h2>Sites</h2>
     <table class="section-details">
       <tr jsselect="sites">
         <td class="detail" jscontent="title"></td>
         <td class="value" jscontent="url"></td>
       </tr>
-      <tr jsskip = true>
+      <tr jsskip="true">
         <td class="detail">
           <input id="view-json" type="submit" value="View JSON">
         </td>

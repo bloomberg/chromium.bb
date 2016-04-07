@@ -32,7 +32,7 @@ cr.define('chrome.popular_sites_internals', function() {
   }
 
   function receiveSites(sites) {
-    jstProcess(new JsEvalContext(sites), $('sites'));
+    jstProcess(new JsEvalContext(sites), $('info'));
     // Also clear the json string, since it's likely stale now.
     $('json-value').textContent = '';
   }

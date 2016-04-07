@@ -58,7 +58,7 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!status.is_success()) {
     DLOG(WARNING) << "URLRequestStatus error " << status.error()
         << " while trying to download " << source->GetURL().spec();
-    callback_.Run(false);
+    callback_.Run(FAILED);
     return;
   }
 
@@ -66,14 +66,14 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   if (response_code != net::HTTP_OK) {
     DLOG(WARNING) << "HTTP error " << response_code
         << " while trying to download " << source->GetURL().spec();
-    callback_.Run(false);
+    callback_.Run(FAILED);
     return;
   }
 
   base::FilePath response_path;
   bool success = source->GetResponseAsFilePath(false, &response_path);
   if (!success) {
-    callback_.Run(false);
+    callback_.Run(FAILED);
     return;
   }
 
@@ -89,7 +89,7 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void FileDownloader::OnFileExistsCheckDone(bool exists) {
   if (exists)
-    callback_.Run(true);
+    callback_.Run(EXISTS);
   else
     fetcher_->Start();
 }
@@ -100,5 +100,5 @@ void FileDownloader::OnFileMoveDone(bool success) {
                   << local_path_.LossyDisplayName();
   }
 
-  callback_.Run(success);
+  callback_.Run(success ? DOWNLOADED : FAILED);
 }

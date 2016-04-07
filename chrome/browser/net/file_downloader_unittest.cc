@@ -34,7 +34,7 @@ class FileDownloaderTest : public testing::Test {
     ASSERT_FALSE(base::PathExists(path_));
   }
 
-  MOCK_METHOD1(OnDownloadFinished, void(bool success));
+  MOCK_METHOD1(OnDownloadFinished, void(FileDownloader::Result));
 
  protected:
   const base::FilePath& path() const { return path_; }
@@ -57,12 +57,12 @@ class FileDownloaderTest : public testing::Test {
         net::URLRequestStatus::SUCCESS);
   }
 
-  void Download(bool overwrite, bool expect_success) {
+  void Download(bool overwrite, FileDownloader::Result expected_result) {
     FileDownloader downloader(
         GURL(kURL), path_, overwrite, request_context_.get(),
         base::Bind(&FileDownloaderTest::OnDownloadFinished,
                    base::Unretained(this)));
-    EXPECT_CALL(*this, OnDownloadFinished(expect_success));
+    EXPECT_CALL(*this, OnDownloadFinished(expected_result));
     // Wait for the FileExists check to happen if necessary.
     if (!overwrite)
       content::BrowserThread::GetBlockingPool()->FlushForTesting();
@@ -84,7 +84,7 @@ class FileDownloaderTest : public testing::Test {
 
 TEST_F(FileDownloaderTest, Success) {
   SetValidResponse();
-  Download(true, true);
+  Download(true, FileDownloader::DOWNLOADED);
   EXPECT_TRUE(base::PathExists(path()));
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(path(), &contents));
@@ -93,20 +93,20 @@ TEST_F(FileDownloaderTest, Success) {
 
 TEST_F(FileDownloaderTest, Failure) {
   SetFailedResponse();
-  Download(true, false);
+  Download(true, FileDownloader::FAILED);
   EXPECT_FALSE(base::PathExists(path()));
 }
 
 TEST_F(FileDownloaderTest, Overwrite) {
   SetValidResponse();
-  Download(true, true);
+  Download(true, FileDownloader::DOWNLOADED);
   ASSERT_TRUE(base::PathExists(path()));
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(path(), &contents));
   ASSERT_EQ(std::string(kFileContents1), contents);
 
   SetValidResponse2();
-  Download(true, true);
+  Download(true, FileDownloader::DOWNLOADED);
   // The file should have been overwritten with the new contents.
   EXPECT_TRUE(base::PathExists(path()));
   ASSERT_TRUE(base::ReadFileToString(path(), &contents));
@@ -115,14 +115,14 @@ TEST_F(FileDownloaderTest, Overwrite) {
 
 TEST_F(FileDownloaderTest, DontOverwrite) {
   SetValidResponse();
-  Download(true, true);
+  Download(true, FileDownloader::DOWNLOADED);
   ASSERT_TRUE(base::PathExists(path()));
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(path(), &contents));
   EXPECT_EQ(std::string(kFileContents1), contents);
 
   SetValidResponse2();
-  Download(false, true);
+  Download(false, FileDownloader::EXISTS);
   // The file should still have the old contents.
   EXPECT_TRUE(base::PathExists(path()));
   ASSERT_TRUE(base::ReadFileToString(path(), &contents));

@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
-#include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -853,10 +852,11 @@ void SupervisedUserService::LoadBlacklistFromFile(const base::FilePath& path) {
                  base::Unretained(this)));
 }
 
-void SupervisedUserService::OnBlacklistDownloadDone(const base::FilePath& path,
-                                                    bool success) {
+void SupervisedUserService::OnBlacklistDownloadDone(
+    const base::FilePath& path,
+    FileDownloader::Result result) {
   DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
-  if (success) {
+  if (FileDownloader::IsSuccess(result)) {
     LoadBlacklistFromFile(path);
   } else {
     LOG(WARNING) << "Blacklist download failed";

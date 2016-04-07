@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -36,14 +35,16 @@ using content::BrowserThread;
 
 namespace {
 
-const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
-const char kPopularSitesServerFilenameFormat[] = "suggested_sites_%s_%s.json";
+const char kPopularSitesURLFormat[] =
+    "https://www.gstatic.com/chrome/ntp/suggested_sites_%s_%s.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "5";
 const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 const int kPopularSitesRedownloadIntervalHours = 24;
 
 const char kPopularSitesLastDownloadPref[] = "popular_sites_last_download";
+const char kPopularSitesCountryPref[] = "popular_sites_country";
+const char kPopularSitesVersionPref[] = "popular_sites_version";
 
 // Extract the country from the default search engine if the default search
 // engine is Google.
@@ -92,7 +93,11 @@ std::string GetVariationsServiceCountry() {
 // Google is the default search engine set. If Google is not the default search
 // engine use the country provided by VariationsService. Fallback to a default
 // if we can't make an educated guess.
-std::string GetCountryCode(Profile* profile) {
+std::string GetCountryToUse(Profile* profile,
+                            const std::string& override_country) {
+  if (!override_country.empty())
+    return override_country;
+
   std::string country_code = GetDefaultSearchEngineCountryCode(profile);
 
   if (country_code.empty())
@@ -104,30 +109,10 @@ std::string GetCountryCode(Profile* profile) {
   return base::ToUpperASCII(country_code);
 }
 
-std::string GetPopularSitesServerFilename(
-    Profile* profile,
-    const std::string& override_country,
-    const std::string& override_version) {
-  std::string country =
-      !override_country.empty() ? override_country : GetCountryCode(profile);
-  std::string version = !override_version.empty() ? override_version
-                                                  : kPopularSitesDefaultVersion;
-  return base::StringPrintf(kPopularSitesServerFilenameFormat,
-                            country.c_str(), version.c_str());
-}
-
-GURL GetPopularSitesURL(Profile* profile,
-                        const std::string& override_country,
-                        const std::string& override_version) {
-  return GURL(base::StringPrintf(
-      kPopularSitesURLFormat,
-      GetPopularSitesServerFilename(profile, override_country, override_version)
-          .c_str()));
-}
-
-GURL GetPopularSitesFallbackURL(Profile* profile) {
-  return GetPopularSitesURL(profile, kPopularSitesDefaultCountryCode,
-                            kPopularSitesDefaultVersion);
+std::string GetVersionToUse(const std::string& override_version) {
+  if (!override_version.empty())
+    return override_version;
+  return kPopularSitesDefaultVersion;
 }
 
 base::FilePath GetPopularSitesPath() {
@@ -198,30 +183,46 @@ PopularSites::PopularSites(Profile* profile,
                            bool force_download,
                            const FinishedCallback& callback)
     : PopularSites(profile,
-                   GetPopularSitesURL(profile, override_country,
-                                      override_version),
+                   GetCountryToUse(profile, override_country),
+                   GetVersionToUse(override_version),
+                   GURL(),
                    force_download,
                    callback) {}
 
 PopularSites::PopularSites(Profile* profile,
                            const GURL& url,
                            const FinishedCallback& callback)
-    : PopularSites(profile, url, true, callback) {}
+    : PopularSites(profile, std::string(), std::string(), url, true, callback) {
+}
 
 PopularSites::~PopularSites() {}
+
+std::string PopularSites::GetCountry() const {
+  return profile_->GetPrefs()->GetString(kPopularSitesCountryPref);
+}
+
+std::string PopularSites::GetVersion() const {
+  return profile_->GetPrefs()->GetString(kPopularSitesVersionPref);
+}
 
 // static
 void PopularSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
+  user_prefs->RegisterStringPref(kPopularSitesCountryPref, std::string());
+  user_prefs->RegisterStringPref(kPopularSitesVersionPref, std::string());
 }
 
 PopularSites::PopularSites(Profile* profile,
-                           const GURL& url,
+                           const std::string& country,
+                           const std::string& version,
+                           const GURL& override_url,
                            bool force_download,
                            const FinishedCallback& callback)
     : callback_(callback),
-      popular_sites_local_path_(GetPopularSitesPath()),
+      pending_country_(country),
+      pending_version_(version),
+      local_path_(GetPopularSitesPath()),
       profile_(profile),
       weak_ptr_factory_(this) {
   const base::Time last_download_time = base::Time::FromInternalValue(
@@ -235,35 +236,58 @@ PopularSites::PopularSites(Profile* profile,
   const bool should_redownload_if_exists =
       force_download || download_time_is_future ||
       (time_since_last_download > redownload_interval);
+  // TODO(treib): If country/version don't match what we have, we should
+  // probably also redownload?
 
-  FetchPopularSites(url, should_redownload_if_exists, false /* is_fallback */);
+  FetchPopularSites(
+      override_url.is_valid() ? override_url : GetPopularSitesURL(),
+      should_redownload_if_exists, false /* is_fallback */);
+}
+
+GURL PopularSites::GetPopularSitesURL() const {
+  return GURL(base::StringPrintf(kPopularSitesURLFormat,
+                                 pending_country_.c_str(),
+                                 pending_version_.c_str()));
 }
 
 void PopularSites::FetchPopularSites(const GURL& url,
                                      bool force_download,
                                      bool is_fallback) {
-  downloader_.reset(
-      new FileDownloader(url, popular_sites_local_path_, force_download,
-                         profile_->GetRequestContext(),
-                         base::Bind(&PopularSites::OnDownloadDone,
-                                    base::Unretained(this), is_fallback)));
+  downloader_.reset(new FileDownloader(
+      url, local_path_, force_download, profile_->GetRequestContext(),
+      base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this),
+                 is_fallback)));
 }
 
-void PopularSites::OnDownloadDone(bool is_fallback, bool success) {
+void PopularSites::OnDownloadDone(bool is_fallback,
+                                  FileDownloader::Result result) {
   downloader_.reset();
-  if (success) {
-    profile_->GetPrefs()->SetInt64(kPopularSitesLastDownloadPref,
-                                   base::Time::Now().ToInternalValue());
-    ParseSiteList(popular_sites_local_path_);
-  } else if (!is_fallback) {
-    DLOG(WARNING) << "Download country site list failed";
-    // It is fine to force the download as Fallback is only triggered after a
-    // failed download.
-    FetchPopularSites(GetPopularSitesFallbackURL(profile_),
-                      true /* force_download */, true /* is_fallback */);
-  } else {
-    DLOG(WARNING) << "Download fallback site list failed";
-    callback_.Run(false);
+  PrefService* prefs = profile_->GetPrefs();
+  switch (result) {
+    case FileDownloader::DOWNLOADED:
+      prefs->SetInt64(kPopularSitesLastDownloadPref,
+                      base::Time::Now().ToInternalValue());
+      prefs->SetString(kPopularSitesCountryPref, pending_country_);
+      prefs->SetString(kPopularSitesVersionPref, pending_version_);
+      ParseSiteList(local_path_);
+      break;
+    case FileDownloader::EXISTS:
+      ParseSiteList(local_path_);
+      break;
+    case FileDownloader::FAILED:
+      if (!is_fallback) {
+        DLOG(WARNING) << "Download country site list failed";
+        pending_country_ = kPopularSitesDefaultCountryCode;
+        pending_version_ = kPopularSitesDefaultVersion;
+        // It is fine to force the download as Fallback is only triggered after
+        // a failed download.
+        FetchPopularSites(GetPopularSitesURL(), true /* force_download */,
+                          true /* is_fallback */);
+      } else {
+        DLOG(WARNING) << "Download fallback site list failed";
+        callback_.Run(false);
+      }
+      break;
   }
 }
 

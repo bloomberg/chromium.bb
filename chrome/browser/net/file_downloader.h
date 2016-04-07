@@ -25,7 +25,15 @@ class GURL;
 // downloading anything.
 class FileDownloader : public net::URLFetcherDelegate {
  public:
-  typedef base::Callback<void(bool /* success */)> DownloadFinishedCallback;
+  enum Result {
+    // The file was successfully downloaded.
+    DOWNLOADED,
+    // A local file at the given path already existed and was kept.
+    EXISTS,
+    // Downloading failed.
+    FAILED
+  };
+  using DownloadFinishedCallback = base::Callback<void(Result)>;
 
   // Directly starts the download (if necessary) and runs |callback| when done.
   // If the instance is destroyed before it is finished, |callback| is not run.
@@ -35,6 +43,8 @@ class FileDownloader : public net::URLFetcherDelegate {
                  net::URLRequestContextGetter* request_context,
                  const DownloadFinishedCallback& callback);
   ~FileDownloader() override;
+
+  static bool IsSuccess(Result result) { return result != FAILED; }
 
  private:
   // net::URLFetcherDelegate implementation.
