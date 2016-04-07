@@ -89,8 +89,10 @@ void HistogramController::GetHistogramDataFromChildProcesses(
       continue;
 
     ++pending_processes;
-    if (!iter.Send(new ChildProcessMsg_GetChildHistogramData(sequence_number)))
+    if (!iter.Send(new ChildProcessMsg_GetChildNonPersistentHistogramData(
+            sequence_number))) {
       --pending_processes;
+    }
   }
 
   BrowserThread::PostTask(
@@ -112,7 +114,8 @@ void HistogramController::GetHistogramData(int sequence_number) {
        !it.IsAtEnd(); it.Advance()) {
     ++pending_processes;
     if (!it.GetCurrentValue()->Send(
-            new ChildProcessMsg_GetChildHistogramData(sequence_number))) {
+            new ChildProcessMsg_GetChildNonPersistentHistogramData(
+                sequence_number))) {
       --pending_processes;
     }
   }

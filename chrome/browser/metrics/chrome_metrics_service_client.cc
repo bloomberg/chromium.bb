@@ -24,6 +24,7 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -356,6 +357,10 @@ void ChromeMetricsServiceClient::Initialize() {
 
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_manager_, this, g_browser_process->local_state()));
+
+  // Gets access to persistent metrics shared by sub-processes.
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new SubprocessMetricsProvider()));
 
   // Register metrics providers.
 #if defined(ENABLE_EXTENSIONS)

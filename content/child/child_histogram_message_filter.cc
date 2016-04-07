@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_delta_serialization.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/single_thread_task_runner.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"
@@ -35,11 +36,27 @@ bool ChildHistogramMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChildHistogramMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildHistogramData,
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetHistogramMemory,
+                        OnSetHistogramMemory)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildNonPersistentHistogramData,
                         OnGetChildHistogramData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ChildHistogramMessageFilter::OnSetHistogramMemory(
+    const base::SharedMemoryHandle& memory_handle,
+    int memory_size) {
+  // This message must be received only once. Multiple calls to create a global
+  // allocator will cause a CHECK() failure.
+  base::GlobalHistogramAllocator::CreateWithSharedMemoryHandle(memory_handle,
+                                                               memory_size);
+
+  base::PersistentHistogramAllocator* global_allocator =
+      base::GlobalHistogramAllocator::Get();
+  if (global_allocator)
+    global_allocator->CreateTrackingHistograms(global_allocator->Name());
 }
 
 void ChildHistogramMessageFilter::SendHistograms(int sequence_number) {

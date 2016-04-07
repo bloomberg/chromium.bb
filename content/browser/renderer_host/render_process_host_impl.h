@@ -158,6 +158,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void NotifyTimezoneChange(const std::string& timezone) override;
   ServiceRegistry* GetServiceRegistry() override;
+  scoped_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+      override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool SubscribeUniformEnabled() const override;
   void OnAddSubscription(unsigned int target) override;
@@ -330,6 +332,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // appropriate. Should be called after any of the involved data members
   // change.
   void UpdateProcessPriority();
+
+  // Creates a PersistentMemoryAllocator and shares it with the renderer
+  // process for it to store histograms from that process. The allocator is
+  // available for extraction by a SubprocesMetricsProvider in order to
+  // report those histograms to UMA.
+  void CreateSharedRendererHistogramAllocator();
 
   // Handle termination of our process.
   void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
@@ -508,6 +516,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Whether or not the CHROMIUM_subscribe_uniform WebGL extension is enabled
   bool subscribe_uniform_enabled_;
+
+  // The memory allocator, if any, in which the renderer will write its metrics.
+  scoped_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
 
   bool channel_connected_;
   bool sent_render_process_ready_;
