@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <iterator>
+#include <vector>
+
 // COURGETTE_HISTOGRAM_TARGETS prints out a histogram of how frequently
 // different target addresses are referenced. Purely for debugging.
 #define COURGETTE_HISTOGRAM_TARGETS 0
@@ -88,6 +91,53 @@ class Label {
   RVA rva_ = kUnassignedRVA;  // Address referred to by the label.
   int index_ = kNoIndex;  // Index of address in address table.
   int32_t count_ = 0;
+};
+
+// An interface for sequential visit of RVAs.
+// Use case: Translating from RVA locations to RVA targets is platform-specific,
+// and works differently for abs32 vs. rel32. A function that sequentually
+// visits RVA targets only requires an RvaVisitor. The caller can provide an
+// implementation that stores a fixed list of RVA locations, and translates each
+// to the matching RVA target on demand without extra storage.
+class RvaVisitor {
+ public:
+  // Returns the number of remaining RVAs to visit.
+  virtual size_t Remaining() const = 0;
+
+  // Returns the current RVA.
+  virtual RVA Get() const = 0;
+
+  // Advances to the next RVA.
+  virtual void Next() = 0;
+};
+
+// RvaVisitor whose data are backed by std::vector<T>. Translating from T to RVA
+// is should be implemented in Get().
+template <typename T>
+class VectorRvaVisitor : public RvaVisitor {
+ public:
+  // Assumes |v| does not change for the lifetime of this instance.
+  explicit VectorRvaVisitor(const std::vector<T>& v)
+      : it_(v.begin()), end_(v.end()) {}
+
+  // RvaVisitor interfaces.
+  size_t Remaining() const override { return std::distance(it_, end_); }
+  virtual RVA Get() const override = 0;
+  void Next() override { ++it_; }
+
+ protected:
+  typename std::vector<T>::const_iterator it_;
+  typename std::vector<T>::const_iterator end_;
+};
+
+// RvaVisitor that simply stores a list of RVAs for traversal. For testing.
+class TrivialRvaVisitor : public VectorRvaVisitor<RVA> {
+ public:
+  explicit TrivialRvaVisitor(const std::vector<RVA>& rvas)
+      : VectorRvaVisitor<RVA>(rvas) {}
+
+  // VectorRvaVisitor<RVA> interfaces.
+  RVA Get() const override { return *it_; }
 };
 
 // These helper functions avoid the need for casts in the main code.

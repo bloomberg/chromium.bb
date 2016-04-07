@@ -20,66 +20,11 @@ namespace courgette {
 using LabelVector = std::vector<Label>;
 using RVAToLabel = std::map<RVA, Label*>;
 
-// A container to store and manage Label instances.
+// A container to store and manage Label instances, dedicated to reducing peak
+// memory usage. To this end we preallocate Label instances in bulk, and
+// carefully control transient memory usage when initializing Labels.
 class LabelManager {
  public:
-  virtual ~LabelManager();
-
-  // Returns an exclusive upper bound for all existing indexes in |labels|.
-  static int GetIndexBound(const LabelVector& labels);
-
-  // Returns an exclusive upper bound for all existing indexes in |labels_map|.
-  static int GetIndexBound(const RVAToLabel& labels_map);
-
-  // Returns the number of Label instances stored.
-  virtual size_t Size() const = 0;
-
-  // Efficiently searches for a Label that targets |rva|. Returns the pointer to
-  // the stored Label instance if found, or null otherwise. Non-const to support
-  // implementations that allocate-on-read.
-  virtual Label* Find(RVA rva) = 0;
-
-  // Removes Label instances whose |count_| is less than |count_threshold|.
-  virtual void RemoveUnderusedLabels(int32_t count_threshold) = 0;
-
-  // Resets all indexes to an unassigned state.
-  virtual void UnassignIndexes() = 0;
-
-  // Assigns indexes to successive integers from 0, ordered by RVA.
-  virtual void DefaultAssignIndexes() = 0;
-
-  // Assigns indexes to any Label instances that don't have one yet.
-  virtual void AssignRemainingIndexes() = 0;
-
- protected:
-  LabelManager();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LabelManager);
-};
-
-// An implementation of LabelManager dedicated to reducing peak memory usage.
-// To this end we preallocate Label instances in bulk, and carefully control
-// transient memory usage when initializing Labels.
-class LabelManagerImpl : public LabelManager {
- public:
-  // An adaptor to sequentially traverse multiple RVAs. This is useful for RVA
-  // translation without extra storage. For example, we might have a stored list
-  // of RVA locations, but we want to traverse the matching RVA targets.
-  class RvaVisitor {
-   public:
-    virtual ~RvaVisitor();
-
-    // Returns the number of remaining RVAs to visit.
-    virtual size_t Remaining() const = 0;
-
-    // Returns the current RVA.
-    virtual RVA Get() const = 0;
-
-    // Advances to the next RVA.
-    virtual void Next() = 0;
-  };
-
   // A helper class to heuristically complete index assignment for a list of
   // Labels that have partially assigned indexes.
   // Goal: An address table compresses best when each index is associated with
@@ -104,7 +49,7 @@ class LabelManagerImpl : public LabelManager {
   // distances between successive RVAs.
   class SimpleIndexAssigner {
    public:
-    SimpleIndexAssigner(LabelVector* labels);
+    explicit SimpleIndexAssigner(LabelVector* labels);
     ~SimpleIndexAssigner();
 
     // Scans forward to assign successive indexes to Labels, using existing
@@ -120,7 +65,7 @@ class LabelManagerImpl : public LabelManager {
     void DoInFill();
 
    private:
-    // List of Labels to process. Owned by caller.
+    // The target LabelVector, owned by the caller.
     LabelVector* labels_;
 
     // A bound on indexes.
@@ -132,16 +77,35 @@ class LabelManagerImpl : public LabelManager {
     DISALLOW_COPY_AND_ASSIGN(SimpleIndexAssigner);
   };
 
-  LabelManagerImpl();
-  ~LabelManagerImpl() override;
+  LabelManager();
+  ~LabelManager();
 
-  // LabelManager interfaces.
-  size_t Size() const override;
-  Label* Find(RVA rva) override;
-  void RemoveUnderusedLabels(int32_t count_threshold) override;
-  void UnassignIndexes() override;
-  void DefaultAssignIndexes() override;
-  void AssignRemainingIndexes() override;
+  // Returns an exclusive upper bound for all existing indexes in |labels_map|.
+  // TODO(huangs): Remove once all callers are gone.
+  static int GetIndexBound(const RVAToLabel& labels_map);
+
+  // Returns an exclusive upper bound for all assigned indexes in |labels|.
+  static int GetLabelIndexBound(const LabelVector& labels);
+
+  // Accessor to stored Label instances.
+  const LabelVector& Labels() const { return labels_; }
+
+  // Efficiently searches for a Label that targets |rva|. Returns the pointer to
+  // the stored Label instance if found, or null otherwise. Non-const to support
+  // implementations that allocate-on-read.
+  Label* Find(RVA rva);
+
+  // Removes Label instances whose |count_| is less than |count_threshold|.
+  void RemoveUnderusedLabels(int32_t count_threshold);
+
+  // Resets all indexes to an unassigned state.
+  void UnassignIndexes();
+
+  // Assigns indexes to successive integers from 0, ordered by RVA.
+  void DefaultAssignIndexes();
+
+  // Assigns indexes to any Label instances that don't have one yet.
+  void AssignRemainingIndexes();
 
   // Populates |labels_| using RVAs from |rva_visitor|. Each distinct RVA from
   // |rva_visitor| yields a Label with |rva_| assigned as the RVA, and |count_|
@@ -149,20 +113,14 @@ class LabelManagerImpl : public LabelManager {
   void Read(RvaVisitor* rva_visitor);
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(LabelManagerTest, TrivialAssign);
+  FRIEND_TEST_ALL_PREFIXES(LabelManagerTest, AssignRemainingIndexes);
+
   // The main list of Label instances, sorted by the |rva_| member.
   LabelVector labels_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LabelManagerTest, TrivialAssign);
-  FRIEND_TEST_ALL_PREFIXES(LabelManagerTest, AssignRemainingIndexes);
-
-  // Accessor to stored Label instances. For testing only.
-  const LabelVector& Labels() const { return labels_; }
-
-  // Directly assign |labels_|. For testing only.
-  void SetLabels(const LabelVector& labels);
-
-  DISALLOW_COPY_AND_ASSIGN(LabelManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(LabelManager);
 };
 
 }  // namespace courgette

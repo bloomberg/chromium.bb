@@ -16,38 +16,11 @@
 
 namespace courgette {
 
-LabelManager::LabelManager() {}
-
-LabelManager::~LabelManager() {}
-
-// static
-int LabelManager::GetIndexBound(const LabelVector& labels) {
-  int max_index = -1;
-  for (const Label& label : labels) {
-    if (label.index_ != Label::kNoIndex)
-      max_index = std::max(max_index, label.index_);
-  }
-  return max_index + 1;
-}
-
-// static
-int LabelManager::GetIndexBound(const RVAToLabel& labels_map) {
-  int max_index = -1;
-  for (const auto& rva_and_label : labels_map) {
-    const Label& label = *rva_and_label.second;
-    if (label.index_ != Label::kNoIndex)
-      max_index = std::max(max_index, label.index_);
-  }
-  return max_index + 1;
-}
-
-LabelManagerImpl::RvaVisitor::~RvaVisitor() {}
-
-LabelManagerImpl::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
+LabelManager::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
     : labels_(labels) {
   // Initialize |num_index_| and |available_|.
   num_index_ = std::max(base::checked_cast<int>(labels_->size()),
-                        LabelManager::GetIndexBound(*labels_));
+                        GetLabelIndexBound(*labels_));
   available_.resize(num_index_, true);
   size_t used = 0;
   for (const Label& label : *labels_) {
@@ -59,9 +32,9 @@ LabelManagerImpl::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
   VLOG(1) << used << " of " << labels_->size() << " labels pre-assigned.";
 }
 
-LabelManagerImpl::SimpleIndexAssigner::~SimpleIndexAssigner() {}
+LabelManager::SimpleIndexAssigner::~SimpleIndexAssigner() {}
 
-void LabelManagerImpl::SimpleIndexAssigner::DoForwardFill() {
+void LabelManager::SimpleIndexAssigner::DoForwardFill() {
   size_t count = 0;
   // Inside the loop, if |prev_index| == |kNoIndex| then we try to assign 0.
   // This allows 0 (if unused) to be assigned in middle of |labels_|.
@@ -80,7 +53,7 @@ void LabelManagerImpl::SimpleIndexAssigner::DoForwardFill() {
   VLOG(1) << "  fill forward " << count;
 }
 
-void LabelManagerImpl::SimpleIndexAssigner::DoBackwardFill() {
+void LabelManager::SimpleIndexAssigner::DoBackwardFill() {
   size_t count = 0;
   // This is asymmetric from DoForwardFill(), to preserve old behavior.
   // Inside the loop, if |prev_index| == |kNoIndex| then we skip assignment.
@@ -102,7 +75,7 @@ void LabelManagerImpl::SimpleIndexAssigner::DoBackwardFill() {
   VLOG(1) << "  fill backward " << count;
 }
 
-void LabelManagerImpl::SimpleIndexAssigner::DoInFill() {
+void LabelManager::SimpleIndexAssigner::DoInFill() {
   size_t count = 0;
   int index = 0;
   for (Label& label : *labels_) {
@@ -118,9 +91,71 @@ void LabelManagerImpl::SimpleIndexAssigner::DoInFill() {
   VLOG(1) << "  infill " << count;
 }
 
-LabelManagerImpl::LabelManagerImpl() {}
+LabelManager::LabelManager() {}
 
-LabelManagerImpl::~LabelManagerImpl() {}
+LabelManager::~LabelManager() {}
+
+// static
+int LabelManager::GetIndexBound(const RVAToLabel& labels_map) {
+  int max_index = -1;
+  for (const auto& rva_and_label : labels_map) {
+    const Label& label = *rva_and_label.second;
+    if (label.index_ != Label::kNoIndex)
+      max_index = std::max(max_index, label.index_);
+  }
+  return max_index + 1;
+}
+
+// static
+int LabelManager::GetLabelIndexBound(const LabelVector& labels) {
+  int max_index = -1;
+  for (const Label& label : labels) {
+    if (label.index_ != Label::kNoIndex)
+      max_index = std::max(max_index, label.index_);
+  }
+  return max_index + 1;
+}
+
+// Uses binary search to find |rva|.
+Label* LabelManager::Find(RVA rva) {
+  auto it = std::lower_bound(
+      labels_.begin(), labels_.end(), Label(rva),
+      [](const Label& l1, const Label& l2) { return l1.rva_ < l2.rva_; });
+  return it == labels_.end() || it->rva_ != rva ? nullptr : &(*it);
+}
+
+void LabelManager::RemoveUnderusedLabels(int32_t count_threshold) {
+  if (count_threshold <= 0)
+    return;
+  labels_.erase(std::remove_if(labels_.begin(), labels_.end(),
+                               [count_threshold](const Label& label) {
+                                 return label.count_ < count_threshold;
+                               }),
+                labels_.end());
+  // Not shrinking |labels_|, since this may cause reallocation.
+}
+
+void LabelManager::UnassignIndexes() {
+  for (Label& label : labels_)
+    label.index_ = Label::kNoIndex;
+}
+
+void LabelManager::DefaultAssignIndexes() {
+  int cur_index = 0;
+  for (Label& label : labels_) {
+    CHECK_EQ(Label::kNoIndex, label.index_);
+    label.index_ = cur_index++;
+  }
+}
+
+void LabelManager::AssignRemainingIndexes() {
+  // This adds some memory overhead, about 1 bit per Label (more if indexes >=
+  // |labels_.size()| get used).
+  SimpleIndexAssigner assigner(&labels_);
+  assigner.DoForwardFill();
+  assigner.DoBackwardFill();
+  assigner.DoInFill();
+}
 
 // We wish to minimize peak memory usage here. Analysis: Let
 //   m = number of (RVA) elements in |rva_visitor|,
@@ -132,7 +167,7 @@ LabelManagerImpl::~LabelManagerImpl() {}
 // For our typical usage (i.e. Chrome) we see m = ~4n, so we use 16 * n bytes of
 // extra contiguous memory during computation. Assuming memory fragmentation
 // would not be an issue, this is much better than using std::map.
-void LabelManagerImpl::Read(RvaVisitor* rva_visitor) {
+void LabelManager::Read(RvaVisitor* rva_visitor) {
   // Write all values in |rva_visitor| to |rvas|.
   size_t num_rva = rva_visitor->Remaining();
   std::vector<RVA> rvas(num_rva);
@@ -156,55 +191,6 @@ void LabelManagerImpl::Read(RvaVisitor* rva_visitor) {
     base::CheckedNumeric<uint32_t> count = it.repeat();
     labels_.back().count_ = count.ValueOrDie();
   }
-}
-
-size_t LabelManagerImpl::Size() const {
-  return labels_.size();
-}
-
-// Uses binary search to find |rva|.
-Label* LabelManagerImpl::Find(RVA rva) {
-  auto it = std::lower_bound(
-      labels_.begin(), labels_.end(), Label(rva),
-      [](const Label& l1, const Label& l2) { return l1.rva_ < l2.rva_; });
-  return it == labels_.end() || it->rva_ != rva ? nullptr : &(*it);
-}
-
-void LabelManagerImpl::RemoveUnderusedLabels(int32_t count_threshold) {
-  if (count_threshold <= 0)
-    return;
-  labels_.erase(std::remove_if(labels_.begin(), labels_.end(),
-                               [count_threshold](const Label& label) {
-                                 return label.count_ < count_threshold;
-                               }),
-                labels_.end());
-  // Not shrinking |labels_|, since this may cause reallocation.
-}
-
-void LabelManagerImpl::UnassignIndexes() {
-  for (Label& label : labels_)
-    label.index_ = Label::kNoIndex;
-}
-
-void LabelManagerImpl::DefaultAssignIndexes() {
-  int cur_index = 0;
-  for (Label& label : labels_) {
-    CHECK_EQ(Label::kNoIndex, label.index_);
-    label.index_ = cur_index++;
-  }
-}
-
-void LabelManagerImpl::AssignRemainingIndexes() {
-  // This adds some memory overhead, about 1 bit per Label (more if indexes >=
-  // |labels_.size()| get used).
-  SimpleIndexAssigner assigner(&labels_);
-  assigner.DoForwardFill();
-  assigner.DoBackwardFill();
-  assigner.DoInFill();
-}
-
-void LabelManagerImpl::SetLabels(const LabelVector& labels) {
-  labels_ = labels;
 }
 
 }  // namespace courgette
