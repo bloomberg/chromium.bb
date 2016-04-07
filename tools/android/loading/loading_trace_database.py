@@ -7,8 +7,8 @@
 import json
 from google_storage_util import ReadFromGoogleStorage
 
-class LoadingTraceDatabase:
 
+class LoadingTraceDatabase(object):
   def __init__(self, traces_dict):
     """traces_dict is a dictionary mapping filenames of traces to metadata
        about those traces."""

@@ -346,7 +346,7 @@ class LocalChromeController(ChromeControllerBase):
     the value of stdout/stderr based on the value of OPTIONS.local_noisy."""
     stdout = None if OPTIONS.local_noisy else file('/dev/null', 'w')
     stderr = stdout
-    return self.OpenWithRedirection(self, stdout, stderr)
+    return self.OpenWithRedirection(stdout, stderr)
 
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
