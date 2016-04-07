@@ -249,9 +249,9 @@ void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(Pas
         m_cropRect = IntRect(IntPoint(), image->size());
     }
 
-    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
+    ImageBitmap* imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
     if (imageBitmap && imageBitmap->bitmapImage()) {
-        m_resolver->resolve(imageBitmap.release());
+        m_resolver->resolve(imageBitmap);
     } else {
         rejectPromise();
         return;
