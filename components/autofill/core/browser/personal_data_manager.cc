@@ -1374,7 +1374,7 @@ bool PersonalDataManager::ImportCreditCard(
 
   // Reject the credit card if we did not detect enough filled credit card
   // fields (such as valid number, month, year).
-  if (!candidate_credit_card.IsComplete())
+  if (!candidate_credit_card.IsValid())
     return false;
 
   // Attempt to merge with an existing credit card. Don't present a prompt if we

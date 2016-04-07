@@ -231,7 +231,7 @@ class PersonalDataManagerTest : public testing::Test {
                             "https://www.example.com");
     test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
                             "347666888555" /* American Express */, "04",
-                            "2015");
+                            "3999");
     credit_card0.set_use_count(3);
     credit_card0.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
     personal_data_->AddCreditCard(credit_card0);
@@ -242,7 +242,7 @@ class PersonalDataManagerTest : public testing::Test {
     credit_card1.set_use_date(base::Time::Now() -
                               base::TimeDelta::FromDays(10));
     test::SetCreditCardInfo(&credit_card1, "John Dillinger",
-                            "423456789012" /* Visa */, "01", "2010");
+                            "423456789012" /* Visa */, "01", "2999");
     personal_data_->AddCreditCard(credit_card1);
 
     CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
@@ -476,15 +476,15 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0,
-      "John Dillinger", "423456789012" /* Visa */, "01", "2010");
+      "John Dillinger", "423456789012" /* Visa */, "01", "2999");
 
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card1,
-      "Bonnie Parker", "518765432109" /* Mastercard */, "12", "2012");
+      "Bonnie Parker", "518765432109" /* Mastercard */, "12", "3999");
 
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card2,
-      "Clyde Barrow", "347666888555" /* American Express */, "04", "2015");
+      "Clyde Barrow", "347666888555" /* American Express */, "04", "3999");
 
   // Add two test credit cards to the database.
   personal_data_->AddCreditCard(credit_card0);
@@ -539,7 +539,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card,
-      "John Dillinger", "423456789012" /* Visa */, "01", "2010");
+      "John Dillinger", "423456789012" /* Visa */, "01", "2999");
   EXPECT_FALSE(credit_card.IsVerified());
 
   // Add the data to the database.
@@ -621,7 +621,7 @@ TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
 
@@ -651,17 +651,17 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "9012" /* Visa */, "01", "2010");
+                          "9012" /* Visa */, "01", "2999");
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2012");
+                          "2109" /* Mastercard */, "12", "3999");
   server_cards.back().SetTypeForMaskedCard(kMasterCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -729,11 +729,11 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
 
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0,
-      "John Dillinger", "423456789012" /* Visa */, "01", "2010");
+      "John Dillinger", "423456789012" /* Visa */, "01", "2999");
 
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card1,
-      "Bonnie Parker", "518765432109" /* Mastercard */, "12", "2012");
+      "Bonnie Parker", "518765432109" /* Mastercard */, "12", "3999");
 
   // Add two test profiles to the database.
   personal_data_->AddProfile(profile0);
@@ -1955,7 +1955,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_Valid) {
   // Add a single valid credit card form.
   FormData form;
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -1971,7 +1971,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_Valid) {
 
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
-                          "2011");
+                          "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1981,7 +1981,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_Valid) {
 TEST_F(PersonalDataManagerTest, ImportCreditCard_Invalid) {
   FormData form;
   AddFullCreditCardForm(&form, "Jim Johansen", "1000000000000000", "02",
-                        "2012");
+                        "3999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -2003,7 +2003,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MonthSelectInvalidText) {
   // Add a single valid credit card form with an invalid option value.
   FormData form;
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111",
-                        "Feb (2)", "2011");
+                        "Feb (2)", "2999");
   // Add option values and contents to the expiration month field.
   ASSERT_EQ(ASCIIToUTF16("exp_month"), form.fields[2].name);
   std::vector<base::string16> values;
@@ -2032,7 +2032,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MonthSelectInvalidText) {
   // See that the invalid option text was converted to the right value.
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "02",
-                          "2011");
+                          "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -2042,7 +2042,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_TwoValidCards) {
   // Start with a single valid credit card form.
   FormData form1;
   AddFullCreditCardForm(&form1, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
@@ -2058,14 +2058,14 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_TwoValidCards) {
 
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
-                          "2011");
+                          "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 
   // Add a second different valid credit card.
   FormData form2;
-  AddFullCreditCardForm(&form2, "", "5500 0000 0000 0004", "02", "2012");
+  AddFullCreditCardForm(&form2, "", "5500 0000 0000 0004", "02", "3999");
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
@@ -2080,7 +2080,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_TwoValidCards) {
   base::MessageLoop::current()->Run();
 
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetCreditCardInfo(&expected2, "", "5500000000000004", "02", "2012");
+  test::SetCreditCardInfo(&expected2, "", "5500000000000004", "02", "3999");
   std::vector<CreditCard*> cards;
   cards.push_back(&expected);
   cards.push_back(&expected2);
@@ -2095,14 +2095,14 @@ TEST_F(PersonalDataManagerTest,
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "1111" /* Visa */, "01", "2010");
+                          "1111" /* Visa */, "01", "2999");
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
   test::SetServerCreditCards(autofill_table_, server_cards);
 
   // Type the same data as the masked card into a form.
   FormData form;
   AddFullCreditCardForm(&form, "John Dillinger", "4111111111111111", "01",
-                        "2010");
+                        "2999");
 
   // The card should be offered to be saved locally because it only matches the
   // masked server card.
@@ -2127,12 +2127,12 @@ TEST_F(PersonalDataManagerTest,
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
   test::SetServerCreditCards(autofill_table_, server_cards);
 
   // Type the same data as the unmasked card into a form.
   FormData form;
-  AddFullCreditCardForm(&form, "Clyde Barrow", "347666888555", "04", "2015");
+  AddFullCreditCardForm(&form, "Clyde Barrow", "347666888555", "04", "3999");
 
   // The card should not be offered to be saved locally because it only matches
   // the full server card.
@@ -2147,7 +2147,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCreditCardWithConflict) {
   // Start with a single valid credit card form.
   FormData form1;
   AddFullCreditCardForm(&form1, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
@@ -2163,7 +2163,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCreditCardWithConflict) {
 
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -2172,7 +2172,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCreditCardWithConflict) {
   // the credit card number matches.
   FormData form2;
   AddFullCreditCardForm(&form2, "Biggie Smalls", "4111 1111 1111 1111", "01",
-                        /* different year */ "2012");
+                        /* different year */ "3999");
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
@@ -2186,10 +2186,10 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCreditCardWithConflict) {
   base::MessageLoop::current()->Run();
 
   // Expect that the newer information is saved.  In this case the year is
-  // updated to "2012".
+  // updated to "3999".
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected2, "Biggie Smalls", "4111111111111111", "01",
-                          "2012");
+                          "3999");
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -2199,7 +2199,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_ShouldReturnLocalCard) {
   // Start with a single valid credit card form.
   FormData form1;
   AddFullCreditCardForm(&form1, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
@@ -2215,7 +2215,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_ShouldReturnLocalCard) {
 
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -2224,7 +2224,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_ShouldReturnLocalCard) {
   // the credit card number matches.
   FormData form2;
   AddFullCreditCardForm(&form2, "Biggie Smalls", "4111 1111 1111 1111", "01",
-                        /* different year */ "2012");
+                        /* different year */ "3999");
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
@@ -2241,10 +2241,10 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_ShouldReturnLocalCard) {
   base::MessageLoop::current()->Run();
 
   // Expect that the newer information is saved.  In this case the year is
-  // updated to "2012".
+  // updated to "3999".
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected2,
-      "Biggie Smalls", "4111111111111111", "01", "2012");
+      "Biggie Smalls", "4111111111111111", "01", "3999");
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -2254,7 +2254,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_EmptyCardWithConflict) {
   // Start with a single valid credit card form.
   FormData form1;
   AddFullCreditCardForm(&form1, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
@@ -2270,7 +2270,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_EmptyCardWithConflict) {
 
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -2278,7 +2278,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_EmptyCardWithConflict) {
   // Add a second credit card with no number.
   FormData form2;
   AddFullCreditCardForm(&form2, "Biggie Smalls", /* no number */ nullptr, "01",
-                        "2012");
+                        "3999");
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
@@ -2294,7 +2294,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_EmptyCardWithConflict) {
   // No change is expected.
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected2,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -2304,7 +2304,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
   // Start with a single valid credit card form.
   FormData form1;
   AddFullCreditCardForm(&form1, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
@@ -2320,7 +2320,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
 
   CreditCard expected(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -2329,7 +2329,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
   // the credit card number matches.
   FormData form2;
   AddFullCreditCardForm(&form2, /* missing name */ nullptr,
-                        "4111-1111-1111-1111", "01", "2011");
+                        "4111-1111-1111-1111", "01", "2999");
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
@@ -2344,7 +2344,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
   // No change is expected.
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected2,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -2369,7 +2369,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInNew) {
   // No change is expected.
   CreditCard expected3(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected3,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2999");
   const std::vector<CreditCard*>& results3 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results3.size());
   EXPECT_EQ(0, expected3.Compare(*results3[0]));
@@ -2380,7 +2380,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInOld) {
   // Note the empty name.
   CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&saved_credit_card,
-      "", "4111111111111111" /* Visa */, "01", "2011");
+      "", "4111111111111111" /* Visa */, "01", "2999");
   personal_data_->AddCreditCard(saved_credit_card);
 
   // Verify that the web database has been updated and the notification sent.
@@ -2396,7 +2396,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInOld) {
   // the credit card number matches.
   FormData form;
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        /* different year */ "2012");
+                        /* different year */ "3999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -2413,7 +2413,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MissingInfoInOld) {
   // added to the existing credit card.
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected2,
-      "Biggie Smalls", "4111111111111111", "01", "2012");
+      "Biggie Smalls", "4111111111111111", "01", "3999");
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -2426,7 +2426,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCardWithSeparators) {
   // Note the separators in the credit card number.
   CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&saved_credit_card,
-      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2011");
+      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2999");
   personal_data_->AddCreditCard(saved_credit_card);
 
   // Verify that the web database has been updated and the notification sent.
@@ -2441,7 +2441,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCardWithSeparators) {
   // Import the same card info, but with different separators in the number.
   FormData form;
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -2466,7 +2466,7 @@ TEST_F(PersonalDataManagerTest,
   // Start with a verified credit card.
   CreditCard credit_card(base::GenerateGUID(), "Chrome settings");
   test::SetCreditCardInfo(&credit_card, "Biggie Smalls",
-                          "4111 1111 1111 1111" /* Visa */, "01", "2011");
+                          "4111 1111 1111 1111" /* Visa */, "01", "2999");
   EXPECT_TRUE(credit_card.IsVerified());
 
   // Add the credit card to the database.
@@ -2480,7 +2480,7 @@ TEST_F(PersonalDataManagerTest,
   // Simulate a form submission with conflicting expiration year.
   FormData form;
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
-                        /* different year */ "2012");
+                        /* different year */ "3999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -2527,7 +2527,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressOneCreditCard) {
 
   // Credit card section.
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -2556,7 +2556,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressOneCreditCard) {
   // Test that the credit card has also been saved.
   CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected_card, "Biggie Smalls", "4111111111111111",
-                          "01", "2011");
+                          "01", "2999");
   const std::vector<CreditCard*>& results_cards =
       personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results_cards.size());
@@ -2605,7 +2605,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
 
   // Credit card section.
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
-                        "2011");
+                        "2999");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
@@ -2627,7 +2627,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
   // Test that the credit card has been saved.
   CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&expected_card, "Biggie Smalls", "4111111111111111",
-                          "01", "2011");
+                          "01", "2999");
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected_card.Compare(*results[0]));
@@ -2715,7 +2715,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
   // Start with a verified credit card.
   CreditCard credit_card(base::GenerateGUID(), "Chrome settings");
   test::SetCreditCardInfo(&credit_card,
-      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2011");
+      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2999");
   EXPECT_TRUE(credit_card.IsVerified());
 
   // Add the credit card to the database.
@@ -2830,7 +2830,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card,
                           "John Dillinger", "423456789012" /* Visa */,
-                          "01", "2010");
+                          "01", "2999");
   personal_data_->AddCreditCard(credit_card);
 
   // Verify that the web database has been updated and the notification sent.
@@ -3256,7 +3256,7 @@ TEST_F(PersonalDataManagerTest,
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
-                          "2012");
+                          "3999");
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   test::SetServerCreditCards(autofill_table_, server_cards);
@@ -3307,7 +3307,7 @@ TEST_F(PersonalDataManagerTest,
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
-                          "2012");
+                          "3999");
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(base::Time::Now() -
                                    base::TimeDelta::FromDays(1));
@@ -3315,7 +3315,7 @@ TEST_F(PersonalDataManagerTest,
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b460"));
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
-                          "2012");
+                          "3999");
   server_cards.back().set_use_count(6);
   server_cards.back().set_use_date(base::Time::Now() -
                                    base::TimeDelta::FromDays(1));
@@ -3349,7 +3349,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
   CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
                           "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
   credit_card0.set_use_count(3);
   credit_card0.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
   personal_data_->AddCreditCard(credit_card0);
@@ -3358,7 +3358,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
                           "https://www.example.com");
   credit_card1.set_use_count(300);
   credit_card1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
-  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2999");
   personal_data_->AddCreditCard(credit_card1);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3377,7 +3377,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
   EXPECT_EQ(UTF8ToUTF16("Amex\xC2\xA0\xE2\x8B\xAF"
                         "8555"),
             suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[0].label);
+  EXPECT_EQ(ASCIIToUTF16("04/99"), suggestions[0].label);
 }
 
 // Tests the suggestions of duplicate local and server credit cards.
@@ -3393,7 +3393,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   // suggestions since the locally saved card takes precedence.
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "9012" /* Visa */, "01", "2010");
+                          "9012" /* Visa */, "01", "2999");
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(base::Time::Now() -
                                    base::TimeDelta::FromDays(15));
@@ -3403,7 +3403,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   // card type. Not a dupe and therefore both should appear in the suggestions.
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker", "2109", "12",
-                          "2012");
+                          "3999");
   server_cards.back().set_use_count(3);
   server_cards.back().set_use_date(base::Time::Now() -
                                    base::TimeDelta::FromDays(15));
@@ -3414,7 +3414,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   // precedence over local cards.
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
   server_cards.back().set_use_count(1);
   server_cards.back().set_use_date(base::Time::Now() -
                                    base::TimeDelta::FromDays(15));
@@ -3464,7 +3464,7 @@ TEST_F(PersonalDataManagerTest,
   // the local card should appear in the suggestions.
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -3505,7 +3505,7 @@ TEST_F(PersonalDataManagerTest,
   CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
                         "https://www.example.com");
   test::SetCreditCardInfo(&local_card, "Homer Simpson",
-                          "423456789012" /* Visa */, "01", "2010");
+                          "423456789012" /* Visa */, "01", "2999");
   local_card.set_use_count(3);
   local_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
   credit_cards.push_back(&local_card);
@@ -3513,7 +3513,7 @@ TEST_F(PersonalDataManagerTest,
   // Create a full server card that is a duplicate of one of the local cards.
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
-                          "423456789012" /* Visa */, "01", "2010");
+                          "423456789012" /* Visa */, "01", "2999");
   full_server_card.set_use_count(1);
   full_server_card.set_use_date(base::Time::Now() -
                                 base::TimeDelta::FromDays(15));
@@ -3536,13 +3536,13 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
   local_card.set_use_count(300);
   local_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
   test::SetCreditCardInfo(&local_card, "Homer Simpson",
-                          "423456789012" /* Visa */, "01", "2010");
+                          "423456789012" /* Visa */, "01", "2999");
   credit_cards.push_back(&local_card);
 
   // Create a masked server card that is a duplicate of a local card.
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "9012" /* Visa */,
-                          "01", "2010");
+                          "01", "2999");
   masked_card.set_use_count(2);
   masked_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   masked_card.SetTypeForMaskedCard(kVisaCard);
@@ -3562,7 +3562,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   // Create a full server card that is a duplicate of one of the local cards.
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
-                          "423456789012" /* Visa */, "01", "2010");
+                          "423456789012" /* Visa */, "01", "2999");
   full_server_card.set_use_count(1);
   full_server_card.set_use_date(base::Time::Now() -
                                 base::TimeDelta::FromDays(15));
@@ -3571,7 +3571,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   // Create a masked server card that is a duplicate of a local card.
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "9012" /* Visa */,
-                          "01", "2010");
+                          "01", "2999");
   masked_card.set_use_count(2);
   masked_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   masked_card.SetTypeForMaskedCard(kVisaCard);
@@ -3596,7 +3596,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
 
   // Create a masked server card that is slightly different of the local card.
   CreditCard credit_card4(CreditCard::MASKED_SERVER_CARD, "b456");
-  test::SetCreditCardInfo(&credit_card4, "Homer Simpson", "2109", "12", "2012");
+  test::SetCreditCardInfo(&credit_card4, "Homer Simpson", "2109", "12", "3999");
   credit_card4.set_use_count(3);
   credit_card4.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   credit_card4.SetTypeForMaskedCard(kVisaCard);
@@ -3606,7 +3606,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   // cards.
   CreditCard credit_card5(CreditCard::FULL_SERVER_CARD, "c789");
   test::SetCreditCardInfo(&credit_card5, "Homer Simpson",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
   credit_card5.set_use_count(1);
   credit_card5.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   credit_cards.push_back(&credit_card5);
@@ -3624,7 +3624,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
 
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
-                          "423456789012" /* Visa */, "01", "2010");
+                          "423456789012" /* Visa */, "01", "2999");
   EXPECT_EQ(0U, credit_card.use_count());
   EXPECT_EQ(base::Time(), credit_card.use_date());
   EXPECT_EQ(base::Time(), credit_card.modification_date());
@@ -3677,17 +3677,17 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "9012" /* Visa */, "01", "2010");
+                          "9012" /* Visa */, "01", "2999");
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
-                          "4444" /* Mastercard */, "12", "2012");
+                          "4444" /* Mastercard */, "12", "3999");
   server_cards.back().SetTypeForMaskedCard(kMasterCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -3787,7 +3787,7 @@ TEST_F(PersonalDataManagerTest, ClearAllServerData) {
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "9012" /* Visa */, "01", "2010");
+                          "9012" /* Visa */, "01", "2999");
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -3823,12 +3823,12 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "1881" /* Visa */, "01", "2017");
+                          "1881" /* Visa */, "01", "4999");
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2015");
+                          "347666888555" /* American Express */, "04", "3999");
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -3850,7 +3850,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
   form1.fields.push_back(field);
   test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField("Exp Year:", "exp_year", "2017", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "4999", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
@@ -3872,7 +3872,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
   form2.fields.push_back(field);
   test::CreateTestFormField("Exp Month:", "exp_month", "04", "text", &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField("Exp Year:", "exp_year", "2015", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "3999", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);

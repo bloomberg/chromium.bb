@@ -400,27 +400,6 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   EXPECT_EQ(original_card, a);
 }
 
-TEST(CreditCardTest, IsComplete) {
-  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
-  EXPECT_FALSE(card.IsComplete());
-  card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Wally T. Walrus"));
-  EXPECT_FALSE(card.IsComplete());
-  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
-  EXPECT_FALSE(card.IsComplete());
-  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2014"));
-
-  for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
-    SCOPED_TRACE(kValidNumbers[i]);
-    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kValidNumbers[i]));
-    EXPECT_TRUE(card.IsComplete());
-  }
-  for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
-    SCOPED_TRACE(kInvalidNumbers[i]);
-    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kInvalidNumbers[i]));
-    EXPECT_FALSE(card.IsComplete());
-  }
-}
-
 TEST(CreditCardTest, IsValid) {
   CreditCard card;
   // Invalid because expired
@@ -440,20 +419,16 @@ TEST(CreditCardTest, IsValid) {
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("41111"));
   EXPECT_FALSE(card.IsValid());
 
-  // Valid
-  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
-  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("9999"));
-  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
-  EXPECT_TRUE(card.IsValid());
-}
-
-TEST(CreditCardTest, InvalidMastercardNumber) {
-  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
-
-  test::SetCreditCardInfo(&card, "Baby Face Nelson",
-                          "5200000000000004", "01", "2010");
-  EXPECT_EQ(kMasterCard, card.type());
-  EXPECT_FALSE(card.IsComplete());
+  for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
+    SCOPED_TRACE(kValidNumbers[i]);
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kValidNumbers[i]));
+    EXPECT_TRUE(card.IsValid());
+  }
+  for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
+    SCOPED_TRACE(kInvalidNumbers[i]);
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kInvalidNumbers[i]));
+    EXPECT_FALSE(card.IsValid());
+  }
 }
 
 // Verify that we preserve exactly what the user typed for credit card numbers.
