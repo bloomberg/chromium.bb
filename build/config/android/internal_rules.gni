@@ -2180,6 +2180,10 @@ template("test_runner_script") {
       depfile,
       generated_script,
     ]
+    data = [
+      generated_script,
+    ]
+
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
