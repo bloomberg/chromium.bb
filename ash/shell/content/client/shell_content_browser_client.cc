@@ -8,7 +8,6 @@
 
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "base/command_line.h"
-#include "content/shell/browser/shell_browser_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace ash {
@@ -23,20 +22,6 @@ content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   shell_browser_main_parts_ = new ShellBrowserMainParts(parameters);
   return shell_browser_main_parts_;
-}
-
-net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
-    content::BrowserContext* content_browser_context,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  content::ShellBrowserContext* shell_context =
-      static_cast<content::ShellBrowserContext*>(content_browser_context);
-  return shell_context->CreateRequestContext(protocol_handlers,
-                                             std::move(request_interceptors));
-}
-
-content::ShellBrowserContext* ShellContentBrowserClient::browser_context() {
-  return shell_browser_main_parts_->browser_context();
 }
 
 }  // namespace examples

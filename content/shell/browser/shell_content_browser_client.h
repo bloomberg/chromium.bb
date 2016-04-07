@@ -35,16 +35,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       const MainFunctionParams& parameters) override;
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_url) override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      BrowserContext* browser_context,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      BrowserContext* browser_context,
-      const base::FilePath& partition_path,
-      bool in_memory,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override;
   bool IsHandledURL(const GURL& url) override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;
@@ -117,8 +107,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
  private:
-  ShellBrowserContext* ShellBrowserContextForBrowserContext(
-      BrowserContext* content_browser_context);
 
   scoped_ptr<ShellResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;

@@ -42,14 +42,17 @@ class HeadlessBrowserContext : public content::BrowserContext {
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionManager* GetPermissionManager() override;
   content::BackgroundSyncController* GetBackgroundSyncController() override;
+  net::URLRequestContextGetter* CreateRequestContext(
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
+  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
 
   const HeadlessBrowser::Options& options() const { return options_; }
   void SetOptionsForTesting(const HeadlessBrowser::Options& options);
-
-  // Configure the URL request context getter to be used for serving URL
-  // requests in this browser instance.
-  void SetURLRequestContextGetter(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
  private:
   // Performs initialization of the HeadlessBrowserContext while IO is still

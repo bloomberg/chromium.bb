@@ -117,28 +117,11 @@ bool ShellContentBrowserClient::ShouldUseProcessPerSite(
   return true;
 }
 
-net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
-    content::BrowserContext* content_browser_context,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  // Handle only chrome-extension:// requests. app_shell does not support
-  // chrome-extension-resource:// requests (it does not store shared extension
-  // data in its installation directory).
-  InfoMap* extension_info_map =
-      browser_main_parts_->extension_system()->info_map();
-  (*protocol_handlers)[kExtensionScheme] =
-      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateExtensionProtocolHandler(false /* is_incognito */,
-                                         extension_info_map)
-              .release());
-  return browser_main_parts_->browser_context()->CreateRequestContext(
-      protocol_handlers, std::move(request_interceptors), extension_info_map);
-}
-
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;
-  // Keep in sync with ProtocolHandlers added in CreateRequestContext() and in
+  // Keep in sync with ProtocolHandlers added in
+  // ShellBrowserContext::CreateRequestContext() and in
   // content::ShellURLRequestContextGetter::GetURLRequestContext().
   static const char* const kProtocolList[] = {
       url::kBlobScheme,

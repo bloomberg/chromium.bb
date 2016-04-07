@@ -188,14 +188,6 @@ void CastContentBrowserClient::AddNetworkHintsMessageFilter(
   host->AddFilter(network_hints_message_filter.get());
 }
 
-net::URLRequestContextGetter* CastContentBrowserClient::CreateRequestContext(
-    content::BrowserContext* browser_context,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return url_request_context_factory_->CreateMainGetter(
-      browser_context, protocol_handlers, std::move(request_interceptors));
-}
-
 bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;

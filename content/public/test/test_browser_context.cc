@@ -143,4 +143,19 @@ BackgroundSyncController* TestBrowserContext::GetBackgroundSyncController() {
   return background_sync_controller_.get();
 }
 
+net::URLRequestContextGetter* TestBrowserContext::CreateRequestContext(
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors) {
+  return GetRequestContext();
+}
+
+net::URLRequestContextGetter*
+TestBrowserContext::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    ProtocolHandlerMap* protocol_handlers,
+    URLRequestInterceptorScopedVector request_interceptors) {
+  return nullptr;
+}
+
 }  // namespace content

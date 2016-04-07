@@ -796,13 +796,6 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return new net::TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-}
-
 net::URLRequestContextGetter* TestingProfile::GetMediaRequestContext() {
   return NULL;
 }
@@ -830,17 +823,6 @@ net::SSLConfigService* TestingProfile::GetSSLConfigService() {
   if (!GetRequestContext())
     return NULL;
   return GetRequestContext()->GetURLRequestContext()->ssl_config_service();
-}
-
-net::URLRequestContextGetter*
-TestingProfile::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  // We don't test storage partitions here yet, so returning the same dummy
-  // context is sufficient for now.
-  return GetRequestContext();
 }
 
 content::ResourceContext* TestingProfile::GetResourceContext() {
@@ -946,6 +928,24 @@ content::PermissionManager* TestingProfile::GetPermissionManager() {
 content::BackgroundSyncController*
 TestingProfile::GetBackgroundSyncController() {
   return nullptr;
+}
+
+net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return new net::TestURLRequestContextGetter(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+}
+
+net::URLRequestContextGetter*
+TestingProfile::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  // We don't test storage partitions here yet, so returning the same dummy
+  // context is sufficient for now.
+  return GetRequestContext();
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {

@@ -157,30 +157,6 @@ bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
   return base::MatchPattern(origin, pattern);
 }
 
-net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
-    BrowserContext* content_browser_context,
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  ShellBrowserContext* shell_browser_context =
-      ShellBrowserContextForBrowserContext(content_browser_context);
-  return shell_browser_context->CreateRequestContext(
-      protocol_handlers, std::move(request_interceptors));
-}
-
-net::URLRequestContextGetter*
-ShellContentBrowserClient::CreateRequestContextForStoragePartition(
-    BrowserContext* content_browser_context,
-    const base::FilePath& partition_path,
-    bool in_memory,
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  ShellBrowserContext* shell_browser_context =
-      ShellBrowserContextForBrowserContext(content_browser_context);
-  return shell_browser_context->CreateRequestContextForStoragePartition(
-      partition_path, in_memory, protocol_handlers,
-      std::move(request_interceptors));
-}
-
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;
@@ -378,15 +354,6 @@ ShellBrowserContext*
 
 AccessTokenStore* ShellContentBrowserClient::CreateAccessTokenStore() {
   return new ShellAccessTokenStore(browser_context());
-}
-
-ShellBrowserContext*
-ShellContentBrowserClient::ShellBrowserContextForBrowserContext(
-    BrowserContext* content_browser_context) {
-  if (content_browser_context == browser_context())
-    return browser_context();
-  DCHECK_EQ(content_browser_context, off_the_record_browser_context());
-  return off_the_record_browser_context();
 }
 
 }  // namespace content

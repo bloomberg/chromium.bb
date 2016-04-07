@@ -61,23 +61,6 @@ bool ContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
   return false;
 }
 
-net::URLRequestContextGetter* ContentBrowserClient::CreateRequestContext(
-    BrowserContext* browser_context,
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-ContentBrowserClient::CreateRequestContextForStoragePartition(
-    BrowserContext* browser_context,
-    const base::FilePath& partition_path,
-    bool in_memory,
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
 bool ContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }

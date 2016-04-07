@@ -459,14 +459,13 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   // These calls must happen after StoragePartitionImpl::Create().
   if (partition_domain.empty()) {
     partition->SetURLRequestContext(
-        GetContentClient()->browser()->CreateRequestContext(
-            browser_context_, &protocol_handlers,
-            std::move(request_interceptors)));
+        browser_context_->CreateRequestContext(
+            &protocol_handlers, std::move(request_interceptors)));
   } else {
     partition->SetURLRequestContext(
-        GetContentClient()->browser()->CreateRequestContextForStoragePartition(
-            browser_context_, partition->GetPath(), in_memory,
-            &protocol_handlers, std::move(request_interceptors)));
+        browser_context_->CreateRequestContextForStoragePartition(
+            partition->GetPath(), in_memory, &protocol_handlers,
+            std::move(request_interceptors)));
   }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?

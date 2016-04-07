@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 
-namespace content {
-class ShellBrowserContext;
-}
-
 namespace ui {
 
 class ViewsContentClient;
@@ -26,10 +22,6 @@ class ViewsContentBrowserClient : public content::ContentBrowserClient {
   // content::ContentBrowserClient:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::BrowserContext* browser_context,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
 
  private:
   ViewsContentClientMainParts* views_content_main_parts_;

@@ -4,9 +4,6 @@
 
 #include "ui/views_content_client/views_content_browser_client.h"
 
-#include <utility>
-
-#include "content/shell/browser/shell_browser_context.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
 namespace ui {
@@ -25,17 +22,6 @@ content::BrowserMainParts* ViewsContentBrowserClient::CreateBrowserMainParts(
   views_content_main_parts_ =
       ViewsContentClientMainParts::Create(parameters, views_content_client_);
   return views_content_main_parts_;
-}
-
-net::URLRequestContextGetter*
-ViewsContentBrowserClient::CreateRequestContext(
-    content::BrowserContext* content_browser_context,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  content::ShellBrowserContext* shell_context =
-      views_content_main_parts_->browser_context();
-  return shell_context->CreateRequestContext(protocol_handlers,
-                                             std::move(request_interceptors));
 }
 
 }  // namespace ui

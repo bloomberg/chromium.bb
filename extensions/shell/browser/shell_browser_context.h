@@ -13,28 +13,28 @@
 namespace extensions {
 
 class InfoMap;
+class ShellBrowserMainParts;
 class ShellSpecialStoragePolicy;
 
 // The BrowserContext used by the content, apps and extensions systems in
 // app_shell.
 class ShellBrowserContext : public content::ShellBrowserContext {
  public:
-  ShellBrowserContext();
+  explicit ShellBrowserContext(ShellBrowserMainParts* browser_main_parts);
   ~ShellBrowserContext() override;
 
   // content::BrowserContext implementation.
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
-
   net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors,
-      InfoMap* extension_info_map);
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
 
  private:
   void InitURLRequestContextOnIOThread();
 
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
+  ShellBrowserMainParts* browser_main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

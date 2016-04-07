@@ -86,6 +86,21 @@ content::BackgroundSyncController* FakeProfile::GetBackgroundSyncController() {
   return nullptr;
 }
 
+net::URLRequestContextGetter* FakeProfile::CreateRequestContext(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return nullptr;
+}
+
+net::URLRequestContextGetter*
+FakeProfile::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return nullptr;
+}
+
 scoped_refptr<base::SequencedTaskRunner>
 FakeProfile::GetIOTaskRunner() {
   return scoped_refptr<base::SequencedTaskRunner>();
@@ -151,21 +166,6 @@ bool FakeProfile::IsSameProfile(Profile* profile) {
 
 base::Time FakeProfile::GetStartTime() const {
   return base::Time();
-}
-
-net::URLRequestContextGetter* FakeProfile::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-FakeProfile::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
 }
 
 base::FilePath FakeProfile::last_selected_directory() {

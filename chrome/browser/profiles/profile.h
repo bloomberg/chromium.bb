@@ -223,29 +223,6 @@ class Profile : public content::BrowserContext {
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
 
-  // Creates the main net::URLRequestContextGetter that will be returned by
-  // GetRequestContext(). Should only be called once per ContentBrowserClient
-  // object. This function is exposed because of the circular dependency where
-  // GetStoragePartition() is used to retrieve the request context, but creation
-  // still has to happen in the Profile so the StoragePartition calls
-  // ContextBrowserClient to call this function.
-  // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
-  virtual net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) = 0;
-
-  // Creates the net::URLRequestContextGetter for a StoragePartition. Should
-  // only be called once per partition_path per ContentBrowserClient object.
-  // This function is exposed because the request context is retrieved from the
-  // StoragePartition, but creation still has to happen in the Profile so the
-  // StoragePartition calls ContextBrowserClient to call this function.
-  // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
-  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) = 0;
-
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;
   virtual void set_last_selected_directory(const base::FilePath& path) = 0;

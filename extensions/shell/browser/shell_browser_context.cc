@@ -10,6 +10,10 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/extension_protocols.h"
+#include "extensions/common/constants.h"
+#include "extensions/shell/browser/shell_browser_main_parts.h"
+#include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_network_delegate.h"
 #include "extensions/shell/browser/shell_special_storage_policy.h"
 #include "extensions/shell/browser/shell_url_request_context_getter.h"
@@ -27,10 +31,12 @@ bool IgnoreCertificateErrors() {
 
 // Create a normal recording browser context. If we used an incognito context
 // then app_shell would also have to create a normal context and manage both.
-ShellBrowserContext::ShellBrowserContext()
+ShellBrowserContext::ShellBrowserContext(
+    ShellBrowserMainParts* browser_main_parts)
     : content::ShellBrowserContext(false /* off_the_record */,
                                    nullptr /* net_log */),
-      storage_policy_(new ShellSpecialStoragePolicy) {
+      storage_policy_(new ShellSpecialStoragePolicy),
+      browser_main_parts_(browser_main_parts) {
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
@@ -46,9 +52,19 @@ storage::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
 
 net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors,
-      InfoMap* extension_info_map) {
+      content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!url_request_context_getter());
+  // Handle only chrome-extension:// requests. app_shell does not support
+  // chrome-extension-resource:// requests (it does not store shared extension
+  // data in its installation directory).
+  InfoMap* extension_info_map =
+      browser_main_parts_->extension_system()->info_map();
+  (*protocol_handlers)[kExtensionScheme] =
+      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          CreateExtensionProtocolHandler(false /* is_incognito */,
+                                         extension_info_map)
+              .release());
+
   set_url_request_context_getter(new ShellURLRequestContextGetter(
       this, IgnoreCertificateErrors(), GetPath(),
       content::BrowserThread::GetMessageLoopProxyForThread(

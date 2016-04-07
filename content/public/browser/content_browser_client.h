@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
@@ -27,8 +26,6 @@
 #include "content/public/common/window_container_type.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/base/window_open_disposition.h"
@@ -128,16 +125,6 @@ struct OpenURLParams;
 struct Referrer;
 struct WebPreferences;
 
-// A mapping from the scheme name to the protocol handler that services its
-// content.
-typedef std::map<
-  std::string, linked_ptr<net::URLRequestJobFactory::ProtocolHandler> >
-    ProtocolHandlerMap;
-
-// A scoped vector of protocol interceptors.
-typedef ScopedVector<net::URLRequestInterceptor>
-    URLRequestInterceptorScopedVector;
-
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
 // principal implementation. The methods are assumed to be called on the UI
@@ -234,24 +221,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // chrome://downloads used more than chrome://bookmarks?). Only internal (e.g.
   // chrome://) URLs are logged. Returns whether the URL was actually logged.
   virtual bool LogWebUIUrl(const GURL& web_ui_url) const;
-
-  // Creates the main net::URLRequestContextGetter. Should only be called once
-  // per ContentBrowserClient object.
-  // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
-  virtual net::URLRequestContextGetter* CreateRequestContext(
-      BrowserContext* browser_context,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors);
-
-  // Creates the net::URLRequestContextGetter for a StoragePartition. Should
-  // only be called once per partition_path per ContentBrowserClient object.
-  // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
-  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      BrowserContext* browser_context,
-      const base::FilePath& partition_path,
-      bool in_memory,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors);
 
   // Returns whether a specified URL is handled by the embedder's internal
   // protocol handlers.

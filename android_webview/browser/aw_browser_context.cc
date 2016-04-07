@@ -269,30 +269,6 @@ void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
   visitedlink_master_->AddURLs(urls);
 }
 
-net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  // This function cannot actually create the request context because
-  // there is a reentrant dependency on GetResourceContext() via
-  // content::StoragePartitionImplMap::Create(). This is not fixable
-  // until http://crbug.com/159193. Until then, assert that the context
-  // has already been allocated and just handle setting the protocol_handlers.
-  DCHECK(url_request_context_getter_.get());
-  url_request_context_getter_->SetHandlersAndInterceptors(
-      protocol_handlers, std::move(request_interceptors));
-  return url_request_context_getter_.get();
-}
-
-net::URLRequestContextGetter*
-AwBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  NOTREACHED();
-  return NULL;
-}
-
 AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
   if (!quota_manager_bridge_.get()) {
     quota_manager_bridge_ = native_factory_->CreateAwQuotaManagerBridge(this);
@@ -437,6 +413,30 @@ content::PermissionManager* AwBrowserContext::GetPermissionManager() {
 content::BackgroundSyncController*
 AwBrowserContext::GetBackgroundSyncController() {
   return nullptr;
+}
+
+net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  // This function cannot actually create the request context because
+  // there is a reentrant dependency on GetResourceContext() via
+  // content::StoragePartitionImplMap::Create(). This is not fixable
+  // until http://crbug.com/159193. Until then, assert that the context
+  // has already been allocated and just handle setting the protocol_handlers.
+  DCHECK(url_request_context_getter_.get());
+  url_request_context_getter_->SetHandlersAndInterceptors(
+      protocol_handlers, std::move(request_interceptors));
+  return url_request_context_getter_.get();
+}
+
+net::URLRequestContextGetter*
+AwBrowserContext::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  NOTREACHED();
+  return NULL;
 }
 
 policy::URLBlacklistManager* AwBrowserContext::GetURLBlacklistManager() {

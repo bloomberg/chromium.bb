@@ -11,7 +11,6 @@ namespace headless {
 
 class HeadlessBrowserImpl;
 class HeadlessBrowserMainParts;
-class HeadlessBrowserContext;
 
 class HeadlessContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -21,12 +20,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   // content::ContentBrowserClient implementation:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams&) override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::BrowserContext* browser_context,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
-
-  HeadlessBrowserContext* browser_context() const;
 
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.

@@ -229,14 +229,6 @@ class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
 
   ~WebContentsImplTestBrowserClient() override {}
 
-  net::URLRequestContextGetter* CreateRequestContext(
-      BrowserContext* browser_context,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override {
-    return static_cast<TestBrowserContext*>(browser_context)->
-        GetRequestContext();
-  }
-
   bool ShouldAssignSiteForURL(const GURL& url) override {
     return assign_site_for_url_;
   }

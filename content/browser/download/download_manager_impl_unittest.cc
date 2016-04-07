@@ -433,6 +433,23 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetPermissionManager, PermissionManager*());
   MOCK_METHOD0(GetBackgroundSyncController, BackgroundSyncController*());
 
+  // Define these two methods to avoid a
+  // cannot access private member declared in class 'ScopedVector<net::URLRequestInterceptor>'
+  // build error if they're put in MOCK_METHOD.
+  net::URLRequestContextGetter* CreateRequestContext(
+      ProtocolHandlerMap* protocol_handlers,
+      URLRequestInterceptorScopedVector request_interceptors) override {
+    return nullptr;
+  }
+
+  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory,
+      ProtocolHandlerMap* protocol_handlers,
+      URLRequestInterceptorScopedVector request_interceptors) override {
+    return nullptr;
+  }
+
   scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& path) override {
     return scoped_ptr<ZoomLevelDelegate>(CreateZoomLevelDelegateMock(path));

@@ -30,12 +30,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::BrowserContext* browser_context,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
-
-  content::ShellBrowserContext* browser_context();
 
  private:
   ShellBrowserMainParts* shell_browser_main_parts_;

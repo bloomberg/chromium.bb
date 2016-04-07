@@ -154,5 +154,21 @@ CastBrowserContext::GetBackgroundSyncController() {
   return nullptr;
 }
 
+net::URLRequestContextGetter* CastBrowserContext::CreateRequestContext(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return url_request_context_factory_->CreateMainGetter(
+      this, protocol_handlers, std::move(request_interceptors));
+}
+
+net::URLRequestContextGetter*
+CastBrowserContext::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return nullptr;
+}
+
 }  // namespace shell
 }  // namespace chromecast

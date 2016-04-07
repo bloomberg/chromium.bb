@@ -51,12 +51,14 @@ class BlimpBrowserContext : public content::BrowserContext {
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionManager* GetPermissionManager() override;
   content::BackgroundSyncController* GetBackgroundSyncController() override;
-
-  // The content of |protocol_handlers| is swapped into the returned instance.
-  // Caller should take a reference to the returned instance via scoped_refptr.
-  const scoped_refptr<BlimpURLRequestContextGetter>& CreateRequestContext(
+  net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors);
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
+  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
 
  private:
   // Performs initialization of the BlimpBrowserContext while IO is still

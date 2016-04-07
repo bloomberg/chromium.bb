@@ -142,7 +142,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
-  browser_context_.reset(new ShellBrowserContext);
+  browser_context_.reset(new ShellBrowserContext(this));
 
   // app_shell only supports a single user, so all preferences live in the user
   // data directory, including the device-wide local state.

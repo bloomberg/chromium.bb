@@ -913,15 +913,6 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
   return otr_prefs_.get();
 }
 
-net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_.CreateMainRequestContextGetter(
-                     protocol_handlers, std::move(request_interceptors),
-                     g_browser_process->io_thread())
-      .get();
-}
-
 net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
@@ -955,18 +946,6 @@ content::ResourceContext* ProfileImpl::GetResourceContext() {
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return io_data_.GetExtensionsRequestContextGetter().get();
-}
-
-net::URLRequestContextGetter*
-ProfileImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_.CreateIsolatedAppRequestContextGetter(
-                     partition_path, in_memory, protocol_handlers,
-                     std::move(request_interceptors))
-      .get();
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
@@ -1017,6 +996,27 @@ content::PermissionManager* ProfileImpl::GetPermissionManager() {
 
 content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
   return BackgroundSyncControllerFactory::GetForProfile(this);
+}
+
+net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return io_data_.CreateMainRequestContextGetter(
+                     protocol_handlers, std::move(request_interceptors),
+                     g_browser_process->io_thread())
+      .get();
+}
+
+net::URLRequestContextGetter*
+ProfileImpl::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
+  return io_data_.CreateIsolatedAppRequestContextGetter(
+                     partition_path, in_memory, protocol_handlers,
+                     std::move(request_interceptors))
+      .get();
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {
