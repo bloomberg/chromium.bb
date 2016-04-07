@@ -693,9 +693,8 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, GridSizingData& s
     if (shouldClearContainingBlockLogicalHeight)
         layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
 
-    bool hasOverrideHeight = child.hasOverrideLogicalContentHeight();
     // We need to clear the stretched height to properly compute logical height during layout.
-    if (hasOverrideHeight && child.needsLayout())
+    if (child.needsLayout())
         child.clearOverrideLogicalContentHeight();
 
     // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
@@ -703,7 +702,6 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, GridSizingData& s
     if (shouldClearContainingBlockLogicalHeight)
         child.setOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
     child.layoutIfNeeded();
-    // If the child was stretched we should use its intrinsic height.
     return child.logicalHeight() + child.marginLogicalHeight();
 }
 
