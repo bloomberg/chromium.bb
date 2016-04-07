@@ -103,8 +103,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   // TODO(tommycli): Remove once we fix https://crbug.com/588624.
   bool destroyed_;
 
-  base::WeakPtrFactory<PepperWebPluginImpl> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperWebPluginImpl);
 };
 

@@ -273,8 +273,8 @@ WebPluginContainer* BrowserPlugin::container() const {
 }
 
 bool BrowserPlugin::initialize(WebPluginContainer* container) {
-  if (!container)
-    return false;
+  DCHECK(container);
+  DCHECK_EQ(this, container->plugin());
 
   container_ = container;
   container_->setWantsWheelEvents(true);

@@ -174,6 +174,11 @@ TestPlugin::~TestPlugin() {
 }
 
 bool TestPlugin::initialize(blink::WebPluginContainer* container) {
+  DCHECK(container);
+  DCHECK_EQ(this, container->plugin());
+
+  container_ = container;
+
   blink::Platform::ContextAttributes attrs;
   DCHECK(!container->element().isNull());
   DCHECK(!container->element().document().isNull());
@@ -190,7 +195,6 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
   web_layer_ = make_scoped_ptr(new cc_blink::WebLayerImpl(layer_));
-  container_ = container;
   container_->setWebLayer(web_layer_.get());
   if (re_request_touch_events_) {
     container_->requestTouchEventType(
@@ -221,6 +225,10 @@ void TestPlugin::destroy() {
   blink::Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       blink::WebTraceLocation(__FUNCTION__, __FILE__),
       new DeferredDeleteTask(make_scoped_ptr(this)));
+}
+
+blink::WebPluginContainer* TestPlugin::container() const {
+  return container_;
 }
 
 bool TestPlugin::canProcessDrag() const {

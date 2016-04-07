@@ -101,8 +101,6 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
     return;
   }
 
-  CHECK(container->plugin() == plugin());
-  // Set the new plugin on the container before initializing it.
   container->setPlugin(new_plugin);
   // Save the element in case the plugin is removed from the page during
   // initialization.
@@ -110,10 +108,12 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   bool plugin_needs_initialization =
       !premade_throttler_ || new_plugin != premade_throttler_->GetWebPlugin();
   if (plugin_needs_initialization && !new_plugin->initialize(container)) {
-    // Since the we couldn't initialize the new plugin, we must destroy it and
-    // restore the old one.
-    container->setPlugin(plugin());
-    new_plugin->destroy();
+    if (new_plugin->container()) {
+      // Since the we couldn't initialize the new plugin, but the container
+      // still exists, restore the placeholder and destroy the new plugin.
+      container->setPlugin(plugin());
+      new_plugin->destroy();
+    }
     return;
   }
 

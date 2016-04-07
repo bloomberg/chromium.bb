@@ -694,7 +694,7 @@ void WebPluginContainerImpl::dispose()
     setWantsWheelEvents(false);
 
     if (m_webPlugin) {
-        CHECK(!m_webPlugin->container() || m_webPlugin->container() == this);
+        CHECK(m_webPlugin->container() == this);
         m_webPlugin->destroy();
         m_webPlugin = nullptr;
     }

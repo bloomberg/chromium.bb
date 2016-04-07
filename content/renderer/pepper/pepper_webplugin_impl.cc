@@ -65,9 +65,8 @@ PepperWebPluginImpl::PepperWebPluginImpl(
       full_frame_(params.loadManually),
       throttler_(std::move(throttler)),
       instance_object_(PP_MakeUndefined()),
-      container_(NULL),
-      destroyed_(false),
-      weak_factory_(this) {
+      container_(nullptr),
+      destroyed_(false) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->render_frame = render_frame;
@@ -91,34 +90,32 @@ blink::WebPluginContainer* PepperWebPluginImpl::container() const {
 }
 
 bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
+  DCHECK(container);
+  DCHECK_EQ(this, container->plugin());
+
+  container_ = container;
+
   // The plugin delegate may have gone away.
   instance_ = init_data_->module->CreateInstance(
       init_data_->render_frame, container, init_data_->url);
-  if (!instance_.get())
+  if (!instance_)
     return false;
 
-  auto weak_this = weak_factory_.GetWeakPtr();
-  bool success =
-      instance_->Initialize(init_data_->arg_names, init_data_->arg_values,
-                            full_frame_, std::move(throttler_));
-  // The above call to Initialize can result in re-entrancy and destruction of
-  // the plugin instance. In this case it's quite unclear whether this object
-  // could also have been destroyed. We could return false here, but it would be
-  // better if this object was guaranteed to outlast the recursive call.
-  // Otherwise, the caller of this function would also have to take care that,
-  // in the case of the object being deleted, we never access it again, and we
-  // would just keep passing that responsibility further up the call stack.
-  // Classes tend not to be written with this possibility in mind so it's best
-  // to make this assumption as far down the call stack (as close to the
-  // re-entrant call) as possible. Also take care not to access the plugin
-  // instance again in that case. crbug.com/487146.
-  CHECK(weak_this);
+  if (!instance_->Initialize(init_data_->arg_names, init_data_->arg_values,
+                             full_frame_, std::move(throttler_))) {
+    // If |container_| is nullptr, this object has already been synchronously
+    // destroy()-ed during |instance_|'s Initialize call. In that case, we early
+    // exit. We neither create a replacement plugin nor destroy() ourselves.
+    if (!container_)
+      return false;
 
-  if (!success) {
-    if (instance_) {
-      instance_->Delete();
-      instance_ = NULL;
-    }
+    DCHECK(!destroyed_);
+
+    DCHECK(instance_);
+    ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
+    instance_object_ = PP_MakeUndefined();
+    instance_->Delete();
+    instance_ = nullptr;
 
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
@@ -141,8 +138,6 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   }
 
   init_data_.reset();
-  CHECK(container->plugin() == this);
-  container_ = container;
   return true;
 }
 
@@ -151,11 +146,13 @@ void PepperWebPluginImpl::destroy() {
   CHECK(!destroyed_);
   destroyed_ = true;
 
-  if (instance_.get()) {
+  container_ = nullptr;
+
+  if (instance_) {
     ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
     instance_object_ = PP_MakeUndefined();
     instance_->Delete();
-    instance_ = NULL;
+    instance_ = nullptr;
   }
 
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -165,22 +162,22 @@ v8::Local<v8::Object> PepperWebPluginImpl::v8ScriptableObject(
       v8::Isolate* isolate) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See e.g. crbug.com/503401.
-  if (!instance_.get())
+  if (!instance_)
     return v8::Local<v8::Object>();
   // Call through the plugin to get its instance object. The plugin should pass
   // us a reference which we release in destroy().
   if (instance_object_.type == PP_VARTYPE_UNDEFINED)
     instance_object_ = instance_->GetInstanceObject(isolate);
   // GetInstanceObject talked to the plugin which may have removed the instance
-  // from the DOM, in which case instance_ would be NULL now.
-  if (!instance_.get())
+  // from the DOM, in which case instance_ would be nullptr now.
+  if (!instance_)
     return v8::Local<v8::Object>();
 
   scoped_refptr<V8ObjectVar> object_var(
       V8ObjectVar::FromPPVar(instance_object_));
   // If there's an InstanceObject, tell the Instance's MessageChannel to pass
   // any non-postMessage calls to it.
-  if (object_var.get()) {
+  if (object_var) {
     MessageChannel* message_channel = instance_->message_channel();
     if (message_channel)
       message_channel->SetPassthroughObject(object_var->GetHandle());
@@ -238,20 +235,20 @@ void PepperWebPluginImpl::didReceiveResponse(
 void PepperWebPluginImpl::didReceiveData(const char* data, int data_length) {
   blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
-    document_loader->didReceiveData(NULL, data, data_length, 0);
+    document_loader->didReceiveData(nullptr, data, data_length, 0);
 }
 
 void PepperWebPluginImpl::didFinishLoading() {
   blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didFinishLoading(
-        NULL, 0.0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
+        nullptr, 0.0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void PepperWebPluginImpl::didFailLoading(const blink::WebURLError& error) {
   blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
-    document_loader->didFail(NULL, error);
+    document_loader->didFail(nullptr, error);
 }
 
 bool PepperWebPluginImpl::hasSelection() const {
