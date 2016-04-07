@@ -378,6 +378,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
         for (Account account : accounts) {
             ChromeBasePreference pref = new ChromeBasePreference(activity);
+            pref.setSelectable(false);
             pref.setTitle(account.name);
 
             boolean isChildAccount = ChildAccountService.isChildAccount();
@@ -385,17 +386,6 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setIcon(new BitmapDrawable(getResources(),
                     isChildAccount ? getBadgedUserPicture(account.name, getResources()) :
                         getUserPicture(account.name, getResources())));
-
-            pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (!isVisible() || !isResumed()) return false;
-
-                    openSyncSettingsPage(activity);
-                    return true;
-                }
-
-            });
 
             pref.setOrder(nextPrefOrder++);
             prefScreen.addPreference(pref);
