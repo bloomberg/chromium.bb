@@ -10,7 +10,7 @@ executes libFuzzer tests on scale.
 
 ## Status Links
 
-* [Buildbot] - status of all libFuzzer builds
+* [Buildbot] - status of all libFuzzer builds.
 * [ClusterFuzz Fuzzer Status] - fuzzing metrics, links to crashes and coverage 
 reports.
 * [Corpus GCS Bucket] - current corpus for each fuzzer. Can be used to upload
@@ -20,7 +20,7 @@ bootstrapped corpus.
 
 The integration between libFuzzer and ClusterFuzz consists of:
 
-* Build rules definition in [fuzzer_test.gni]
+* Build rules definition in [fuzzer_test.gni].
 * [Buildbot] that automatically discovers fuzzers using `gn refs` facility, 
 builds fuzzers with multiple sanitizers and uploads binaries to a special
 GCS bucket. Build bot recipe is defined in [chromium_libfuzzer.py].
@@ -30,7 +30,7 @@ corpus is minimized to reduce number of duplicates and/or reduce effect of
 parasitic coverage. 
 * [ClusterFuzz Fuzzer Status] displays fuzzer runtime 
 metrics as well as provides links to crashes and coverage reports. The information
-is collected once a day.
+is collected every 30 minutes.
 
 
 [Buildbot]: https://goto.google.com/libfuzzer-clusterfuzz-buildbot

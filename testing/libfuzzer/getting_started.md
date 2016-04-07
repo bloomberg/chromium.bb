@@ -1,7 +1,7 @@
 # Getting Started with libFuzzer in Chrome
 
 *** note
-**Prerequisites:** libFuzzer in chrome is supported with GN on Linux only. 
+**Prerequisites:** libFuzzer in Chrome is supported with GN on Linux only. 
 ***
 
 This document will walk you through:
@@ -70,7 +70,7 @@ Build with ninja as usual and run:
 
 ```bash
 ninja -C out/libfuzzer url_parse_fuzzer
-./out/libfuzzer url_parse_fuzzer
+./out/libfuzzer/url_parse_fuzzer
 ```
 
 Your fuzzer should produce output like this:
