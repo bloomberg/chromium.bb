@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -68,8 +67,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void KeyDown(const std::string& code_str,
                int modifiers,
                KeyLocationCode location);
-
-  WebTaskList* mutable_task_list() { return &task_list_; }
 
   void set_send_wheel_gestures(bool send_wheel_gestures) {
     send_wheel_gestures_ = send_wheel_gestures;
@@ -242,8 +239,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   int wm_sys_char_;
   int wm_sys_dead_char_;
 #endif
-
-  WebTaskList task_list_;
 
   TestInterfaces* interfaces_;
   WebTestDelegate* delegate_;

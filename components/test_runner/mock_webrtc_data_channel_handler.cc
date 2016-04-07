@@ -4,7 +4,10 @@
 
 #include "components/test_runner/mock_webrtc_data_channel_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 
@@ -12,42 +15,28 @@ using namespace blink;
 
 namespace test_runner {
 
-class DataChannelReadyStateTask
-    : public WebMethodTask<MockWebRTCDataChannelHandler> {
- public:
-  DataChannelReadyStateTask(MockWebRTCDataChannelHandler* object,
-                            WebRTCDataChannelHandlerClient* data_channel_client,
-                            WebRTCDataChannelHandlerClient::ReadyState state)
-      : WebMethodTask<MockWebRTCDataChannelHandler>(object),
-        data_channel_client_(data_channel_client),
-        state_(state) {}
-
-  void RunIfValid() override {
-    data_channel_client_->didChangeReadyState(state_);
-  }
-
- private:
-  WebRTCDataChannelHandlerClient* data_channel_client_;
-  WebRTCDataChannelHandlerClient::ReadyState state_;
-};
-
-/////////////////////
-
 MockWebRTCDataChannelHandler::MockWebRTCDataChannelHandler(
     WebString label,
     const WebRTCDataChannelInit& init,
     WebTestDelegate* delegate)
-    : client_(0), label_(label), init_(init), delegate_(delegate) {
+    : client_(0),
+      label_(label),
+      init_(init),
+      delegate_(delegate),
+      weak_factory_(this) {
   reliable_ = (init.ordered && init.maxRetransmits == -1 &&
                init.maxRetransmitTime == -1);
 }
+
+MockWebRTCDataChannelHandler::~MockWebRTCDataChannelHandler() {}
 
 void MockWebRTCDataChannelHandler::setClient(
     WebRTCDataChannelHandlerClient* client) {
   client_ = client;
   if (client_)
-    delegate_->PostTask(new DataChannelReadyStateTask(
-        this, client_, WebRTCDataChannelHandlerClient::ReadyStateOpen));
+    delegate_->PostTask(new WebCallbackTask(
+        base::Bind(&MockWebRTCDataChannelHandler::ReportOpenedState,
+                   weak_factory_.GetWeakPtr())));
 }
 
 blink::WebString MockWebRTCDataChannelHandler::label() {
@@ -105,8 +94,18 @@ bool MockWebRTCDataChannelHandler::sendRawData(const char* data, size_t size) {
 
 void MockWebRTCDataChannelHandler::close() {
   DCHECK(client_);
-  delegate_->PostTask(new DataChannelReadyStateTask(
-      this, client_, WebRTCDataChannelHandlerClient::ReadyStateClosed));
+  delegate_->PostTask(new WebCallbackTask(
+      base::Bind(&MockWebRTCDataChannelHandler::ReportClosedState,
+                 weak_factory_.GetWeakPtr())));
+}
+
+void MockWebRTCDataChannelHandler::ReportOpenedState() {
+  client_->didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
+}
+
+void MockWebRTCDataChannelHandler::ReportClosedState() {
+  client_->didChangeReadyState(
+      WebRTCDataChannelHandlerClient::ReadyStateClosed);
 }
 
 }  // namespace test_runner

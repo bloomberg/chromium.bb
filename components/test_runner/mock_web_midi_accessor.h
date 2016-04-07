@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 
 namespace blink {
@@ -32,13 +32,13 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
                     size_t length,
                     double timestamp) override;
 
-  // WebTask related methods
-  WebTaskList* mutable_task_list() { return &task_list_; }
-
  private:
+  void ReportStartedSession(bool success);
+
   blink::WebMIDIAccessorClient* client_;
-  WebTaskList task_list_;
   TestInterfaces* interfaces_;
+
+  base::WeakPtrFactory<MockWebMIDIAccessor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebMIDIAccessor);
 };

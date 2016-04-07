@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -16,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/test_runner/mock_spell_check.h"
 #include "components/test_runner/test_interfaces.h"
+#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "gin/handle.h"
@@ -324,55 +327,6 @@ std::vector<std::string> MakeMenuItemStringsFor(
 // How much we should scroll per event - the value here is chosen to match the
 // WebKit impl and layout test results.
 const float kScrollbarPixelsPerTick = 40.0f;
-
-class MouseDownTask : public WebMethodTask<EventSender> {
- public:
-  MouseDownTask(EventSender* obj, int button_number, int modifiers)
-      : WebMethodTask<EventSender>(obj),
-        button_number_(button_number),
-        modifiers_(modifiers) {}
-
-  void RunIfValid() override { object_->MouseDown(button_number_, modifiers_); }
-
- private:
-  int button_number_;
-  int modifiers_;
-};
-
-class MouseUpTask : public WebMethodTask<EventSender> {
- public:
-  MouseUpTask(EventSender* obj, int button_number, int modifiers)
-      : WebMethodTask<EventSender>(obj),
-        button_number_(button_number),
-        modifiers_(modifiers) {}
-
-  void RunIfValid() override { object_->MouseUp(button_number_, modifiers_); }
-
- private:
-  int button_number_;
-  int modifiers_;
-};
-
-class KeyDownTask : public WebMethodTask<EventSender> {
- public:
-  KeyDownTask(EventSender* obj,
-              const std::string code_str,
-              int modifiers,
-              KeyLocationCode location)
-      : WebMethodTask<EventSender>(obj),
-        code_str_(code_str),
-        modifiers_(modifiers),
-        location_(location) {}
-
-  void RunIfValid() override {
-    object_->KeyDown(code_str_, modifiers_, location_);
-  }
-
- private:
-  std::string code_str_;
-  int modifiers_;
-  KeyLocationCode location_;
-};
 
 bool NeedsShiftModifier(int keyCode) {
   // If code is an uppercase letter, assign a SHIFT key to eventDown.modifier.
@@ -1226,7 +1180,7 @@ void EventSender::Reset() {
   last_button_type_ = WebMouseEvent::ButtonNone;
   touch_points_.clear();
   last_context_menu_data_.reset();
-  task_list_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   current_gesture_location_ = WebPoint(0, 0);
   mouse_event_queue_.clear();
 
@@ -2022,14 +1976,20 @@ void EventSender::MouseLeave() {
 
 
 void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
-  delegate_->PostTask(new MouseDownTask(this, button_number, modifiers));
-  delegate_->PostTask(new MouseUpTask(this, button_number, modifiers));
+  delegate_->PostTask(new WebCallbackTask(
+      base::Bind(&EventSender::MouseDown, weak_factory_.GetWeakPtr(),
+                 button_number, modifiers)));
+  delegate_->PostTask(new WebCallbackTask(
+      base::Bind(&EventSender::MouseUp, weak_factory_.GetWeakPtr(),
+                 button_number, modifiers)));
 }
 
 void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
                                               int modifiers,
                                               KeyLocationCode location) {
-  delegate_->PostTask(new KeyDownTask(this, code_str, modifiers, location));
+  delegate_->PostTask(new WebCallbackTask(
+      base::Bind(&EventSender::KeyDown, weak_factory_.GetWeakPtr(), code_str,
+                 modifiers, location)));
 }
 
 double EventSender::GetCurrentEventTimeSec() {

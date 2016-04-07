@@ -6,39 +6,23 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/test_runner/mock_grammar_check.h"
 #include "components/test_runner/test_runner.h"
+#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
 namespace test_runner {
 
-namespace {
-
-class HostMethodTask : public WebMethodTask<SpellCheckClient> {
- public:
-  typedef void (SpellCheckClient::*CallbackMethodType)();
-  HostMethodTask(SpellCheckClient* object, CallbackMethodType callback)
-      : WebMethodTask<SpellCheckClient>(object), callback_(callback) {}
-
-  ~HostMethodTask() override {}
-
-  void RunIfValid() override { (object_->*callback_)(); }
-
- private:
-  CallbackMethodType callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostMethodTask);
-};
-
-}  // namespace
-
 SpellCheckClient::SpellCheckClient(TestRunner* test_runner)
     : last_requested_text_checking_completion_(nullptr),
-      test_runner_(test_runner) {
+      test_runner_(test_runner),
+      weak_factory_(this) {
   DCHECK(test_runner);
 }
 
@@ -107,7 +91,9 @@ void SpellCheckClient::requestCheckingOfText(
     FinishLastTextCheck();
   else
     delegate_->PostDelayedTask(
-        new HostMethodTask(this, &SpellCheckClient::FinishLastTextCheck), 0);
+        new WebCallbackTask(base::Bind(&SpellCheckClient::FinishLastTextCheck,
+                                       weak_factory_.GetWeakPtr())),
+        0);
 }
 
 void SpellCheckClient::FinishLastTextCheck() {

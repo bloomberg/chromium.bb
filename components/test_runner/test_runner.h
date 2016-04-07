@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/test_runner/layout_test_runtime_flags.h"
 #include "components/test_runner/test_runner_export.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "v8/include/v8.h"
@@ -52,8 +51,7 @@ class WebContentSettings;
 class WebTestDelegate;
 class WebTestProxyBase;
 
-class TestRunner : public WebTestRunner,
-                   public base::SupportsWeakPtr<TestRunner> {
+class TestRunner : public WebTestRunner {
  public:
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
@@ -65,14 +63,10 @@ class TestRunner : public WebTestRunner,
 
   void Reset();
 
-  WebTaskList* mutable_task_list() { return &task_list_; }
-
   void SetTestIsRunning(bool);
   bool TestIsRunning() const { return test_is_running_; }
 
   bool UseMockTheme() const { return use_mock_theme_; }
-
-  void InvokeCallback(scoped_ptr<InvokeCallbackTask> callback);
 
   // WebTestRunner implementation.
   bool ShouldGeneratePixelResults() override;
@@ -155,9 +149,22 @@ class TestRunner : public WebTestRunner,
   };
 
  private:
-  friend class InvokeCallbackTask;
   friend class TestRunnerBindings;
   friend class WorkQueue;
+
+  // Helpers for working with base and V8 callbacks.
+  void PostTask(const base::Closure& callback);
+  void PostDelayedTask(long long delay, const base::Closure& callback);
+  void PostV8Callback(const v8::Local<v8::Function>& callback);
+  void PostV8CallbackWithArgs(v8::UniquePersistent<v8::Function> callback,
+                              int argc,
+                              v8::Local<v8::Value> argv[]);
+  void InvokeV8Callback(const v8::UniquePersistent<v8::Function>& callback);
+  void InvokeV8CallbackWithArgs(
+      const v8::UniquePersistent<v8::Function>& callback,
+      const std::vector<v8::UniquePersistent<v8::Value>>& args);
+  base::Closure CreateClosureThatPostsV8Callback(
+      const v8::Local<v8::Function>& callback);
 
   // Helper class for managing events queued by methods like queueLoad or
   // queueScript.
@@ -174,22 +181,15 @@ class TestRunner : public WebTestRunner,
 
     void set_frozen(bool frozen) { frozen_ = frozen; }
     bool is_empty() { return queue_.empty(); }
-    WebTaskList* mutable_task_list() { return &task_list_; }
 
    private:
     void ProcessWork();
 
-    class WorkQueueTask : public WebMethodTask<WorkQueue> {
-     public:
-      WorkQueueTask(WorkQueue* object) : WebMethodTask<WorkQueue>(object) {}
-
-      void RunIfValid() override;
-    };
-
-    WebTaskList task_list_;
     std::deque<WorkItem*> queue_;
     bool frozen_;
     TestRunner* controller_;
+
+    base::WeakPtrFactory<WorkQueue> weak_factory_;
   };
 
   ///////////////////////////////////////////////////////////////////////////
@@ -650,15 +650,16 @@ class TestRunner : public WebTestRunner,
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
 
-  void GetManifestCallback(scoped_ptr<InvokeCallbackTask> task,
+  void GetManifestCallback(v8::UniquePersistent<v8::Function> callback,
                            const blink::WebURLResponse& response,
                            const std::string& data);
-  void CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
+  void CapturePixelsCallback(v8::UniquePersistent<v8::Function> callback,
                              const SkBitmap& snapshot);
-  void DispatchBeforeInstallPromptCallback(scoped_ptr<InvokeCallbackTask> task,
-                                           bool canceled);
+  void DispatchBeforeInstallPromptCallback(
+      v8::UniquePersistent<v8::Function> callback,
+      bool canceled);
   void GetBluetoothManualChooserEventsCallback(
-      scoped_ptr<InvokeCallbackTask> task,
+      v8::UniquePersistent<v8::Function> callback,
       const std::vector<std::string>& events);
 
   void CheckResponseMimeType();
@@ -790,9 +791,6 @@ class TestRunner : public WebTestRunner,
 
   // WAV audio data is stored here.
   std::vector<unsigned char> audio_data_;
-
-  // Used for test timeouts.
-  WebTaskList task_list_;
 
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;

@@ -5,72 +5,24 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TASK_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TASK_H_
 
-#include <vector>
-
+#include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 
 namespace test_runner {
 
-class WebTaskList;
-
-// WebTask represents a task which can run by WebTestDelegate::postTask() or
-// WebTestDelegate::postDelayedTask().
-class WebTask : public blink::WebTaskRunner::Task {
+// blink::WebTaskRunner::Task that wraps a base::Closure.
+class WebCallbackTask : public blink::WebTaskRunner::Task {
  public:
-  explicit WebTask(WebTaskList*);
-  ~WebTask() override;
+  WebCallbackTask(const base::Closure& callback);
+  ~WebCallbackTask() override;
 
-  // The main code of this task.
-  // An implementation of run() should return immediately if cancel() was
-  // called.
-  void run() override = 0;
-  virtual void cancel() = 0;
-
- protected:
-  WebTaskList* task_list_;
-};
-
-class WebTaskList {
- public:
-  WebTaskList();
-  ~WebTaskList();
-  void RegisterTask(WebTask*);
-  void UnregisterTask(WebTask*);
-  void RevokeAll();
+  void run() override;
 
  private:
-  std::vector<WebTask*> tasks_;
+  base::Closure callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebTaskList);
-};
-
-// A task containing an object pointer of class T. Derived classes should
-// override RunIfValid() which in turn can safely invoke methods on the
-// object_. The Class T must have "WebTaskList* mutable_task_list()".
-template <class T>
-class WebMethodTask : public WebTask {
- public:
-  explicit WebMethodTask(T* object)
-      : WebTask(object->mutable_task_list()), object_(object) {}
-
-  virtual ~WebMethodTask() {}
-
-  void run() override {
-    if (object_)
-      RunIfValid();
-  }
-
-  void cancel() override {
-    object_ = 0;
-    task_list_->UnregisterTask(this);
-    task_list_ = 0;
-  }
-
-  virtual void RunIfValid() = 0;
-
- protected:
-  T* object_;
+  DISALLOW_COPY_AND_ASSIGN(WebCallbackTask);
 };
 
 }  // namespace test_runner

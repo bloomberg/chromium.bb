@@ -4,6 +4,8 @@
 
 #include "components/test_runner/web_view_test_client.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,22 +27,6 @@
 
 namespace test_runner {
 
-namespace {
-
-class HostMethodTask : public WebMethodTask<WebViewTestClient> {
- public:
-  typedef void (WebViewTestClient::*CallbackMethodType)();
-  HostMethodTask(WebViewTestClient* object, CallbackMethodType callback)
-      : WebMethodTask<WebViewTestClient>(object), callback_(callback) {}
-
-  void RunIfValid() override { (object_->*callback_)(); }
-
- private:
-  CallbackMethodType callback_;
-};
-
-}  // namespace
-
 WebViewTestClient::WebViewTestClient(TestRunner* test_runner,
                                      WebTestDelegate* delegate,
                                      EventSender* event_sender,
@@ -49,7 +35,8 @@ WebViewTestClient::WebViewTestClient(TestRunner* test_runner,
       delegate_(delegate),
       event_sender_(event_sender),
       web_test_proxy_base_(web_test_proxy_base),
-      animation_scheduled_(false) {
+      animation_scheduled_(false),
+      weak_factory_(this) {
   DCHECK(test_runner);
   DCHECK(delegate);
   DCHECK(event_sender);
@@ -67,7 +54,9 @@ void WebViewTestClient::scheduleAnimation() {
     test_runner_->OnAnimationScheduled(web_test_proxy_base_->web_view());
 
     delegate_->PostDelayedTask(
-        new HostMethodTask(this, &WebViewTestClient::AnimateNow), 1);
+        new WebCallbackTask(base::Bind(&WebViewTestClient::AnimateNow,
+                                       weak_factory_.GetWeakPtr())),
+        1);
   }
 }
 

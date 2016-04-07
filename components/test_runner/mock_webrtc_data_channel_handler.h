@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
@@ -23,6 +23,7 @@ class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
   MockWebRTCDataChannelHandler(blink::WebString label,
                                const blink::WebRTCDataChannelInit& init,
                                WebTestDelegate* delegate);
+  ~MockWebRTCDataChannelHandler() override;
 
   // WebRTCDataChannelHandler related methods
   void setClient(blink::WebRTCDataChannelHandlerClient* client) override;
@@ -40,18 +41,18 @@ class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
   bool sendRawData(const char* data, size_t size) override;
   void close() override;
 
-  // WebTask related methods
-  WebTaskList* mutable_task_list() { return &task_list_; }
-
  private:
   MockWebRTCDataChannelHandler();
+  void ReportOpenedState();
+  void ReportClosedState();
 
   blink::WebRTCDataChannelHandlerClient* client_;
   blink::WebString label_;
   blink::WebRTCDataChannelInit init_;
   bool reliable_;
-  WebTaskList task_list_;
   WebTestDelegate* delegate_;
+
+  base::WeakPtrFactory<MockWebRTCDataChannelHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCDataChannelHandler);
 };

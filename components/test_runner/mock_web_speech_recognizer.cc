@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
@@ -129,8 +132,10 @@ class EndedTask : public MockWebSpeechRecognizer::Task {
 }  // namespace
 
 MockWebSpeechRecognizer::MockWebSpeechRecognizer()
-    : was_aborted_(false), task_queue_running_(false), delegate_(0) {
-}
+    : was_aborted_(false),
+      task_queue_running_(false),
+      delegate_(0),
+      weak_factory_(this) {}
 
 MockWebSpeechRecognizer::~MockWebSpeechRecognizer() {
   ClearTaskQueue();
@@ -239,8 +244,7 @@ void MockWebSpeechRecognizer::SetError(const blink::WebString& error,
 void MockWebSpeechRecognizer::StartTaskQueue() {
   if (task_queue_running_)
     return;
-  delegate_->PostTask(new StepTask(this));
-  task_queue_running_ = true;
+  PostRunTaskFromQueue();
 }
 
 void MockWebSpeechRecognizer::ClearTaskQueue() {
@@ -251,23 +255,29 @@ void MockWebSpeechRecognizer::ClearTaskQueue() {
   task_queue_running_ = false;
 }
 
-void MockWebSpeechRecognizer::StepTask::RunIfValid() {
-  if (object_->task_queue_.empty()) {
-    object_->task_queue_running_ = false;
+void MockWebSpeechRecognizer::PostRunTaskFromQueue() {
+  task_queue_running_ = true;
+  delegate_->PostTask(new WebCallbackTask(base::Bind(
+      &MockWebSpeechRecognizer::RunTaskFromQueue, weak_factory_.GetWeakPtr())));
+}
+
+void MockWebSpeechRecognizer::RunTaskFromQueue() {
+  if (task_queue_.empty()) {
+    task_queue_running_ = false;
     return;
   }
 
-  MockWebSpeechRecognizer::Task* task = object_->task_queue_.front();
-  object_->task_queue_.pop_front();
+  MockWebSpeechRecognizer::Task* task = task_queue_.front();
+  task_queue_.pop_front();
   task->run();
   delete task;
 
-  if (object_->task_queue_.empty()) {
-    object_->task_queue_running_ = false;
+  if (task_queue_.empty()) {
+    task_queue_running_ = false;
     return;
   }
 
-  object_->delegate_->PostTask(new StepTask(object_));
+  PostRunTaskFromQueue();
 }
 
 }  // namespace test_runner

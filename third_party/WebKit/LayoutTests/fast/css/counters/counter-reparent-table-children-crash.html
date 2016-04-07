@@ -12,8 +12,8 @@ if (window.testRunner) {
 function crash() {
     document.body.innerHTML = "PASS: Malformed table counters do not cause crash";
     if (window.testRunner) {
-        testRunner.notifyDone();
         testRunner.dumpAsText();
+        testRunner.notifyDone();
     }
 }
 </script>

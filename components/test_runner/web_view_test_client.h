@@ -6,7 +6,7 @@
 #define COMPONENTS_TEST_RUNNER_WEB_VIEW_TEST_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace blink {
@@ -68,9 +68,6 @@ class WebViewTestClient : public blink::WebViewClient {
   void resetInputMethod() override;
   blink::WebString acceptLanguages() override;
 
-  // Members expected by WebTask-related templates.
-  WebTaskList* mutable_task_list() { return &task_list_; }
-
  private:
   void AnimateNow();
 
@@ -82,7 +79,7 @@ class WebViewTestClient : public blink::WebViewClient {
 
   bool animation_scheduled_;
 
-  WebTaskList task_list_;
+  base::WeakPtrFactory<WebViewTestClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestClient);
 };

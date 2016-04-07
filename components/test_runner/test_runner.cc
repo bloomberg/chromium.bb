@@ -25,6 +25,7 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_content_settings.h"
+#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
@@ -93,65 +94,7 @@ double GetDefaultDeviceScaleFactor() {
   return 1.f;
 }
 
-class HostMethodTask : public WebMethodTask<TestRunner> {
- public:
-  typedef void (TestRunner::*CallbackMethodType)();
-  HostMethodTask(TestRunner* object, CallbackMethodType callback)
-      : WebMethodTask<TestRunner>(object), callback_(callback) {}
-
-  void RunIfValid() override { (object_->*callback_)(); }
-
- private:
-  CallbackMethodType callback_;
-};
-
 }  // namespace
-
-class InvokeCallbackTask : public WebMethodTask<TestRunner> {
- public:
-  InvokeCallbackTask(TestRunner* object, v8::Local<v8::Function> callback)
-      : WebMethodTask<TestRunner>(object),
-        callback_(blink::mainThreadIsolate(), callback),
-        argc_(0) {}
-
-  void RunIfValid() override {
-    v8::Isolate* isolate = blink::mainThreadIsolate();
-    v8::HandleScope handle_scope(isolate);
-    WebFrame* frame = object_->web_view_->mainFrame();
-
-    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-    if (context.IsEmpty())
-      return;
-
-    v8::Context::Scope context_scope(context);
-
-    scoped_ptr<v8::Local<v8::Value>[]> local_argv;
-    if (argc_) {
-        local_argv.reset(new v8::Local<v8::Value>[argc_]);
-        for (int i = 0; i < argc_; ++i)
-          local_argv[i] = v8::Local<v8::Value>::New(isolate, argv_[i]);
-    }
-
-    frame->callFunctionEvenIfScriptDisabled(
-        v8::Local<v8::Function>::New(isolate, callback_),
-        context->Global(),
-        argc_,
-        local_argv.get());
-  }
-
-  void SetArguments(int argc, v8::Local<v8::Value> argv[]) {
-    v8::Isolate* isolate = blink::mainThreadIsolate();
-    argc_ = argc;
-    argv_.reset(new v8::UniquePersistent<v8::Value>[argc]);
-    for (int i = 0; i < argc; ++i)
-      argv_[i] = v8::UniquePersistent<v8::Value>(isolate, argv[i]);
-  }
-
- private:
-  v8::UniquePersistent<v8::Function> callback_;
-  int argc_;
-  scoped_ptr<v8::UniquePersistent<v8::Value>[]> argv_;
-};
 
 class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
  public:
@@ -1503,7 +1446,8 @@ void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
 }
 
 void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
-  runner_->setCustomTextOutput(output);
+  if (runner_)
+    runner_->setCustomTextOutput(output);
 }
 
 void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
@@ -1606,8 +1550,7 @@ void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {
 }
 
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
-    : frozen_(false)
-    , controller_(controller) {}
+    : frozen_(false), controller_(controller), weak_factory_(this) {}
 
 TestRunner::WorkQueue::~WorkQueue() {
   Reset();
@@ -1619,7 +1562,8 @@ void TestRunner::WorkQueue::ProcessWorkSoon() {
 
   if (!queue_.empty()) {
     // We delay processing queued work to avoid recursion problems.
-    controller_->delegate_->PostTask(new WorkQueueTask(this));
+    controller_->PostTask(base::Bind(&TestRunner::WorkQueue::ProcessWork,
+                                     weak_factory_.GetWeakPtr()));
   } else if (!controller_->layout_test_runtime_flags_.wait_until_done()) {
     controller_->delegate_->TestFinished();
   }
@@ -1655,10 +1599,6 @@ void TestRunner::WorkQueue::ProcessWork() {
   if (!controller_->layout_test_runtime_flags_.wait_until_done() &&
       !controller_->topLoadingFrame())
     controller_->delegate_->TestFinished();
-}
-
-void TestRunner::WorkQueue::WorkQueueTask::RunIfValid() {
-  object_->ProcessWork();
 }
 
 TestRunner::TestRunner(TestInterfaces* interfaces)
@@ -1779,7 +1719,7 @@ void TestRunner::Reset() {
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
 
-  task_list_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   work_queue_.Reset();
 
   if (close_remaining_windows_ && delegate_)
@@ -1792,8 +1732,73 @@ void TestRunner::SetTestIsRunning(bool running) {
   test_is_running_ = running;
 }
 
-void TestRunner::InvokeCallback(scoped_ptr<InvokeCallbackTask> task) {
-  delegate_->PostTask(task.release());
+void TestRunner::PostTask(const base::Closure& callback) {
+  delegate_->PostTask(new WebCallbackTask(callback));
+}
+
+void TestRunner::PostDelayedTask(long long delay,
+                                 const base::Closure& callback) {
+  delegate_->PostDelayedTask(new WebCallbackTask(callback), delay);
+}
+
+void TestRunner::PostV8Callback(const v8::Local<v8::Function>& callback) {
+  PostTask(base::Bind(&TestRunner::InvokeV8Callback, weak_factory_.GetWeakPtr(),
+                      v8::UniquePersistent<v8::Function>(
+                          blink::mainThreadIsolate(), callback)));
+}
+
+void TestRunner::PostV8CallbackWithArgs(
+    v8::UniquePersistent<v8::Function> callback,
+    int argc,
+    v8::Local<v8::Value> argv[]) {
+  std::vector<v8::UniquePersistent<v8::Value>> args;
+  for (int i = 0; i < argc; i++) {
+    args.push_back(
+        v8::UniquePersistent<v8::Value>(blink::mainThreadIsolate(), argv[i]));
+  }
+
+  PostTask(base::Bind(&TestRunner::InvokeV8CallbackWithArgs,
+                      weak_factory_.GetWeakPtr(), std::move(callback),
+                      std::move(args)));
+}
+
+void TestRunner::InvokeV8Callback(
+    const v8::UniquePersistent<v8::Function>& callback) {
+  std::vector<v8::UniquePersistent<v8::Value>> empty_args;
+  InvokeV8CallbackWithArgs(callback, std::move(empty_args));
+}
+
+void TestRunner::InvokeV8CallbackWithArgs(
+    const v8::UniquePersistent<v8::Function>& callback,
+    const std::vector<v8::UniquePersistent<v8::Value>>& args) {
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  if (!web_view_)
+    return;
+  WebFrame* frame = web_view_->mainFrame();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+  v8::Context::Scope context_scope(context);
+
+  std::vector<v8::Local<v8::Value>> local_args;
+  for (const auto& arg : args) {
+    local_args.push_back(v8::Local<v8::Value>::New(isolate, arg));
+  }
+
+  frame->callFunctionEvenIfScriptDisabled(
+      v8::Local<v8::Function>::New(isolate, callback), context->Global(),
+      local_args.size(), local_args.data());
+}
+
+base::Closure TestRunner::CreateClosureThatPostsV8Callback(
+    const v8::Local<v8::Function>& callback) {
+  return base::Bind(
+      &TestRunner::PostTask, weak_factory_.GetWeakPtr(),
+      base::Bind(&TestRunner::InvokeV8Callback, weak_factory_.GetWeakPtr(),
+                 v8::UniquePersistent<v8::Function>(blink::mainThreadIsolate(),
+                                                    callback)));
 }
 
 bool TestRunner::shouldDumpEditingCallbacks() const {
@@ -2021,9 +2026,8 @@ bool TestRunner::shouldDumpResourcePriorities() const {
 bool TestRunner::RequestPointerLock() {
   switch (pointer_lock_planned_result_) {
     case PointerLockWillSucceed:
-      delegate_->PostDelayedTask(
-          new HostMethodTask(this, &TestRunner::DidAcquirePointerLockInternal),
-          0);
+      PostDelayedTask(0, base::Bind(&TestRunner::DidAcquirePointerLockInternal,
+                                    weak_factory_.GetWeakPtr()));
       return true;
     case PointerLockWillRespondAsync:
       DCHECK(!pointer_locked_);
@@ -2038,8 +2042,8 @@ bool TestRunner::RequestPointerLock() {
 }
 
 void TestRunner::RequestPointerUnlock() {
-  delegate_->PostDelayedTask(
-      new HostMethodTask(this, &TestRunner::DidLosePointerLockInternal), 0);
+  PostDelayedTask(0, base::Bind(&TestRunner::DidLosePointerLockInternal,
+                                weak_factory_.GetWeakPtr()));
 }
 
 bool TestRunner::isPointerLocked() {
@@ -2089,8 +2093,8 @@ class WorkItemBackForward : public TestRunner::WorkItem {
 };
 
 void TestRunner::NotifyDone() {
-  // Test didn't timeout. Kill the timeout timer.
-  task_list_.RevokeAll();
+  // Test didn't timeout. Kill the pending callbacks.
+  weak_factory_.InvalidateWeakPtrs();
 
   CompleteNotifyDone();
 }
@@ -2964,27 +2968,24 @@ std::string TestRunner::PathToLocalResource(const std::string& path) {
 void TestRunner::SetBackingScaleFactor(double value,
                                        v8::Local<v8::Function> callback) {
   delegate_->SetDeviceScaleFactor(value);
-  delegate_->PostTask(new InvokeCallbackTask(this, callback));
+  PostV8Callback(callback);
 }
 
 void TestRunner::EnableUseZoomForDSF(v8::Local<v8::Function> callback) {
   delegate_->EnableUseZoomForDSF();
-  delegate_->PostTask(new InvokeCallbackTask(this, callback));
+  PostV8Callback(callback);
 }
 
 void TestRunner::SetColorProfile(const std::string& name,
                                  v8::Local<v8::Function> callback) {
   delegate_->SetDeviceColorProfile(name);
-  delegate_->PostTask(new InvokeCallbackTask(this, callback));
+  PostV8Callback(callback);
 }
 
 void TestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
                                          v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
   delegate_->SetBluetoothFakeAdapter(
-      adapter_name,
-      base::Bind(&TestRunner::InvokeCallback, weak_factory_.GetWeakPtr(),
-                 base::Passed(&task)));
+      adapter_name, CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunner::SetBluetoothManualChooser(bool enable) {
@@ -2993,10 +2994,11 @@ void TestRunner::SetBluetoothManualChooser(bool enable) {
 
 void TestRunner::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
   return delegate_->GetBluetoothManualChooserEvents(
       base::Bind(&TestRunner::GetBluetoothManualChooserEventsCallback,
-                 weak_factory_.GetWeakPtr(), base::Passed(&task)));
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(v8::UniquePersistent<v8::Function>(
+                     blink::mainThreadIsolate(), callback))));
 }
 
 void TestRunner::SendBluetoothManualChooserEvent(const std::string& event,
@@ -3027,13 +3029,12 @@ void TestRunner::DispatchBeforeInstallPromptEvent(
     int request_id,
     const std::vector<std::string>& event_platforms,
     v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(
-      new InvokeCallbackTask(this, callback));
-
   delegate_->DispatchBeforeInstallPromptEvent(
       request_id, event_platforms,
       base::Bind(&TestRunner::DispatchBeforeInstallPromptCallback,
-                 weak_factory_.GetWeakPtr(), base::Passed(&task)));
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(v8::UniquePersistent<v8::Function>(
+                     blink::mainThreadIsolate(), callback))));
 }
 
 void TestRunner::ResolveBeforeInstallPromptPromise(
@@ -3104,28 +3105,39 @@ void TestRunner::LayoutAndPaintAsync() {
 }
 
 void TestRunner::LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(
-      new InvokeCallbackTask(this, callback));
-  proxy_->LayoutAndPaintAsyncThen(base::Bind(&TestRunner::InvokeCallback,
-                                             weak_factory_.GetWeakPtr(),
-                                             base::Passed(&task)));
+  proxy_->LayoutAndPaintAsyncThen(CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(
-      new InvokeCallbackTask(this, callback));
+  v8::UniquePersistent<v8::Function> persistent_callback(
+      blink::mainThreadIsolate(), callback);
+
+  if (!web_view_) {
+    WebURLResponse response;
+    response.setHTTPStatusCode(404);
+    GetManifestCallback(std::move(persistent_callback), response, "");
+    return;
+  }
 
   delegate_->FetchManifest(
       web_view_, web_view_->mainFrame()->document().manifestURL(),
       base::Bind(&TestRunner::GetManifestCallback, weak_factory_.GetWeakPtr(),
-                 base::Passed(&task)));
+                 base::Passed(std::move(persistent_callback))));
 }
 
 void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
-  DumpPixelsAsync(proxy_->web_view(),
-                  base::Bind(&TestRunner::CapturePixelsCallback,
-                             weak_factory_.GetWeakPtr(), base::Passed(&task)));
+  v8::UniquePersistent<v8::Function> persistent_callback(
+      blink::mainThreadIsolate(), callback);
+
+  if (!web_view_) {
+    CapturePixelsCallback(std::move(persistent_callback), SkBitmap());
+    return;
+  }
+
+  DumpPixelsAsync(
+      proxy_->web_view(),
+      base::Bind(&TestRunner::CapturePixelsCallback, weak_factory_.GetWeakPtr(),
+                 base::Passed(std::move(persistent_callback))));
 }
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {
@@ -3149,22 +3161,33 @@ void TestRunner::ForceNextDrawingBufferCreationToFail() {
 
 void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
     int x, int y, v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(
-      new InvokeCallbackTask(this, callback));
+  v8::UniquePersistent<v8::Function> persistent_callback(
+      blink::mainThreadIsolate(), callback);
+
+  if (!web_view_) {
+    CapturePixelsCallback(std::move(persistent_callback), SkBitmap());
+    return;
+  }
+
   CopyImageAtAndCapturePixels(
       proxy_->web_view(), x, y,
       base::Bind(&TestRunner::CapturePixelsCallback, weak_factory_.GetWeakPtr(),
-                 base::Passed(&task)));
+                 base::Passed(std::move(persistent_callback))));
 }
 
-void TestRunner::GetManifestCallback(scoped_ptr<InvokeCallbackTask> task,
-                                     const blink::WebURLResponse& response,
-                                     const std::string& data) {
-  InvokeCallback(std::move(task));
+void TestRunner::GetManifestCallback(
+    v8::UniquePersistent<v8::Function> callback,
+    const blink::WebURLResponse& response,
+    const std::string& data) {
+  PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
 }
 
-void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
-                                       const SkBitmap& snapshot) {
+void TestRunner::CapturePixelsCallback(
+    v8::UniquePersistent<v8::Function> callback,
+    const SkBitmap& snapshot) {
+  if (!web_view_)
+    return;
+
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -3203,13 +3226,15 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
   argv[2] = blink::WebArrayBufferConverter::toV8Value(
       &buffer, context->Global(), isolate);
 
-  task->SetArguments(3, argv);
-  InvokeCallback(std::move(task));
+  PostV8CallbackWithArgs(std::move(callback), arraysize(argv), argv);
 }
 
 void TestRunner::DispatchBeforeInstallPromptCallback(
-    scoped_ptr<InvokeCallbackTask> task,
+    v8::UniquePersistent<v8::Function> callback,
     bool canceled) {
+  if (!web_view_)
+    return;
+
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -3219,16 +3244,18 @@ void TestRunner::DispatchBeforeInstallPromptCallback(
     return;
 
   v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> argv[1];
-  argv[0] = v8::Boolean::New(isolate, canceled);
+  v8::Local<v8::Value> arg;
+  arg = v8::Boolean::New(isolate, canceled);
 
-  task->SetArguments(1, argv);
-  InvokeCallback(std::move(task));
+  PostV8CallbackWithArgs(std::move(callback), 1, &arg);
 }
 
 void TestRunner::GetBluetoothManualChooserEventsCallback(
-    scoped_ptr<InvokeCallbackTask> task,
+    v8::UniquePersistent<v8::Function> callback,
     const std::vector<std::string>& events) {
+  if (!web_view_)
+    return;
+
   // Build the V8 context.
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -3239,13 +3266,12 @@ void TestRunner::GetBluetoothManualChooserEventsCallback(
   v8::Context::Scope context_scope(context);
 
   // Convert the argument.
-  v8::Local<v8::Value> arg[1];
-  if (!gin::TryConvertToV8(isolate, events, &arg[0]))
+  v8::Local<v8::Value> arg;
+  if (!gin::TryConvertToV8(isolate, events, &arg))
     return;
 
   // Call the callback.
-  task->SetArguments(1, arg);
-  InvokeCallback(std::move(task));
+  PostV8CallbackWithArgs(std::move(callback), 1, &arg);
 }
 
 void TestRunner::LocationChangeDone() {

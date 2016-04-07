@@ -4,42 +4,15 @@
 
 #include "components/test_runner/web_task.h"
 
-#include <algorithm>
-
-#include "third_party/WebKit/public/web/WebKit.h"
-
 namespace test_runner {
 
-WebTask::WebTask(WebTaskList* list) : task_list_(list) {
-  task_list_->RegisterTask(this);
-}
+WebCallbackTask::WebCallbackTask(const base::Closure& callback)
+    : callback_(callback) {}
 
-WebTask::~WebTask() {
-  if (task_list_)
-    task_list_->UnregisterTask(this);
-}
+WebCallbackTask::~WebCallbackTask() {}
 
-WebTaskList::WebTaskList() {
-}
-
-WebTaskList::~WebTaskList() {
-  RevokeAll();
-}
-
-void WebTaskList::RegisterTask(WebTask* task) {
-  tasks_.push_back(task);
-}
-
-void WebTaskList::UnregisterTask(WebTask* task) {
-  std::vector<WebTask*>::iterator iter =
-      std::find(tasks_.begin(), tasks_.end(), task);
-  if (iter != tasks_.end())
-    tasks_.erase(iter);
-}
-
-void WebTaskList::RevokeAll() {
-  while (!tasks_.empty())
-    tasks_[0]->cancel();
+void WebCallbackTask::run() {
+  callback_.Run();
 }
 
 }  // namespace test_runner

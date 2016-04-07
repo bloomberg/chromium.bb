@@ -6,7 +6,6 @@
 #define COMPONENTS_TEST_RUNNER_MOCK_WEB_MEDIA_STREAM_CENTER_H_
 
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 
 namespace blink {
@@ -20,9 +19,8 @@ class TestInterfaces;
 
 class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
  public:
-  MockWebMediaStreamCenter(blink::WebMediaStreamCenterClient* client,
-                           TestInterfaces* interfaces);
-  ~MockWebMediaStreamCenter() override;
+  MockWebMediaStreamCenter() = default;
+  ~MockWebMediaStreamCenter() override {};
 
   void didEnableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
@@ -41,8 +39,6 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
       const blink::WebMediaStreamTrack& track) override;
 
  private:
-  WebTaskList task_list_;
-
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaStreamCenter);
 };
 

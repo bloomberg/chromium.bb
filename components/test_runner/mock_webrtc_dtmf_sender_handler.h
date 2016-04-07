@@ -6,7 +6,7 @@
 #define COMPONENTS_TEST_RUNNER_MOCK_WEBRTC_DTMF_SENDER_HANDLER_H_
 
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -19,6 +19,7 @@ class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
  public:
   MockWebRTCDTMFSenderHandler(const blink::WebMediaStreamTrack& track,
                               WebTestDelegate* delegate);
+  ~MockWebRTCDTMFSenderHandler() override;
 
   // WebRTCDTMFSenderHandler related methods
   void setClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
@@ -28,19 +29,17 @@ class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
                   long duration,
                   long inter_tone_gap) override;
 
-  // WebTask related methods
-  WebTaskList* mutable_task_list() { return &task_list_; }
-
   void ClearToneBuffer() { tone_buffer_.reset(); }
 
  private:
-  MockWebRTCDTMFSenderHandler();
+  void PlayTone();
 
   blink::WebRTCDTMFSenderHandlerClient* client_;
   blink::WebMediaStreamTrack track_;
   blink::WebString tone_buffer_;
-  WebTaskList task_list_;
   WebTestDelegate* delegate_;
+
+  base::WeakPtrFactory<MockWebRTCDTMFSenderHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCDTMFSenderHandler);
 };

@@ -6,7 +6,7 @@
 #define COMPONENTS_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
 
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/web/WebColorChooser.h"
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
 
@@ -31,13 +31,13 @@ class MockColorChooser : public blink::WebColorChooser {
   void endChooser() override;
 
   void InvokeDidEndChooser();
-  WebTaskList* mutable_task_list() { return &task_list_; }
 
  private:
   blink::WebColorChooserClient* client_;
   WebTestDelegate* delegate_;
   TestRunner* test_runner_;
-  WebTaskList task_list_;
+
+  base::WeakPtrFactory<MockColorChooser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
 };
