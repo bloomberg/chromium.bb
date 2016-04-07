@@ -62,14 +62,12 @@ var DumpCreator = (function() {
         ' and RTCP packets are logged. These do not include any audio or' +
         ' video information, nor any other types of personally identifiable' +
         ' information (so no IP addresses or URLs). Checking this box will' +
-        ' enable the recording for ongoing WebRTC calls and for future' +
-        ' WebRTC calls. When the box is unchecked or this page is closed,' +
-        ' all ongoing recordings will be stopped and this recording' +
-        ' functionality will be disabled for future WebRTC calls. Recording' +
-        ' in multiple tabs or multiple recordings in the same tab is' +
-        ' currently not supported. When enabling, a filename for the' +
-        ' recording can be selected. If an existing file is selected, it' +
-        ' will be overwritten. </p>';
+        ' enable the recording for currently ongoing WebRTC calls. When' +
+        ' the box is unchecked or this page is closed, all active recordings' +
+        ' will be stopped. Recording in multiple tabs or multiple recordings' +
+        ' in the same tab is currently not supported. When enabling, a' +
+        ' filename for the recording can be selected. If an existing file is' +
+        ' selected, it will be overwritten. </p>';
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
     content.getElementsByTagName('input')[0].addEventListener(
