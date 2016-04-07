@@ -383,9 +383,12 @@ RawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState
     if (!anchor.anchorNode()->isInShadowTree())
         return m_frame->selection().firstRange();
 
+    Node* node = shadowAdjustedNode(anchor);
+    if (!node) // crbug.com/595100
+        return nullptr;
     if (!visibleSelection().isBaseFirst())
-        return Range::create(*anchor.document(), focusNode(), focusOffset(), shadowAdjustedNode(anchor), anchorOffset());
-    return Range::create(*anchor.document(), shadowAdjustedNode(anchor), anchorOffset(), focusNode(), focusOffset());
+        return Range::create(*anchor.document(), focusNode(), focusOffset(), node, anchorOffset());
+    return Range::create(*anchor.document(), node, anchorOffset(), focusNode(), focusOffset());
 }
 
 void DOMSelection::removeAllRanges()
