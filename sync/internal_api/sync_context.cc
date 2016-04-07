@@ -6,10 +6,8 @@
 
 namespace syncer_v2 {
 
-SyncContext::SyncContext() {
-}
+SyncContext::SyncContext() {}
 
-SyncContext::~SyncContext() {
-}
+SyncContext::~SyncContext() {}
 
 }  // namespace syncer_v2

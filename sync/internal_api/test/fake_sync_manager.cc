@@ -16,6 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
+#include "sync/internal_api/public/test/fake_sync_context.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/syncable/directory.h"
 #include "sync/test/fake_sync_encryption_handler.h"
@@ -200,8 +201,8 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
-syncer_v2::SyncContextProxy* FakeSyncManager::GetSyncContextProxy() {
-  return &null_sync_context_proxy_;
+scoped_ptr<syncer_v2::SyncContext> FakeSyncManager::GetSyncContextProxy() {
+  return make_scoped_ptr(new syncer_v2::FakeSyncContext());
 }
 
 const std::string FakeSyncManager::cache_guid() {

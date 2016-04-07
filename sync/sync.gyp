@@ -356,8 +356,6 @@
         'internal_api/shared_model_type_processor.cc',
         'internal_api/sync_context.cc',
         'internal_api/sync_context_proxy.cc',
-        'internal_api/sync_context_proxy_impl.cc',
-        'internal_api/sync_context_proxy_impl.h',
         'internal_api/sync_db_util.cc',
         'internal_api/sync_encryption_handler_impl.cc',
         'internal_api/sync_encryption_handler_impl.h',

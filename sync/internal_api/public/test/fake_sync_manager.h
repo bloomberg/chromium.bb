@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "sync/internal_api/public/sync_manager.h"
-#include "sync/internal_api/public/test/null_sync_context_proxy.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 
 class GURL;
@@ -99,7 +98,7 @@ class FakeSyncManager : public SyncManager {
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  syncer_v2::SyncContextProxy* GetSyncContextProxy() override;
+  scoped_ptr<syncer_v2::SyncContext> GetSyncContextProxy() override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
@@ -147,8 +146,6 @@ class FakeSyncManager : public SyncManager {
   scoped_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
 
   TestUserShare test_user_share_;
-
-  syncer_v2::NullSyncContextProxy null_sync_context_proxy_;
 
   // Number of invalidations received since startup.
   int num_invalidations_received_;

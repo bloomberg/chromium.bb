@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -184,14 +186,13 @@ class SyncBackendHostImpl
   // Reports backend initialization success.  Includes some objects from sync
   // manager initialization to be passed back to the UI thread.
   //
-  // |sync_context_proxy| points to an object owned by the SyncManager.
-  // Ownership is not transferred, but we can obtain our own copy of the object
-  // using its Clone() method.
+  // |sync_context| is our SyncContext, which is owned because in
+  // production it is a proxy object to the real SyncContext.
   virtual void HandleInitializationSuccessOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend> js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
           debug_info_listener,
-      syncer_v2::SyncContextProxy* sync_context_proxy,
+      scoped_ptr<syncer_v2::SyncContext> sync_context,
       const std::string& cache_guid);
 
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
@@ -333,8 +334,9 @@ class SyncBackendHostImpl
   // sync loop.
   scoped_refptr<SyncBackendHostCore> core_;
 
-  // A handle referencing the main interface for non-blocking sync types.
-  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
+  // A handle referencing the main interface for non-blocking sync types. This
+  // object is owned because in production code it is a proxy object.
+  scoped_ptr<syncer_v2::SyncContext> sync_context_;
 
   bool initialized_;
 

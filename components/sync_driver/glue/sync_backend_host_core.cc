@@ -4,7 +4,10 @@
 
 #include "components/sync_driver/glue/sync_backend_host_core.h"
 
+#include <map>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -24,7 +27,6 @@
 #include "sync/internal_api/public/sessions/status_counters.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/sessions/update_counters.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "url/gurl.h"
@@ -548,9 +550,8 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
 
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
-             js_backend_,
-             debug_info_listener_,
-             sync_manager_->GetSyncContextProxy(),
+             js_backend_, debug_info_listener_,
+             base::Passed(sync_manager_->GetSyncContextProxy()),
              sync_manager_->cache_guid());
 
   js_backend_.Reset();

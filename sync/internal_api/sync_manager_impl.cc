@@ -33,13 +33,11 @@
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
-#include "sync/internal_api/public/sync_context.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/internal_api/sync_context_proxy_impl.h"
+#include "sync/internal_api/sync_context_proxy.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/syncapi_server_connection_manager.h"
 #include "sync/protocol/proto_value_conversions.h"
@@ -312,15 +310,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
   model_type_registry_.reset(
       new ModelTypeRegistry(args->workers, directory(), this));
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
-
-  // Bind the SyncContext WeakPtr to this thread.  This helps us crash earlier
-  // if the pointer is misused in debug mode.
-  base::WeakPtr<syncer_v2::SyncContext> weak_core =
-      model_type_registry_->AsWeakPtr();
-  weak_core.get();
-
-  sync_context_proxy_.reset(new syncer_v2::SyncContextProxyImpl(
-      base::ThreadTaskRunnerHandle::Get(), weak_core));
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -938,9 +927,10 @@ UserShare* SyncManagerImpl::GetUserShare() {
   return &share_;
 }
 
-syncer_v2::SyncContextProxy* SyncManagerImpl::GetSyncContextProxy() {
+scoped_ptr<syncer_v2::SyncContext> SyncManagerImpl::GetSyncContextProxy() {
   DCHECK(initialized_);
-  return sync_context_proxy_.get();
+  return make_scoped_ptr(new syncer_v2::SyncContextProxy(
+      base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr()));
 }
 
 const std::string SyncManagerImpl::cache_guid() {

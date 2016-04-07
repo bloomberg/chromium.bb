@@ -62,7 +62,7 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
   // and its task_runner to the newly created worker.
   //
   // Expects that the proxy's ModelType is not currently enabled.
-  void ConnectSyncTypeToWorker(
+  void ConnectType(
       syncer::ModelType type,
       scoped_ptr<syncer_v2::ActivationContext> activation_context) override;
 
@@ -70,7 +70,7 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
   //
   // Expects that the type is currently enabled.
   // Deletes the worker associated with the type.
-  void DisconnectSyncWorker(syncer::ModelType type) override;
+  void DisconnectType(syncer::ModelType type) override;
 
   // Implementation of SyncEncryptionHandler::Observer.
   void OnPassphraseRequired(

@@ -137,7 +137,7 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
                       GetEnabledNonBlockingTypes()).Empty());
 }
 
-void ModelTypeRegistry::ConnectSyncTypeToWorker(
+void ModelTypeRegistry::ConnectType(
     ModelType type,
     scoped_ptr<syncer_v2::ActivationContext> activation_context) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
@@ -174,7 +174,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
                       GetEnabledNonBlockingTypes()).Empty());
 }
 
-void ModelTypeRegistry::DisconnectSyncWorker(ModelType type) {
+void ModelTypeRegistry::DisconnectType(ModelType type) {
   DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
   DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());

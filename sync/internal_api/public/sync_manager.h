@@ -30,7 +30,7 @@
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/shutdown_reason.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
+#include "sync/internal_api/public/sync_context.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -359,7 +359,7 @@ class SYNC_EXPORT SyncManager {
   virtual UserShare* GetUserShare() = 0;
 
   // Returns an instance of the main interface for non-blocking sync types.
-  virtual syncer_v2::SyncContextProxy* GetSyncContextProxy() = 0;
+  virtual scoped_ptr<syncer_v2::SyncContext> GetSyncContextProxy() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.

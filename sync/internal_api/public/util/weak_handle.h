@@ -50,6 +50,7 @@
 #include <cstddef>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -57,6 +58,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "sync/base/sync_export.h"
@@ -85,14 +87,14 @@ struct ParamTraits<T&> {
   typedef T& ForwardType;
 };
 
-template <typename T, size_t n>
-struct ParamTraits<T[n]> {
-  typedef const T* ForwardType;
-};
-
 template <typename T>
-struct ParamTraits<T[]> {
-  typedef const T* ForwardType;
+// scoped_ptr<T> is the type the target function will accept; PassedWrapper is
+// the type that gets passed into Call and through to base::Bind. It would be
+// better to support movable types in a generic way but this was the simplest
+// fix for supporting scoped_ptr. Using base::internal is unfortunate but since
+// this class is basically a wrapper around base::Bind it makes sense.
+struct ParamTraits<scoped_ptr<T>> {
+  typedef base::internal::PassedWrapper<scoped_ptr<T>> ForwardType;
 };
 
 // Base class for WeakHandleCore<T> to avoid template bloat.  Handles
@@ -142,19 +144,14 @@ class WeakHandleCore
   template <typename U>
   void Call(const tracked_objects::Location& from_here,
             void (U::*fn)(void)) const {
-    PostToOwnerThread(
-        from_here,
-        Bind(&WeakHandleCore::template DoCall0<U>, this, fn));
+    PostToOwnerThread(from_here, Bind(fn, ptr_));
   }
 
   template <typename U, typename A1>
   void Call(const tracked_objects::Location& from_here,
             void (U::*fn)(A1),
             typename ParamTraits<A1>::ForwardType a1) const {
-    PostToOwnerThread(
-        from_here,
-        Bind(&WeakHandleCore::template DoCall1<U, A1>,
-             this, fn, a1));
+    PostToOwnerThread(from_here, Bind(fn, ptr_, a1));
   }
 
   template <typename U, typename A1, typename A2>
@@ -162,10 +159,7 @@ class WeakHandleCore
             void (U::*fn)(A1, A2),
             typename ParamTraits<A1>::ForwardType a1,
             typename ParamTraits<A2>::ForwardType a2) const {
-    PostToOwnerThread(
-        from_here,
-        Bind(&WeakHandleCore::template DoCall2<U, A1, A2>,
-             this, fn, a1, a2));
+    PostToOwnerThread(from_here, Bind(fn, ptr_, a1, a2));
   }
 
   template <typename U, typename A1, typename A2, typename A3>
@@ -174,10 +168,7 @@ class WeakHandleCore
             typename ParamTraits<A1>::ForwardType a1,
             typename ParamTraits<A2>::ForwardType a2,
             typename ParamTraits<A3>::ForwardType a3) const {
-    PostToOwnerThread(
-        from_here,
-        Bind(&WeakHandleCore::template DoCall3<U, A1, A2, A3>,
-             this, fn, a1, a2, a3));
+    PostToOwnerThread(from_here, Bind(fn, ptr_, a1, a2, a3));
   }
 
   template <typename U, typename A1, typename A2, typename A3, typename A4>
@@ -187,10 +178,7 @@ class WeakHandleCore
             typename ParamTraits<A2>::ForwardType a2,
             typename ParamTraits<A3>::ForwardType a3,
             typename ParamTraits<A4>::ForwardType a4) const {
-    PostToOwnerThread(
-        from_here,
-        Bind(&WeakHandleCore::template DoCall4<U, A1, A2, A3, A4>,
-             this, fn, a1, a2, a3, a4));
+    PostToOwnerThread(from_here, Bind(fn, ptr_, a1, a2, a3, a4));
   }
 
  private:
@@ -198,64 +186,6 @@ class WeakHandleCore
 
   // May be destroyed on any thread.
   ~WeakHandleCore() {}
-
-  // GCC 4.2.1 on OS X gets confused if all the DoCall functions are
-  // named the same, so we distinguish them.
-
-  template <typename U>
-  void DoCall0(void (U::*fn)(void)) const {
-    CHECK(IsOnOwnerThread());
-    if (!Get()) {
-      return;
-    }
-    (Get().get()->*fn)();
-  }
-
-  template <typename U, typename A1>
-  void DoCall1(void (U::*fn)(A1),
-               typename ParamTraits<A1>::ForwardType a1) const {
-    CHECK(IsOnOwnerThread());
-    if (!Get()) {
-      return;
-    }
-    (Get().get()->*fn)(a1);
-  }
-
-  template <typename U, typename A1, typename A2>
-  void DoCall2(void (U::*fn)(A1, A2),
-               typename ParamTraits<A1>::ForwardType a1,
-               typename ParamTraits<A2>::ForwardType a2) const {
-    CHECK(IsOnOwnerThread());
-    if (!Get()) {
-      return;
-    }
-    (Get().get()->*fn)(a1, a2);
-  }
-
-  template <typename U, typename A1, typename A2, typename A3>
-  void DoCall3(void (U::*fn)(A1, A2, A3),
-               typename ParamTraits<A1>::ForwardType a1,
-               typename ParamTraits<A2>::ForwardType a2,
-               typename ParamTraits<A3>::ForwardType a3) const {
-    CHECK(IsOnOwnerThread());
-    if (!Get()) {
-      return;
-    }
-    (Get().get()->*fn)(a1, a2, a3);
-  }
-
-  template <typename U, typename A1, typename A2, typename A3, typename A4>
-  void DoCall4(void (U::*fn)(A1, A2, A3, A4),
-               typename ParamTraits<A1>::ForwardType a1,
-               typename ParamTraits<A2>::ForwardType a2,
-               typename ParamTraits<A3>::ForwardType a3,
-               typename ParamTraits<A4>::ForwardType a4) const {
-    CHECK(IsOnOwnerThread());
-    if (!Get()) {
-      return;
-    }
-    (Get().get()->*fn)(a1, a2, a3, a4);
-  }
 
   // Must be dereferenced only on the owner thread.  May be destroyed
   // from any thread.

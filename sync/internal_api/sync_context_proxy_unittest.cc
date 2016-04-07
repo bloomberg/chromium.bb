@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/sync_context_proxy_impl.h"
+#include "sync/internal_api/sync_context_proxy.h"
 
 #include <utility>
 #include <vector>
@@ -24,9 +24,9 @@
 
 namespace syncer_v2 {
 
-class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
+class SyncContextProxyTest : public ::testing::Test, FakeModelTypeService {
  public:
-  SyncContextProxyImplTest()
+  SyncContextProxyTest()
       : sync_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         type_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -35,7 +35,7 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
     registry_.reset(new syncer::ModelTypeRegistry(
         workers_, dir_maker_.directory(), &nudge_handler_));
     context_proxy_.reset(
-        new SyncContextProxyImpl(sync_task_runner_, registry_->AsWeakPtr()));
+        new SyncContextProxy(sync_task_runner_, registry_->AsWeakPtr()));
   }
 
   void TearDown() override {
@@ -50,12 +50,12 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
 
   void OnSyncStarting(SharedModelTypeProcessor* processor) {
     processor->OnSyncStarting(base::Bind(
-        &SyncContextProxyImplTest::OnReadyToConnect, base::Unretained(this)));
+        &SyncContextProxyTest::OnReadyToConnect, base::Unretained(this)));
   }
 
   void OnReadyToConnect(syncer::SyncError error,
                         scoped_ptr<ActivationContext> context) {
-    context_proxy_->ConnectTypeToSync(syncer::THEMES, std::move(context));
+    context_proxy_->ConnectType(syncer::THEMES, std::move(context));
   }
 
   scoped_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
@@ -75,11 +75,11 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
   syncer::MockNudgeHandler nudge_handler_;
   scoped_ptr<syncer::ModelTypeRegistry> registry_;
 
-  scoped_ptr<SyncContextProxyImpl> context_proxy_;
+  scoped_ptr<SyncContextProxy> context_proxy_;
 };
 
 // Try to connect a type to a SyncContext that has already shut down.
-TEST_F(SyncContextProxyImplTest, FailToConnect1) {
+TEST_F(SyncContextProxyTest, FailToConnect1) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   DisableSync();
   OnSyncStarting(processor.get());
@@ -90,7 +90,7 @@ TEST_F(SyncContextProxyImplTest, FailToConnect1) {
 }
 
 // Try to connect a type to a SyncContext as it shuts down.
-TEST_F(SyncContextProxyImplTest, FailToConnect2) {
+TEST_F(SyncContextProxyTest, FailToConnect2) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   OnSyncStarting(processor.get());
   DisableSync();
@@ -101,7 +101,7 @@ TEST_F(SyncContextProxyImplTest, FailToConnect2) {
 }
 
 // Tests the case where the type's sync proxy shuts down first.
-TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
+TEST_F(SyncContextProxyTest, TypeDisconnectsFirst) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   OnSyncStarting(processor.get());
 
@@ -113,7 +113,7 @@ TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
 }
 
 // Tests the case where the sync thread shuts down first.
-TEST_F(SyncContextProxyImplTest, SyncDisconnectsFirst) {
+TEST_F(SyncContextProxyTest, SyncDisconnectsFirst) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   OnSyncStarting(processor.get());
 

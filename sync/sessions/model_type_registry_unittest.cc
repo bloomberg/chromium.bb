@@ -181,20 +181,20 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
 
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
-  registry()->ConnectSyncTypeToWorker(
+  registry()->ConnectType(
       syncer::THEMES, MakeActivationContext(MakeInitialDataTypeState(THEMES),
                                             std::move(themes_sync_processor)));
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES)));
 
-  registry()->ConnectSyncTypeToWorker(
+  registry()->ConnectType(
       syncer::SESSIONS,
       MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
                             std::move(sessions_sync_processor)));
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES, syncer::SESSIONS)));
 
-  registry()->DisconnectSyncWorker(syncer::THEMES);
+  registry()->DisconnectType(syncer::THEMES);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::SESSIONS)));
 
@@ -221,7 +221,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
   // Add the themes non-blocking type.
-  registry()->ConnectSyncTypeToWorker(
+  registry()->ConnectType(
       syncer::THEMES, MakeActivationContext(MakeInitialDataTypeState(THEMES),
                                             std::move(themes_sync_processor)));
   current_types.Put(syncer::THEMES);
@@ -233,7 +233,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
   // Add sessions non-blocking type.
-  registry()->ConnectSyncTypeToWorker(
+  registry()->ConnectType(
       syncer::SESSIONS,
       MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
                             std::move(sessions_sync_processor)));
@@ -241,7 +241,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
   // Remove themes non-blocking type.
-  registry()->DisconnectSyncWorker(syncer::THEMES);
+  registry()->DisconnectType(syncer::THEMES);
   current_types.Remove(syncer::THEMES);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 

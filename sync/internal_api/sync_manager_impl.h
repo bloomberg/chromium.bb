@@ -25,7 +25,6 @@
 #include "sync/internal_api/js_sync_encryption_handler_observer.h"
 #include "sync/internal_api/js_sync_manager_observer.h"
 #include "sync/internal_api/protocol_event_buffer.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/sync_encryption_handler_impl.h"
@@ -35,10 +34,6 @@
 #include "sync/util/time.h"
 
 class GURL;
-
-namespace syncer_v2 {
-class SyncContext;
-}
 
 namespace syncer {
 
@@ -102,7 +97,7 @@ class SYNC_EXPORT SyncManagerImpl
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  syncer_v2::SyncContextProxy* GetSyncContextProxy() override;
+  scoped_ptr<syncer_v2::SyncContext> GetSyncContextProxy() override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
@@ -294,9 +289,6 @@ class SYNC_EXPORT SyncManagerImpl
   // Maintains state that affects the way we interact with different sync types.
   // This state changes when entering or exiting a configuration cycle.
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
-
-  // Thread-safe wrapper for main interface for non-blocking sync types.
-  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 
   // A container of various bits of information used by the SyncScheduler to
   // create SyncSessions.  Must outlive the SyncScheduler.
