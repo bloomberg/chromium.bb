@@ -113,11 +113,11 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
       histogram_to_return = histogram;
     } else {
       const std::string& name = histogram->histogram_name();
-      const uint64_t name_hash = histogram->name_hash();
-      DCHECK_NE(0U, name_hash);
-      HistogramMap::iterator it = histograms_->find(name_hash);
+      HistogramMap::iterator it = histograms_->find(name);
       if (histograms_->end() == it) {
-        (*histograms_)[name_hash] = histogram;
+        // The StringKey references the name within |histogram| rather than
+        // making a copy.
+        (*histograms_)[name] = histogram;
         ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
         // If there are callbacks for this histogram, we set the kCallbackExists
         // flag.
@@ -261,7 +261,6 @@ void StatisticsRecorder::GetHistograms(Histograms* output) {
     return;
 
   for (const auto& entry : *histograms_) {
-    DCHECK_EQ(entry.first, entry.second->name_hash());
     output->push_back(entry.second);
   }
 }
@@ -298,10 +297,9 @@ HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
   if (allocator)
     allocator->ImportHistogramsToStatisticsRecorder();
 
-  HistogramMap::iterator it = histograms_->find(HashMetricName(name));
+  HistogramMap::iterator it = histograms_->find(name);
   if (histograms_->end() == it)
     return NULL;
-  DCHECK_EQ(name, it->second->histogram_name()) << "hash collision";
   return it->second;
 }
 
@@ -346,11 +344,9 @@ bool StatisticsRecorder::SetCallback(
     return false;
   callbacks_->insert(std::make_pair(name, cb));
 
-  auto it = histograms_->find(HashMetricName(name));
-  if (it != histograms_->end()) {
-    DCHECK_EQ(name, it->second->histogram_name()) << "hash collision";
+  auto it = histograms_->find(name);
+  if (it != histograms_->end())
     it->second->SetFlags(HistogramBase::kCallbackExists);
-  }
 
   return true;
 }
@@ -366,11 +362,9 @@ void StatisticsRecorder::ClearCallback(const std::string& name) {
   callbacks_->erase(name);
 
   // We also clear the flag from the histogram (if it exists).
-  auto it = histograms_->find(HashMetricName(name));
-  if (it != histograms_->end()) {
-    DCHECK_EQ(name, it->second->histogram_name()) << "hash collision";
+  auto it = histograms_->find(name);
+  if (it != histograms_->end())
     it->second->ClearFlags(HistogramBase::kCallbackExists);
-  }
 }
 
 // static
@@ -407,7 +401,7 @@ void StatisticsRecorder::ResetForTesting() {
 // static
 void StatisticsRecorder::ForgetHistogramForTesting(base::StringPiece name) {
   if (histograms_)
-    histograms_->erase(HashMetricName(name.as_string()));
+    histograms_->erase(name);
 }
 
 // This singleton instance should be started during the single threaded portion

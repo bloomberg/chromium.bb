@@ -32,7 +32,36 @@ class Lock;
 
 class BASE_EXPORT StatisticsRecorder {
  public:
-  typedef std::map<uint64_t, HistogramBase*> HistogramMap;  // Key is name-hash.
+  // A class used as a key for the histogram map below. It always references
+  // a string owned outside of this class, likely in the value of the map.
+  class StringKey : public StringPiece {
+   public:
+    // Constructs the StringKey using various sources. The source must live
+    // at least as long as the created object.
+    StringKey(const std::string& str) : StringPiece(str) {}
+    StringKey(StringPiece str) : StringPiece(str) {}
+
+    // Though StringPiece is better passed by value than by reference, in
+    // this case it's being passed many times and likely already been stored
+    // in memory (not just registers) so the benefit of pass-by-value is
+    // negated.
+    bool operator<(const StringKey& rhs) const {
+      // Since order is unimportant in the map and string comparisons can be
+      // slow, use the length as the primary sort value.
+      if (length() < rhs.length())
+        return true;
+      if (length() > rhs.length())
+        return false;
+
+      // Fall back to an actual string comparison. The lengths are the same
+      // so a simple memory-compare is sufficient. This is slightly more
+      // efficient than calling operator<() for StringPiece which would
+      // again have to check lengths before calling wordmemcmp().
+      return wordmemcmp(data(), rhs.data(), length()) < 0;
+    }
+  };
+
+  typedef std::map<StringKey, HistogramBase*> HistogramMap;
   typedef std::vector<HistogramBase*> Histograms;
 
   // A class for iterating over the histograms held within this global resource.
