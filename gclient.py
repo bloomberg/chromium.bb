@@ -2118,6 +2118,11 @@ def CMDrevert(parser, args):
                     help='don\'t run pre-DEPS hooks', default=False)
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
+  parser.add_option('--break_repo_locks', action='store_true',
+                    help='GIT ONLY - Forcibly remove repo locks (e.g. '
+                      'index.lock). This should only be used if you know for '
+                      'certain that this invocation of gclient is the only '
+                      'thing operating on the git repos (e.g. on a bot).')
   (options, args) = parser.parse_args(args)
   # --force is implied.
   options.force = True
