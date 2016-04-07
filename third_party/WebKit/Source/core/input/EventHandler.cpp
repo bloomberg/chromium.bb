@@ -50,11 +50,13 @@
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDialogElement.h"
@@ -992,7 +994,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
         return WebInputEventResult::HandledSuppressed;
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
-    m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
+    m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken = UserGestureIndicator::currentToken();
 
     cancelFakeMouseMoveEvent();
     if (m_eventHandlerWillResetCapturingMouseEventsNode)
@@ -3759,15 +3761,6 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
         m_touchSequenceUserGestureToken.clear();
     }
 
-    OwnPtr<UserGestureIndicator> gestureIndicator;
-
-    if (m_touchSequenceUserGestureToken)
-        gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release()));
-    else
-        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
-
-    m_touchSequenceUserGestureToken = gestureIndicator->currentToken();
-
     ASSERT(m_frame->view());
     if (m_touchSequenceDocument && (!m_touchSequenceDocument->frame() || !m_touchSequenceDocument->frame()->view())) {
         // If the active touch document has no frame or view, it's probably being destroyed
@@ -3843,6 +3836,26 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
             m_touchSequenceUserGestureToken.clear();
         }
         return WebInputEventResult::NotHandled;
+    }
+
+    // Whether a touch should be considered a "user gesture" or not is a tricky question.
+    // https://docs.google.com/document/d/1oF1T3O7_E4t1PYHV6gyCwHxOi3ystm0eSL5xZu7nvOg/edit#
+    // TODO(rbyers): Disable user gesture in some cases but retain logging for now (crbug.com/582140).
+    OwnPtr<UserGestureIndicator> gestureIndicator;
+    if (event.touchPoints().size() == 1
+        && event.touchPoints()[0].state() == PlatformTouchPoint::TouchReleased
+        && !event.causesScrollingIfUncanceled()) {
+        // This is a touchend corresponding to a tap, definitely a user gesture.  So don't supply
+        // a UserGestureUtilizedCallback.
+        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
+    } else {
+        // This is some other touch event that perhaps shouldn't be considered a user gesture.  So
+        // use a UserGestureUtilizedCallback to get metrics / deprecation warnings.
+        if (m_touchSequenceUserGestureToken)
+            gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release(), &m_touchSequenceDocument->frame()->eventHandler()));
+        else
+            gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture, &m_touchSequenceDocument->frame()->eventHandler()));
+        m_touchSequenceUserGestureToken = UserGestureIndicator::currentToken();
     }
 
     // Compute and store the common info used by both PointerEvent and TouchEvent.
@@ -3940,6 +3953,14 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
     }
 
     return eventResult;
+}
+
+void EventHandler::userGestureUtilized()
+{
+    // This is invoked for UserGestureIndicators created in handleTouchEvent which perhaps represent
+    // touch actions which shouldn't be considered a user-gesture.
+    UseCounter::count(m_frame, UseCounter::TouchDragUserGestureUsed);
+    Deprecation::countDeprecationCrossOriginIframe(m_frame, UseCounter::TouchDragUserGestureUsedCrossOrigin);
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)

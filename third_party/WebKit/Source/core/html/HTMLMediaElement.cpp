@@ -2048,6 +2048,7 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
             return NotAllowedError;
         }
     } else {
+        UserGestureIndicator::utilizeUserGesture();
         // We ask the helper to remove the gesture requirement for us, so that
         // it can record the reason.
         Platform::current()->recordAction(UserMetricsAction("Media_Play_WithGesture"));
@@ -2107,7 +2108,7 @@ void HTMLMediaElement::pause()
 
     // Only buffer aggressively on a user-initiated pause. Other types of pauses
     // (which go directly to pauseInternal()) should not cause this behavior.
-    if (webMediaPlayer() && UserGestureIndicator::processingUserGesture())
+    if (webMediaPlayer() && UserGestureIndicator::utilizeUserGesture())
         webMediaPlayer()->setBufferingStrategy(WebMediaPlayer::BufferingStrategy::Aggressive);
 
     pauseInternal();

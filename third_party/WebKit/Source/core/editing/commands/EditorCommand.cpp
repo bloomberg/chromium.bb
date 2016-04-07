@@ -301,7 +301,7 @@ static bool canWriteClipboard(LocalFrame& frame, EditorCommandSource source)
     if (source == CommandFromMenuOrKeyBinding)
         return true;
     Settings* settings = frame.settings();
-    bool defaultValue = (settings && settings->javaScriptCanAccessClipboard()) || UserGestureIndicator::processingUserGesture();
+    bool defaultValue = (settings && settings->javaScriptCanAccessClipboard()) || UserGestureIndicator::utilizeUserGesture();
     return frame.editor().client().canCopyCut(&frame, defaultValue);
 }
 

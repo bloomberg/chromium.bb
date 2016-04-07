@@ -1099,6 +1099,8 @@ public:
         InvalidReportUriDirectiveInMetaCSP = 1281,
         InvalidSandboxDirectiveInMetaCSP = 1282,
         InvalidFrameAncestorsDirectiveInMetaCSP = 1283,
+        TouchDragUserGestureUsed = 1284,
+        TouchDragUserGestureUsedCrossOrigin = 1285,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -97,7 +97,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
     Settings* contextSettings = settings(getExecutionContext());
     bool isUserGestureRequired = !contextSettings || contextSettings->presentationRequiresUserGesture();
 
-    if (isUserGestureRequired && !UserGestureIndicator::processingUserGesture()) {
+    if (isUserGestureRequired && !UserGestureIndicator::utilizeUserGesture()) {
         resolver->reject(DOMException::create(InvalidAccessError, "PresentationRequest::start() requires user gesture."));
         return promise;
     }

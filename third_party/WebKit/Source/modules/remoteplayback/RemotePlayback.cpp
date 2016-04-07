@@ -101,7 +101,7 @@ ScriptPromise RemotePlayback::connect(ScriptState* scriptState)
 
     // TODO(avayvod): should we have a separate flag to disable the user gesture
     // requirement (for tests) or reuse the one for the PresentationRequest::start()?
-    if (!UserGestureIndicator::processingUserGesture()) {
+    if (!UserGestureIndicator::utilizeUserGesture()) {
         resolver->reject(DOMException::create(InvalidAccessError, "RemotePlayback::connect() requires user gesture."));
         return promise;
     }

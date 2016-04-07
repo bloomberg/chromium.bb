@@ -51,18 +51,53 @@ public:
     virtual void setPauseInDebugger() = 0;
 };
 
+// Callback to be invoked when the state of a UserGestureIndicator is
+// used (only during the scope of a UserGestureIndicator, does
+// not flow with the UserGestureToken).  It's the responsibility of the
+// caller to ensure the UserGestureUtilizedCallback is kept alive as long
+// as the UserGestureIndicator it's used in.
+// Note that this doesn't currently track EVERY way in which the
+// state of a UserGesture can be read (sometimes it's just propagated
+// elsewhere, or otherwise read in a way that's hard to know if it will
+// actually be used), but should include the primary use cases.  Therefore
+// this is suitable mainly for diagnostics and measurement purposes.
+class PLATFORM_EXPORT UserGestureUtilizedCallback {
+public:
+    virtual ~UserGestureUtilizedCallback() = default;
+    virtual void userGestureUtilized() = 0;
+};
+
 class PLATFORM_EXPORT UserGestureIndicator final {
     USING_FAST_MALLOC(UserGestureIndicator);
     WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
 public:
+    // Returns whether a user gesture is currently in progress.
+    // Does not invoke the UserGestureUtilizedCallback.  Consider calling
+    // utilizeUserGesture instead if you know for sure that the return value
+    // will have an effect.
     static bool processingUserGesture();
+
+    // Indicates that a user gesture (if any) is being used, without preventing it
+    // from being used again.  Returns whether a user gesture is currently in progress.
+    // If true, invokes (and then clears) any UserGestureUtilizedCallback.
+    static bool utilizeUserGesture();
+
+    // Mark the current user gesture (if any) as having been used, such that
+    // it cannot be used again.  This is done only for very security-sensitive
+    // operations like creating a new process.
+    // Like utilizeUserGesture, may invoke/clear any UserGestureUtilizedCallback.
     static bool consumeUserGesture();
+
     static UserGestureToken* currentToken();
+
+    // Reset the notion of "since load".
     static void clearProcessedUserGestureSinceLoad();
+
+    // Returns whether a user gesture has occurred since page load.
     static bool processedUserGestureSinceLoad();
 
-    explicit UserGestureIndicator(ProcessingUserGestureState);
-    explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
+    explicit UserGestureIndicator(ProcessingUserGestureState, UserGestureUtilizedCallback* = 0);
+    explicit UserGestureIndicator(PassRefPtr<UserGestureToken>, UserGestureUtilizedCallback* = 0);
     ~UserGestureIndicator();
 
 private:
@@ -71,6 +106,7 @@ private:
     static bool s_processedUserGestureSinceLoad;
     ProcessingUserGestureState m_previousState;
     RefPtr<UserGestureToken> m_token;
+    UserGestureUtilizedCallback* m_usageCallback;
 };
 
 } // namespace blink

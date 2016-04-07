@@ -272,7 +272,7 @@ unsigned LocalDOMWindow::pendingUnloadEventListeners() const
 
 bool LocalDOMWindow::allowPopUp(LocalFrame& firstFrame)
 {
-    if (UserGestureIndicator::processingUserGesture())
+    if (UserGestureIndicator::utilizeUserGesture())
         return true;
 
     Settings* settings = firstFrame.settings();

@@ -83,7 +83,7 @@ void AutoplayExperimentHelper::playMethodCalled()
     // Having this set is okay.
     m_playPending = true;
 
-    if (!UserGestureIndicator::processingUserGesture()) {
+    if (!UserGestureIndicator::utilizeUserGesture()) {
         autoplayMediaEncountered();
 
         if (isEligible()) {
@@ -121,7 +121,7 @@ void AutoplayExperimentHelper::pauseMethodCalled()
 
 void AutoplayExperimentHelper::loadMethodCalled()
 {
-    if (UserGestureIndicator::processingUserGesture() && isUserGestureRequiredForPlay()) {
+    if (isUserGestureRequiredForPlay() && UserGestureIndicator::utilizeUserGesture()) {
         recordAutoplayMetric(AutoplayEnabledThroughLoad);
         removeUserGestureRequirement(GesturelessPlaybackEnabledByLoad);
     }

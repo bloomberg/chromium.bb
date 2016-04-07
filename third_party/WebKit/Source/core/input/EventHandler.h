@@ -86,7 +86,9 @@ class Widget;
 
 enum class DragInitiator;
 
-class CORE_EXPORT EventHandler final : public GarbageCollectedFinalized<EventHandler> {
+class CORE_EXPORT EventHandler final : public GarbageCollectedFinalized<EventHandler>
+    , public UserGestureUtilizedCallback {
+
     WTF_MAKE_NONCOPYABLE(EventHandler);
 public:
     explicit EventHandler(LocalFrame*);
@@ -207,6 +209,7 @@ public:
     void capsLockStateMayHaveChanged(); // Only called by FrameSelection
 
     WebInputEventResult handleTouchEvent(const PlatformTouchEvent&);
+    void userGestureUtilized() override;
 
     bool useHandCursor(Node*, bool isOverLink);
 

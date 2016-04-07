@@ -1355,7 +1355,7 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
         m_progressTracker->progressStarted();
         return false;
     }
-    if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
+    if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::utilizeUserGesture())
         return false;
     client()->loadURLExternally(request, policy, String(), replacesCurrentHistoryItem);
     return false;

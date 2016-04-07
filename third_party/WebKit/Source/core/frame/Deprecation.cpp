@@ -148,16 +148,21 @@ void Deprecation::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, Execu
     Deprecation::countDeprecation(context, feature);
 }
 
-void Deprecation::countDeprecationCrossOriginIframe(const Document& document, UseCounter::Feature feature)
+void Deprecation::countDeprecationCrossOriginIframe(const LocalFrame* frame, UseCounter::Feature feature)
 {
-    LocalFrame* frame = document.frame();
-    if (!frame)
-        return;
     // Check to see if the frame can script into the top level document.
     SecurityOrigin* securityOrigin = frame->securityContext()->getSecurityOrigin();
     Frame* top = frame->tree().top();
     if (top && !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin()))
         countDeprecation(frame, feature);
+}
+
+void Deprecation::countDeprecationCrossOriginIframe(const Document& document, UseCounter::Feature feature)
+{
+    LocalFrame* frame = document.frame();
+    if (!frame)
+        return;
+    countDeprecationCrossOriginIframe(frame, feature);
 }
 
 String Deprecation::deprecationMessage(UseCounter::Feature feature)
@@ -361,6 +366,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
 
     case UseCounter::ResultsAttribute:
         return willBeRemoved("'results' attribute", 53, "5738199536107520");
+
+    case UseCounter::TouchDragUserGestureUsedCrossOrigin:
+        return willBeRemoved("Performing sensitive operations in iframes on touch events which don't represent a tap gesture", 52, "https://www.chromestatus.com/features/5649871251963904");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

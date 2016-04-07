@@ -43,6 +43,7 @@ public:
     static void countDeprecationIfNotPrivateScript(v8::Isolate*, ExecutionContext*, UseCounter::Feature);
     // Count only features if they're being used in an iframe which does not
     // have script access into the top level document.
+    static void countDeprecationCrossOriginIframe(const LocalFrame*, UseCounter::Feature);
     static void countDeprecationCrossOriginIframe(const Document&, UseCounter::Feature);
     static String deprecationMessage(UseCounter::Feature);
 

@@ -128,8 +128,9 @@ ProcessingUserGestureState UserGestureIndicator::s_state = DefinitelyNotProcessi
 UserGestureIndicator* UserGestureIndicator::s_topmostIndicator = 0;
 bool UserGestureIndicator::s_processedUserGestureSinceLoad = false;
 
-UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
+UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state, UserGestureUtilizedCallback* usageCallback)
     : m_previousState(DefinitelyNotProcessingUserGesture)
+    , m_usageCallback(usageCallback)
 {
     // Silently ignore UserGestureIndicators on non-main threads.
     if (!isMainThread())
@@ -158,8 +159,9 @@ UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
     ASSERT(isDefinite(s_state));
 }
 
-UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
+UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token, UserGestureUtilizedCallback* usageCallback)
     : m_previousState(DefinitelyNotProcessingUserGesture)
+    , m_usageCallback(usageCallback)
 {
     // Silently ignore UserGestureIndicators on non-main threads.
     if (!isMainThread())
@@ -196,6 +198,18 @@ UserGestureIndicator::~UserGestureIndicator()
 }
 
 // static
+bool UserGestureIndicator::utilizeUserGesture()
+{
+    if (UserGestureIndicator::processingUserGesture()) {
+        if (s_topmostIndicator->m_usageCallback) {
+            s_topmostIndicator->m_usageCallback->userGestureUtilized();
+            s_topmostIndicator->m_usageCallback = nullptr;
+        }
+        return true;
+    }
+    return false;
+}
+
 bool UserGestureIndicator::processingUserGesture()
 {
     if (auto* token = currentToken()) {
@@ -211,9 +225,14 @@ bool UserGestureIndicator::consumeUserGesture()
 {
     if (auto* token = currentToken()) {
         ASSERT(isMainThread());
-        return static_cast<GestureToken*>(token)->consumeGesture();
+        if (static_cast<GestureToken*>(token)->consumeGesture()) {
+            if (s_topmostIndicator->m_usageCallback) {
+                s_topmostIndicator->m_usageCallback->userGestureUtilized();
+                s_topmostIndicator->m_usageCallback = nullptr;
+            }
+            return true;
+        }
     }
-
     return false;
 }
 
