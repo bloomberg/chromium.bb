@@ -1254,7 +1254,7 @@ void LocalSafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
       check_timeout_);
 }
 
-bool LocalSafeBrowsingDatabaseManager::download_protection_enabled() const {
+bool LocalSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
   return enable_download_protection_;
 }
 

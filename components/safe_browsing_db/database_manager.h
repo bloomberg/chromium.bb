@@ -83,7 +83,7 @@ class SafeBrowsingDatabaseManager
   virtual bool CanCheckUrl(const GURL& url) const = 0;
 
   // Returns whether download protection is enabled.
-  virtual bool download_protection_enabled() const = 0;
+  virtual bool IsDownloadProtectionEnabled() const = 0;
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.

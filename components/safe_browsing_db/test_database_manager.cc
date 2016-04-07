@@ -40,7 +40,7 @@ bool TestSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return false;
 }
 
-bool TestSafeBrowsingDatabaseManager::download_protection_enabled() const {
+bool TestSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
   NOTIMPLEMENTED();
   return false;
 }

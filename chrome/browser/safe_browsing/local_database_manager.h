@@ -135,7 +135,7 @@ class LocalSafeBrowsingDatabaseManager
   void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
                        const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
-  bool download_protection_enabled() const override;
+  bool IsDownloadProtectionEnabled() const override;
 
  protected:
   ~LocalSafeBrowsingDatabaseManager() override;

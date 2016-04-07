@@ -165,7 +165,7 @@ bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
          url.SchemeIs(url::kFtpScheme);
 }
 
-bool RemoteSafeBrowsingDatabaseManager::download_protection_enabled() const {
+bool RemoteSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
   return false;
 }
 

@@ -346,7 +346,7 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(FULL_SAFE_BROWSING)
-  return (database_manager_->download_protection_enabled() &&
+  return (database_manager_->IsDownloadProtectionEnabled() &&
           ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) ||
          (download_protection_service() &&
           download_protection_service()->enabled());
