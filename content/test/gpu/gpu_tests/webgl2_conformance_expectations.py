@@ -60,11 +60,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
     self.Skip('deqp/functional/gles3/vertexarrays.html', bug=483282)
 
-    self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html', bug=483282)
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
     # Windows only.
@@ -131,13 +129,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
         ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderstruct.html',
-        ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['win'], bug=483282)
@@ -155,6 +149,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
 
     # Windows 8 only.
+
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['win8'], bug=483282)
+
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['win8'], bug=483282)
@@ -306,6 +304,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderstruct.html',
+        ['win', 'intel'], bug=483282)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
@@ -334,15 +334,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
-    self.Fail('conformance2/textures/video/*', ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/textures/misc/texture-npot.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['mac'], bug=295792)
@@ -352,14 +351,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/readbuffer.html',
         ['mac'], bug=570453)
-    self.Fail('conformance2/textures/misc/copy-texture-image.html',
-        ['mac'], bug=577144)
     self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
-    self.Fail('conformance2/textures/image_bitmap_from_image/*',
-        ['mac'], bug=589930)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',
@@ -387,6 +382,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
+        ['linux'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
