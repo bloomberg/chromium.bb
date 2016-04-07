@@ -96,7 +96,7 @@ uint32_t BrowserAccessibility::PlatformChildCount() const {
     BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(
             GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));
-    if (child_manager)
+    if (child_manager && child_manager->GetRoot()->GetParent() == this)
       return 1;
 
     return 0;
@@ -138,7 +138,7 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(
             GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));
-    if (child_manager)
+    if (child_manager && child_manager->GetRoot()->GetParent() == this)
       result = child_manager->GetRoot();
   } else {
     result = InternalGetChild(child_index);

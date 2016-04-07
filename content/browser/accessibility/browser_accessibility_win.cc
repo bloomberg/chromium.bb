@@ -4582,8 +4582,15 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state |= STATE_SYSTEM_FOCUSABLE;
       break;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
-      ia_role = ROLE_SYSTEM_CLIENT;
-      ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
+      if (HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
+        // Windows screen readers assume that IA2_ROLE_EMBEDDED_OBJECT
+        // doesn't have any children, but it may be something like a
+        // browser plugin that has a document inside.
+        ia_role = ROLE_SYSTEM_GROUPING;
+      } else {
+        ia_role = ROLE_SYSTEM_CLIENT;
+        ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
+      }
       break;
     case ui::AX_ROLE_FIGCAPTION:
       role_name = html_tag;
