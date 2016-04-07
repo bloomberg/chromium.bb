@@ -14,7 +14,6 @@
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/child/font_warmup_win.h"
 #include "skia/ext/fontmgr_default_win.h"
-#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
@@ -72,7 +71,7 @@ void InitializeDWriteFontProxy() {
         &g_font_collection, factory.Get(), g_sender_override);
   }
 
-  skia::RefPtr<SkFontMgr> skia_font_manager = skia::AdoptRef(
+  sk_sp<SkFontMgr> skia_font_manager(
       SkFontMgr_New_DirectWrite(factory.Get(), g_font_collection.Get()));
   blink::WebFontRendering::setSkiaFontManager(skia_font_manager.get());
 

@@ -54,7 +54,6 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_gamepad_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
-#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
@@ -807,7 +806,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // to generate the entire PDF given the variables below:
   //
   // The most recently used WebCanvas, guaranteed to be valid.
-  skia::RefPtr<blink::WebCanvas> canvas_;
+  sk_sp<blink::WebCanvas> canvas_;
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 

@@ -12,7 +12,6 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/browser/compositor/gl_helper.h"
 #include "skia/ext/image_operations.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"

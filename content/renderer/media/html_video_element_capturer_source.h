@@ -56,7 +56,7 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   void sendNewFrame();
 
   media::VideoFramePool frame_pool_;
-  skia::RefPtr<SkCanvas> canvas_;
+  sk_sp<SkCanvas> canvas_;
 
   const base::WeakPtr<blink::WebMediaPlayer> web_media_player_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

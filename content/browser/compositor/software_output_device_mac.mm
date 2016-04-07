@@ -141,7 +141,7 @@ void SoftwareOutputDeviceMac::EndPaint() {
       DLOG(ERROR) << "Failed to unlock IOSurface " << io_result;
   }
 
-  canvas_ = nullptr;
+  canvas_.reset();
   base::TimeTicks vsync_timebase;
   base::TimeDelta vsync_interval;
   ui::AcceleratedWidgetMacGotFrame(

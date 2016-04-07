@@ -128,9 +128,8 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
   desc.fWidth = size.width();
   desc.fHeight = size.height();
-  skia::RefPtr<GrTexture> texture = skia::AdoptRef(
-      gr->textureProvider()->refScratchTexture(
-          desc, GrTextureProvider::kExact_ScratchTexMatch));
+  sk_sp<GrTexture> texture(gr->textureProvider()->refScratchTexture(
+        desc, GrTextureProvider::kExact_ScratchTexMatch));
   if (!texture.get())
     return false;
 

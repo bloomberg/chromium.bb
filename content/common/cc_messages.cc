@@ -223,8 +223,7 @@ void ParamTraits<skia::RefPtr<SkImageFilter>>::Write(base::Pickle* m,
                                                      const param_type& p) {
   SkImageFilter* filter = p.get();
   if (filter) {
-    skia::RefPtr<SkData> data =
-        skia::AdoptRef(SkValidatingSerializeFlattenable(filter));
+    sk_sp<SkData> data(SkValidatingSerializeFlattenable(filter));
     m->WriteData(static_cast<const char*>(data->data()), data->size());
   } else {
     m->WriteData(0, 0);

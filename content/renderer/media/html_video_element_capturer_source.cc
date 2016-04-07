@@ -90,7 +90,7 @@ void HtmlVideoElementCapturerSource::StartCapture(
     return;
   }
   const blink::WebSize resolution = web_media_player_->naturalSize();
-  canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(resolution.width,
+  canvas_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(resolution.width,
                                resolution.height,
                                true /* is_opaque */));
 

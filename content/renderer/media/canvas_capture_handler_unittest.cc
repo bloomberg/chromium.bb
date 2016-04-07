@@ -9,7 +9,6 @@
 #include "content/renderer/media/canvas_capture_handler.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "media/base/limits.h"
-#include "skia/ext/refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -82,13 +81,13 @@ class CanvasCaptureHandlerTest : public TestWithParam<bool> {
   void OnRunning(bool state) { DoOnRunning(state); }
 
   // Verify returned frames.
-  static skia::RefPtr<SkImage> GenerateTestImage(bool opaque) {
+  static sk_sp<SkImage> GenerateTestImage(bool opaque) {
 
     SkBitmap testBitmap;
     testBitmap.allocN32Pixels(kTestCanvasCaptureFrameWidth,
                               kTestCanvasCaptureFrameHeight, opaque);
     testBitmap.eraseARGB(kTestAlphaValue, 30, 60, 200);
-    return skia::AdoptRef(SkImage::NewFromBitmap(testBitmap));
+    return SkImage::MakeFromBitmap(testBitmap);
   }
 
   void OnVerifyDeliveredFrame(

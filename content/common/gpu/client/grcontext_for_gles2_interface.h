@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_GPU_CLIENT_GRCONTEXT_FOR_GLES2_INTERFACE_H_
 
 #include "base/macros.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class GrContext;
 
@@ -32,7 +32,7 @@ class GrContextForGLES2Interface {
   void FreeGpuResources();
 
  private:
-  skia::RefPtr<class GrContext> gr_context_;
+  sk_sp<class GrContext> gr_context_;
 
   DISALLOW_COPY_AND_ASSIGN(GrContextForGLES2Interface);
 };

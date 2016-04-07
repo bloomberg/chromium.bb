@@ -14,7 +14,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -234,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                                            OFFSCREEN_CONTEXT_FOR_TESTING);
   EXPECT_TRUE(provider->BindToCurrentThread());
 
-  skia::RefPtr<GrContext> gr_context = skia::SharePtr(provider->GrContext());
+  sk_sp<GrContext> gr_context = sk_ref_sp(provider->GrContext());
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
