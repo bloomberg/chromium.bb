@@ -1,9 +1,9 @@
 <!DOCTYPE html>
+<title>Check that descendant style invalidation works with ::cue selectors.</title>
 <script src="../media-file.js"></script>
-<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src="../video-test.js"></script>
 <script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
 video::cue,
 video::cue(c),
@@ -14,67 +14,53 @@ video::cue(.b:future) { background-color: red }
 .cuefunc video::cue(c),
 .past video::cue(i:past),
 .future video::cue(.b:future) { background-color: green }
-
-// This selector would have triggered sibling subtree recalc if we didn't
-// support descendant invalidation for ::cue/::cue().
-#ascendant + div { color: pink }
 </style>
-<script>
-function seeked() {
-    var red = "rgb(255, 0, 0)";
-    var green = "rgb(0, 128, 0)";
-
-    cueNode = textTrackDisplayElement(video, "cue");
-    iNode = cueNode.firstElementChild;
-    cNode = iNode.nextSibling.nextSibling;
-    bNode = cNode.nextSibling.nextSibling;
-
-    testExpected("getComputedStyle(cueNode).backgroundColor", red);
-    ascendant.offsetTop;
-    ascendant.classList.add("cue");
-    if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 8);
-    testExpected("getComputedStyle(cueNode).backgroundColor", green);
-
-    testExpected("getComputedStyle(cNode).backgroundColor", red);
-    ascendant.offsetTop;
-    ascendant.classList.add("cuefunc");
-    if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
-    testExpected("getComputedStyle(cNode).backgroundColor", green);
-
-    testExpected("getComputedStyle(iNode).backgroundColor", red);
-    ascendant.offsetTop;
-    ascendant.classList.add("past");
-    if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
-    testExpected("getComputedStyle(iNode).backgroundColor", green);
-
-    testExpected("getComputedStyle(bNode).backgroundColor", red);
-    ascendant.offsetTop;
-    ascendant.classList.add("future");
-    if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
-    testExpected("getComputedStyle(bNode).backgroundColor", green);
-
-    endTest();
-}
-
-window.onload = function() {
-    consoleWrite("Check that descendant style invalidation works with ::cue selectors.");
-    findMediaElement();
-    video.src = findMediaFile("video", "../content/test");
-    waitForEvent("seeked", seeked);
-    waitForEvent("canplaythrough", function() { video.currentTime = 0.1; });
-};
-</script>
 <div id="ascendant">
     <video>
         <track src="captions-webvtt/invalidation.vtt" kind="captions" default>
     </video>
-    <div></div>
-    <div></div>
 </div>
-<div>
-    <div></div>
-</div>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
+    video.src = findMediaFile("video", "../content/test");
+    video.onseeked = t.step_func_done(function() {
+        var red = "rgb(255, 0, 0)";
+        var green = "rgb(0, 128, 0)";
+
+        var cueNode = textTrackDisplayElement(video, "cue");
+        var iNode = cueNode.firstElementChild;
+        var cNode = iNode.nextSibling.nextSibling;
+        var bNode = cNode.nextSibling.nextSibling;
+
+        assert_equals(getComputedStyle(cueNode).backgroundColor, red);
+        ascendant.offsetTop;
+        ascendant.classList.add("cue");
+        if (window.internals)
+            assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 8);
+        assert_equals(getComputedStyle(cueNode).backgroundColor, green);
+
+        assert_equals(getComputedStyle(cNode).backgroundColor, red);
+        ascendant.offsetTop;
+        ascendant.classList.add("cuefunc");
+        if (window.internals)
+            assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1);
+        assert_equals(getComputedStyle(cNode).backgroundColor, green);
+
+        assert_equals(getComputedStyle(iNode).backgroundColor, red);
+        ascendant.offsetTop;
+        ascendant.classList.add("past");
+        if (window.internals)
+            assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1);
+        assert_equals(getComputedStyle(iNode).backgroundColor, green);
+
+        assert_equals(getComputedStyle(bNode).backgroundColor, red);
+        ascendant.offsetTop;
+        ascendant.classList.add("future");
+        if (window.internals)
+            assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1);
+        assert_equals(getComputedStyle(bNode).backgroundColor, green);
+    });
+    video.currentTime = 0.1;
+});
+</script>
