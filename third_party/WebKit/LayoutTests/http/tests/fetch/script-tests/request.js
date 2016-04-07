@@ -748,4 +748,16 @@ promise_test(function(t) {
         });
   }, 'Extract a MIME type (1)');
 
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           credentials: 'include',
+                           body: 'this is a body'});
+
+    return req.text()
+        .then(t => {
+           assert_equals(t, 'this is a body');
+        });
+  }, 'Credentials and body can both be set.');
+
 done();

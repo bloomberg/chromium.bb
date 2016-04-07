@@ -82,7 +82,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         }
     }
 
-    if (isCredentialSet || !isBodySet || v8Body->IsUndefined() || v8Body->IsNull())
+    if (attachedCredential.get() || !isBodySet || v8Body->IsUndefined() || v8Body->IsNull())
         return;
 
     if (v8Body->IsArrayBuffer()) {
