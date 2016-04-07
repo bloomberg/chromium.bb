@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_image.h"
@@ -24,7 +25,7 @@ class Size;
 
 namespace content {
 
-class StreamTexture : public gl::GLImage,
+class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                       public IPC::Listener,
                       public GpuCommandBufferStub::DestructionObserver {
  public:
@@ -57,6 +58,9 @@ class StreamTexture : public gl::GLImage,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
 
+  // gpu::gles2::GLStreamTextureMatrix implementation
+  void GetTextureMatrix(float xform[16]) override;
+
   // GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
 
@@ -82,9 +86,6 @@ class StreamTexture : public gl::GLImage,
 
   // Current size of the surface texture.
   gfx::Size size_;
-
-  // Whether we ever bound a valid frame.
-  bool has_valid_frame_;
 
   // Whether a new frame is available that we should update to.
   bool has_pending_frame_;

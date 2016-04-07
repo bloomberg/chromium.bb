@@ -70,7 +70,6 @@ class VideoFrameCompositorTest : public testing::Test,
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
-  void DidUpdateMatrix(const float* matrix) override {}
 
   // VideoRendererSink::RenderCallback implementation.
   MOCK_METHOD3(Render,

@@ -31,7 +31,6 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
 
   // StreamTextureHost::Listener implementation:
   void OnFrameAvailable() override;
-  void OnMatrixChanged(const float matrix[16]) override;
 
  private:
   void BindOnThread(int32_t stream_id);
@@ -100,12 +99,6 @@ void StreamTextureProxyImpl::OnFrameAvailable() {
   base::AutoLock lock(lock_);
   if (client_)
     client_->DidReceiveFrame();
-}
-
-void StreamTextureProxyImpl::OnMatrixChanged(const float matrix[16]) {
-  base::AutoLock lock(lock_);
-  if (client_)
-    client_->DidUpdateMatrix(matrix);
 }
 
 }  // namespace

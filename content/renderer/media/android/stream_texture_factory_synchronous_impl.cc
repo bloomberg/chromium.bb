@@ -54,16 +54,13 @@ class StreamTextureProxyImpl
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       context_provider_;
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
-  float current_matrix_[16];
-  bool has_updated_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxyImpl);
 };
 
 StreamTextureProxyImpl::StreamTextureProxyImpl(
     StreamTextureFactorySynchronousImpl::ContextProvider* provider)
-    : client_(NULL), context_provider_(provider), has_updated_(false) {
-  std::fill(current_matrix_, current_matrix_ + 16, 0);
+    : client_(NULL), context_provider_(provider) {
 }
 
 StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
@@ -122,25 +119,6 @@ void StreamTextureProxyImpl::BindOnThread(int32_t stream_id) {
 }
 
 void StreamTextureProxyImpl::OnFrameAvailable() {
-  // GetTransformMatrix only returns something valid after both is true:
-  // - OnFrameAvailable was called
-  // - we called UpdateTexImage
-  if (has_updated_) {
-    float matrix[16];
-    surface_texture_->GetTransformMatrix(matrix);
-
-    if (memcmp(current_matrix_, matrix, sizeof(matrix)) != 0) {
-      memcpy(current_matrix_, matrix, sizeof(matrix));
-
-      base::AutoLock lock(lock_);
-      if (client_)
-        client_->DidUpdateMatrix(current_matrix_);
-    }
-  }
-  // OnFrameAvailable being called a second time implies that we called
-  // updateTexImage since after we received the first frame.
-  has_updated_ = true;
-
   base::AutoLock lock(lock_);
   if (client_)
     client_->DidReceiveFrame();

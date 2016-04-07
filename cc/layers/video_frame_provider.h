@@ -47,9 +47,6 @@ class CC_EXPORT VideoFrameProvider {
     // BeginFrameObserver based approach. http://crbug.com/336733
     virtual void DidReceiveFrame() = 0;
 
-    // Notifies the client of a new UV transform matrix to be used.
-    virtual void DidUpdateMatrix(const float* matrix) = 0;
-
    protected:
     virtual ~Client() {}
   };

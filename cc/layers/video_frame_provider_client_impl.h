@@ -58,7 +58,6 @@ class CC_EXPORT VideoFrameProviderClientImpl
   void StartRendering() override;
   void StopRendering() override;
   void DidReceiveFrame() override;
-  void DidUpdateMatrix(const float* matrix) override;
 
   const VideoFrameProvider* get_provider_for_testing() const {
     return provider_;

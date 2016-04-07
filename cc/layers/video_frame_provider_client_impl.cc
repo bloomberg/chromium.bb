@@ -151,17 +151,6 @@ void VideoFrameProviderClientImpl::DidReceiveFrame() {
     active_video_layer_->SetNeedsRedraw();
 }
 
-void VideoFrameProviderClientImpl::DidUpdateMatrix(const float* matrix) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  stream_texture_matrix_ = gfx::Transform(
-      matrix[0], matrix[4], matrix[8], matrix[12],
-      matrix[1], matrix[5], matrix[9], matrix[13],
-      matrix[2], matrix[6], matrix[10], matrix[14],
-      matrix[3], matrix[7], matrix[11], matrix[15]);
-  if (active_video_layer_)
-    active_video_layer_->SetNeedsRedraw();
-}
-
 void VideoFrameProviderClientImpl::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(rendering_);
