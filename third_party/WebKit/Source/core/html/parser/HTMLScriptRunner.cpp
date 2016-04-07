@@ -217,7 +217,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
         } else {
             ASSERT(isExecutingScript());
             if (scriptParserBlockingTime > 0.0) {
-                DocumentParserTiming::from(*m_document).recordParserBlockedOnScriptLoadDuration(monotonicallyIncreasingTime() - scriptParserBlockingTime);
+                DocumentParserTiming::from(*m_document).recordParserBlockedOnScriptLoadDuration(monotonicallyIncreasingTime() - scriptParserBlockingTime, scriptLoader->wasCreatedDuringDocumentWrite());
             }
             if (!doExecuteScript(element.get(), sourceCode, scriptStartPosition)) {
                 scriptLoader->dispatchErrorEvent();

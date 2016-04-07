@@ -96,6 +96,7 @@ public:
     unsigned long long parseStart() const;
     unsigned long long parseStop() const;
     unsigned long long parseBlockedOnScriptLoadDuration() const;
+    unsigned long long parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
 
     ScriptValue toJSONForBinding(ScriptState*) const;
 

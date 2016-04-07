@@ -388,6 +388,15 @@ unsigned long long PerformanceTiming::parseBlockedOnScriptLoadDuration() const
     return toIntegerMilliseconds(timing->parserBlockedOnScriptLoadDuration());
 }
 
+unsigned long long PerformanceTiming::parseBlockedOnScriptLoadFromDocumentWriteDuration() const
+{
+    const DocumentParserTiming* timing = documentParserTiming();
+    if (!timing)
+        return 0;
+
+    return toIntegerMilliseconds(timing->parserBlockedOnScriptLoadFromDocumentWriteDuration());
+}
+
 DocumentLoader* PerformanceTiming::documentLoader() const
 {
     if (!m_frame)

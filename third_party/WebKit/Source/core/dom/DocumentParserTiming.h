@@ -44,9 +44,12 @@ public:
     void markParserDetached();
 
     // Record a duration of time that the parser yielded due to loading a
-    // script, in seconds. This may be called multiple times, once for each time
-    // the parser yields on a script load.
-    void recordParserBlockedOnScriptLoadDuration(double duration);
+    // script, in seconds. scriptInsertedViaDocumentWrite indicates whether the
+    // script causing blocking was inserted via document.write. This may be
+    // called multiple times, once for each time the parser yields on a script
+    // load.
+    void recordParserBlockedOnScriptLoadDuration(
+        double duration, bool scriptInsertedViaDocumentWrite);
 
     // The getters below return monotonically-increasing seconds, or zero if the
     // given parser event has not yet occurred.  See the comments for
@@ -59,6 +62,12 @@ public:
     // recordParseBlockedOnScriptLoadDuration.
     double parserBlockedOnScriptLoadDuration() const { return m_parserBlockedOnScriptLoadDuration; }
 
+    // Returns the sum of all blocking script load durations due to
+    // document.write reported via recordParseBlockedOnScriptLoadDuration. Note
+    // that some uncommon cases are not currently covered by this method. See
+    // crbug/600711 for details.
+    double parserBlockedOnScriptLoadFromDocumentWriteDuration() const { return m_parserBlockedOnScriptLoadFromDocumentWriteDuration; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -68,6 +77,7 @@ private:
     double m_parserStart = 0.0;
     double m_parserStop = 0.0;
     double m_parserBlockedOnScriptLoadDuration = 0.0;
+    double m_parserBlockedOnScriptLoadFromDocumentWriteDuration = 0.0;
     bool m_parserDetached = false;
 
     Member<Document> m_document;

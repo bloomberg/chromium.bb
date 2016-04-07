@@ -93,6 +93,7 @@ public:
     BLINK_EXPORT double parseStart() const;
     BLINK_EXPORT double parseStop() const;
     BLINK_EXPORT double parseBlockedOnScriptLoadDuration() const;
+    BLINK_EXPORT double parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
 
 #if BLINK_IMPLEMENTATION
     WebPerformance(const RawPtr<Performance>&);

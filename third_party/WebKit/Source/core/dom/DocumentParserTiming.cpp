@@ -46,11 +46,14 @@ void DocumentParserTiming::markParserDetached()
     m_parserDetached = true;
 }
 
-void DocumentParserTiming::recordParserBlockedOnScriptLoadDuration(double duration)
+void DocumentParserTiming::recordParserBlockedOnScriptLoadDuration(
+    double duration, bool scriptInsertedViaDocumentWrite)
 {
     if (m_parserDetached || m_parserStart == 0.0 || m_parserStop > 0.0)
         return;
     m_parserBlockedOnScriptLoadDuration += duration;
+    if (scriptInsertedViaDocumentWrite)
+        m_parserBlockedOnScriptLoadFromDocumentWriteDuration += duration;
     notifyDocumentParserTimingChanged();
 }
 
