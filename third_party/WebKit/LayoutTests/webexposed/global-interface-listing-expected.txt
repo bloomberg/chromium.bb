@@ -250,6 +250,7 @@ interface AudioTrack
     getter kind
     getter label
     getter language
+    getter sourceBuffer
     method constructor
     setter enabled
 interface AudioTrackList : EventTarget
@@ -6366,6 +6367,7 @@ interface VideoTrack
     getter label
     getter language
     getter selected
+    getter sourceBuffer
     method constructor
     setter selected
 interface VideoTrackList : EventTarget

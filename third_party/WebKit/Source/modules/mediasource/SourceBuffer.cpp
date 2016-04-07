@@ -48,6 +48,7 @@
 #include "core/html/track/VideoTrackList.h"
 #include "core/streams/Stream.h"
 #include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebSourceBuffer.h"
@@ -532,6 +533,7 @@ std::vector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived
             AudioTrack* audioTrack = nullptr;
             if (!m_firstInitializationSegmentReceived) {
                 audioTrack = AudioTrack::create(id, kind, label, language, false);
+                SourceBufferTrackBaseSupplement::setSourceBuffer(*audioTrack, this);
                 audioTracks().add(audioTrack);
                 m_source->mediaElement()->audioTracks().add(audioTrack);
             } else {
@@ -544,6 +546,7 @@ std::vector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived
             VideoTrack* videoTrack = nullptr;
             if (!m_firstInitializationSegmentReceived) {
                 videoTrack = VideoTrack::create(id, kind, label, language, false);
+                SourceBufferTrackBaseSupplement::setSourceBuffer(*videoTrack, this);
                 videoTracks().add(videoTrack);
                 m_source->mediaElement()->videoTracks().add(videoTrack);
             } else {

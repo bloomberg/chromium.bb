@@ -64,6 +64,7 @@ Node* TrackBase::owner() const
 
 DEFINE_TRACE(TrackBase)
 {
+    Supplementable<TrackBase>::trace(visitor);
     visitor->trace(m_mediaElement);
 }
 
