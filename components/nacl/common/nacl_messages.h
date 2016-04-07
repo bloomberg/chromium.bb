@@ -22,9 +22,6 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(nexe_file)
   IPC_STRUCT_TRAITS_MEMBER(nexe_file_path_metadata)
   IPC_STRUCT_TRAITS_MEMBER(irt_handle)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_TRAITS_MEMBER(mac_shm_fd)
-#endif
 #if defined(OS_POSIX)
   IPC_STRUCT_TRAITS_MEMBER(debug_stub_server_bound_socket)
 #endif

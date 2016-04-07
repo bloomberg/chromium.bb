@@ -73,39 +73,7 @@ void LoadStatusCallback(int load_status) {
           static_cast<NaClErrorCode>(load_status)));
 }
 
-#if defined(OS_MACOSX)
-
-// On Mac OS X, shm_open() works in the sandbox but does not give us
-// an FD that we can map as PROT_EXEC.  Rather than doing an IPC to
-// get an executable SHM region when CreateMemoryObject() is called,
-// we preallocate one on startup, since NaCl's sel_ldr only needs one
-// of them.  This saves a round trip.
-
-base::subtle::Atomic32 g_shm_fd = -1;
-
-int CreateMemoryObject(size_t size, int executable) {
-  if (executable && size > 0) {
-    int result_fd = base::subtle::NoBarrier_AtomicExchange(&g_shm_fd, -1);
-    if (result_fd != -1) {
-      // ftruncate() is disallowed by the Mac OS X sandbox and
-      // returns EPERM.  Luckily, we can get the same effect with
-      // lseek() + write().
-      if (lseek(result_fd, size - 1, SEEK_SET) == -1) {
-        LOG(ERROR) << "lseek() failed: " << errno;
-        return -1;
-      }
-      if (write(result_fd, "", 1) != 1) {
-        LOG(ERROR) << "write() failed: " << errno;
-        return -1;
-      }
-      return result_fd;
-    }
-  }
-  // Fall back to NaCl's default implementation.
-  return -1;
-}
-
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 
 int CreateMemoryObject(size_t size, int executable) {
   return content::MakeSharedMemorySegmentViaIPC(size, executable);
@@ -379,13 +347,12 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     LOG(FATAL) << "NaClChromeMainArgsCreate() failed";
   }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   args->number_of_cores = number_of_cores_;
+#endif
+
+#if defined(OS_LINUX)
   args->create_memory_object_func = CreateMemoryObject;
-# if defined(OS_MACOSX)
-  CHECK(params.mac_shm_fd != IPC::InvalidPlatformFileForTransit());
-  g_shm_fd = IPC::PlatformFileForTransitToPlatformFile(params.mac_shm_fd);
-# endif
 #endif
 
   DCHECK(params.process_type != nacl::kUnknownNaClProcessType);

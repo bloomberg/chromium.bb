@@ -11,9 +11,6 @@ namespace nacl {
 NaClStartParams::NaClStartParams()
     : nexe_file(IPC::InvalidPlatformFileForTransit()),
       irt_handle(IPC::InvalidPlatformFileForTransit()),
-#if defined(OS_MACOSX)
-      mac_shm_fd(IPC::InvalidPlatformFileForTransit()),
-#endif
 #if defined(OS_POSIX)
       debug_stub_server_bound_socket(IPC::InvalidPlatformFileForTransit()),
 #endif

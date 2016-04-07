@@ -75,9 +75,6 @@ struct NaClStartParams {
   base::FilePath nexe_file_path_metadata;
 
   IPC::PlatformFileForTransit irt_handle;
-#if defined(OS_MACOSX)
-  IPC::PlatformFileForTransit mac_shm_fd;
-#endif
 #if defined(OS_POSIX)
   IPC::PlatformFileForTransit debug_stub_server_bound_socket;
 #endif
