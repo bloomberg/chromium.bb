@@ -79,7 +79,6 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoS
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -88,7 +87,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -238,6 +236,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
                 @Override
                 public void tabPendingClosure(Tab tab) {
+                    closeIfNoTabsAndHomepageEnabled();
+                }
+
+                @Override
+                public void tabRemoved(Tab tab) {
                     closeIfNoTabsAndHomepageEnabled();
                 }
 
@@ -1088,24 +1091,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     private void moveTabToOtherWindow(Tab tab) {
-        getCurrentTabModel().removeTab(tab);
-        tab.getContentViewCore().updateWindowAndroid(null);
-        tab.attachTabContentManager(null);
-
         Class<? extends Activity> targetActivity =
                 MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(this);
         if (targetActivity == null) return;
 
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(tab.getUrl()));
+        Intent intent = new Intent(this, targetActivity);
         intent.setClass(this, targetActivity);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-        intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+        intent.setFlags(MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
 
-        AsyncTabParamsManager.add(tab.getId(),
-                new TabReparentingParams(tab, intent, null));
-
-        startActivity(intent);
+        tab.detachAndStartReparenting(intent, null, null);
     }
 
     @Override

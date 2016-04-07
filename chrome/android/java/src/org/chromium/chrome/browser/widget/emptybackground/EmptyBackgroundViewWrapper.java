@@ -82,6 +82,11 @@ public class EmptyBackgroundViewWrapper {
             public void allTabsPendingClosure(List<Integer> tabIds) {
                 updateEmptyContainerState();
             }
+
+            @Override
+            public void tabRemoved(Tab tab) {
+                updateEmptyContainerState();
+            }
         };
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override

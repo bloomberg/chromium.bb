@@ -102,7 +102,7 @@ public interface TabModelObserver {
     void allTabsClosureCommitted();
 
     /**
-     * Called when a tab is removed.
+     * Called after a tab has been removed. At this point, the tab is no longer in the tab model.
      *
      * @param tab The tab that has been removed.
      */

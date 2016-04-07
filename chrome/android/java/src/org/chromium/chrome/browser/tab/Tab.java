@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Browser;
@@ -37,6 +39,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.FrozenNativePage;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
@@ -69,12 +72,14 @@ import org.chromium.chrome.browser.snackbar.LofiBarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -1395,13 +1400,54 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Detaches tab and related objects from an existing activity and attaches to a new one. This
-     * updates many delegates inside the tab and {@link ContentViewCore} both on java and native
-     * sides.
+     * Begins the tab reparenting process. Detaches the tab from its current activity and fires
+     * an Intent to reparent the tab into its new host activity.
+     *
+     * @param intent An optional intent with the desired component, flags, or extras to use when
+     *               launching the new host activity. This intent's URI and action will be
+     *               overriden. This may be null if no intent customization is needed.
+     * @param startActivityOptions Options to pass to {@link Activity#startActivity(Intent, Bundle)}
+     * @param finalizeCallback A callback that will be called after the tab is attached to the new
+     *                         host activity in {@link #attachAndFinishReparenting}.
+     * @return Whether reparenting succeeded. If false, the tab was not removed and the intent was
+     *         not fired.
+     */
+    public boolean detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
+            Runnable finalizeCallback) {
+        ChromeActivity activity = getActivity();
+        if (activity == null) return false;
+        TabModelSelector tabModelSelector = getTabModelSelector();
+        if (tabModelSelector == null) return false;
+        tabModelSelector.getModel(mIncognito).removeTab(this);
+
+        if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
+        attachTabContentManager(null);
+
+        if (intent == null) intent = new Intent();
+        intent.setPackage(activity.getPackageName());
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(getUrl()));
+        intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
+        IntentHandler.addTrustedIntentExtras(intent, activity);
+
+        AsyncTabParamsManager.add(mId,
+                new TabReparentingParams(this, intent, finalizeCallback));
+
+        activity.startActivity(intent, startActivityOptions);
+        return true;
+    }
+
+    /**
+     * Finishes the tab reparenting process. Attaches the tab to the new activity, and updates the
+     * tab and related objects to reference the new activity. This updates many delegates inside the
+     * tab and {@link ContentViewCore} both on java and native sides.
+     *
      * @param activity The new activity this tab should be associated with.
      * @param tabDelegateFactory The new delegate factory this tab should be using.
+     * @Param reparentingParams The TabReparentingParams associated with this reparenting process.
      */
-    public void reparentToActivity(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
+    public void attachAndFinishReparenting(ChromeActivity activity,
+            TabDelegateFactory tabDelegateFactory, TabReparentingParams reparentingParams) {
         // TODO(yusufo): Share these calls with the construction related calls.
         // crbug.com/590281
 
@@ -1422,6 +1468,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mTopControlsVisibilityDelegate = mDelegateFactory.createTopControlsVisibilityDelegate(this);
         setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
         mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
+
+        reparentingParams.finalizeTabReparenting();
     }
 
     /**

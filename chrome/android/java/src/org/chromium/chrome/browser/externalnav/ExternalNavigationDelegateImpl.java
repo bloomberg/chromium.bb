@@ -58,7 +58,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     public ExternalNavigationDelegateImpl(Tab tab) {
         mTab = tab;
-        mApplicationContext = tab.getContentViewCore().getContext().getApplicationContext();
+        mApplicationContext = tab.getWindowAndroid().getApplicationContext();
     }
 
     /**

@@ -306,6 +306,8 @@ public class CompositorViewHolder extends FrameLayout
      * Perform any initialization necessary for showing a reparented tab.
      */
     public void prepareForTabReparenting() {
+        if (mHasDrawnOnce) return;
+
         // Set the background to white while we wait for the first swap of buffers. This gets
         // corrected inside the view.
         mCompositorView.setBackgroundColor(Color.WHITE);

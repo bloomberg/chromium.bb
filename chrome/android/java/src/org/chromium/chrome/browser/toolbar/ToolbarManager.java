@@ -287,6 +287,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 updateTabCount();
                 refreshSelectedTab();
             }
+
+            @Override
+            public void tabRemoved(Tab tab) {
+                updateTabCount();
+                refreshSelectedTab();
+            }
         };
 
         mTabObserver = new EmptyTabObserver() {

@@ -10,6 +10,7 @@ import android.view.MenuItem;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -111,7 +112,7 @@ public class AppMenuPropertiesDelegate {
                     UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));
 
             // TODO(newt): change this to a flag when command line flags work on Android N.
-            boolean enableMoveToOtherWindow = false;
+            boolean enableMoveToOtherWindow = ChromeVersionInfo.isLocalBuild();
             menu.findItem(R.id.move_to_other_window_menu_id).setVisible(enableMoveToOtherWindow
                     && MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity));
 

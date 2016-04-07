@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
@@ -611,7 +612,8 @@ public class DocumentActivity extends ChromeActivity {
 
         if (params != null && params.getTabToReparent() != null) {
             mTab = params.getTabToReparent();
-            mTab.reparentToActivity(this, new DocumentTabDelegateFactory());
+            mTab.attachAndFinishReparenting(this, new DocumentTabDelegateFactory(),
+                    (TabReparentingParams) params);
         } else {
             mTab = createActivityTab(asyncParams);
         }
