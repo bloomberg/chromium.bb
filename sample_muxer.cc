@@ -212,9 +212,9 @@ int main(int argc, char* argv[]) {
     } else if (!strcmp("-switch_tracks", argv[i]) && i < argc_check) {
       switch_tracks = strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-audio_track_number", argv[i]) && i < argc_check) {
-      audio_track_number = strtol(argv[++i], &end, 10);
+      audio_track_number = static_cast<int>(strtol(argv[++i], &end, 10));
     } else if (!strcmp("-video_track_number", argv[i]) && i < argc_check) {
-      video_track_number = strtol(argv[++i], &end, 10);
+      video_track_number = static_cast<int>(strtol(argv[++i], &end, 10));
     } else if (!strcmp("-chunking", argv[i]) && i < argc_check) {
       chunking = true;
       chunk_name = argv[++i];
@@ -349,7 +349,7 @@ int main(int argc, char* argv[]) {
   using mkvparser::Track;
 
   while (i != parser_tracks->GetTracksCount()) {
-    int track_num = i++;
+    unsigned long track_num = i++;
     if (switch_tracks)
       track_num = i % parser_tracks->GetTracksCount();
 
@@ -487,7 +487,7 @@ int main(int argc, char* argv[]) {
 
   // Write clusters
   unsigned char* data = NULL;
-  int data_len = 0;
+  long data_len = 0;
 
   const mkvparser::Cluster* cluster = parser_segment->GetFirst();
 
