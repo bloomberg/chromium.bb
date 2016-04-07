@@ -286,7 +286,8 @@ void DefaultComponentInstaller::FinishRegistration(
 
 void DefaultComponentInstaller::ComponentReady(
     scoped_ptr<base::DictionaryValue> manifest) {
-  VLOG(1) << "ComponentReady";
+  VLOG(1) << "Component ready, version " << current_version_.GetString()
+          << " in " << GetInstallDirectory().value();
   installer_traits_->ComponentReady(current_version_, GetInstallDirectory(),
                                     std::move(manifest));
 }

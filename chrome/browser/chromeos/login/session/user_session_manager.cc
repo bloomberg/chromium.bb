@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
+#include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -112,6 +113,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "net/cert/sth_distributor.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
@@ -1148,7 +1150,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitRlz(profile);
     InitializeCerts(profile);
     InitializeCRLSetFetcher(user);
-    InitializeEVCertificatesWhitelistComponent(user);
+    InitializeCertificateTransparencyComponents(user);
 
     if (arc::ArcBridgeService::GetEnabled(
             base::CommandLine::ForCurrentProcess())) {
@@ -1415,7 +1417,7 @@ void UserSessionManager::InitializeCRLSetFetcher(
   }
 }
 
-void UserSessionManager::InitializeEVCertificatesWhitelistComponent(
+void UserSessionManager::InitializeCertificateTransparencyComponents(
     const user_manager::User* user) {
   const std::string username_hash = user->username_hash();
   component_updater::ComponentUpdateService* cus =
@@ -1423,7 +1425,10 @@ void UserSessionManager::InitializeEVCertificatesWhitelistComponent(
   if (!username_hash.empty() && cus) {
     const base::FilePath path =
         ProfileHelper::GetProfilePathByUserIdHash(username_hash);
+    // EV whitelist.
     RegisterEVWhitelistComponent(cus, path);
+    // STH set fetcher.
+    RegisterSTHSetComponent(cus, path);
   }
 }
 

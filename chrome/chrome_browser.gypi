@@ -168,6 +168,8 @@
       'browser/component_updater/pnacl_component_installer.h',
       'browser/component_updater/recovery_component_installer.cc',
       'browser/component_updater/recovery_component_installer.h',
+      'browser/component_updater/sth_set_component_installer.cc',
+      'browser/component_updater/sth_set_component_installer.h',
       'browser/component_updater/supervised_user_whitelist_installer.cc',
       'browser/component_updater/supervised_user_whitelist_installer.h',
       'browser/component_updater/sw_reporter_installer_win.cc',

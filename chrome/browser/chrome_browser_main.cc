@@ -50,6 +50,7 @@
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
+#include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
@@ -488,6 +489,11 @@ void RegisterComponentsForUpdate() {
     // 1. Android: Because it currently does not have the EV indicator.
     // 2. Chrome OS: On Chrome OS this registration is delayed until user login.
     RegisterEVWhitelistComponent(cus, path);
+
+    // Registration of the STH set fetcher here is not done for:
+    // Android: Because the story around CT on Mobile is not finalized yet.
+    // Chrome OS: On Chrome OS this registration is delayed until user login.
+    RegisterSTHSetComponent(cus, path);
 #endif  // defined(OS_ANDROID)
   }
 

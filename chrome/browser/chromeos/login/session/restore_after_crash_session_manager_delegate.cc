@@ -49,7 +49,7 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
     user_session_mgr->InitRlz(profile());
     user_session_mgr->InitializeCerts(profile());
     user_session_mgr->InitializeCRLSetFetcher(user);
-    user_session_mgr->InitializeEVCertificatesWhitelistComponent(user);
+    user_session_mgr->InitializeCertificateTransparencyComponents(user);
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.

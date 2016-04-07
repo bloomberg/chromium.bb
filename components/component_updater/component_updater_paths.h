@@ -19,6 +19,7 @@ enum {
   DIR_SW_REPORTER,                  // Path to the SwReporter component.
   DIR_COMPONENT_EV_WHITELIST,       // EV whitelist for CT files.
   DIR_SUPERVISED_USER_WHITELISTS,   // Supervised user whitelists.
+  DIR_CERT_TRANS_TREE_STATES,       // Signed Tree Heads for CT logs.
   PATH_END
 };
 

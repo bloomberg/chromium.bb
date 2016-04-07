@@ -47,6 +47,9 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_SUPERVISED_USER_WHITELISTS:
       cur = cur.Append(FILE_PATH_LITERAL("SupervisedUserWhitelists"));
       break;
+    case DIR_CERT_TRANS_TREE_STATES:
+      cur = cur.Append(FILE_PATH_LITERAL("CertificateTransparency"));
+      break;
     default:
       return false;
   }
