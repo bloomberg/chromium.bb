@@ -33,6 +33,23 @@ def _ArgumentParser():
       dest='where_statement', type=str,
       nargs=2, metavar=('FORMAT', 'REGEX'), default=[],
       help='Where statement to filter such as: --where "{protocol}" "https?"')
+
+  # requests listing subcommand.
+  prune_parser = subparsers.add_parser('prune',
+      help='Prunes some stuff from traces to make them small.')
+  prune_parser.add_argument('loading_trace', type=file,
+      help='Input path of the loading trace.')
+  prune_parser.add_argument('-t', '--trace-filters',
+      type=str, nargs='+', metavar='REGEX', default=[],
+      help='Regex filters to whitelist trace events.')
+  prune_parser.add_argument('-r', '--request-member-filter',
+      type=str, nargs='+', metavar='REGEX', default=[],
+      help='Regex filters to whitelist requests\' members.')
+  prune_parser.add_argument('-i', '--indent', type=int, default=2,
+      help='Number of space to indent the output.')
+  prune_parser.add_argument('-o', '--output',
+      type=argparse.FileType('w'), default=sys.stdout,
+      help='Output destination path if different from stdout.')
   return parser
 
 
@@ -70,9 +87,70 @@ def ListRequests(loading_trace_path,
     yield output_format.format(**request_event_json)
 
 
-def main(command_line_args):
-  """Command line tool entry point.
+def _PruneMain(args):
+  """`loading_trace_analyzer.py requests` Command line tool entry point.
+
+  Args:
+    args: Command line parsed arguments.
+
+  Example:
+    Keep only blink.net trace event category:
+      ... prune -t "blink.net"
+
+    Keep only requestStart trace events:
+      ... prune -t "requestStart"
+
+    Keep only requestStart trace events of the blink.user_timing category:
+      ... prune -t "blink.user_timing:requestStart"
+
+    Keep only all blink trace event categories:
+      ... prune -t "^blink\.*"
+
+    Keep only requests' url member:
+      ... prune -r "^url$"
+
+    Keep only requests' url and document_url members:
+      ... prune -r "^./url$"
+
+    Keep only requests' url, document_url and initiator members:
+      ... prune -r "^./url$" "initiator"
   """
+  trace_json = json.load(args.loading_trace)
+
+  # Filter trace events.
+  regexes = [re.compile(f) for f in args.trace_filters]
+  events = []
+  for event in trace_json['tracing_track']['events']:
+    prune = True
+    for cat in event['cat'].split(','):
+      event_name = cat + ':' + event['name']
+      for regex in regexes:
+        if regex.search(event_name):
+          prune = False
+          break
+      if not prune:
+        events.append(event)
+        break
+  trace_json['tracing_track']['events'] = events
+
+  # Filter members of requests.
+  regexes = [re.compile(f) for f in args.request_member_filter]
+  for request in trace_json['request_track']['events']:
+    for key in request.keys():
+      prune = True
+      for regex in regexes:
+        if regex.search(key):
+          prune = False
+          break
+      if prune:
+        del request[key]
+
+  json.dump(trace_json, args.output, indent=args.indent)
+  return 0
+
+
+def main(command_line_args):
+  """Command line tool entry point."""
   args = _ArgumentParser().parse_args(command_line_args)
   if args.subcommand == 'requests':
     try:
@@ -91,6 +169,8 @@ def main(command_line_args):
       sys.stderr.write("Invalid where statement REGEX: {}\n{}\n".format(
           where_statement[1], str(e)))
     return 1
+  elif args.subcommand == 'prune':
+    return _PruneMain(args)
   assert False
 
 

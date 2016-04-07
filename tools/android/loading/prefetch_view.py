@@ -56,7 +56,7 @@ class PrefetchSimulationView(object):
     self.postload_msec = user_lens.PostloadTimeMsec()
     self.graph = dependency_graph.RequestDependencyGraph(
         requests, dependencies_lens, node_class=RequestNode)
-    preloaded_requests = [r.request_id for r in self._PreloadedRequests(
+    preloaded_requests = [r.request_id for r in self.PreloadedRequests(
         requests[0], dependencies_lens, trace)]
     self._AnnotateNodes(self.graph.graph.Nodes(), preloaded_requests,
                         critical_requests_ids)
@@ -102,8 +102,8 @@ class PrefetchSimulationView(object):
       node.before = node.request.request_id in critical_requests_ids
 
   @classmethod
-  def _ParserDiscoverableRequests(
-      cls, dependencies_lens, request, recurse=False):
+  def ParserDiscoverableRequests(
+      cls, request, dependencies_lens, recurse=False):
     """Returns a list of requests IDs dicovered by the parser.
 
     Args:
@@ -128,7 +128,7 @@ class PrefetchSimulationView(object):
         [dependencies_lens.GetRedirectChain(r) for r in requests]))
 
   @classmethod
-  def _PreloadedRequests(cls, request, dependencies_lens, trace):
+  def PreloadedRequests(cls, request, dependencies_lens, trace):
     """Returns the requests that have been preloaded from a given request.
 
     This list is the set of request that are:
@@ -142,7 +142,7 @@ class PrefetchSimulationView(object):
 
     Returns:
       A list of Request. Does not include the root request. This list is a
-      subset of the one returned by _ParserDiscoverableRequests().
+      subset of the one returned by ParserDiscoverableRequests().
     """
     # Preload step events are emitted in ResourceFetcher::preloadStarted().
     resource_events = trace.tracing_track.Filter(
@@ -155,8 +155,8 @@ class PrefetchSimulationView(object):
       preload_event = resource_events.EventFromStep(preload_step_event)
       if preload_event:
         preloaded_urls.add(preload_event.args['url'])
-    parser_requests = cls._ParserDiscoverableRequests(
-        dependencies_lens, request)
+    parser_requests = cls.ParserDiscoverableRequests(
+        request, dependencies_lens)
     preloaded_root_requests = filter(
         lambda r: r.url in preloaded_urls, parser_requests)
     # We can actually fetch the whole redirect chain.

@@ -25,8 +25,8 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
 
   def testParserDiscoverableRequests(self):
     first_request = TestRequests.FIRST_REDIRECT_REQUEST
-    discovered_requests = PrefetchSimulationView._ParserDiscoverableRequests(
-        self.dependencies_lens, first_request)
+    discovered_requests = PrefetchSimulationView.ParserDiscoverableRequests(
+        first_request, self.dependencies_lens)
     self.assertListEqual(
         [TestRequests.FIRST_REDIRECT_REQUEST,
          TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_OTHER_FRAME,
@@ -34,7 +34,7 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
 
   def testPreloadedRequests(self):
     first_request = TestRequests.FIRST_REDIRECT_REQUEST
-    preloaded_requests = PrefetchSimulationView._PreloadedRequests(
+    preloaded_requests = PrefetchSimulationView.PreloadedRequests(
         first_request, self.dependencies_lens, self.trace)
     self.assertListEqual([first_request], preloaded_requests)
     self._SetUp(
@@ -44,7 +44,7 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
          {'args': {'step': 'Preload'}, 'cat': 'blink.net',
           'id': '0xaf9f14fa9dd6c314', 'name': 'Resource', 'ph': 'T',
           'ts': 12, 'pid': 12, 'tid': 12}])
-    preloaded_requests = PrefetchSimulationView._PreloadedRequests(
+    preloaded_requests = PrefetchSimulationView.PreloadedRequests(
         first_request, self.dependencies_lens, self.trace)
     self.assertListEqual([TestRequests.FIRST_REDIRECT_REQUEST,
          TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_OTHER_FRAME,

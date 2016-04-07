@@ -4,9 +4,27 @@
 
 import logging
 
+from loading_trace import LoadingTrace
+from prefetch_view import PrefetchSimulationView
+from request_dependencies_lens import RequestDependencyLens
+from user_satisfied_lens import FirstContentfulPaintLens
 import wpr_backend
-import loading_trace
-import request_dependencies_lens
+
+
+# Prefetches the first resource following the redirection chain.
+REDIRECTED_MAIN_DISCOVERER = 'redirected-main'
+
+# All resources which are fetched from the main document and their redirections.
+PARSER_DISCOVERER = 'parser',
+
+# Simulation of HTMLPreloadScanner on the main document and their redirections.
+HTML_PRELOAD_SCANNER_DISCOVERER = 'html-scanner',
+
+SUBRESOURCE_DISCOVERERS = set([
+  REDIRECTED_MAIN_DISCOVERER,
+  PARSER_DISCOVERER,
+  HTML_PRELOAD_SCANNER_DISCOVERER
+])
 
 
 def PatchWpr(wpr_archive_path):
@@ -44,38 +62,55 @@ def PatchWpr(wpr_archive_path):
   wpr_archive.Persist()
 
 
-def ExtractParserDiscoverableResources(loading_trace_path):
-  """Extracts the parser discoverable resources from a loading trace.
+def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
+  """Extracts discoverable resource urls from a loading trace according to a
+  sub-resource discoverer.
 
   Args:
     loading_trace_path: The loading trace's path.
+    subresource_discoverer: The sub-resources discoverer that should white-list
+      the resources to keep in cache for the NoState-Prefetch benchmarks.
 
   Returns:
     A set of urls.
   """
-  whitelisted_urls = set()
-  logging.info('loading %s' % loading_trace_path)
-  trace = loading_trace.LoadingTrace.FromJsonFile(loading_trace_path)
-  requests_lens = request_dependencies_lens.RequestDependencyLens(trace)
-  deps = requests_lens.GetRequestDependencies()
+  assert subresource_discoverer in SUBRESOURCE_DISCOVERERS, \
+      'unknown prefetch simulation {}'.format(subresource_discoverer)
 
-  main_resource_request = deps[0][0]
-  logging.info('white-listing %s' % main_resource_request.url)
-  whitelisted_urls.add(main_resource_request.url)
-  for (first, second, reason) in deps:
+  # Load trace and related infos.
+  logging.info('loading %s' % loading_trace_path)
+  trace = LoadingTrace.FromJsonFile(loading_trace_path)
+  dependencies_lens = RequestDependencyLens(trace)
+  first_resource_request = trace.request_track.GetFirstResourceRequest()
+
+  # Build the list of discovered requests according to the desired simulation.
+  discovered_requests = []
+  if subresource_discoverer == REDIRECTED_MAIN_DISCOVERER:
+    discovered_requests = \
+        [dependencies_lens.GetRedirectChain(first_resource_request)[-1]]
+  elif subresource_discoverer == PARSER_DISCOVERER:
+    discovered_requests = PrefetchSimulationView.ParserDiscoverableRequests(
+        first_resource_request, dependencies_lens)
+  elif subresource_discoverer == HTML_PRELOAD_SCANNER_DISCOVERER:
+    discovered_requests = PrefetchSimulationView.PreloadedRequests(
+        first_resource_request, dependencies_lens, trace)
+  else:
+    assert False
+
+  # Prune out data:// requests.
+  whitelisted_urls = set()
+  logging.info('white-listing %s' % first_resource_request.url)
+  whitelisted_urls.add(first_resource_request.url)
+  for request in discovered_requests:
     # Work-around where the protocol may be none for an unclear reason yet.
     # TODO(gabadie): Follow up on this with Clovis guys and possibly remove
     #   this work-around.
-    if not second.protocol:
-      logging.info('ignoring %s (no protocol)' % second.url)
+    if not request.protocol:
+      logging.warning('ignoring %s (no protocol)' % request.url)
       continue
     # Ignore data protocols.
-    if not second.protocol.startswith('http'):
-      logging.info('ignoring %s (`%s` is not HTTP{,S} protocol)' % (
-          second.url, second.protocol))
+    if not request.protocol.startswith('http'):
       continue
-    if (first.request_id == main_resource_request.request_id and
-        reason == 'parser' and second.url not in whitelisted_urls):
-      logging.info('white-listing %s' % second.url)
-      whitelisted_urls.add(second.url)
+    logging.info('white-listing %s' % request.url)
+    whitelisted_urls.add(request.url)
   return whitelisted_urls

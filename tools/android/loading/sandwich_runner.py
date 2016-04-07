@@ -78,7 +78,7 @@ class SandwichRunner(object):
   command line flags have `dest` parameter set to existing runner members.
   """
 
-  def __init__(self, job_name):
+  def __init__(self):
     """Configures a sandwich runner out of the box.
 
     Public members are meant to be configured as wished before calling Run().
@@ -97,7 +97,7 @@ class SandwichRunner(object):
     self.disable_wpr_script_injection = False
 
     # The job name. Is str.
-    self.job_name = job_name
+    self.job_name = '__unknown_job'
 
     # Number of times to repeat the job.
     self.job_repeat = 1
@@ -112,7 +112,7 @@ class SandwichRunner(object):
     self.trace_output_directory = None
 
     # List of urls to run.
-    self.urls = _ReadUrlsFromJobDescription(job_name)
+    self.urls = []
 
     # Configures whether to record speed-index video.
     self.record_video = False
@@ -125,6 +125,10 @@ class SandwichRunner(object):
 
     self._chrome_ctl = None
     self._local_cache_directory_path = None
+
+  def LoadJob(self, job_name):
+    self.job_name = job_name
+    self.urls = _ReadUrlsFromJobDescription(job_name)
 
   def PullConfigFromArgs(self, args):
     """Configures the sandwich runner from parsed command line argument.

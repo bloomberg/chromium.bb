@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import logging
+import shutil
+import tempfile
 import time
 
 
@@ -61,3 +64,15 @@ def DeserializeAttributesFromJsonDict(json_dict, instance, attributes):
     getattr(instance, attr) # To raise AttributeError if attr doesn't exist.
     setattr(instance, attr, json_dict[attr])
   return instance
+
+
+@contextlib.contextmanager
+def TemporaryDirectory():
+  """Returns a freshly-created directory that gets automatically deleted after
+  usage.
+  """
+  name = tempfile.mkdtemp()
+  try:
+    yield name
+  finally:
+    shutil.rmtree(name)

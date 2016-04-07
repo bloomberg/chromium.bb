@@ -29,7 +29,16 @@ import loading_trace as loading_trace_module
 import tracing
 
 
-CATEGORIES = ['blink.user_timing', 'disabled-by-default-memory-infra']
+# List of selected trace event categories when running chrome.
+CATEGORIES = [
+    # Need blink network trace events for prefetch_view.PrefetchSimulationView
+    'blink.net',
+
+    # Need to get mark trace events for _GetWebPageTrackedEvents()
+    'blink.user_timing',
+
+    # Need to memory dump trace event for _GetBrowserDumpEvents()
+    'disabled-by-default-memory-infra']
 
 CSV_FIELD_NAMES = [
     'id',

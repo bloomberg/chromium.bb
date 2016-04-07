@@ -15,6 +15,7 @@ import argparse
 import csv
 import logging
 import os
+import shutil
 import sys
 
 _SRC_DIR = os.path.abspath(os.path.join(
@@ -28,11 +29,13 @@ from pylib import constants
 import devil_chromium
 
 import chrome_cache
+import common_util
 import emulation
 import options
 import sandwich_metrics
 import sandwich_misc
 from sandwich_runner import SandwichRunner
+from trace_test.webserver_test import WebServer
 
 
 # Use options layer to access constants.
@@ -137,6 +140,10 @@ def _ArgumentParser():
   filter_cache_parser.add_argument('--cache-archive', type=str, required=True,
                                    dest='cache_archive_path',
                                    help='Path of the cache archive to filter.')
+  filter_cache_parser.add_argument('--subresource-discoverer', required=True,
+      help='Strategy for populating the cache with a subset of resources, '
+           'according to the way they can be discovered',
+      choices=sandwich_misc.SUBRESOURCE_DISCOVERERS)
   filter_cache_parser.add_argument('--output', type=str, required=True,
                                    dest='output_cache_archive_path',
                                    help='Path of filtered cache archive.')
@@ -147,11 +154,24 @@ def _ArgumentParser():
           'list the ones discoverable by the HTML pre-scanner for that given ' +
           'url.')
 
+  # Record test trace subcommand.
+  record_trace_parser = subparsers.add_parser('record-test-trace',
+      help='Record a test trace using the trace_test.webserver_test.')
+  record_trace_parser.add_argument('--source-dir', type=str, required=True,
+                                   help='Base path where the files are opened'
+                                        'by the web server.')
+  record_trace_parser.add_argument('--page', type=str, required=True,
+                                   help='Source page in source-dir to navigate '
+                                        'to.')
+  record_trace_parser.add_argument('-o', '--output', type=str, required=True,
+                                   help='Output path of the generated trace.')
+
   return parser
 
 
 def _RecordWprMain(args):
-  sandwich_runner = SandwichRunner(args.job)
+  sandwich_runner = SandwichRunner()
+  sandwich_runner.LoadJob(args.job)
   sandwich_runner.PullConfigFromArgs(args)
   sandwich_runner.wpr_record = True
   sandwich_runner.PrintConfig()
@@ -162,7 +182,8 @@ def _RecordWprMain(args):
 
 
 def _CreateCacheMain(args):
-  sandwich_runner = SandwichRunner(args.job)
+  sandwich_runner = SandwichRunner()
+  sandwich_runner.LoadJob(args.job)
   sandwich_runner.PullConfigFromArgs(args)
   sandwich_runner.cache_operation = 'save'
   sandwich_runner.PrintConfig()
@@ -173,7 +194,8 @@ def _CreateCacheMain(args):
 
 
 def _RunJobMain(args):
-  sandwich_runner = SandwichRunner(args.job)
+  sandwich_runner = SandwichRunner()
+  sandwich_runner.LoadJob(args.job)
   sandwich_runner.PullConfigFromArgs(args)
   sandwich_runner.PrintConfig()
   sandwich_runner.Run()
@@ -196,13 +218,29 @@ def _ExtractMetricsMain(args):
 def _FilterCacheMain(args):
   whitelisted_urls = set()
   for loading_trace_path in args.loading_trace_paths:
-    whitelisted_urls.update(
-        sandwich_misc.ExtractParserDiscoverableResources(loading_trace_path))
+    whitelisted_urls.update(sandwich_misc.ExtractDiscoverableUrls(
+        loading_trace_path, args.subresource_discoverer))
   if not os.path.isdir(os.path.dirname(args.output_cache_archive_path)):
     os.makedirs(os.path.dirname(args.output_cache_archive_path))
   chrome_cache.ApplyUrlWhitelistToCacheArchive(args.cache_archive_path,
                                                whitelisted_urls,
                                                args.output_cache_archive_path)
+  return 0
+
+
+def _RecordWebServerTestTrace(args):
+  with common_util.TemporaryDirectory() as out_path:
+    sandwich_runner = SandwichRunner()
+    # Reuse the WPR's forwarding to access the webpage from Android.
+    sandwich_runner.wpr_record = True
+    sandwich_runner.wpr_archive_path = os.path.join(out_path, 'wpr')
+    sandwich_runner.trace_output_directory = os.path.join(out_path, 'run')
+    with WebServer.Context(
+        source_dir=args.source_dir, communication_dir=out_path) as server:
+      address = server.Address()
+      sandwich_runner.urls = ['http://%s/%s' % (address, args.page)]
+      sandwich_runner.Run()
+    shutil.copy(os.path.join(out_path, 'run', '0', 'trace.json'), args.output)
   return 0
 
 
@@ -226,6 +264,8 @@ def main(command_line_args):
     return _ExtractMetricsMain(args)
   if args.subcommand == 'filter-cache':
     return _FilterCacheMain(args)
+  if args.subcommand == 'record-test-trace':
+    return _RecordWebServerTestTrace(args)
   assert False
 
 

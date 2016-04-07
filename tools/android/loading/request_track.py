@@ -333,6 +333,9 @@ class RequestTrack(devtools_monitor.Track):
                       % len(self._requests_in_flight))
     return self._requests
 
+  def GetFirstResourceRequest(self):
+    return self.GetEvents()[0]
+
   def GetFirstRequestMillis(self):
     """Find the canonical start time for this track.
 
