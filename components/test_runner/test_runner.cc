@@ -152,7 +152,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpPermissionClientCallbacks();
   void DumpPingLoaderCallbacks();
   void DumpResourceLoadCallbacks();
-  void DumpResourceRequestCallbacks();
   void DumpResourceRequestPriorities();
   void DumpResourceResponseMIMETypes();
   void DumpSelectionRect();
@@ -179,7 +178,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void QueueBackNavigation(int how_far_back);
   void QueueForwardNavigation(int how_far_forward);
   void QueueLoad(gin::Arguments* args);
-  void QueueLoadHTMLString(gin::Arguments* args);
   void QueueLoadingScript(const std::string& script);
   void QueueNonLoadingScript(const std::string& script);
   void QueueReload();
@@ -288,8 +286,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   std::string SelectionAsMarkup();
   std::string TooltipText();
 
-  bool WasMockSpeechRecognitionAborted();
-
   int WebHistoryItemCount();
   int WindowCount();
 
@@ -347,17 +343,11 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::AddOriginAccessWhitelistEntry)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("animationScheduled", &TestRunnerBindings::AnimationScheduled)
-      .SetMethod("applicationCacheDiskUsageForOrigin",
-                 &TestRunnerBindings::NotImplemented)
       .SetMethod("callShouldCloseOnWebView",
                  &TestRunnerBindings::CallShouldCloseOnWebView)
       .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::CapturePixelsAsyncThen)
-      .SetMethod("clearAllApplicationCaches",
-                 &TestRunnerBindings::NotImplemented)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
-      .SetMethod("clearApplicationCacheForOrigin",
-                 &TestRunnerBindings::NotImplemented)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
       .SetMethod("clearGeofencingMockProvider",
                  &TestRunnerBindings::ClearGeofencingMockProvider)
@@ -365,9 +355,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
       .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
                  &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
-      .SetMethod("deleteAllLocalStorage", &TestRunnerBindings::NotImplemented)
-      .SetMethod("deleteLocalStorageForOrigin",
-                 &TestRunnerBindings::NotImplemented)
       .SetMethod("didAcquirePointerLock",
                  &TestRunnerBindings::DidAcquirePointerLock)
       .SetMethod("didLosePointerLock", &TestRunnerBindings::DidLosePointerLock)
@@ -409,8 +396,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpPingLoaderCallbacks)
       .SetMethod("dumpResourceLoadCallbacks",
                  &TestRunnerBindings::DumpResourceLoadCallbacks)
-      .SetMethod("dumpResourceRequestCallbacks",
-                 &TestRunnerBindings::DumpResourceRequestCallbacks)
       .SetMethod("dumpResourceRequestPriorities",
                  &TestRunnerBindings::DumpResourceRequestPriorities)
       .SetMethod("dumpResourceResponseMIMETypes",
@@ -425,8 +410,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpTitleChanges", &TestRunnerBindings::DumpTitleChanges)
       .SetMethod("dumpUserGestureInFrameLoadCallbacks",
                  &TestRunnerBindings::DumpUserGestureInFrameLoadCallbacks)
-      .SetMethod("dumpWindowStatusChanges",
-                 &TestRunnerBindings::DumpWindowStatusChanges)
       .SetMethod("enableAutoResizeMode",
                  &TestRunnerBindings::EnableAutoResizeMode)
       .SetMethod("enableUseZoomForDSF",
@@ -467,13 +450,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::LayoutAndPaintAsync)
       .SetMethod("layoutAndPaintAsyncThen",
                  &TestRunnerBindings::LayoutAndPaintAsyncThen)
-      .SetMethod("localStorageDiskUsageForOrigin",
-                 &TestRunnerBindings::NotImplemented)
       .SetMethod("logToStderr", &TestRunnerBindings::LogToStderr)
       .SetMethod("notifyDone", &TestRunnerBindings::NotifyDone)
-      .SetMethod("observeStorageTrackerNotifications",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("originsWithLocalStorage", &TestRunnerBindings::NotImplemented)
       .SetMethod("overridePreference", &TestRunnerBindings::OverridePreference)
       .SetMethod("pathToLocalResource",
                  &TestRunnerBindings::PathToLocalResource)
@@ -483,8 +461,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("queueForwardNavigation",
                  &TestRunnerBindings::QueueForwardNavigation)
       .SetMethod("queueLoad", &TestRunnerBindings::QueueLoad)
-      .SetMethod("queueLoadHTMLString",
-                 &TestRunnerBindings::QueueLoadHTMLString)
       .SetMethod("queueLoadingScript", &TestRunnerBindings::QueueLoadingScript)
       .SetMethod("queueNonLoadingScript",
                  &TestRunnerBindings::QueueNonLoadingScript)
@@ -515,8 +491,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetAllowUniversalAccessFromFileURLs)
       .SetMethod("setAlwaysAcceptCookies",
                  &TestRunnerBindings::SetAlwaysAcceptCookies)
-      .SetMethod("setApplicationCacheOriginQuota",
-                 &TestRunnerBindings::NotImplemented)
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
@@ -602,7 +576,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("simulateWebNotificationClose",
                  &TestRunnerBindings::SimulateWebNotificationClose)
-      .SetMethod("syncLocalStorage", &TestRunnerBindings::NotImplemented)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
       .SetMethod("useUnfortunateSynchronousResizeMode",
                  &TestRunnerBindings::UseUnfortunateSynchronousResizeMode)
@@ -611,8 +584,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("waitUntilDone", &TestRunnerBindings::WaitUntilDone)
       .SetMethod("waitUntilExternalURLLoad",
                  &TestRunnerBindings::WaitUntilExternalURLLoad)
-      .SetMethod("wasMockSpeechRecognitionAborted",
-                 &TestRunnerBindings::WasMockSpeechRecognitionAborted)
 
       // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
       .SetProperty("webHistoryItemCount",
@@ -667,11 +638,6 @@ void TestRunnerBindings::QueueLoad(gin::Arguments* args) {
     args->GetNext(&target);
     runner_->QueueLoad(url, target);
   }
-}
-
-void TestRunnerBindings::QueueLoadHTMLString(gin::Arguments* args) {
-  if (runner_)
-    runner_->QueueLoadHTMLString(args);
 }
 
 void TestRunnerBindings::SetCustomPolicyDelegate(gin::Arguments* args) {
@@ -1124,11 +1090,6 @@ void TestRunnerBindings::DumpResourceLoadCallbacks() {
     runner_->DumpResourceLoadCallbacks();
 }
 
-void TestRunnerBindings::DumpResourceRequestCallbacks() {
-  if (runner_)
-    runner_->DumpResourceRequestCallbacks();
-}
-
 void TestRunnerBindings::DumpResourceResponseMIMETypes() {
   if (runner_)
     runner_->DumpResourceResponseMIMETypes();
@@ -1384,12 +1345,6 @@ void TestRunnerBindings::SetMockSpeechRecognitionError(
     const std::string& error, const std::string& message) {
   if (runner_)
     runner_->SetMockSpeechRecognitionError(error, message);
-}
-
-bool TestRunnerBindings::WasMockSpeechRecognitionAborted() {
-  if (runner_)
-    return runner_->WasMockSpeechRecognitionAborted();
-  return false;
 }
 
 void TestRunnerBindings::AddMockCredentialManagerResponse(
@@ -1691,7 +1646,6 @@ void TestRunner::Reset() {
   dump_create_view_ = false;
   can_open_windows_ = false;
   dump_resource_load_callbacks_ = false;
-  dump_resource_request_callbacks_ = false;
   dump_resource_response_mime_types_ = false;
   dump_window_status_changes_ = false;
   dump_spell_check_callbacks_ = false;
@@ -2182,47 +2136,6 @@ void TestRunner::QueueLoad(const std::string& url, const std::string& target) {
   GURL current_url = web_view_->mainFrame()->document().url();
   GURL full_url = current_url.Resolve(url);
   work_queue_.AddWork(new WorkItemLoad(full_url, target));
-}
-
-class WorkItemLoadHTMLString : public TestRunner::WorkItem  {
- public:
-  WorkItemLoadHTMLString(const std::string& html, const WebURL& base_url)
-      : html_(html), base_url_(base_url) {}
-
-  WorkItemLoadHTMLString(const std::string& html, const WebURL& base_url,
-                         const WebURL& unreachable_url)
-      : html_(html), base_url_(base_url), unreachable_url_(unreachable_url) {}
-
-  bool Run(WebTestDelegate*, WebView* web_view) override {
-    web_view->mainFrame()->loadHTMLString(
-        WebData(html_.data(), html_.length()),
-        base_url_, unreachable_url_);
-    return true;
-  }
-
- private:
-  std::string html_;
-  WebURL base_url_;
-  WebURL unreachable_url_;
-};
-
-void TestRunner::QueueLoadHTMLString(gin::Arguments* args) {
-  std::string html;
-  args->GetNext(&html);
-
-  std::string base_url_str;
-  args->GetNext(&base_url_str);
-  WebURL base_url = WebURL(GURL(base_url_str));
-
-  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
-    std::string unreachable_url_str;
-    args->GetNext(&unreachable_url_str);
-    WebURL unreachable_url = WebURL(GURL(unreachable_url_str));
-    work_queue_.AddWork(new WorkItemLoadHTMLString(html, base_url,
-                                                   unreachable_url));
-  } else {
-    work_queue_.AddWork(new WorkItemLoadHTMLString(html, base_url));
-  }
 }
 
 void TestRunner::SetCustomPolicyDelegate(gin::Arguments* args) {
@@ -2807,10 +2720,6 @@ void TestRunner::DumpResourceLoadCallbacks() {
   dump_resource_load_callbacks_ = true;
 }
 
-void TestRunner::DumpResourceRequestCallbacks() {
-  dump_resource_request_callbacks_ = true;
-}
-
 void TestRunner::DumpResourceResponseMIMETypes() {
   dump_resource_response_mime_types_ = true;
 }
@@ -3071,10 +2980,6 @@ void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
                                                const std::string& message) {
   getMockWebSpeechRecognizer()->SetError(WebString::fromUTF8(error),
                                          WebString::fromUTF8(message));
-}
-
-bool TestRunner::WasMockSpeechRecognitionAborted() {
-  return getMockWebSpeechRecognizer()->WasAborted();
 }
 
 void TestRunner::AddMockCredentialManagerResponse(const std::string& id,

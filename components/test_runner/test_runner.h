@@ -208,7 +208,6 @@ class TestRunner : public WebTestRunner {
   void QueueLoadingScript(const std::string& script);
   void QueueNonLoadingScript(const std::string& script);
   void QueueLoad(const std::string& url, const std::string& target);
-  void QueueLoadHTMLString(gin::Arguments* args);
 
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
@@ -429,11 +428,6 @@ class TestRunner : public WebTestRunner {
   // any that may be present.
   void DumpResourceLoadCallbacks();
 
-  // This function sets a flag that tells the test_shell to print a line of
-  // descriptive text for each element that requested a resource. It takes no
-  // arguments, and ignores any that may be present.
-  void DumpResourceRequestCallbacks();
-
   // This function sets a flag that tells the test_shell to dump the MIME type
   // for each resource that was loaded. It takes no arguments, and ignores any
   // that may be present.
@@ -612,7 +606,6 @@ class TestRunner : public WebTestRunner {
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,
                                      const std::string& message);
-  bool WasMockSpeechRecognitionAborted();
 
   // Credential Manager mock functions
   // TODO(mkwst): Support FederatedCredential.
@@ -745,10 +738,6 @@ class TestRunner : public WebTestRunner {
   // If true, the test_shell will output a descriptive line for each resource
   // load callback.
   bool dump_resource_load_callbacks_;
-
-  // If true, the test_shell will output a descriptive line for each resource
-  // request callback.
-  bool dump_resource_request_callbacks_;
 
   // If true, the test_shell will output the MIME type for each resource that
   // was loaded.
