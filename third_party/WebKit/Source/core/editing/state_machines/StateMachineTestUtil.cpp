@@ -5,6 +5,7 @@
 #include "core/editing/state_machines/StateMachineTestUtil.h"
 
 #include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
+#include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "wtf/Assertions.h"
 #include <algorithm>
@@ -64,7 +65,8 @@ std::string processSequence(StateMachine* machine,
             break;
         }
     }
-    if (state == TextSegmentationMachineState::NeedMoreCodeUnit) {
+    if (preceding.empty()
+        || state == TextSegmentationMachineState::NeedMoreCodeUnit) {
         state = machine->tellEndOfPrecedingText();
         out += MachineStateToChar(state);
     }
@@ -95,9 +97,21 @@ std::string processSequenceBackward(
 {
     const std::string& out =
         processSequence(machine, preceding, std::vector<UChar32>());
-    DCHECK_EQ(machine->finalizeAndGetBoundaryOffset(),
-        machine->finalizeAndGetBoundaryOffset())
-        << "finalizeAndGetBoundaryOffset should return fixed values.";
+    if (machine->finalizeAndGetBoundaryOffset()
+        != machine->finalizeAndGetBoundaryOffset())
+        return "State machine changes final offset after finished.";
+    return out;
+}
+
+std::string processSequenceForward(
+    ForwardGraphemeBoundaryStateMachine* machine,
+    const std::vector<UChar32>& preceding,
+    const std::vector<UChar32>& following)
+{
+    const std::string& out = processSequence(machine, preceding, following);
+    if (machine->finalizeAndGetBoundaryOffset()
+        != machine->finalizeAndGetBoundaryOffset())
+        return "State machine changes final offset after finished.";
     return out;
 }
 

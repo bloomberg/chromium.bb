@@ -10,6 +10,7 @@
 namespace blink {
 
 class BackwardGraphemeBoundaryStateMachine;
+class ForwardGraphemeBoundaryStateMachine;
 
 // Processes the |machine| with preceding/following code points.
 // The result string represents the output sequence of the state machine.
@@ -26,4 +27,8 @@ std::string processSequenceBackward(
     BackwardGraphemeBoundaryStateMachine*,
     const std::vector<UChar32>& preceding);
 
+std::string processSequenceForward(
+    ForwardGraphemeBoundaryStateMachine*,
+    const std::vector<UChar32>& preceding,
+    const std::vector<UChar32>& following);
 } // namespace blink
