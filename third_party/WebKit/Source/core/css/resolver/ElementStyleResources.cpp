@@ -49,7 +49,7 @@ ElementStyleResources::ElementStyleResources(Document& document, float deviceSca
 {
 }
 
-RawPtr<StyleImage> ElementStyleResources::styleImage(CSSPropertyID property, const CSSValue& value)
+StyleImage* ElementStyleResources::styleImage(CSSPropertyID property, const CSSValue& value)
 {
     if (value.isImageValue())
         return cachedOrPendingFromValue(property, toCSSImageValue(value));
@@ -66,7 +66,7 @@ RawPtr<StyleImage> ElementStyleResources::styleImage(CSSPropertyID property, con
     return nullptr;
 }
 
-RawPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPropertyID property, const CSSImageGeneratorValue& value)
+StyleImage* ElementStyleResources::generatedOrPendingFromValue(CSSPropertyID property, const CSSImageGeneratorValue& value)
 {
     if (value.isPending()) {
         m_pendingImageProperties.add(property);
@@ -75,7 +75,7 @@ RawPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPropert
     return StyleGeneratedImage::create(value);
 }
 
-RawPtr<StyleImage> ElementStyleResources::setOrPendingFromValue(CSSPropertyID property, const CSSImageSetValue& value)
+StyleImage* ElementStyleResources::setOrPendingFromValue(CSSPropertyID property, const CSSImageSetValue& value)
 {
     if (value.isCachePending(m_deviceScaleFactor)) {
         m_pendingImageProperties.add(property);
@@ -84,7 +84,7 @@ RawPtr<StyleImage> ElementStyleResources::setOrPendingFromValue(CSSPropertyID pr
     return value.cachedImage(m_deviceScaleFactor);
 }
 
-RawPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(CSSPropertyID property, const CSSImageValue& value)
+StyleImage* ElementStyleResources::cachedOrPendingFromValue(CSSPropertyID property, const CSSImageValue& value)
 {
     if (value.isCachePending()) {
         m_pendingImageProperties.add(property);
@@ -94,7 +94,7 @@ RawPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(CSSPropertyID
     return value.cachedImage();
 }
 
-RawPtr<StyleImage> ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID property, const CSSCursorImageValue& value)
+StyleImage* ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID property, const CSSCursorImageValue& value)
 {
     if (value.isCachePending(m_deviceScaleFactor)) {
         m_pendingImageProperties.add(property);
@@ -115,9 +115,9 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
 
     FilterOperations::FilterOperationVector& filterOperations = computedStyle->mutableFilter().operations();
     for (unsigned i = 0; i < filterOperations.size(); ++i) {
-        RawPtr<FilterOperation> filterOperation = filterOperations.at(i);
+        FilterOperation* filterOperation = filterOperations.at(i);
         if (filterOperation->type() == FilterOperation::REFERENCE) {
-            ReferenceFilterOperation* referenceFilter = toReferenceFilterOperation(filterOperation.get());
+            ReferenceFilterOperation* referenceFilter = toReferenceFilterOperation(filterOperation);
 
             CSSSVGDocumentValue* value = m_pendingSVGDocuments.get(referenceFilter);
             if (!value)
@@ -132,7 +132,7 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
     }
 }
 
-RawPtr<StyleImage> ElementStyleResources::loadPendingImage(StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
+StyleImage* ElementStyleResources::loadPendingImage(StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
         return imageValue->cacheImage(m_document, crossOrigin);
@@ -217,8 +217,8 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
             if (StyleReflection* reflection = style->boxReflect()) {
                 const NinePieceImage& maskImage = reflection->mask();
                 if (maskImage.image() && maskImage.image()->isPendingImage()) {
-                    RawPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(maskImage.image()));
-                    reflection->setMask(NinePieceImage(loadedImage.release(), maskImage.imageSlices(), maskImage.fill(), maskImage.borderSlices(), maskImage.outset(), maskImage.horizontalRule(), maskImage.verticalRule()));
+                    StyleImage* loadedImage = loadPendingImage(toStylePendingImage(maskImage.image()));
+                    reflection->setMask(NinePieceImage(loadedImage, maskImage.imageSlices(), maskImage.fill(), maskImage.borderSlices(), maskImage.outset(), maskImage.horizontalRule(), maskImage.verticalRule()));
                 }
             }
             break;

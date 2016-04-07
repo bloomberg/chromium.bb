@@ -48,10 +48,10 @@ enum StyleSheetUpdateType {
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSStyleSheet> create(RawPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
-    static RawPtr<CSSStyleSheet> create(RawPtr<StyleSheetContents>, Node* ownerNode);
-    static RawPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
-    static RawPtr<CSSStyleSheet> createInline(RawPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
+    static CSSStyleSheet* create(StyleSheetContents*, CSSImportRule* ownerRule = 0);
+    static CSSStyleSheet* create(StyleSheetContents*, Node* ownerNode);
+    static CSSStyleSheet* createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
+    static CSSStyleSheet* createInline(StyleSheetContents*, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
 
     ~CSSStyleSheet() override;
 
@@ -63,13 +63,13 @@ public:
     bool disabled() const override { return m_isDisabled; }
     void setDisabled(bool) override;
 
-    RawPtr<CSSRuleList> cssRules();
+    CSSRuleList* cssRules();
     unsigned insertRule(const String& rule, unsigned index, ExceptionState&);
     unsigned insertRule(const String& rule, ExceptionState&); // Deprecated.
     void deleteRule(unsigned index, ExceptionState&);
 
     // IE Extensions
-    RawPtr<CSSRuleList> rules();
+    CSSRuleList* rules();
     int addRule(const String& selector, const String& style, int index, ExceptionState&);
     int addRule(const String& selector, const String& style, ExceptionState&);
     void removeRule(unsigned index, ExceptionState& exceptionState) { deleteRule(index, exceptionState); }
@@ -87,7 +87,7 @@ public:
     void clearOwnerRule() { m_ownerRule = nullptr; }
     Document* ownerDocument() const;
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
-    void setMediaQueries(RawPtr<MediaQuerySet>);
+    void setMediaQueries(MediaQuerySet*);
     void setTitle(const String& title) { m_title = title; }
     // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this origin.
     void setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowedOrigin);
@@ -121,8 +121,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CSSStyleSheet(RawPtr<StyleSheetContents>, CSSImportRule* ownerRule);
-    CSSStyleSheet(RawPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
+    CSSStyleSheet(StyleSheetContents*, CSSImportRule* ownerRule);
+    CSSStyleSheet(StyleSheetContents*, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
 
     bool isCSSStyleSheet() const override { return true; }
     String type() const override { return "text/css"; }

@@ -339,7 +339,7 @@ void FontBuilder::updateComputedSize(FontDescription& fontDescription, const Com
     fontDescription.setComputedSize(computedSize);
 }
 
-void FontBuilder::createFont(RawPtr<FontSelector> fontSelector, ComputedStyle& style)
+void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style)
 {
     if (!m_flags)
         return;
@@ -382,14 +382,14 @@ void FontBuilder::createFont(RawPtr<FontSelector> fontSelector, ComputedStyle& s
 
     updateSpecifiedSize(description, style);
     updateComputedSize(description, style);
-    updateAdjustedSize(description, style, fontSelector.get());
+    updateAdjustedSize(description, style, fontSelector);
 
     style.setFontDescription(description);
     style.font().update(fontSelector);
     m_flags = 0;
 }
 
-void FontBuilder::createFontForDocument(RawPtr<FontSelector> fontSelector, ComputedStyle& documentStyle)
+void FontBuilder::createFontForDocument(FontSelector* fontSelector, ComputedStyle& documentStyle)
 {
     FontDescription fontDescription = FontDescription();
     fontDescription.setLocale(documentStyle.locale());

@@ -36,19 +36,19 @@ class LayoutObject;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
 public:
-    static RawPtr<CSSImageValue> create(const KURL& url, StyleImage* image = 0)
+    static CSSImageValue* create(const KURL& url, StyleImage* image = 0)
     {
         return create(url.getString(), url, image);
     }
-    static RawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleImage* image = 0)
+    static CSSImageValue* create(const String& rawValue, const KURL& url, StyleImage* image = 0)
     {
         return create(AtomicString(rawValue), url, image);
     }
-    static RawPtr<CSSImageValue> create(const AtomicString& rawValue, const KURL& url, StyleImage* image = 0)
+    static CSSImageValue* create(const AtomicString& rawValue, const KURL& url, StyleImage* image = 0)
     {
         return new CSSImageValue(rawValue, url, image);
     }
-    static RawPtr<CSSImageValue> create(const AtomicString& absoluteURL)
+    static CSSImageValue* create(const AtomicString& absoluteURL)
     {
         return new CSSImageValue(absoluteURL);
     }
@@ -73,7 +73,7 @@ public:
 
     bool knownToBeOpaque(const LayoutObject&) const;
 
-    RawPtr<CSSImageValue> valueWithURLMadeAbsolute()
+    CSSImageValue* valueWithURLMadeAbsolute()
     {
         return create(KURL(ParsedURLString, m_absoluteURL), m_cachedImage.get());
     }

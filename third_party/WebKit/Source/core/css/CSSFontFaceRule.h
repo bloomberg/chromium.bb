@@ -34,7 +34,7 @@ class StyleRuleCSSStyleDeclaration;
 class CSSFontFaceRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSFontFaceRule> create(StyleRuleFontFace* rule, CSSStyleSheet* sheet)
+    static CSSFontFaceRule* create(StyleRuleFontFace* rule, CSSStyleSheet* sheet)
     {
         return new CSSFontFaceRule(rule, sheet);
     }

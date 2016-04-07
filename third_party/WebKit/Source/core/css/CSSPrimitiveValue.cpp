@@ -289,11 +289,11 @@ void CSSPrimitiveValue::init(UnitType type)
     m_primitiveUnitType = static_cast<unsigned>(type);
 }
 
-void CSSPrimitiveValue::init(RawPtr<CSSCalcValue> c)
+void CSSPrimitiveValue::init(CSSCalcValue* c)
 {
     init(UnitType::Calc);
     m_hasCachedCSSText = false;
-    m_value.calc = c.leakRef();
+    m_value.calc = c;
 }
 
 CSSPrimitiveValue::~CSSPrimitiveValue()

@@ -35,7 +35,7 @@ public:
     bool addExpression();
     bool tryAddParserToken(CSSParserTokenType, const CSSParserToken&);
     void setMediaType(const String&);
-    RawPtr<MediaQuery> takeMediaQuery();
+    MediaQuery* takeMediaQuery();
 
     inline bool currentMediaQueryChanged() const
     {
@@ -51,9 +51,9 @@ public:
 class CORE_EXPORT MediaQueryParser {
     STACK_ALLOCATED();
 public:
-    static RawPtr<MediaQuerySet> parseMediaQuerySet(const String&);
-    static RawPtr<MediaQuerySet> parseMediaQuerySet(CSSParserTokenRange);
-    static RawPtr<MediaQuerySet> parseMediaCondition(CSSParserTokenRange);
+    static MediaQuerySet* parseMediaQuerySet(const String&);
+    static MediaQuerySet* parseMediaQuerySet(CSSParserTokenRange);
+    static MediaQuerySet* parseMediaCondition(CSSParserTokenRange);
 
 private:
     enum ParserType {
@@ -64,7 +64,7 @@ private:
     MediaQueryParser(ParserType);
     virtual ~MediaQueryParser();
 
-    RawPtr<MediaQuerySet> parseImpl(CSSParserTokenRange);
+    MediaQuerySet* parseImpl(CSSParserTokenRange);
 
     void processToken(const CSSParserToken&);
 

@@ -35,7 +35,7 @@ public:
         SerializeAsQuad
     };
 
-    static RawPtr<CSSQuadValue> create(RawPtr<CSSPrimitiveValue> top, RawPtr<CSSPrimitiveValue> right, RawPtr<CSSPrimitiveValue> bottom, RawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
+    static CSSQuadValue* create(CSSPrimitiveValue* top, CSSPrimitiveValue* right, CSSPrimitiveValue* bottom, CSSPrimitiveValue* left, TypeForSerialization serializationType)
     {
         return new CSSQuadValue(top, right, bottom, left, serializationType);
     }
@@ -60,7 +60,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
-    CSSQuadValue(RawPtr<CSSPrimitiveValue> top, RawPtr<CSSPrimitiveValue> right, RawPtr<CSSPrimitiveValue> bottom, RawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
+    CSSQuadValue(CSSPrimitiveValue* top, CSSPrimitiveValue* right, CSSPrimitiveValue* bottom, CSSPrimitiveValue* left, TypeForSerialization serializationType)
         : CSSValue(QuadClass)
         , m_serializationType(serializationType)
         , m_top(top)

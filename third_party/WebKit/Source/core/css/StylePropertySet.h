@@ -98,7 +98,7 @@ public:
     bool hasProperty(CSSPropertyID property) const { return findPropertyIndex(property) != -1; }
 
     template<typename T> // CSSPropertyID or AtomicString
-    RawPtr<CSSValue> getPropertyCSSValue(T property) const;
+    CSSValue* getPropertyCSSValue(T property) const;
 
     template<typename T> // CSSPropertyID or AtomicString
     String getPropertyValue(T property) const;
@@ -114,10 +114,10 @@ public:
 
     CSSParserMode cssParserMode() const { return static_cast<CSSParserMode>(m_cssParserMode); }
 
-    RawPtr<MutableStylePropertySet> mutableCopy() const;
-    RawPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
+    MutableStylePropertySet* mutableCopy() const;
+    ImmutableStylePropertySet* immutableCopyIfNeeded() const;
 
-    RawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+    MutableStylePropertySet* copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
     String asText() const;
 
@@ -162,7 +162,7 @@ protected:
 class CORE_EXPORT ImmutableStylePropertySet : public StylePropertySet {
 public:
     ~ImmutableStylePropertySet();
-    static RawPtr<ImmutableStylePropertySet> create(const CSSProperty* properties, unsigned count, CSSParserMode);
+    static ImmutableStylePropertySet* create(const CSSProperty* properties, unsigned count, CSSParserMode);
 
     unsigned propertyCount() const { return m_arraySize; }
 
@@ -200,8 +200,8 @@ DEFINE_TYPE_CASTS(ImmutableStylePropertySet, StylePropertySet, set, !set->isMuta
 class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
 public:
     ~MutableStylePropertySet() { }
-    static RawPtr<MutableStylePropertySet> create(CSSParserMode);
-    static RawPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
+    static MutableStylePropertySet* create(CSSParserMode);
+    static MutableStylePropertySet* create(const CSSProperty* properties, unsigned count);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
 
@@ -212,7 +212,7 @@ public:
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID unresolvedProperty, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
     bool setProperty(const AtomicString& customPropertyName, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
-    void setProperty(CSSPropertyID, RawPtr<CSSValue>, bool important = false);
+    void setProperty(CSSPropertyID, CSSValue*, bool important = false);
 
     // These do not. FIXME: This is too messy, we can do better.
     bool setProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
@@ -254,11 +254,6 @@ private:
 };
 
 DEFINE_TYPE_CASTS(MutableStylePropertySet, StylePropertySet, set, set->isMutable(), set.isMutable());
-
-inline MutableStylePropertySet* toMutableStylePropertySet(const RawPtr<StylePropertySet>& set)
-{
-    return toMutableStylePropertySet(set.get());
-}
 
 inline MutableStylePropertySet* toMutableStylePropertySet(const Persistent<StylePropertySet>& set)
 {

@@ -17,11 +17,11 @@ PerspectiveTransformComponent* PerspectiveTransformComponent::create(const Lengt
     return new PerspectiveTransformComponent(length);
 }
 
-RawPtr<CSSFunctionValue> PerspectiveTransformComponent::toCSSValue() const
+CSSFunctionValue* PerspectiveTransformComponent::toCSSValue() const
 {
-    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValuePerspective);
+    CSSFunctionValue* result = CSSFunctionValue::create(CSSValuePerspective);
     result->append(m_length->toCSSValue());
-    return result.release();
+    return result;
 }
 
 } // namespace blink

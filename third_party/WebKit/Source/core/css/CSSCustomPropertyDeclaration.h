@@ -14,12 +14,12 @@ namespace blink {
 
 class CSSCustomPropertyDeclaration : public CSSValue {
 public:
-    static RawPtr<CSSCustomPropertyDeclaration> create(const AtomicString& name, PassRefPtr<CSSVariableData> value)
+    static CSSCustomPropertyDeclaration* create(const AtomicString& name, PassRefPtr<CSSVariableData> value)
     {
         return new CSSCustomPropertyDeclaration(name, value);
     }
 
-    static RawPtr<CSSCustomPropertyDeclaration> create(const AtomicString& name, CSSValueID id)
+    static CSSCustomPropertyDeclaration* create(const AtomicString& name, CSSValueID id)
     {
         return new CSSCustomPropertyDeclaration(name, id);
     }

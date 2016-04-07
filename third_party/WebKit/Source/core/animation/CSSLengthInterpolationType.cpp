@@ -292,7 +292,7 @@ static CSSCalcExpressionNode* createCalcExpression(const InterpolableList& value
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
         double value = toInterpolableNumber(values.get(i))->value();
         if (value || (i == CSSPrimitiveValue::UnitTypePercentage && hasPercentage)) {
-            RawPtr<CSSCalcExpressionNode> node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(i)));
+            CSSCalcExpressionNode* node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(i)));
             result = result ? CSSCalcValue::createExpressionNode(result, node, CalcAdd) : node;
         }
     }

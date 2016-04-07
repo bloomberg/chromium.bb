@@ -39,11 +39,11 @@ class Document;
 
 class CSSFontFaceSrcValue : public CSSValue {
 public:
-    static RawPtr<CSSFontFaceSrcValue> create(const String& specifiedResource, const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    static CSSFontFaceSrcValue* create(const String& specifiedResource, const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
     {
         return new CSSFontFaceSrcValue(specifiedResource, absoluteResource, false, shouldCheckContentSecurityPolicy);
     }
-    static RawPtr<CSSFontFaceSrcValue> createLocal(const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    static CSSFontFaceSrcValue* createLocal(const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
     {
         return new CSSFontFaceSrcValue(emptyString(), absoluteResource, true, shouldCheckContentSecurityPolicy);
     }
@@ -94,7 +94,7 @@ private:
     class FontResourceHelper : public GarbageCollectedFinalized<FontResourceHelper>, public ResourceOwner<FontResource> {
         USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
     public:
-        static RawPtr<FontResourceHelper> create(RawPtr<FontResource> resource)
+        static FontResourceHelper* create(FontResource* resource)
         {
             return new FontResourceHelper(resource);
         }
@@ -102,7 +102,7 @@ private:
         DEFINE_INLINE_VIRTUAL_TRACE() { ResourceOwner<FontResource>::trace(visitor); }
 
     private:
-        FontResourceHelper(RawPtr<FontResource> resource)
+        FontResourceHelper(FontResource* resource)
         {
             setResource(resource);
         }

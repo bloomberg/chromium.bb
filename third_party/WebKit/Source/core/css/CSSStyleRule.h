@@ -34,7 +34,7 @@ class StyleRule;
 class CORE_EXPORT CSSStyleRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet)
+    static CSSStyleRule* create(StyleRule* rule, CSSStyleSheet* sheet)
     {
         return new CSSStyleRule(rule, sheet);
     }

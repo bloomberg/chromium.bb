@@ -14,13 +14,13 @@ namespace blink {
 
 class CSSCustomIdentValue : public CSSValue {
 public:
-    static RawPtr<CSSCustomIdentValue> create(const String& str)
+    static CSSCustomIdentValue* create(const String& str)
     {
         return new CSSCustomIdentValue(str);
     }
 
     // TODO(sashab, timloh): Remove this and lazily parse the CSSPropertyID in isKnownPropertyID().
-    static RawPtr<CSSCustomIdentValue> create(CSSPropertyID id)
+    static CSSCustomIdentValue* create(CSSPropertyID id)
     {
         return new CSSCustomIdentValue(id);
     }

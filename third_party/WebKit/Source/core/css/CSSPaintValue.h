@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSPaintValue : public CSSImageGeneratorValue {
 public:
-    static RawPtr<CSSPaintValue> create(RawPtr<CSSCustomIdentValue> name)
+    static CSSPaintValue* create(CSSCustomIdentValue* name)
     {
         return new CSSPaintValue(name);
     }
@@ -37,7 +37,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    explicit CSSPaintValue(RawPtr<CSSCustomIdentValue> name);
+    explicit CSSPaintValue(CSSCustomIdentValue* name);
 
     Member<CSSCustomIdentValue> m_name;
 };

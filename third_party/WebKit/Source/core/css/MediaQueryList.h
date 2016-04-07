@@ -47,7 +47,7 @@ class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, publi
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 public:
-    static RawPtr<MediaQueryList> create(ExecutionContext*, RawPtr<MediaQueryMatcher>, RawPtr<MediaQuerySet>);
+    static MediaQueryList* create(ExecutionContext*, MediaQueryMatcher*, MediaQuerySet*);
     ~MediaQueryList() override;
 
     String media() const;
@@ -57,12 +57,12 @@ public:
 
     // These two functions are provided for compatibility with JS code
     // written before the change listener became a DOM event.
-    void addDeprecatedListener(RawPtr<EventListener>);
-    void removeDeprecatedListener(RawPtr<EventListener>);
+    void addDeprecatedListener(EventListener*);
+    void removeDeprecatedListener(EventListener*);
 
     // C++ code can use these functions to listen to changes instead of having to use DOM event listeners.
-    void addListener(RawPtr<MediaQueryListListener>);
-    void removeListener(RawPtr<MediaQueryListListener>);
+    void addListener(MediaQueryListListener*);
+    void removeListener(MediaQueryListListener*);
 
     // Will return true if a DOM event should be scheduled.
     bool mediaFeaturesChanged(HeapVector<Member<MediaQueryListListener>>* listenersToNotify);
@@ -79,7 +79,7 @@ public:
     ExecutionContext* getExecutionContext() const override;
 
 private:
-    MediaQueryList(ExecutionContext*, RawPtr<MediaQueryMatcher>, RawPtr<MediaQuerySet>);
+    MediaQueryList(ExecutionContext*, MediaQueryMatcher*, MediaQuerySet*);
 
     bool updateMatches();
 

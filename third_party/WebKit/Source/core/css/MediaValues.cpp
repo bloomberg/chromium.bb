@@ -24,7 +24,7 @@
 
 namespace blink {
 
-RawPtr<MediaValues> MediaValues::createDynamicIfFrameExists(LocalFrame* frame)
+MediaValues* MediaValues::createDynamicIfFrameExists(LocalFrame* frame)
 {
     if (frame)
         return MediaValuesDynamic::create(frame);

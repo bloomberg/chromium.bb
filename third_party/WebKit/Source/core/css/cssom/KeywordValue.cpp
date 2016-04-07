@@ -32,7 +32,7 @@ CSSValueID KeywordValue::keywordValueID() const
     return cssValueKeywordID(cssKeywordString);
 }
 
-RawPtr<CSSValue> KeywordValue::toCSSValue() const
+CSSValue* KeywordValue::toCSSValue() const
 {
     CSSValueID keywordID = keywordValueID();
     if (keywordID == CSSValueID::CSSValueInvalid) {

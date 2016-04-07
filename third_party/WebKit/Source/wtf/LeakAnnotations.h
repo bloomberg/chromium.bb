@@ -131,7 +131,7 @@ public:
 #define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) WTF::RegisterStaticLocalReference<Type>::registerStatic(Object)
 #else
 #define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE
-#define LEAK_SANITIZER_IGNORE_OBJECT
+#define LEAK_SANITIZER_IGNORE_OBJECT(X) ((void)0)
 #define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) Object
 #endif // USE(LEAK_SANITIZER)
 

@@ -30,7 +30,7 @@ namespace blink {
 
 class CSSCounterValue : public CSSValue {
 public:
-    static RawPtr<CSSCounterValue> create(RawPtr<CSSCustomIdentValue> identifier, RawPtr<CSSPrimitiveValue> listStyle, RawPtr<CSSCustomIdentValue> separator)
+    static CSSCounterValue* create(CSSCustomIdentValue* identifier, CSSPrimitiveValue* listStyle, CSSCustomIdentValue* separator)
     {
         return new CSSCounterValue(identifier, listStyle, separator);
     }
@@ -51,7 +51,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCounterValue(RawPtr<CSSCustomIdentValue> identifier, RawPtr<CSSPrimitiveValue> listStyle, RawPtr<CSSCustomIdentValue> separator)
+    CSSCounterValue(CSSCustomIdentValue* identifier, CSSPrimitiveValue* listStyle, CSSCustomIdentValue* separator)
         : CSSValue(CounterClass)
         , m_identifier(identifier)
         , m_listStyle(listStyle)

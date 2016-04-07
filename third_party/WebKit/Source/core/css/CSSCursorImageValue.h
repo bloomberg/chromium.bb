@@ -32,7 +32,7 @@ class SVGElement;
 
 class CSSCursorImageValue : public CSSValue {
 public:
-    static RawPtr<CSSCursorImageValue> create(RawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
+    static CSSCursorImageValue* create(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
     {
         return new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot);
     }
@@ -59,7 +59,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCursorImageValue(RawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot);
+    CSSCursorImageValue(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot);
 
     bool isSVGCursor() const;
     String cachedImageURL();

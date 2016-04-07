@@ -173,7 +173,7 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         cacheValue = nullptr;
     }
 
-    RawPtr<StylePropertySet> style = nullptr;
+    StylePropertySet* style = nullptr;
     if (cacheHash && cacheValue->value) {
         style = cacheValue->value->value;
         cacheCleaner.didHitPresentationAttributeCache();
@@ -185,7 +185,7 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
     }
 
     if (!cacheHash || cacheValue->value)
-        return style.release();
+        return style;
 
     RawPtr<PresentationAttributeCacheEntry> newEntry = new PresentationAttributeCacheEntry;
     newEntry->key = cacheKey;
@@ -201,7 +201,7 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         cacheValue->value = newEntry.release();
     }
 
-    return style.release();
+    return style;
 }
 
 } // namespace blink

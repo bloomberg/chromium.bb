@@ -14,22 +14,22 @@ namespace blink {
 class MediaQueryListEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<MediaQueryListEvent> create()
+    static MediaQueryListEvent* create()
     {
         return new MediaQueryListEvent;
     }
 
-    static RawPtr<MediaQueryListEvent> create(RawPtr<MediaQueryList> list)
+    static MediaQueryListEvent* create(MediaQueryList* list)
     {
         return new MediaQueryListEvent(list);
     }
 
-    static RawPtr<MediaQueryListEvent> create(const String& media, bool matches)
+    static MediaQueryListEvent* create(const String& media, bool matches)
     {
         return new MediaQueryListEvent(media, matches);
     }
 
-    static RawPtr<MediaQueryListEvent> create(const AtomicString& eventType, const MediaQueryListEventInit& initializer)
+    static MediaQueryListEvent* create(const AtomicString& eventType, const MediaQueryListEventInit& initializer)
     {
         return new MediaQueryListEvent(eventType, initializer);
     }
@@ -54,7 +54,7 @@ private:
         , m_media(media)
         , m_matches(matches) { }
 
-    explicit MediaQueryListEvent(RawPtr<MediaQueryList> list)
+    explicit MediaQueryListEvent(MediaQueryList* list)
         : Event(EventTypeNames::change, false, false)
         , m_mediaQueryList(list)
         , m_matches(false) { }

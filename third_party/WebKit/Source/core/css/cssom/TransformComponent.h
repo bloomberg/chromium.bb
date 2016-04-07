@@ -42,7 +42,7 @@ public:
         return toCSSValue()->cssText();
     }
 
-    virtual RawPtr<CSSFunctionValue> toCSSValue() const = 0;
+    virtual CSSFunctionValue* toCSSValue() const = 0;
     virtual MatrixTransformComponent* asMatrix() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

@@ -130,7 +130,7 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     return success;
 }
 
-RawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
+CSSValue* CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
 {
     ASSERT(!isShorthandProperty(id));
 
@@ -138,10 +138,10 @@ RawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(StyleVariableDat
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
         return cssValuePool().createUnsetValue();
-    RawPtr<CSSValue> result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
+    CSSValue* result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
     if (!result)
         return cssValuePool().createUnsetValue();
-    return result.release();
+    return result;
 }
 
 void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
@@ -163,15 +163,15 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
         }
     }
 
-    RawPtr<CSSUnsetValue> unset = cssValuePool().createUnsetValue();
+    CSSUnsetValue* unset = cssValuePool().createUnsetValue();
     if (isShorthandProperty(id)) {
         StylePropertyShorthand shorthand = shorthandForProperty(id);
         for (unsigned i = 0; i < shorthand.length(); i++)
-            StyleBuilder::applyProperty(shorthand.properties()[i], state, unset.get());
+            StyleBuilder::applyProperty(shorthand.properties()[i], state, unset);
         return;
     }
 
-    StyleBuilder::applyProperty(id, state, unset.get());
+    StyleBuilder::applyProperty(id, state, unset);
 }
 
 void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variables)

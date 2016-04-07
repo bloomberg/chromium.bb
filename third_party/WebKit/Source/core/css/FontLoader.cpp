@@ -14,7 +14,7 @@ namespace blink {
 
 struct FontLoader::FontToLoad : public GarbageCollectedFinalized<FontLoader::FontToLoad> {
 public:
-    static RawPtr<FontToLoad> create(FontResource* fontResource, Document& document)
+    static FontToLoad* create(FontResource* fontResource, Document& document)
     {
         return new FontToLoad(fontResource, document);
     }

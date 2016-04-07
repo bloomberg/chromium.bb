@@ -48,11 +48,11 @@ public:
 
     // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
     // a result of egregious spaghettification in FontFace/FontFaceSet.
-    void add(CSSFontSelector*, const StyleRuleFontFace*, RawPtr<FontFace>);
+    void add(CSSFontSelector*, const StyleRuleFontFace*, FontFace*);
     void remove(const StyleRuleFontFace*);
     void clearCSSConnected();
     void clearAll();
-    void addFontFace(CSSFontSelector*, RawPtr<FontFace>, bool cssConnected);
+    void addFontFace(CSSFontSelector*, FontFace*, bool cssConnected);
     void removeFontFace(FontFace*, bool cssConnected);
 
     // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,

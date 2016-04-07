@@ -29,7 +29,7 @@
 
 namespace blink {
 
-CSSBorderImageSliceValue::CSSBorderImageSliceValue(RawPtr<CSSQuadValue> slices, bool fill)
+CSSBorderImageSliceValue::CSSBorderImageSliceValue(CSSQuadValue* slices, bool fill)
     : CSSValue(BorderImageSliceClass)
     , m_slices(slices)
     , m_fill(fill)

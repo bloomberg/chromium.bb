@@ -38,7 +38,7 @@ class StyleRuleSupports;
 class CSSSupportsRule final : public CSSGroupingRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
+    static CSSSupportsRule* create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
     {
         return new CSSSupportsRule(rule, sheet);
     }

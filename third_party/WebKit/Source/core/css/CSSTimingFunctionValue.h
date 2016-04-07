@@ -34,7 +34,7 @@ namespace blink {
 
 class CSSCubicBezierTimingFunctionValue : public CSSValue {
 public:
-    static RawPtr<CSSCubicBezierTimingFunctionValue> create(double x1, double y1, double x2, double y2)
+    static CSSCubicBezierTimingFunctionValue* create(double x1, double y1, double x2, double y2)
     {
         return new CSSCubicBezierTimingFunctionValue(x1, y1, x2, y2);
     }
@@ -70,7 +70,7 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSCubicBezierTimingFunctionValue, isCubicBezierTimi
 
 class CSSStepsTimingFunctionValue : public CSSValue {
 public:
-    static RawPtr<CSSStepsTimingFunctionValue> create(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)
+    static CSSStepsTimingFunctionValue* create(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)
     {
         return new CSSStepsTimingFunctionValue(steps, stepAtPosition);
     }

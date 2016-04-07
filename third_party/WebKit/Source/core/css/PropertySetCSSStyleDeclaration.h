@@ -60,7 +60,7 @@ private:
     void setCSSFloat(const String&, ExceptionState&);
     String cssText() const final;
     void setCSSText(const String&, ExceptionState&) final;
-    RawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) final;
+    CSSValue* getPropertyCSSValueInternal(CSSPropertyID) final;
     String getPropertyValueInternal(CSSPropertyID) final;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) final;
 
@@ -92,7 +92,7 @@ protected:
 
 class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
 public:
-    static RawPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
+    static StyleRuleCSSStyleDeclaration* create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
     {
         return new StyleRuleCSSStyleDeclaration(propertySet, parentRule);
     }

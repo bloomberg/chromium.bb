@@ -53,7 +53,7 @@ CSSValuePool::CSSValuePool()
     m_numberValueCache.resize(maximumCacheableIntegerValue + 1);
 }
 
-RawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ident)
+CSSPrimitiveValue* CSSValuePool::createIdentifierValue(CSSValueID ident)
 {
     if (ident <= 0)
         return CSSPrimitiveValue::createIdentifier(ident);
@@ -63,12 +63,12 @@ RawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ident)
     return m_identifierValueCache[ident];
 }
 
-RawPtr<CSSCustomIdentValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
+CSSCustomIdentValue* CSSValuePool::createIdentifierValue(CSSPropertyID ident)
 {
     return CSSCustomIdentValue::create(ident);
 }
 
-RawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbValue)
+CSSColorValue* CSSValuePool::createColorValue(RGBA32 rgbValue)
 {
     // These are the empty and deleted values of the hash table.
     if (rgbValue == Color::transparent)
@@ -92,7 +92,7 @@ RawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbValue)
     if (m_colorValueCache.size() > maximumColorCacheSize)
         m_colorValueCache.clear();
 
-    RawPtr<CSSColorValue> dummyValue = nullptr;
+    CSSColorValue* dummyValue = nullptr;
     ColorValueCache::AddResult entry = m_colorValueCache.add(rgbValue, dummyValue);
     if (entry.isNewEntry)
         entry.storedValue->value = CSSColorValue::create(rgbValue);
@@ -100,7 +100,7 @@ RawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbValue)
     return entry.storedValue->value;
 }
 
-RawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimitiveValue::UnitType type)
+CSSPrimitiveValue* CSSValuePool::createValue(double value, CSSPrimitiveValue::UnitType type)
 {
     if (std::isinf(value))
         value = 0;
@@ -131,12 +131,12 @@ RawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimitiveVa
     }
 }
 
-RawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const ComputedStyle& style)
+CSSPrimitiveValue* CSSValuePool::createValue(const Length& value, const ComputedStyle& style)
 {
     return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }
 
-RawPtr<CSSFontFamilyValue> CSSValuePool::createFontFamilyValue(const String& familyName)
+CSSFontFamilyValue* CSSValuePool::createFontFamilyValue(const String& familyName)
 {
     if (familyName.isNull())
         return CSSFontFamilyValue::create(familyName);
@@ -146,7 +146,7 @@ RawPtr<CSSFontFamilyValue> CSSValuePool::createFontFamilyValue(const String& fam
     return value;
 }
 
-RawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& string)
+CSSValueList* CSSValuePool::createFontFaceValue(const AtomicString& string)
 {
     // Just wipe out the cache and start rebuilding if it gets too big.
     const unsigned maximumFontFaceCacheSize = 128;
@@ -155,9 +155,9 @@ RawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& strin
 
     Member<CSSValueList>& value = m_fontFaceValueCache.add(string, nullptr).storedValue->value;
     if (!value) {
-        RawPtr<CSSValue> parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
+        CSSValue* parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
         if (parsedValue && parsedValue->isValueList())
-            value = toCSSValueList(parsedValue.get());
+            value = toCSSValueList(parsedValue);
     }
     return value;
 }

@@ -9,12 +9,12 @@
 
 namespace blink {
 
-RawPtr<CSSPathValue> CSSPathValue::create(PassRefPtr<StylePath> stylePath)
+CSSPathValue* CSSPathValue::create(PassRefPtr<StylePath> stylePath)
 {
     return new CSSPathValue(stylePath);
 }
 
-RawPtr<CSSPathValue> CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
+CSSPathValue* CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
 {
     return CSSPathValue::create(StylePath::create(pathByteStream));
 }
@@ -28,7 +28,7 @@ CSSPathValue::CSSPathValue(PassRefPtr<StylePath> stylePath)
 
 namespace {
 
-RawPtr<CSSPathValue> createPathValue()
+CSSPathValue* createPathValue()
 {
     OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     // Need to be registered as LSan ignored, as it will be reachable and

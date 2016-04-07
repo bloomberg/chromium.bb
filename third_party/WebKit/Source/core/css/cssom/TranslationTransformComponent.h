@@ -31,7 +31,7 @@ public:
     // TODO: Implement asMatrix for TranslationTransformComponent.
     MatrixTransformComponent* asMatrix() const override { return nullptr; }
 
-    RawPtr<CSSFunctionValue> toCSSValue() const override;
+    CSSFunctionValue* toCSSValue() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

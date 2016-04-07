@@ -23,7 +23,7 @@ namespace blink {
 // allows us to keep the parsing algorithm almost intact.
 class CSSGridAutoRepeatValue : public CSSValueList {
 public:
-    static RawPtr<CSSGridAutoRepeatValue> create(CSSValueID id)
+    static CSSGridAutoRepeatValue* create(CSSValueID id)
     {
         return new CSSGridAutoRepeatValue(id);
     }

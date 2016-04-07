@@ -88,10 +88,10 @@ class CSSGradientValue : public CSSImageGeneratorValue {
 public:
     PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
 
-    void setFirstX(RawPtr<CSSValue> val) { m_firstX = val; }
-    void setFirstY(RawPtr<CSSValue> val) { m_firstY = val; }
-    void setSecondX(RawPtr<CSSValue> val) { m_secondX = val; }
-    void setSecondY(RawPtr<CSSValue> val) { m_secondY = val; }
+    void setFirstX(CSSValue* val) { m_firstX = val; }
+    void setFirstY(CSSValue* val) { m_firstY = val; }
+    void setSecondX(CSSValue* val) { m_secondX = val; }
+    void setSecondY(CSSValue* val) { m_secondY = val; }
 
     void addStop(const CSSGradientColorStop& stop) { m_stops.append(stop); }
 
@@ -151,12 +151,12 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSGradientValue, isGradientValue());
 class CSSLinearGradientValue final : public CSSGradientValue {
 public:
 
-    static RawPtr<CSSLinearGradientValue> create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
+    static CSSLinearGradientValue* create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
     {
         return new CSSLinearGradientValue(repeat, gradientType);
     }
 
-    void setAngle(RawPtr<CSSPrimitiveValue> val) { m_angle = val; }
+    void setAngle(CSSPrimitiveValue* val) { m_angle = val; }
 
     String customCSSText() const;
 
@@ -180,21 +180,21 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSLinearGradientValue, isLinearGradientValue());
 
 class CSSRadialGradientValue final : public CSSGradientValue {
 public:
-    static RawPtr<CSSRadialGradientValue> create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)
+    static CSSRadialGradientValue* create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)
     {
         return new CSSRadialGradientValue(repeat, gradientType);
     }
 
     String customCSSText() const;
 
-    void setFirstRadius(RawPtr<CSSPrimitiveValue> val) { m_firstRadius = val; }
-    void setSecondRadius(RawPtr<CSSPrimitiveValue> val) { m_secondRadius = val; }
+    void setFirstRadius(CSSPrimitiveValue* val) { m_firstRadius = val; }
+    void setSecondRadius(CSSPrimitiveValue* val) { m_secondRadius = val; }
 
-    void setShape(RawPtr<CSSPrimitiveValue> val) { m_shape = val; }
-    void setSizingBehavior(RawPtr<CSSPrimitiveValue> val) { m_sizingBehavior = val; }
+    void setShape(CSSPrimitiveValue* val) { m_shape = val; }
+    void setSizingBehavior(CSSPrimitiveValue* val) { m_sizingBehavior = val; }
 
-    void setEndHorizontalSize(RawPtr<CSSPrimitiveValue> val) { m_endHorizontalSize = val; }
-    void setEndVerticalSize(RawPtr<CSSPrimitiveValue> val) { m_endVerticalSize = val; }
+    void setEndHorizontalSize(CSSPrimitiveValue* val) { m_endHorizontalSize = val; }
+    void setEndVerticalSize(CSSPrimitiveValue* val) { m_endVerticalSize = val; }
 
     // Create the gradient for a given size.
     PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&, const LayoutObject&);

@@ -39,14 +39,14 @@ class StyleRuleKeyframe;
 
 class StyleRuleKeyframes final : public StyleRuleBase {
 public:
-    static RawPtr<StyleRuleKeyframes> create() { return new StyleRuleKeyframes(); }
+    static StyleRuleKeyframes* create() { return new StyleRuleKeyframes(); }
 
     ~StyleRuleKeyframes();
 
     const HeapVector<Member<StyleRuleKeyframe>>& keyframes() const { return m_keyframes; }
 
-    void parserAppendKeyframe(RawPtr<StyleRuleKeyframe>);
-    void wrapperAppendKeyframe(RawPtr<StyleRuleKeyframe>);
+    void parserAppendKeyframe(StyleRuleKeyframe*);
+    void wrapperAppendKeyframe(StyleRuleKeyframe*);
     void wrapperRemoveKeyframe(unsigned);
 
     String name() const { return m_name; }
@@ -57,7 +57,7 @@ public:
 
     int findKeyframeIndex(const String& key) const;
 
-    RawPtr<StyleRuleKeyframes> copy() const { return new StyleRuleKeyframes(*this); }
+    StyleRuleKeyframes* copy() const { return new StyleRuleKeyframes(*this); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -79,7 +79,7 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
 class CSSKeyframesRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
+    static CSSKeyframesRule* create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
     {
         return new CSSKeyframesRule(rule, sheet);
     }

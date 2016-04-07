@@ -47,7 +47,7 @@ class StylePropertyShorthand;
 
 class CORE_EXPORT CSSComputedStyleDeclaration final : public CSSStyleDeclaration {
 public:
-    static RawPtr<CSSComputedStyleDeclaration> create(RawPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
+    static CSSComputedStyleDeclaration* create(Node* node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
     {
         return new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName);
     }
@@ -61,21 +61,21 @@ public:
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
-    RawPtr<MutableStylePropertySet> copyProperties() const;
+    MutableStylePropertySet* copyProperties() const;
 
-    RawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
-    RawPtr<CSSValue> getPropertyCSSValue(AtomicString customPropertyName) const;
+    CSSValue* getPropertyCSSValue(CSSPropertyID) const;
+    CSSValue* getPropertyCSSValue(AtomicString customPropertyName) const;
     const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const;
 
-    RawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
+    CSSValue* getFontSizeCSSValuePreferringKeyword() const;
     bool isMonospaceFont() const;
 
-    RawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+    MutableStylePropertySet* copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CSSComputedStyleDeclaration(RawPtr<Node>, bool allowVisitedStyle, const String&);
+    CSSComputedStyleDeclaration(Node*, bool allowVisitedStyle, const String&);
 
     // The styled node is either the node passed into getComputedStyle, or the
     // PseudoElement for :before and :after if they exist.
@@ -99,7 +99,7 @@ private:
     void setCSSFloat(const String&, ExceptionState&);
     String cssText() const override;
     void setCSSText(const String&, ExceptionState&) override;
-    RawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;
+    CSSValue* getPropertyCSSValueInternal(CSSPropertyID) override;
     String getPropertyValueInternal(CSSPropertyID) override;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) override;
 

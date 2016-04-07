@@ -69,7 +69,7 @@ public:
 
     void loadSubimages(Document*);
 
-    RawPtr<CSSImageGeneratorValue> valueWithURLsMadeAbsolute();
+    CSSImageGeneratorValue* valueWithURLsMadeAbsolute();
 
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 

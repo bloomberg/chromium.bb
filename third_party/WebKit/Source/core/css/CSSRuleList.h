@@ -57,7 +57,7 @@ protected:
 
 class StaticCSSRuleList final : public CSSRuleList {
 public:
-    static RawPtr<StaticCSSRuleList> create()
+    static StaticCSSRuleList* create()
     {
         return new StaticCSSRuleList();
     }
@@ -89,7 +89,7 @@ private:
 template <class Rule>
 class LiveCSSRuleList final : public CSSRuleList {
 public:
-    static RawPtr<LiveCSSRuleList> create(Rule* rule)
+    static LiveCSSRuleList* create(Rule* rule)
     {
         return new LiveCSSRuleList(rule);
     }

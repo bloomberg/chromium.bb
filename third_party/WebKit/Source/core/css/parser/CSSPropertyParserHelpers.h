@@ -33,30 +33,30 @@ enum class UnitlessQuirk {
     Forbid
 };
 
-RawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange&, double minimumValue = -std::numeric_limits<double>::max());
-RawPtr<CSSPrimitiveValue> consumePositiveInteger(CSSParserTokenRange&);
+CSSPrimitiveValue* consumeInteger(CSSParserTokenRange&, double minimumValue = -std::numeric_limits<double>::max());
+CSSPrimitiveValue* consumePositiveInteger(CSSParserTokenRange&);
 bool consumeNumberRaw(CSSParserTokenRange&, double& result);
-RawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange&, ValueRange);
-RawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange&, CSSParserMode, ValueRange, UnitlessQuirk = UnitlessQuirk::Forbid);
-RawPtr<CSSPrimitiveValue> consumePercent(CSSParserTokenRange&, ValueRange);
-RawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenRange&, CSSParserMode, ValueRange, UnitlessQuirk = UnitlessQuirk::Forbid);
-RawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange&);
-RawPtr<CSSPrimitiveValue> consumeTime(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* consumeNumber(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* consumeLength(CSSParserTokenRange&, CSSParserMode, ValueRange, UnitlessQuirk = UnitlessQuirk::Forbid);
+CSSPrimitiveValue* consumePercent(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* consumeLengthOrPercent(CSSParserTokenRange&, CSSParserMode, ValueRange, UnitlessQuirk = UnitlessQuirk::Forbid);
+CSSPrimitiveValue* consumeAngle(CSSParserTokenRange&);
+CSSPrimitiveValue* consumeTime(CSSParserTokenRange&, ValueRange);
 
-RawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRange&);
-RawPtr<CSSPrimitiveValue> consumeIdentRange(CSSParserTokenRange&, CSSValueID lower, CSSValueID upper);
+CSSPrimitiveValue* consumeIdent(CSSParserTokenRange&);
+CSSPrimitiveValue* consumeIdentRange(CSSParserTokenRange&, CSSValueID lower, CSSValueID upper);
 template<CSSValueID, CSSValueID...> inline bool identMatches(CSSValueID id);
-template<CSSValueID... allowedIdents> RawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRange&);
+template<CSSValueID... allowedIdents> CSSPrimitiveValue* consumeIdent(CSSParserTokenRange&);
 
-RawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange&);
-RawPtr<CSSStringValue> consumeString(CSSParserTokenRange&);
+CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange&);
+CSSStringValue* consumeString(CSSParserTokenRange&);
 String consumeUrl(CSSParserTokenRange&);
 
-RawPtr<CSSValue> consumeColor(CSSParserTokenRange&, CSSParserMode, bool acceptQuirkyColors = false);
+CSSValue* consumeColor(CSSParserTokenRange&, CSSParserMode, bool acceptQuirkyColors = false);
 
-RawPtr<CSSValuePair> consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
-bool consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY);
-bool consumeOneOrTwoValuedPosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY);
+CSSValuePair* consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
+bool consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, CSSValue*& resultX, CSSValue*& resultY);
+bool consumeOneOrTwoValuedPosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, CSSValue*& resultX, CSSValue*& resultY);
 
 // TODO(timloh): Move across consumeImage
 
@@ -68,7 +68,7 @@ template<CSSValueID head, CSSValueID... tail> inline bool identMatches(CSSValueI
     return id == head || identMatches<tail...>(id);
 }
 
-template<CSSValueID... names> RawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRange& range)
+template<CSSValueID... names> CSSPrimitiveValue* consumeIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken || !identMatches<names...>(range.peek().id()))
         return nullptr;

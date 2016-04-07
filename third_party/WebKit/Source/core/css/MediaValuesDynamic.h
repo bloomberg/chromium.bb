@@ -13,9 +13,9 @@ class Document;
 
 class MediaValuesDynamic final : public MediaValues {
 public:
-    static RawPtr<MediaValues> create(Document&);
-    static RawPtr<MediaValues> create(LocalFrame*);
-    RawPtr<MediaValues> copy() const override;
+    static MediaValues* create(Document&);
+    static MediaValues* create(LocalFrame*);
+    MediaValues* copy() const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 

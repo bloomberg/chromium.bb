@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSStringValue : public CSSValue {
 public:
-    static RawPtr<CSSStringValue> create(const String& str)
+    static CSSStringValue* create(const String& str)
     {
         return new CSSStringValue(str);
     }

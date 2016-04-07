@@ -10,7 +10,7 @@
 
 namespace blink {
 
-StyleRuleKeyframe::StyleRuleKeyframe(PassOwnPtr<Vector<double>> keys, RawPtr<StylePropertySet> properties)
+StyleRuleKeyframe::StyleRuleKeyframe(PassOwnPtr<Vector<double>> keys, StylePropertySet* properties)
 : StyleRuleBase(Keyframe)
 , m_properties(properties)
 , m_keys(*keys)

@@ -53,7 +53,7 @@ protected:
 TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
 {
     EXPECT_THAT(
-        PrintToString(AnimatableClipPathOperation::create(ShapeClipPathOperation::create(BasicShapeCircle::create().get()).get())),
+        PrintToString(AnimatableClipPathOperation::create(ShapeClipPathOperation::create(BasicShapeCircle::create()).get())),
         testing::StartsWith("AnimatableClipPathOperation")
         );
 
@@ -66,7 +66,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         testing::StartsWith("AnimatableNeutral@"));
 
     EXPECT_THAT(
-        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox))),
+        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create(), ContentBox))),
         testing::StartsWith("AnimatableShapeValue@"));
 
     RefPtr<SVGDashArray> l2 = SVGDashArray::create();
@@ -78,7 +78,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
 
     EXPECT_EQ(
         ::std::string("AnimatableUnknown(none)"),
-        PrintToString(AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueNone).get())));
+        PrintToString(AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueNone))));
 
     EXPECT_EQ(
         ::std::string("AnimatableVisibility(VISIBLE)"),

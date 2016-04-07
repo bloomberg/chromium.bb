@@ -45,14 +45,14 @@ static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
     return sizeof(ImmutableStylePropertySet) - sizeof(void*) + sizeof(Member<CSSValue>) * count + sizeof(StylePropertyMetadata) * count;
 }
 
-RawPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
+ImmutableStylePropertySet* ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
 {
     ASSERT(count <= MaxArraySize);
     void* slot = Heap::allocate<StylePropertySet>(sizeForImmutableStylePropertySetWithPropertyCount(count));
     return new (slot) ImmutableStylePropertySet(properties, count, cssParserMode);
 }
 
-RawPtr<ImmutableStylePropertySet> StylePropertySet::immutableCopyIfNeeded() const
+ImmutableStylePropertySet* StylePropertySet::immutableCopyIfNeeded() const
 {
     if (!isMutable())
         return toImmutableStylePropertySet(const_cast<StylePropertySet*>(this));
@@ -175,7 +175,7 @@ static String serializeShorthand(const StylePropertySet&, const AtomicString& cu
 template<typename T>
 String StylePropertySet::getPropertyValue(T property) const
 {
-    RawPtr<CSSValue> value = getPropertyCSSValue(property);
+    CSSValue* value = getPropertyCSSValue(property);
     if (value)
         return value->cssText();
     return serializeShorthand(*this, property);
@@ -184,15 +184,15 @@ template CORE_EXPORT String StylePropertySet::getPropertyValue<CSSPropertyID>(CS
 template CORE_EXPORT String StylePropertySet::getPropertyValue<AtomicString>(AtomicString) const;
 
 template<typename T>
-RawPtr<CSSValue> StylePropertySet::getPropertyCSSValue(T property) const
+CSSValue* StylePropertySet::getPropertyCSSValue(T property) const
 {
     int foundPropertyIndex = findPropertyIndex(property);
     if (foundPropertyIndex == -1)
         return nullptr;
     return propertyAt(foundPropertyIndex).value();
 }
-template CORE_EXPORT RawPtr<CSSValue> StylePropertySet::getPropertyCSSValue<CSSPropertyID>(CSSPropertyID) const;
-template CORE_EXPORT RawPtr<CSSValue> StylePropertySet::getPropertyCSSValue<AtomicString>(AtomicString) const;
+template CORE_EXPORT CSSValue* StylePropertySet::getPropertyCSSValue<CSSPropertyID>(CSSPropertyID) const;
+template CORE_EXPORT CSSValue* StylePropertySet::getPropertyCSSValue<AtomicString>(AtomicString) const;
 
 DEFINE_TRACE(StylePropertySet)
 {
@@ -320,17 +320,16 @@ bool MutableStylePropertySet::setProperty(const AtomicString& customPropertyName
     return CSSParser::parseValueForCustomProperty(this, customPropertyName, value, important, contextStyleSheet);
 }
 
-void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, RawPtr<CSSValue> prpValue, bool important)
+void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, CSSValue* value, bool important)
 {
     StylePropertyShorthand shorthand = shorthandForProperty(propertyID);
     if (!shorthand.length()) {
-        setProperty(CSSProperty(propertyID, prpValue, important));
+        setProperty(CSSProperty(propertyID, value, important));
         return;
     }
 
     removePropertiesInSet(shorthand.properties(), shorthand.length());
 
-    RawPtr<CSSValue> value = prpValue;
     for (unsigned i = 0; i < shorthand.length(); ++i)
         m_propertyVector.append(CSSProperty(shorthand.properties()[i], value, important));
 }
@@ -505,19 +504,19 @@ void MutableStylePropertySet::removeEquivalentProperties(const CSSStyleDeclarati
         removeProperty(propertiesToRemove[i]);
 }
 
-RawPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
+MutableStylePropertySet* StylePropertySet::mutableCopy() const
 {
     return new MutableStylePropertySet(*this);
 }
 
-RawPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
+MutableStylePropertySet* StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     HeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
-        RawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
+        CSSValue* value = getPropertyCSSValue(properties[i]);
         if (value)
-            list.append(CSSProperty(properties[i], value.release(), false));
+            list.append(CSSProperty(properties[i], value, false));
     }
     return MutableStylePropertySet::create(list.data(), list.size());
 }
@@ -578,12 +577,12 @@ void StylePropertySet::showStyle()
 }
 #endif
 
-RawPtr<MutableStylePropertySet> MutableStylePropertySet::create(CSSParserMode cssParserMode)
+MutableStylePropertySet* MutableStylePropertySet::create(CSSParserMode cssParserMode)
 {
     return new MutableStylePropertySet(cssParserMode);
 }
 
-RawPtr<MutableStylePropertySet> MutableStylePropertySet::create(const CSSProperty* properties, unsigned count)
+MutableStylePropertySet* MutableStylePropertySet::create(const CSSProperty* properties, unsigned count)
 {
     return new MutableStylePropertySet(properties, count);
 }

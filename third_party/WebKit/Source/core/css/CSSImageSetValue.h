@@ -39,7 +39,7 @@ class StyleImage;
 class CSSImageSetValue : public CSSValueList {
 public:
 
-    static RawPtr<CSSImageSetValue> create()
+    static CSSImageSetValue* create()
     {
         return new CSSImageSetValue();
     }
@@ -58,7 +58,7 @@ public:
         float scaleFactor;
     };
 
-    RawPtr<CSSImageSetValue> valueWithURLsMadeAbsolute();
+    CSSImageSetValue* valueWithURLsMadeAbsolute();
 
     bool hasFailedOrCanceledSubresources() const;
 

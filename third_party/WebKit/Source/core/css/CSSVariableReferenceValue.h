@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSVariableReferenceValue : public CSSValue {
 public:
-    static RawPtr<CSSVariableReferenceValue> create(PassRefPtr<CSSVariableData> data)
+    static CSSVariableReferenceValue* create(PassRefPtr<CSSVariableData> data)
     {
         return new CSSVariableReferenceValue(data);
     }

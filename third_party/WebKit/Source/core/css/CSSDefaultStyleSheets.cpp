@@ -61,14 +61,14 @@ static const MediaQueryEvaluator& printEval()
     return staticPrintEval;
 }
 
-static RawPtr<StyleSheetContents> parseUASheet(const String& str)
+static StyleSheetContents* parseUASheet(const String& str)
 {
-    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
+    StyleSheetContents* sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
     sheet->parseString(str);
     // User Agent stylesheets are parsed once for the lifetime of the renderer
     // process and are intentionally leaked.
-    LEAK_SANITIZER_IGNORE_OBJECT(sheet.get());
-    return sheet.release();
+    LEAK_SANITIZER_IGNORE_OBJECT(sheet);
+    return sheet;
 }
 
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
@@ -107,8 +107,8 @@ RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle()
     if (!m_defaultViewSourceStyle) {
         m_defaultViewSourceStyle = RuleSet::create();
         // Loaded stylesheet is leaked on purpose.
-        RawPtr<StyleSheetContents> stylesheet = parseUASheet(loadResourceAsASCIIString("view-source.css"));
-        m_defaultViewSourceStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
+        StyleSheetContents* stylesheet = parseUASheet(loadResourceAsASCIIString("view-source.css"));
+        m_defaultViewSourceStyle->addRulesFromSheet(stylesheet, screenEval());
     }
     return m_defaultViewSourceStyle.get();
 }
@@ -118,8 +118,8 @@ RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
     if (!m_defaultXHTMLMobileProfileStyle) {
         m_defaultXHTMLMobileProfileStyle = RuleSet::create();
         // Loaded stylesheet is leaked on purpose.
-        RawPtr<StyleSheetContents> stylesheet = parseUASheet(loadResourceAsASCIIString("xhtmlmp.css"));
-        m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
+        StyleSheetContents* stylesheet = parseUASheet(loadResourceAsASCIIString("xhtmlmp.css"));
+        m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(stylesheet, screenEval());
     }
     return m_defaultXHTMLMobileProfileStyle.get();
 }

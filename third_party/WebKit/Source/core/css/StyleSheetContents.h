@@ -48,15 +48,15 @@ class StyleRuleNamespace;
 
 class CORE_EXPORT StyleSheetContents : public GarbageCollectedFinalized<StyleSheetContents> {
 public:
-    static RawPtr<StyleSheetContents> create(const CSSParserContext& context)
+    static StyleSheetContents* create(const CSSParserContext& context)
     {
         return new StyleSheetContents(0, String(), context);
     }
-    static RawPtr<StyleSheetContents> create(const String& originalURL, const CSSParserContext& context)
+    static StyleSheetContents* create(const String& originalURL, const CSSParserContext& context)
     {
         return new StyleSheetContents(0, originalURL, context);
     }
-    static RawPtr<StyleSheetContents> create(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
+    static StyleSheetContents* create(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
     {
         return new StyleSheetContents(ownerRule, originalURL, context);
     }
@@ -97,7 +97,7 @@ public:
     void findFontFaceRules(HeapVector<Member<const StyleRuleFontFace>>& fontFaceRules);
 
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
-    void parserAppendRule(RawPtr<StyleRuleBase>);
+    void parserAppendRule(StyleRuleBase*);
 
     void clearRules();
 
@@ -123,10 +123,10 @@ public:
 
     unsigned estimatedSizeInBytes() const;
 
-    bool wrapperInsertRule(RawPtr<StyleRuleBase>, unsigned index);
+    bool wrapperInsertRule(StyleRuleBase*, unsigned index);
     bool wrapperDeleteRule(unsigned index);
 
-    RawPtr<StyleSheetContents> copy() const
+    StyleSheetContents* copy() const
     {
         return new StyleSheetContents(*this);
     }

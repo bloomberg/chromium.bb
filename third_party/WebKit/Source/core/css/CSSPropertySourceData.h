@@ -70,7 +70,7 @@ public:
 };
 
 struct CSSStyleSourceData : public GarbageCollected<CSSStyleSourceData> {
-    static RawPtr<CSSStyleSourceData> create()
+    static CSSStyleSourceData* create()
     {
         return new CSSStyleSourceData();
     }
@@ -95,7 +95,7 @@ public:
 };
 
 struct CSSMediaQuerySourceData : public GarbageCollected<CSSMediaQuerySourceData> {
-    static RawPtr<CSSMediaQuerySourceData> create()
+    static CSSMediaQuerySourceData* create()
     {
         return new CSSMediaQuerySourceData();
     }
@@ -109,7 +109,7 @@ struct CSSMediaQuerySourceData : public GarbageCollected<CSSMediaQuerySourceData
 };
 
 struct CSSMediaSourceData : public GarbageCollected<CSSMediaSourceData> {
-    static RawPtr<CSSMediaSourceData> create()
+    static CSSMediaSourceData* create()
     {
         return new CSSMediaSourceData();
     }
@@ -127,7 +127,7 @@ using RuleSourceDataList = HeapVector<Member<CSSRuleSourceData>>;
 using SelectorRangeList = HeapVector<SourceRange>;
 
 struct CSSRuleSourceData : public GarbageCollected<CSSRuleSourceData> {
-    static RawPtr<CSSRuleSourceData> create(StyleRule::RuleType type)
+    static CSSRuleSourceData* create(StyleRule::RuleType type)
     {
         return new CSSRuleSourceData(type);
     }

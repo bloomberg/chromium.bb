@@ -42,12 +42,12 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(Document& docume
     }
 }
 
-RawPtr<MediaValuesCached> MediaValuesCached::create()
+MediaValuesCached* MediaValuesCached::create()
 {
     return new MediaValuesCached();
 }
 
-RawPtr<MediaValuesCached> MediaValuesCached::create(const MediaValuesCachedData& data)
+MediaValuesCached* MediaValuesCached::create(const MediaValuesCachedData& data)
 {
     return new MediaValuesCached(data);
 }
@@ -61,7 +61,7 @@ MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)
 {
 }
 
-RawPtr<MediaValues> MediaValuesCached::copy() const
+MediaValues* MediaValuesCached::copy() const
 {
     return new MediaValuesCached(m_data);
 }

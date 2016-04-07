@@ -312,7 +312,7 @@ void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
 void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& compactMap)
 {
     for (auto& item : pendingMap) {
-        RawPtr<HeapLinkedStack<RuleData>> pendingRules = item.value.release();
+        HeapLinkedStack<RuleData>* pendingRules = item.value.release();
         CompactRuleMap::ValueType* compactRules = compactMap.add(item.key, nullptr).storedValue;
 
         HeapTerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
@@ -329,7 +329,7 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& co
 void RuleSet::compactRules()
 {
     ASSERT(m_pendingRules);
-    RawPtr<PendingRuleMaps> pendingRules = m_pendingRules.release();
+    PendingRuleMaps* pendingRules = m_pendingRules.release();
     compactPendingRules(pendingRules->idRules, m_idRules);
     compactPendingRules(pendingRules->classRules, m_classRules);
     compactPendingRules(pendingRules->tagRules, m_tagRules);

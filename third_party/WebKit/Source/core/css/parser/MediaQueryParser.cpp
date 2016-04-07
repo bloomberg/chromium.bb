@@ -11,17 +11,17 @@
 
 namespace blink {
 
-RawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const String& queryString)
+MediaQuerySet* MediaQueryParser::parseMediaQuerySet(const String& queryString)
 {
     return parseMediaQuerySet(CSSTokenizer::Scope(queryString).tokenRange());
 }
 
-RawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range)
+MediaQuerySet* MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range)
 {
     return MediaQueryParser(MediaQuerySetParser).parseImpl(range);
 }
 
-RawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(CSSParserTokenRange range)
+MediaQuerySet* MediaQueryParser::parseMediaCondition(CSSParserTokenRange range)
 {
     return MediaQueryParser(MediaConditionParser).parseImpl(range);
 }
@@ -214,7 +214,7 @@ void MediaQueryParser::processToken(const CSSParserToken& token)
 }
 
 // The state machine loop
-RawPtr<MediaQuerySet> MediaQueryParser::parseImpl(CSSParserTokenRange range)
+MediaQuerySet* MediaQueryParser::parseImpl(CSSParserTokenRange range)
 {
     while (!range.atEnd())
         processToken(range.consume());
@@ -248,18 +248,18 @@ void MediaQueryData::clear()
     m_expressions.clear();
 }
 
-RawPtr<MediaQuery> MediaQueryData::takeMediaQuery()
+MediaQuery* MediaQueryData::takeMediaQuery()
 {
-    RawPtr<MediaQuery> mediaQuery = MediaQuery::create(m_restrictor, std::move(m_mediaType), std::move(m_expressions));
+    MediaQuery* mediaQuery = MediaQuery::create(m_restrictor, std::move(m_mediaType), std::move(m_expressions));
     clear();
-    return mediaQuery.release();
+    return mediaQuery;
 }
 
 bool MediaQueryData::addExpression()
 {
-    RawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
+    MediaQueryExp* expression = MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
     bool isValid = !!expression;
-    m_expressions.append(expression.release());
+    m_expressions.append(expression);
     m_valueList.clear();
     return isValid;
 }

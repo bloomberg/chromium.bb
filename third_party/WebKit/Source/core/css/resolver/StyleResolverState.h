@@ -118,7 +118,7 @@ public:
     // FIXME: Once styleImage can be made to not take a StyleResolverState
     // this convenience function should be removed. As-is, without this, call
     // sites are extremely verbose.
-    RawPtr<StyleImage> styleImage(CSSPropertyID propertyId, const CSSValue& value)
+    StyleImage* styleImage(CSSPropertyID propertyId, const CSSValue& value)
     {
         return m_elementStyleResources.styleImage(propertyId, value);
     }

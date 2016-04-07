@@ -13,12 +13,12 @@
 
 namespace blink {
 
-RawPtr<MediaValues> MediaValuesDynamic::create(Document& document)
+MediaValues* MediaValuesDynamic::create(Document& document)
 {
     return MediaValuesDynamic::create(frameFrom(document));
 }
 
-RawPtr<MediaValues> MediaValuesDynamic::create(LocalFrame* frame)
+MediaValues* MediaValuesDynamic::create(LocalFrame* frame)
 {
     if (!frame || !frame->view() || !frame->document() || !frame->document()->layoutView())
         return MediaValuesCached::create();
@@ -43,7 +43,7 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame, bool overriddenViewpor
     ASSERT(m_frame);
 }
 
-RawPtr<MediaValues> MediaValuesDynamic::copy() const
+MediaValues* MediaValuesDynamic::copy() const
 {
     return new MediaValuesDynamic(m_frame, m_viewportDimensionsOverridden, m_viewportWidthOverride, m_viewportHeightOverride);
 }

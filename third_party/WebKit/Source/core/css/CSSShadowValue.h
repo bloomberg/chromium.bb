@@ -33,12 +33,12 @@ class CSSPrimitiveValue;
 // Used for text-shadow and box-shadow
 class CORE_EXPORT CSSShadowValue : public CSSValue {
 public:
-    static RawPtr<CSSShadowValue> create(RawPtr<CSSPrimitiveValue> x,
-        RawPtr<CSSPrimitiveValue> y,
-        RawPtr<CSSPrimitiveValue> blur,
-        RawPtr<CSSPrimitiveValue> spread,
-        RawPtr<CSSPrimitiveValue> style,
-        RawPtr<CSSValue> color)
+    static CSSShadowValue* create(CSSPrimitiveValue* x,
+        CSSPrimitiveValue* y,
+        CSSPrimitiveValue* blur,
+        CSSPrimitiveValue* spread,
+        CSSPrimitiveValue* style,
+        CSSValue* color)
     {
         return new CSSShadowValue(x, y, blur, spread, style, color);
     }
@@ -57,12 +57,12 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSShadowValue(RawPtr<CSSPrimitiveValue> x,
-        RawPtr<CSSPrimitiveValue> y,
-        RawPtr<CSSPrimitiveValue> blur,
-        RawPtr<CSSPrimitiveValue> spread,
-        RawPtr<CSSPrimitiveValue> style,
-        RawPtr<CSSValue> color);
+    CSSShadowValue(CSSPrimitiveValue* x,
+        CSSPrimitiveValue* y,
+        CSSPrimitiveValue* blur,
+        CSSPrimitiveValue* spread,
+        CSSPrimitiveValue* style,
+        CSSValue* color);
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSShadowValue, isShadowValue());

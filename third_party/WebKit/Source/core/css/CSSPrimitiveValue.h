@@ -200,19 +200,19 @@ public:
     bool isValueID() const { return type() == UnitType::ValueID; }
     bool colorIsDerivedFromElement() const;
 
-    static RawPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID)
+    static CSSPrimitiveValue* createIdentifier(CSSValueID valueID)
     {
         return new CSSPrimitiveValue(valueID);
     }
-    static RawPtr<CSSPrimitiveValue> create(double value, UnitType type)
+    static CSSPrimitiveValue* create(double value, UnitType type)
     {
         return new CSSPrimitiveValue(value, type);
     }
-    static RawPtr<CSSPrimitiveValue> create(const Length& value, float zoom)
+    static CSSPrimitiveValue* create(const Length& value, float zoom)
     {
         return new CSSPrimitiveValue(value, zoom);
     }
-    template<typename T> static RawPtr<CSSPrimitiveValue> create(T value)
+    template<typename T> static CSSPrimitiveValue* create(T value)
     {
         static_assert(!std::is_same<T, CSSValueID>::value, "Do not call create() with a CSSValueID; call createIdentifier() instead");
         return new CSSPrimitiveValue(value);
@@ -262,13 +262,8 @@ private:
     CSSPrimitiveValue(double, UnitType);
 
     template<typename T> CSSPrimitiveValue(T); // Defined in CSSPrimitiveValueMappings.h
-    template<typename T> CSSPrimitiveValue(T* val)
-        : CSSValue(PrimitiveClass)
-    {
-        init(RawPtr<T>(val));
-    }
 
-    template<typename T> CSSPrimitiveValue(RawPtr<T> val)
+    template<typename T> CSSPrimitiveValue(T* val)
         : CSSValue(PrimitiveClass)
     {
         init(val);
@@ -280,7 +275,7 @@ private:
 
     void init(UnitType);
     void init(const Length&);
-    void init(RawPtr<CSSCalcValue>);
+    void init(CSSCalcValue*);
 
     double computeLengthDouble(const CSSToLengthConversionData&) const;
 

@@ -79,7 +79,7 @@ using ActiveInterpolationsMap = HashMap<PropertyHandle, Vector<RefPtr<Interpolat
 class CORE_EXPORT StyleResolver final : public GarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver);
 public:
-    static RawPtr<StyleResolver> create(Document& document)
+    static StyleResolver* create(Document& document)
     {
         return new StyleResolver(document);
     }
@@ -126,9 +126,9 @@ public:
         AllButEmptyCSSRules = UAAndUserCSSRules | AuthorCSSRules | CrossOriginCSSRules,
         AllCSSRules         = AllButEmptyCSSRules | EmptyCSSRules,
     };
-    RawPtr<CSSRuleList> cssRulesForElement(Element*, unsigned rulesToInclude = AllButEmptyCSSRules);
-    RawPtr<CSSRuleList> pseudoCSSRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules);
-    RawPtr<StyleRuleList> styleRulesForElement(Element*, unsigned rulesToInclude);
+    CSSRuleList* cssRulesForElement(Element*, unsigned rulesToInclude = AllButEmptyCSSRules);
+    CSSRuleList* pseudoCSSRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules);
+    StyleRuleList* styleRulesForElement(Element*, unsigned rulesToInclude);
 
     void computeFont(ComputedStyle*, const StylePropertySet&);
 
@@ -171,7 +171,7 @@ public:
     void increaseStyleSharingDepth() { ++m_styleSharingDepth; }
     void decreaseStyleSharingDepth() { --m_styleSharingDepth; }
 
-    RawPtr<PseudoElement> createPseudoElementIfNeeded(Element& parent, PseudoId);
+    PseudoElement* createPseudoElementIfNeeded(Element& parent, PseudoId);
 
     DECLARE_TRACE();
 
@@ -220,7 +220,7 @@ private:
     bool hasAuthorBackground(const StyleResolverState&);
     bool hasAuthorBorder(const StyleResolverState&);
 
-    RawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
+    PseudoElement* createPseudoElement(Element* parent, PseudoId);
 
     Document& document() { return *m_document; }
 

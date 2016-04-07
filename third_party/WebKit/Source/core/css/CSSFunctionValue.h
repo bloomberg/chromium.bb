@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSFunctionValue : public CSSValueList {
 public:
-    static RawPtr<CSSFunctionValue> create(CSSValueID id)
+    static CSSFunctionValue* create(CSSValueID id)
     {
         return new CSSFunctionValue(id);
     }

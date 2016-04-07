@@ -29,7 +29,7 @@ class CORE_EXPORT CSSParser {
     STATIC_ONLY(CSSParser);
 public:
     // As well as regular rules, allows @import and @namespace but not @charset
-    static RawPtr<StyleRuleBase> parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
+    static StyleRuleBase* parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
     static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&);
     static CSSSelectorList parseSelector(const CSSParserContext&, StyleSheetContents*, const String&);
     static CSSSelectorList parsePageSelector(const CSSParserContext&, StyleSheetContents*, const String&);
@@ -38,17 +38,17 @@ public:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, StyleSheetContents*);
 
     static bool parseValueForCustomProperty(MutableStylePropertySet*, const AtomicString& propertyName, const String& value, bool important, StyleSheetContents*);
-    static RawPtr<ImmutableStylePropertySet> parseCustomPropertySet(CSSParserTokenRange);
+    static ImmutableStylePropertySet* parseCustomPropertySet(CSSParserTokenRange);
 
     // This is for non-shorthands only
-    static RawPtr<CSSValue> parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
+    static CSSValue* parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
 
-    static RawPtr<CSSValue> parseFontFaceDescriptor(CSSPropertyID, const String&, const CSSParserContext&);
+    static CSSValue* parseFontFaceDescriptor(CSSPropertyID, const String&, const CSSParserContext&);
 
-    static RawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
+    static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&, Element*);
 
     static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
-    static RawPtr<StyleRuleKeyframe> parseKeyframeRule(const CSSParserContext&, const String&);
+    static StyleRuleKeyframe* parseKeyframeRule(const CSSParserContext&, const String&);
 
     static bool parseSupportsCondition(const String&);
 

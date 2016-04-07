@@ -13,7 +13,7 @@ class CSSKeyframeRule;
 
 class KeyframeStyleRuleCSSStyleDeclaration final : public StyleRuleCSSStyleDeclaration {
 public:
-    static RawPtr<KeyframeStyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSKeyframeRule* parentRule)
+    static KeyframeStyleRuleCSSStyleDeclaration* create(MutableStylePropertySet& propertySet, CSSKeyframeRule* parentRule)
     {
         return new KeyframeStyleRuleCSSStyleDeclaration(propertySet, parentRule);
     }

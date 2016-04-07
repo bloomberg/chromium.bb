@@ -17,7 +17,7 @@ namespace blink {
 class CORE_EXPORT SizesAttributeParser {
     STACK_ALLOCATED();
 public:
-    SizesAttributeParser(RawPtr<MediaValues>, const String&);
+    SizesAttributeParser(MediaValues*, const String&);
 
     float length();
 
@@ -25,7 +25,7 @@ private:
     bool parse(CSSParserTokenRange);
     float effectiveSize();
     bool calculateLengthInPixels(CSSParserTokenRange, float& result);
-    bool mediaConditionMatches(RawPtr<MediaQuerySet> mediaCondition);
+    bool mediaConditionMatches(MediaQuerySet* mediaCondition);
     unsigned effectiveSizeDefaultValue();
 
     Member<MediaQuerySet> m_mediaCondition;

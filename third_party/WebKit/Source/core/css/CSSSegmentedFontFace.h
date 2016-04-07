@@ -47,7 +47,7 @@ class SegmentedFontData;
 
 class CSSSegmentedFontFace final : public GarbageCollectedFinalized<CSSSegmentedFontFace> {
 public:
-    static RawPtr<CSSSegmentedFontFace> create(CSSFontSelector* selector, FontTraits traits)
+    static CSSSegmentedFontFace* create(CSSFontSelector* selector, FontTraits traits)
     {
         return new CSSSegmentedFontFace(selector, traits);
     }
@@ -60,8 +60,8 @@ public:
     // so cached FontData must be discarded.
     void fontFaceInvalidated();
 
-    void addFontFace(RawPtr<FontFace>, bool cssConnected);
-    void removeFontFace(RawPtr<FontFace>);
+    void addFontFace(FontFace*, bool cssConnected);
+    void removeFontFace(FontFace*);
     bool isEmpty() const { return m_fontFaces.isEmpty(); }
 
     PassRefPtr<FontData> getFontData(const FontDescription&);

@@ -18,7 +18,7 @@ class FontResource;
 
 class FontLoader : public GarbageCollectedFinalized<FontLoader> {
 public:
-    static RawPtr<FontLoader> create(CSSFontSelector* fontSelector, Document* document)
+    static FontLoader* create(CSSFontSelector* fontSelector, Document* document)
     {
         return new FontLoader(fontSelector, document);
     }

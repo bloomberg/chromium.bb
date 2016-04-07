@@ -142,12 +142,12 @@ bool StyleSheetContents::isCacheable() const
     return true;
 }
 
-void StyleSheetContents::parserAppendRule(RawPtr<StyleRuleBase> rule)
+void StyleSheetContents::parserAppendRule(StyleRuleBase* rule)
 {
     if (rule->isImportRule()) {
         // Parser enforces that @import rules come before anything else
         ASSERT(m_childRules.isEmpty());
-        StyleRuleImport* importRule = toStyleRuleImport(rule.get());
+        StyleRuleImport* importRule = toStyleRuleImport(rule);
         if (importRule->mediaQueries())
             setHasMediaQueries();
         m_importRules.append(importRule);
@@ -212,7 +212,7 @@ void StyleSheetContents::clearRules()
     m_childRules.clear();
 }
 
-bool StyleSheetContents::wrapperInsertRule(RawPtr<StyleRuleBase> rule, unsigned index)
+bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule, unsigned index)
 {
     ASSERT(m_isMutable);
     ASSERT_WITH_SECURITY_IMPLICATION(index <= ruleCount());
@@ -222,7 +222,7 @@ bool StyleSheetContents::wrapperInsertRule(RawPtr<StyleRuleBase> rule, unsigned 
         if (!rule->isImportRule())
             return false;
 
-        StyleRuleImport* importRule = toStyleRuleImport(rule.get());
+        StyleRuleImport* importRule = toStyleRuleImport(rule);
         if (importRule->mediaQueries())
             setHasMediaQueries();
 
@@ -246,7 +246,7 @@ bool StyleSheetContents::wrapperInsertRule(RawPtr<StyleRuleBase> rule, unsigned 
         if (!m_childRules.isEmpty())
             return false;
 
-        StyleRuleNamespace* namespaceRule = toStyleRuleNamespace(rule.get());
+        StyleRuleNamespace* namespaceRule = toStyleRuleNamespace(rule);
         m_namespaceRules.insert(index, namespaceRule);
         // For now to be compatible with IE and Firefox if namespace rule with same prefix is added
         // irrespective of adding the rule at any index, last added rule's value is considered.
@@ -381,11 +381,6 @@ void StyleSheetContents::checkLoaded()
     if (isLoading())
         return;
 
-    // Avoid |this| being deleted by scripts that run via
-    // ScriptableDocumentParser::executeScriptsWaitingForResources().
-    // See https://bugs.webkit.org/show_bug.cgi?id=95106
-    RawPtr<StyleSheetContents> protect(this);
-
     StyleSheetContents* parentSheet = parentStyleSheet();
     if (parentSheet) {
         parentSheet->checkLoaded();
@@ -412,7 +407,7 @@ void StyleSheetContents::checkLoaded()
             continue;
 
         // sheetLoaded might be invoked after its owner node is removed from document.
-        if (RawPtr<Node> ownerNode = loadingClients[i]->ownerNode()) {
+        if (Node* ownerNode = loadingClients[i]->ownerNode()) {
             if (loadingClients[i]->sheetLoaded())
                 ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur ? Node::ErrorOccurredLoadingSubresource : Node::NoErrorLoadingSubresource);
         }

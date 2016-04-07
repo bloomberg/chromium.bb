@@ -48,8 +48,8 @@ public:
         Only, Not, None
     };
 
-    static RawPtr<MediaQuery> create(RestrictorType, String mediaType, ExpressionHeapVector);
-    static RawPtr<MediaQuery> createNotAll();
+    static MediaQuery* create(RestrictorType, String mediaType, ExpressionHeapVector);
+    static MediaQuery* createNotAll();
 
     ~MediaQuery();
 
@@ -59,7 +59,7 @@ public:
     bool operator==(const MediaQuery& other) const;
     String cssText() const;
 
-    RawPtr<MediaQuery> copy() const { return new MediaQuery(*this); }
+    MediaQuery* copy() const { return new MediaQuery(*this); }
 
     DECLARE_TRACE();
 

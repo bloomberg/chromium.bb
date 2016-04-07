@@ -82,7 +82,7 @@ struct MediaQueryExpValue {
 
 class CORE_EXPORT MediaQueryExp  : public GarbageCollectedFinalized<MediaQueryExp> {
 public:
-    static RawPtr<MediaQueryExp> createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>&);
+    static MediaQueryExp* createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>&);
     ~MediaQueryExp();
 
     const String& mediaFeature() const { return m_mediaFeature; }
@@ -97,7 +97,7 @@ public:
 
     String serialize() const;
 
-    RawPtr<MediaQueryExp> copy() const { return new MediaQueryExp(*this); }
+    MediaQueryExp* copy() const { return new MediaQueryExp(*this); }
 
     MediaQueryExp(const MediaQueryExp& other);
 

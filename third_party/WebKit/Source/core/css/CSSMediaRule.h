@@ -33,7 +33,7 @@ class StyleRuleMedia;
 class CSSMediaRule final : public CSSGroupingRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSMediaRule> create(StyleRuleMedia* rule, CSSStyleSheet* sheet)
+    static CSSMediaRule* create(StyleRuleMedia* rule, CSSStyleSheet* sheet)
     {
         return new CSSMediaRule(rule, sheet);
     }

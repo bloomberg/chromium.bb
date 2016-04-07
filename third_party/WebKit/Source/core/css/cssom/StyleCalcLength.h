@@ -50,7 +50,7 @@ public:
 
     bool containsPercent() const override;
 
-    RawPtr<CSSValue> toCSSValue() const override;
+    CSSValue* toCSSValue() const override;
 
     StyleValueType type() const override { return CalcLengthType; }
 protected:

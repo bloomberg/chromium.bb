@@ -74,12 +74,12 @@ static bool expressionCompare(const Member<MediaQueryExp>& a, const Member<Media
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-RawPtr<MediaQuery> MediaQuery::createNotAll()
+MediaQuery* MediaQuery::createNotAll()
 {
     return new MediaQuery(MediaQuery::Not, MediaTypeNames::all, ExpressionHeapVector());
 }
 
-RawPtr<MediaQuery> MediaQuery::create(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)
+MediaQuery* MediaQuery::create(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)
 {
     return new MediaQuery(restrictor, std::move(mediaType), std::move(expressions));
 }

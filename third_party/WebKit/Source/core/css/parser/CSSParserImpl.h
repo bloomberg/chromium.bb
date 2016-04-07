@@ -57,13 +57,13 @@ public:
 
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     static bool parseVariableValue(MutableStylePropertySet*, const AtomicString& propertyName, const String&, bool important, const CSSParserContext&);
-    static RawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
+    static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&, Element*);
     static bool parseDeclarationList(MutableStylePropertySet*, const String&, const CSSParserContext&);
-    static RawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&, StyleSheetContents*, AllowedRulesType);
+    static StyleRuleBase* parseRule(const String&, const CSSParserContext&, StyleSheetContents*, AllowedRulesType);
     static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
     static CSSSelectorList parsePageSelector(CSSParserTokenRange, StyleSheetContents*);
 
-    static RawPtr<ImmutableStylePropertySet> parseCustomPropertySet(CSSParserTokenRange);
+    static ImmutableStylePropertySet* parseCustomPropertySet(CSSParserTokenRange);
 
     static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
 
@@ -84,23 +84,23 @@ private:
     bool consumeRuleList(CSSParserTokenRange, RuleListType, T callback);
 
     // These two functions update the range they're given
-    RawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType);
-    RawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType);
+    StyleRuleBase* consumeAtRule(CSSParserTokenRange&, AllowedRulesType);
+    StyleRuleBase* consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType);
 
-    static RawPtr<StyleRuleCharset> consumeCharsetRule(CSSParserTokenRange prelude);
-    RawPtr<StyleRuleImport> consumeImportRule(CSSParserTokenRange prelude);
-    RawPtr<StyleRuleNamespace> consumeNamespaceRule(CSSParserTokenRange prelude);
-    RawPtr<StyleRuleMedia> consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
-    RawPtr<StyleRuleSupports> consumeSupportsRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
-    RawPtr<StyleRuleViewport> consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
-    RawPtr<StyleRuleFontFace> consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
-    RawPtr<StyleRuleKeyframes> consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block);
-    RawPtr<StyleRulePage> consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    static StyleRuleCharset* consumeCharsetRule(CSSParserTokenRange prelude);
+    StyleRuleImport* consumeImportRule(CSSParserTokenRange prelude);
+    StyleRuleNamespace* consumeNamespaceRule(CSSParserTokenRange prelude);
+    StyleRuleMedia* consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRuleSupports* consumeSupportsRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRuleViewport* consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRuleFontFace* consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRuleKeyframes* consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRulePage* consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     // Updates m_parsedProperties
     void consumeApplyRule(CSSParserTokenRange prelude);
 
-    RawPtr<StyleRuleKeyframe> consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
-    RawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRuleKeyframe* consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    StyleRule* consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
 
     void consumeDeclarationList(CSSParserTokenRange, StyleRule::RuleType);
     void consumeDeclaration(CSSParserTokenRange, StyleRule::RuleType);

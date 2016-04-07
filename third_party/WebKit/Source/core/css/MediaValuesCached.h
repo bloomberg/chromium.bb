@@ -76,9 +76,9 @@ public:
         }
     };
 
-    static RawPtr<MediaValuesCached> create();
-    static RawPtr<MediaValuesCached> create(const MediaValuesCachedData&);
-    RawPtr<MediaValues> copy() const override;
+    static MediaValuesCached* create();
+    static MediaValuesCached* create(const MediaValuesCachedData&);
+    MediaValues* copy() const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 

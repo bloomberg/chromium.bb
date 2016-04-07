@@ -33,7 +33,7 @@ namespace blink {
 
 class CSSFontFeatureValue : public CSSValue {
 public:
-    static RawPtr<CSSFontFeatureValue> create(const AtomicString& tag, int value)
+    static CSSFontFeatureValue* create(const AtomicString& tag, int value)
     {
         return new CSSFontFeatureValue(tag, value);
     }

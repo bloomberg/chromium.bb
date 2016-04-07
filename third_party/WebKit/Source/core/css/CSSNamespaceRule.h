@@ -15,7 +15,7 @@ class StyleRuleNamespace;
 class CSSNamespaceRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSNamespaceRule> create(StyleRuleNamespace* rule, CSSStyleSheet* sheet)
+    static CSSNamespaceRule* create(StyleRuleNamespace* rule, CSSStyleSheet* sheet)
     {
         return new CSSNamespaceRule(rule, sheet);
     }

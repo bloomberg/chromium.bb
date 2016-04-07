@@ -41,7 +41,7 @@ class MediaQuerySet;
 class CORE_EXPORT MediaQueryMatcher final : public GarbageCollectedFinalized<MediaQueryMatcher> {
     WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
 public:
-    static RawPtr<MediaQueryMatcher> create(Document&);
+    static MediaQueryMatcher* create(Document&);
     ~MediaQueryMatcher();
 
     void documentDetached();
@@ -49,10 +49,10 @@ public:
     void addMediaQueryList(MediaQueryList*);
     void removeMediaQueryList(MediaQueryList*);
 
-    void addViewportListener(RawPtr<MediaQueryListListener>);
-    void removeViewportListener(RawPtr<MediaQueryListListener>);
+    void addViewportListener(MediaQueryListListener*);
+    void removeViewportListener(MediaQueryListListener*);
 
-    RawPtr<MediaQueryList> matchMedia(const String&);
+    MediaQueryList* matchMedia(const String&);
 
     void mediaFeaturesChanged();
     void viewportChanged();
@@ -63,7 +63,7 @@ public:
 private:
     explicit MediaQueryMatcher(Document&);
 
-    RawPtr<MediaQueryEvaluator> createEvaluator() const;
+    MediaQueryEvaluator* createEvaluator() const;
 
     Member<Document> m_document;
     Member<MediaQueryEvaluator> m_evaluator;

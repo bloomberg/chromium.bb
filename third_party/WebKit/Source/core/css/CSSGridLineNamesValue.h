@@ -38,7 +38,7 @@ namespace blink {
 
 class CSSGridLineNamesValue : public CSSValueList {
 public:
-    static RawPtr<CSSGridLineNamesValue> create()
+    static CSSGridLineNamesValue* create()
     {
         return new CSSGridLineNamesValue();
     }

@@ -24,8 +24,8 @@ public:
     virtual ~MediaValues() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    static RawPtr<MediaValues> createDynamicIfFrameExists(LocalFrame*);
-    virtual RawPtr<MediaValues> copy() const = 0;
+    static MediaValues* createDynamicIfFrameExists(LocalFrame*);
+    virtual MediaValues* copy() const = 0;
 
     static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitType, unsigned defaultFontSize, double viewportWidth, double viewportHeight, double& result);
     template<typename T>

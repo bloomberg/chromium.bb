@@ -47,7 +47,7 @@ void PrintTo(const CSSLengthArray& lengthArray, ::std::ostream* os)
 
 namespace {
 
-void testAccumulatePixelsAndPercent(const CSSToLengthConversionData& conversionData, RawPtr<CSSCalcExpressionNode> expression, float expectedPixels, float expectedPercent)
+void testAccumulatePixelsAndPercent(const CSSToLengthConversionData& conversionData, CSSCalcExpressionNode* expression, float expectedPixels, float expectedPercent)
 {
     PixelsAndPercent value(0, 0);
     expression->accumulatePixelsAndPercent(conversionData, value);
@@ -65,9 +65,9 @@ void initLengthArray(CSSLengthArray& lengthArray)
 CSSLengthArray& setLengthArray(CSSLengthArray& lengthArray, String text)
 {
     initLengthArray(lengthArray);
-    RawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* propertySet = MutableStylePropertySet::create(HTMLQuirksMode);
     propertySet->setProperty(CSSPropertyLeft, text);
-    toCSSPrimitiveValue(propertySet->getPropertyCSSValue(CSSPropertyLeft).get())->accumulateLengthArray(lengthArray);
+    toCSSPrimitiveValue(propertySet->getPropertyCSSValue(CSSPropertyLeft))->accumulateLengthArray(lengthArray);
     return lengthArray;
 }
 

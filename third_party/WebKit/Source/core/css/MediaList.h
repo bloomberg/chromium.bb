@@ -41,24 +41,24 @@ class MediaQuery;
 
 class CORE_EXPORT MediaQuerySet : public GarbageCollected<MediaQuerySet> {
 public:
-    static RawPtr<MediaQuerySet> create()
+    static MediaQuerySet* create()
     {
         return new MediaQuerySet();
     }
-    static RawPtr<MediaQuerySet> create(const String& mediaString);
-    static RawPtr<MediaQuerySet> createOffMainThread(const String& mediaString);
+    static MediaQuerySet* create(const String& mediaString);
+    static MediaQuerySet* createOffMainThread(const String& mediaString);
 
     bool set(const String&);
     bool add(const String&);
     bool remove(const String&);
 
-    void addMediaQuery(RawPtr<MediaQuery>);
+    void addMediaQuery(MediaQuery*);
 
     const HeapVector<Member<MediaQuery>>& queryVector() const { return m_queries; }
 
     String mediaText() const;
 
-    RawPtr<MediaQuerySet> copy() const { return new MediaQuerySet(*this); }
+    MediaQuerySet* copy() const { return new MediaQuerySet(*this); }
 
     DECLARE_TRACE();
 
@@ -72,12 +72,12 @@ private:
 class MediaList final : public GarbageCollected<MediaList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
+    static MediaList* create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     {
         return new MediaList(mediaQueries, parentSheet);
     }
 
-    static RawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
+    static MediaList* create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
     {
         return new MediaList(mediaQueries, parentRule);
     }

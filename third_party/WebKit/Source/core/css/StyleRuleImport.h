@@ -35,7 +35,7 @@ class StyleSheetContents;
 class StyleRuleImport : public StyleRuleBase {
     USING_PRE_FINALIZER(StyleRuleImport, dispose);
 public:
-    static RawPtr<StyleRuleImport> create(const String& href, RawPtr<MediaQuerySet>);
+    static StyleRuleImport* create(const String& href, MediaQuerySet*);
 
     ~StyleRuleImport();
 
@@ -80,7 +80,7 @@ private:
     void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
     friend class ImportedStyleSheetClient;
 
-    StyleRuleImport(const String& href, RawPtr<MediaQuerySet>);
+    StyleRuleImport(const String& href, MediaQuerySet*);
 
     void dispose();
 

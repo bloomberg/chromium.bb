@@ -63,7 +63,7 @@ public:
 
     bool isValid() const { return !m_sources.isEmpty(); }
 
-    void addSource(RawPtr<CSSFontFaceSource>);
+    void addSource(CSSFontFaceSource*);
 
     void didBeginLoad();
     void fontLoaded(RemoteFontFaceSource*);

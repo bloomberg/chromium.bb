@@ -11,9 +11,9 @@
 
 namespace blink {
 
-RawPtr<CSSFunctionValue> MatrixTransformComponent::toCSSValue() const
+CSSFunctionValue* MatrixTransformComponent::toCSSValue() const
 {
-    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(m_is2D ? CSSValueMatrix : CSSValueMatrix3d);
+    CSSFunctionValue* result = CSSFunctionValue::create(m_is2D ? CSSValueMatrix : CSSValueMatrix3d);
 
     if (m_is2D) {
         double values[6] = {a(), b(), c(), d(), e(), f()};
@@ -28,7 +28,7 @@ RawPtr<CSSFunctionValue> MatrixTransformComponent::toCSSValue() const
         }
     }
 
-    return result.release();
+    return result;
 }
 
 MatrixTransformComponent* MatrixTransformComponent::perspective(double length)

@@ -140,7 +140,7 @@ static inline bool isEditingProperty(int id)
     return allEditingProperties().contains(static_cast<CSSPropertyID>(id));
 }
 
-static RawPtr<MutableStylePropertySet> editingStyleFromComputedStyle(RawPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)
+static MutableStylePropertySet* editingStyleFromComputedStyle(RawPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)
 {
     if (!style)
         return MutableStylePropertySet::create(HTMLQuirksMode);
@@ -293,8 +293,8 @@ HTMLAttributeEquivalent::HTMLAttributeEquivalent(CSSPropertyID id, const Qualifi
 
 bool HTMLAttributeEquivalent::valueIsPresentInStyle(HTMLElement* element, StylePropertySet* style) const
 {
-    RawPtr<CSSValue> value = attributeValueAsCSSValue(element);
-    RawPtr<CSSValue> styleValue = style->getPropertyCSSValue(m_propertyID);
+    CSSValue* value = attributeValueAsCSSValue(element);
+    CSSValue* styleValue = style->getPropertyCSSValue(m_propertyID);
 
     return compareCSSValuePtr(value, styleValue);
 }
@@ -407,27 +407,27 @@ static Color cssValueToColor(CSSValue* colorValue)
 
 static inline Color getFontColor(CSSStyleDeclaration* style)
 {
-    return cssValueToColor(style->getPropertyCSSValueInternal(CSSPropertyColor).get());
+    return cssValueToColor(style->getPropertyCSSValueInternal(CSSPropertyColor));
 }
 
 static inline Color getFontColor(StylePropertySet* style)
 {
-    return cssValueToColor(style->getPropertyCSSValue(CSSPropertyColor).get());
+    return cssValueToColor(style->getPropertyCSSValue(CSSPropertyColor));
 }
 
 static inline Color getBackgroundColor(CSSStyleDeclaration* style)
 {
-    return cssValueToColor(style->getPropertyCSSValueInternal(CSSPropertyBackgroundColor).get());
+    return cssValueToColor(style->getPropertyCSSValueInternal(CSSPropertyBackgroundColor));
 }
 
 static inline Color getBackgroundColor(StylePropertySet* style)
 {
-    return cssValueToColor(style->getPropertyCSSValue(CSSPropertyBackgroundColor).get());
+    return cssValueToColor(style->getPropertyCSSValue(CSSPropertyBackgroundColor));
 }
 
 static inline Color backgroundColorInEffect(Node* node)
 {
-    return cssValueToColor(backgroundColorValueInEffect(node).get());
+    return cssValueToColor(backgroundColorValueInEffect(node));
 }
 
 static int textAlignResolvingStartAndEnd(int textAlign, int direction)
@@ -928,7 +928,7 @@ bool EditingStyle::extractConflictingImplicitStyleOfAttributes(HTMLElement* elem
 
 bool EditingStyle::styleIsPresentInComputedStyleOfNode(Node* node) const
 {
-    return !m_mutableStyle || getPropertiesNotIn(m_mutableStyle.get(), CSSComputedStyleDeclaration::create(node).get())->isEmpty();
+    return !m_mutableStyle || getPropertiesNotIn(m_mutableStyle.get(), CSSComputedStyleDeclaration::create(node))->isEmpty();
 }
 
 bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* element)
@@ -992,8 +992,8 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
     RawPtr<EditingStyle> editingStyleAtPosition = EditingStyle::create(position, EditingPropertiesInEffect);
     StylePropertySet* styleAtPosition = editingStyleAtPosition->m_mutableStyle.get();
 
-    RawPtr<CSSValue> unicodeBidi = nullptr;
-    RawPtr<CSSValue> direction = nullptr;
+    CSSValue* unicodeBidi = nullptr;
+    CSSValue* direction = nullptr;
     if (shouldPreserveWritingDirection == PreserveWritingDirection) {
         unicodeBidi = m_mutableStyle->getPropertyCSSValue(CSSPropertyUnicodeBidi);
         direction = m_mutableStyle->getPropertyCSSValue(CSSPropertyDirection);
@@ -1008,13 +1008,13 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
         m_mutableStyle->removeProperty(CSSPropertyColor);
 
     if (hasTransparentBackgroundColor(m_mutableStyle.get())
-        || cssValueToColor(m_mutableStyle->getPropertyCSSValue(CSSPropertyBackgroundColor).get()) == backgroundColorInEffect(position.computeContainerNode()))
+        || cssValueToColor(m_mutableStyle->getPropertyCSSValue(CSSPropertyBackgroundColor)) == backgroundColorInEffect(position.computeContainerNode()))
         m_mutableStyle->removeProperty(CSSPropertyBackgroundColor);
 
     if (unicodeBidi && unicodeBidi->isPrimitiveValue()) {
-        m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, toCSSPrimitiveValue(unicodeBidi.get())->getValueID());
+        m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, toCSSPrimitiveValue(unicodeBidi)->getValueID());
         if (direction && direction->isPrimitiveValue())
-            m_mutableStyle->setProperty(CSSPropertyDirection, toCSSPrimitiveValue(direction.get())->getValueID());
+            m_mutableStyle->setProperty(CSSPropertyDirection, toCSSPrimitiveValue(direction)->getValueID());
     }
 }
 

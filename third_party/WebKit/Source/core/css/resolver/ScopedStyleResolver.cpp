@@ -71,7 +71,7 @@ void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet)
     CSSFontSelector* cssFontSelector = document.styleEngine().fontSelector();
     const HeapVector<Member<StyleRuleFontFace>> fontFaceRules = ruleSet.fontFaceRules();
     for (auto& fontFaceRule : fontFaceRules) {
-        if (RawPtr<FontFace> fontFace = FontFace::create(&document, fontFaceRule))
+        if (FontFace* fontFace = FontFace::create(&document, fontFaceRule))
             cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
     }
     if (fontFaceRules.size())
@@ -129,7 +129,7 @@ StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const String
     return it->value.get();
 }
 
-void ScopedStyleResolver::addKeyframeStyle(RawPtr<StyleRuleKeyframes> rule)
+void ScopedStyleResolver::addKeyframeStyle(StyleRuleKeyframes* rule)
 {
     AtomicString s(rule->name());
 
@@ -215,12 +215,12 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     if (!authorRules.deepCombinatorOrShadowPseudoRules().isEmpty())
         m_hasDeepOrShadowSelector = true;
 
-    RawPtr<RuleSet> ruleSetForScope = RuleSet::create();
-    addRules(ruleSetForScope.get(), authorRules.deepCombinatorOrShadowPseudoRules());
+    RuleSet* ruleSetForScope = RuleSet::create();
+    addRules(ruleSetForScope, authorRules.deepCombinatorOrShadowPseudoRules());
 
     if (!isDocumentScope) {
-        addRules(ruleSetForScope.get(), authorRules.contentPseudoElementRules());
-        addRules(ruleSetForScope.get(), authorRules.slottedPseudoElementRules());
+        addRules(ruleSetForScope, authorRules.contentPseudoElementRules());
+        addRules(ruleSetForScope, authorRules.slottedPseudoElementRules());
     }
 
     if (!m_treeBoundaryCrossingRuleSet) {
@@ -228,7 +228,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
         treeScope().document().styleResolver()->addTreeBoundaryCrossingScope(treeScope().rootNode());
     }
 
-    m_treeBoundaryCrossingRuleSet->append(RuleSubSet::create(parentStyleSheet, sheetIndex, ruleSetForScope.release()));
+    m_treeBoundaryCrossingRuleSet->append(RuleSubSet::create(parentStyleSheet, sheetIndex, ruleSetForScope));
 }
 
 DEFINE_TRACE(ScopedStyleResolver::RuleSubSet)

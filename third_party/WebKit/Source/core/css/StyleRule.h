@@ -64,7 +64,7 @@ public:
     bool isViewportRule() const { return type() == Viewport; }
     bool isImportRule() const { return type() == Import; }
 
-    RawPtr<StyleRuleBase> copy() const;
+    StyleRuleBase* copy() const;
 
 #if !ENABLE(OILPAN)
     void deref()
@@ -75,8 +75,8 @@ public:
 #endif // !ENABLE(OILPAN)
 
     // FIXME: There shouldn't be any need for the null parent version.
-    RawPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
-    RawPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
+    CSSRule* createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
+    CSSRule* createCSSOMWrapper(CSSRule* parentRule) const;
 
     DECLARE_TRACE();
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { }
@@ -95,7 +95,7 @@ protected:
 private:
     void destroy();
 
-    RawPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
+    CSSRule* createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
 
     unsigned m_type : 5;
 };
@@ -103,7 +103,7 @@ private:
 class CORE_EXPORT StyleRule : public StyleRuleBase {
 public:
     // Adopts the selector list
-    static RawPtr<StyleRule> create(CSSSelectorList selectorList, RawPtr<StylePropertySet> properties)
+    static StyleRule* create(CSSSelectorList selectorList, StylePropertySet* properties)
     {
         return new StyleRule(std::move(selectorList), properties);
     }
@@ -116,14 +116,14 @@ public:
 
     void wrapperAdoptSelectorList(CSSSelectorList selectors) { m_selectorList = std::move(selectors); }
 
-    RawPtr<StyleRule> copy() const { return new StyleRule(*this); }
+    StyleRule* copy() const { return new StyleRule(*this); }
 
     static unsigned averageSizeInBytes();
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRule(CSSSelectorList, RawPtr<StylePropertySet>);
+    StyleRule(CSSSelectorList, StylePropertySet*);
     StyleRule(const StyleRule&);
 
     Member<StylePropertySet> m_properties; // Cannot be null.
@@ -132,7 +132,7 @@ private:
 
 class StyleRuleFontFace : public StyleRuleBase {
 public:
-    static RawPtr<StyleRuleFontFace> create(RawPtr<StylePropertySet> properties)
+    static StyleRuleFontFace* create(StylePropertySet* properties)
     {
         return new StyleRuleFontFace(properties);
     }
@@ -142,12 +142,12 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    RawPtr<StyleRuleFontFace> copy() const { return new StyleRuleFontFace(*this); }
+    StyleRuleFontFace* copy() const { return new StyleRuleFontFace(*this); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleFontFace(RawPtr<StylePropertySet>);
+    StyleRuleFontFace(StylePropertySet*);
     StyleRuleFontFace(const StyleRuleFontFace&);
 
     Member<StylePropertySet> m_properties; // Cannot be null.
@@ -156,7 +156,7 @@ private:
 class StyleRulePage : public StyleRuleBase {
 public:
     // Adopts the selector list
-    static RawPtr<StyleRulePage> create(CSSSelectorList selectorList, RawPtr<StylePropertySet> properties)
+    static StyleRulePage* create(CSSSelectorList selectorList, StylePropertySet* properties)
     {
         return new StyleRulePage(std::move(selectorList), properties);
     }
@@ -169,12 +169,12 @@ public:
 
     void wrapperAdoptSelectorList(CSSSelectorList selectors) { m_selectorList = std::move(selectors); }
 
-    RawPtr<StyleRulePage> copy() const { return new StyleRulePage(*this); }
+    StyleRulePage* copy() const { return new StyleRulePage(*this); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRulePage(CSSSelectorList, RawPtr<StylePropertySet>);
+    StyleRulePage(CSSSelectorList, StylePropertySet*);
     StyleRulePage(const StyleRulePage&);
 
     Member<StylePropertySet> m_properties; // Cannot be null.
@@ -185,7 +185,7 @@ class StyleRuleGroup : public StyleRuleBase {
 public:
     const HeapVector<Member<StyleRuleBase>>& childRules() const { return m_childRules; }
 
-    void wrapperInsertRule(unsigned, RawPtr<StyleRuleBase>);
+    void wrapperInsertRule(unsigned, StyleRuleBase*);
     void wrapperRemoveRule(unsigned);
 
     DECLARE_TRACE_AFTER_DISPATCH();
@@ -200,19 +200,19 @@ private:
 
 class StyleRuleMedia : public StyleRuleGroup {
 public:
-    static RawPtr<StyleRuleMedia> create(RawPtr<MediaQuerySet> media, HeapVector<Member<StyleRuleBase>>& adoptRules)
+    static StyleRuleMedia* create(MediaQuerySet* media, HeapVector<Member<StyleRuleBase>>& adoptRules)
     {
         return new StyleRuleMedia(media, adoptRules);
     }
 
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
 
-    RawPtr<StyleRuleMedia> copy() const { return new StyleRuleMedia(*this); }
+    StyleRuleMedia* copy() const { return new StyleRuleMedia(*this); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleMedia(RawPtr<MediaQuerySet>, HeapVector<Member<StyleRuleBase>>& adoptRules);
+    StyleRuleMedia(MediaQuerySet*, HeapVector<Member<StyleRuleBase>>& adoptRules);
     StyleRuleMedia(const StyleRuleMedia&);
 
     Member<MediaQuerySet> m_mediaQueries;
@@ -220,14 +220,14 @@ private:
 
 class StyleRuleSupports : public StyleRuleGroup {
 public:
-    static RawPtr<StyleRuleSupports> create(const String& conditionText, bool conditionIsSupported, HeapVector<Member<StyleRuleBase>>& adoptRules)
+    static StyleRuleSupports* create(const String& conditionText, bool conditionIsSupported, HeapVector<Member<StyleRuleBase>>& adoptRules)
     {
         return new StyleRuleSupports(conditionText, conditionIsSupported, adoptRules);
     }
 
     String conditionText() const { return m_conditionText; }
     bool conditionIsSupported() const { return m_conditionIsSupported; }
-    RawPtr<StyleRuleSupports> copy() const { return new StyleRuleSupports(*this); }
+    StyleRuleSupports* copy() const { return new StyleRuleSupports(*this); }
 
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleGroup::traceAfterDispatch(visitor); }
 
@@ -241,7 +241,7 @@ private:
 
 class StyleRuleViewport : public StyleRuleBase {
 public:
-    static RawPtr<StyleRuleViewport> create(RawPtr<StylePropertySet> properties)
+    static StyleRuleViewport* create(StylePropertySet* properties)
     {
         return new StyleRuleViewport(properties);
     }
@@ -251,12 +251,12 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    RawPtr<StyleRuleViewport> copy() const { return new StyleRuleViewport(*this); }
+    StyleRuleViewport* copy() const { return new StyleRuleViewport(*this); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleViewport(RawPtr<StylePropertySet>);
+    StyleRuleViewport(StylePropertySet*);
     StyleRuleViewport(const StyleRuleViewport&);
 
     Member<StylePropertySet> m_properties; // Cannot be null
@@ -265,7 +265,7 @@ private:
 // This should only be used within the CSS Parser
 class StyleRuleCharset : public StyleRuleBase {
 public:
-    static RawPtr<StyleRuleCharset> create() { return new StyleRuleCharset(); }
+    static StyleRuleCharset* create() { return new StyleRuleCharset(); }
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:

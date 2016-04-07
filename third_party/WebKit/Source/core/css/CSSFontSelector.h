@@ -44,7 +44,7 @@ class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
 public:
-    static RawPtr<CSSFontSelector> create(Document* document)
+    static CSSFontSelector* create(Document* document)
     {
         return new CSSFontSelector(document);
     }

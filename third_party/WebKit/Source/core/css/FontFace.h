@@ -63,8 +63,8 @@ class FontFace : public GarbageCollectedFinalized<FontFace>, public ScriptWrappa
 public:
     enum LoadStatusType { Unloaded, Loading, Loaded, Error };
 
-    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, StringOrArrayBufferOrArrayBufferView&, const FontFaceDescriptors&);
-    static RawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
+    static FontFace* create(ExecutionContext*, const AtomicString& family, StringOrArrayBufferOrArrayBufferView&, const FontFaceDescriptors&);
+    static FontFace* create(Document*, const StyleRuleFontFace*);
 
     ~FontFace();
 
@@ -108,24 +108,24 @@ public:
         virtual void notifyError(FontFace*) = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
-    void loadWithCallback(RawPtr<LoadFontCallback>, ExecutionContext*);
+    void loadWithCallback(LoadFontCallback*, ExecutionContext*);
 
     // ActiveScriptWrappable.
     bool hasPendingActivity() const final;
 
 private:
-    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);
-    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBufferView>, const FontFaceDescriptors&);
-    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
+    static FontFace* create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);
+    static FontFace* create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBufferView>, const FontFaceDescriptors&);
+    static FontFace* create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
 
     explicit FontFace(ExecutionContext*);
     FontFace(ExecutionContext*, const AtomicString& family, const FontFaceDescriptors&);
 
-    void initCSSFontFace(Document*, RawPtr<CSSValue> src);
+    void initCSSFontFace(Document*, CSSValue* src);
     void initCSSFontFace(const unsigned char* data, size_t);
     void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState* = 0);
     bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
-    bool setPropertyValue(RawPtr<CSSValue>, CSSPropertyID);
+    bool setPropertyValue(CSSValue*, CSSPropertyID);
     bool setFamilyValue(const CSSValue&);
     void loadInternal(ExecutionContext*);
     ScriptPromise fontStatusPromise(ScriptState*);

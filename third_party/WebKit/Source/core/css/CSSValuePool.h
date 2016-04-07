@@ -45,19 +45,19 @@ namespace blink {
 
 class CORE_EXPORT CSSValuePool :  public GarbageCollectedFinalized<CSSValuePool> {
 public:
-    RawPtr<CSSValueList> createFontFaceValue(const AtomicString&);
-    RawPtr<CSSFontFamilyValue> createFontFamilyValue(const String&);
-    RawPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
-    RawPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
-    RawPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
-    RawPtr<CSSUnsetValue> createUnsetValue() { return m_unsetValue; }
-    RawPtr<CSSPrimitiveValue> createIdentifierValue(CSSValueID identifier);
-    RawPtr<CSSCustomIdentValue> createIdentifierValue(CSSPropertyID identifier);
-    RawPtr<CSSColorValue> createColorValue(RGBA32 rgbValue);
-    RawPtr<CSSPrimitiveValue> createValue(double value, CSSPrimitiveValue::UnitType);
-    RawPtr<CSSPrimitiveValue> createValue(const Length& value, const ComputedStyle&);
-    RawPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
-    template<typename T> static RawPtr<CSSPrimitiveValue> createValue(T value) { return CSSPrimitiveValue::create(value); }
+    CSSValueList* createFontFaceValue(const AtomicString&);
+    CSSFontFamilyValue* createFontFamilyValue(const String&);
+    CSSInheritedValue* createInheritedValue() { return m_inheritedValue; }
+    CSSInitialValue* createImplicitInitialValue() { return m_implicitInitialValue; }
+    CSSInitialValue* createExplicitInitialValue() { return m_explicitInitialValue; }
+    CSSUnsetValue* createUnsetValue() { return m_unsetValue; }
+    CSSPrimitiveValue* createIdentifierValue(CSSValueID identifier);
+    CSSCustomIdentValue* createIdentifierValue(CSSPropertyID identifier);
+    CSSColorValue* createColorValue(RGBA32 rgbValue);
+    CSSPrimitiveValue* createValue(double value, CSSPrimitiveValue::UnitType);
+    CSSPrimitiveValue* createValue(const Length& value, const ComputedStyle&);
+    CSSPrimitiveValue* createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
+    template<typename T> static CSSPrimitiveValue* createValue(T value) { return CSSPrimitiveValue::create(value); }
 
     DECLARE_TRACE();
 

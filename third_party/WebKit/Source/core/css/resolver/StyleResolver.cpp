@@ -313,15 +313,15 @@ void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
     treeScope.clearScopedStyleResolver();
 }
 
-static RawPtr<RuleSet> makeRuleSet(const HeapVector<RuleFeature>& rules)
+static RuleSet* makeRuleSet(const HeapVector<RuleFeature>& rules)
 {
     size_t size = rules.size();
     if (!size)
         return nullptr;
-    RawPtr<RuleSet> ruleSet = RuleSet::create();
+    RuleSet* ruleSet = RuleSet::create();
     for (size_t i = 0; i < size; ++i)
         ruleSet->addRule(rules[i].rule, rules[i].selectorIndex, rules[i].hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
-    return ruleSet.release();
+    return ruleSet;
 }
 
 void StyleResolver::collectFeatures()
@@ -858,14 +858,14 @@ PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleRe
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
 
-RawPtr<PseudoElement> StyleResolver::createPseudoElement(Element* parent, PseudoId pseudoId)
+PseudoElement* StyleResolver::createPseudoElement(Element* parent, PseudoId pseudoId)
 {
     if (pseudoId == PseudoIdFirstLetter)
         return FirstLetterPseudoElement::create(parent);
     return PseudoElement::create(parent, pseudoId);
 }
 
-RawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
+PseudoElement* StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
     LayoutObject* parentLayoutObject = parent.layoutObject();
     if (!parentLayoutObject)
@@ -902,12 +902,12 @@ RawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent
     if (!pseudoElementLayoutObjectIsNeeded(style.get()))
         return nullptr;
 
-    RawPtr<PseudoElement> pseudo = createPseudoElement(&parent, pseudoId);
+    PseudoElement* pseudo = createPseudoElement(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
     if (ElementAnimations* elementAnimations = pseudo->elementAnimations())
-        elementAnimations->cssAnimations().maybeApplyPendingUpdate(pseudo.get());
-    return pseudo.release();
+        elementAnimations->cssAnimations().maybeApplyPendingUpdate(pseudo);
+    return pseudo;
 }
 
 bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, const ComputedStyle* parentStyle, StyleResolverState& state)
@@ -1061,7 +1061,7 @@ void StyleResolver::updateFont(StyleResolverState& state)
     state.setConversionZoom(state.style()->effectiveZoom());
 }
 
-RawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
+StyleRuleList* StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
@@ -1071,7 +1071,7 @@ RawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsi
     return collector.matchedStyleRuleList();
 }
 
-RawPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude)
+CSSRuleList* StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
@@ -1081,7 +1081,7 @@ RawPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, Ps
     return collector.matchedCSSRuleList();
 }
 
-RawPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude)
+CSSRuleList* StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude)
 {
     return pseudoCSSRulesForElement(element, PseudoIdNone, rulesToInclude);
 }
@@ -1662,7 +1662,7 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
     collector.collectMatchingRules(matchRequest);
     collector.sortAndTransferMatchedRules();
 
-    RawPtr<StyleRuleList> rules = collector.matchedStyleRuleList();
+    StyleRuleList* rules = collector.matchedStyleRuleList();
     if (!rules)
         return;
     for (size_t i = 0; i < rules->size(); i++)
@@ -1688,7 +1688,7 @@ void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& pr
     for (CSSPropertyID property : properties) {
         if (property == CSSPropertyLineHeight)
             updateFont(state);
-        StyleBuilder::applyProperty(property, state, propertySet.getPropertyCSSValue(property).get());
+        StyleBuilder::applyProperty(property, state, propertySet.getPropertyCSSValue(property));
     }
 }
 

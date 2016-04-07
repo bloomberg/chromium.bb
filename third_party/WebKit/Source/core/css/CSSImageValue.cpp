@@ -69,8 +69,8 @@ StyleImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeVa
         if (crossOrigin != CrossOriginAttributeNotSet)
             request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);
 
-        if (RawPtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
-            m_cachedImage = StyleFetchedImage::create(cachedImage.get(), document, request.url());
+        if (ImageResource* cachedImage = ImageResource::fetch(request, document->fetcher()))
+            m_cachedImage = StyleFetchedImage::create(cachedImage, document, request.url());
         else
             m_cachedImage = StyleInvalidImage::create(url());
     }

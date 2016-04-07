@@ -52,7 +52,7 @@ CSSTestHelper::CSSTestHelper()
 
 CSSRuleList* CSSTestHelper::cssRules()
 {
-    return m_styleSheet->cssRules().get();
+    return m_styleSheet->cssRules();
 }
 
 RuleSet& CSSTestHelper::ruleSet()

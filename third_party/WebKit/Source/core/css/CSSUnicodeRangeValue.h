@@ -33,7 +33,7 @@ namespace blink {
 
 class CSSUnicodeRangeValue : public CSSValue {
 public:
-    static RawPtr<CSSUnicodeRangeValue> create(UChar32 from, UChar32 to)
+    static CSSUnicodeRangeValue* create(UChar32 from, UChar32 to)
     {
         return new CSSUnicodeRangeValue(from, to);
     }

@@ -28,9 +28,9 @@ public:
     void SetUp()
     {
         m_document = HTMLDocument::create();
-        RawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
+        HTMLHtmlElement* html = HTMLHtmlElement::create(*m_document);
         html->appendChild(HTMLBodyElement::create(*m_document));
-        m_document->appendChild(html.release());
+        m_document->appendChild(html);
 
         m_document->body()->setInnerHTML("<b><i></i></b>", ASSERT_NO_EXCEPTION);
     }
@@ -39,8 +39,8 @@ public:
     {
         CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), nullptr, selectorText);
 
-        RawPtr<StyleRule> styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
-        RuleData ruleData(styleRule.get(), 0, 0, RuleHasNoSpecialState);
+        StyleRule* styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
+        RuleData ruleData(styleRule, 0, 0, RuleHasNoSpecialState);
         return m_ruleFeatureSet.collectFeaturesFromRuleData(ruleData);
     }
 

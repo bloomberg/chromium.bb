@@ -23,8 +23,8 @@ public:
 
 TEST(MediaQueryListTest, CrashInStop)
 {
-    RawPtr<Document> document = Document::create();
-    RawPtr<MediaQueryList> list = MediaQueryList::create(document.get(), MediaQueryMatcher::create(*document), MediaQuerySet::create());
+    Document* document = Document::create();
+    MediaQueryList* list = MediaQueryList::create(document, MediaQueryMatcher::create(*document), MediaQuerySet::create());
     list->addListener(new TestListener());
     list->stop();
     // This test passes if it's not crashed.

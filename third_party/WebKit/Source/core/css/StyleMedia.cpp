@@ -58,12 +58,12 @@ bool StyleMedia::matchMedium(const String& query) const
     if (!documentElement)
         return false;
 
-    RawPtr<MediaQuerySet> media = MediaQuerySet::create();
+    MediaQuerySet* media = MediaQuerySet::create();
     if (!media->set(query))
         return false;
 
     MediaQueryEvaluator screenEval(m_frame);
-    return screenEval.eval(media.get());
+    return screenEval.eval(media);
 }
 
 DEFINE_TRACE(StyleMedia)

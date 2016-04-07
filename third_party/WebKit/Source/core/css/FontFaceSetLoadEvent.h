@@ -43,17 +43,17 @@ namespace blink {
 class FontFaceSetLoadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<FontFaceSetLoadEvent> create()
+    static FontFaceSetLoadEvent* create()
     {
         return new FontFaceSetLoadEvent();
     }
 
-    static RawPtr<FontFaceSetLoadEvent> create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
+    static FontFaceSetLoadEvent* create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
     {
         return new FontFaceSetLoadEvent(type, initializer);
     }
 
-    static RawPtr<FontFaceSetLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
+    static FontFaceSetLoadEvent* createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
     {
         return new FontFaceSetLoadEvent(type, fontfaces);
     }

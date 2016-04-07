@@ -138,12 +138,12 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
             CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(filterValue->item(0));
             KURL url = state.document().completeURL(svgDocumentValue->url());
 
-            RawPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), AtomicString(url.fragmentIdentifier()));
+            ReferenceFilterOperation* operation = ReferenceFilterOperation::create(svgDocumentValue->url(), AtomicString(url.fragmentIdentifier()));
             if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), state.document())) {
                 if (!svgDocumentValue->loadRequested())
-                    state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
+                    state.elementStyleResources().addPendingSVGDocument(operation, svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())
-                    ReferenceFilterBuilder::setDocumentResourceReference(operation.get(), adoptPtr(new DocumentResourceReference(svgDocumentValue->cachedSVGDocument())));
+                    ReferenceFilterBuilder::setDocumentResourceReference(operation, adoptPtr(new DocumentResourceReference(svgDocumentValue->cachedSVGDocument())));
             }
             operations.operations().append(operation);
             continue;

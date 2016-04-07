@@ -349,7 +349,7 @@ static const Vector<CSSPropertyID>& computableProperties()
     return properties;
 }
 
-CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(RawPtr<Node> n, bool allowVisitedStyle, const String& pseudoElementName)
+CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(Node* n, bool allowVisitedStyle, const String& pseudoElementName)
     : m_node(n)
     , m_allowVisitedStyle(allowVisitedStyle)
 #if !ENABLE(OILPAN)
@@ -408,12 +408,12 @@ static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
     return static_cast<CSSValueID>(CSSValueXxSmall + keywordSize - 1);
 }
 
-inline static RawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const ComputedStyle& style)
+inline static CSSPrimitiveValue* zoomAdjustedPixelValue(double value, const ComputedStyle& style)
 {
     return cssValuePool().createValue(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::UnitType::Pixels);
 }
 
-RawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
+CSSValue* CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
 {
     if (!m_node)
         return nullptr;
@@ -526,7 +526,7 @@ Node* CSSComputedStyleDeclaration::styledNode() const
     return m_node.get();
 }
 
-RawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
+CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
 {
     const ComputedStyle* style = computeComputedStyle();
     if (!style)
@@ -542,7 +542,7 @@ const HashMap<AtomicString, RefPtr<CSSVariableData>>* CSSComputedStyleDeclaratio
     return ComputedStyleCSSValueMapping::getVariables(*style);
 }
 
-RawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
+CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     Node* styledNode = this->styledNode();
     if (!styledNode)
@@ -575,7 +575,7 @@ RawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID 
     if (!style)
         return nullptr;
 
-    RawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(propertyID, *style, layoutObject, styledNode, m_allowVisitedStyle);
+    CSSValue* value = ComputedStyleCSSValueMapping::get(propertyID, *style, layoutObject, styledNode, m_allowVisitedStyle);
     if (value)
         return value;
 
@@ -585,7 +585,7 @@ RawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID 
 
 String CSSComputedStyleDeclaration::getPropertyValue(CSSPropertyID propertyID) const
 {
-    RawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
+    CSSValue* value = getPropertyCSSValue(propertyID);
     if (value)
         return value->cssText();
     return "";
@@ -619,23 +619,23 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
                 return true;
         }
     }
-    RawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
+    CSSValue* value = getPropertyCSSValue(propertyID);
     return value && propertyValue && value->equals(*propertyValue);
 }
 
-RawPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyProperties() const
+MutableStylePropertySet* CSSComputedStyleDeclaration::copyProperties() const
 {
     return copyPropertiesInSet(computableProperties());
 }
 
-RawPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
+MutableStylePropertySet* CSSComputedStyleDeclaration::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     HeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
-        RawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
+        CSSValue* value = getPropertyCSSValue(properties[i]);
         if (value)
-            list.append(CSSProperty(properties[i], value.release(), false));
+            list.append(CSSProperty(properties[i], value, false));
     }
     return MutableStylePropertySet::create(list.data(), list.size());
 }
@@ -650,7 +650,7 @@ String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
         if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(propertyName)) {
-            RawPtr<CSSValue> value = getPropertyCSSValue(AtomicString(propertyName));
+            CSSValue* value = getPropertyCSSValue(AtomicString(propertyName));
             if (value)
                 return value->cssText();
         }
@@ -687,7 +687,7 @@ String CSSComputedStyleDeclaration::removeProperty(const String& name, Exception
     return String();
 }
 
-RawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
+CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
 {
     return getPropertyCSSValue(propertyID);
 }

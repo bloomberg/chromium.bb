@@ -482,7 +482,7 @@ HTMLElement* ApplyStyleCommand::splitAncestorsWithUnicodeBidi(Node* node, bool b
     ContainerNode* nextHighestAncestorWithUnicodeBidi = nullptr;
     int highestAncestorUnicodeBidi = 0;
     for (ContainerNode* n = node->parentNode(); n != block; n = n->parentNode()) {
-        int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(n).get(), CSSPropertyUnicodeBidi);
+        int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(n), CSSPropertyUnicodeBidi);
         if (unicodeBidi && unicodeBidi != CSSValueNormal) {
             highestAncestorUnicodeBidi = unicodeBidi;
             nextHighestAncestorWithUnicodeBidi = highestAncestorWithUnicodeBidi;
@@ -532,7 +532,7 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, HTMLElemen
             continue;
 
         Element* element = toElement(n);
-        int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(element).get(), CSSPropertyUnicodeBidi);
+        int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(element), CSSPropertyUnicodeBidi);
         if (!unicodeBidi || unicodeBidi == CSSValueNormal)
             continue;
 
@@ -562,7 +562,7 @@ static HTMLElement* highestEmbeddingAncestor(Node* startNode, Node* enclosingNod
 {
     for (Node* n = startNode; n && n != enclosingNode; n = n->parentNode()) {
         if (n->isHTMLElement()
-            && EditingStyle::isEmbedOrIsolate(getIdentifierValue(CSSComputedStyleDeclaration::create(n).get(), CSSPropertyUnicodeBidi))) {
+            && EditingStyle::isEmbedOrIsolate(getIdentifierValue(CSSComputedStyleDeclaration::create(n), CSSPropertyUnicodeBidi))) {
             return toHTMLElement(n);
         }
     }
@@ -1661,11 +1661,11 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     if (!node)
         return 0;
 
-    RawPtr<CSSComputedStyleDeclaration> style = CSSComputedStyleDeclaration::create(node);
+    CSSComputedStyleDeclaration* style = CSSComputedStyleDeclaration::create(node);
     if (!style)
         return 0;
 
-    RawPtr<CSSPrimitiveValue> value = static_pointer_cast<CSSPrimitiveValue>(style->getPropertyCSSValue(CSSPropertyFontSize));
+    CSSPrimitiveValue* value = toCSSPrimitiveValue(style->getPropertyCSSValue(CSSPropertyFontSize));
     if (!value)
         return 0;
 

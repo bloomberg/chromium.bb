@@ -31,8 +31,8 @@ static void verifyCSSCalc(String text, double value, bool valid, unsigned fontSi
 {
     CSSLengthArray lengthArray;
     initLengthArray(lengthArray);
-    RawPtr<CSSValue> cssValue = CSSParser::parseSingleValue(CSSPropertyLeft, text);
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue.get());
+    CSSValue* cssValue = CSSParser::parseSingleValue(CSSPropertyLeft, text);
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
     if (primitiveValue)
         primitiveValue->accumulateLengthArray(lengthArray);
     else
@@ -112,7 +112,7 @@ TEST(SizesCalcParserTest, Basic)
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
     data.displayMode = WebDisplayModeBrowser;
-    RawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    MediaValues* mediaValues = MediaValuesCached::create(data);
 
     for (unsigned i = 0; testCases[i].input; ++i) {
         SizesCalcParser calcParser(CSSTokenizer::Scope(testCases[i].input).tokenRange(), mediaValues);

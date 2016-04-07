@@ -37,7 +37,7 @@ class StyleSheet;
 class StyleSheetList final : public GarbageCollected<StyleSheetList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<StyleSheetList> create(TreeScope* treeScope) { return new StyleSheetList(treeScope); }
+    static StyleSheetList* create(TreeScope* treeScope) { return new StyleSheetList(treeScope); }
 
     unsigned length();
     StyleSheet* item(unsigned index);

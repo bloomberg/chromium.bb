@@ -32,7 +32,7 @@
 
 namespace blink {
 
-RawPtr<MediaQueryMatcher> MediaQueryMatcher::create(Document& document)
+MediaQueryMatcher* MediaQueryMatcher::create(Document& document)
 {
     return new MediaQueryMatcher(document);
 }
@@ -53,7 +53,7 @@ void MediaQueryMatcher::documentDetached()
     m_evaluator = nullptr;
 }
 
-RawPtr<MediaQueryEvaluator> MediaQueryMatcher::createEvaluator() const
+MediaQueryEvaluator* MediaQueryMatcher::createEvaluator() const
 {
     if (!m_document || !m_document->frame())
         return nullptr;
@@ -78,12 +78,12 @@ bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)
     return false;
 }
 
-RawPtr<MediaQueryList> MediaQueryMatcher::matchMedia(const String& query)
+MediaQueryList* MediaQueryMatcher::matchMedia(const String& query)
 {
     if (!m_document)
         return nullptr;
 
-    RawPtr<MediaQuerySet> media = MediaQuerySet::create(query);
+    MediaQuerySet* media = MediaQuerySet::create(query);
     return MediaQueryList::create(m_document, this, media);
 }
 
@@ -101,14 +101,14 @@ void MediaQueryMatcher::removeMediaQueryList(MediaQueryList* query)
     m_mediaLists.remove(query);
 }
 
-void MediaQueryMatcher::addViewportListener(RawPtr<MediaQueryListListener> listener)
+void MediaQueryMatcher::addViewportListener(MediaQueryListListener* listener)
 {
     if (!m_document)
         return;
     m_viewportListeners.add(listener);
 }
 
-void MediaQueryMatcher::removeViewportListener(RawPtr<MediaQueryListListener> listener)
+void MediaQueryMatcher::removeViewportListener(MediaQueryListListener* listener)
 {
     if (!m_document)
         return;
@@ -123,7 +123,7 @@ void MediaQueryMatcher::mediaFeaturesChanged()
     HeapVector<Member<MediaQueryListListener>> listenersToNotify;
     for (const auto& list : m_mediaLists) {
         if (list->mediaFeaturesChanged(&listenersToNotify)) {
-            RawPtr<Event> event(MediaQueryListEvent::create(list));
+            Event* event = MediaQueryListEvent::create(list);
             event->setTarget(list);
             m_document->enqueueUniqueAnimationFrameEvent(event);
         }

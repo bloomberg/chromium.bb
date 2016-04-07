@@ -45,7 +45,7 @@ class StyleRuleViewport;
 
 class CORE_EXPORT ViewportStyleResolver : public GarbageCollected<ViewportStyleResolver> {
 public:
-    static RawPtr<ViewportStyleResolver> create(Document* document)
+    static ViewportStyleResolver* create(Document* document)
     {
         return new ViewportStyleResolver(document);
     }

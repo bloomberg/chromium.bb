@@ -101,12 +101,12 @@ protected:
 
 class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
 public:
-    static RawPtr<CSSCalcValue> create(const CSSParserTokenRange&, ValueRange);
-    static RawPtr<CSSCalcValue> create(RawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
+    static CSSCalcValue* create(const CSSParserTokenRange&, ValueRange);
+    static CSSCalcValue* create(CSSCalcExpressionNode*, ValueRange = ValueRangeAll);
 
-    static RawPtr<CSSCalcExpressionNode> createExpressionNode(RawPtr<CSSPrimitiveValue>, bool isInteger = false);
-    static RawPtr<CSSCalcExpressionNode> createExpressionNode(RawPtr<CSSCalcExpressionNode>, RawPtr<CSSCalcExpressionNode>, CalcOperator);
-    static RawPtr<CSSCalcExpressionNode> createExpressionNode(double pixels, double percent);
+    static CSSCalcExpressionNode* createExpressionNode(CSSPrimitiveValue*, bool isInteger = false);
+    static CSSCalcExpressionNode* createExpressionNode(CSSCalcExpressionNode*, CSSCalcExpressionNode*, CalcOperator);
+    static CSSCalcExpressionNode* createExpressionNode(double pixels, double percent);
 
     PassRefPtr<CalculationValue> toCalcValue(const CSSToLengthConversionData& conversionData) const
     {
@@ -132,7 +132,7 @@ public:
     }
 
 private:
-    CSSCalcValue(RawPtr<CSSCalcExpressionNode> expression, ValueRange range)
+    CSSCalcValue(CSSCalcExpressionNode* expression, ValueRange range)
         : m_expression(expression)
         , m_nonNegative(range == ValueRangeNonNegative)
     {

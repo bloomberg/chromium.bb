@@ -37,7 +37,7 @@ struct SizesCalcValue {
 class CORE_EXPORT SizesCalcParser {
     STACK_ALLOCATED();
 public:
-    SizesCalcParser(CSSParserTokenRange, RawPtr<MediaValues>);
+    SizesCalcParser(CSSParserTokenRange, MediaValues*);
 
     float result() const;
     bool isValid() const { return m_isValid; }

@@ -102,7 +102,7 @@ static KURL urlForCSSValue(const CSSValue* value)
     return KURL(ParsedURLString, toCSSImageValue(*value).url());
 }
 
-CSSCrossfadeValue::CSSCrossfadeValue(RawPtr<CSSValue> fromValue, RawPtr<CSSValue> toValue, RawPtr<CSSPrimitiveValue> percentageValue)
+CSSCrossfadeValue::CSSCrossfadeValue(CSSValue* fromValue, CSSValue* toValue, CSSPrimitiveValue* percentageValue)
     : CSSImageGeneratorValue(CrossfadeClass)
     , m_fromValue(fromValue)
     , m_toValue(toValue)
@@ -148,15 +148,15 @@ String CSSCrossfadeValue::customCSSText() const
     return result.toString();
 }
 
-RawPtr<CSSCrossfadeValue> CSSCrossfadeValue::valueWithURLsMadeAbsolute()
+CSSCrossfadeValue* CSSCrossfadeValue::valueWithURLsMadeAbsolute()
 {
-    RawPtr<CSSValue> fromValue = m_fromValue;
+    CSSValue* fromValue = m_fromValue;
     if (m_fromValue->isImageValue())
         fromValue = toCSSImageValue(*m_fromValue).valueWithURLMadeAbsolute();
-    RawPtr<CSSValue> toValue = m_toValue;
+    CSSValue* toValue = m_toValue;
     if (m_toValue->isImageValue())
         toValue = toCSSImageValue(*m_toValue).valueWithURLMadeAbsolute();
-    return CSSCrossfadeValue::create(fromValue.release(), toValue.release(), m_percentageValue);
+    return CSSCrossfadeValue::create(fromValue, toValue, m_percentageValue);
 }
 
 IntSize CSSCrossfadeValue::fixedSize(const LayoutObject& layoutObject, const FloatSize& defaultObjectSize)
@@ -200,8 +200,8 @@ bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject& layoutObject) const
 
 void CSSCrossfadeValue::loadSubimages(Document* document)
 {
-    RawPtr<ImageResource> oldCachedFromImage = m_cachedFromImage;
-    RawPtr<ImageResource> oldCachedToImage = m_cachedToImage;
+    ImageResource* oldCachedFromImage = m_cachedFromImage;
+    ImageResource* oldCachedToImage = m_cachedToImage;
 
     m_cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
     m_cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);

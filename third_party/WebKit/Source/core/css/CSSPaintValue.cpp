@@ -10,7 +10,7 @@
 
 namespace blink {
 
-CSSPaintValue::CSSPaintValue(RawPtr<CSSCustomIdentValue> name)
+CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
     : CSSImageGeneratorValue(PaintClass)
     , m_name(name)
 {

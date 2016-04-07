@@ -45,7 +45,7 @@ class ViewportStyleResolver;
 class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
     WTF_MAKE_NONCOPYABLE(ScopedStyleResolver);
 public:
-    static RawPtr<ScopedStyleResolver> create(TreeScope& scope)
+    static ScopedStyleResolver* create(TreeScope& scope)
     {
         return new ScopedStyleResolver(scope);
     }
@@ -76,7 +76,7 @@ private:
     void addTreeBoundaryCrossingRules(const RuleSet&, CSSStyleSheet*, unsigned sheetIndex);
     void addKeyframeRules(const RuleSet&);
     void addFontFaceRules(const RuleSet&);
-    void addKeyframeStyle(RawPtr<StyleRuleKeyframes>);
+    void addKeyframeStyle(StyleRuleKeyframes*);
 
     Member<TreeScope> m_scope;
 
@@ -87,7 +87,7 @@ private:
 
     class RuleSubSet final : public GarbageCollected<RuleSubSet> {
     public:
-        static RawPtr<RuleSubSet> create(CSSStyleSheet* sheet, unsigned index, RawPtr<RuleSet> rules)
+        static RuleSubSet* create(CSSStyleSheet* sheet, unsigned index, RuleSet* rules)
         {
             return new RuleSubSet(sheet, index, rules);
         }
@@ -99,7 +99,7 @@ private:
         DECLARE_TRACE();
 
     private:
-        RuleSubSet(CSSStyleSheet* sheet, unsigned index, RawPtr<RuleSet> rules)
+        RuleSubSet(CSSStyleSheet* sheet, unsigned index, RuleSet* rules)
             : m_parentStyleSheet(sheet)
             , m_parentIndex(index)
             , m_ruleSet(rules)

@@ -33,15 +33,15 @@ public:
     using iterator = HeapVector<Member<CSSValue>, 4>::iterator;
     using const_iterator = HeapVector<Member<CSSValue>, 4>::const_iterator;
 
-    static RawPtr<CSSValueList> createCommaSeparated()
+    static CSSValueList* createCommaSeparated()
     {
         return new CSSValueList(CommaSeparator);
     }
-    static RawPtr<CSSValueList> createSpaceSeparated()
+    static CSSValueList* createSpaceSeparated()
     {
         return new CSSValueList(SpaceSeparator);
     }
-    static RawPtr<CSSValueList> createSlashSeparated()
+    static CSSValueList* createSlashSeparated()
     {
         return new CSSValueList(SlashSeparator);
     }
@@ -57,11 +57,11 @@ public:
     CSSValue* itemWithBoundsCheck(size_t index) { return index < m_values.size() ? m_values[index].get() : nullptr; }
     const CSSValue* itemWithBoundsCheck(size_t index) const { return index < m_values.size() ? m_values[index].get() : nullptr; }
 
-    void append(RawPtr<CSSValue> value) { m_values.append(value); }
-    void prepend(RawPtr<CSSValue> value) { m_values.prepend(value); }
+    void append(CSSValue* value) { m_values.append(value); }
+    void prepend(CSSValue* value) { m_values.prepend(value); }
     bool removeAll(CSSValue*);
     bool hasValue(CSSValue*) const;
-    RawPtr<CSSValueList> copy();
+    CSSValueList* copy();
 
     String customCSSText() const;
     bool equals(const CSSValueList&) const;

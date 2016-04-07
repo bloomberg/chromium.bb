@@ -43,7 +43,7 @@ class StyleRuleCSSStyleDeclaration;
 class CSSViewportRule final: public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
+    static CSSViewportRule* create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     {
         return new CSSViewportRule(viewportRule, sheet);
     }

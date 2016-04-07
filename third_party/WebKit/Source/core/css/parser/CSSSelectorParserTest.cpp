@@ -262,12 +262,12 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix)
     };
 
     CSSParserContext context(HTMLStandardMode, nullptr);
-    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
+    StyleSheetContents* sheet = StyleSheetContents::create(context);
 
     for (auto testCase : testCases) {
         CSSTokenizer::Scope scope(testCase);
         CSSParserTokenRange range = scope.tokenRange();
-        CSSSelectorList list = CSSSelectorParser::parseSelector(range, context, sheet.get());
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, context, sheet);
         EXPECT_FALSE(list.isValid());
     }
 }
@@ -292,14 +292,14 @@ TEST(CSSSelectorParserTest, SerializedUniversal)
     };
 
     CSSParserContext context(HTMLStandardMode, nullptr);
-    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
+    StyleSheetContents* sheet = StyleSheetContents::create(context);
     sheet->parserAddNamespace("ns", "http://ns.org");
 
     for (auto testCase : testCases) {
         SCOPED_TRACE(testCase[0]);
         CSSTokenizer::Scope scope(testCase[0]);
         CSSParserTokenRange range = scope.tokenRange();
-        CSSSelectorList list = CSSSelectorParser::parseSelector(range, context, sheet.get());
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, context, sheet);
         EXPECT_TRUE(list.isValid());
         EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
     }

@@ -49,7 +49,7 @@ static const char defaultFontFamily[] = "sans-serif";
 
 class LoadFontPromiseResolver final : public FontFace::LoadFontCallback {
 public:
-    static RawPtr<LoadFontPromiseResolver> create(FontFaceArray faces, ScriptState* scriptState)
+    static LoadFontPromiseResolver* create(FontFaceArray faces, ScriptState* scriptState)
     {
         return new LoadFontPromiseResolver(faces, scriptState);
     }
@@ -235,7 +235,7 @@ void FontFaceSet::loadError(FontFace* fontFace)
     removeFromLoadingFonts(fontFace);
 }
 
-void FontFaceSet::addToLoadingFonts(RawPtr<FontFace> fontFace)
+void FontFaceSet::addToLoadingFonts(FontFace* fontFace)
 {
     if (!m_isLoading) {
         m_isLoading = true;
@@ -247,7 +247,7 @@ void FontFaceSet::addToLoadingFonts(RawPtr<FontFace> fontFace)
     m_loadingFonts.add(fontFace);
 }
 
-void FontFaceSet::removeFromLoadingFonts(RawPtr<FontFace> fontFace)
+void FontFaceSet::removeFromLoadingFonts(FontFace* fontFace)
 {
     m_loadingFonts.remove(fontFace);
     if (m_loadingFonts.isEmpty())
@@ -259,7 +259,7 @@ ScriptPromise FontFaceSet::ready(ScriptState* scriptState)
     return m_ready->promise(scriptState->world());
 }
 
-RawPtr<FontFaceSet> FontFaceSet::addForBinding(ScriptState*, FontFace* fontFace, ExceptionState&)
+FontFaceSet* FontFaceSet::addForBinding(ScriptState*, FontFace* fontFace, ExceptionState&)
 {
     ASSERT(fontFace);
     if (!inActiveDocumentContext())
@@ -352,8 +352,8 @@ void FontFaceSet::fireDoneEventIfPossible()
         return;
 
     if (m_isLoading) {
-        RawPtr<FontFaceSetLoadEvent> doneEvent = nullptr;
-        RawPtr<FontFaceSetLoadEvent> errorEvent = nullptr;
+        FontFaceSetLoadEvent* doneEvent = nullptr;
+        FontFaceSetLoadEvent* errorEvent = nullptr;
         doneEvent = FontFaceSetLoadEvent::createForFontFaces(EventTypeNames::loadingdone, m_loadedFonts);
         m_loadedFonts.clear();
         if (!m_failedFonts.isEmpty()) {
@@ -391,7 +391,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
             segmentedFontFace->match(text, faces);
     }
 
-    RawPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(faces, scriptState);
+    LoadFontPromiseResolver* resolver = LoadFontPromiseResolver::create(faces, scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->loadFonts(getExecutionContext()); // After this, resolver->promise() may return null.
     return promise;
@@ -435,8 +435,8 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
         return false;
 
     // Interpret fontString in the same way as the 'font' attribute of CanvasRenderingContext2D.
-    RawPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create(HTMLStandardMode);
-    CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, fontString, true, 0);
+    MutableStylePropertySet* parsedStyle = MutableStylePropertySet::create(HTMLStandardMode);
+    CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true, 0);
     if (parsedStyle->isEmpty())
         return false;
 
@@ -494,15 +494,15 @@ static const char* supplementName()
     return "FontFaceSet";
 }
 
-RawPtr<FontFaceSet> FontFaceSet::from(Document& document)
+FontFaceSet* FontFaceSet::from(Document& document)
 {
-    RawPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName()));
+    FontFaceSet* fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName()));
     if (!fonts) {
         fonts = FontFaceSet::create(document);
         Supplement<Document>::provideTo(document, supplementName(), fonts);
     }
 
-    return fonts.release();
+    return fonts;
 }
 
 void FontFaceSet::didLayout(Document& document)

@@ -59,7 +59,7 @@ MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
         m_queries[i] = o.m_queries[i]->copy();
 }
 
-RawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
+MediaQuerySet* MediaQuerySet::create(const String& mediaString)
 {
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
@@ -67,7 +67,7 @@ RawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
     return MediaQueryParser::parseMediaQuerySet(mediaString);
 }
 
-RawPtr<MediaQuerySet> MediaQuerySet::createOffMainThread(const String& mediaString)
+MediaQuerySet* MediaQuerySet::createOffMainThread(const String& mediaString)
 {
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
@@ -77,7 +77,7 @@ RawPtr<MediaQuerySet> MediaQuerySet::createOffMainThread(const String& mediaStri
 
 bool MediaQuerySet::set(const String& mediaString)
 {
-    RawPtr<MediaQuerySet> result = create(mediaString);
+    MediaQuerySet* result = create(mediaString);
     m_queries.swap(result->m_queries);
     return true;
 }
@@ -87,13 +87,13 @@ bool MediaQuerySet::add(const String& queryString)
     // To "parse a media query" for a given string means to follow "the parse
     // a media query list" steps and return "null" if more than one media query
     // is returned, or else the returned media query.
-    RawPtr<MediaQuerySet> result = create(queryString);
+    MediaQuerySet* result = create(queryString);
 
     // Only continue if exactly one media query is found, as described above.
     if (result->m_queries.size() != 1)
         return true;
 
-    RawPtr<MediaQuery> newQuery = result->m_queries[0].release();
+    MediaQuery* newQuery = result->m_queries[0].release();
     ASSERT(newQuery);
 
     // If comparing with any of the media queries in the collection of media
@@ -104,7 +104,7 @@ bool MediaQuerySet::add(const String& queryString)
             return true;
     }
 
-    m_queries.append(newQuery.release());
+    m_queries.append(newQuery);
     return true;
 }
 
@@ -113,13 +113,13 @@ bool MediaQuerySet::remove(const String& queryStringToRemove)
     // To "parse a media query" for a given string means to follow "the parse
     // a media query list" steps and return "null" if more than one media query
     // is returned, or else the returned media query.
-    RawPtr<MediaQuerySet> result = create(queryStringToRemove);
+    MediaQuerySet* result = create(queryStringToRemove);
 
     // Only continue if exactly one media query is found, as described above.
     if (result->m_queries.size() != 1)
         return true;
 
-    RawPtr<MediaQuery> newQuery = result->m_queries[0].release();
+    MediaQuery* newQuery = result->m_queries[0].release();
     ASSERT(newQuery);
 
     // Remove any media query from the collection of media queries for which
@@ -137,7 +137,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove)
     return found;
 }
 
-void MediaQuerySet::addMediaQuery(RawPtr<MediaQuery> mediaQuery)
+void MediaQuerySet::addMediaQuery(MediaQuery* mediaQuery)
 {
     m_queries.append(mediaQuery);
 }

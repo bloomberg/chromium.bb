@@ -28,11 +28,11 @@ namespace blink {
 
 class CSSInitialValue : public CSSValue {
 public:
-    static RawPtr<CSSInitialValue> createExplicit()
+    static CSSInitialValue* createExplicit()
     {
         return new CSSInitialValue(/* implicit */ false);
     }
-    static RawPtr<CSSInitialValue> createImplicit()
+    static CSSInitialValue* createImplicit()
     {
         return new CSSInitialValue(/* implicit */ true);
     }

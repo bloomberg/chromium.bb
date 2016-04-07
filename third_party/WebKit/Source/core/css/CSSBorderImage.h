@@ -26,8 +26,8 @@
 
 namespace blink {
 
-RawPtr<CSSValueList> createBorderImageValue(RawPtr<CSSValue> image, RawPtr<CSSValue> imageSlice, RawPtr<CSSValue> borderSlice,
-    RawPtr<CSSValue> outset, RawPtr<CSSValue> repeat);
+CSSValueList* createBorderImageValue(CSSValue* image, CSSValue* imageSlice, CSSValue* borderSlice,
+    CSSValue* outset, CSSValue* repeat);
 
 } // namespace blink
 

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-RawPtr<CSSValue> SimpleLength::toCSSValue() const
+CSSValue* SimpleLength::toCSSValue() const
 {
     return cssValuePool().createValue(m_value, m_unit);
 }

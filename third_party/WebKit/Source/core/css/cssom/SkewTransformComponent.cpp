@@ -9,12 +9,12 @@
 
 namespace blink {
 
-RawPtr<CSSFunctionValue> SkewTransformComponent::toCSSValue() const
+CSSFunctionValue* SkewTransformComponent::toCSSValue() const
 {
-    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueSkew);
+    CSSFunctionValue* result = CSSFunctionValue::create(CSSValueSkew);
     result->append(cssValuePool().createValue(m_ax, CSSPrimitiveValue::UnitType::Number));
     result->append(cssValuePool().createValue(m_ay, CSSPrimitiveValue::UnitType::Number));
-    return result.release();
+    return result;
 }
 
 } // namespace blink

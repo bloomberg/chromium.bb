@@ -148,7 +148,7 @@ TEST(MediaQueryEvaluatorTest, Cached)
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
     data.displayMode = WebDisplayModeBrowser;
-    RawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    MediaValues* mediaValues = MediaValuesCached::create(data);
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
     testMQEvaluator(screenTestCases, mediaQueryEvaluator);
@@ -174,12 +174,12 @@ TEST(MediaQueryEvaluatorTest, Dynamic)
 TEST(MediaQueryEvaluatorTest, DynamicNoView)
 {
     OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
-    RawPtr<LocalFrame> frame = &pageHolder->frame();
+    LocalFrame* frame = &pageHolder->frame();
     pageHolder.clear();
     ASSERT_EQ(nullptr, frame->view());
-    MediaQueryEvaluator mediaQueryEvaluator(frame.get());
-    RawPtr<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
-    EXPECT_FALSE(mediaQueryEvaluator.eval(querySet.get()));
+    MediaQueryEvaluator mediaQueryEvaluator(frame);
+    MediaQuerySet* querySet = MediaQuerySet::create("foobar");
+    EXPECT_FALSE(mediaQueryEvaluator.eval(querySet));
 }
 
 TEST(MediaQueryEvaluatorTest, CachedFloatViewport)
@@ -187,7 +187,7 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewport)
     MediaValuesCached::MediaValuesCachedData data;
     data.viewportWidth = 600.5;
     data.viewportHeight = 700.125;
-    RawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    MediaValues* mediaValues = MediaValuesCached::create(data);
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
     testMQEvaluator(floatViewportTestCases, mediaQueryEvaluator);

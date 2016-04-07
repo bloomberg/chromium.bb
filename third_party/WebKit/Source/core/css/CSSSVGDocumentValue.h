@@ -34,7 +34,7 @@ class Document;
 
 class CSSSVGDocumentValue : public CSSValue {
 public:
-    static RawPtr<CSSSVGDocumentValue> create(const String& url)
+    static CSSSVGDocumentValue* create(const String& url)
     {
         return new CSSSVGDocumentValue(url);
     }

@@ -65,7 +65,7 @@ void CSSImageGeneratorValue::addClient(const LayoutObject* layoutObject, const I
     }
 }
 
-RawPtr<CSSImageGeneratorValue> CSSImageGeneratorValue::valueWithURLsMadeAbsolute()
+CSSImageGeneratorValue* CSSImageGeneratorValue::valueWithURLsMadeAbsolute()
 {
     if (isCrossfadeValue())
         return toCSSCrossfadeValue(this)->valueWithURLsMadeAbsolute();
@@ -107,7 +107,6 @@ Image* CSSImageGeneratorValue::getImage(const LayoutObject* layoutObject, const 
         SizeAndCount& sizeCount = it->value;
         IntSize oldSize = sizeCount.size;
         if (oldSize != size) {
-            RawPtr<CSSImageGeneratorValue> protect(this);
             removeClient(layoutObject);
             addClient(layoutObject, size);
         }

@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSFontFamilyValue : public CSSValue {
 public:
-    static RawPtr<CSSFontFamilyValue> create(const String& str)
+    static CSSFontFamilyValue* create(const String& str)
     {
         return new CSSFontFamilyValue(str);
     }

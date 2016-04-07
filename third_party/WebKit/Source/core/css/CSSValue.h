@@ -256,7 +256,7 @@ inline bool compareCSSValuePtr(const RefPtr<CSSValueType>& first, const RefPtr<C
 }
 
 template<typename CSSValueType>
-inline bool compareCSSValuePtr(const RawPtr<CSSValueType>& first, const RawPtr<CSSValueType>& second)
+inline bool compareCSSValuePtr(const CSSValueType* first, const CSSValueType* second)
 {
     if (first == second)
         return true;

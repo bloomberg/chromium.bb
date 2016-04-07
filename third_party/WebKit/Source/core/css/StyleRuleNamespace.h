@@ -13,7 +13,7 @@ namespace blink {
 // the parser to pass to a stylesheet
 class StyleRuleNamespace final : public StyleRuleBase {
 public:
-    static RawPtr<StyleRuleNamespace> create(AtomicString prefix, AtomicString uri)
+    static StyleRuleNamespace* create(AtomicString prefix, AtomicString uri)
     {
         return new StyleRuleNamespace(prefix, uri);
     }

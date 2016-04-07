@@ -9,16 +9,16 @@
 
 namespace blink {
 
-RawPtr<CSSFunctionValue> RotationTransformComponent::toCSSValue() const
+CSSFunctionValue* RotationTransformComponent::toCSSValue() const
 {
-    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(m_is2D ? CSSValueRotate : CSSValueRotate3d);
+    CSSFunctionValue* result = CSSFunctionValue::create(m_is2D ? CSSValueRotate : CSSValueRotate3d);
     if (!m_is2D) {
         result->append(cssValuePool().createValue(m_x, CSSPrimitiveValue::UnitType::Number));
         result->append(cssValuePool().createValue(m_y, CSSPrimitiveValue::UnitType::Number));
         result->append(cssValuePool().createValue(m_z, CSSPrimitiveValue::UnitType::Number));
     }
     result->append(cssValuePool().createValue(m_angle, CSSPrimitiveValue::UnitType::Degrees));
-    return result.release();
+    return result;
 }
 
 } // namespace blink

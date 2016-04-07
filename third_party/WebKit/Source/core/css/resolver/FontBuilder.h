@@ -69,9 +69,9 @@ public:
     void setFontSmoothing(FontSmoothingMode);
 
     // FIXME: These need to just vend a Font object eventually.
-    void createFont(RawPtr<FontSelector>, ComputedStyle&);
+    void createFont(FontSelector*, ComputedStyle&);
 
-    void createFontForDocument(RawPtr<FontSelector>, ComputedStyle&);
+    void createFontForDocument(FontSelector*, ComputedStyle&);
 
     bool fontDirty() const { return m_flags; }
 

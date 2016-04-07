@@ -14,7 +14,7 @@ class StylePropertySet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
 public:
-    static RawPtr<StyleRuleKeyframe> create(PassOwnPtr<Vector<double>> keys, RawPtr<StylePropertySet> properties)
+    static StyleRuleKeyframe* create(PassOwnPtr<Vector<double>> keys, StylePropertySet* properties)
     {
         return new StyleRuleKeyframe(keys, properties);
     }
@@ -34,7 +34,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleKeyframe(PassOwnPtr<Vector<double>>, RawPtr<StylePropertySet>);
+    StyleRuleKeyframe(PassOwnPtr<Vector<double>>, StylePropertySet*);
 
     Member<StylePropertySet> m_properties;
     Vector<double> m_keys;

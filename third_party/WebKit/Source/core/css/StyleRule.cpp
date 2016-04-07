@@ -42,12 +42,12 @@ struct SameSizeAsStyleRuleBase : public GarbageCollectedFinalized<SameSizeAsStyl
 
 static_assert(sizeof(StyleRuleBase) <= sizeof(SameSizeAsStyleRuleBase), "StyleRuleBase should stay small");
 
-RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet) const
+CSSRule* StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet) const
 {
     return createCSSOMWrapper(parentSheet, 0);
 }
 
-RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
+CSSRule* StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
 {
     return createCSSOMWrapper(0, parentRule);
 }
@@ -172,7 +172,7 @@ void StyleRuleBase::destroy()
     ASSERT_NOT_REACHED();
 }
 
-RawPtr<StyleRuleBase> StyleRuleBase::copy() const
+StyleRuleBase* StyleRuleBase::copy() const
 {
     switch (type()) {
     case Style:
@@ -203,9 +203,9 @@ RawPtr<StyleRuleBase> StyleRuleBase::copy() const
     return nullptr;
 }
 
-RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
+CSSRule* StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
 {
-    RawPtr<CSSRule> rule = nullptr;
+    CSSRule* rule = nullptr;
     StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
     switch (type()) {
     case Style:
@@ -242,7 +242,7 @@ RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CS
     }
     if (parentRule)
         rule->setParentRule(parentRule);
-    return rule.release();
+    return rule;
 }
 
 unsigned StyleRule::averageSizeInBytes()
@@ -250,7 +250,7 @@ unsigned StyleRule::averageSizeInBytes()
     return sizeof(StyleRule) + sizeof(CSSSelector) + StylePropertySet::averageSizeInBytes();
 }
 
-StyleRule::StyleRule(CSSSelectorList selectorList, RawPtr<StylePropertySet> properties)
+StyleRule::StyleRule(CSSSelectorList selectorList, StylePropertySet* properties)
     : StyleRuleBase(Style)
     , m_properties(properties)
 {
@@ -281,7 +281,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRule)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRulePage::StyleRulePage(CSSSelectorList selectorList, RawPtr<StylePropertySet> properties)
+StyleRulePage::StyleRulePage(CSSSelectorList selectorList, StylePropertySet* properties)
     : StyleRuleBase(Page)
     , m_properties(properties)
     , m_selectorList(std::move(selectorList))
@@ -312,7 +312,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRulePage)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleFontFace::StyleRuleFontFace(RawPtr<StylePropertySet> properties)
+StyleRuleFontFace::StyleRuleFontFace(StylePropertySet* properties)
     : StyleRuleBase(FontFace)
     , m_properties(properties)
 {
@@ -355,7 +355,7 @@ StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& o)
         m_childRules[i] = o.m_childRules[i]->copy();
 }
 
-void StyleRuleGroup::wrapperInsertRule(unsigned index, RawPtr<StyleRuleBase> rule)
+void StyleRuleGroup::wrapperInsertRule(unsigned index, StyleRuleBase* rule)
 {
     m_childRules.insert(index, rule);
 }
@@ -371,7 +371,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleGroup)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleMedia::StyleRuleMedia(RawPtr<MediaQuerySet> media, HeapVector<Member<StyleRuleBase>>& adoptRules)
+StyleRuleMedia::StyleRuleMedia(MediaQuerySet* media, HeapVector<Member<StyleRuleBase>>& adoptRules)
     : StyleRuleGroup(Media, adoptRules)
     , m_mediaQueries(media)
 {
@@ -404,7 +404,7 @@ StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
 {
 }
 
-StyleRuleViewport::StyleRuleViewport(RawPtr<StylePropertySet> properties)
+StyleRuleViewport::StyleRuleViewport(StylePropertySet* properties)
     : StyleRuleBase(Viewport)
     , m_properties(properties)
 {

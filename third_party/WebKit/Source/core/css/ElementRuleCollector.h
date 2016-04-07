@@ -118,8 +118,8 @@ public:
     bool hasAnyMatchingRules(RuleSet*);
 
     const MatchResult& matchedResult() const;
-    RawPtr<StyleRuleList> matchedStyleRuleList();
-    RawPtr<CSSRuleList> matchedCSSRuleList();
+    StyleRuleList* matchedStyleRuleList();
+    CSSRuleList* matchedCSSRuleList();
 
     void collectMatchingRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
     void collectMatchingShadowHostRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder);

@@ -69,7 +69,7 @@ public:
     // CSSPropertyID versions of the CSSOM functions to support bindings and editing.
     // Use the non-virtual methods in the concrete subclasses when possible.
     // The CSSValue returned by this function should not be exposed to the web as it may be used by multiple documents at the same time.
-    virtual RawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) = 0;
+    virtual CSSValue* getPropertyCSSValueInternal(CSSPropertyID) = 0;
     virtual String getPropertyValueInternal(CSSPropertyID) = 0;
     virtual void setPropertyInternal(CSSPropertyID, const String& propertyValue, const String& value, bool important, ExceptionState&) = 0;
 

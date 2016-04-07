@@ -43,7 +43,7 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
     friend class CrossfadeSubimageObserverProxy;
     USING_PRE_FINALIZER(CSSCrossfadeValue, dispose);
 public:
-    static RawPtr<CSSCrossfadeValue> create(RawPtr<CSSValue> fromValue, RawPtr<CSSValue> toValue, RawPtr<CSSPrimitiveValue> percentageValue)
+    static CSSCrossfadeValue* create(CSSValue* fromValue, CSSValue* toValue, CSSPrimitiveValue* percentageValue)
     {
         return new CSSCrossfadeValue(fromValue, toValue, percentageValue);
     }
@@ -65,12 +65,12 @@ public:
 
     bool equals(const CSSCrossfadeValue&) const;
 
-    RawPtr<CSSCrossfadeValue> valueWithURLsMadeAbsolute();
+    CSSCrossfadeValue* valueWithURLsMadeAbsolute();
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCrossfadeValue(RawPtr<CSSValue> fromValue, RawPtr<CSSValue> toValue, RawPtr<CSSPrimitiveValue> percentageValue);
+    CSSCrossfadeValue(CSSValue* fromValue, CSSValue* toValue, CSSPrimitiveValue* percentageValue);
 
     void dispose();
 

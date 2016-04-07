@@ -9,7 +9,7 @@
 
 namespace blink {
 
-RawPtr<CSSValue> PositionValue::toCSSValue() const
+CSSValue* PositionValue::toCSSValue() const
 {
     return CSSValuePair::create(m_x->toCSSValue(), m_y->toCSSValue(), CSSValuePair::KeepIdenticalValues);
 }

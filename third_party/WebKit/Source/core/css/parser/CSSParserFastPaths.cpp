@@ -86,7 +86,7 @@ static inline bool parseSimpleLength(const CharacterType* characters, unsigned l
     return ok && CSSPropertyParser::isValidNumericValue(number);
 }
 
-static RawPtr<CSSValue> parseSimpleLengthValue(CSSPropertyID propertyId, const String& string, CSSParserMode cssParserMode)
+static CSSValue* parseSimpleLengthValue(CSSPropertyID propertyId, const String& string, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool acceptsNegativeNumbers = false;
@@ -437,7 +437,7 @@ static bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters,
     return false;
 }
 
-RawPtr<CSSValue> CSSParserFastPaths::parseColor(const String& string, CSSParserMode parserMode)
+CSSValue* CSSParserFastPaths::parseColor(const String& string, CSSParserMode parserMode)
 {
     ASSERT(!string.isEmpty());
     CSSParserString cssString;
@@ -828,7 +828,7 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static RawPtr<CSSValue> parseKeywordValue(CSSPropertyID propertyId, const String& string)
+static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& string)
 {
     ASSERT(!string.isEmpty());
 
@@ -900,7 +900,7 @@ static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigne
 }
 
 template <typename CharType>
-static RawPtr<CSSFunctionValue> parseSimpleTransformValue(CharType*& pos, CharType* end)
+static CSSFunctionValue* parseSimpleTransformValue(CharType*& pos, CharType* end)
 {
     static const int shortestValidTransformStringLength = 12;
 
@@ -940,10 +940,10 @@ static RawPtr<CSSFunctionValue> parseSimpleTransformValue(CharType*& pos, CharTy
             return nullptr;
         }
         pos += argumentStart;
-        RawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(transformType);
-        if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue.get()))
+        CSSFunctionValue* transformValue = CSSFunctionValue::create(transformType);
+        if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue))
             return nullptr;
-        return transformValue.release();
+        return transformValue;
     }
 
     const bool isMatrix3d = toASCIILower(pos[0]) == 'm'
@@ -958,10 +958,10 @@ static RawPtr<CSSFunctionValue> parseSimpleTransformValue(CharType*& pos, CharTy
 
     if (isMatrix3d) {
         pos += 9;
-        RawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(CSSValueMatrix3d);
-        if (!parseTransformNumberArguments(pos, end, 16, transformValue.get()))
+        CSSFunctionValue* transformValue = CSSFunctionValue::create(CSSValueMatrix3d);
+        if (!parseTransformNumberArguments(pos, end, 16, transformValue))
             return nullptr;
-        return transformValue.release();
+        return transformValue;
     }
 
     const bool isScale3d = toASCIILower(pos[0]) == 's'
@@ -975,37 +975,37 @@ static RawPtr<CSSFunctionValue> parseSimpleTransformValue(CharType*& pos, CharTy
 
     if (isScale3d) {
         pos += 8;
-        RawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(CSSValueScale3d);
-        if (!parseTransformNumberArguments(pos, end, 3, transformValue.get()))
+        CSSFunctionValue* transformValue = CSSFunctionValue::create(CSSValueScale3d);
+        if (!parseTransformNumberArguments(pos, end, 3, transformValue))
             return nullptr;
-        return transformValue.release();
+        return transformValue;
     }
 
     return nullptr;
 }
 
 template <typename CharType>
-static RawPtr<CSSValueList> parseSimpleTransformList(CharType*& pos, CharType* end)
+static CSSValueList* parseSimpleTransformList(CharType*& pos, CharType* end)
 {
-    RawPtr<CSSValueList> transformList = nullptr;
+    CSSValueList* transformList = nullptr;
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
             ++pos;
-        RawPtr<CSSFunctionValue> transformValue = parseSimpleTransformValue(pos, end);
+        CSSFunctionValue* transformValue = parseSimpleTransformValue(pos, end);
         if (!transformValue)
             return nullptr;
         if (!transformList)
             transformList = CSSValueList::createSpaceSeparated();
-        transformList->append(transformValue.release());
+        transformList->append(transformValue);
         if (pos < end) {
             if (isCSSSpace(*pos))
                 return nullptr;
         }
     }
-    return transformList.release();
+    return transformList;
 }
 
-static RawPtr<CSSValue> parseSimpleTransform(CSSPropertyID propertyID, const String& string)
+static CSSValue* parseSimpleTransform(CSSPropertyID propertyID, const String& string)
 {
     ASSERT(!string.isEmpty());
 
@@ -1021,16 +1021,16 @@ static RawPtr<CSSValue> parseSimpleTransform(CSSPropertyID propertyID, const Str
     return parseSimpleTransformList(pos, end);
 }
 
-RawPtr<CSSValue> CSSParserFastPaths::maybeParseValue(CSSPropertyID propertyID, const String& string, CSSParserMode parserMode)
+CSSValue* CSSParserFastPaths::maybeParseValue(CSSPropertyID propertyID, const String& string, CSSParserMode parserMode)
 {
-    if (RawPtr<CSSValue> length = parseSimpleLengthValue(propertyID, string, parserMode))
-        return length.release();
+    if (CSSValue* length = parseSimpleLengthValue(propertyID, string, parserMode))
+        return length;
     if (isColorPropertyID(propertyID))
         return parseColor(string, parserMode);
-    if (RawPtr<CSSValue> keyword = parseKeywordValue(propertyID, string))
-        return keyword.release();
-    if (RawPtr<CSSValue> transform = parseSimpleTransform(propertyID, string))
-        return transform.release();
+    if (CSSValue* keyword = parseKeywordValue(propertyID, string))
+        return keyword;
+    if (CSSValue* transform = parseSimpleTransform(propertyID, string))
+        return transform;
     return nullptr;
 }
 

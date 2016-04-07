@@ -88,7 +88,7 @@ TEST(SizesAttributeParserTest, Basic)
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
     data.displayMode = WebDisplayModeBrowser;
-    RawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    MediaValues* mediaValues = MediaValuesCached::create(data);
 
     for (unsigned i = 0; testCases[i].input; ++i) {
         SizesAttributeParser parser(mediaValues, testCases[i].input);

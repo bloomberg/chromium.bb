@@ -33,7 +33,7 @@ class StyleRuleImport;
 class CSSImportRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
+    static CSSImportRule* create(StyleRuleImport* rule, CSSStyleSheet* sheet)
     {
         return new CSSImportRule(rule, sheet);
     }

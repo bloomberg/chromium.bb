@@ -43,7 +43,7 @@ const double duration = 1.0;
 
 PassRefPtr<AnimatableValue> unknownAnimatableValue(double n)
 {
-    return AnimatableUnknown::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::UnitType::Unknown).get());
+    return AnimatableUnknown::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::UnitType::Unknown));
 }
 
 PassRefPtr<AnimatableValue> pixelAnimatableValue(double n)

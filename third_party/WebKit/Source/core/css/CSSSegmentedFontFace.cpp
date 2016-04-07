@@ -76,9 +76,8 @@ void CSSSegmentedFontFace::fontFaceInvalidated()
     pruneTable();
 }
 
-void CSSSegmentedFontFace::addFontFace(RawPtr<FontFace> prpFontFace, bool cssConnected)
+void CSSSegmentedFontFace::addFontFace(FontFace* fontFace, bool cssConnected)
 {
-    RawPtr<FontFace> fontFace = prpFontFace;
     pruneTable();
     fontFace->cssFontFace()->setSegmentedFontFace(this);
     if (cssConnected) {
@@ -91,9 +90,8 @@ void CSSSegmentedFontFace::addFontFace(RawPtr<FontFace> prpFontFace, bool cssCon
     }
 }
 
-void CSSSegmentedFontFace::removeFontFace(RawPtr<FontFace> prpFontFace)
+void CSSSegmentedFontFace::removeFontFace(FontFace* fontFace)
 {
-    RawPtr<FontFace> fontFace = prpFontFace;
     FontFaceList::iterator it = m_fontFaces.find(fontFace);
     if (it == m_fontFaces.end())
         return;

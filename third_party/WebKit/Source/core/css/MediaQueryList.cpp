@@ -27,14 +27,14 @@
 
 namespace blink {
 
-RawPtr<MediaQueryList> MediaQueryList::create(ExecutionContext* context, RawPtr<MediaQueryMatcher> matcher, RawPtr<MediaQuerySet> media)
+MediaQueryList* MediaQueryList::create(ExecutionContext* context, MediaQueryMatcher* matcher, MediaQuerySet* media)
 {
-    RawPtr<MediaQueryList> list = new MediaQueryList(context, matcher, media);
+    MediaQueryList* list = new MediaQueryList(context, matcher, media);
     list->suspendIfNeeded();
-    return list.release();
+    return list;
 }
 
-MediaQueryList::MediaQueryList(ExecutionContext* context, RawPtr<MediaQueryMatcher> matcher, RawPtr<MediaQuerySet> media)
+MediaQueryList::MediaQueryList(ExecutionContext* context, MediaQueryMatcher* matcher, MediaQuerySet* media)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_matcher(matcher)
@@ -58,7 +58,7 @@ String MediaQueryList::media() const
     return m_media->mediaText();
 }
 
-void MediaQueryList::addDeprecatedListener(RawPtr<EventListener> listener)
+void MediaQueryList::addDeprecatedListener(EventListener* listener)
 {
     if (!listener)
         return;
@@ -66,7 +66,7 @@ void MediaQueryList::addDeprecatedListener(RawPtr<EventListener> listener)
     addEventListener(EventTypeNames::change, listener, false);
 }
 
-void MediaQueryList::removeDeprecatedListener(RawPtr<EventListener> listener)
+void MediaQueryList::removeDeprecatedListener(EventListener* listener)
 {
     if (!listener)
         return;
@@ -74,7 +74,7 @@ void MediaQueryList::removeDeprecatedListener(RawPtr<EventListener> listener)
     removeEventListener(EventTypeNames::change, listener, false);
 }
 
-void MediaQueryList::addListener(RawPtr<MediaQueryListListener> listener)
+void MediaQueryList::addListener(MediaQueryListListener* listener)
 {
     if (!listener)
         return;
@@ -82,12 +82,11 @@ void MediaQueryList::addListener(RawPtr<MediaQueryListListener> listener)
     m_listeners.add(listener);
 }
 
-void MediaQueryList::removeListener(RawPtr<MediaQueryListListener> listener)
+void MediaQueryList::removeListener(MediaQueryListListener* listener)
 {
     if (!listener)
         return;
 
-    RawPtr<MediaQueryList> protect(this);
     m_listeners.remove(listener);
 }
 
@@ -98,8 +97,6 @@ bool MediaQueryList::hasPendingActivity() const
 
 void MediaQueryList::stop()
 {
-    // m_listeners.clear() can drop the last ref to this MediaQueryList.
-    RawPtr<MediaQueryList> protect(this);
     m_listeners.clear();
     removeAllEventListeners();
 }

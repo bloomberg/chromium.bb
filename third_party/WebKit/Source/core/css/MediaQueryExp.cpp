@@ -203,7 +203,7 @@ MediaQueryExp::MediaQueryExp(const String& mediaFeature, const MediaQueryExpValu
 {
 }
 
-RawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>& tokenList)
+MediaQueryExp* MediaQueryExp::createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>& tokenList)
 {
     ASSERT(!mediaFeature.isNull());
 

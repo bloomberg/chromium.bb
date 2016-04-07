@@ -46,7 +46,7 @@ namespace blink {
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
 public:
-    static RawPtr<StyleSheetCSSRuleList> create(CSSStyleSheet* sheet)
+    static StyleSheetCSSRuleList* create(CSSStyleSheet* sheet)
     {
         return new StyleSheetCSSRuleList(sheet);
     }
@@ -90,30 +90,30 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 }
 #endif
 
-RawPtr<CSSStyleSheet> CSSStyleSheet::create(RawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
+CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet, CSSImportRule* ownerRule)
 {
     return new CSSStyleSheet(sheet, ownerRule);
 }
 
-RawPtr<CSSStyleSheet> CSSStyleSheet::create(RawPtr<StyleSheetContents> sheet, Node* ownerNode)
+CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet, Node* ownerNode)
 {
     return new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition());
 }
 
-RawPtr<CSSStyleSheet> CSSStyleSheet::createInline(RawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
+CSSStyleSheet* CSSStyleSheet::createInline(StyleSheetContents* sheet, Node* ownerNode, const TextPosition& startPosition)
 {
     ASSERT(sheet);
     return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }
 
-RawPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
+CSSStyleSheet* CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
     CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
-    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.getString(), parserContext);
-    return new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition);
+    StyleSheetContents* sheet = StyleSheetContents::create(baseURL.getString(), parserContext);
+    return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }
 
-CSSStyleSheet::CSSStyleSheet(RawPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)
+CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, CSSImportRule* ownerRule)
     : m_contents(contents)
     , m_isInlineStylesheet(false)
     , m_isDisabled(false)
@@ -125,7 +125,7 @@ CSSStyleSheet::CSSStyleSheet(RawPtr<StyleSheetContents> contents, CSSImportRule*
     m_contents->registerClient(this);
 }
 
-CSSStyleSheet::CSSStyleSheet(RawPtr<StyleSheetContents> contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
+CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
     : m_contents(contents)
     , m_isInlineStylesheet(isInlineStylesheet)
     , m_isDisabled(false)
@@ -222,7 +222,7 @@ void CSSStyleSheet::setDisabled(bool disabled)
     didMutate();
 }
 
-void CSSStyleSheet::setMediaQueries(RawPtr<MediaQuerySet> mediaQueries)
+void CSSStyleSheet::setMediaQueries(MediaQuerySet* mediaQueries)
 {
     m_mediaQueries = mediaQueries;
     if (m_mediaCSSOMWrapper && m_mediaQueries)
@@ -276,7 +276,7 @@ bool CSSStyleSheet::canAccessRules() const
     return false;
 }
 
-RawPtr<CSSRuleList> CSSStyleSheet::rules()
+CSSRuleList* CSSStyleSheet::rules()
 {
     return cssRules();
 }
@@ -290,7 +290,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         return 0;
     }
     CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
-    RawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
+    StyleRuleBase* rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
 
     if (!rule) {
         exceptionState.throwDOMException(SyntaxError, "Failed to parse the rule '" + ruleString + "'.");
@@ -362,7 +362,7 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, Exceptio
 }
 
 
-RawPtr<CSSRuleList> CSSStyleSheet::cssRules()
+CSSRuleList* CSSStyleSheet::cssRules()
 {
     if (!canAccessRules())
         return nullptr;

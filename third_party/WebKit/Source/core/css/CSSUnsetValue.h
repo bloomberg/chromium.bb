@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSUnsetValue : public CSSValue {
 public:
-    static RawPtr<CSSUnsetValue> create()
+    static CSSUnsetValue* create()
     {
         return new CSSUnsetValue;
     }

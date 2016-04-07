@@ -36,8 +36,8 @@ class CSSPrimitiveValue;
 
 class CSSReflectValue : public CSSValue {
 public:
-    static RawPtr<CSSReflectValue> create(RawPtr<CSSPrimitiveValue> direction,
-        RawPtr<CSSPrimitiveValue> offset, RawPtr<CSSValue> mask)
+    static CSSReflectValue* create(CSSPrimitiveValue* direction,
+        CSSPrimitiveValue* offset, CSSValue* mask)
     {
         return new CSSReflectValue(direction, offset, mask);
     }
@@ -53,7 +53,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSReflectValue(RawPtr<CSSPrimitiveValue> direction, RawPtr<CSSPrimitiveValue> offset, RawPtr<CSSValue> mask)
+    CSSReflectValue(CSSPrimitiveValue* direction, CSSPrimitiveValue* offset, CSSValue* mask)
         : CSSValue(ReflectClass)
         , m_direction(direction)
         , m_offset(offset)

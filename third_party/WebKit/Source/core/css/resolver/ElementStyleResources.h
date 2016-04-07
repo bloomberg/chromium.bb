@@ -51,22 +51,22 @@ class ElementStyleResources {
 public:
     ElementStyleResources(Document&, float deviceScaleFactor);
 
-    RawPtr<StyleImage> styleImage(CSSPropertyID, const CSSValue&);
-    RawPtr<StyleImage> cachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
-    RawPtr<StyleImage> setOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
+    StyleImage* styleImage(CSSPropertyID, const CSSValue&);
+    StyleImage* cachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
+    StyleImage* setOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
 
     void loadPendingResources(ComputedStyle*);
 
     void addPendingSVGDocument(FilterOperation*, CSSSVGDocumentValue*);
 
 private:
-    RawPtr<StyleImage> cursorOrPendingFromValue(CSSPropertyID, const CSSCursorImageValue&);
-    RawPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, const CSSImageGeneratorValue&);
+    StyleImage* cursorOrPendingFromValue(CSSPropertyID, const CSSCursorImageValue&);
+    StyleImage* generatedOrPendingFromValue(CSSPropertyID, const CSSImageGeneratorValue&);
 
     void loadPendingSVGDocuments(ComputedStyle*);
     void loadPendingImages(ComputedStyle*);
 
-    RawPtr<StyleImage> loadPendingImage(StylePendingImage*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
+    StyleImage* loadPendingImage(StylePendingImage*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
     Member<Document> m_document;
     HashSet<CSSPropertyID> m_pendingImageProperties;

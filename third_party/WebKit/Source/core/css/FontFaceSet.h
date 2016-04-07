@@ -73,7 +73,7 @@ public:
     ScriptPromise load(ScriptState*, const String& font, const String& text);
     ScriptPromise ready(ScriptState*);
 
-    RawPtr<FontFaceSet> addForBinding(ScriptState*, FontFace*, ExceptionState&);
+    FontFaceSet* addForBinding(ScriptState*, FontFace*, ExceptionState&);
     void clearForBinding(ScriptState*, ExceptionState&);
     bool deleteForBinding(ScriptState*, FontFace*, ExceptionState&);
     bool hasForBinding(ScriptState*, FontFace*, ExceptionState&) const;
@@ -96,7 +96,7 @@ public:
     void resume() override;
     void stop() override;
 
-    static RawPtr<FontFaceSet> from(Document&);
+    static FontFaceSet* from(Document&);
     static void didLayout(Document&);
 
     void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
@@ -104,7 +104,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    static RawPtr<FontFaceSet> create(Document& document)
+    static FontFaceSet* create(Document& document)
     {
         return new FontFaceSet(document);
     }
@@ -147,8 +147,8 @@ private:
     FontFaceSet(Document&);
 
     bool inActiveDocumentContext() const;
-    void addToLoadingFonts(RawPtr<FontFace>);
-    void removeFromLoadingFonts(RawPtr<FontFace>);
+    void addToLoadingFonts(FontFace*);
+    void removeFromLoadingFonts(FontFace*);
     void fireLoadingEvent();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);

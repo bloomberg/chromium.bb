@@ -36,13 +36,13 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
 public:
     enum IdenticalValuesPolicy { DropIdenticalValues, KeepIdenticalValues };
 
-    static RawPtr<CSSValuePair> create(RawPtr<CSSValue> first, RawPtr<CSSValue> second,
+    static CSSValuePair* create(CSSValue* first, CSSValue* second,
         IdenticalValuesPolicy identicalValuesPolicy)
     {
         return new CSSValuePair(first, second, identicalValuesPolicy);
     }
 
-    static RawPtr<CSSValuePair> create(const LengthSize& lengthSize, const ComputedStyle& style)
+    static CSSValuePair* create(const LengthSize& lengthSize, const ComputedStyle& style)
     {
         return new CSSValuePair(CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()), CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()), KeepIdenticalValues);
     }
@@ -72,7 +72,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSValuePair(RawPtr<CSSValue> first, RawPtr<CSSValue> second, IdenticalValuesPolicy identicalValuesPolicy)
+    CSSValuePair(CSSValue* first, CSSValue* second, IdenticalValuesPolicy identicalValuesPolicy)
         : CSSValue(ValuePairClass)
         , m_first(first)
         , m_second(second)

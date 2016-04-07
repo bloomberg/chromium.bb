@@ -70,15 +70,15 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         // the image resource.
         document()->fetcher()->setAutoLoadImages(false);
 
-        RawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
-        memoryCache()->add(cssResource.get());
+        CSSStyleSheetResource* cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
+        memoryCache()->add(cssResource);
         cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
         cssResource->finish();
 
-        RawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
-        RawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
+        StyleSheetContents* contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+        CSSStyleSheet* sheet = CSSStyleSheet::create(contents, document());
         EXPECT_TRUE(sheet);
-        RawPtr<CSSCrossfadeValue> crossfade = CSSCrossfadeValue::create(
+        CSSCrossfadeValue* crossfade = CSSCrossfadeValue::create(
             CSSImageValue::create(String("image"), imageURL),
             CSSImageValue::create(String("image"), imageURL),
             CSSPrimitiveValue::create(1.0, CSSPrimitiveValue::UnitType::Number));
@@ -91,7 +91,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
             StyleRule::create(CSSSelectorList::adoptSelectorVector(selectors), ImmutableStylePropertySet::create(&property, 1, HTMLStandardMode)));
 
         crossfade->loadSubimages(document());
-        RawPtr<Resource> imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
+        Resource* imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
         ASSERT_TRUE(imageResource);
         ResourceResponse imageResponse;
         imageResponse.setURL(imageURL);
@@ -101,16 +101,16 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         contents->checkLoaded();
         cssResource->saveParsedStyleSheet(contents);
 
-        memoryCache()->update(cssResource.get(), cssResource->size(), cssResource->size(), false);
-        memoryCache()->update(imageResource.get(), imageResource->size(), imageResource->size(), false);
-        if (!memoryCache()->isInSameLRUListForTest(cssResource.get(), imageResource.get())) {
+        memoryCache()->update(cssResource, cssResource->size(), cssResource->size(), false);
+        memoryCache()->update(imageResource, imageResource->size(), imageResource->size(), false);
+        if (!memoryCache()->isInSameLRUListForTest(cssResource, imageResource)) {
             // We assume that the LRU list is determined by |size / accessCount|.
             for (size_t i = 0; i < cssResource->size() + 1; ++i)
-                memoryCache()->update(cssResource.get(), cssResource->size(), cssResource->size(), true);
+                memoryCache()->update(cssResource, cssResource->size(), cssResource->size(), true);
             for (size_t i = 0; i < imageResource->size() + 1; ++i)
-                memoryCache()->update(imageResource.get(), imageResource->size(), imageResource->size(), true);
+                memoryCache()->update(imageResource, imageResource->size(), imageResource->size(), true);
         }
-        ASSERT_TRUE(memoryCache()->isInSameLRUListForTest(cssResource.get(), imageResource.get()));
+        ASSERT_TRUE(memoryCache()->isInSameLRUListForTest(cssResource, imageResource));
     }
     Heap::collectAllGarbage();
     // This operation should not lead to crash!
@@ -125,17 +125,17 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
 
     // Emulate using <img> to do async stylesheet preloads.
 
-    RawPtr<Resource> imageResource = ImageResource::create(ResourceRequest(imageURL), nullptr);
+    Resource* imageResource = ImageResource::create(ResourceRequest(imageURL), nullptr);
     ASSERT_TRUE(imageResource);
-    memoryCache()->add(imageResource.get());
-    ASSERT_TRUE(memoryCache()->contains(imageResource.get()));
+    memoryCache()->add(imageResource);
+    ASSERT_TRUE(memoryCache()->contains(imageResource));
 
-    RawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
+    CSSStyleSheetResource* cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
     cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
     cssResource->finish();
 
-    RawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
-    RawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
+    StyleSheetContents* contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+    CSSStyleSheet* sheet = CSSStyleSheet::create(contents, document());
     EXPECT_TRUE(sheet);
 
     contents->checkLoaded();
@@ -144,8 +144,8 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
     // Verify that the cache will have a mapping for |imageResource| at |url|.
     // The underlying |contents| for the stylesheet resource must have a
     // matching cache status.
-    ASSERT_TRUE(memoryCache()->contains(imageResource.get()));
-    ASSERT_FALSE(memoryCache()->contains(cssResource.get()));
+    ASSERT_TRUE(memoryCache()->contains(imageResource));
+    ASSERT_FALSE(memoryCache()->contains(cssResource));
     ASSERT_FALSE(contents->isInMemoryCache());
 }
 

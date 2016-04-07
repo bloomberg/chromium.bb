@@ -14,7 +14,7 @@ namespace blink {
 // Represents the non-keyword subset of <color>.
 class CSSColorValue : public CSSValue {
 public:
-    static RawPtr<CSSColorValue> create(Color color)
+    static CSSColorValue* create(Color color)
     {
         return new CSSColorValue(color);
     }

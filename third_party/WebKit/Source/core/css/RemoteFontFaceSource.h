@@ -27,7 +27,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResource
 public:
     enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
 
-    explicit RemoteFontFaceSource(RawPtr<FontResource>, RawPtr<FontLoader>, FontDisplay);
+    explicit RemoteFontFaceSource(FontResource*, FontLoader*, FontDisplay);
     ~RemoteFontFaceSource() override;
     void dispose();
 

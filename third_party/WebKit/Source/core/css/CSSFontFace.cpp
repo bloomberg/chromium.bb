@@ -37,7 +37,7 @@
 
 namespace blink {
 
-void CSSFontFace::addSource(RawPtr<CSSFontFaceSource> source)
+void CSSFontFace::addSource(CSSFontFaceSource* source)
 {
     source->setFontFace(this);
     m_sources.append(source);
