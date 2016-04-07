@@ -856,14 +856,14 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
 TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
   MockSetCookiesCallback set_cookies_callback;
   CookieList list;
-  list.push_back(CanonicalCookie(
+  list.push_back(*CanonicalCookie::Create(
       http_www_google_.url(), "A", "B", http_www_google_.domain(), "/",
-      base::Time::Now(), base::Time(), base::Time(), false, true,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
-  list.push_back(CanonicalCookie(
+      base::Time::Now(), base::Time(), false, true,
+      CookieSameSite::DEFAULT_MODE, false, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(*CanonicalCookie::Create(
       http_www_google_.url(), "C", "D", http_www_google_.domain(), "/",
-      base::Time::Now(), base::Time(), base::Time(), false, true,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      base::Time::Now(), base::Time(), false, true,
+      CookieSameSite::DEFAULT_MODE, false, COOKIE_PRIORITY_DEFAULT));
 
   BeginWith(
       SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
@@ -2303,18 +2303,18 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
   EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "Y=Z; path=/"));
 
   CookieList list;
-  list.push_back(CanonicalCookie(
+  list.push_back(*CanonicalCookie::Create(
       http_www_google_.url(), "A", "B", http_www_google_.url().host(), "/",
-      base::Time::Now(), base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
-  list.push_back(CanonicalCookie(
+      base::Time::Now(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, false, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(*CanonicalCookie::Create(
       http_www_google_.url(), "W", "X", http_www_google_.url().host(), "/bar",
-      base::Time::Now(), base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
-  list.push_back(CanonicalCookie(
+      base::Time::Now(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, false, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(*CanonicalCookie::Create(
       http_www_google_.url(), "Y", "Z", http_www_google_.url().host(), "/",
-      base::Time::Now(), base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      base::Time::Now(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, false, COOKIE_PRIORITY_DEFAULT));
 
   // SetAllCookies must not flush.
   ASSERT_EQ(0, store->flush_count());
@@ -2346,67 +2346,68 @@ TEST_F(CookieMonsterTest, ComputeCookieDiff) {
   base::Time now = base::Time::Now();
   base::Time creation_time = now - base::TimeDelta::FromSeconds(1);
 
-  CanonicalCookie cookie1(
+  scoped_ptr<CanonicalCookie> cookie1(CanonicalCookie::Create(
       http_www_google_.url(), "A", "B", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie2(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie2(CanonicalCookie::Create(
       http_www_google_.url(), "C", "D", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie3(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie3(CanonicalCookie::Create(
       http_www_google_.url(), "E", "F", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie4(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie4(CanonicalCookie::Create(
       http_www_google_.url(), "G", "H", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie4_with_new_value(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie4_with_new_value(CanonicalCookie::Create(
       http_www_google_.url(), "G", "iamnew", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie5(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie5(CanonicalCookie::Create(
       http_www_google_.url(), "I", "J", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie5_with_new_creation_time(
-      http_www_google_.url(), "I", "J", http_www_google_.url().host(), "/", now,
-      base::Time(), base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
-      COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie6(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie5_with_new_creation_time(
+      CanonicalCookie::Create(
+          http_www_google_.url(), "I", "J", http_www_google_.url().host(), "/",
+          now, base::Time(), false, false, CookieSameSite::DEFAULT_MODE, false,
+          COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie6(CanonicalCookie::Create(
       http_www_google_.url(), "K", "L", http_www_google_.url().host(), "/foo",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie6_with_new_path(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie6_with_new_path(CanonicalCookie::Create(
       http_www_google_.url(), "K", "L", http_www_google_.url().host(), "/bar",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie7(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie7(CanonicalCookie::Create(
       http_www_google_.url(), "M", "N", http_www_google_.url().host(), "/foo",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie7_with_new_path(
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> cookie7_with_new_path(CanonicalCookie::Create(
       http_www_google_.url(), "M", "N", http_www_google_.url().host(), "/bar",
-      creation_time, base::Time(), base::Time(), false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+      creation_time, base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT));
 
   CookieList old_cookies;
-  old_cookies.push_back(cookie1);
-  old_cookies.push_back(cookie2);
-  old_cookies.push_back(cookie4);
-  old_cookies.push_back(cookie5);
-  old_cookies.push_back(cookie6);
-  old_cookies.push_back(cookie7);
+  old_cookies.push_back(*cookie1);
+  old_cookies.push_back(*cookie2);
+  old_cookies.push_back(*cookie4);
+  old_cookies.push_back(*cookie5);
+  old_cookies.push_back(*cookie6);
+  old_cookies.push_back(*cookie7);
 
   CookieList new_cookies;
-  new_cookies.push_back(cookie1);
-  new_cookies.push_back(cookie3);
-  new_cookies.push_back(cookie4_with_new_value);
-  new_cookies.push_back(cookie5_with_new_creation_time);
-  new_cookies.push_back(cookie6_with_new_path);
-  new_cookies.push_back(cookie7);
-  new_cookies.push_back(cookie7_with_new_path);
+  new_cookies.push_back(*cookie1);
+  new_cookies.push_back(*cookie3);
+  new_cookies.push_back(*cookie4_with_new_value);
+  new_cookies.push_back(*cookie5_with_new_creation_time);
+  new_cookies.push_back(*cookie6_with_new_path);
+  new_cookies.push_back(*cookie7);
+  new_cookies.push_back(*cookie7_with_new_path);
 
   CookieList cookies_to_add;
   CookieList cookies_to_delete;
@@ -2415,44 +2416,44 @@ TEST_F(CookieMonsterTest, ComputeCookieDiff) {
                         &cookies_to_delete);
 
   // |cookie1| has not changed.
-  EXPECT_FALSE(IsCookieInList(cookie1, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie1, cookies_to_delete));
+  EXPECT_FALSE(IsCookieInList(*cookie1, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie1, cookies_to_delete));
 
   // |cookie2| has been deleted.
-  EXPECT_FALSE(IsCookieInList(cookie2, cookies_to_add));
-  EXPECT_TRUE(IsCookieInList(cookie2, cookies_to_delete));
+  EXPECT_FALSE(IsCookieInList(*cookie2, cookies_to_add));
+  EXPECT_TRUE(IsCookieInList(*cookie2, cookies_to_delete));
 
   // |cookie3| has been added.
-  EXPECT_TRUE(IsCookieInList(cookie3, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie3, cookies_to_delete));
+  EXPECT_TRUE(IsCookieInList(*cookie3, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie3, cookies_to_delete));
 
   // |cookie4| has a new value: new cookie overrides the old one (which does not
   // need to be explicitly removed).
-  EXPECT_FALSE(IsCookieInList(cookie4, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie4, cookies_to_delete));
-  EXPECT_TRUE(IsCookieInList(cookie4_with_new_value, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie4_with_new_value, cookies_to_delete));
+  EXPECT_FALSE(IsCookieInList(*cookie4, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie4, cookies_to_delete));
+  EXPECT_TRUE(IsCookieInList(*cookie4_with_new_value, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie4_with_new_value, cookies_to_delete));
 
   // |cookie5| has a new creation time: new cookie overrides the old one (which
   // does not need to be explicitly removed).
-  EXPECT_FALSE(IsCookieInList(cookie5, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie5, cookies_to_delete));
-  EXPECT_TRUE(IsCookieInList(cookie5_with_new_creation_time, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie5, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie5, cookies_to_delete));
+  EXPECT_TRUE(IsCookieInList(*cookie5_with_new_creation_time, cookies_to_add));
   EXPECT_FALSE(
-      IsCookieInList(cookie5_with_new_creation_time, cookies_to_delete));
+      IsCookieInList(*cookie5_with_new_creation_time, cookies_to_delete));
 
   // |cookie6| has a new path: the new cookie does not overrides the old one,
   // which needs to be explicitly removed.
-  EXPECT_FALSE(IsCookieInList(cookie6, cookies_to_add));
-  EXPECT_TRUE(IsCookieInList(cookie6, cookies_to_delete));
-  EXPECT_TRUE(IsCookieInList(cookie6_with_new_path, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie6_with_new_path, cookies_to_delete));
+  EXPECT_FALSE(IsCookieInList(*cookie6, cookies_to_add));
+  EXPECT_TRUE(IsCookieInList(*cookie6, cookies_to_delete));
+  EXPECT_TRUE(IsCookieInList(*cookie6_with_new_path, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie6_with_new_path, cookies_to_delete));
 
   // |cookie7| is kept and |cookie7_with_new_path| is added as a new cookie.
-  EXPECT_FALSE(IsCookieInList(cookie7, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie7, cookies_to_delete));
-  EXPECT_TRUE(IsCookieInList(cookie7_with_new_path, cookies_to_add));
-  EXPECT_FALSE(IsCookieInList(cookie7_with_new_path, cookies_to_delete));
+  EXPECT_FALSE(IsCookieInList(*cookie7, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie7, cookies_to_delete));
+  EXPECT_TRUE(IsCookieInList(*cookie7_with_new_path, cookies_to_add));
+  EXPECT_FALSE(IsCookieInList(*cookie7_with_new_path, cookies_to_delete));
 }
 
 // Check that DeleteAll does flush (as a sanity check that flush_count()
@@ -2601,13 +2602,13 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
 
   // We have to manually build this cookie because it contains a control
   // character, and our cookie line parser rejects control characters.
-  CanonicalCookie* cc = new CanonicalCookie(
+  scoped_ptr<CanonicalCookie> cc = CanonicalCookie::Create(
       url, "baz",
       "\x05"
       "boo",
-      domain, path, now2, later, now2, false, false,
-      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  initial_cookies.push_back(cc);
+      domain, path, now2, later, false, false, CookieSameSite::DEFAULT_MODE,
+      false, COOKIE_PRIORITY_DEFAULT);
+  initial_cookies.push_back(cc.release());
 
   AddCookieToList(url, "hello=world; path=" + path, now3, &initial_cookies);
 
