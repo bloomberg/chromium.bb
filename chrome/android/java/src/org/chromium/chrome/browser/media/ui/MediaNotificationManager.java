@@ -391,12 +391,14 @@ public class MediaNotificationManager {
             new MediaSessionCompat.Callback() {
                 @Override
                 public void onPlay() {
-                    onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                    MediaNotificationManager.this.onPlay(
+                            MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                 }
 
                 @Override
                 public void onPause() {
-                    onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                    MediaNotificationManager.this.onPause(
+                            MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                 }
             };
 
