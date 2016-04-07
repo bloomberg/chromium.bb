@@ -1797,7 +1797,7 @@
     },
 
     'lto': {
-       'gn_args': 'is_lto=true',
+       'gn_args': 'allow_posix_link_time_opt=true',
        'gyp_defines': 'use_lto=1',
      },
 

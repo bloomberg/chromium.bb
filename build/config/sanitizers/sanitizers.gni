@@ -39,6 +39,8 @@ declare_args() {
 
   # Compile with Control Flow Integrity to protect virtual calls and casts.
   # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
+  #
+  # TODO(pcc): Remove this flag if/when CFI is enabled in official builds.
   is_cfi = false
 
   # By default, Control Flow Integrity will crash the program if it detects a
@@ -71,10 +73,6 @@ declare_args() {
   # This is intended to be used for instrumented builds.
   use_custom_libcxx = (is_asan && is_linux) || is_tsan || is_msan || is_ubsan ||
                       is_ubsan_security || use_libfuzzer
-
-  # Enable Link Time Optimization (output programs runs faster,
-  # but linking is up to 5-20x slower.
-  is_lto = is_cfi
 
   use_sanitizer_coverage = use_libfuzzer
 }

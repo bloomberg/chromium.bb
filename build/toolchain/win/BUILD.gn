@@ -25,12 +25,7 @@ if (use_goma) {
 }
 
 # This value will be inherited in the toolchain below.
-if (is_lto) {
-  concurrent_links =
-      exec_script("../get_concurrent_links.py", [ "--lto" ], "value")
-} else {
-  concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
-}
+concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 
 # Copy the VS runtime DLL for the default toolchain to the root build directory
 # so things will run.

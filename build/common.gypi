@@ -6149,6 +6149,11 @@
           ['_toolset=="target"', {
             'ldflags': [
               '-Wl,--plugin-opt,O1',
+              # Allows the linker to apply ICF to the LTO object file. Also, when
+              # targeting ARM, wWithout this flag, LTO produces a .text section
+              # that is larger than the maximum call displacement, preventing the
+              # linker from relocating calls (http://llvm.org/PR22999).
+              '-Wl,--plugin-opt,-function-sections',
             ],
           }],
           ['_toolset=="target" and _type!="static_library"', {
@@ -6166,20 +6171,6 @@
             ],
           },
         },
-      },
-    }],
-    ['use_lto==1 and clang==1 and target_arch=="arm"', {
-      'target_defaults': {
-        'target_conditions': [
-          ['_toolset=="target"', {
-            # Without this flag, LTO produces a .text section that is larger
-            # than the maximum call displacement, preventing the linker from
-            # relocating calls (http://llvm.org/PR22999).
-            'ldflags': [
-              '-Wl,-plugin-opt,-function-sections',
-            ],
-          }],
-        ],
       },
     }],
     ['(use_lto==1 or use_lto_o2==1) and clang==0', {
@@ -6323,6 +6314,24 @@
                 ],
               },
             },
+          }],
+        ],
+      },
+    }],
+    # TODO(pcc): Make these flags work correctly with CFI.
+    ['use_lto!=0 and cfi_vptr==0', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fwhole-program-vtables',
+              # TODO(pcc): Remove this flag once the upstream interface change
+              # (http://reviews.llvm.org/D18635) lands.
+              '-fwhole-program-vtables-blacklist=<(cfi_blacklist)',
+            ],
+            'ldflags': [
+              '-fwhole-program-vtables',
+            ],
           }],
         ],
       },
