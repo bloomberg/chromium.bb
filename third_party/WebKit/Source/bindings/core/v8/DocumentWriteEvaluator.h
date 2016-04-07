@@ -23,6 +23,9 @@ class CORE_EXPORT DocumentWriteEvaluator {
     USING_FAST_MALLOC(DocumentWriteEvaluator);
 
 public:
+    // For unit testing.
+    DocumentWriteEvaluator(const String& pathName, const String& hostName, const String& protocol, const String& userAgent);
+
     static PassOwnPtr<DocumentWriteEvaluator> create(const Document& document)
     {
         return adoptPtr(new DocumentWriteEvaluator(document));
@@ -54,8 +57,8 @@ private:
 
     String m_pathName;
     String m_hostName;
-    String m_userAgent;
     String m_protocol;
+    String m_userAgent;
 };
 
 } // namespace blink

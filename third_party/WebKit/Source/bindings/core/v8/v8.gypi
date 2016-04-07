@@ -177,6 +177,7 @@
             'WrapperTypeInfo.h',
         ],
         'bindings_core_v8_unittest_files': [
+            'DocumentWriteEvaluatorTest.cpp',
             'ScriptPromisePropertyTest.cpp',
             'ScriptPromiseResolverTest.cpp',
             'ScriptPromiseTest.cpp',

@@ -41,6 +41,15 @@ DocumentWriteEvaluator::DocumentWriteEvaluator(const Document& document)
     m_userAgent = document.userAgent();
 }
 
+// For unit testing.
+DocumentWriteEvaluator::DocumentWriteEvaluator(const String& pathName, const String& hostName, const String& protocol, const String& userAgent)
+    : m_pathName(pathName)
+    , m_hostName(hostName)
+    , m_protocol(protocol)
+    , m_userAgent(userAgent)
+{
+}
+
 DocumentWriteEvaluator::~DocumentWriteEvaluator()
 {
 }
