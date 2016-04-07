@@ -45,6 +45,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--override-use-gl-with-osmesa-for-tests",
           "--run-in-mash",
           "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter"
         ],

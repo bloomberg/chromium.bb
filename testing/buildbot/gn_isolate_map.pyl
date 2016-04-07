@@ -342,7 +342,7 @@
     "label_type": "group",
     "type": "windowed_test_launcher",
     "executable": "browser_tests",
-    "args": ["--run-in-mash", "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"],
+    "args": ["--override-use-gl-with-osmesa-for-tests", "--run-in-mash", "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"],
   },
   "media_unittests": {
     "label": "//media:media_unittests",
