@@ -327,27 +327,6 @@ class GitWrapper(SCMWrapper):
           os.remove(disabled_hook_path)
         os.rename(os.path.join(hook_dir, f), disabled_hook_path)
 
-  def _maybe_break_locks(self, options):
-    """This removes all .lock files from this repo's .git directory, if the
-    user passed the --break_repo_locks command line flag.
-
-    In particular, this will cleanup index.lock files, as well as ref lock
-    files.
-    """
-    if options.break_repo_locks:
-      git_dir = os.path.join(self.checkout_path, '.git')
-      for path, _, filenames in os.walk(git_dir):
-        for filename in filenames:
-          if filename.endswith('.lock'):
-            to_break = os.path.join(path, filename)
-            self.Print('breaking lock: %s' % (to_break,))
-            try:
-              os.remove(to_break)
-            except OSError as ex:
-              self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
-              raise
-
-
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
 
@@ -453,8 +432,6 @@ class GitWrapper(SCMWrapper):
       self._UpdateBranchHeads(options, fetch=False)
       self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
-
-    self._maybe_break_locks(options)
 
     if mirror:
       self._UpdateMirror(mirror, options)

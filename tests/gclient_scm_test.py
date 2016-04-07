@@ -133,7 +133,6 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.cache_dir = None
       self.merge = False
       self.jobs = 1
-      self.break_repo_locks = False
       self.delete_unversioned_trees = False
 
   sample_git_import = """blob
@@ -502,36 +501,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     sys.stdout.getvalue()
     sys.stdout.close()
 
-  def testUpdateLocked(self):
-    if not self.enabled:
-      return
-    options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
-    file_path = join(self.base_path, '.git', 'index.lock')
-    with open(file_path, 'w'):
-      pass
-    with self.assertRaisesRegexp(subprocess2.CalledProcessError,
-                                 'Unable to create.*/index.lock'):
-      scm.update(options, (), [])
-    sys.stdout.close()
-
-  def testUpdateLockedBreak(self):
-    if not self.enabled:
-      return
-    options = self.Options()
-    options.break_repo_locks = True
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
-    file_path = join(self.base_path, '.git', 'index.lock')
-    with open(file_path, 'w'):
-      pass
-    scm.update(options, (), [])
-    self.assertRegexpMatches(sys.stdout.getvalue(),
-                             "breaking lock.*\.git/index\.lock")
-    self.assertFalse(os.path.exists(file_path))
-    sys.stdout.close()
-
   def testUpdateConflict(self):
     if not self.enabled:
       return
@@ -573,7 +542,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
       self.force = force
       self.reset = False
       self.nohooks = False
-      self.break_repo_locks = False
       # TODO(maruel): Test --jobs > 1.
       self.jobs = 1
 
