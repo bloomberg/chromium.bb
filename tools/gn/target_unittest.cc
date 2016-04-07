@@ -270,30 +270,32 @@ TEST(Target, GetComputedOutputName) {
   // no prefix) or output name.
   TestTarget basic(setup, "//foo:bar", Target::EXECUTABLE);
   ASSERT_TRUE(basic.OnResolved(&err));
-  EXPECT_EQ("bar", basic.GetComputedOutputName(false));
-  EXPECT_EQ("bar", basic.GetComputedOutputName(true));
+  EXPECT_EQ("bar", basic.GetComputedOutputName());
 
   // Target with no prefix but an output name.
   TestTarget with_name(setup, "//foo:bar", Target::EXECUTABLE);
   with_name.set_output_name("myoutput");
   ASSERT_TRUE(with_name.OnResolved(&err));
-  EXPECT_EQ("myoutput", with_name.GetComputedOutputName(false));
-  EXPECT_EQ("myoutput", with_name.GetComputedOutputName(true));
+  EXPECT_EQ("myoutput", with_name.GetComputedOutputName());
 
   // Target with a "lib" prefix (the static library tool in the TestWithScope
   // should specify a "lib" output prefix).
   TestTarget with_prefix(setup, "//foo:bar", Target::STATIC_LIBRARY);
   ASSERT_TRUE(with_prefix.OnResolved(&err));
-  EXPECT_EQ("bar", with_prefix.GetComputedOutputName(false));
-  EXPECT_EQ("libbar", with_prefix.GetComputedOutputName(true));
+  EXPECT_EQ("libbar", with_prefix.GetComputedOutputName());
 
   // Target with a "lib" prefix that already has it applied. The prefix should
   // not duplicate something already in the target name.
   TestTarget dup_prefix(setup, "//foo:bar", Target::STATIC_LIBRARY);
   dup_prefix.set_output_name("libbar");
   ASSERT_TRUE(dup_prefix.OnResolved(&err));
-  EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName(false));
-  EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName(true));
+  EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName());
+
+  // Target with an output prefix override should not have a prefix.
+  TestTarget override_prefix(setup, "//foo:bar", Target::SHARED_LIBRARY);
+  override_prefix.set_output_prefix_override(true);
+  ASSERT_TRUE(dup_prefix.OnResolved(&err));
+  EXPECT_EQ("bar", override_prefix.GetComputedOutputName());
 }
 
 // Test visibility failure case.

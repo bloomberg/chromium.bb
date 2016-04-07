@@ -448,7 +448,7 @@ bool SubstitutionWriter::GetTargetSubstitution(
           result);
       break;
     case SUBSTITUTION_TARGET_OUTPUT_NAME:
-      *result = target->GetComputedOutputName(true);
+      *result = target->GetComputedOutputName();
       break;
     default:
       return false;
@@ -547,11 +547,13 @@ std::string SubstitutionWriter::GetLinkerSubstitution(
   // Fall-through to the linker-specific ones.
   switch (type) {
     case SUBSTITUTION_OUTPUT_EXTENSION:
-      // Use the extension provided on the target if nonempty, otherwise
+      // Use the extension provided on the target if specified, otherwise
       // fall back on the default. Note that the target's output extension
       // does not include the dot but the tool's does.
-      if (target->output_extension().empty())
+      if (!target->output_extension_set())
         return tool->default_output_extension();
+      if (target->output_extension().empty())
+        return std::string();  // Explicitly set to no extension.
       return std::string(".") + target->output_extension();
 
     default:

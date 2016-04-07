@@ -191,6 +191,10 @@ extern const char kOutputName[];
 extern const char kOutputName_HelpShort[];
 extern const char kOutputName_Help[];
 
+extern const char kOutputPrefixOverride[];
+extern const char kOutputPrefixOverride_HelpShort[];
+extern const char kOutputPrefixOverride_Help[];
+
 extern const char kOutputs[];
 extern const char kOutputs_HelpShort[];
 extern const char kOutputs_Help[];

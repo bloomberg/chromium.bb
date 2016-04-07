@@ -1092,9 +1092,11 @@ const char kOutputExtension_Help[] =
     "  override the name (for example to use \"libfreetype.so.6\" instead\n"
     "  of libfreetype.so on Linux).\n"
     "\n"
-    "  This value should not include a leading dot. If undefined or empty,\n"
-    "  the default_output_extension specified on the tool will be used.\n"
-    "  The output_extension will be used in the \"{{output_extension}}\"\n"
+    "  This value should not include a leading dot. If undefined, the default\n"
+    "  specified on the tool will be used. If set to the empty string, no\n"
+    "  output extension will be used.\n"
+    "\n"
+    "  The output_extension will be used to set the \"{{output_extension}}\"\n"
     "  expansion which the linker tool will generally use to specify the\n"
     "  output file name. See \"gn help tool\".\n"
     "\n"
@@ -1143,6 +1145,33 @@ const char kOutputName_Help[] =
     "\n"
     "  static_library(\"doom_melon\") {\n"
     "    output_name = \"fluffy_bunny\"\n"
+    "  }\n";
+
+const char kOutputPrefixOverride[] = "output_prefix_override";
+const char kOutputPrefixOverride_HelpShort[] =
+    "output_prefix_override: [boolean] Don't use prefix for output name.";
+const char kOutputPrefixOverride_Help[] =
+    "output_prefix_override: Don't use prefix for output name.\n"
+    "\n"
+    "  A boolean that overrides the output prefix for a target. Defaults to\n"
+    "  false.\n"
+    "\n"
+    "  Some systems use prefixes for the names of the final target output\n"
+    "  file. The normal example is \"libfoo.so\" on Linux for a target\n"
+    "  named \"foo\".\n"
+    "\n"
+    "  The output prefix for a given target type is specified on the linker\n"
+    "  tool (see \"gn help tool\"). Sometimes this prefix is undesired.\n"
+    "\n"
+    "  See also \"gn help output_extension\".\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  shared_library(\"doom_melon\") {\n"
+    "    # Normally this will produce \"libdoom_melon.so\" on Linux, setting\n"
+    "    # Setting this flag will produce \"doom_melon.so\".\n"
+    "    output_prefix_override = true\n"
+    "    ...\n"
     "  }\n";
 
 const char kOutputs[] = "outputs";
@@ -1609,6 +1638,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(LibDirs)
     INSERT_VARIABLE(OutputExtension)
     INSERT_VARIABLE(OutputName)
+    INSERT_VARIABLE(OutputPrefixOverride)
     INSERT_VARIABLE(Outputs)
     INSERT_VARIABLE(PrecompiledHeader)
     INSERT_VARIABLE(PrecompiledSource)

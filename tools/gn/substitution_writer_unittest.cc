@@ -268,4 +268,14 @@ TEST(SubstitutionWriter, LinkerSubstitutions) {
   OutputFile output = SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
       &target, tool, pattern);
   EXPECT_EQ("./libbaz.so", output.value());
+
+  // Output extensions can be overridden.
+  target.set_output_extension("extension");
+  EXPECT_EQ(".extension",
+            SubstitutionWriter::GetLinkerSubstitution(
+                &target, tool, SUBSTITUTION_OUTPUT_EXTENSION));
+  target.set_output_extension("");
+  EXPECT_EQ("",
+            SubstitutionWriter::GetLinkerSubstitution(
+                &target, tool, SUBSTITUTION_OUTPUT_EXTENSION));
 }

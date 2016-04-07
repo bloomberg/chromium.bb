@@ -241,10 +241,12 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
 
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
-  // This test is the same as ProductExtension, except that
-  // we call set_output_extension("") and ensure that we still get the default.
+  // This test is the same as ProductExtension, except that we call
+  // set_output_extension("") and ensure that we get an empty one and override
+  // the output prefix so that the name matches the target exactly.
   Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
   target.set_output_type(Target::SHARED_LIBRARY);
+  target.set_output_prefix_override(true);
   target.set_output_extension(std::string());
   target.sources().push_back(SourceFile("//foo/input1.cc"));
   target.sources().push_back(SourceFile("//foo/input2.cc"));
@@ -263,16 +265,16 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
       "cflags_cc =\n"
       "root_out_dir = .\n"
       "target_out_dir = obj/foo\n"
-      "target_output_name = libshlib\n"
+      "target_output_name = shlib\n"
       "\n"
-      "build obj/foo/libshlib.input1.o: cxx ../../foo/input1.cc\n"
-      "build obj/foo/libshlib.input2.o: cxx ../../foo/input2.cc\n"
+      "build obj/foo/shlib.input1.o: cxx ../../foo/input1.cc\n"
+      "build obj/foo/shlib.input2.o: cxx ../../foo/input2.cc\n"
       "\n"
-      "build ./libshlib.so: solink obj/foo/libshlib.input1.o "
-          "obj/foo/libshlib.input2.o\n"
+      "build ./shlib: solink obj/foo/shlib.input1.o "
+          "obj/foo/shlib.input2.o\n"
       "  ldflags =\n"
       "  libs =\n"
-      "  output_extension = .so\n";
+      "  output_extension = \n";
 
   std::string out_str = out.str();
   EXPECT_EQ(expected, out_str);

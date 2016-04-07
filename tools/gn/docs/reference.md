@@ -2845,6 +2845,10 @@
         is not already there. The result will show up in the
         {{output_name}} substitution pattern.
 
+        Individual targets can opt-out of the output prefix by setting:
+          output_prefix_override = true
+        (see "gn help output_prefix_override").
+
         This is typically used to prepend "lib" to libraries on
         Posix systems:
           output_prefix = "lib"
@@ -4664,9 +4668,11 @@
   override the name (for example to use "libfreetype.so.6" instead
   of libfreetype.so on Linux).
 
-  This value should not include a leading dot. If undefined or empty,
-  the default_output_extension specified on the tool will be used.
-  The output_extension will be used in the "{{output_extension}}"
+  This value should not include a leading dot. If undefined, the default
+  specified on the tool will be used. If set to the empty string, no
+  output extension will be used.
+
+  The output_extension will be used to set the "{{output_extension}}"
   expansion which the linker tool will generally use to specify the
   output file name. See "gn help tool".
 
@@ -4720,6 +4726,35 @@
 ```
   static_library("doom_melon") {
     output_name = "fluffy_bunny"
+  }
+
+
+```
+## **output_prefix_override**: Don't use prefix for output name.
+
+```
+  A boolean that overrides the output prefix for a target. Defaults to
+  false.
+
+  Some systems use prefixes for the names of the final target output
+  file. The normal example is "libfoo.so" on Linux for a target
+  named "foo".
+
+  The output prefix for a given target type is specified on the linker
+  tool (see "gn help tool"). Sometimes this prefix is undesired.
+
+  See also "gn help output_extension".
+
+```
+
+### **Example**
+
+```
+  shared_library("doom_melon") {
+    # Normally this will produce "libdoom_melon.so" on Linux, setting
+    # Setting this flag will produce "doom_melon.so".
+    output_prefix_override = true
+    ...
   }
 
 
@@ -5128,6 +5163,29 @@
   Any target in the current directory and any subdirectory thereof, plus
   any targets in "//bar/" and any subdirectory thereof.
     visibility = [ "./*", "//bar/*" ]
+
+
+```
+## **write_runtime_deps**: Writes the target's runtime_deps to the given path.
+
+```
+  Does not synchronously write the file, but rather schedules it
+  to be written at the end of generation.
+
+  If the file exists and the contents are identical to that being
+  written, the file will not be updated. This will prevent unnecessary
+  rebuilds of targets that depend on this file.
+
+  Path must be within the output directory.
+
+  See "gn help runtime_deps" for how the runtime dependencies are
+  computed.
+
+  The format of this file will list one file per line with no escaping.
+  The files will be relative to the root_build_dir. The first line of
+  the file will be the main output file of the target itself. The file
+  contents will be the same as requesting the runtime deps be written on
+  the command line (see "gn help --runtime-deps-list-file").
 
 
 ```
@@ -5561,8 +5619,8 @@
 ```
   Runtime dependencies of a target are exposed via the "runtime_deps"
   category of "gn desc" (see "gn help desc") or they can be written
-  at build generation time via "--runtime-deps-list-file"
-  (see "gn help --runtime-deps-list-file").
+  at build generation time via write_runtime_deps(), or
+  --runtime-deps-list-file (see "gn help --runtime-deps-list-file").
 
   To a first approximation, the runtime dependencies of a target are
   the set of "data" files, data directories, and the shared libraries

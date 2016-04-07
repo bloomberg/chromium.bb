@@ -854,15 +854,9 @@ void NinjaBinaryTargetWriter::WriteLibs() {
 }
 
 void NinjaBinaryTargetWriter::WriteOutputExtension() {
-  out_ << "  output_extension = ";
-  if (target_->output_extension().empty()) {
-    // Use the default from the tool.
-    out_ << tool_->default_output_extension();
-  } else {
-    // Use the one specified in the target. Note that the one in the target
-    // does not include the leading dot, so add that.
-    out_ << "." << target_->output_extension();
-  }
+  out_ << "  output_extension = "
+       << SubstitutionWriter::GetLinkerSubstitution(
+              target_, tool_, SUBSTITUTION_OUTPUT_EXTENSION);
   out_ << std::endl;
 }
 

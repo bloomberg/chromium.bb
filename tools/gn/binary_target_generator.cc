@@ -31,6 +31,9 @@ void BinaryTargetGenerator::DoRun() {
   if (!FillOutputName())
     return;
 
+  if (!FillOutputPrefixOverride())
+    return;
+
   if (!FillOutputExtension())
     return;
 
@@ -82,6 +85,16 @@ bool BinaryTargetGenerator::FillOutputName() {
   if (!value->VerifyTypeIs(Value::STRING, err_))
     return false;
   target_->set_output_name(value->string_value());
+  return true;
+}
+
+bool BinaryTargetGenerator::FillOutputPrefixOverride() {
+  const Value* value = scope_->GetValue(variables::kOutputPrefixOverride, true);
+  if (!value)
+    return true;
+  if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
+    return false;
+  target_->set_output_prefix_override(value->boolean_value());
   return true;
 }
 

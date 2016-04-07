@@ -212,6 +212,8 @@ bool RecursiveCheckAssertNoDeps(const Target* target,
 Target::Target(const Settings* settings, const Label& label)
     : Item(settings, label),
       output_type_(UNKNOWN),
+      output_prefix_override_(false),
+      output_extension_set_(false),
       all_headers_public_(true),
       check_includes_(true),
       complete_static_lib_(false),
@@ -358,7 +360,7 @@ DepsIteratorRange Target::GetDeps(DepsIterationType type) const {
       &public_deps_, &private_deps_, &data_deps_));
 }
 
-std::string Target::GetComputedOutputName(bool include_prefix) const {
+std::string Target::GetComputedOutputName() const {
   DCHECK(toolchain_)
       << "Toolchain must be specified before getting the computed output name.";
 
@@ -366,14 +368,14 @@ std::string Target::GetComputedOutputName(bool include_prefix) const {
                                                  : output_name_;
 
   std::string result;
-  if (include_prefix) {
-    const Tool* tool = toolchain_->GetToolForTargetFinalOutput(this);
-    if (tool) {
-      // Only add the prefix if the name doesn't already have it.
-      if (!base::StartsWith(name, tool->output_prefix(),
-                            base::CompareCase::SENSITIVE))
-        result = tool->output_prefix();
-    }
+  const Tool* tool = toolchain_->GetToolForTargetFinalOutput(this);
+  if (tool) {
+    // Only add the prefix if the name doesn't already have it and it's not
+    // being overridden.
+    if (!output_prefix_override_ &&
+        !base::StartsWith(name, tool->output_prefix(),
+                          base::CompareCase::SENSITIVE))
+      result = tool->output_prefix();
   }
   result.append(name);
   return result;
@@ -536,7 +538,7 @@ void Target::FillOutputFiles() {
       // entry in the outputs. These stamps are named
       // "<target_out_dir>/<targetname>.stamp".
       dependency_output_file_ = GetTargetOutputDirAsOutputFile(this);
-      dependency_output_file_.value().append(GetComputedOutputName(true));
+      dependency_output_file_.value().append(GetComputedOutputName());
       dependency_output_file_.value().append(".stamp");
       break;
     }
