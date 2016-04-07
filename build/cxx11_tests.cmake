@@ -7,6 +7,9 @@
 ##  be found in the AUTHORS file in the root of the source tree.
 cmake_minimum_required(VERSION 3.2)
 
+include(CheckCXXCompilerFlag)
+include(CheckCXXSourceCompiles)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR
     CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
     CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -134,5 +137,3 @@ if (NOT HAVE_UNIQUE_PTR
   set(ENABLE_WEBMTS OFF)
   message(WARNING "C++11 feature(s) not supported, tests and webmts disabled.")
 endif ()
-
-

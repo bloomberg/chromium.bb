@@ -7,10 +7,8 @@
 ##  be found in the AUTHORS file in the root of the source tree.
 cmake_minimum_required(VERSION 3.2)
 project(LIBWEBM CXX)
-include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
 
-include(CheckCXXCompilerFlag)
-include(CheckCXXSourceCompiles)
+include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
 
 set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -18,25 +16,16 @@ set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 option(ENABLE_WEBMTS "Enables WebM PES/TS support." ON)
 option(ENABLE_TESTS "Enables tests." OFF)
 option(ENABLE_IWYU "Enables include-what-you-use support." OFF)
+option(ENABLE_WERROR "Enable warnings as errors." OFF)
 set(GTEST_SRC_DIR "${LIBWEBM_SRC_DIR}/../googletest" CACHE PATH
     "Path to Googletest git repository.")
 
 # This directory is where libwebm will build googletest dependencies.
 set(GTEST_BUILD_DIR "${CMAKE_BINARY_DIR}/googletest_build")
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx_flags.cmake")
 if (ENABLE_TESTS OR ENABLE_WEBMTS)
   include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx11_tests.cmake")
-endif ()
-
-# Set warning levels.
-if (MSVC)
-  set(CMAKE_CXX_FLAGS "/W4 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
-  # Disable MSVC warnings that suggest making code non-portable.
-  set(CMAKE_CXX_FLAGS "/wd4996 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
-else ()
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
-  set(CMAKE_CXX_FLAGS "-Wno-deprecated ${CMAKE_CXX_FLAGS}" CACHE
-      STRING "" FORCE)
 endif ()
 
 set(CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS ${CMAKE_CXX_FLAGS}")
@@ -201,4 +190,3 @@ if (ENABLE_IWYU)
     message(STATUS "  See README.libwebm for more information.")
   endif ()
 endif ()
-
