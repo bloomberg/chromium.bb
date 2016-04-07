@@ -17,10 +17,10 @@ OpenPDFInReaderBubbleView::~OpenPDFInReaderBubbleView() {}
 OpenPDFInReaderBubbleView::OpenPDFInReaderBubbleView(
     views::View* anchor_view,
     pdf::OpenPDFInReaderPromptClient* model)
-    : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : views::BubbleDialogDelegateView(anchor_view,
+                                      views::BubbleBorder::TOP_RIGHT),
       model_(model),
-      open_in_reader_link_(NULL),
-      close_button_(NULL) {
+      open_in_reader_link_(nullptr) {
   DCHECK(model);
 }
 
@@ -47,25 +47,20 @@ void OpenPDFInReaderBubbleView::Init() {
   open_in_reader_link_->set_listener(this);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(open_in_reader_link_);
-
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  layout->StartRow(0, single_column_set_id);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
-                  GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  close_button_ = new views::LabelButton(this, model_->GetCancelButtonText());
-  close_button_->SetStyle(views::Button::STYLE_BUTTON);
-  layout->StartRow(0, single_column_set_id);
-  layout->AddView(close_button_);
 }
 
-void OpenPDFInReaderBubbleView::ButtonPressed(views::Button* sender,
-                                              const ui::Event& event) {
-  DCHECK_EQ(close_button_, sender);
+int OpenPDFInReaderBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_CANCEL;
+}
 
+base::string16 OpenPDFInReaderBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return model_->GetCancelButtonText();
+}
+
+bool OpenPDFInReaderBubbleView::Cancel() {
   model_->Cancel();
-  GetWidget()->Close();
+  return true;
 }
 
 void OpenPDFInReaderBubbleView::LinkClicked(views::Link* source,

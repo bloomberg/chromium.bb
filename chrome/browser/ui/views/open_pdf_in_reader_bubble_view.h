@@ -6,20 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_OPEN_PDF_IN_READER_BUBBLE_VIEW_H_
 
 #include "base/macros.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
 namespace pdf {
 class OpenPDFInReaderPromptClient;
 }
 
-namespace views {
-class LabelButton;
-}
-
-class OpenPDFInReaderBubbleView : public views::BubbleDelegateView,
-                                  public views::ButtonListener,
+class OpenPDFInReaderBubbleView : public views::BubbleDialogDelegateView,
                                   public views::LinkListener {
  public:
   OpenPDFInReaderBubbleView(views::View* anchor_view,
@@ -27,11 +21,11 @@ class OpenPDFInReaderBubbleView : public views::BubbleDelegateView,
   ~OpenPDFInReaderBubbleView() override;
 
  protected:
-  // views::BubbleDelegateView:
+  // views::BubbleDialogDelegateView:
   void Init() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  bool Cancel() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -42,7 +36,6 @@ class OpenPDFInReaderBubbleView : public views::BubbleDelegateView,
   pdf::OpenPDFInReaderPromptClient* model_;
 
   views::Link* open_in_reader_link_;
-  views::LabelButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenPDFInReaderBubbleView);
 };
