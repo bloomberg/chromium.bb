@@ -75,7 +75,7 @@ public:
     void dispatchProgressEvent(const AtomicString&, bool lengthComputable, unsigned long long loaded, unsigned long long total);
     // Dispatches the given event after operation about the "progress" event
     // depending on the value of the ProgressEventAction argument.
-    void dispatchReadyStateChangeEvent(RawPtr<Event>, DeferredEventAction);
+    void dispatchReadyStateChangeEvent(Event*, DeferredEventAction);
 
     void suspend();
     void resume();
@@ -89,7 +89,7 @@ private:
 
     // Dispatches a "progress" progress event and usually a readyStateChange
     // event as well.
-    void dispatchProgressProgressEvent(RawPtr<Event>);
+    void dispatchProgressProgressEvent(Event*);
 
     // The main purpose of this class is to throttle the "progress"
     // ProgressEvent dispatching. This class represents such a deferred
@@ -100,7 +100,7 @@ private:
         void set(bool lengthComputable, unsigned long long loaded, unsigned long long total);
         void clear();
         bool isSet() const { return m_isSet; }
-        RawPtr<Event> take();
+        Event* take();
 
     private:
         unsigned long long m_loaded;
