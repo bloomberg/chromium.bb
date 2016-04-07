@@ -1157,7 +1157,7 @@ TEST_F(HostContentSettingsMapTest, MigrateOldSettings) {
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
 
-  host_content_settings_map->SetContentSetting(
+  host_content_settings_map->SetContentSettingCustomScope(
       pattern, pattern, CONTENT_SETTINGS_TYPE_KEYGEN, std::string(),
       CONTENT_SETTING_ALLOW);
   // Because of the old formatted setting entry which has two same patterns,

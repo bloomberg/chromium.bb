@@ -137,7 +137,7 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedAllSitesAllowed) {
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   // As an example for a url that matches all hosts but not all origins,
   // match all HTTPS sites.
-  settings_map_->SetContentSetting(
+  settings_map_->SetContentSettingCustomScope(
       kAllHttpsSitesPattern, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_ALLOW);
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);

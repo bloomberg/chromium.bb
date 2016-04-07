@@ -1354,7 +1354,7 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
       mode == "normal" ? GetContentSettingsMap() :
                          GetOTRContentSettingsMap();
   if (settings_map) {
-    settings_map->SetContentSetting(
+    settings_map->SetContentSettingCustomScope(
         ContentSettingsPattern::FromString(pattern),
         secondary_pattern.empty()
             ? ContentSettingsPattern::Wildcard()
@@ -1526,11 +1526,9 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
         content_settings::ContentSettingFromString(setting, &setting_type);
     DCHECK(result);
 
-    settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
-                                    ContentSettingsPattern::Wildcard(),
-                                    type,
-                                    std::string(),
-                                    setting_type);
+    settings_map->SetContentSettingCustomScope(
+        ContentSettingsPattern::FromString(pattern),
+        ContentSettingsPattern::Wildcard(), type, std::string(), setting_type);
     WebSiteSettingsUmaUtil::LogPermissionChange(type, setting_type);
   }
 }

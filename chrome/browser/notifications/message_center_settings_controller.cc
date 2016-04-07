@@ -355,10 +355,11 @@ void MessageCenterSettingsController::SetNotifierEnabled(
         // here because pattern might be from user manual input and not match
         // the default one used by ClearSetting().
         HostContentSettingsMapFactory::GetForProfile(profile)
-            ->SetContentSetting(pattern, ContentSettingsPattern::Wildcard(),
-                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                content_settings::ResourceIdentifier(),
-                                CONTENT_SETTING_DEFAULT);
+            ->SetContentSettingCustomScope(
+                pattern, ContentSettingsPattern::Wildcard(),
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                content_settings::ResourceIdentifier(),
+                CONTENT_SETTING_DEFAULT);
       }
     }
   } else {

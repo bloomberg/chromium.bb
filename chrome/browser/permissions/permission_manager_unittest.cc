@@ -210,12 +210,8 @@ TEST_F(PermissionManagerTest, WildCardPatternNotifies) {
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());

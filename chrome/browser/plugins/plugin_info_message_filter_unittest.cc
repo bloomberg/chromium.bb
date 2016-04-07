@@ -227,11 +227,9 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
                          CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // Allow plugin "foo" on all sites.
-  map->SetContentSetting(ContentSettingsPattern::Wildcard(),
-                         ContentSettingsPattern::Wildcard(),
-                         CONTENT_SETTINGS_TYPE_PLUGINS,
-                         "foo",
-                         CONTENT_SETTING_ALLOW);
+  map->SetContentSettingCustomScope(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_PLUGINS, "foo", CONTENT_SETTING_ALLOW);
 
   GURL unmatched_host("https://www.google.com");
   ASSERT_EQ(CONTENT_SETTING_BLOCK, map->GetContentSetting(

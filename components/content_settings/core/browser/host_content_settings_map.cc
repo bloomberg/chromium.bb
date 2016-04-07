@@ -387,11 +387,11 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
       narrow_secondary = info.secondary_pattern;
   }
 
-  SetContentSetting(narrow_primary, narrow_secondary, type, std::string(),
-                    setting);
+  SetContentSettingCustomScope(narrow_primary, narrow_secondary, type,
+                               std::string(), setting);
 }
 
-void HostContentSettingsMap::SetContentSetting(
+void HostContentSettingsMap::SetContentSettingCustomScope(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
@@ -437,8 +437,8 @@ void HostContentSettingsMap::SetContentSettingDefaultScope(
   if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
     return;
 
-  SetContentSetting(primary_pattern, secondary_pattern, content_type,
-                    resource_identifier, setting);
+  SetContentSettingCustomScope(primary_pattern, secondary_pattern, content_type,
+                               resource_identifier, setting);
 }
 
 void HostContentSettingsMap::MigrateOldSettings() {
@@ -476,7 +476,7 @@ void HostContentSettingsMap::MigrateOldSettings() {
           content_setting = GetContentSetting(url, url, type, std::string());
         }
         // Remove the old pattern.
-        SetContentSetting(setting_entry.primary_pattern,
+        SetContentSettingCustomScope(setting_entry.primary_pattern,
                           setting_entry.secondary_pattern, type, std::string(),
                           CONTENT_SETTING_DEFAULT);
         // Set the new pattern.

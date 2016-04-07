@@ -163,11 +163,10 @@ static void SetContentSettingForPattern(JNIEnv* env,
                                         int setting) {
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetContentSetting(
+  host_content_settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
       ContentSettingsPattern::Wildcard(),
-      static_cast<ContentSettingsType>(content_settings_type),
-      std::string(),
+      static_cast<ContentSettingsType>(content_settings_type), std::string(),
       static_cast<ContentSetting>(setting));
 }
 

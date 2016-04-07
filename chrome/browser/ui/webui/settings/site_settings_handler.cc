@@ -220,7 +220,7 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  map->SetContentSetting(
+  map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString(primary_pattern),
       secondary_pattern.empty() ?
           ContentSettingsPattern::Wildcard() :
@@ -246,7 +246,7 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  map->SetContentSetting(
+  map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString(primary_pattern),
       secondary_pattern.empty() ?
           ContentSettingsPattern::Wildcard() :

@@ -1237,15 +1237,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::Wildcard(),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-                          CONTENT_SETTING_ALLOW);
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                 CONTENT_SETTING_ALLOW);
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromString("https://*"),
-                          ContentSettingsPattern::FromString("https://*"),
-                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
-                          CONTENT_SETTING_ALLOW);
+      ->SetContentSettingCustomScope(
+          ContentSettingsPattern::FromString("https://*"),
+          ContentSettingsPattern::FromString("https://*"),
+          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
+          CONTENT_SETTING_ALLOW);
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, GURL(),
                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,

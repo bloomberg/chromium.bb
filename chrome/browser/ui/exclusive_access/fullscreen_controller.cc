@@ -505,8 +505,9 @@ ContentSetting FullscreenController::GetFullscreenSetting() const {
     return CONTENT_SETTING_ALLOW;
   }
 
-  // See the comment above the call to |SetContentSetting()| for how the
-  // requesting and embedding origins interact with each other wrt permissions.
+  // See the comment above the call to |SetContentSettingDefaultScope()| for how
+  // the requesting and embedding origins interact with each other wrt
+  // permissions.
   return HostContentSettingsMapFactory::GetForProfile(
       exclusive_access_manager()->context()->GetProfile())
           ->GetContentSetting(url, GetEmbeddingOrigin(),

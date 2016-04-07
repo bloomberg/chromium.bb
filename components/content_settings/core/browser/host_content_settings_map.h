@@ -142,11 +142,12 @@ class HostContentSettingsMap : public content_settings::Observer,
   // data types please use the method SetWebsiteSettingDefaultScope().
   //
   // This should only be called on the UI thread.
-  void SetContentSetting(const ContentSettingsPattern& primary_pattern,
-                         const ContentSettingsPattern& secondary_pattern,
-                         ContentSettingsType content_type,
-                         const std::string& resource_identifier,
-                         ContentSetting setting);
+  void SetContentSettingCustomScope(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      ContentSetting setting);
 
   // Sets the content |setting| for the default scope of the url that is
   // appropriate for the given |content_type| and |resource_identifier|.
@@ -159,10 +160,10 @@ class HostContentSettingsMap : public content_settings::Observer,
   //
   // This should only be called on the UI thread.
   //
-  // Internally this will call SetContentSetting() with the default scope
-  // patterns for the given |content_type|. Developers will generally want
-  // to use this function instead of SetContentSetting() unless they need
-  // to specify custom scoping.
+  // Internally this will call SetContentSettingCustomScope() with the default
+  // scope patterns for the given |content_type|. Developers will generally want
+  // to use this function instead of SetContentSettingCustomScope() unless they
+  // need to specify custom scoping.
   void SetContentSettingDefaultScope(const GURL& primary_url,
                                      const GURL& secondary_url,
                                      ContentSettingsType content_type,

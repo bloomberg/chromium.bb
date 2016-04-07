@@ -162,10 +162,12 @@ void PluginsHandler::SaveShowDetailsToPrefs(bool details_mode) {
 void PluginsHandler::SetPluginAlwaysAllowed(const mojo::String& plugin,
                                             bool allowed) {
   Profile* profile = Profile::FromWebUI(web_ui_);
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_PLUGINS, plugin.get(),
-      allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_DEFAULT);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingCustomScope(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_PLUGINS,
+          plugin.get(),
+          allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_DEFAULT);
 
   // Keep track of the whitelist separately, so that we can distinguish plugins
   // whitelisted by the user from automatically whitelisted ones.
