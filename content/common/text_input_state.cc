@@ -10,6 +10,7 @@ TextInputState::TextInputState()
     : type(ui::TEXT_INPUT_TYPE_NONE),
       mode(ui::TEXT_INPUT_MODE_DEFAULT),
       flags(0),
-      can_compose_inline(true) {}
+      can_compose_inline(true),
+      show_ime_if_needed(false) {}
 
 }  //  namespace content
