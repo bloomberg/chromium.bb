@@ -251,8 +251,9 @@ cvox.MathJaxExternalUtil.injectConfigScript = function() {
 cvox.MathJaxExternalUtil.injectLoadScript = function() {
   var script = document.createElement('script');
   script.setAttribute('type', 'text/javascript');
+  var protocol = location.protocol == 'https:' ? 'https' : 'http';
   script.setAttribute(
-      'src', 'http://cdn.mathjax.org/mathjax/latest/MathJax.js');
+      'src', protocol + '://cdn.mathjax.org/mathjax/latest/MathJax.js');
   document.activeElement.appendChild(script);
 };
 
