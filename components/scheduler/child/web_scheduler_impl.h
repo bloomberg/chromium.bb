@@ -39,7 +39,7 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
                                blink::WebThread::IdleTask* task) override;
   blink::WebTaskRunner* loadingTaskRunner() override;
   blink::WebTaskRunner* timerTaskRunner() override;
-  blink::WebPassOwnPtr<blink::WebViewScheduler> createWebViewScheduler(
+  std::unique_ptr<blink::WebViewScheduler> createWebViewScheduler(
       blink::WebView*) override;
   void suspendTimerQueue() override {}
   void resumeTimerQueue() override {}

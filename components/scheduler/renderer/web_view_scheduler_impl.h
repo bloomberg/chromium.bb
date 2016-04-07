@@ -41,7 +41,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
 
   // blink::WebViewScheduler implementation:
   void setPageVisible(bool page_visible) override;
-  blink::WebPassOwnPtr<blink::WebFrameScheduler> createFrameScheduler(
+  std::unique_ptr<blink::WebFrameScheduler> createFrameScheduler(
       blink::BlameContext* blame_context) override;
   void enableVirtualTime() override;
   void setAllowVirtualTimeToAdvance(

@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/rtc_certificate.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/renderer/media/peer_connection_identity_store.h"
 #include "url/gurl.h"
 
@@ -19,9 +20,8 @@ RTCCertificate::RTCCertificate(
 RTCCertificate::~RTCCertificate() {
 }
 
-blink::WebPassOwnPtr<blink::WebRTCCertificate> RTCCertificate::shallowCopy()
-    const {
-  return blink::adoptWebPtr(new RTCCertificate(key_params_, certificate_));
+std::unique_ptr<blink::WebRTCCertificate> RTCCertificate::shallowCopy() const {
+  return base::WrapUnique(new RTCCertificate(key_params_, certificate_));
 }
 
 const blink::WebRTCKeyParams& RTCCertificate::keyParams() const {

@@ -6,15 +6,16 @@
 #define WebPermissionClient_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/permissions/WebPermissionStatus.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 
+#include <memory>
+
 namespace blink {
 
 using WebPermissionCallback = WebCallbacks<WebPermissionStatus, void>;
-using WebPermissionsCallback = WebCallbacks<WebPassOwnPtr<WebVector<WebPermissionStatus>>, void>;
+using WebPermissionsCallback = WebCallbacks<std::unique_ptr<WebVector<WebPermissionStatus>>, void>;
 
 class WebPermissionObserver;
 class WebURL;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/common/presentation_constants.h"
 #include "content/public/common/service_registry.h"
@@ -383,7 +384,7 @@ void PresentationDispatcher::OnSessionCreated(
 
   DCHECK(!session_info.is_null());
   presentation_service_->ListenForSessionMessages(session_info.Clone());
-  callback->onSuccess(blink::adoptWebPtr(
+  callback->onSuccess(base::WrapUnique(
       new PresentationConnectionClient(std::move(session_info))));
 }
 

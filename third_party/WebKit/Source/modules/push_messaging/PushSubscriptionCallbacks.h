@@ -27,7 +27,7 @@ public:
     PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~PushSubscriptionCallbacks() override;
 
-    void onSuccess(WebPassOwnPtr<WebPushSubscription>) override;
+    void onSuccess(std::unique_ptr<WebPushSubscription>) override;
     void onError(const WebPushError&) override;
 
 private:

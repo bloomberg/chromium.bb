@@ -58,16 +58,16 @@ class WebViewSchedulerImplTest : public testing::Test {
 };
 
 TEST_F(WebViewSchedulerImplTest, TestDestructionOfFrameSchedulersBefore) {
-  blink::WebPassOwnPtr<blink::WebFrameScheduler> frame1(
+  std::unique_ptr<blink::WebFrameScheduler> frame1(
       web_view_scheduler_->createFrameScheduler(nullptr));
-  blink::WebPassOwnPtr<blink::WebFrameScheduler> frame2(
+  std::unique_ptr<blink::WebFrameScheduler> frame2(
       web_view_scheduler_->createFrameScheduler(nullptr));
 }
 
 TEST_F(WebViewSchedulerImplTest, TestDestructionOfFrameSchedulersAfter) {
-  blink::WebPassOwnPtr<blink::WebFrameScheduler> frame1(
+  std::unique_ptr<blink::WebFrameScheduler> frame1(
       web_view_scheduler_->createFrameScheduler(nullptr));
-  blink::WebPassOwnPtr<blink::WebFrameScheduler> frame2(
+  std::unique_ptr<blink::WebFrameScheduler> frame2(
       web_view_scheduler_->createFrameScheduler(nullptr));
   web_view_scheduler_.reset();
 }

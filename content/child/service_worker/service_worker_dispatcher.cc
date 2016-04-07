@@ -481,14 +481,14 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
       ServiceWorkerVersionAttributes attr(attrs[i]);
 
       // WebServiceWorkerGetRegistrationsCallbacks cannot receive an array of
-      // WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, so create leaky
+      // std::unique_ptr<WebServiceWorkerRegistration::Handle>, so create leaky
       // handles instead.
       (*registrations)[i] = WebServiceWorkerRegistrationImpl::CreateLeakyHandle(
           GetOrAdoptRegistration(info, attr));
     }
   }
 
-  callbacks->onSuccess(blink::adoptWebPtr(registrations.release()));
+  callbacks->onSuccess(std::move(registrations));
   pending_get_registrations_callbacks_.Remove(request_id);
 }
 

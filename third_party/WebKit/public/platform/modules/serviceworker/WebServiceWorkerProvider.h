@@ -32,9 +32,10 @@
 #define WebServiceWorkerProvider_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -52,13 +53,12 @@ public:
     // events. Must be cleared before the client becomes invalid.
     virtual void setClient(WebServiceWorkerProviderClient*) { }
 
-    using WebServiceWorkerRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, const WebServiceWorkerError&>;
-    using WebServiceWorkerGetRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, const WebServiceWorkerError&>;
+    using WebServiceWorkerRegistrationCallbacks = WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, const WebServiceWorkerError&>;
+    using WebServiceWorkerGetRegistrationCallbacks = WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, const WebServiceWorkerError&>;
 
     // Each element's ownership is transferred.
-    // TODO(yhirano): Consider using vector<std::unique_ptr<>>.
-    using WebServiceWorkerGetRegistrationsCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>>, const WebServiceWorkerError&>;
-    using WebServiceWorkerGetRegistrationForReadyCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, void>;
+    using WebServiceWorkerGetRegistrationsCallbacks = WebCallbacks<std::unique_ptr<WebVector<WebServiceWorkerRegistration::Handle*>>, const WebServiceWorkerError&>;
+    using WebServiceWorkerGetRegistrationForReadyCallbacks = WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, void>;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }

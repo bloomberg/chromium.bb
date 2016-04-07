@@ -444,7 +444,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_shouldDispatchFirstLayoutAfterFinishedLoading(false)
     , m_displayMode(WebDisplayModeBrowser)
     , m_elasticOverscroll(FloatSize())
-    , m_scheduler(Platform::current()->currentThread()->scheduler()->createWebViewScheduler(this).release())
+    , m_scheduler(adoptPtr(Platform::current()->currentThread()->scheduler()->createWebViewScheduler(this).release()))
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = m_chromeClientImpl.get();

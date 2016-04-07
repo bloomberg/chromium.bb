@@ -11,11 +11,11 @@
 
 namespace blink {
 
-void NavigateClientCallback::onSuccess(WebPassOwnPtr<WebServiceWorkerClientInfo> clientInfo)
+void NavigateClientCallback::onSuccess(std::unique_ptr<WebServiceWorkerClientInfo> clientInfo)
 {
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->resolve(ServiceWorkerWindowClient::take(m_resolver.get(), clientInfo.release()));
+    m_resolver->resolve(ServiceWorkerWindowClient::take(m_resolver.get(), adoptPtr(clientInfo.release())));
 }
 
 void NavigateClientCallback::onError(const WebServiceWorkerError& error)

@@ -17,12 +17,12 @@ PermissionsCallback::PermissionsCallback(ScriptPromiseResolver* resolver, PassOw
     ASSERT(m_resolver);
 }
 
-void PermissionsCallback::onSuccess(WebPassOwnPtr<WebVector<WebPermissionStatus>> permissionStatus)
+void PermissionsCallback::onSuccess(std::unique_ptr<WebVector<WebPermissionStatus>> permissionStatus)
 {
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
-    OwnPtr<WebVector<WebPermissionStatus>> statusPtr = permissionStatus.release();
+    OwnPtr<WebVector<WebPermissionStatus>> statusPtr = adoptPtr(permissionStatus.release());
     HeapVector<Member<PermissionStatus>> result(m_callerIndexToInternalIndex->size());
 
     // Create the response vector by finding the status for each index by

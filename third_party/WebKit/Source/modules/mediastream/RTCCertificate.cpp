@@ -32,12 +32,12 @@
 
 namespace blink {
 
-RTCCertificate::RTCCertificate(WebPassOwnPtr<WebRTCCertificate> certificate)
-    : m_certificate(certificate.release())
+RTCCertificate::RTCCertificate(std::unique_ptr<WebRTCCertificate> certificate)
+    : m_certificate(adoptPtr(certificate.release()))
 {
 }
 
-WebPassOwnPtr<WebRTCCertificate> RTCCertificate::certificateShallowCopy() const
+std::unique_ptr<WebRTCCertificate> RTCCertificate::certificateShallowCopy() const
 {
     return m_certificate->shallowCopy();
 }

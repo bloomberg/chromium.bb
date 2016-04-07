@@ -22,7 +22,7 @@ public:
     explicit RegistrationCallback(LinkLoaderClient* client) : m_client(client) {}
     ~RegistrationCallback() override {}
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override
     {
         Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&LinkLoaderClient::linkLoaded, m_client));
     }

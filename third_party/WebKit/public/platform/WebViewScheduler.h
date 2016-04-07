@@ -7,7 +7,8 @@
 
 #include "WebCommon.h"
 #include "public/platform/BlameContext.h"
-#include "public/platform/WebPassOwnPtr.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -23,7 +24,7 @@ public:
     // Creates a new WebFrameScheduler. The caller is responsible for deleting
     // it. All tasks executed by the frame scheduler will be attributed to
     // |BlameContext|.
-    virtual WebPassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) = 0;
+    virtual std::unique_ptr<WebFrameScheduler> createFrameScheduler(BlameContext*) = 0;
 
     // Instructs this WebViewScheduler to use virtual time. When virtual time is enabled
     // the system doesn't actually sleep for the delays between tasks before executing

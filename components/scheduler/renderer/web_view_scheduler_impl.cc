@@ -62,10 +62,9 @@ WebViewSchedulerImpl::createWebFrameSchedulerImpl(
   return frame_scheduler;
 }
 
-blink::WebPassOwnPtr<blink::WebFrameScheduler>
+std::unique_ptr<blink::WebFrameScheduler>
 WebViewSchedulerImpl::createFrameScheduler(blink::BlameContext* blame_context) {
-  return blink::adoptWebPtr(
-      createWebFrameSchedulerImpl(blame_context).release());
+  return createWebFrameSchedulerImpl(blame_context);
 }
 
 void WebViewSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {

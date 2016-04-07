@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
@@ -138,12 +139,12 @@ void WebServiceWorkerImpl::terminate() {
 }
 
 // static
-blink::WebPassOwnPtr<blink::WebServiceWorker::Handle>
+std::unique_ptr<blink::WebServiceWorker::Handle>
 WebServiceWorkerImpl::CreateHandle(
     const scoped_refptr<WebServiceWorkerImpl>& worker) {
   if (!worker)
     return nullptr;
-  return blink::adoptWebPtr(new HandleImpl(worker));
+  return base::WrapUnique(new HandleImpl(worker));
 }
 
 WebServiceWorkerImpl::~WebServiceWorkerImpl() {

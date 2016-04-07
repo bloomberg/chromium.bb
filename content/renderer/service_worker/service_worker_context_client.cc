@@ -4,6 +4,7 @@
 
 #include "content/renderer/service_worker/service_worker_context_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -45,7 +46,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
-#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -866,7 +866,7 @@ void ServiceWorkerContextClient::OnDidGetClient(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(blink::adoptWebPtr(web_client.release()));
+  callbacks->onSuccess(std::move(web_client));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -907,7 +907,7 @@ void ServiceWorkerContextClient::OnOpenWindowResponse(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(blink::adoptWebPtr(web_client.release()));
+  callbacks->onSuccess(std::move(web_client));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -943,7 +943,7 @@ void ServiceWorkerContextClient::OnFocusClientResponse(
     scoped_ptr<blink::WebServiceWorkerClientInfo> web_client (
         new blink::WebServiceWorkerClientInfo(
             ToWebServiceWorkerClientInfo(client)));
-    callback->onSuccess(blink::adoptWebPtr(web_client.release()));
+    callback->onSuccess(std::move(web_client));
   } else {
     callback->onError(blink::WebServiceWorkerError(
         blink::WebServiceWorkerError::ErrorTypeNotFound,
@@ -970,7 +970,7 @@ void ServiceWorkerContextClient::OnNavigateClientResponse(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(blink::adoptWebPtr(web_client.release()));
+  callbacks->onSuccess(std::move(web_client));
   context_->client_callbacks.Remove(request_id);
 }
 

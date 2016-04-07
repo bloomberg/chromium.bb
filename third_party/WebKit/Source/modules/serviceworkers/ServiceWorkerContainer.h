@@ -80,8 +80,8 @@ public:
     ScriptPromise getRegistrations(ScriptState*);
 
     // WebServiceWorkerProviderClient overrides.
-    void setController(WebPassOwnPtr<WebServiceWorker::Handle>, bool shouldNotifyControllerChange) override;
-    void dispatchMessageEvent(WebPassOwnPtr<WebServiceWorker::Handle>, const WebString& message, const WebMessagePortChannelArray&) override;
+    void setController(std::unique_ptr<WebServiceWorker::Handle>, bool shouldNotifyControllerChange) override;
+    void dispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>, const WebString& message, const WebMessagePortChannelArray&) override;
 
     // EventTarget overrides.
     ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }

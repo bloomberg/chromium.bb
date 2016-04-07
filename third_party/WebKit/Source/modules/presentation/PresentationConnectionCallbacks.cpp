@@ -21,9 +21,9 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(ScriptPromiseRe
     ASSERT(m_request);
 }
 
-void PresentationConnectionCallbacks::onSuccess(WebPassOwnPtr<WebPresentationConnectionClient> PresentationConnectionClient)
+void PresentationConnectionCallbacks::onSuccess(std::unique_ptr<WebPresentationConnectionClient> PresentationConnectionClient)
 {
-    OwnPtr<WebPresentationConnectionClient> result(PresentationConnectionClient.release());
+    OwnPtr<WebPresentationConnectionClient> result(adoptPtr(PresentationConnectionClient.release()));
 
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;

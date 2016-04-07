@@ -138,7 +138,7 @@ void BackgroundSyncProvider::RegisterCallback(
       if (!options.is_null())
         result =
             mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(options);
-      callbacks->onSuccess(blink::adoptWebPtr(result.release()));
+      callbacks->onSuccess(std::move(result));
       break;
     case mojom::BackgroundSyncError::NOT_FOUND:
       NOTREACHED();

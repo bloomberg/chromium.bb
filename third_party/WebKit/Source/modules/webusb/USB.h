@@ -48,8 +48,8 @@ public:
     void contextDestroyed() override;
 
     // WebUSBClient::Observer overrides.
-    void onDeviceConnected(WebPassOwnPtr<WebUSBDevice>) override;
-    void onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice>) override;
+    void onDeviceConnected(std::unique_ptr<WebUSBDevice>) override;
+    void onDeviceDisconnected(std::unique_ptr<WebUSBDevice>) override;
 
     DECLARE_VIRTUAL_TRACE();
     EAGERLY_FINALIZE();

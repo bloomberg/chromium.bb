@@ -88,6 +88,8 @@
 #include "public/platform/WebRTCStatsRequest.h"
 #include "public/platform/WebRTCVoidRequest.h"
 
+#include <memory>
+
 namespace blink {
 
 namespace {
@@ -169,15 +171,13 @@ public:
 
     ~WebRTCCertificateObserver() override {}
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_resolver); }
-
 private:
     WebRTCCertificateObserver(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) {}
 
-    void onSuccess(WebPassOwnPtr<WebRTCCertificate> certificate) override
+    void onSuccess(std::unique_ptr<WebRTCCertificate> certificate) override
     {
-        m_resolver->resolve(new RTCCertificate(certificate));
+        m_resolver->resolve(new RTCCertificate(std::move(certificate)));
     }
 
     void onError() override
@@ -705,7 +705,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebPassOwnPtr<WebRTCCertificateObserver> certificateObserver = adoptWebPtr(WebRTCCertificateObserver::create(resolver));
+    std::unique_ptr<WebRTCCertificateObserver> certificateObserver(WebRTCCertificateObserver::create(resolver));
 
     // Generate certificate. The |certificateObserver| will resolve the promise asynchronously upon completion.
     // The observer will manage its own destruction as well as the resolver's destruction.
@@ -713,7 +713,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
         keyParams.get(),
         toDocument(scriptState->getExecutionContext())->url(),
         toDocument(scriptState->getExecutionContext())->firstPartyForCookies(),
-        certificateObserver);
+        std::move(certificateObserver));
 
     return promise;
 }

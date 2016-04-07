@@ -24,13 +24,13 @@ SyncRegistrationCallbacks::~SyncRegistrationCallbacks()
 {
 }
 
-void SyncRegistrationCallbacks::onSuccess(WebPassOwnPtr<WebSyncRegistration> webSyncRegistration)
+void SyncRegistrationCallbacks::onSuccess(std::unique_ptr<WebSyncRegistration> webSyncRegistration)
 {
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
 
-    OwnPtr<WebSyncRegistration> registration = webSyncRegistration.release();
+    OwnPtr<WebSyncRegistration> registration = adoptPtr(webSyncRegistration.release());
     if (!registration) {
         m_resolver->resolve(v8::Null(m_resolver->getScriptState()->isolate()));
         return;

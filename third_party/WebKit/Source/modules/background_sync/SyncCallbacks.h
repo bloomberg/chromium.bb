@@ -34,7 +34,7 @@ public:
     SyncRegistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~SyncRegistrationCallbacks() override;
 
-    void onSuccess(WebPassOwnPtr<WebSyncRegistration>) override;
+    void onSuccess(std::unique_ptr<WebSyncRegistration>) override;
     void onError(const WebSyncError&) override;
 
 private:

@@ -7,13 +7,14 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/permissions/WebPermissionStatus.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -24,12 +25,12 @@ class ScriptPromiseResolver;
 // the callback. It takes a WebPermissionType in its constructor and will pass
 // it to the PermissionStatus.
 class PermissionsCallback final
-    : public WebCallbacks<WebPassOwnPtr<WebVector<WebPermissionStatus>>, void> {
+    : public WebCallbacks<std::unique_ptr<WebVector<WebPermissionStatus>>, void> {
 public:
     PermissionsCallback(ScriptPromiseResolver*, PassOwnPtr<Vector<WebPermissionType>>, PassOwnPtr<Vector<int>>);
     ~PermissionsCallback() = default;
 
-    void onSuccess(WebPassOwnPtr<WebVector<WebPermissionStatus>>) override;
+    void onSuccess(std::unique_ptr<WebVector<WebPermissionStatus>>) override;
     void onError() override;
 
 private:

@@ -87,7 +87,7 @@ blink::WebTaskRunner* WebSchedulerImpl::timerTaskRunner() {
   return timer_web_task_runner_.get();
 }
 
-blink::WebPassOwnPtr<blink::WebViewScheduler>
+std::unique_ptr<blink::WebViewScheduler>
 WebSchedulerImpl::createWebViewScheduler(blink::WebView*) {
   NOTREACHED();
   return nullptr;

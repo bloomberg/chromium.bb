@@ -63,7 +63,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   // Creates WebServiceWorkerRegistrationHandle object that owns a reference to
   // the given WebServiceWorkerRegistrationImpl object.
-  static blink::WebPassOwnPtr<WebServiceWorkerRegistrationHandle> CreateHandle(
+  static std::unique_ptr<WebServiceWorkerRegistrationHandle> CreateHandle(
       const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration);
 
   // Same with CreateHandle(), but returns a raw pointer to the handle w/ its

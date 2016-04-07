@@ -7,9 +7,10 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebData.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLLoaderTestDelegate.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -19,7 +20,7 @@ struct WebURLError;
 
 class WebURLLoaderMockFactory {
 public:
-    static WebPassOwnPtr<WebURLLoaderMockFactory> create();
+    static std::unique_ptr<WebURLLoaderMockFactory> create();
 
     virtual ~WebURLLoaderMockFactory() {}
 

@@ -67,6 +67,8 @@
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 
+#include <utility>
+
 namespace blink {
 
 RawPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
@@ -86,9 +88,9 @@ DEFINE_TRACE(ServiceWorkerGlobalScopeProxy)
     visitor->trace(m_workerGlobalScope);
 }
 
-void ServiceWorkerGlobalScopeProxy::setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
+void ServiceWorkerGlobalScopeProxy::setRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
 {
-    workerGlobalScope()->setRegistration(handle);
+    workerGlobalScope()->setRegistration(std::move(handle));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
@@ -118,7 +120,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, WebPassOwnPtr<WebServiceWorker::Handle> handle)
+void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     DCHECK(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
 
@@ -127,7 +129,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     String origin;
     if (!sourceOrigin.isUnique())
         origin = sourceOrigin.toString();
-    ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), handle.release());
+    ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), adoptPtr(handle.release()));
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
     RawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));

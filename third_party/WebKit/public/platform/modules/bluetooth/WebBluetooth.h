@@ -6,10 +6,11 @@
 #define WebBluetooth_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/bluetooth/WebBluetoothError.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -21,20 +22,19 @@ struct WebBluetoothRemoteGATTService;
 struct WebRequestDeviceOptions;
 
 // Success and failure callbacks for requestDevice.
-using WebBluetoothRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothDevice>, const WebBluetoothError&>;
+using WebBluetoothRequestDeviceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothDevice>, const WebBluetoothError&>;
 
 // Success and failure callbacks for connectGATT.
 using WebBluetoothRemoteGATTServerConnectCallbacks = WebCallbacks<void, const WebBluetoothError&>;
 
 // Success and failure callbacks for getPrimaryService.
-using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothRemoteGATTService>, const WebBluetoothError&>;
+using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothRemoteGATTService>, const WebBluetoothError&>;
 
 // Success and failure callbacks for getCharacteristic.
-using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>, const WebBluetoothError&>;
+using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>, const WebBluetoothError&>;
 
 // Success and failure callbacks for getCharacteristics.
-using WebBluetoothGetCharacteristicsCallbacks =
-    WebCallbacks<WebPassOwnPtr<WebVector<WebBluetoothRemoteGATTCharacteristicInit*>>, const WebBluetoothError&>;
+using WebBluetoothGetCharacteristicsCallbacks = WebCallbacks<std::unique_ptr<WebVector<WebBluetoothRemoteGATTCharacteristicInit*>>, const WebBluetoothError&>;
 
 // Success and failure callbacks for readValue.
 using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;

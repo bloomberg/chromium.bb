@@ -31,14 +31,12 @@
 #ifndef WebCallbacks_h
 #define WebCallbacks_h
 
-#include "public/platform/WebPassOwnPtr.h"
-
 namespace blink {
 
 // A WebCallbacks<S, T> represents a callback object. Typically it is created
 // in Blink and passed to Chromium, and onSuccess or onError will be called
 // from Chromium.
-// When transferring ownership, use |WebPrivatePassOwnPtr<X>| as a type
+// When transferring ownership, use |std::unique_ptr<X>| as a type
 // parameter. Otherwise, |const X&| or |X| for a type parameter. It is
 // generally not preferred to use |X*| because the object ownership is not well
 // specified.

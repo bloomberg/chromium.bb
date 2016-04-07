@@ -91,11 +91,11 @@ public:
         : m_cacheName(cacheName), m_cacheStorage(cacheStorage), m_resolver(resolver) { }
     ~WithCacheCallbacks() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerCache> webCache) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerCache> webCache) override
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher, webCache.release());
+        Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher, adoptPtr(webCache.release()));
         m_cacheStorage->m_nameToCacheMap.set(m_cacheName, cache);
         m_resolver->resolve(cache);
         m_resolver.clear();

@@ -6,8 +6,9 @@
 #define WebUSBDevice_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebVector.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -23,7 +24,7 @@ using WebUSBDeviceReleaseInterfaceCallbacks = WebCallbacks<void, const WebUSBErr
 using WebUSBDeviceResetCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceSetInterfaceAlternateSettingCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceClearHaltCallbacks = WebCallbacks<void, const WebUSBError&>;
-using WebUSBDeviceTransferCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBTransferInfo>, const WebUSBError&>;
+using WebUSBDeviceTransferCallbacks = WebCallbacks<std::unique_ptr<WebUSBTransferInfo>, const WebUSBError&>;
 
 class WebUSBDevice {
 public:

@@ -5,6 +5,7 @@
 #include "content/child/push_messaging/push_provider.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
@@ -161,8 +162,8 @@ void PushProvider::OnSubscribeFromWorkerSuccess(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(blink::adoptWebPtr(
-      new blink::WebPushSubscription(endpoint, p256dh, auth)));
+  callbacks->onSuccess(
+      base::WrapUnique(new blink::WebPushSubscription(endpoint, p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -221,8 +222,8 @@ void PushProvider::OnGetSubscriptionSuccess(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(blink::adoptWebPtr(
-      new blink::WebPushSubscription(endpoint, p256dh, auth)));
+  callbacks->onSuccess(
+      base::WrapUnique(new blink::WebPushSubscription(endpoint, p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }

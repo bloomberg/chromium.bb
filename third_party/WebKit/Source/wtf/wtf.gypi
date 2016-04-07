@@ -91,6 +91,7 @@
             'PassRefPtr.h',
             'PrintStream.cpp',
             'PrintStream.h',
+            'PtrUtil.h',
             'RefCounted.h',
             'RefPtr.h',
             'RetainPtr.h',

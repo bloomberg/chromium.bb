@@ -223,7 +223,7 @@ void PermissionDispatcher::RunPermissionCallbackOnWorkerThread(
 void PermissionDispatcher::RunPermissionsCallbackOnWorkerThread(
     scoped_ptr<blink::WebPermissionsCallback> callback,
     scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses) {
-  callback->onSuccess(blink::adoptWebPtr(statuses.release()));
+  callback->onSuccess(std::move(statuses));
 }
 
 blink::mojom::PermissionService*
@@ -366,7 +366,7 @@ void PermissionDispatcher::OnRequestPermissionsResponse(
     return;
   }
 
-  callback->onSuccess(blink::adoptWebPtr(statuses.release()));
+  callback->onSuccess(std::move(statuses));
 }
 
 void PermissionDispatcher::OnPermissionChanged(blink::WebPermissionType type,

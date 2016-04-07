@@ -5,8 +5,9 @@
 #ifndef WebRTCCertificate_h
 #define WebRTCCertificate_h
 
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebRTCKeyParams.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -23,7 +24,7 @@ public:
     // Copies the WebRTCCertificate object without copying the underlying implementation
     // specific (WebRTC layer) certificate. When all copies are destroyed the underlying
     // data is freed.
-    virtual WebPassOwnPtr<WebRTCCertificate> shallowCopy() const = 0;
+    virtual std::unique_ptr<WebRTCCertificate> shallowCopy() const = 0;
 
     virtual const WebRTCKeyParams& keyParams() const = 0;
 

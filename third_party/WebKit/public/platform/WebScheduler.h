@@ -6,10 +6,11 @@
 #define WebScheduler_h
 
 #include "WebCommon.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebViewScheduler.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -68,7 +69,7 @@ public:
 
     // Creates a new WebViewScheduler for a given WebView. Must be called from
     // the associated WebThread.
-    virtual WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) = 0;
+    virtual std::unique_ptr<WebViewScheduler> createWebViewScheduler(blink::WebView*) = 0;
 
     // Suspends the timer queue and increments the timer queue suspension count.
     // May only be called from the main thread.

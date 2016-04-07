@@ -4,8 +4,10 @@
 
 #include "components/test_runner/mock_credential_manager_client.h"
 
+#include <memory>
+#include <utility>
+
 #include "third_party/WebKit/public/platform/WebCredential.h"
-#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 
 namespace test_runner {
 
@@ -52,7 +54,7 @@ void MockCredentialManagerClient::dispatchGet(
   if (error_ != blink::WebCredentialManagerNoError)
     callbacks->onError(error_);
   else
-    callbacks->onSuccess(adoptWebPtr(credential_.release()));
+    callbacks->onSuccess(std::move(credential_));
   delete callbacks;
 }
 

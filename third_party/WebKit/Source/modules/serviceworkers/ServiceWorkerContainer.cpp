@@ -65,11 +65,11 @@ public:
         : m_resolver(resolver) { }
     ~RegistrationCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->getExecutionContext(), handle.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->getExecutionContext(), adoptPtr(handle.release())));
     }
 
     void onError(const WebServiceWorkerError& error) override
@@ -94,9 +94,9 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> webPassHandle) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle> webPassHandle) override
     {
-        OwnPtr<WebServiceWorkerRegistration::Handle> handle = webPassHandle.release();
+        OwnPtr<WebServiceWorkerRegistration::Handle> handle = adoptPtr(webPassHandle.release());
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (!handle) {
@@ -125,10 +125,10 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationsCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> webPassRegistrations) override
+    void onSuccess(std::unique_ptr<WebVector<WebServiceWorkerRegistration::Handle*>> webPassRegistrations) override
     {
         Vector<OwnPtr<WebServiceWorkerRegistration::Handle>> handles;
-        OwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> webRegistrations = webPassRegistrations.release();
+        OwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> webRegistrations = adoptPtr(webPassRegistrations.release());
         for (auto& handle : *webRegistrations) {
             handles.append(adoptPtr(handle));
         }
@@ -156,12 +156,12 @@ public:
         : m_ready(ready) { }
     ~GetRegistrationForReadyCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override
     {
         ASSERT(m_ready->getState() == ReadyProperty::Pending);
 
         if (m_ready->getExecutionContext() && !m_ready->getExecutionContext()->activeDOMObjectsAreStopped())
-            m_ready->resolve(ServiceWorkerRegistration::getOrCreate(m_ready->getExecutionContext(), handle.release()));
+            m_ready->resolve(ServiceWorkerRegistration::getOrCreate(m_ready->getExecutionContext(), adoptPtr(handle.release())));
     }
 
 private:
@@ -381,25 +381,25 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState)
     return m_ready->promise(callerState->world());
 }
 
-void ServiceWorkerContainer::setController(WebPassOwnPtr<WebServiceWorker::Handle> handle, bool shouldNotifyControllerChange)
+void ServiceWorkerContainer::setController(std::unique_ptr<WebServiceWorker::Handle> handle, bool shouldNotifyControllerChange)
 {
     if (!getExecutionContext())
         return;
-    m_controller = ServiceWorker::from(getExecutionContext(), handle.release());
+    m_controller = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
     if (m_controller)
         UseCounter::count(getExecutionContext(), UseCounter::ServiceWorkerControlledPage);
     if (shouldNotifyControllerChange)
         dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
 
-void ServiceWorkerContainer::dispatchMessageEvent(WebPassOwnPtr<WebServiceWorker::Handle> handle, const WebString& message, const WebMessagePortChannelArray& webChannels)
+void ServiceWorkerContainer::dispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle> handle, const WebString& message, const WebMessagePortChannelArray& webChannels)
 {
     if (!getExecutionContext() || !getExecutionContext()->executingWindow())
         return;
 
     MessagePortArray* ports = MessagePort::toMessagePortArray(getExecutionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
-    ServiceWorker* source = ServiceWorker::from(getExecutionContext(), handle.release());
+    ServiceWorker* source = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
     dispatchEvent(ServiceWorkerMessageEvent::create(ports, value, source, getExecutionContext()->getSecurityOrigin()->toString()));
 }
 

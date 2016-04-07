@@ -7,11 +7,12 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -23,7 +24,7 @@ class WebServiceWorkerCache;
 class WebServiceWorkerCacheStorage {
 public:
     using CacheStorageCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
-    using CacheStorageWithCacheCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerCache>, WebServiceWorkerCacheError>;
+    using CacheStorageWithCacheCallbacks = WebCallbacks<std::unique_ptr<WebServiceWorkerCache>, WebServiceWorkerCacheError>;
     using CacheStorageKeysCallbacks = WebCallbacks<const WebVector<WebString>&, WebServiceWorkerCacheError>;
     using CacheStorageMatchCallbacks = WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError>;
 

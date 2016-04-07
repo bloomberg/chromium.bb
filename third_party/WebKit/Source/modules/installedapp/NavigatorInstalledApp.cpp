@@ -18,6 +18,7 @@
 #include "modules/installedapp/RelatedApplication.h"
 #include "public/platform/modules/installedapp/WebInstalledAppClient.h"
 #include "public/platform/modules/installedapp/WebRelatedApplication.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -80,7 +81,7 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(ScriptState* script
 
     controller()->getInstalledApps(
         WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()),
-        adoptWebPtr(new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
+        wrapUnique(new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
     return promise;
 }
 

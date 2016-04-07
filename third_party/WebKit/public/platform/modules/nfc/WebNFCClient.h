@@ -6,7 +6,8 @@
 #define WebNFCClient_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
+
+#include <memory>
 
 namespace blink {
 

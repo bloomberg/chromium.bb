@@ -14,8 +14,8 @@ class WebUSBDevice;
 struct WebUSBDeviceRequestOptions;
 struct WebUSBError;
 
-using WebUSBClientGetDevicesCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebUSBDevice*>>, const WebUSBError&>;
-using WebUSBClientRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBDevice>, const WebUSBError&>;
+using WebUSBClientGetDevicesCallbacks = WebCallbacks<std::unique_ptr<WebVector<WebUSBDevice*>>, const WebUSBError&>;
+using WebUSBClientRequestDeviceCallbacks = WebCallbacks<std::unique_ptr<WebUSBDevice>, const WebUSBError&>;
 
 class WebUSBClient {
 public:
@@ -24,10 +24,10 @@ public:
         virtual ~Observer() { }
 
         // Called when a device is connected to the system.
-        virtual void onDeviceConnected(WebPassOwnPtr<WebUSBDevice>) = 0;
+        virtual void onDeviceConnected(std::unique_ptr<WebUSBDevice>) = 0;
 
         // Called when a device is disconnected from the system.
-        virtual void onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice>) = 0;
+        virtual void onDeviceDisconnected(std::unique_ptr<WebUSBDevice>) = 0;
     };
 
     virtual ~WebUSBClient() { }

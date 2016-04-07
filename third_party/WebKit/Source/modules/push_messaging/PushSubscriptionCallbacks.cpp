@@ -24,12 +24,12 @@ PushSubscriptionCallbacks::~PushSubscriptionCallbacks()
 {
 }
 
-void PushSubscriptionCallbacks::onSuccess(WebPassOwnPtr<WebPushSubscription> webPushSubscription)
+void PushSubscriptionCallbacks::onSuccess(std::unique_ptr<WebPushSubscription> webPushSubscription)
 {
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
-    m_resolver->resolve(PushSubscription::take(m_resolver.get(), webPushSubscription.release(), m_serviceWorkerRegistration));
+    m_resolver->resolve(PushSubscription::take(m_resolver.get(), adoptPtr(webPushSubscription.release()), m_serviceWorkerRegistration));
 }
 
 void PushSubscriptionCallbacks::onError(const WebPushError& error)

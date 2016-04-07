@@ -143,14 +143,14 @@ void USB::contextDestroyed()
     m_client = nullptr;
 }
 
-void USB::onDeviceConnected(WebPassOwnPtr<WebUSBDevice> device)
+void USB::onDeviceConnected(std::unique_ptr<WebUSBDevice> device)
 {
-    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(device.release(), getExecutionContext())));
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(adoptPtr(device.release()), getExecutionContext())));
 }
 
-void USB::onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice> device)
+void USB::onDeviceDisconnected(std::unique_ptr<WebUSBDevice> device)
 {
-    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(device.release(), getExecutionContext())));
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(adoptPtr(device.release()), getExecutionContext())));
 }
 
 DEFINE_TRACE(USB)

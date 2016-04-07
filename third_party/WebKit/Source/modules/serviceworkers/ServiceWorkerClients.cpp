@@ -66,9 +66,9 @@ public:
         : m_resolver(resolver) { }
     ~GetCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerClientInfo> webClient) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerClientInfo> webClient) override
     {
-        OwnPtr<WebServiceWorkerClientInfo> client = webClient.release();
+        OwnPtr<WebServiceWorkerClientInfo> client = adoptPtr(webClient.release());
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (!client) {

@@ -66,7 +66,7 @@ public:
     void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
     void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
     void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
+    std::unique_ptr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
     void suspendTimerQueue() override { }
     void resumeTimerQueue() override { }
     void addPendingNavigation() override { }

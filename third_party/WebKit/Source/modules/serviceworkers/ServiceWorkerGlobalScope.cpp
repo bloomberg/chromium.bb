@@ -141,11 +141,11 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
     return promise;
 }
 
-void ServiceWorkerGlobalScope::setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
+void ServiceWorkerGlobalScope::setRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
 {
     if (!getExecutionContext())
         return;
-    m_registration = ServiceWorkerRegistration::getOrCreate(getExecutionContext(), handle.release());
+    m_registration = ServiceWorkerRegistration::getOrCreate(getExecutionContext(), adoptPtr(handle.release()));
 }
 
 bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)

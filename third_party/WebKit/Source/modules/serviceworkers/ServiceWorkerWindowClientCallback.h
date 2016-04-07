@@ -16,7 +16,7 @@ public:
     explicit NavigateClientCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerClientInfo>) override;
+    void onSuccess(std::unique_ptr<WebServiceWorkerClientInfo>) override;
     void onError(const WebServiceWorkerError&) override;
 
 private:

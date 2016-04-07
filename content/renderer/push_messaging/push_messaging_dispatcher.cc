@@ -4,6 +4,7 @@
 
 #include "content/renderer/push_messaging/push_messaging_dispatcher.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/common/push_messaging_messages.h"
@@ -114,8 +115,8 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
-  callbacks->onSuccess(blink::adoptWebPtr(
-      new blink::WebPushSubscription(endpoint, p256dh, auth)));
+  callbacks->onSuccess(
+      base::WrapUnique(new blink::WebPushSubscription(endpoint, p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }

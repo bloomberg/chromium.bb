@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "modules/cachestorage/InspectorCacheStorageAgent.h"
-
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
@@ -11,7 +10,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -30,6 +28,7 @@
 #include "wtf/text/StringBuilder.h"
 
 #include <algorithm>
+#include <memory>
 
 using blink::protocol::Array;
 using blink::protocol::CacheStorage::Cache;
@@ -299,9 +298,9 @@ public:
     }
     ~GetCacheForRequestData() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerCache> cache) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override
     {
-        auto* cacheRequest = new GetCacheKeysForRequestData(m_params, cache.release(), m_callback.release());
+        auto* cacheRequest = new GetCacheKeysForRequestData(m_params, adoptPtr(cache.release()), m_callback.release());
         cacheRequest->cache()->dispatchKeys(cacheRequest, nullptr, WebServiceWorkerCache::QueryParams());
     }
 
@@ -376,7 +375,7 @@ public:
     }
     ~GetCacheForDeleteEntry() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerCache> cache) override
+    void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override
     {
         auto* deleteRequest = new DeleteCacheEntry(m_callback.release());
         BatchOperation deleteOperation;

@@ -8,6 +8,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebSecurityOrigin.h"
 
+#include <utility>
+
 namespace blink {
 
 InstalledAppController::~InstalledAppController()
@@ -40,7 +42,7 @@ const char* InstalledAppController::supplementName()
     return "InstalledAppController";
 }
 
-void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, WebPassOwnPtr<AppInstalledCallbacks> callback)
+void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, std::unique_ptr<AppInstalledCallbacks> callback)
 {
     // When detached, the client is no longer valid.
     if (!m_client) {
@@ -49,7 +51,7 @@ void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, WebP
     }
 
     // Client is expected to take ownership of the callback
-    m_client->getInstalledRelatedApps(url, callback);
+    m_client->getInstalledRelatedApps(url, std::move(callback));
 }
 
 void InstalledAppController::willDetachFrameHost()

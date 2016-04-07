@@ -34,9 +34,10 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "platform/heap/GarbageCollected.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "wtf/OwnPtr.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -44,10 +45,10 @@ class RTCCertificate final : public GarbageCollectedFinalized<RTCCertificate>, p
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Takes ownership of the certificate.
-    RTCCertificate(WebPassOwnPtr<WebRTCCertificate>);
+    RTCCertificate(std::unique_ptr<WebRTCCertificate>);
 
     // Returns a new WebRTCCertificate shallow copy.
-    WebPassOwnPtr<WebRTCCertificate> certificateShallowCopy() const;
+    std::unique_ptr<WebRTCCertificate> certificateShallowCopy() const;
 
     DEFINE_INLINE_TRACE() {}
 

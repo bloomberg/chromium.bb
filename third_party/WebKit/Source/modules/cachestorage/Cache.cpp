@@ -23,8 +23,9 @@
 #include "platform/HTTPNames.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+
+#include <memory>
 
 namespace blink {
 

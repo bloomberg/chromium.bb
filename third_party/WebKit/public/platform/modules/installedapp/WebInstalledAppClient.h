@@ -19,7 +19,7 @@ public:
     virtual ~WebInstalledAppClient() {}
 
     // Takes ownership of the AppInstalledCallbacks.
-    virtual void getInstalledRelatedApps(const WebSecurityOrigin&, WebPassOwnPtr<AppInstalledCallbacks>) = 0;
+    virtual void getInstalledRelatedApps(const WebSecurityOrigin&, std::unique_ptr<AppInstalledCallbacks>) = 0;
 };
 
 } // namespace blink

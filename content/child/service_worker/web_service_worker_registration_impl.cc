@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
@@ -149,12 +150,12 @@ int64_t WebServiceWorkerRegistrationImpl::registration_id() const {
 }
 
 // static
-blink::WebPassOwnPtr<blink::WebServiceWorkerRegistration::Handle>
+std::unique_ptr<blink::WebServiceWorkerRegistration::Handle>
 WebServiceWorkerRegistrationImpl::CreateHandle(
     const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration) {
   if (!registration)
     return nullptr;
-  return blink::adoptWebPtr(new HandleImpl(registration));
+  return base::WrapUnique(new HandleImpl(registration));
 }
 
 blink::WebServiceWorkerRegistration::Handle*

@@ -128,7 +128,7 @@ void OnTransferIn(
   info->status.assign(
       std::vector<blink::WebUSBTransferInfo::Status>(1, web_status));
   info->data.assign(data);
-  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+  scoped_callbacks->onSuccess(std::move(info));
 }
 
 void OnTransferOut(
@@ -154,7 +154,7 @@ void OnTransferOut(
   info->status.assign(
       std::vector<blink::WebUSBTransferInfo::Status>(1, web_status));
   info->bytesTransferred.assign(std::vector<uint32_t>(1, bytes_written));
-  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+  scoped_callbacks->onSuccess(std::move(info));
 }
 
 void OnIsochronousTransferIn(
@@ -186,7 +186,7 @@ void OnIsochronousTransferIn(
     info->packetLength[i] = packets[i]->length;
     info->bytesTransferred[i] = packets[i]->transferred_length;
   }
-  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+  scoped_callbacks->onSuccess(std::move(info));
 }
 
 void OnIsochronousTransferOut(
@@ -211,7 +211,7 @@ void OnIsochronousTransferOut(
     }
     info->bytesTransferred[i] = packets[i]->transferred_length;
   }
-  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+  scoped_callbacks->onSuccess(std::move(info));
 }
 
 }  // namespace

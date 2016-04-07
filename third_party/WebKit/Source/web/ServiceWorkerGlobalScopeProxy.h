@@ -70,10 +70,10 @@ public:
     ~ServiceWorkerGlobalScopeProxy() override;
 
     // WebServiceWorkerContextProxy overrides:
-    void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>) override;
+    void setRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle>) override;
     void dispatchActivateEvent(int) override;
     void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, const WebServiceWorkerClientInfo&) override;
-    void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, WebPassOwnPtr<WebServiceWorker::Handle>) override;
+    void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, std::unique_ptr<WebServiceWorker::Handle>) override;
     void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
     void dispatchForeignFetchEvent(int, const WebServiceWorkerRequest&) override;
     void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;

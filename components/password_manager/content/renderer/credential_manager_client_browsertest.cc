@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/password_manager/content/renderer/credential_manager_client.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <tuple>
 
 #include "components/password_manager/content/common/credential_manager_messages.h"
-#include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "content/public/test/render_view_test.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
-#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 
 namespace password_manager {
@@ -130,7 +131,7 @@ class TestRequestCallbacks
 
   ~TestRequestCallbacks() override {}
 
-  void onSuccess(blink::WebPassOwnPtr<blink::WebCredential>) override {
+  void onSuccess(std::unique_ptr<blink::WebCredential>) override {
     test_->set_callback_succeeded(true);
   }
 

@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_IMPL_H_
 #define CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -14,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
-#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
@@ -57,7 +57,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
 
   // Creates WebServiceWorker::Handle object that owns a reference to the given
   // WebServiceWorkerImpl object.
-  static blink::WebPassOwnPtr<blink::WebServiceWorker::Handle> CreateHandle(
+  static std::unique_ptr<blink::WebServiceWorker::Handle> CreateHandle(
       const scoped_refptr<WebServiceWorkerImpl>& worker);
 
  private:

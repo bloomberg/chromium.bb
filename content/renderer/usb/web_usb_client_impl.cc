@@ -5,10 +5,13 @@
 #include "content/renderer/usb/web_usb_client_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/move.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +23,6 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
-#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceFilter.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceInfo.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceRequestOptions.h"
@@ -57,8 +59,9 @@ void OnGetDevicesComplete(
     ScopedWebCallbacks<blink::WebUSBClientGetDevicesCallbacks> scoped_callbacks,
     device::usb::DeviceManager* device_manager,
     mojo::Array<device::usb::DeviceInfoPtr> results) {
-  blink::WebVector<blink::WebUSBDevice*>* devices =
-      new blink::WebVector<blink::WebUSBDevice*>(results.size());
+  // TODO(dcheng): This WebVector should hold smart pointers.
+  std::unique_ptr<blink::WebVector<blink::WebUSBDevice*>> devices(
+      new blink::WebVector<blink::WebUSBDevice*>(results.size()));
   for (size_t i = 0; i < results.size(); ++i) {
     device::usb::DevicePtr device;
     device_manager->GetDevice(results[i]->guid, mojo::GetProxy(&device));
@@ -66,7 +69,7 @@ void OnGetDevicesComplete(
         std::move(device),
         mojo::ConvertTo<blink::WebUSBDeviceInfo>(results[i]));
   }
-  scoped_callbacks.PassCallbacks()->onSuccess(blink::adoptWebPtr(devices));
+  scoped_callbacks.PassCallbacks()->onSuccess(std::move(devices));
 }
 
 void OnRequestDevicesComplete(
@@ -77,10 +80,10 @@ void OnRequestDevicesComplete(
   if (result) {
     device::usb::DevicePtr device;
     device_manager->GetDevice(result->guid, mojo::GetProxy(&device));
-    blink::WebUSBDevice* web_usb_device = new WebUSBDeviceImpl(
-        std::move(device), mojo::ConvertTo<blink::WebUSBDeviceInfo>(result));
+    std::unique_ptr<blink::WebUSBDevice> web_usb_device(new WebUSBDeviceImpl(
+        std::move(device), mojo::ConvertTo<blink::WebUSBDeviceInfo>(result)));
 
-    scoped_callbacks->onSuccess(blink::adoptWebPtr(web_usb_device));
+    scoped_callbacks->onSuccess(std::move(web_usb_device));
   } else {
     scoped_callbacks->onError(
         blink::WebUSBError(blink::WebUSBError::Error::NotFound,
@@ -160,7 +163,7 @@ void WebUSBClientImpl::OnDeviceChangeNotification(
     for (auto observer : observers_) {
       device::usb::DevicePtr device;
       device_manager_->GetDevice(device_info->guid, mojo::GetProxy(&device));
-      observer->onDeviceConnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
+      observer->onDeviceConnected(base::WrapUnique(new WebUSBDeviceImpl(
           std::move(device),
           mojo::ConvertTo<blink::WebUSBDeviceInfo>(device_info))));
     }
@@ -169,7 +172,7 @@ void WebUSBClientImpl::OnDeviceChangeNotification(
     const device::usb::DeviceInfoPtr& device_info =
         notification->devices_removed[i];
     for (auto observer : observers_)
-      observer->onDeviceDisconnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
+      observer->onDeviceDisconnected(base::WrapUnique(new WebUSBDeviceImpl(
           nullptr, mojo::ConvertTo<blink::WebUSBDeviceInfo>(device_info))));
   }
 }

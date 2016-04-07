@@ -74,7 +74,7 @@ public:
 
     ScriptPromise skipWaiting(ScriptState*);
 
-    void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>);
+    void setRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 
     // EventTarget
     const AtomicString& interfaceName() const override;

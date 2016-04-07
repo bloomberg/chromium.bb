@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "components/password_manager/content/common/credential_manager_content_utils.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -13,7 +16,6 @@
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
-#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -76,7 +78,7 @@ void CredentialManagerClient::OnSendCredential(int request_id,
                                                const CredentialInfo& info) {
   RequestCallbacks* callbacks = get_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
-  std::unique_ptr<blink::WebCredential> credential = nullptr;
+  std::unique_ptr<blink::WebCredential> credential;
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
       credential.reset(new blink::WebFederatedCredential(
@@ -90,7 +92,7 @@ void CredentialManagerClient::OnSendCredential(int request_id,
       // Intentionally empty; we'll send nullptr to the onSuccess call below.
       break;
   }
-  callbacks->onSuccess(adoptWebPtr(credential.release()));
+  callbacks->onSuccess(std::move(credential));
   get_callbacks_.Remove(request_id);
 }
 

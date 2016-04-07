@@ -21,12 +21,12 @@ struct WebPresentationError;
 // the PresentationRequest object that originated the call in its constructor
 // and will pass it to the created PresentationConnection.
 class PresentationConnectionCallbacks final
-    : public WebCallbacks<WebPassOwnPtr<WebPresentationConnectionClient>, const WebPresentationError&> {
+    : public WebCallbacks<std::unique_ptr<WebPresentationConnectionClient>, const WebPresentationError&> {
 public:
     PresentationConnectionCallbacks(ScriptPromiseResolver*, PresentationRequest*);
     ~PresentationConnectionCallbacks() override = default;
 
-    void onSuccess(WebPassOwnPtr<WebPresentationConnectionClient>) override;
+    void onSuccess(std::unique_ptr<WebPresentationConnectionClient>) override;
     void onError(const WebPresentationError&) override;
 
 private:

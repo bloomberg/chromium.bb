@@ -28,25 +28,25 @@ void ServiceWorkerRegistration::dispatchUpdateFoundEvent()
     dispatchEvent(Event::create(EventTypeNames::updatefound));
 }
 
-void ServiceWorkerRegistration::setInstalling(WebPassOwnPtr<WebServiceWorker::Handle> handle)
+void ServiceWorkerRegistration::setInstalling(std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     if (!getExecutionContext())
         return;
-    m_installing = ServiceWorker::from(getExecutionContext(), handle.release());
+    m_installing = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
 }
 
-void ServiceWorkerRegistration::setWaiting(WebPassOwnPtr<WebServiceWorker::Handle> handle)
+void ServiceWorkerRegistration::setWaiting(std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     if (!getExecutionContext())
         return;
-    m_waiting = ServiceWorker::from(getExecutionContext(), handle.release());
+    m_waiting = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
 }
 
-void ServiceWorkerRegistration::setActive(WebPassOwnPtr<WebServiceWorker::Handle> handle)
+void ServiceWorkerRegistration::setActive(std::unique_ptr<WebServiceWorker::Handle> handle)
 {
     if (!getExecutionContext())
         return;
-    m_active = ServiceWorker::from(getExecutionContext(), handle.release());
+    m_active = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
 }
 
 ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)

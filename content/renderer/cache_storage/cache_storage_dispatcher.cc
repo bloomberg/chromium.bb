@@ -303,7 +303,7 @@ void CacheStorageDispatcher::OnCacheStorageOpenSuccess(int thread_id,
                       TimeTicks::Now() - open_times_[request_id]);
   WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks* callbacks =
       open_callbacks_.Lookup(request_id);
-  callbacks->onSuccess(blink::adoptWebPtr(web_cache.release()));
+  callbacks->onSuccess(std::move(web_cache));
   open_callbacks_.Remove(request_id);
   open_times_.erase(request_id);
 }

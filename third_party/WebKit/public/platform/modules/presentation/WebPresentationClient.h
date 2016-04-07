@@ -7,7 +7,8 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebPassOwnPtr.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -20,7 +21,7 @@ struct WebPresentationError;
 // If session was created, callback's onSuccess() is invoked with the information about the
 // presentation session created by the embedder. Otherwise, onError() is invoked with the error code
 // and message.
-using WebPresentationConnectionClientCallbacks = WebCallbacks<WebPassOwnPtr<WebPresentationConnectionClient>, const WebPresentationError&>;
+using WebPresentationConnectionClientCallbacks = WebCallbacks<std::unique_ptr<WebPresentationConnectionClient>, const WebPresentationError&>;
 
 // Callback for .getAvailability().
 using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, const WebPresentationError&>;

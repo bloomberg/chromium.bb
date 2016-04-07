@@ -15,13 +15,13 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
-WebPassOwnPtr<WebURLLoaderMockFactory> WebURLLoaderMockFactory::create()
+std::unique_ptr<WebURLLoaderMockFactory> WebURLLoaderMockFactory::create()
 {
-    return adoptWebPtr(static_cast<WebURLLoaderMockFactory*>(
-        new WebURLLoaderMockFactoryImpl));
+    return wrapUnique(new WebURLLoaderMockFactoryImpl);
 }
 
 WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl() {}

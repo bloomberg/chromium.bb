@@ -21,7 +21,7 @@ class MODULES_EXPORT InstalledAppController final
 public:
     virtual ~InstalledAppController();
 
-    void getInstalledApps(const WebSecurityOrigin&, WebPassOwnPtr<AppInstalledCallbacks>);
+    void getInstalledApps(const WebSecurityOrigin&, std::unique_ptr<AppInstalledCallbacks>);
 
     static void provideTo(LocalFrame&, WebInstalledAppClient*);
     static InstalledAppController* from(LocalFrame&);
