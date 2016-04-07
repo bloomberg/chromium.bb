@@ -70385,6 +70385,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1283" label="InvalidFrameAncestorsDirectiveInMetaCSP"/>
   <int value="1284" label="TouchDragUserGestureUsed"/>
   <int value="1285" label="TouchDragUserGestureUsedCrossOrigin"/>
+  <int value="1286" label="DocumentCreateEventForeignFetchEvent"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

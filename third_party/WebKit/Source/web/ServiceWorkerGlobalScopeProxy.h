@@ -112,8 +112,6 @@ private:
     Document& document() const;
     ServiceWorkerGlobalScope* workerGlobalScope() const;
 
-    void dispatchFetchEventImpl(int eventID, const WebServiceWorkerRequest&, const AtomicString& eventTypeName);
-
     // Non-null until the WebEmbeddedWorkerImpl explicitly detach()es
     // as part of its finalization.
     WebEmbeddedWorkerImpl* m_embeddedWorker;

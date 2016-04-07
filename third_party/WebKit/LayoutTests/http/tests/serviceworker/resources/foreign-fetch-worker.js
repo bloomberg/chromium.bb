@@ -5,5 +5,5 @@ self.addEventListener('install', function(event) {
   });
 
 self.addEventListener('foreignfetch', function(event) {
-    event.respondWith(new Response('Foreign Fetch'));
+    event.respondWith({response: new Response('Foreign Fetch')});
   });

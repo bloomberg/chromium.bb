@@ -251,6 +251,10 @@ interface FileReaderSync
     method readAsBinaryString
     method readAsDataURL
     method readAsText
+interface ForeignFetchEvent : ExtendableEvent
+    getter request
+    method constructor
+    method respondWith
 interface FormData
     method append
     method constructor

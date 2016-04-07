@@ -51,6 +51,7 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/ExtendableMessageEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
+#include "modules/serviceworkers/ForeignFetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
@@ -138,12 +139,30 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
-    dispatchFetchEventImpl(eventID, webRequest, EventTypeNames::fetch);
+    RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
+    Request* request = Request::create(workerGlobalScope(), webRequest);
+    request->getHeaders()->setGuard(Headers::ImmutableGuard);
+    FetchEventInit eventInit;
+    eventInit.setCancelable(true);
+    eventInit.setRequest(request);
+    eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
+    eventInit.setIsReload(webRequest.isReload());
+    FetchEvent* fetchEvent = FetchEvent::create(EventTypeNames::fetch, eventInit, observer);
+    DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
+    observer->didDispatchEvent(dispatchResult);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
-    dispatchFetchEventImpl(eventID, webRequest, EventTypeNames::foreignfetch);
+    ForeignFetchRespondWithObserver* observer = ForeignFetchRespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
+    Request* request = Request::create(workerGlobalScope(), webRequest);
+    request->getHeaders()->setGuard(Headers::ImmutableGuard);
+    ForeignFetchEventInit eventInit;
+    eventInit.setCancelable(true);
+    eventInit.setRequest(request);
+    ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(EventTypeNames::foreignfetch, eventInit, observer);
+    DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
+    observer->didDispatchEvent(dispatchResult);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchGeofencingEvent(int eventID, WebGeofencingEventType eventType, const WebString& regionID, const WebCircularGeofencingRegion& region)
@@ -293,21 +312,6 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScopeProxy::workerGlobalScope() con
 {
     DCHECK(m_workerGlobalScope);
     return m_workerGlobalScope;
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchFetchEventImpl(int eventID, const WebServiceWorkerRequest& webRequest, const AtomicString& eventTypeName)
-{
-    RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
-    Request* request = Request::create(workerGlobalScope(), webRequest);
-    request->getHeaders()->setGuard(Headers::ImmutableGuard);
-    FetchEventInit eventInit;
-    eventInit.setCancelable(true);
-    eventInit.setRequest(request);
-    eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
-    eventInit.setIsReload(webRequest.isReload());
-    RawPtr<FetchEvent> fetchEvent(FetchEvent::create(eventTypeName, eventInit, observer));
-    DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent.release());
-    observer->didDispatchEvent(dispatchResult);
 }
 
 } // namespace blink

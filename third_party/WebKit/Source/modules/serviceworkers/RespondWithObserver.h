@@ -22,9 +22,11 @@ class ScriptValue;
 
 // This class observes the service worker's handling of a FetchEvent and
 // notifies the client.
-class MODULES_EXPORT RespondWithObserver final : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
+class MODULES_EXPORT RespondWithObserver : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 public:
+    virtual ~RespondWithObserver();
+
     static RespondWithObserver* create(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext);
 
     void contextDestroyed() override;
@@ -36,14 +38,15 @@ public:
     void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
     void responseWasRejected(WebServiceWorkerResponseError);
-    void responseWasFulfilled(const ScriptValue&);
+    virtual void responseWasFulfilled(const ScriptValue&);
 
     DECLARE_VIRTUAL_TRACE();
 
+protected:
+    RespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext);
+
 private:
     class ThenFunction;
-
-    RespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext);
 
     int m_eventID;
     KURL m_requestURL;

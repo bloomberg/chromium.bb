@@ -59,6 +59,9 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
     case WebServiceWorkerResponseErrorBodyLocked:
         errorMessage = errorMessage + "a Response whose \"body\" is locked cannot be used to respond to a request.";
         break;
+    case WebServiceWorkerResponseErrorNoForeignFetchResponse:
+        errorMessage = errorMessage + "an object that was not a ForeignFetchResponse was passed to respondWith().";
+        break;
     case WebServiceWorkerResponseErrorUnknown:
     default:
         errorMessage = errorMessage + "an unexpected error occurred.";
@@ -133,6 +136,8 @@ private:
     Member<RespondWithObserver> m_observer;
     ResolveType m_resolveType;
 };
+
+RespondWithObserver::~RespondWithObserver() {}
 
 RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
 {
