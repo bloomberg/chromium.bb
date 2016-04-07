@@ -992,6 +992,10 @@ class Changelist(object):
     self.GetBranch()  # Poke the lazy loader.
     return self.branchref
 
+  def ClearBranch(self):
+    """Clears cached branch data of this object."""
+    self.branch = self.branchref = None
+
   @staticmethod
   def FetchUpstreamTuple(branch):
     """Returns a tuple containing remote and remote ref,
@@ -4317,9 +4321,9 @@ def CMDdiff(parser, args):
 
   # Create a new branch based on the merge-base
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
-  # Update the cached branch in cl instance, to avoid overwriting original
-  # branch properties.
-  cl.branch = cl.branchref = None
+  # Clear cached branch in cl object, to avoid overwriting original CL branch
+  # properties.
+  cl.ClearBranch()
   try:
     rtn = cl.CMDPatchIssue(issue, reject=False, nocommit=False, directory=None)
     if rtn != 0:
