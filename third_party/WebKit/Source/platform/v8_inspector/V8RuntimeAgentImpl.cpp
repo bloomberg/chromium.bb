@@ -109,7 +109,8 @@ void V8RuntimeAgentImpl::evaluate(
         return;
 
     v8::HandleScope scope(injectedScript->isolate());
-    v8::Context::Scope contextScope(injectedScript->context()->context());
+    v8::Local<v8::Context> context = injectedScript->context()->context();
+    v8::Context::Scope contextScope(context);
 
     if (!injectedScript->canAccessInspectedWindow()) {
         *errorString = "Can not access given context";
@@ -125,7 +126,13 @@ void V8RuntimeAgentImpl::evaluate(
         return;
     InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
 
+    bool evalIsDisabled = !context->IsCodeGenerationFromStringsAllowed();
+    // Temporarily enable allow evals for inspector.
+    if (evalIsDisabled)
+        context->AllowCodeGenerationFromStrings(true);
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), expression));
+    if (evalIsDisabled)
+        context->AllowCodeGenerationFromStrings(false);
     // InjectedScript may be gone after any evaluate call - find it again.
     injectedScript = m_session->findInjectedScript(errorString, contextId);
     if (!injectedScript)
