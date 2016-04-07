@@ -123,6 +123,11 @@ class WebClient {
 
   // Gives the embedder a chance to provide the JavaScript to be injected into
   // the web view as early as possible. Result must not be nil.
+  virtual NSString* GetEarlyPageScript() const;
+
+  // Gives the embedder a chance to provide the JavaScript to be injected into
+  // the web view as early as possible. Result must not be nil.
+  // Deprecated, use GetEarlyPageScript() instead.
   virtual NSString* GetEarlyPageScript(WebViewType web_view_type) const;
 };
 

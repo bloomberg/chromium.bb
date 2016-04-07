@@ -28,10 +28,9 @@ NSString* GetPageScript(NSString* script_file_name) {
   return content;
 }
 
-NSString* GetEarlyPageScript(WebViewType web_view_type) {
+NSString* GetEarlyPageScript() {
   DCHECK(GetWebClient());
-  NSString* embedder_page_script =
-      GetWebClient()->GetEarlyPageScript(web_view_type);
+  NSString* embedder_page_script = GetWebClient()->GetEarlyPageScript();
   DCHECK(embedder_page_script);
 
   // Make sure that script is injected only once. For example, content of
@@ -45,6 +44,11 @@ NSString* GetEarlyPageScript(WebViewType web_view_type) {
   return [NSString stringWithFormat:kScriptTemplate,
                                     GetPageScript(@"web_bundle"),
                                     embedder_page_script];
+}
+
+NSString* GetEarlyPageScript(WebViewType web_view_type) {
+  DCHECK_EQ(web_view_type, web::WK_WEB_VIEW_TYPE);
+  return GetEarlyPageScript();
 }
 
 }  // namespace web

@@ -10,7 +10,7 @@
 @implementation CRWJSEarlyScriptManager
 
 - (NSString*)staticInjectionContent {
-  return web::GetEarlyPageScript(self.receiver.webViewType);
+  return web::GetEarlyPageScript();
 }
 
 - (NSString*)presenceBeacon {

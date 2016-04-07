@@ -22,9 +22,9 @@ const char kWKWebViewConfigProviderKeyName[] = "wk_web_view_config_provider";
 
 // Returns an autoreleased instance of WKUserScript to be added to
 // configuration's userContentController.
-WKUserScript* GetEarlyPageScript() {
+WKUserScript* InternalGetEarlyPageScript() {
   return [[[WKUserScript alloc]
-        initWithSource:GetEarlyPageScript(WK_WEB_VIEW_TYPE)
+        initWithSource:GetEarlyPageScript()
          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
       forMainFrameOnly:YES] autorelease];
 }
@@ -65,7 +65,8 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     }
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
-    [[configuration_ userContentController] addUserScript:GetEarlyPageScript()];
+    [[configuration_ userContentController]
+        addUserScript:InternalGetEarlyPageScript()];
   }
   // Prevent callers from changing the internals of configuration.
   return [[configuration_ copy] autorelease];

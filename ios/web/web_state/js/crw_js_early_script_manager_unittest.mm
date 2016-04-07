@@ -39,7 +39,7 @@ class CRWJSEarlyScriptManagerTest : public PlatformTest {
 // web::GetEarlyPageScript.
 TEST_F(CRWJSEarlyScriptManagerTest, Content) {
   NSString* injectionContent = [earlyScriptManager_ staticInjectionContent];
-  NSString* earlyScript = GetEarlyPageScript([receiver_ webViewType]);
+  NSString* earlyScript = GetEarlyPageScript();
   // |earlyScript| is a substring of |injectionContent|. The latter wraps the
   // former with "if (typeof __gCrWeb !== 'object')" check to avoid multiple
   // injections.

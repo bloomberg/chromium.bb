@@ -4,30 +4,30 @@
 
 #import "ios/web/public/test/test_web_client.h"
 
-#include "base/strings/sys_string_conversions.h"
+#include "base/logging.h"
 
 namespace web {
 
-TestWebClient::TestWebClient()
-    : early_page_scripts_([[NSMutableDictionary alloc] init]) {
-}
+TestWebClient::TestWebClient() {}
 
-TestWebClient::~TestWebClient() {
+TestWebClient::~TestWebClient() {}
+
+NSString* TestWebClient::GetEarlyPageScript() const {
+  return early_page_script_ ? early_page_script_.get() : @"";
 }
 
 NSString* TestWebClient::GetEarlyPageScript(
     web::WebViewType web_view_type) const {
-  NSString* result = [early_page_scripts_ objectForKey:@(web_view_type)];
-  return result ? result : @"";
+  DCHECK_EQ(web_view_type, web::WK_WEB_VIEW_TYPE);
+  return GetEarlyPageScript();
 }
 
 bool TestWebClient::WebViewsNeedActiveStateManager() const {
   return true;
 }
 
-void TestWebClient::SetEarlyPageScript(NSString* page_script,
-                                       web::WebViewType web_view_type) {
-  [early_page_scripts_ setObject:page_script forKey:@(web_view_type)];
+void TestWebClient::SetEarlyPageScript(NSString* page_script) {
+  early_page_script_.reset([page_script copy]);
 }
 
 }  // namespace web

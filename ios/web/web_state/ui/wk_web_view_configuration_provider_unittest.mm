@@ -131,12 +131,12 @@ TEST_F(WKWebViewConfigurationProviderTest, Purge) {
 }
 
 // Tests that configuration's userContentController has only one script with the
-// same content as web::GetEarlyPageScript(WK_WEB_VIEW_TYPE) returns.
+// same content as web::GetEarlyPageScript() returns.
 TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
   WKWebViewConfiguration* config = GetProvider().GetWebViewConfiguration();
   NSArray* scripts = config.userContentController.userScripts;
   EXPECT_EQ(1U, scripts.count);
-  NSString* early_script = GetEarlyPageScript(WK_WEB_VIEW_TYPE);
+  NSString* early_script = GetEarlyPageScript();
   // |earlyScript| is a substring of |userScripts|. The latter wraps the
   // former with "if (!injected)" check to avoid double injections.
   EXPECT_LT(0U, [[scripts[0] source] rangeOfString:early_script].length);

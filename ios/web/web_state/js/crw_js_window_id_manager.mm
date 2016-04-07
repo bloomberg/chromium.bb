@@ -53,7 +53,7 @@ const NSInteger kUniqueKeyLength = 16;
 }
 
 // It is important to recreate the injection content on every injection, because
-// it cotains the randomly-generated page ID used for security checks.
+// it contains the randomly-generated page ID used for security checks.
 - (NSString*)injectionContent {
   _windowId.reset([[self generateUniqueKey] retain]);
   NSString* script = [super injectionContent];

@@ -75,6 +75,10 @@ base::RefCountedStaticMemory* WebClient::GetDataResourceBytes(
   return nullptr;
 }
 
+NSString* WebClient::GetEarlyPageScript() const {
+  return GetEarlyPageScript(web::WK_WEB_VIEW_TYPE);
+}
+
 NSString* WebClient::GetEarlyPageScript(WebViewType web_view_type) const {
   return @"";
 }

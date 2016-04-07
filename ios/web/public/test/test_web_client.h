@@ -19,16 +19,17 @@ class TestWebClient : public web::WebClient {
  public:
   TestWebClient();
   ~TestWebClient() override;
+
   // WebClient implementation.
+  NSString* GetEarlyPageScript() const override;
   NSString* GetEarlyPageScript(web::WebViewType web_view_type) const override;
   bool WebViewsNeedActiveStateManager() const override;
 
   // Changes Early Page Script for testing purposes.
-  void SetEarlyPageScript(NSString* page_script,
-                          web::WebViewType web_view_type);
+  void SetEarlyPageScript(NSString* page_script);
 
  private:
-  base::scoped_nsobject<NSMutableDictionary> early_page_scripts_;
+  base::scoped_nsobject<NSString> early_page_script_;
 };
 
 }  // namespace web
