@@ -16,7 +16,7 @@ class Page;
 class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Frontend::Accessibility>, public protocol::Backend::Accessibility {
     WTF_MAKE_NONCOPYABLE(InspectorAccessibilityAgent);
 public:
-    static RawPtr<InspectorAccessibilityAgent> create(Page* page)
+    static InspectorAccessibilityAgent* create(Page* page)
     {
         return new InspectorAccessibilityAgent(page);
     }

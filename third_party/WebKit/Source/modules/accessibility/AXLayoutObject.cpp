@@ -1851,7 +1851,7 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const
         return AXRange();
 
     VisibleSelection selection = getLayoutObject()->frame()->selection().selection();
-    RawPtr<Range> selectionRange = firstRangeOf(selection);
+    Range* selectionRange = firstRangeOf(selection);
     ContainerNode* parentNode = getNode()->parentNode();
     int nodeIndex = getNode()->nodeIndex();
     if (!selectionRange
@@ -1915,7 +1915,7 @@ int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& position) con
     if (indexPosition.isNull())
         return 0;
 
-    RawPtr<Range> range = Range::create(*getDocument());
+    Range* range = Range::create(*getDocument());
     range->setStart(getNode(), 0, IGNORE_EXCEPTION);
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 

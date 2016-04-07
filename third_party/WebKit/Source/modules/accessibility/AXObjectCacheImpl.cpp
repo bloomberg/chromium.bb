@@ -653,8 +653,6 @@ void AXObjectCacheImpl::childrenChanged(AXObject* obj)
 
 void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
 {
-    RawPtr<Document> protectorForCacheOwner(m_document.get());
-
     m_notificationPostTimer.stop();
 
     unsigned i = 0, count = m_notificationsToPost.size();
