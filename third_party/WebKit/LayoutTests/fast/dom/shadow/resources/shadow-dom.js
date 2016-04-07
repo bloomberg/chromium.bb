@@ -190,7 +190,7 @@ function isInnermostActiveElement(id)
 {
     var element = getNodeInComposedTree(id);
     if (!element) {
-        debug('FAIL: There is no such element with id: '+ from);
+        debug('FAIL: There is no such element with id: '+ id);
         return false;
     }
     if (element == innermostActiveElement())

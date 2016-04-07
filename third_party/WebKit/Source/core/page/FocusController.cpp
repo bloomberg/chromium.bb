@@ -373,7 +373,7 @@ inline bool isNonFocusableShadowHost(const Element& element)
 
 inline bool isNonKeyboardFocusableShadowHost(const Element& element)
 {
-    return isShadowHostWithoutCustomFocusLogic(element) && !element.isKeyboardFocusable();
+    return isShadowHostWithoutCustomFocusLogic(element) && !(element.shadowRootIfV1() ? element.isFocusable() : element.isKeyboardFocusable());
 }
 
 inline bool isKeyboardFocusableShadowHost(const Element& element)

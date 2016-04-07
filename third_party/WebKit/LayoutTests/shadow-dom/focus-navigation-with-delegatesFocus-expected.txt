@@ -52,13 +52,9 @@ PASS
 (5/8) Testing tab navigation order with tabindex=-1 and delegatesFocus=false
 PASS window.internals.shadowRoot(hostDiv).delegatesFocus is false
 PASS hostDiv.getAttribute("tabindex") is "-1"
-Should move from input-before to host-div/inner-input in forward
+Should move from input-before to input-after in forward
 PASS
-Should move from host-div/inner-input to input-after in forward
-PASS
-Should move from input-after to host-div/inner-input in backward
-PASS
-Should move from host-div/inner-input to input-before in backward
+Should move from input-after to input-before in backward
 PASS
 (6/8) Testing tab navigation order with tabindex=-1 and delegatesFocus=true
 PASS window.internals.shadowRoot(hostDiv).delegatesFocus is true
@@ -144,13 +140,9 @@ PASS
 (5/8) Testing tab navigation order with tabindex=-1 and delegatesFocus=false
 PASS window.internals.shadowRoot(hostDiv).delegatesFocus is false
 PASS hostDiv.getAttribute("tabindex") is "-1"
-Should move from input-before to host-div/inner-input in forward
+Should move from input-before to input-after in forward
 PASS
-Should move from host-div/inner-input to input-after in forward
-PASS
-Should move from input-after to host-div/inner-input in backward
-PASS
-Should move from host-div/inner-input to input-before in backward
+Should move from input-after to input-before in backward
 PASS
 (6/8) Testing tab navigation order with tabindex=-1 and delegatesFocus=true
 PASS window.internals.shadowRoot(hostDiv).delegatesFocus is true
