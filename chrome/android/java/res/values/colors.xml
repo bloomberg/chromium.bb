@@ -108,6 +108,7 @@
     <!-- Contextual Search colors -->
     <color name="contextual_search_promo_text_color">#333333</color>
     <color name="contextual_search_promo_background_color">#EEEEEE</color>
+    <color name="contextual_search_promo_border_color">#C2C2C2</color>
 
     <!-- Progress Bar colors -->
     <color name="progress_bar_foreground">@color/light_active_color</color>

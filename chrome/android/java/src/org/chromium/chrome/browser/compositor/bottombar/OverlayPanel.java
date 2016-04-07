@@ -84,8 +84,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         CONTENT_CHANGED,
         KEYBOARD_SHOWN,
         KEYBOARD_HIDDEN,
-        TAB_NAVIGATION,
-        PROMO_ACCEPTED
+        TAB_NAVIGATION
     }
 
     /** The activity this panel is in. */

@@ -312,7 +312,7 @@ abstract class OverlayPanelBase {
      *
      * @return The Panel Bar Container in dps.
      */
-    protected float getBarContainerHeight() {
+    public float getBarContainerHeight() {
         return getBarHeight();
     }
 

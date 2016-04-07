@@ -55,13 +55,6 @@ public abstract class OverlayPanelInflater extends ViewResourceInflater {
     }
 
     @Override
-    protected void onFinishInflate() {
-        if (!mOverlayPanel.isFullWidthSizePanel()) {
-            invalidate(true);
-        }
-    }
-
-    @Override
     protected int getWidthMeasureSpec() {
         return View.MeasureSpec.makeMeasureSpec(
                 mOverlayPanel.getMaximumWidthPx(), View.MeasureSpec.EXACTLY);

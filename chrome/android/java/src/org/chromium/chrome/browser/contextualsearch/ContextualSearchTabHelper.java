@@ -64,7 +64,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
         mBaseContentViewCore = tab.getContentViewCore();
         // Add Contextual Search here in case it couldn't get added in onContentChanged() due to
         // being too early in initialization of Chrome (ContextualSearchManager being null).
-        setContextualSearchHooks(mBaseContentViewCore);
+        updateContextualSearchHooks(mBaseContentViewCore);
 
         ContextualSearchManager manager = getContextualSearchManager();
         if (manager != null) {
@@ -84,7 +84,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
                     new TemplateUrlServiceObserver() {
                         @Override
                         public void onTemplateURLServiceChanged() {
-                            onContextualSearchPrefChanged();
+                            updateContextualSearchHooks(mBaseContentViewCore);
                         }
                     };
             TemplateUrlService.getInstance().addObserver(mTemplateUrlObserver);
@@ -126,15 +126,15 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     private void updateHooksForNewContentViewCore(Tab tab) {
         removeContextualSearchHooks(mBaseContentViewCore);
         mBaseContentViewCore = tab.getContentViewCore();
-        setContextualSearchHooks(mBaseContentViewCore);
+        updateContextualSearchHooks(mBaseContentViewCore);
     }
 
     /**
-     * Sets up the Contextual Search hooks, adding or removing them depending on whether it is
+     * Updates the Contextual Search hooks, adding or removing them depending on whether it is
      * currently active.
      * @param cvc The content view core to attach the gesture state listener to.
      */
-    private void setContextualSearchHooks(ContentViewCore cvc) {
+    private void updateContextualSearchHooks(ContentViewCore cvc) {
         if (cvc == null) return;
 
         if (isContextualSearchActive(cvc)) {
@@ -200,7 +200,14 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
 
     @CalledByNative
     private void onContextualSearchPrefChanged() {
-        setContextualSearchHooks(mBaseContentViewCore);
+        updateContextualSearchHooks(mBaseContentViewCore);
+
+        ContextualSearchManager manager = getContextualSearchManager();
+        if (manager != null) {
+            boolean isEnabled = !PrefServiceBridge.getInstance().isContextualSearchDisabled()
+                    && !PrefServiceBridge.getInstance().isContextualSearchUninitialized();
+            manager.onContextualSearchPrefChanged(isEnabled);
+        }
     }
 
     private native long nativeInit(Profile profile);

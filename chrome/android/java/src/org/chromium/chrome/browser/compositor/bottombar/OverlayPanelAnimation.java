@@ -27,9 +27,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * Animation properties.
      */
     protected enum Property {
-        PANEL_HEIGHT,
-        // TODO(pedrosimonetti): Move Promo logic to its own control class.
-        PROMO_VISIBILITY
+        PANEL_HEIGHT
     }
 
     /**
@@ -104,9 +102,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     // ============================================================================================
     // Animation API
     // ============================================================================================
-
-    // TODO(pedrosimonetti): Move Promo logic to its own control class.
-    protected void setPromoVisibilityForOptInAnimation(float percentage) {}
 
     /**
      * Animates the Overlay Panel to its maximized state.
@@ -375,9 +370,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     public void setProperty(Property prop, float value) {
         if (prop == Property.PANEL_HEIGHT) {
             setPanelHeight(value);
-        } else if (prop == Property.PROMO_VISIBILITY) {
-            // TODO(pedrosimonetti): Move Promo logic to its own control class.
-            setPromoVisibilityForOptInAnimation(value);
         }
     }
 

@@ -140,6 +140,7 @@ public class ViewResourceInflater {
         // View must be inflated at this point. If it's not, do it now.
         if (mView == null) {
             inflate();
+            didViewSizeChange = true;
         }
 
         mIsInvalidated = true;
@@ -161,8 +162,7 @@ public class ViewResourceInflater {
         } else {
             // When the View is not attached, we need to manually layout the View and
             // invalidate the resource in order to capture a new snapshot.
-            mView.measure(getWidthMeasureSpec(), getHeightMeasureSpec());
-            mView.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
+            layout();
             invalidateResource();
         }
     }
@@ -255,10 +255,25 @@ public class ViewResourceInflater {
     }
 
     /**
+     * Lays out the View.
+     */
+    protected void layout() {
+        mView.measure(getWidthMeasureSpec(), getHeightMeasureSpec());
+        mView.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
+    }
+
+    /**
      * @return The View resource.
      */
     protected View getView() {
         return mView;
+    }
+
+    /**
+     * @return The Context used to inflate the View.
+     */
+    protected Context getContext() {
+        return mContext;
     }
 
     /**

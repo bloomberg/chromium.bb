@@ -740,6 +740,14 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         mIsAccessibilityModeEnabled = enabled;
     }
 
+    /**
+     * Notifies that the preference state has changed.
+     * @param isEnabled Whether the feature is enabled.
+     */
+    public void onContextualSearchPrefChanged(boolean isEnabled) {
+        mSearchPanel.onContextualSearchPrefChanged(isEnabled);
+    }
+
     // ============================================================================================
     // Observers
     // ============================================================================================

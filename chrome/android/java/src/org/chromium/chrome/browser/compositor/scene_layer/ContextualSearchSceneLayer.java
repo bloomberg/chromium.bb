@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchIconSpriteControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPeekPromoControl;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -41,16 +42,17 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             ContextualSearchPanel panel,
             ContextualSearchBarControl searchBarControl,
             ContextualSearchPeekPromoControl peekPromoControl,
+            ContextualSearchPromoControl promoControl,
             ContextualSearchIconSpriteControl spriteControl) {
 
         int searchContextViewId = searchBarControl.getSearchContextViewId();
         int searchTermViewId = searchBarControl.getSearchTermViewId();
         int searchCaptionViewId = searchBarControl.getCaptionViewId();
 
-        // TODO(pedrosimonetti): Move to Promo logic to its own control class.
-        boolean searchPromoVisible = panel.getPromoVisible();
-        float searchPromoHeightPx = panel.getPromoHeightPx();
-        float searchPromoOpacity = panel.getPromoOpacity();
+        int searchPromoViewId = promoControl.getViewId();
+        boolean searchPromoVisible = promoControl.isVisible();
+        float searchPromoHeightPx = promoControl.getHeightPx();
+        float searchPromoOpacity = promoControl.getOpacity();
 
         int searchPeekPromoTextViewId = peekPromoControl.getViewId();
         boolean searchPeekPromoVisible = peekPromoControl.isVisible();
@@ -104,7 +106,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background,
                 R.drawable.progress_bar_foreground,
-                R.id.contextual_search_opt_out_promo,
+                searchPromoViewId,
                 R.drawable.contextual_search_promo_ripple,
                 searchPeekPromoTextViewId,
                 mDpToPx,
