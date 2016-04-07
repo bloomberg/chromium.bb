@@ -10,19 +10,13 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_item_delegate.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/fullscreen.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -32,10 +26,6 @@
 
 namespace {
 
-bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
-  return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
-}
-
 // Returns true if the user can modify the |shelf|'s auto-hide behavior.
 bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
   const std::string& pref = prefs::kShelfAutoHideBehaviorLocal;
@@ -43,6 +33,21 @@ bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
 }
 
 }  // namespace
+
+// static
+LauncherContextMenu* LauncherContextMenu::Create(
+    ChromeLauncherController* controller,
+    const ash::ShelfItem* item,
+    ash::Shelf* shelf) {
+  DCHECK(controller);
+  DCHECK(shelf);
+  // Create DesktopShellLauncherContextMenu if no item is selected.
+  if (!item || item->id == 0)
+    return new DesktopShellLauncherContextMenu(controller, item, shelf);
+
+  // Create ExtensionLauncherContextMenu for the item.
+  return new ExtensionLauncherContextMenu(controller, item, shelf);
+}
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::ShelfItem* item,
@@ -52,180 +57,28 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       item_(item ? *item : ash::ShelfItem()),
       shelf_alignment_menu_(shelf),
       shelf_(shelf) {
-  DCHECK(shelf_);
-  Init();
-}
-
-void LauncherContextMenu::Init() {
   set_delegate(this);
-
-  if (item_.id != 0) {
-    extension_items_.reset(new extensions::ContextMenuMatcher(
-        controller_->profile(), this, this,
-        base::Bind(MenuItemHasLauncherContext)));
-    if (item_.type == ash::TYPE_APP_SHORTCUT ||
-        item_.type == ash::TYPE_WINDOWED_APP) {
-      // V1 apps can be started from the menu - but V2 apps should not.
-      if (!controller_->IsPlatformApp(item_.id)) {
-        AddItem(MENU_OPEN_NEW, base::string16());
-        AddSeparator(ui::NORMAL_SEPARATOR);
-      }
-      const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
-      int menu_pin_string_id;
-      if (!controller_->CanPin(app_id))
-        menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY;
-      else if (controller_->IsPinned(item_.id))
-        menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_UNPIN;
-      else
-        menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN;
-      AddItem(MENU_PIN, l10n_util::GetStringUTF16(menu_pin_string_id));
-      if (controller_->IsOpen(item_.id)) {
-        AddItem(MENU_CLOSE,
-                l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
-      }
-      if (!controller_->IsPlatformApp(item_.id) &&
-          item_.type != ash::TYPE_WINDOWED_APP) {
-        AddSeparator(ui::NORMAL_SEPARATOR);
-        if (extensions::util::IsNewBookmarkAppsEnabled()) {
-          // With bookmark apps enabled, hosted apps launch in a window by
-          // default. This menu item is re-interpreted as a single, toggle-able
-          // option to launch the hosted app as a tab.
-          AddCheckItemWithStringId(LAUNCH_TYPE_WINDOW,
-                                   IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-        } else {
-          AddCheckItemWithStringId(
-              LAUNCH_TYPE_REGULAR_TAB,
-              IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-          AddCheckItemWithStringId(
-              LAUNCH_TYPE_PINNED_TAB,
-              IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-          AddCheckItemWithStringId(
-              LAUNCH_TYPE_WINDOW,
-              IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-          // Even though the launch type is Full Screen it is more accurately
-          // described as Maximized in Ash.
-          AddCheckItemWithStringId(
-              LAUNCH_TYPE_FULLSCREEN,
-              IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-        }
-      }
-    } else if (item_.type == ash::TYPE_BROWSER_SHORTCUT) {
-      AddItem(MENU_NEW_WINDOW,
-              l10n_util::GetStringUTF16(IDS_APP_LIST_NEW_WINDOW));
-      if (!controller_->IsLoggedInAsGuest()) {
-        AddItem(MENU_NEW_INCOGNITO_WINDOW,
-                l10n_util::GetStringUTF16(IDS_APP_LIST_NEW_INCOGNITO_WINDOW));
-      }
-    } else if (item_.type == ash::TYPE_DIALOG) {
-      AddItem(MENU_CLOSE,
-              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
-    } else {
-      if (item_.type == ash::TYPE_PLATFORM_APP) {
-        AddItem(
-            MENU_PIN,
-            l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_PIN));
-      }
-      bool show_close_button = controller_->IsOpen(item_.id);
-#if defined(OS_CHROMEOS)
-      if (extension_misc::IsImeMenuExtensionId(
-              controller_->GetAppIDForShelfID(item_.id))) {
-        show_close_button = false;
-      }
-#endif
-      if (show_close_button) {
-        AddItem(MENU_CLOSE,
-                l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
-      }
-    }
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    if (item_.type == ash::TYPE_APP_SHORTCUT ||
-        item_.type == ash::TYPE_WINDOWED_APP ||
-        item_.type == ash::TYPE_PLATFORM_APP) {
-      const extensions::MenuItem::ExtensionKey app_key(
-          controller_->GetAppIDForShelfID(item_.id));
-      if (!app_key.empty()) {
-        int index = 0;
-        extension_items_->AppendExtensionItems(app_key,
-                                               base::string16(),
-                                               &index,
-                                               false);  // is_action_menu
-        AddSeparator(ui::NORMAL_SEPARATOR);
-      }
-    }
-  }
-  // In fullscreen, the launcher is either hidden or autohidden depending on the
-  // type of fullscreen. Do not show the auto-hide menu item while in fullscreen
-  // because it is confusing when the preference appears not to apply.
-  if (!IsFullScreenMode() &&
-      CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
-    AddCheckItemWithStringId(MENU_AUTO_HIDE,
-                             IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
-  }
-  if (ash::ShelfWidget::ShelfAlignmentAllowed() &&
-      !ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
-    AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
-                           IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
-                           &shelf_alignment_menu_);
-  }
-#if defined(OS_CHROMEOS)
-  if (!controller_->IsLoggedInAsGuest()) {
-    AddItem(MENU_CHANGE_WALLPAPER,
-            l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
-  }
-#endif
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
 }
 
 bool LauncherContextMenu::IsItemForCommandIdDynamic(int command_id) const {
-  return command_id == MENU_OPEN_NEW;
+  return false;
 }
 
 base::string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
-  if (command_id == MENU_OPEN_NEW) {
-    if (item_.type == ash::TYPE_PLATFORM_APP) {
-      return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
-    }
-    switch (controller_->GetLaunchType(item_.id)) {
-      case extensions::LAUNCH_TYPE_PINNED:
-      case extensions::LAUNCH_TYPE_REGULAR:
-        return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
-      case extensions::LAUNCH_TYPE_FULLSCREEN:
-      case extensions::LAUNCH_TYPE_WINDOW:
-        return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
-      default:
-        NOTREACHED();
-        return base::string16();
-    }
-  }
   NOTREACHED();
   return base::string16();
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
-  switch (command_id) {
-    case LAUNCH_TYPE_PINNED_TAB:
-      return controller_->GetLaunchType(item_.id) ==
-          extensions::LAUNCH_TYPE_PINNED;
-    case LAUNCH_TYPE_REGULAR_TAB:
-      return controller_->GetLaunchType(item_.id) ==
-          extensions::LAUNCH_TYPE_REGULAR;
-    case LAUNCH_TYPE_WINDOW:
-      return controller_->GetLaunchType(item_.id) ==
-          extensions::LAUNCH_TYPE_WINDOW;
-    case LAUNCH_TYPE_FULLSCREEN:
-      return controller_->GetLaunchType(item_.id) ==
-          extensions::LAUNCH_TYPE_FULLSCREEN;
-    case MENU_AUTO_HIDE:
-      return shelf_->GetAutoHideBehavior() ==
-             ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-    default:
-      if (command_id < MENU_ITEM_COUNT)
-        return false;
-      return (extension_items_ &&
-              extension_items_->IsCommandIdChecked(command_id));
+  if (command_id == MENU_AUTO_HIDE) {
+    return shelf_->GetAutoHideBehavior() ==
+           ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   }
+  DCHECK(command_id < MENU_ITEM_COUNT);
+  return false;
 }
 
 bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
@@ -233,23 +86,14 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_PIN:
       return controller_->IsPinnable(item_.id);
     case MENU_CHANGE_WALLPAPER:
-      return ash::Shell::GetInstance()->user_wallpaper_delegate()->
-          CanOpenSetWallpaperPage();
-    case MENU_NEW_WINDOW:
-      // "Normal" windows are not allowed when incognito is enforced.
-      return IncognitoModePrefs::GetAvailability(
-          controller_->profile()->GetPrefs()) != IncognitoModePrefs::FORCED;
+      return ash::Shell::GetInstance()
+          ->user_wallpaper_delegate()
+          ->CanOpenSetWallpaperPage();
     case MENU_AUTO_HIDE:
       return CanUserModifyShelfAutoHideBehavior(controller_->profile());
-    case MENU_NEW_INCOGNITO_WINDOW:
-      // Incognito windows are not allowed when incognito is disabled.
-      return IncognitoModePrefs::GetAvailability(
-          controller_->profile()->GetPrefs()) != IncognitoModePrefs::DISABLED;
     default:
-      if (command_id < MENU_ITEM_COUNT)
-        return true;
-      return (extension_items_ &&
-              extension_items_->IsCommandIdEnabled(command_id));
+      DCHECK(command_id < MENU_ITEM_COUNT);
+      return true;
   }
 }
 
@@ -282,39 +126,11 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case MENU_PIN:
       controller_->TogglePinned(item_.id);
       break;
-    case LAUNCH_TYPE_PINNED_TAB:
-      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_PINNED);
-      break;
-    case LAUNCH_TYPE_REGULAR_TAB:
-      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_REGULAR);
-      break;
-    case LAUNCH_TYPE_WINDOW: {
-      extensions::LaunchType launch_type = extensions::LAUNCH_TYPE_WINDOW;
-      // With bookmark apps enabled, hosted apps can only toggle between
-      // LAUNCH_WINDOW and LAUNCH_REGULAR.
-      if (extensions::util::IsNewBookmarkAppsEnabled()) {
-        launch_type = controller_->GetLaunchType(item_.id) ==
-                              extensions::LAUNCH_TYPE_WINDOW
-                          ? extensions::LAUNCH_TYPE_REGULAR
-                          : extensions::LAUNCH_TYPE_WINDOW;
-      }
-      controller_->SetLaunchType(item_.id, launch_type);
-      break;
-    }
-    case LAUNCH_TYPE_FULLSCREEN:
-      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_FULLSCREEN);
-      break;
     case MENU_AUTO_HIDE:
       shelf_->SetAutoHideBehavior(shelf_->GetAutoHideBehavior() ==
                                           ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
                                       ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
                                       : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-      break;
-    case MENU_NEW_WINDOW:
-      controller_->CreateNewWindow();
-      break;
-    case MENU_NEW_INCOGNITO_WINDOW:
-      controller_->CreateNewIncognitoWindow();
       break;
     case MENU_ALIGNMENT_MENU:
       break;
@@ -323,9 +139,58 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
           OpenSetWallpaperPage();
       break;
     default:
-      if (extension_items_) {
-        extension_items_->ExecuteCommand(command_id, nullptr, nullptr,
-                                         content::ContextMenuParams());
-      }
+      NOTREACHED();
+  }
+}
+
+void LauncherContextMenu::AddPinMenu() {
+  // Expect an item with a none zero id to add pin/unpin menu item.
+  DCHECK(item_.id);
+  const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
+  int menu_pin_string_id;
+  if (!controller_->CanPin(app_id))
+    menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY;
+  else if (controller_->IsPinned(item_.id))
+    menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_UNPIN;
+  else
+    menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN;
+  AddItemWithStringId(MENU_PIN, menu_pin_string_id);
+}
+
+void LauncherContextMenu::AddShelfOptionsMenu() {
+  // In fullscreen, the launcher is either hidden or autohidden depending
+  // on thethe type of fullscreen. Do not show the auto-hide menu item while in
+  // while in fullscreen because it is confusing when the preference appears
+  // not to apply.
+  if (!IsFullScreenMode() &&
+      CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
+    AddCheckItemWithStringId(MENU_AUTO_HIDE,
+                             IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
+  }
+  if (ash::ShelfWidget::ShelfAlignmentAllowed() &&
+      !ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
+    AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
+                           IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
+                           &shelf_alignment_menu_);
+  }
+#if defined(OS_CHROMEOS)
+  if (!controller_->IsLoggedInAsGuest())
+    AddItemWithStringId(MENU_CHANGE_WALLPAPER, IDS_AURA_SET_DESKTOP_WALLPAPER);
+#endif
+}
+
+bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
+                                               int event_flags) {
+  switch (command_id) {
+    case MENU_OPEN_NEW:
+    case MENU_CLOSE:
+    case MENU_PIN:
+    case MENU_AUTO_HIDE:
+    case MENU_ALIGNMENT_MENU:
+    case MENU_CHANGE_WALLPAPER:
+      ExecuteCommand(command_id, event_flags);
+      return true;
+    default:
+      return false;
   }
 }

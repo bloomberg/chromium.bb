@@ -162,7 +162,7 @@ ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
   if (chrome::IsRunningInAppMode())
     return nullptr;
 
-  return new LauncherContextMenu(shelf_delegate_, item, shelf);
+  return LauncherContextMenu::Create(shelf_delegate_, item, shelf);
 }
 
 ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
