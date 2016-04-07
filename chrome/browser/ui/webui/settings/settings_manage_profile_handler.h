@@ -34,15 +34,16 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, SetProfileIconAndName);
-  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, GetAvailableIcons);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
+                           HandleSetProfileIconAndName);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleGetAvailableIcons);
 
   // Callback for the "getAvailableIcons" message.
   // Sends the array of default profile icon URLs and profile names to WebUI.
   void HandleGetAvailableIcons(const base::ListValue* args);
 
-  // Send all the available profile icons to choose from.
-  void SendAvailableIcons();
+  // Get all the available profile icons to choose from.
+  scoped_ptr<base::ListValue> GetAvailableIcons();
 
   // Callback for the "setProfileIconAndName" message. Sets the name and icon
   // of a given profile.

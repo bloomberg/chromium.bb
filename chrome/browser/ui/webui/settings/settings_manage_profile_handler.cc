@@ -72,7 +72,9 @@ void ManageProfileHandler::RegisterMessages() {
 void ManageProfileHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   // This is necessary to send the potentially updated GAIA photo.
-  SendAvailableIcons();
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   base::StringValue("available-icons-changed"),
+                                   *GetAvailableIcons());
 }
 
 void ManageProfileHandler::HandleGetAvailableIcons(
@@ -86,11 +88,14 @@ void ManageProfileHandler::HandleGetAvailableIcons(
 
   profiles::UpdateGaiaProfileInfoIfNeeded(profile_);
 
-  SendAvailableIcons();
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  ResolveJavascriptCallback(*callback_id, *GetAvailableIcons());
 }
 
-void ManageProfileHandler::SendAvailableIcons() {
-  base::ListValue image_url_list;
+scoped_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
+  scoped_ptr<base::ListValue> image_url_list(new base::ListValue());
 
   // First add the GAIA picture if it is available.
   ProfileAttributesEntry* entry;
@@ -100,19 +105,17 @@ void ManageProfileHandler::SendAvailableIcons() {
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
-      image_url_list.AppendString(gaia_picture_url_);
+      image_url_list->AppendString(gaia_picture_url_);
     }
   }
 
   // Next add the default avatar icons and names.
   for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); i++) {
     std::string url = profiles::GetDefaultAvatarIconUrl(i);
-    image_url_list.AppendString(url);
+    image_url_list->AppendString(url);
   }
 
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("available-icons-changed"),
-                                   image_url_list);
+  return image_url_list;
 }
 
 void ManageProfileHandler::HandleSetProfileIconAndName(

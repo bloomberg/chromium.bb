@@ -12,8 +12,8 @@ cr.define('settings', function() {
 
   ManageProfileBrowserProxy.prototype = {
     /**
-     * Gets the available profile icons to choose from. As a response, the C++
-     * sends the 'available-icons-changed' WebUIListener event.
+     * Gets the available profile icons to choose from.
+     * @return {!Promise<!Array<string>>}
      */
     getAvailableIcons: function() {},
 
@@ -37,7 +37,7 @@ cr.define('settings', function() {
   ManageProfileBrowserProxyImpl.prototype = {
     /** @override */
     getAvailableIcons: function() {
-      chrome.send('getAvailableIcons');
+      return cr.sendWithPromise('getAvailableIcons');
     },
 
     /** @override */

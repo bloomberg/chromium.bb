@@ -45,11 +45,12 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('available-icons-changed', function(iconUrls) {
+    var setIcons = function(iconUrls) {
       this.availableIconUrls = iconUrls;
-    }.bind(this));
+    }.bind(this);
 
-    this.browserProxy_.getAvailableIcons();
+    this.addWebUIListener('available-icons-changed', setIcons);
+    this.browserProxy_.getAvailableIcons().then(setIcons);
   },
 
   /**

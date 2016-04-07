@@ -42,6 +42,19 @@ class ManageProfileHandlerTest : public testing::Test {
     handler_->set_web_ui(&web_ui_);
   }
 
+  void VerifyIconList(const base::Value* value) {
+    const base::ListValue* icon_urls = nullptr;
+    ASSERT_TRUE(value->GetAsList(&icon_urls));
+
+    // Expect the list of icon URLs to be a non-empty list of non-empty strings.
+    EXPECT_FALSE(icon_urls->empty());
+    for (size_t i = 0; i < icon_urls->GetSize(); ++i) {
+      std::string icon_url;
+      EXPECT_TRUE(icon_urls->GetString(i, &icon_url));
+      EXPECT_FALSE(icon_url.empty());
+    }
+  }
+
   content::TestWebUI* web_ui() { return &web_ui_; }
   Profile* profile() const { return profile_; }
   TestManageProfileHandler* handler() const { return handler_.get(); }
@@ -55,7 +68,7 @@ class ManageProfileHandlerTest : public testing::Test {
   scoped_ptr<TestManageProfileHandler> handler_;
 };
 
-TEST_F(ManageProfileHandlerTest, SetProfileIconAndName) {
+TEST_F(ManageProfileHandlerTest, HandleSetProfileIconAndName) {
   base::ListValue list_args;
   list_args.Append(
       new base::StringValue("chrome://theme/IDR_PROFILE_AVATAR_15"));
@@ -70,28 +83,36 @@ TEST_F(ManageProfileHandlerTest, SetProfileIconAndName) {
   EXPECT_EQ("New Profile Name", pref_service->GetString(prefs::kProfileName));
 }
 
-TEST_F(ManageProfileHandlerTest, GetAvailableIcons) {
-  handler()->HandleGetAvailableIcons(nullptr);
+TEST_F(ManageProfileHandlerTest, HandleGetAvailableIcons) {
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue("get-icons-callback-id"));
+  handler()->HandleGetAvailableIcons(&list_args);
+
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+  std::string callback_id;
+  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+  EXPECT_EQ("get-icons-callback-id", callback_id);
+
+  VerifyIconList(data.arg3());
+}
+
+TEST_F(ManageProfileHandlerTest, ProfileAvatarChangedWebUIEvent) {
+  handler()->OnProfileAvatarChanged(base::FilePath());
 
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
 
-  std::string callback_id;
-  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-  EXPECT_EQ("available-icons-changed", callback_id);
+  std::string event_id;
+  ASSERT_TRUE(data.arg1()->GetAsString(&event_id));
+  EXPECT_EQ("available-icons-changed", event_id);
 
-  const base::ListValue* icon_urls = nullptr;
-  ASSERT_TRUE(data.arg2()->GetAsList(&icon_urls));
-
-  // Expect the list of icon URLs to be a non-empty list of non-empty strings.
-  EXPECT_FALSE(icon_urls->empty());
-  for (size_t i = 0; i < icon_urls->GetSize(); ++i) {
-    std::string icon_url;
-    EXPECT_TRUE(icon_urls->GetString(i, &icon_url));
-    EXPECT_FALSE(icon_url.empty());
-  }
+  VerifyIconList(data.arg2());
 }
 
 }  // namespace settings
