@@ -46,7 +46,7 @@ class Node;
 class LayerRect final : public GarbageCollectedFinalized<LayerRect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static LayerRect* create(RawPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
+    static LayerRect* create(Node* node, const String& layerType, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
     {
         return new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect);
     }
@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    LayerRect(RawPtr<Node> node, const String& layerName, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
+    LayerRect(Node* node, const String& layerName, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
         : m_layerAssociatedNode(node)
         , m_layerType(layerName)
         , m_associatedNodeOffsetX(nodeOffsetX)

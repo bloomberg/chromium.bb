@@ -657,17 +657,17 @@ String Internals::elementLayoutTreeAsText(Element* element, ExceptionState& exce
     return representation;
 }
 
-RawPtr<CSSStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node) const
+CSSStyleDeclaration* Internals::computedStyleIncludingVisitedInfo(Node* node) const
 {
     ASSERT(node);
     bool allowVisitedStyle = true;
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
-RawPtr<ShadowRoot> Internals::createUserAgentShadowRoot(Element* host)
+ShadowRoot* Internals::createUserAgentShadowRoot(Element* host)
 {
     ASSERT(host);
-    return RawPtr<ShadowRoot>(host->ensureUserAgentShadowRoot());
+    return &host->ensureUserAgentShadowRoot();
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host)
@@ -874,7 +874,7 @@ DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsign
     return markers[index];
 }
 
-RawPtr<Range> Internals::markerRangeForNode(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
+Range* Internals::markerRangeForNode(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
 {
     ASSERT(node);
     DocumentMarker* marker = markerAt(node, markerType, index, exceptionState);
@@ -1040,7 +1040,7 @@ void Internals::setAutofilled(Element* element, bool enabled, ExceptionState& ex
     toHTMLFormControlElement(element)->setAutofilled(enabled);
 }
 
-RawPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength)
+Range* Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength)
 {
     ASSERT(scope);
 
@@ -1486,7 +1486,7 @@ Vector<AtomicString> Internals::svgTags()
     return tags;
 }
 
-RawPtr<StaticNodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,
+StaticNodeList* Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,
     unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowChildFrameContent, ExceptionState& exceptionState) const
 {
     ASSERT(document);

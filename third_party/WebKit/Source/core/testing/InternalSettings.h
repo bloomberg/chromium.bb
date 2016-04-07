@@ -78,7 +78,7 @@ public:
         bool m_originalCompositorWorkerEnabled;
     };
 
-    static RawPtr<InternalSettings> create(Page& page)
+    static InternalSettings* create(Page& page)
     {
         return new InternalSettings(page);
     }

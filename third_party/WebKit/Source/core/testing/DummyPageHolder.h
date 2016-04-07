@@ -68,7 +68,7 @@ public:
     static PassOwnPtr<DummyPageHolder> create(
         const IntSize& initialViewSize = IntSize(),
         Page::PageClients* = 0,
-        RawPtr<FrameLoaderClient> = nullptr,
+        FrameLoaderClient* = nullptr,
         FrameSettingOverrideFunction = nullptr);
     ~DummyPageHolder();
 
@@ -78,7 +78,7 @@ public:
     Document& document() const;
 
 private:
-    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, RawPtr<FrameLoaderClient>, FrameSettingOverrideFunction settingOverrider);
+    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, FrameLoaderClient*, FrameSettingOverrideFunction settingOverrider);
 
     Persistent<Page> m_page;
     Persistent<LocalFrame> m_frame;

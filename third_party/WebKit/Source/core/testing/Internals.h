@@ -94,9 +94,9 @@ public:
 
     bool isSharingStyle(Element*, Element*) const;
 
-    RawPtr<CSSStyleDeclaration> computedStyleIncludingVisitedInfo(Node*) const;
+    CSSStyleDeclaration* computedStyleIncludingVisitedInfo(Node*) const;
 
-    RawPtr<ShadowRoot> createUserAgentShadowRoot(Element* host);
+    ShadowRoot* createUserAgentShadowRoot(Element* host);
 
     ShadowRoot* shadowRoot(Element* host);
     ShadowRoot* youngestShadowRoot(Element* host);
@@ -159,7 +159,7 @@ public:
 
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
     unsigned activeMarkerCountForNode(Node*);
-    RawPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
+    Range* markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
@@ -174,7 +174,7 @@ public:
     void setEditingValue(Element* inputElement, const String&, ExceptionState&);
     void setAutofilled(Element*, bool enabled, ExceptionState&);
 
-    RawPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength);
+    Range* rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength);
     unsigned locationFromRange(Element* scope, const Range*);
     unsigned lengthFromRange(Element* scope, const Range*);
     String rangeAsText(const Range*);
@@ -205,7 +205,7 @@ public:
     Vector<AtomicString> svgTags();
 
     // This is used to test rect based hit testing like what's done on touch screens.
-    RawPtr<StaticNodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
+    StaticNodeList* nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowChildFrameContent, ExceptionState&) const;
 
     bool hasSpellingMarker(Document*, int from, int length);
@@ -244,7 +244,7 @@ public:
     unsigned numberOfLiveDocuments() const;
     String dumpRefCountedInstanceCounts() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;
-    RawPtr<LocalDOMWindow> openDummyInspectorFrontend(const String& url);
+    LocalDOMWindow* openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
 
