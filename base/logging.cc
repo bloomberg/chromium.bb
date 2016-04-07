@@ -59,7 +59,6 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/debugger.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
@@ -333,19 +332,6 @@ void CloseLogFileUnlocked() {
 }
 
 }  // namespace
-
-#if defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-// Used to implement dump-on-DCHECK. See crbug.com/596231.
-void DCheckDumpWithoutCrashing() {
-  // To ensure we don't risk spamming Crash with dump-on-DCHECK reports we log
-  // only the first[*] DCHECK to fail once DumpWithoutCrashing() is working.
-  // [*] This is racey, but in the pathological case still only results in one
-  // dump per-racing-thread, rather than our aim of one per-process.
-  static bool dump_on_dcheck = true;
-  if (dump_on_dcheck)
-    dump_on_dcheck = !base::debug::DumpWithoutCrashing();
-}
-#endif
 
 LoggingSettings::LoggingSettings()
     : logging_dest(LOG_DEFAULT),

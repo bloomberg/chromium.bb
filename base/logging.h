@@ -637,16 +637,10 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 
 #if DCHECK_IS_ON()
 
-// If DCHECK is configured to dump-without-crashing then omit these, so that
-// anything using them directly will break the build. See crbug.com/596231.
-#if !defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-
 #define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
   COMPACT_GOOGLE_LOG_EX_FATAL(ClassName , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_FATAL
 const LogSeverity LOG_DCHECK = LOG_FATAL;
-
-#endif  // !defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
 
 #else  // DCHECK_IS_ON()
 
@@ -666,10 +660,6 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 #if defined(_PREFAST_) && defined(OS_WIN)
 // See comments on the previous use of __analysis_assume.
 
-#if defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-#error "Only one of _PREFAST_ and DCHECK_IS_DUMP_WITHOUT_CRASH may be set"
-#endif  // defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-
 #define DCHECK(condition)                                               \
   __analysis_assume(!!(condition)),                                     \
   LAZY_STREAM(LOG_STREAM(DCHECK), false)                                \
@@ -680,20 +670,7 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
   LAZY_STREAM(PLOG_STREAM(DCHECK), false)                               \
   << "Check failed: " #condition ". "
 
-#elif DCHECK_IS_ON() && defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-// DCHECK is configured to dump-without-crashing, rather than logging.
-// See crbug.com/596231.
-
-BASE_EXPORT void DCheckDumpWithoutCrashing();
-
-#define DCHECK(condition)                                       \
-  (condition) ? (void)0 : logging::DCheckDumpWithoutCrashing(), \
-      EAT_STREAM_PARAMETERS
-
-// Since we're uploading a crash dump, not logging, DPCHECK behaves identically.
-#define DPCHECK(condition) DCHECK(condition)
-
-#else  // DCHECK_IS_ON() && defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
+#else  // _PREFAST_
 
 #define DCHECK(condition)                                                \
   LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON() ? !(condition) : false) \
@@ -703,21 +680,10 @@ BASE_EXPORT void DCheckDumpWithoutCrashing();
   LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON() ? !(condition) : false) \
       << "Check failed: " #condition ". "
 
-#endif  // DCHECK_IS_ON() && defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
+#endif  // _PREFAST_
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.
-
-#if DCHECK_IS_ON() && defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-// DCHECK is configured to dump-without-crashing, rather than logging.
-// See crbug.com/596231.
-
-// Use logging::Check*Impl() to ensure that operator<<()s don't go unused.
-#define DCHECK_OP(name, op, val1, val2) \
-  DCHECK(logging::Check##name##Impl((val1), (val2), #val1 " " #op " " #val2))
-
-#else  // DCHECK_IS_ON() && defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
-
 // The 'switch' is used to prevent the 'else' from being ambiguous when the
 // macro is used in an 'if' clause such as:
 // if (a == 1)
@@ -732,8 +698,6 @@ BASE_EXPORT void DCheckDumpWithoutCrashing();
   else                                                                \
     logging::LogMessage(__FILE__, __LINE__, ::logging::LOG_DCHECK,    \
                         true_if_passed.message()).stream()
-
-#endif  // DCHECK_IS_ON() && defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
 
 // Equality/Inequality checks - compare two values, and log a
 // LOG_DCHECK message including the two values when the result is not
