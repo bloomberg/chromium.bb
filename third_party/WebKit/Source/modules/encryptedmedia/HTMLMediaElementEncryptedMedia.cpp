@@ -341,7 +341,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
 }
 
 // Create a MediaEncryptedEvent for WD EME.
-static RawPtr<Event> createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
+static Event* createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaEncryptedEventInit initializer;
     initializer.setInitDataType(EncryptedMediaUtils::convertFromInitDataType(initDataType));
@@ -356,7 +356,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted");
 
-    RawPtr<Event> event;
+    Event* event;
     if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->getExecutionContext()->getSecurityOrigin())) {
         event = createEncryptedEvent(initDataType, initData, initDataLength);
     } else {
@@ -366,7 +366,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
     }
 
     event->setTarget(m_mediaElement);
-    m_mediaElement->scheduleEvent(event.release());
+    m_mediaElement->scheduleEvent(event);
 }
 
 void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()
@@ -382,9 +382,9 @@ void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()
     // 2. If the media element's waiting for key value is false, queue a task
     //    to fire a simple event named waitingforkey at the media element.
     if (!m_isWaitingForKey) {
-        RawPtr<Event> event = Event::create(EventTypeNames::waitingforkey);
+        Event* event = Event::create(EventTypeNames::waitingforkey);
         event->setTarget(m_mediaElement);
-        m_mediaElement->scheduleEvent(event.release());
+        m_mediaElement->scheduleEvent(event);
     }
 
     // 3. Set the media element's waiting for key value to true.

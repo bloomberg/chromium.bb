@@ -36,12 +36,12 @@ class MediaEncryptedEvent final : public Event {
 public:
     ~MediaEncryptedEvent() override;
 
-    static RawPtr<MediaEncryptedEvent> create()
+    static MediaEncryptedEvent* create()
     {
         return new MediaEncryptedEvent;
     }
 
-    static RawPtr<MediaEncryptedEvent> create(const AtomicString& type, const MediaEncryptedEventInit& initializer)
+    static MediaEncryptedEvent* create(const AtomicString& type, const MediaEncryptedEventInit& initializer)
     {
         return new MediaEncryptedEvent(type, initializer);
     }

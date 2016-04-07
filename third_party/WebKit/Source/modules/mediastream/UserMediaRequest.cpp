@@ -163,7 +163,7 @@ void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
     if (!getExecutionContext())
         return;
 
-    RawPtr<MediaStream> stream = MediaStream::create(getExecutionContext(), streamDescriptor);
+    MediaStream* stream = MediaStream::create(getExecutionContext(), streamDescriptor);
 
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {
@@ -175,7 +175,7 @@ void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
         (*iter)->component()->source()->setConstraints(m_video);
     }
 
-    m_successCallback->handleEvent(stream.get());
+    m_successCallback->handleEvent(stream);
 }
 
 void UserMediaRequest::failPermissionDenied(const String& message)

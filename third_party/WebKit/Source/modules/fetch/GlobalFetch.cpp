@@ -21,7 +21,7 @@ template <typename T>
 class GlobalFetchImpl final : public GarbageCollectedFinalized<GlobalFetchImpl<T>>, public GlobalFetch::ScopedFetcher, public Supplement<T> {
     USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 public:
-    static RawPtr<ScopedFetcher> from(T& supplementable, ExecutionContext* executionContext)
+    static ScopedFetcher* from(T& supplementable, ExecutionContext* executionContext)
     {
         GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(Supplement<T>::from(supplementable, supplementName()));
         if (!supplement) {
@@ -71,12 +71,12 @@ GlobalFetch::ScopedFetcher::~ScopedFetcher()
 {
 }
 
-RawPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(DOMWindow& window)
+GlobalFetch::ScopedFetcher* GlobalFetch::ScopedFetcher::from(DOMWindow& window)
 {
     return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.getExecutionContext());
 }
 
-RawPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(WorkerGlobalScope& worker)
+GlobalFetch::ScopedFetcher* GlobalFetch::ScopedFetcher::from(WorkerGlobalScope& worker)
 {
     return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.getExecutionContext());
 }

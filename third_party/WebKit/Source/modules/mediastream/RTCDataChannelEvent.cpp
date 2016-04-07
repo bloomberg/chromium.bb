@@ -26,12 +26,12 @@
 
 namespace blink {
 
-RawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create()
+RTCDataChannelEvent* RTCDataChannelEvent::create()
 {
     return new RTCDataChannelEvent;
 }
 
-RawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
+RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
 {
     return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
 }

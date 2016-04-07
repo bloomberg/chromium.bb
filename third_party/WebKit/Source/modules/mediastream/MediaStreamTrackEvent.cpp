@@ -28,12 +28,12 @@
 
 namespace blink {
 
-RawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
+MediaStreamTrackEvent* MediaStreamTrackEvent::create()
 {
     return new MediaStreamTrackEvent;
 }
 
-RawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)
+MediaStreamTrackEvent* MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)
 {
     return new MediaStreamTrackEvent(type, canBubble, cancelable, track);
 }

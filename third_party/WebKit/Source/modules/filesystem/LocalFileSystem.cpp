@@ -74,7 +74,7 @@ private:
     OwnPtr<AsyncFileSystemCallbacks> m_callbacks;
 };
 
-RawPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
+LocalFileSystem* LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
 {
     return new LocalFileSystem(client);
 }
@@ -85,7 +85,7 @@ LocalFileSystem::~LocalFileSystem()
 
 void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RawPtr<ExecutionContext> contextPtr(context);
+    ExecutionContext* contextPtr(context);
     CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::resolveURLInternal, this, contextPtr, fileSystemURL, wrapper),
@@ -94,7 +94,7 @@ void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSyst
 
 void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RawPtr<ExecutionContext> contextPtr(context);
+    ExecutionContext* contextPtr(context);
     CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::fileSystemAllowedInternal, this, contextPtr, type, wrapper),
@@ -103,7 +103,7 @@ void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemTyp
 
 void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RawPtr<ExecutionContext> contextPtr(context);
+    ExecutionContext* contextPtr(context);
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
@@ -139,21 +139,21 @@ void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context,
 }
 
 void LocalFileSystem::fileSystemNotAvailable(
-    RawPtr<ExecutionContext> context,
+    ExecutionContext* context,
     CallbackWrapper* callbacks)
 {
     context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(
-    RawPtr<ExecutionContext> context,
+    ExecutionContext* context,
     CallbackWrapper* callbacks)
 {
     context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(
-    RawPtr<ExecutionContext> context,
+    ExecutionContext* context,
     FileSystemType type,
     CallbackWrapper* callbacks)
 {
@@ -167,7 +167,7 @@ void LocalFileSystem::fileSystemAllowedInternal(
 }
 
 void LocalFileSystem::resolveURLInternal(
-    RawPtr<ExecutionContext> context,
+    ExecutionContext* context,
     const KURL& fileSystemURL,
     CallbackWrapper* callbacks)
 {
@@ -179,7 +179,7 @@ void LocalFileSystem::resolveURLInternal(
 }
 
 void LocalFileSystem::deleteFileSystemInternal(
-    RawPtr<ExecutionContext> context,
+    ExecutionContext* context,
     FileSystemType type,
     CallbackWrapper* callbacks)
 {

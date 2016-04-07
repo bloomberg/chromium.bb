@@ -50,7 +50,7 @@ private:
     HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
 
     // EventTarget
-    bool setAttributeEventListener(const AtomicString& eventType, RawPtr<EventListener>);
+    bool setAttributeEventListener(const AtomicString& eventType, EventListener*);
     EventListener* getAttributeEventListener(const AtomicString& eventType);
 
     Member<HTMLMediaElement> m_mediaElement;

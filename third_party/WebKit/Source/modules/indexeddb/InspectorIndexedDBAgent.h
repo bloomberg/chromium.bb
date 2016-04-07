@@ -43,7 +43,7 @@ class InspectedFrames;
 
 class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>, public protocol::Backend::IndexedDB {
 public:
-    static RawPtr<InspectorIndexedDBAgent> create(InspectedFrames*);
+    static InspectorIndexedDBAgent* create(InspectedFrames*);
 
     ~InspectorIndexedDBAgent() override;
     DECLARE_VIRTUAL_TRACE();

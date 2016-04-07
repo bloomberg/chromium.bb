@@ -122,7 +122,7 @@ int64_t IDBAny::integer() const
     return m_integer;
 }
 
-IDBAny::IDBAny(RawPtr<DOMStringList> value)
+IDBAny::IDBAny(DOMStringList* value)
     : m_type(DOMStringListType)
     , m_domStringList(value)
 {

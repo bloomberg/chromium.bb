@@ -29,7 +29,7 @@ public:
     static const char* supplementName();
 };
 
-MODULES_EXPORT void provideAudioOutputDeviceClientTo(LocalFrame&, RawPtr<AudioOutputDeviceClient>);
+MODULES_EXPORT void provideAudioOutputDeviceClientTo(LocalFrame&, AudioOutputDeviceClient*);
 
 } // namespace blink
 

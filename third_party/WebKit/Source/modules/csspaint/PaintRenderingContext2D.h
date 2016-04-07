@@ -21,7 +21,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, pu
     USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
     WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
 public:
-    static RawPtr<PaintRenderingContext2D> create(PassOwnPtr<ImageBuffer> imageBuffer)
+    static PaintRenderingContext2D* create(PassOwnPtr<ImageBuffer> imageBuffer)
     {
         return new PaintRenderingContext2D(imageBuffer);
     }

@@ -20,9 +20,9 @@ class MODULES_EXPORT BlobEvent final : public Event {
 public:
     ~BlobEvent() override {}
 
-    static RawPtr<BlobEvent> create();
-    static RawPtr<BlobEvent> create(const AtomicString& type, const BlobEventInit& initializer);
-    static RawPtr<BlobEvent> create(const AtomicString& type, Blob*);
+    static BlobEvent* create();
+    static BlobEvent* create(const AtomicString& type, const BlobEventInit& initializer);
+    static BlobEvent* create(const AtomicString& type, Blob*);
 
     Blob* data() const { return m_blob.get(); }
 

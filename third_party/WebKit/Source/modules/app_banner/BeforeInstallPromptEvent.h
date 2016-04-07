@@ -25,17 +25,17 @@ public:
     ~BeforeInstallPromptEvent() override;
 
     // For EventModules.cpp
-    static RawPtr<BeforeInstallPromptEvent> create()
+    static BeforeInstallPromptEvent* create()
     {
         return new BeforeInstallPromptEvent();
     }
 
-    static RawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, ExecutionContext* executionContext, const Vector<String>& platforms, int requestId, WebAppBannerClient* client)
+    static BeforeInstallPromptEvent* create(const AtomicString& name, ExecutionContext* executionContext, const Vector<String>& platforms, int requestId, WebAppBannerClient* client)
     {
         return new BeforeInstallPromptEvent(name, executionContext, platforms, requestId, client);
     }
 
-    static RawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, const BeforeInstallPromptEventInit& init)
+    static BeforeInstallPromptEvent* create(const AtomicString& name, const BeforeInstallPromptEventInit& init)
     {
         return new BeforeInstallPromptEvent(name, init);
     }

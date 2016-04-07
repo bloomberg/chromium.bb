@@ -51,7 +51,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
     USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
-    static RawPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);
+    static LocalFileSystem* create(PassOwnPtr<FileSystemClient>);
     virtual ~LocalFileSystem();
 
     void resolveURL(ExecutionContext*, const KURL&, PassOwnPtr<AsyncFileSystemCallbacks>);
@@ -75,11 +75,11 @@ protected:
 private:
     WebFileSystem* fileSystem() const;
     void requestFileSystemAccessInternal(ExecutionContext*, PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied);
-    void fileSystemNotAvailable(RawPtr<ExecutionContext>, CallbackWrapper*);
-    void fileSystemNotAllowedInternal(RawPtr<ExecutionContext>, CallbackWrapper*);
-    void fileSystemAllowedInternal(RawPtr<ExecutionContext>, FileSystemType, CallbackWrapper*);
-    void resolveURLInternal(RawPtr<ExecutionContext>, const KURL&, CallbackWrapper*);
-    void deleteFileSystemInternal(RawPtr<ExecutionContext>, FileSystemType, CallbackWrapper*);
+    void fileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
+    void fileSystemNotAllowedInternal(ExecutionContext*, CallbackWrapper*);
+    void fileSystemAllowedInternal(ExecutionContext*, FileSystemType, CallbackWrapper*);
+    void resolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
+    void deleteFileSystemInternal(ExecutionContext*, FileSystemType, CallbackWrapper*);
     OwnPtr<FileSystemClient> m_client;
 };
 

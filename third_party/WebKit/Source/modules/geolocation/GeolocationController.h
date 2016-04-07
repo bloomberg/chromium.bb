@@ -46,7 +46,7 @@ class MODULES_EXPORT GeolocationController : public GarbageCollectedFinalized<Ge
 public:
     virtual ~GeolocationController();
 
-    static RawPtr<GeolocationController> create(LocalFrame&, GeolocationClient*);
+    static GeolocationController* create(LocalFrame&, GeolocationClient*);
 
     void addObserver(Geolocation*, bool enableHighAccuracy);
     void removeObserver(Geolocation*);

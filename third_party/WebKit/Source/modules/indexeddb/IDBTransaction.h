@@ -76,7 +76,7 @@ public:
 
     // Implement the IDBTransaction IDL
     const String& mode() const;
-    RawPtr<DOMStringList> objectStoreNames() const;
+    DOMStringList* objectStoreNames() const;
     IDBDatabase* db() const { return m_database.get(); }
     DOMException* error() const { return m_error; }
     IDBObjectStore* objectStore(const String& name, ExceptionState&);

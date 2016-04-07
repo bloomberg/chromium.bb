@@ -360,7 +360,7 @@ private:
     WebServiceWorkerResponse m_webResponse;
 };
 
-Cache* Cache::create(RawPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
+Cache* Cache::create(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
 {
     return new Cache(fetcher, webCache);
 }
@@ -472,7 +472,7 @@ WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptio
     return webQueryParams;
 }
 
-Cache::Cache(RawPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
+Cache::Cache(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
     : m_scopedFetcher(fetcher)
     , m_webCache(webCache)
 {

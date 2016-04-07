@@ -382,7 +382,7 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
     }
 }
 
-void MediaStream::scheduleDispatchEvent(RawPtr<Event> event)
+void MediaStream::scheduleDispatchEvent(Event* event)
 {
     m_scheduledEvents.append(event);
 

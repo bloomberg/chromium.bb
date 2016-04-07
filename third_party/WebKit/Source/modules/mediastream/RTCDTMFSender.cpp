@@ -142,7 +142,7 @@ void RTCDTMFSender::stop()
     m_handler->setClient(0);
 }
 
-void RTCDTMFSender::scheduleDispatchEvent(RawPtr<Event> event)
+void RTCDTMFSender::scheduleDispatchEvent(Event* event)
 {
     m_scheduledEvents.append(event);
 

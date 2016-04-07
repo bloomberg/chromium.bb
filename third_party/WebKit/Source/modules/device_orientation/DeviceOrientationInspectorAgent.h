@@ -18,7 +18,7 @@ class Page;
 class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::Frontend::DeviceOrientation>, public protocol::Backend::DeviceOrientation {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
-    static RawPtr<DeviceOrientationInspectorAgent> create(Page*);
+    static DeviceOrientationInspectorAgent* create(Page*);
 
     ~DeviceOrientationInspectorAgent() override;
     DECLARE_VIRTUAL_TRACE();

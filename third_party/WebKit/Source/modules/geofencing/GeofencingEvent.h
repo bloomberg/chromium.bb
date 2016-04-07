@@ -20,12 +20,12 @@ class GeofencingRegion;
 class MODULES_EXPORT GeofencingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<GeofencingEvent> create()
+    static GeofencingEvent* create()
     {
         return new GeofencingEvent;
     }
 
-    static RawPtr<GeofencingEvent> create(const AtomicString& type, const String& id, GeofencingRegion* region)
+    static GeofencingEvent* create(const AtomicString& type, const String& id, GeofencingRegion* region)
     {
         return new GeofencingEvent(type, id, region);
     }

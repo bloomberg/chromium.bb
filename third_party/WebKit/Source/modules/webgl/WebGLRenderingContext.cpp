@@ -66,7 +66,7 @@
 
 namespace blink {
 
-RawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
+CanvasRenderingContext* WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
     OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 1));
@@ -81,7 +81,7 @@ RawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::create(HTMLCanvas
         gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
     }
 
-    RawPtr<WebGLRenderingContext> renderingContext = new WebGLRenderingContext(canvas, contextProvider.release(), attributes);
+    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(canvas, contextProvider.release(), attributes);
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
@@ -91,7 +91,7 @@ RawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::create(HTMLCanvas
     renderingContext->initializeNewContext();
     renderingContext->registerContextExtensions();
 
-    return renderingContext.release();
+    return renderingContext;
 }
 
 void WebGLRenderingContext::Factory::onError(HTMLCanvasElement* canvas, const String& error)

@@ -37,7 +37,7 @@ class UserMediaRequest;
 class UserMediaController final : public GarbageCollected<UserMediaController>, public Supplement<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 public:
-    static RawPtr<UserMediaController> create(UserMediaClient*);
+    static UserMediaController* create(UserMediaClient*);
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -14,12 +14,12 @@
 namespace blink {
 
 // static
-RawPtr<PaintWorkletGlobalScope> PaintWorkletGlobalScope::create(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
+PaintWorkletGlobalScope* PaintWorkletGlobalScope::create(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
 {
-    RawPtr<PaintWorkletGlobalScope> paintWorkletGlobalScope = new PaintWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate);
+    PaintWorkletGlobalScope* paintWorkletGlobalScope = new PaintWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate);
     paintWorkletGlobalScope->scriptController()->initializeContextIfNeeded();
     MainThreadDebugger::instance()->contextCreated(paintWorkletGlobalScope->scriptController()->getScriptState(), paintWorkletGlobalScope->frame(), paintWorkletGlobalScope->getSecurityOrigin());
-    return paintWorkletGlobalScope.release();
+    return paintWorkletGlobalScope;
 }
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
@@ -103,7 +103,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
 
     v8::Local<v8::Function> paint = v8::Local<v8::Function>::Cast(paintValue);
 
-    RawPtr<CSSPaintDefinition> definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint);
+    CSSPaintDefinition* definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint);
     m_paintDefinitions.set(name, definition);
 }
 

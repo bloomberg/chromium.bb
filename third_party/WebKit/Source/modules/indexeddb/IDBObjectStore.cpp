@@ -75,14 +75,14 @@ ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
     return ScriptValue::from(scriptState, m_metadata.keyPath);
 }
 
-RawPtr<DOMStringList> IDBObjectStore::indexNames() const
+DOMStringList* IDBObjectStore::indexNames() const
 {
     IDB_TRACE("IDBObjectStore::indexNames");
-    RawPtr<DOMStringList> indexNames = DOMStringList::create(DOMStringList::IndexedDB);
+    DOMStringList* indexNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (const auto& it : m_metadata.indexes)
         indexNames->append(it.value.name);
     indexNames->sort();
-    return indexNames.release();
+    return indexNames;
 }
 
 IDBRequest* IDBObjectStore::get(ScriptState* scriptState, const ScriptValue& key, ExceptionState& exceptionState)
@@ -416,7 +416,7 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator final : public EventListener {
 public:
-    static RawPtr<IndexPopulator> create(ScriptState* scriptState, IDBDatabase* database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    static IndexPopulator* create(ScriptState* scriptState, IDBDatabase* database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
     {
         return new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata);
     }
@@ -547,7 +547,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
-    RawPtr<IndexPopulator> indexPopulator = IndexPopulator::create(scriptState, transaction()->db(), m_transaction->id(), id(), metadata);
+    IndexPopulator* indexPopulator = IndexPopulator::create(scriptState, transaction()->db(), m_transaction->id(), id(), metadata);
     indexRequest->setOnsuccess(indexPopulator);
     return index;
 }

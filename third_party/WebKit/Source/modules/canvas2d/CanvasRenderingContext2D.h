@@ -73,7 +73,7 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        RawPtr<CanvasRenderingContext> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document) override
+        CanvasRenderingContext* create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document) override
         {
             return new CanvasRenderingContext2D(canvas, attrs, document);
         }

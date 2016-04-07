@@ -25,7 +25,7 @@ class CacheStorage final : public GarbageCollectedFinalized<CacheStorage>, publi
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
-    static CacheStorage* create(RawPtr<GlobalFetch::ScopedFetcher>, WebServiceWorkerCacheStorage*);
+    static CacheStorage* create(GlobalFetch::ScopedFetcher*, WebServiceWorkerCacheStorage*);
     ~CacheStorage();
     void dispose();
 
@@ -47,7 +47,7 @@ private:
     friend class WithCacheCallbacks;
     friend class DeleteCallbacks;
 
-    CacheStorage(RawPtr<GlobalFetch::ScopedFetcher>, PassOwnPtr<WebServiceWorkerCacheStorage>);
+    CacheStorage(GlobalFetch::ScopedFetcher*, PassOwnPtr<WebServiceWorkerCacheStorage>);
     ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 
     Member<GlobalFetch::ScopedFetcher> m_scopedFetcher;

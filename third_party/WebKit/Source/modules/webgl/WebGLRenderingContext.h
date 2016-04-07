@@ -42,7 +42,7 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        RawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
+        CanvasRenderingContext* create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
         CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl; }
         void onError(HTMLCanvasElement*, const String& error) override;
     };

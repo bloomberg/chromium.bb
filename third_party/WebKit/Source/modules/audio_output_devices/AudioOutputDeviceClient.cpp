@@ -27,7 +27,7 @@ AudioOutputDeviceClient* AudioOutputDeviceClient::from(ExecutionContext* context
     return static_cast<AudioOutputDeviceClient*>(Supplement<LocalFrame>::from(document->frame(), supplementName()));
 }
 
-void provideAudioOutputDeviceClientTo(LocalFrame& frame, RawPtr<AudioOutputDeviceClient> client)
+void provideAudioOutputDeviceClientTo(LocalFrame& frame, AudioOutputDeviceClient* client)
 {
     frame.provideSupplement(AudioOutputDeviceClient::supplementName(), client);
 }

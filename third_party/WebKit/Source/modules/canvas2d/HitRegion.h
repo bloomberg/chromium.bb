@@ -19,7 +19,7 @@ namespace blink {
 
 class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
 public:
-    static RawPtr<HitRegion> create(const Path& path, const HitRegionOptions& options)
+    static HitRegion* create(const Path& path, const HitRegionOptions& options)
     {
         return new HitRegion(path, options);
     }
@@ -51,7 +51,7 @@ public:
     static HitRegionManager* create() { return new HitRegionManager; }
     ~HitRegionManager() { }
 
-    void addHitRegion(RawPtr<HitRegion>);
+    void addHitRegion(HitRegion*);
 
     void removeHitRegion(HitRegion*);
     void removeHitRegionById(const String& id);

@@ -90,7 +90,7 @@ private:
     void createBlobEvent(Blob*);
 
     void stopRecording();
-    void scheduleDispatchEvent(RawPtr<Event>);
+    void scheduleDispatchEvent(Event*);
     void dispatchScheduledEvent();
 
     Member<MediaStream> m_stream;

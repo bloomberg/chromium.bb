@@ -17,15 +17,15 @@ namespace blink {
 class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SyncEvent> create()
+    static SyncEvent* create()
     {
         return new SyncEvent;
     }
-    static RawPtr<SyncEvent> create(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
+    static SyncEvent* create(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
     {
         return new SyncEvent(type, tag, lastChance, observer);
     }
-    static RawPtr<SyncEvent> create(const AtomicString& type, const SyncEventInit& init)
+    static SyncEvent* create(const AtomicString& type, const SyncEventInit& init)
     {
         return new SyncEvent(type, init);
     }

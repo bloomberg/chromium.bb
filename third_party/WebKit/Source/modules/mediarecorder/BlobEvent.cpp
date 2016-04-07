@@ -10,19 +10,19 @@
 namespace blink {
 
 // static
-RawPtr<BlobEvent> BlobEvent::create()
+BlobEvent* BlobEvent::create()
 {
     return new BlobEvent;
 }
 
 // static
-RawPtr<BlobEvent> BlobEvent::create(const AtomicString& type, const BlobEventInit& initializer)
+BlobEvent* BlobEvent::create(const AtomicString& type, const BlobEventInit& initializer)
 {
     return new BlobEvent(type, initializer);
 }
 
 // static
-RawPtr<BlobEvent> BlobEvent::create(const AtomicString& type, Blob* blob)
+BlobEvent* BlobEvent::create(const AtomicString& type, Blob* blob)
 {
     return new BlobEvent(type, blob);
 }

@@ -20,7 +20,7 @@ static const char overrideEnabled[] = "overrideEnabled";
 }
 
 // static
-RawPtr<DeviceOrientationInspectorAgent> DeviceOrientationInspectorAgent::create(Page* page)
+DeviceOrientationInspectorAgent* DeviceOrientationInspectorAgent::create(Page* page)
 {
     return new DeviceOrientationInspectorAgent(*page);
 }

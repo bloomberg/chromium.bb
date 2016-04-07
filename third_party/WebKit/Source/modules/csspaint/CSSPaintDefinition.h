@@ -16,7 +16,7 @@ class ScriptState;
 
 class CSSPaintDefinition final : public GarbageCollectedFinalized<CSSPaintDefinition> {
 public:
-    static RawPtr<CSSPaintDefinition> create(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint);
+    static CSSPaintDefinition* create(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint);
     virtual ~CSSPaintDefinition();
 
     v8::Local<v8::Function> paintFunctionForTesting(v8::Isolate* isolate) { return m_paint.newLocal(isolate); }

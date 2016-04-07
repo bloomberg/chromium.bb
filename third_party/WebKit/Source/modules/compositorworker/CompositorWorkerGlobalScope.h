@@ -36,7 +36,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, RawPtr<WorkerClients>);
+    CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     CompositorWorkerThread* thread() const;
 
     FrameRequestCallbackCollection m_callbackCollection;

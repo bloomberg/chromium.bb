@@ -130,7 +130,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
 
 void CanvasRenderingContext2D::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setCanvasRenderingContext2D(RawPtr<CanvasRenderingContext2D>(this));
+    result.setCanvasRenderingContext2D(this);
 }
 
 void CanvasRenderingContext2D::unwindStateStack()
@@ -228,7 +228,7 @@ DEFINE_TRACE(CanvasRenderingContext2D)
 void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)
 {
     if (contextLostRestoredEventsEnabled()) {
-        RawPtr<Event> event = Event::createCancelable(EventTypeNames::contextlost);
+        Event* event = Event::createCancelable(EventTypeNames::contextlost);
         canvas()->dispatchEvent(event);
         if (event->defaultPrevented()) {
             m_contextRestorable = false;
@@ -273,7 +273,7 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderin
     reset();
     m_contextLostMode = NotLostContext;
     if (contextLostRestoredEventsEnabled()) {
-        RawPtr<Event> event(Event::create(EventTypeNames::contextrestored));
+        Event* event(Event::create(EventTypeNames::contextrestored));
         canvas()->dispatchEvent(event);
     }
 }
@@ -1013,11 +1013,11 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
     m_hitRegionManager->removeHitRegionById(options.id());
     m_hitRegionManager->removeHitRegionByControl(options.control());
 
-    RawPtr<HitRegion> hitRegion = HitRegion::create(hitRegionPath, options);
+    HitRegion* hitRegion = HitRegion::create(hitRegionPath, options);
     Element* element = hitRegion->control();
     if (element && element->isDescendantOf(canvas()))
         updateElementAccessibility(hitRegion->path(), hitRegion->control());
-    m_hitRegionManager->addHitRegion(hitRegion.release());
+    m_hitRegionManager->addHitRegion(hitRegion);
 }
 
 void CanvasRenderingContext2D::removeHitRegion(const String& id)

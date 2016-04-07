@@ -73,7 +73,7 @@ GeolocationController::~GeolocationController()
 #endif
 }
 
-RawPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
+GeolocationController* GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
 {
     return new GeolocationController(frame, client);
 }

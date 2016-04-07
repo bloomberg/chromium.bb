@@ -294,7 +294,7 @@ ExecutionContext* RTCDataChannel::getExecutionContext() const
     return m_executionContext;
 }
 
-void RTCDataChannel::scheduleDispatchEvent(RawPtr<Event> event)
+void RTCDataChannel::scheduleDispatchEvent(Event* event)
 {
     m_scheduledEvents.append(event);
 

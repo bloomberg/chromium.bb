@@ -160,13 +160,13 @@ void IDBDatabase::onComplete(int64_t transactionId)
     m_transactions.get(transactionId)->onComplete();
 }
 
-RawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
+DOMStringList* IDBDatabase::objectStoreNames() const
 {
-    RawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
+    DOMStringList* objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (const auto& it : m_metadata.objectStores)
         objectStoreNames->append(it.value.name);
     objectStoreNames->sort();
-    return objectStoreNames.release();
+    return objectStoreNames;
 }
 
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)

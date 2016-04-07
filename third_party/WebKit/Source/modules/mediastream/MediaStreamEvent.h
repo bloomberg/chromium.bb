@@ -37,9 +37,9 @@ class MediaStreamEvent final : public Event {
 public:
     ~MediaStreamEvent() override;
 
-    static RawPtr<MediaStreamEvent> create();
-    static RawPtr<MediaStreamEvent> create(const AtomicString& type, bool canBubble, bool cancelable, MediaStream*);
-    static RawPtr<MediaStreamEvent> create(const AtomicString& type, const MediaStreamEventInit& initializer);
+    static MediaStreamEvent* create();
+    static MediaStreamEvent* create(const AtomicString& type, bool canBubble, bool cancelable, MediaStream*);
+    static MediaStreamEvent* create(const AtomicString& type, const MediaStreamEventInit& initializer);
 
     MediaStream* stream() const;
     MediaStream* stream(bool&) const;

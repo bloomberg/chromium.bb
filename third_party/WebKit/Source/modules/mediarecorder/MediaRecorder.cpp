@@ -240,7 +240,7 @@ void MediaRecorder::requestData(ExceptionState& exceptionState)
 
 bool MediaRecorder::isTypeSupported(const String& type)
 {
-    RawPtr<WebMediaRecorderHandler> handler = Platform::current()->createMediaRecorderHandler();
+    WebMediaRecorderHandler* handler = Platform::current()->createMediaRecorderHandler();
     if (!handler)
         return false;
 
@@ -332,7 +332,7 @@ void MediaRecorder::stopRecording()
     scheduleDispatchEvent(Event::create(EventTypeNames::stop));
 }
 
-void MediaRecorder::scheduleDispatchEvent(RawPtr<Event> event)
+void MediaRecorder::scheduleDispatchEvent(Event* event)
 {
     m_scheduledEvents.append(event);
 

@@ -16,15 +16,15 @@ class DeviceLightEvent final : public Event {
 public:
     ~DeviceLightEvent() override;
 
-    static RawPtr<DeviceLightEvent> create()
+    static DeviceLightEvent* create()
     {
         return new DeviceLightEvent;
     }
-    static RawPtr<DeviceLightEvent> create(const AtomicString& eventType, double value)
+    static DeviceLightEvent* create(const AtomicString& eventType, double value)
     {
         return new DeviceLightEvent(eventType, value);
     }
-    static RawPtr<DeviceLightEvent> create(const AtomicString& eventType, const DeviceLightEventInit& initializer)
+    static DeviceLightEvent* create(const AtomicString& eventType, const DeviceLightEventInit& initializer)
     {
         return new DeviceLightEvent(eventType, initializer);
     }

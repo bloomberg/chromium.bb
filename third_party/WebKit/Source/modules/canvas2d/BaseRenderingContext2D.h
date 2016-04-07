@@ -78,8 +78,8 @@ public:
     void save();
     void restore();
 
-    RawPtr<SVGMatrixTearOff> currentTransform() const;
-    void setCurrentTransform(RawPtr<SVGMatrixTearOff>);
+    SVGMatrixTearOff* currentTransform() const;
+    void setCurrentTransform(SVGMatrixTearOff*);
 
     void scale(double sx, double sy);
     void rotate(double angleInRadians);

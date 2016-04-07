@@ -42,15 +42,15 @@ namespace blink {
 class IDBVersionChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<IDBVersionChangeEvent> create()
+    static IDBVersionChangeEvent* create()
     {
         return new IDBVersionChangeEvent();
     }
-    static RawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss = WebIDBDataLossNone, const String& dataLossMessage = String())
+    static IDBVersionChangeEvent* create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss = WebIDBDataLossNone, const String& dataLossMessage = String())
     {
         return new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage);
     }
-    static RawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
+    static IDBVersionChangeEvent* create(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
     {
         return new IDBVersionChangeEvent(eventType, initializer);
     }

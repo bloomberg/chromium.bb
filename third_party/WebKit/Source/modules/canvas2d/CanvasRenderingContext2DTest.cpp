@@ -93,7 +93,7 @@ private:
 
     class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
     public:
-        static RawPtr<WrapGradients> create()
+        static WrapGradients* create()
         {
             return new WrapGradients;
         }
@@ -446,18 +446,18 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
     canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     NonThrowableExceptionState exceptionState;
-    RawPtr<Element> sourceCanvasElement = document().createElement("canvas", exceptionState);
+    Element* sourceCanvasElement = document().createElement("canvas", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    HTMLCanvasElement* sourceCanvas = static_cast<HTMLCanvasElement*>(sourceCanvasElement.get());
+    HTMLCanvasElement* sourceCanvas = static_cast<HTMLCanvasElement*>(sourceCanvasElement);
     IntSize sourceSize(10, 10 * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio);
     OwnPtr<UnacceleratedImageBufferSurface> sourceSurface = adoptPtr(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
     sourceCanvas->createImageBufferUsingSurfaceForTesting(sourceSurface.release());
 
     const ImageBitmapOptions defaultOptions;
     // Go through an ImageBitmap to avoid triggering a display list fallback
-    RawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
+    ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
 
-    context2d()->drawImage(sourceImageBitmap.get(), 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
+    context2d()->drawImage(sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     EXPECT_FALSE(canvasElement().shouldBeDirectComposited());
@@ -470,18 +470,18 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
     canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     NonThrowableExceptionState exceptionState;
-    RawPtr<Element> sourceCanvasElement = document().createElement("canvas", exceptionState);
+    Element* sourceCanvasElement = document().createElement("canvas", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    HTMLCanvasElement* sourceCanvas = static_cast<HTMLCanvasElement*>(sourceCanvasElement.get());
+    HTMLCanvasElement* sourceCanvas = static_cast<HTMLCanvasElement*>(sourceCanvasElement);
     IntSize sourceSize(10, 10 * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio + 1);
     OwnPtr<UnacceleratedImageBufferSurface> sourceSurface = adoptPtr(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
     sourceCanvas->createImageBufferUsingSurfaceForTesting(sourceSurface.release());
 
     const ImageBitmapOptions defaultOptions;
     // Go through an ImageBitmap to avoid triggering a display list fallback
-    RawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
+    ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
 
-    context2d()->drawImage(sourceImageBitmap.get(), 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
+    context2d()->drawImage(sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     EXPECT_TRUE(canvasElement().shouldBeDirectComposited());
@@ -660,16 +660,16 @@ TEST_F(CanvasRenderingContext2DTest, NonOpaqueDisplayListDoesNotFallBackForText)
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
 {
     NonThrowableExceptionState nonThrowableExceptionState;
-    RawPtr<Element> canvasElement = document().createElement("canvas", nonThrowableExceptionState);
+    Element* canvasElement = document().createElement("canvas", nonThrowableExceptionState);
     EXPECT_FALSE(nonThrowableExceptionState.hadException());
-    HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(canvasElement.get());
+    HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(canvasElement);
     canvas->setHeight(40);
     canvas->setWidth(40);
-    RawPtr<ImageBitmap> imageBitmapDerived = nullptr;
+    ImageBitmap* imageBitmapDerived = nullptr;
     {
         const ImageBitmapOptions defaultOptions;
-        RawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvas, IntRect(0, 0, canvas->width(), canvas->height()), defaultOptions);
-        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20), defaultOptions);
+        ImageBitmap* imageBitmapFromCanvas = ImageBitmap::create(canvas, IntRect(0, 0, canvas->width(), canvas->height()), defaultOptions);
+        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas, IntRect(0, 0, 20, 20), defaultOptions);
     }
     CanvasContextCreationAttributes attributes;
     CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->getCanvasRenderingContext("2d", attributes));

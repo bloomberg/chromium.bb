@@ -38,11 +38,11 @@ class DeviceOrientationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~DeviceOrientationEvent() override;
-    static RawPtr<DeviceOrientationEvent> create()
+    static DeviceOrientationEvent* create()
     {
         return new DeviceOrientationEvent;
     }
-    static RawPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
+    static DeviceOrientationEvent* create(const AtomicString& eventType, DeviceOrientationData* orientation)
     {
         return new DeviceOrientationEvent(eventType, orientation);
     }

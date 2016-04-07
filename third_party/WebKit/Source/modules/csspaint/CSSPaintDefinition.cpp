@@ -8,7 +8,7 @@
 
 namespace blink {
 
-RawPtr<CSSPaintDefinition> CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint)
+CSSPaintDefinition* CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint)
 {
     return new CSSPaintDefinition(scriptState, constructor, paint);
 }

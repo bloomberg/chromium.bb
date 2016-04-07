@@ -32,7 +32,7 @@ class MODULES_EXPORT Cache final : public GarbageCollectedFinalized<Cache>, publ
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:
-    static Cache* create(RawPtr<GlobalFetch::ScopedFetcher>, PassOwnPtr<WebServiceWorkerCache>);
+    static Cache* create(GlobalFetch::ScopedFetcher*, PassOwnPtr<WebServiceWorkerCache>);
 
     // From Cache.idl:
     ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
@@ -54,7 +54,7 @@ private:
     class BlobHandleCallbackForPut;
     class FetchResolvedForAdd;
     friend class FetchResolvedForAdd;
-    Cache(RawPtr<GlobalFetch::ScopedFetcher>, PassOwnPtr<WebServiceWorkerCache>);
+    Cache(GlobalFetch::ScopedFetcher*, PassOwnPtr<WebServiceWorkerCache>);
 
     ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
     ScriptPromise matchAllImpl(ScriptState*);

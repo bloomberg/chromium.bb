@@ -18,8 +18,8 @@ void InstalledAppController::provideTo(LocalFrame& frame, WebInstalledAppClient*
 {
     ASSERT(RuntimeEnabledFeatures::installedAppEnabled());
 
-    RawPtr<InstalledAppController> controller = new InstalledAppController(frame, client);
-    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller.release());
+    InstalledAppController* controller = new InstalledAppController(frame, client);
+    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 InstalledAppController* InstalledAppController::from(LocalFrame& frame)

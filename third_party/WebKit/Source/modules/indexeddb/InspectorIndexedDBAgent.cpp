@@ -88,7 +88,7 @@ namespace {
 class GetDatabaseNamesCallback final : public EventListener {
     WTF_MAKE_NONCOPYABLE(GetDatabaseNamesCallback);
 public:
-    static RawPtr<GetDatabaseNamesCallback> create(PassOwnPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
+    static GetDatabaseNamesCallback* create(PassOwnPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
     {
         return new GetDatabaseNamesCallback(requestCallback, securityOrigin);
     }
@@ -114,7 +114,7 @@ public:
             return;
         }
 
-        RawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
+        DOMStringList* databaseNamesList = requestResult->domStringList();
         OwnPtr<protocol::Array<String>> databaseNames = protocol::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->anonymousIndexedGetter(i));
@@ -151,7 +151,7 @@ private:
 
 class OpenDatabaseCallback final : public EventListener {
 public:
-    static RawPtr<OpenDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
+    static OpenDatabaseCallback* create(ExecutableWithDatabase* executableWithDatabase)
     {
         return new OpenDatabaseCallback(executableWithDatabase);
     }
@@ -192,7 +192,7 @@ private:
 
 class UpgradeDatabaseCallback final : public EventListener {
 public:
-    static RawPtr<UpgradeDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
+    static UpgradeDatabaseCallback* create(ExecutableWithDatabase* executableWithDatabase)
     {
         return new UpgradeDatabaseCallback(executableWithDatabase);
     }
@@ -229,8 +229,8 @@ private:
 
 void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, const String& databaseName)
 {
-    RawPtr<OpenDatabaseCallback> openCallback = OpenDatabaseCallback::create(this);
-    RawPtr<UpgradeDatabaseCallback> upgradeCallback = UpgradeDatabaseCallback::create(this);
+    OpenDatabaseCallback* openCallback = OpenDatabaseCallback::create(this);
+    UpgradeDatabaseCallback* upgradeCallback = UpgradeDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
     IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(getScriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
@@ -407,7 +407,7 @@ class DataLoader;
 
 class OpenCursorCallback final : public EventListener {
 public:
-    static RawPtr<OpenCursorCallback> create(ScriptState* scriptState, PassOwnPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static OpenCursorCallback* create(ScriptState* scriptState, PassOwnPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
         return new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize);
     }
@@ -544,7 +544,7 @@ public:
         } else {
             idbRequest = idbObjectStore->openCursor(getScriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         }
-        RawPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(getScriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
+        OpenCursorCallback* openCursorCallback = OpenCursorCallback::create(getScriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
 
@@ -571,7 +571,7 @@ public:
 } // namespace
 
 // static
-RawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(InspectedFrames* inspectedFrames)
+InspectorIndexedDBAgent* InspectorIndexedDBAgent::create(InspectedFrames* inspectedFrames)
 {
     return new InspectorIndexedDBAgent(inspectedFrames);
 }
@@ -705,7 +705,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
 class ClearObjectStoreListener final : public EventListener {
     WTF_MAKE_NONCOPYABLE(ClearObjectStoreListener);
 public:
-    static RawPtr<ClearObjectStoreListener> create(PassOwnPtr<ClearObjectStoreCallback> requestCallback)
+    static ClearObjectStoreListener* create(PassOwnPtr<ClearObjectStoreCallback> requestCallback)
     {
         return new ClearObjectStoreListener(requestCallback);
     }

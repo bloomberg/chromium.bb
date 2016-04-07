@@ -339,16 +339,16 @@ const String& IDBTransaction::mode() const
     return IndexedDBNames::readonly;
 }
 
-RawPtr<DOMStringList> IDBTransaction::objectStoreNames() const
+DOMStringList* IDBTransaction::objectStoreNames() const
 {
     if (m_mode == WebIDBTransactionModeVersionChange)
         return m_database->objectStoreNames();
 
-    RawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
+    DOMStringList* objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (const String& name : m_objectStoreNames)
         objectStoreNames->append(name);
     objectStoreNames->sort();
-    return objectStoreNames.release();
+    return objectStoreNames;
 }
 
 const AtomicString& IDBTransaction::interfaceName() const

@@ -302,9 +302,9 @@ private:
 
 MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
 {
-    RawPtr<MediaKeySession> session = new MediaKeySession(scriptState, mediaKeys, sessionType);
+    MediaKeySession* session = new MediaKeySession(scriptState, mediaKeys, sessionType);
     session->suspendIfNeeded();
-    return session.get();
+    return session;
 }
 
 MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
@@ -801,9 +801,9 @@ void MediaKeySession::message(MessageType messageType, const unsigned char* mess
     }
     init.setMessage(DOMArrayBuffer::create(static_cast<const void*>(message), messageLength));
 
-    RawPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
+    MediaKeyMessageEvent* event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
     event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
+    m_asyncEventQueue->enqueueEvent(event);
 }
 
 void MediaKeySession::close()
@@ -869,9 +869,9 @@ void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInf
 
     // 5. Queue a task to fire a simple event named keystatuseschange
     //    at the session.
-    RawPtr<Event> event = Event::create(EventTypeNames::keystatuseschange);
+    Event* event = Event::create(EventTypeNames::keystatuseschange);
     event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
+    m_asyncEventQueue->enqueueEvent(event);
 
     // 6. Queue a task to run the attempt to resume playback if necessary
     //    algorithm on each of the media element(s) whose mediaKeys attribute

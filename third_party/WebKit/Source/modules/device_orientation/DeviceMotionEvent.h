@@ -39,11 +39,11 @@ class DeviceMotionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~DeviceMotionEvent() override;
-    static RawPtr<DeviceMotionEvent> create()
+    static DeviceMotionEvent* create()
     {
         return new DeviceMotionEvent;
     }
-    static RawPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
+    static DeviceMotionEvent* create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
     {
         return new DeviceMotionEvent(eventType, deviceMotionData);
     }

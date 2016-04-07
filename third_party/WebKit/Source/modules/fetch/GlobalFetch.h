@@ -27,8 +27,8 @@ public:
 
         virtual ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&) = 0;
 
-        static RawPtr<ScopedFetcher> from(DOMWindow&);
-        static RawPtr<ScopedFetcher> from(WorkerGlobalScope&);
+        static ScopedFetcher* from(DOMWindow&);
+        static ScopedFetcher* from(WorkerGlobalScope&);
 
         DECLARE_VIRTUAL_TRACE();
     };

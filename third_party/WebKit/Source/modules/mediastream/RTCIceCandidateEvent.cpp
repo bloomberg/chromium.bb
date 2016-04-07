@@ -28,12 +28,12 @@
 
 namespace blink {
 
-RawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create()
+RTCIceCandidateEvent* RTCIceCandidateEvent::create()
 {
     return new RTCIceCandidateEvent;
 }
 
-RawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
+RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
 {
     return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
 }

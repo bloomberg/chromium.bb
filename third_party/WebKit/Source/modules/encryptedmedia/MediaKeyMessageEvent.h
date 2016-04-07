@@ -39,12 +39,12 @@ class MediaKeyMessageEvent final : public Event {
 public:
     ~MediaKeyMessageEvent() override;
 
-    static RawPtr<MediaKeyMessageEvent> create()
+    static MediaKeyMessageEvent* create()
     {
         return new MediaKeyMessageEvent;
     }
 
-    static RawPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
+    static MediaKeyMessageEvent* create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
     {
         return new MediaKeyMessageEvent(type, initializer);
     }

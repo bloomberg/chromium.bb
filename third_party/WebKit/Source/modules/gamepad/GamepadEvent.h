@@ -14,15 +14,15 @@ namespace blink {
 class GamepadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<GamepadEvent> create()
+    static GamepadEvent* create()
     {
         return new GamepadEvent;
     }
-    static RawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
+    static GamepadEvent* create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
     {
         return new GamepadEvent(type, canBubble, cancelable, gamepad);
     }
-    static RawPtr<GamepadEvent> create(const AtomicString& type, const GamepadEventInit& initializer)
+    static GamepadEvent* create(const AtomicString& type, const GamepadEventInit& initializer)
     {
         return new GamepadEvent(type, initializer);
     }

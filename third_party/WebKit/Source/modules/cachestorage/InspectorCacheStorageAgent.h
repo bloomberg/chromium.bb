@@ -17,7 +17,7 @@ class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgen
     WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
 public:
-    static RawPtr<InspectorCacheStorageAgent> create()
+    static InspectorCacheStorageAgent* create()
     {
         return new InspectorCacheStorageAgent();
     }

@@ -107,7 +107,7 @@ public:
 private:
     RTCDataChannel(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
 
-    void scheduleDispatchEvent(RawPtr<Event>);
+    void scheduleDispatchEvent(Event*);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
     Member<ExecutionContext> m_executionContext;

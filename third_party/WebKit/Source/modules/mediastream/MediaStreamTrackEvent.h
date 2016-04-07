@@ -37,8 +37,8 @@ class MediaStreamTrackEvent final : public Event {
 public:
     ~MediaStreamTrackEvent() override;
 
-    static RawPtr<MediaStreamTrackEvent> create();
-    static RawPtr<MediaStreamTrackEvent> create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack*);
+    static MediaStreamTrackEvent* create();
+    static MediaStreamTrackEvent* create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack*);
 
     MediaStreamTrack* track() const;
 

@@ -137,7 +137,7 @@ public:
     PassOwnPtr<TestCompositorWorkerThread> createCompositorWorker(WaitableEvent* startEvent)
     {
         TestCompositorWorkerThread* workerThread = new TestCompositorWorkerThread(nullptr, *m_objectProxy, 0, startEvent);
-        RawPtr<WorkerClients> clients = nullptr;
+        WorkerClients* clients = nullptr;
         workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",
@@ -146,7 +146,7 @@ public:
             DontPauseWorkerGlobalScopeOnStart,
             adoptPtr(new Vector<CSPHeaderAndType>()),
             m_securityOrigin.get(),
-            clients.release(),
+            clients,
             WebAddressSpaceLocal,
             V8CacheOptionsDefault));
         return adoptPtr(workerThread);

@@ -36,8 +36,8 @@ class RTCDataChannelEvent final : public Event {
 public:
     ~RTCDataChannelEvent() override;
 
-    static RawPtr<RTCDataChannelEvent> create();
-    static RawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+    static RTCDataChannelEvent* create();
+    static RTCDataChannelEvent* create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
     RTCDataChannel* channel() const;
 

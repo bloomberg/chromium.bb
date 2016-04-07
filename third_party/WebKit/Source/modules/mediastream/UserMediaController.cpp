@@ -41,7 +41,7 @@ DEFINE_TRACE(UserMediaController)
     Supplement<LocalFrame>::trace(visitor);
 }
 
-RawPtr<UserMediaController> UserMediaController::create(UserMediaClient* client)
+UserMediaController* UserMediaController::create(UserMediaClient* client)
 {
     return new UserMediaController(client);
 }

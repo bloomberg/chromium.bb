@@ -18,7 +18,7 @@ class ExceptionState;
 class MODULES_EXPORT PaintWorkletGlobalScope : public WorkletGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<PaintWorkletGlobalScope> create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+    static PaintWorkletGlobalScope* create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~PaintWorkletGlobalScope() override;
     void dispose() override;
 

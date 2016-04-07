@@ -22,7 +22,7 @@ class CanvasRenderingContext2DState final : public GarbageCollectedFinalized<Can
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext2DState);
     USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 public:
-    static RawPtr<CanvasRenderingContext2DState> create()
+    static CanvasRenderingContext2DState* create()
     {
         return new CanvasRenderingContext2DState;
     }
@@ -42,7 +42,7 @@ public:
         ImagePaintType,
     };
 
-    static RawPtr<CanvasRenderingContext2DState> create(const CanvasRenderingContext2DState& other, ClipListCopyMode mode)
+    static CanvasRenderingContext2DState* create(const CanvasRenderingContext2DState& other, ClipListCopyMode mode)
     {
         return new CanvasRenderingContext2DState(other, mode);
     }
@@ -82,7 +82,7 @@ public:
     void setUnparsedFont(const String& font) { m_unparsedFont = font; }
     const String& unparsedFont() const { return m_unparsedFont; }
 
-    void setFilter(RawPtr<CSSValue>);
+    void setFilter(CSSValue*);
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
     SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize, CanvasRenderingContext2D*) const;

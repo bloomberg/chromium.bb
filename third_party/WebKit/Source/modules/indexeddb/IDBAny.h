@@ -60,7 +60,7 @@ public:
     {
         return new IDBAny(idbObject);
     }
-    static IDBAny* create(RawPtr<DOMStringList> domStringList)
+    static IDBAny* create(DOMStringList* domStringList)
     {
         return new IDBAny(domStringList);
     }
@@ -110,7 +110,7 @@ public:
 
 private:
     explicit IDBAny(Type);
-    explicit IDBAny(RawPtr<DOMStringList>);
+    explicit IDBAny(DOMStringList*);
     explicit IDBAny(IDBCursor*);
     explicit IDBAny(IDBDatabase*);
     explicit IDBAny(IDBIndex*);

@@ -36,8 +36,8 @@ class RTCIceCandidateEvent final : public Event {
 public:
     ~RTCIceCandidateEvent() override;
 
-    static RawPtr<RTCIceCandidateEvent> create();
-    static RawPtr<RTCIceCandidateEvent> create(bool canBubble, bool cancelable, RTCIceCandidate*);
+    static RTCIceCandidateEvent* create();
+    static RTCIceCandidateEvent* create(bool canBubble, bool cancelable, RTCIceCandidate*);
 
     RTCIceCandidate* candidate() const;
 

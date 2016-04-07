@@ -27,17 +27,17 @@
 
 namespace blink {
 
-RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create()
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create()
 {
     return new RTCDTMFToneChangeEvent;
 }
 
-RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const String& tone)
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const String& tone)
 {
     return new RTCDTMFToneChangeEvent(tone);
 }
 
-RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
 {
     ASSERT(type == EventTypeNames::tonechange);
     return new RTCDTMFToneChangeEvent(initializer);
