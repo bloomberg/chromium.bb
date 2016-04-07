@@ -72,7 +72,7 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         MAP_ERROR(BLACKLISTED_WRITE, SecurityError, "writeValue() called on blacklisted object marked exclude-writes. https://goo.gl/4NeimX");
         MAP_ERROR(NOT_ALLOWED_TO_ACCESS_SERVICE, SecurityError, "Origin is not allowed to access the service. Remember to add the service to a filter or to optionalServices in requestDevice().");
         MAP_ERROR(REQUEST_DEVICE_WITH_BLACKLISTED_UUID, SecurityError, "requestDevice() called with a filter containing a blacklisted UUID. https://goo.gl/4NeimX");
-        MAP_ERROR(REQUEST_DEVICE_WITH_UNIQUE_ORIGIN, SecurityError, "requestDevice() called from sandboxed or otherwise unique origin.");
+        MAP_ERROR(REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME, SecurityError, "requestDevice() called from cross-origin iframe.");
         MAP_ERROR(REQUEST_DEVICE_WITHOUT_FRAME, SecurityError, "No window to show the requestDevice() dialog.");
 
 #undef MAP_ERROR

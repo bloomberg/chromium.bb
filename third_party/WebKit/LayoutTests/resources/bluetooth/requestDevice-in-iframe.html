@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script>
   window.onmessage = messageEvent => {
+    // For requestDevice to work, 'Go' should be sent while
+    // handling a user gesture.
     if (messageEvent.data === 'Go') {
       navigator.bluetooth.requestDevice({
         filters: [{services: ['generic_access']}]
@@ -11,8 +13,7 @@
           parent.postMessage('FAIL: requestDevice in iframe returned ' + device, '*');
         }
       }).catch(err => {
-        console.error(err);
-        parent.postMessage('FAIL: ' + err, '*');
+        parent.postMessage(err.name + ': ' + err.message, '*');
       });
     }
   };

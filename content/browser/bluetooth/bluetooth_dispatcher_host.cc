@@ -1137,13 +1137,18 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
   const url::Origin embedding_origin =
       web_contents->GetMainFrame()->GetLastCommittedOrigin();
 
-  if (requesting_origin.unique()) {
-    VLOG(1) << "Request device with unique origin.";
+  // TODO(crbug.com/518042): Enforce correctly-delegated permissions instead of
+  // matching origins. When relaxing this, take care to handle non-sandboxed
+  // unique origins.
+  if (!embedding_origin.IsSameOriginWith(requesting_origin)) {
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id,
-        WebBluetoothError::REQUEST_DEVICE_WITH_UNIQUE_ORIGIN));
+        WebBluetoothError::REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME));
     return;
   }
+  // The above also excludes unique origins, which are not even same-origin with
+  // themselves.
+  DCHECK(!requesting_origin.unique());
 
   DCHECK(adapter_.get());
 
