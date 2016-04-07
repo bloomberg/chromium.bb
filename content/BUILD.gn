@@ -110,6 +110,15 @@ grit("resources") {
     "grit/content_resources.h",
     "content_resources.pak",
   ]
+  grit_flags = [
+    "-E",
+    "root_out_dir=" + rebase_path(root_out_dir, root_build_dir),
+  ]
+  deps = [
+    "//content/public/app:browser_manifest",
+    "//content/public/app:renderer_manifest",
+    "//mojo/services/catalog:manifest",
+  ]
 }
 
 # This target exists to "hold" the content_export header so we can do proper

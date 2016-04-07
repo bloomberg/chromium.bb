@@ -58,31 +58,32 @@
       ],
     },
     {
-      # GN version: //content/browser:chrome_manifest
-      'target_name': 'chrome_manifest',
+      # GN version: //content/public/app:browser_manifest
+      'target_name': 'content_app_browser_manifest',
       'type': 'none',
       'variables': {
         'application_type': 'exe',
-        'application_name': 'chrome',
-        'source_manifest': '<(DEPTH)/content/browser/mojo/chrome_manifest.json',
+        'application_name': 'content_browser',
+        'source_manifest': '<(DEPTH)/content/public/app/mojo/content_browser_manifest.json',
       },
       'includes': [
         '../mojo/public/mojo_application_manifest.gypi',
       ],
+      'hard_dependency': 1,
     },
     {
-      # GN version: //content/browser:chrome_renderer_manifest
-      'target_name': 'chrome_renderer_manifest',
+      # GN version: //content/public/app:renderer_manifest
+      'target_name': 'content_app_renderer_manifest',
       'type': 'none',
       'variables': {
         'application_type': 'exe',
-        'application_name': 'chrome_renderer',
-        'source_manifest':
-            '<(DEPTH)/content/browser/mojo/chrome_renderer_manifest.json',
+        'application_name': 'content_renderer',
+        'source_manifest': '<(DEPTH)/content/public/app/mojo/content_renderer_manifest.json',
       },
       'includes': [
         '../mojo/public/mojo_application_manifest.gypi',
       ],
+      'hard_dependency': 1,
     },
   ],
   'includes': [
@@ -208,8 +209,6 @@
             '../build/android/disable_gcc_lto.gypi',
           ],
           'dependencies': [
-            'chrome_manifest',
-            'chrome_renderer_manifest',
             'content_common',
             'content_gpu',
             'content_resources',
@@ -395,8 +394,6 @@
           'target_name': 'content_common',
           'type': 'none',
           'dependencies': [
-            'chrome_manifest',
-            'chrome_renderer_manifest',
             'content',
             'content_resources'
           ],

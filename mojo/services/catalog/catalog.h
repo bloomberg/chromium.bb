@@ -20,12 +20,14 @@
 
 namespace catalog {
 
+class ManifestProvider;
 class Store;
 
 struct ReadManifestResult {
   ReadManifestResult();
   ~ReadManifestResult();
-  scoped_ptr<base::Value> manifest_root;
+  mojo::shell::mojom::ResolveResultPtr resolve_result;
+  scoped_ptr<Entry> catalog_entry;
   base::FilePath package_dir;
 };
 
@@ -33,9 +35,11 @@ class Catalog : public mojom::Resolver,
                 public mojo::shell::mojom::ShellResolver,
                 public mojom::Catalog {
  public:
+  // |manifest_provider| may be null.
   Catalog(scoped_ptr<Store> store,
           base::TaskRunner* file_task_runner,
-          EntryCache* system_catalog);
+          EntryCache* system_catalog,
+          ManifestProvider* manifest_provider);
   ~Catalog() override;
 
   void BindResolver(mojom::ResolverRequest request);
@@ -81,6 +85,8 @@ class Catalog : public mojom::Resolver,
   // via callback.
   void AddEntryToCatalog(scoped_ptr<Entry> entry, bool is_system_catalog);
 
+  ManifestProvider* const manifest_provider_;
+
   // Directory that contains packages and executables visible to all users.
   base::FilePath system_package_dir_;
   // Directory that contains packages visible to this Catalog instance's user.
@@ -90,7 +96,7 @@ class Catalog : public mojom::Resolver,
   scoped_ptr<Store> store_;
 
   // Task runner for performing file operations.
-  base::TaskRunner* file_task_runner_;
+  base::TaskRunner* const file_task_runner_;
 
   mojo::BindingSet<mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;

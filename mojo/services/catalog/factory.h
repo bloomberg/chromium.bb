@@ -30,6 +30,7 @@ class ShellConnection;
 namespace catalog {
 
 class Catalog;
+class ManifestProvider;
 class Store;
 
 // Creates and owns an instance of the catalog. Exposes a ShellClientPtr that
@@ -40,7 +41,10 @@ class Factory
       public mojo::InterfaceFactory<mojom::Resolver>,
       public mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver> {
  public:
-  Factory(base::TaskRunner* file_task_runner, scoped_ptr<Store> store);
+  // |manifest_provider| may be null.
+  Factory(base::TaskRunner* file_task_runner,
+          scoped_ptr<Store> store,
+          ManifestProvider* manifest_provider);
   ~Factory() override;
 
   mojo::shell::mojom::ShellClientPtr TakeShellClient();
@@ -63,8 +67,9 @@ class Factory
 
   Catalog* GetCatalogForUserId(const std::string& user_id);
 
-  base::TaskRunner* file_task_runner_;
+  base::TaskRunner* const file_task_runner_;
   scoped_ptr<Store> store_;
+  ManifestProvider* const manifest_provider_;
 
   mojo::shell::mojom::ShellClientPtr shell_client_;
   scoped_ptr<mojo::ShellConnection> shell_connection_;

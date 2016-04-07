@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/browser/browser.gni")
 import("//media/media_options.gni")
-import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("browser") {
   # Only the public target should depend on this. All other targets (even
@@ -119,11 +118,6 @@ source_set("browser") {
     "//ui/snapshot",
     "//ui/surface",
     "//ui/touch_selection",
-  ]
-
-  data_deps = [
-    ":chrome_manifest",
-    ":chrome_renderer_manifest",
   ]
 
   sources = rebase_path(content_browser_gypi_values.private_browser_sources,
@@ -536,16 +530,4 @@ group("for_content_tests") {
       ":browser",
     ]
   }
-}
-
-mojo_application_manifest("chrome_manifest") {
-  type = "exe"
-  application_name = "chrome"
-  source = "mojo/chrome_manifest.json"
-}
-
-mojo_application_manifest("chrome_renderer_manifest") {
-  type = "exe"
-  application_name = "chrome_renderer"
-  source = "mojo/chrome_renderer_manifest.json"
 }

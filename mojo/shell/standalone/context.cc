@@ -166,7 +166,8 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   scoped_ptr<catalog::Store> store;
   if (init_params)
     store = std::move(init_params->catalog_store);
-  catalog_.reset(new catalog::Factory(blocking_pool_.get(), std::move(store)));
+  catalog_.reset(
+      new catalog::Factory(blocking_pool_.get(), std::move(store), nullptr));
   shell_.reset(new Shell(std::move(runner_factory),
                          catalog_->TakeShellClient()));
 

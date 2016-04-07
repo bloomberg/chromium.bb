@@ -11,13 +11,17 @@
 
 namespace catalog {
 
-Factory::Factory(base::TaskRunner* file_task_runner, scoped_ptr<Store> store)
+Factory::Factory(base::TaskRunner* file_task_runner,
+                 scoped_ptr<Store> store,
+                 ManifestProvider* manifest_provider)
     : file_task_runner_(file_task_runner),
       store_(std::move(store)),
+      manifest_provider_(manifest_provider),
       weak_factory_(this) {
   mojo::shell::mojom::ShellClientRequest request = GetProxy(&shell_client_);
   shell_connection_.reset(new mojo::ShellConnection(this, std::move(request)));
 }
+
 Factory::~Factory() {}
 
 mojo::shell::mojom::ShellClientPtr Factory::TakeShellClient() {
@@ -58,8 +62,8 @@ Catalog* Factory::GetCatalogForUserId(const std::string& user_id) {
     return it->second.get();
 
   // TODO(beng): There needs to be a way to load the store from different users.
-  Catalog* instance =
-      new Catalog(std::move(store_), file_task_runner_, &system_catalog_);
+  Catalog* instance = new Catalog(std::move(store_), file_task_runner_,
+                                  &system_catalog_, manifest_provider_);
   catalogs_[user_id] = make_scoped_ptr(instance);
   return instance;
 }

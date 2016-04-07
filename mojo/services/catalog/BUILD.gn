@@ -21,6 +21,7 @@ source_set("lib") {
     "entry.h",
     "factory.cc",
     "factory.h",
+    "manifest_provider.h",
     "store.cc",
     "store.h",
     "types.h",

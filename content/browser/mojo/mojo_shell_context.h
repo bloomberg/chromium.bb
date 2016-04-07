@@ -53,6 +53,7 @@ class CONTENT_EXPORT MojoShellContext {
   static void SetApplicationsForTest(const StaticApplicationMap* apps);
 
  private:
+  class BuiltinManifestProvider;
   class Proxy;
   friend class Proxy;
 
@@ -66,6 +67,7 @@ class CONTENT_EXPORT MojoShellContext {
 
   static base::LazyInstance<scoped_ptr<Proxy>> proxy_;
 
+  scoped_ptr<BuiltinManifestProvider> manifest_provider_;
   scoped_ptr<catalog::Factory> catalog_;
   scoped_ptr<mojo::shell::Shell> shell_;
 

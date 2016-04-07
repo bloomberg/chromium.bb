@@ -6,10 +6,13 @@
 
 #include "base/bind.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/services/catalog/entry.h"
+#include "mojo/services/catalog/manifest_provider.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
 #include "url/gurl.h"
@@ -52,6 +55,27 @@ base::FilePath GetPackagePath(const base::FilePath& package_dir,
   return base::FilePath();
 }
 
+scoped_ptr<ReadManifestResult> ProcessManifest(
+    const base::FilePath& user_package_dir,
+    const base::FilePath& system_package_dir,
+    const std::string& name,
+    scoped_ptr<base::Value> manifest_root) {
+  scoped_ptr<Entry> entry(new Entry(name));
+  if (manifest_root) {
+    const base::DictionaryValue* dictionary = nullptr;
+    CHECK(manifest_root->GetAsDictionary(&dictionary));
+    entry = Entry::Deserialize(*dictionary);
+  }
+  entry->set_path(GetPackagePath(system_package_dir, name));
+
+  scoped_ptr<ReadManifestResult> result(new ReadManifestResult);
+  // NOTE: This TypeConverter must run on a thread which allows IO.
+  result->resolve_result = mojo::shell::mojom::ResolveResult::From(*entry);
+  result->catalog_entry = std::move(entry);
+  result->package_dir = system_package_dir;
+  return result;
+}
+
 scoped_ptr<ReadManifestResult> ReadManifest(
     const base::FilePath& user_package_dir,
     const base::FilePath& system_package_dir,
@@ -60,12 +84,11 @@ scoped_ptr<ReadManifestResult> ReadManifest(
   JSONFileValueDeserializer deserializer(manifest_path);
   int error = 0;
   std::string message;
+
   // TODO(beng): probably want to do more detailed error checking. This should
   //             be done when figuring out if to unblock connection completion.
-  scoped_ptr<ReadManifestResult> result(new ReadManifestResult);
-  result->manifest_root = deserializer.Deserialize(&error, &message);
-  result->package_dir = system_package_dir;
-  return result;
+  return ProcessManifest(user_package_dir, system_package_dir, name,
+                         deserializer.Deserialize(&error, &message));
 }
 
 void AddEntryToMap(const Entry& entry,
@@ -85,8 +108,10 @@ ReadManifestResult::~ReadManifestResult() {}
 
 Catalog::Catalog(scoped_ptr<Store> store,
                  base::TaskRunner* file_task_runner,
-                 EntryCache* system_catalog)
-    : store_(std::move(store)),
+                 EntryCache* system_catalog,
+                 ManifestProvider* manifest_provider)
+    : manifest_provider_(manifest_provider),
+      store_(std::move(store)),
       file_task_runner_(file_task_runner),
       system_catalog_(system_catalog),
       weak_factory_(this) {
@@ -155,12 +180,27 @@ void Catalog::ResolveMojoName(const mojo::String& mojo_name,
     callback.Run(mojo::shell::mojom::ResolveResult::From(*entry->second));
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
-      base::Bind(&ReadManifest, base::FilePath(), system_package_dir_,
-                 mojo_name),
-      base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
-                  mojo_name, callback));
+
+  std::string manifest_contents;
+  if (manifest_provider_ &&
+      manifest_provider_->GetApplicationManifest(mojo_name.To<std::string>(),
+                                                 &manifest_contents)) {
+    scoped_ptr<base::Value> manifest_root =
+        base::JSONReader::Read(manifest_contents);
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_, FROM_HERE,
+        base::Bind(&ProcessManifest, user_package_dir_, system_package_dir_,
+                   mojo_name, base::Passed(&manifest_root)),
+        base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
+                   mojo_name, callback));
+  } else {
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_, FROM_HERE,
+        base::Bind(&ReadManifest, user_package_dir_, system_package_dir_,
+                   mojo_name),
+        base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
+                   mojo_name, callback));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -224,18 +264,11 @@ void Catalog::OnReadManifest(base::WeakPtr<Catalog> catalog,
                              const std::string& name,
                              const ResolveMojoNameCallback& callback,
                              scoped_ptr<ReadManifestResult> result) {
-  scoped_ptr<Entry> entry(new Entry(name));
-  if (result->manifest_root) {
-    const base::DictionaryValue* dictionary = nullptr;
-    CHECK(result->manifest_root->GetAsDictionary(&dictionary));
-    entry = Entry::Deserialize(*dictionary);
-  }
-  entry->set_path(GetPackagePath(result->package_dir, name));
-
-  callback.Run(mojo::shell::mojom::ResolveResult::From(*entry));
+  callback.Run(std::move(result ->resolve_result));
   if (catalog) {
     catalog->AddEntryToCatalog(
-        std::move(entry), result->package_dir == catalog->system_package_dir_);
+        std::move(result->catalog_entry),
+        result->package_dir == catalog->system_package_dir_);
   }
 }
 

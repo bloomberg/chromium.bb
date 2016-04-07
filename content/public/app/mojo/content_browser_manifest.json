@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
-  "name": "exe:chrome",
-  "display_name": "Chrome",
+  "name": "exe:content_browser",
+  "display_name": "Content Browser",
   "capabilities": {
     "required": {
       "*": { "interfaces": [ "*" ] },

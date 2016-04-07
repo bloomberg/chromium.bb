@@ -12,11 +12,19 @@ import("//mojo/public/mojo_constants.gni")
 #       The manifest file template for this application, must be valid JSON with
 #       a valid 'url' key matching application_name.
 #
+#   base_manifest (optional)
+#       A manifest file template to use as a base for |source|. Any properties
+#       defined in |source| will overwrite or be merged with properties defined
+#       in |base_manifest|.
+#
 #   application_name
 #       The host portion of the mojo: URL of the application. The script
 #       validates that the value of this parameter matches the host name portion
 #       of the 'url' property set in the manifest and throws a ValueError if
 #       they do not.
+#
+#   base_deps (optional)
+#       Dependencies required to generate |base_manifest| if applicable.
 #
 #   deps (optional)
 #       An array of dependent instances of this template. This template enforces
@@ -86,6 +94,11 @@ template("mojo_application_manifest") {
       "--output=$rebase_output",
     ]
 
+    if (defined(invoker.base_manifest)) {
+      rebase_base = rebase_path(invoker.base_manifest, root_build_dir)
+      args += [ "--base-manifest=$rebase_base" ]
+    }
+
     if (defined(invoker.packaged_applications)) {
       foreach(application_name, invoker.packaged_applications) {
         input = "$root_out_dir/$mojo_application_subdir/$application_name/manifest.json"
@@ -96,6 +109,9 @@ template("mojo_application_manifest") {
     deps = []
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+    if (defined(invoker.base_deps)) {
+      deps += invoker.base_deps
     }
   }
 

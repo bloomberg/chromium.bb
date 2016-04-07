@@ -1,0 +1,5 @@
+{
+  "name": "exe:content_renderer",
+  "display_name": "Content Renderer",
+  "capabilities": { "mojo:mus": [ "mus::mojom::Gpu" ] }
+}

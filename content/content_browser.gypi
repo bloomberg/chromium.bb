@@ -1120,6 +1120,8 @@
       'browser/message_port_service.h',
       'browser/mime_registry_message_filter.cc',
       'browser/mime_registry_message_filter.h',
+      'browser/mojo/constants.cc',
+      'browser/mojo/constants.h',
       'browser/mojo/mojo_app_connection_impl.cc',
       'browser/mojo/mojo_app_connection_impl.h',
       'browser/mojo/mojo_application_host.cc',

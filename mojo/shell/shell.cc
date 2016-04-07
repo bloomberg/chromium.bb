@@ -296,10 +296,10 @@ class Shell::Instance : public mojom::Connector,
       const ConnectCallback& callback) {
     if (!client_process_connection->is_null()) {
       if (!HasClass(capability_spec_, kCapabilityClass_ClientProcess)) {
-        LOG(WARNING) << "Instance: " << identity_.name() << " attempting "
-                     << "to register an instance for a process it created for "
-                     << "target: " << target.name() << " without the "
-                     << "mojo:shell{client_process} capability class.";
+        LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
+                   << "to register an instance for a process it created for "
+                   << "target: " << target.name() << " without the "
+                   << "mojo:shell{client_process} capability class.";
         callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                      mojom::kInheritUserID, mojom::kInvalidInstanceID);
         return false;
@@ -307,17 +307,17 @@ class Shell::Instance : public mojom::Connector,
 
       if (!(*client_process_connection)->shell_client.is_valid() ||
           !(*client_process_connection)->pid_receiver_request.is_valid()) {
-        LOG(WARNING) << "Must supply both shell_client AND "
-                     << "pid_receiver_request when sending "
-                     << "client_process_connection.";
+        LOG(ERROR) << "Must supply both shell_client AND "
+                   << "pid_receiver_request when sending "
+                   << "client_process_connection.";
         callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
                      mojom::kInheritUserID, mojom::kInvalidInstanceID);
         return false;
       }
       if (shell_->GetExistingInstance(target)) {
-        LOG(WARNING) << "Cannot client process matching existing identity:"
-                     << "Name: " << target.name() << " User: "
-                     << target.user_id() << " Instance: " << target.instance();
+        LOG(ERROR) << "Cannot client process matching existing identity:"
+                   << "Name: " << target.name() << " User: "
+                   << target.user_id() << " Instance: " << target.instance();
         callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
                      mojom::kInheritUserID, mojom::kInvalidInstanceID);
         return false;

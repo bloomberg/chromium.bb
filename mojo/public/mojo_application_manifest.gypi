@@ -7,9 +7,11 @@
     'variables': {
       'application_name%': '<(application_name)',
       'application_type%': '<(application_type)',
+      'base_manifest%': 'none',
     },
     'application_type%': '<(application_type)',
     'application_name%': '<(application_name)',
+    'base_manifest%': '<(base_manifest)',
     'manifest_collator_script%':
         '<(DEPTH)/mojo/public/tools/manifest/manifest_collator.py',
     'source_manifest%': '<(source_manifest)',
@@ -19,6 +21,11 @@
       }, {
         'output_manifest%': '<(PRODUCT_DIR)/<(application_name)_manifest.json',
       }],
+      ['base_manifest!="none"', {
+        'extra_args%': [ '--base-manifest=<(base_manifest)', ],
+      }, {
+        'extra_args%': [],
+      }]
     ],
   },
   'actions': [{
@@ -36,6 +43,7 @@
       '--application-name', '<(application_name)',
       '--parent=<(source_manifest)',
       '--output=<(output_manifest)',
+      '<@(extra_args)',
     ],
   }],
 }

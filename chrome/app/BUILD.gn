@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/mojo_application_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
@@ -362,4 +363,27 @@ source_set("test_support") {
       "//components/nacl/renderer/plugin:nacl_trusted_plugin",
     ]
   }
+}
+
+mojo_application_manifest("chrome_manifest") {
+  type = "exe"
+  application_name = "chrome"
+  source = "mojo/chrome_manifest.json"
+  base_manifest = "${root_out_dir}/content_browser_manifest.json"
+  base_deps = [ "//content/public/app:browser_manifest" ]
+}
+
+mojo_application_manifest("chrome_renderer_manifest") {
+  type = "exe"
+  application_name = "chrome_renderer"
+  source = "mojo/chrome_renderer_manifest.json"
+  base_manifest = "${root_out_dir}/content_renderer_manifest.json"
+  base_deps = [ "//content/public/app:renderer_manifest" ]
+}
+
+group("mojo_manifests") {
+  deps = [
+    ":chrome_manifest",
+    ":chrome_renderer_manifest",
+  ]
 }

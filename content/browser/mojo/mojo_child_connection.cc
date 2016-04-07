@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/browser/mojo/constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -110,8 +111,7 @@ std::string MojoConnectToChild(int child_process_id,
   // PIDSender manages its own lifetime.
   new PIDSender(render_process_host, std::move(pid_receiver));
 
-
-  mojo::Identity target("exe:chrome_renderer",
+  mojo::Identity target(kRendererMojoApplicationName,
                         mojo::shell::mojom::kInheritUserID,
                         base::StringPrintf("%d_%d", child_process_id,
                                            instance_id));

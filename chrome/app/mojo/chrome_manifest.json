@@ -1,0 +1,6 @@
+{
+  "manifest_version": 1,
+  "name": "exe:chrome",
+  "display_name": "Chrome",
+  "capabilities": {}
+}

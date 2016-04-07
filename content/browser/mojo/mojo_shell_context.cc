@@ -15,11 +15,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/profile_service/profile_app.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/mojo/constants.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/mojo/current_thread_loader.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/mojo/static_loader.h"
 #include "content/common/process_control.mojom.h"
+#include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/utility_process_host.h"
@@ -30,6 +32,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/services/catalog/factory.h"
+#include "mojo/services/catalog/manifest_provider.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
@@ -42,8 +45,6 @@
 namespace content {
 
 namespace {
-
-const char kBrowserAppName[] = "exe:chrome";
 
 // An extra set of apps to register on initialization, if set by a test.
 const MojoShellContext::StaticApplicationMap* g_applications_for_test;
@@ -155,7 +156,42 @@ class GpuProcessLoader : public mojo::shell::Loader {
   DISALLOW_COPY_AND_ASSIGN(GpuProcessLoader);
 };
 
+std::string GetStringResource(int id) {
+  return GetContentClient()->GetDataResource(
+      id, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
+}
+
 }  // namespace
+
+// A ManifestProvider which resolves application names to builtin manifest
+// resources for the catalog service to consume.
+class MojoShellContext::BuiltinManifestProvider
+    : public catalog::ManifestProvider {
+ public:
+  BuiltinManifestProvider() {}
+  ~BuiltinManifestProvider() override {}
+
+ private:
+  // catalog::ManifestProvider:
+  bool GetApplicationManifest(const base::StringPiece& name,
+                              std::string* manifest_contents) override {
+    if (name == "mojo:catalog") {
+      *manifest_contents = GetStringResource(IDR_MOJO_CATALOG_MANIFEST);
+      return true;
+    } else if (name == kBrowserMojoApplicationName) {
+      *manifest_contents = GetStringResource(IDR_MOJO_CONTENT_BROWSER_MANIFEST);
+      return true;
+    } else if (name == kRendererMojoApplicationName) {
+      *manifest_contents =
+          GetStringResource(IDR_MOJO_CONTENT_RENDERER_MANIFEST);
+      return true;
+    }
+
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
+};
 
 // Thread-safe proxy providing access to the shell context from any thread.
 class MojoShellContext::Proxy {
@@ -217,10 +253,11 @@ MojoShellContext::MojoShellContext(
   scoped_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
       new mojo::shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
-  catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr));
+  manifest_provider_.reset(new BuiltinManifestProvider);
+  catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr,
+                                      manifest_provider_.get()));
   shell_.reset(new mojo::shell::Shell(std::move(native_runner_factory),
                                       catalog_->TakeShellClient()));
-
   shell_->set_default_loader(
       scoped_ptr<mojo::shell::Loader>(new DefaultLoader));
 
@@ -273,9 +310,9 @@ MojoShellContext::MojoShellContext(
   }
 
   if (!IsRunningInMojoShell()) {
-    const bool is_external = false;
     MojoShellConnection::Create(
-        shell_->InitInstanceForEmbedder(kBrowserAppName), is_external);
+        shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName),
+        false /* is_external */);
   }
 }
 

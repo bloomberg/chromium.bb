@@ -402,7 +402,8 @@ class LoaderTest : public testing::Test {
 
   void SetUp() override {
     blocking_pool_ = new base::SequencedWorkerPool(3, "blocking_pool");
-    catalog_.reset(new catalog::Factory(blocking_pool_.get(), nullptr));
+    catalog_.reset(
+        new catalog::Factory(blocking_pool_.get(), nullptr, nullptr));
     shell_.reset(new Shell(nullptr, catalog_->TakeShellClient()));
     test_loader_ = new TestLoader(&context_);
     shell_->set_default_loader(scoped_ptr<Loader>(test_loader_));
@@ -478,7 +479,7 @@ TEST_F(LoaderTest, ClientError) {
 
 TEST_F(LoaderTest, Deletes) {
   {
-    catalog::Factory catalog(blocking_pool_.get(), nullptr);
+    catalog::Factory catalog(blocking_pool_.get(), nullptr, nullptr);
     Shell shell(nullptr, catalog.TakeShellClient());
     TestLoader* default_loader = new TestLoader(&context_);
     TestLoader* name_loader1 = new TestLoader(&context_);

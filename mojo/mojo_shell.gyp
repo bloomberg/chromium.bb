@@ -147,5 +147,18 @@
         ],
       }],
     ],
+  }, {
+    # GN version: //mojo/services/catalog:manifest
+    'target_name': 'mojo_catalog_manifest',
+    'type': 'none',
+    'variables': {
+      'application_type': 'mojo',
+      'application_name': 'catalog',
+      'source_manifest': '<(DEPTH)/mojo/services/catalog/manifest.json',
+    },
+    'includes': [
+      '../mojo/public/mojo_application_manifest.gypi',
+    ],
+    'hard_dependency': 1,
   }],
 }
