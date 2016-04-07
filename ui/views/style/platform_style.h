@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/combobox/combobox.h"
 
 namespace views {
 
@@ -20,6 +21,13 @@ class ScrollBar;
 // Cross-platform API for providing platform-specific styling for toolkit-views.
 class PlatformStyle {
  public:
+  // Creates an ImageSkia containing the image to use for the combobox arrow.
+  // The |is_enabled| argument is true if the control the arrow is for is
+  // enabled, and false if the control is disabled. The |style| argument is the
+  // style of the combobox the arrow is being drawn for.
+  static gfx::ImageSkia CreateComboboxArrow(bool is_enabled,
+                                            Combobox::Style style);
+
   // Creates the appropriate border for a focusable Combobox.
   static scoped_ptr<FocusableBorder> CreateComboboxBorder();
 

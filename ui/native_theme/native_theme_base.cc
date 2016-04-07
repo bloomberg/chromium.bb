@@ -97,10 +97,6 @@ namespace ui {
 gfx::Size NativeThemeBase::GetPartSize(Part part,
                                        State state,
                                        const ExtraParams& extra) const {
-  gfx::Size size = CommonThemeGetPartSize(part, state, extra);
-  if (!size.IsEmpty())
-    return size;
-
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
     case kCheckbox:
@@ -197,9 +193,6 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
 
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
-    case kComboboxArrow:
-      CommonThemePaintComboboxArrow(canvas, rect);
-      break;
     case kCheckbox:
       PaintCheckbox(canvas, state, rect, extra.button);
       break;

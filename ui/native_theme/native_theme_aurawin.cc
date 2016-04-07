@@ -72,10 +72,6 @@ void NativeThemeAuraWin::Paint(SkCanvas* canvas,
 gfx::Size NativeThemeAuraWin::GetPartSize(Part part,
                                           State state,
                                           const ExtraParams& extra) const {
-  gfx::Size part_size = CommonThemeGetPartSize(part, state, extra);
-  if (!part_size.IsEmpty())
-    return part_size;
-
   // We want aura on windows to use the same size for scrollbars as we would in
   // the native theme.
   if (IsScrollbarPart(part))

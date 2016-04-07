@@ -752,19 +752,9 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
                          arrow_size.height());
   AdjustBoundsForRTLUI(&arrow_bounds);
 
-  // TODO(estade): hack alert! Remove this direct call into CommonTheme. For now
-  // STYLE_ACTION isn't properly themed so we have to override the NativeTheme
-  // behavior. See crbug.com/384071
-  if (style_ == STYLE_ACTION) {
-    ui::CommonThemePaintComboboxArrow(canvas->sk_canvas(), arrow_bounds);
-  } else {
-    ui::NativeTheme::ExtraParams ignored;
-    GetNativeTheme()->Paint(canvas->sk_canvas(),
-                            ui::NativeTheme::kComboboxArrow,
-                            ui::NativeTheme::kNormal,
-                            arrow_bounds,
-                            ignored);
-  }
+  gfx::ImageSkia arrow_image = PlatformStyle::CreateComboboxArrow(
+      enabled(), style_);
+  canvas->DrawImageInt(arrow_image, arrow_bounds.x(), arrow_bounds.y());
 }
 
 void Combobox::PaintButtons(gfx::Canvas* canvas) {
@@ -905,21 +895,7 @@ int Combobox::GetDisclosureArrowRightPadding() const {
 }
 
 gfx::Size Combobox::ArrowSize() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(estade): hack alert! This should always use GetNativeTheme(). For now
-  // STYLE_ACTION isn't properly themed so we have to override the NativeTheme
-  // behavior. See crbug.com/384071
-  const ui::NativeTheme* native_theme_for_arrow =
-      style_ == STYLE_ACTION ? ui::NativeThemeAura::instance()
-                             : GetNativeTheme();
-#else
-  const ui::NativeTheme* native_theme_for_arrow = GetNativeTheme();
-#endif
-
-  ui::NativeTheme::ExtraParams ignored;
-  return native_theme_for_arrow->GetPartSize(ui::NativeTheme::kComboboxArrow,
-                                             ui::NativeTheme::kNormal,
-                                             ignored);
+  return PlatformStyle::CreateComboboxArrow(enabled(), style_).size();
 }
 
 gfx::Size Combobox::GetContentSize() const {

@@ -6,6 +6,8 @@
 
 #include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -15,6 +17,13 @@
 namespace views {
 
 #if !defined(OS_MACOSX)
+
+// static
+gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
+                                                  Combobox::Style style) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return *rb.GetImageSkiaNamed(IDR_MENU_DROPARROW);
+}
 
 // static
 scoped_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {

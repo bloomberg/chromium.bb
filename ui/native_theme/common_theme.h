@@ -24,15 +24,6 @@ namespace ui {
 SkColor NATIVE_THEME_EXPORT GetAuraColor(NativeTheme::ColorId color_id,
                                          const NativeTheme* base_theme);
 
-gfx::Size NATIVE_THEME_EXPORT CommonThemeGetPartSize(
-    NativeTheme::Part part,
-    NativeTheme::State state,
-    const NativeTheme::ExtraParams& extra);
-
-void NATIVE_THEME_EXPORT CommonThemePaintComboboxArrow(
-    SkCanvas* canvas,
-    const gfx::Rect& rect);
-
 void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(
     const NativeTheme* theme,
     SkCanvas* canvas,

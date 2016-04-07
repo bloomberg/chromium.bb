@@ -577,6 +577,10 @@ action("aggregate_vector_icons") {
     "--output_cc=" + rebase_path(vector_icons_cc_file, root_build_dir),
     "--output_h=" + rebase_path(vector_icons_h_file, root_build_dir),
   ]
+
+  if (is_mac) {
+    sources += [ "vector_icons/combobox_arrow_mac.icon" ]
+  }
 }
 
 # Looking for gfx_geometry? It's //ui/gfx/geometry:geometry

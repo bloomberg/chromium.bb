@@ -405,28 +405,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   return gfx::kPlaceholderColor;
 }
 
-gfx::Size CommonThemeGetPartSize(NativeTheme::Part part,
-                                 NativeTheme::State state,
-                                 const NativeTheme::ExtraParams& extra) {
-  gfx::Size size;
-  switch (part) {
-    case NativeTheme::kComboboxArrow:
-      return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_MENU_DROPARROW).Size();
-
-    default:
-      break;
-  }
-
-  return size;
-}
-
-void CommonThemePaintComboboxArrow(SkCanvas* canvas, const gfx::Rect& rect) {
-  gfx::ImageSkia* arrow = ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_MENU_DROPARROW);
-  CommonThemeCreateCanvas(canvas)->DrawImageInt(*arrow, rect.x(), rect.y());
-}
-
 void CommonThemePaintMenuItemBackground(
     const NativeTheme* theme,
     SkCanvas* canvas,
