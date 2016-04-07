@@ -57,7 +57,6 @@ void PluginPrefsFactory::RegisterProfilePrefs(
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
   registry->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
                                  internal_dir);
-  registry->RegisterBooleanPref(prefs::kNpapiFlashMigratedToPepperFlash, false);
   registry->RegisterListPref(prefs::kPluginsPluginsList);
   registry->RegisterListPref(prefs::kPluginsDisabledPlugins);
   registry->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);

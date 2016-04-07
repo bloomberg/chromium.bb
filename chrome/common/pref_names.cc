@@ -949,12 +949,6 @@ const char kPluginsDisabledPluginsExceptions[] =
 // List pref containing names of plugins that are enabled by policy.
 const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 
-// When bundled NPAPI Flash is removed, if at that point it is enabled while
-// Pepper Flash is disabled, we would like to turn on Pepper Flash. And we will
-// want to do so in M45, once, for realz.
-const char kNpapiFlashMigratedToPepperFlash[] =
-    "plugins.npapi_flash_migrated_to_pepper_flash";
-
 #if defined(ENABLE_PLUGINS)
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
