@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,40 +20,46 @@ namespace internal {
 
 class TaskTracker;
 
-// A thread that runs Tasks from Sequences returned by a callback.
+// A thread that runs Tasks from Sequences returned by a delegate.
 //
 // A SchedulerWorkerThread is woken up when its WakeUp() method is called. After
-// a wake- up, a SchedulerWorkerThread runs Tasks from Sequences returned by its
-// "get work" callback as long as it doesn't return nullptr. It also
-// periodically checks with its TaskTracker whether shutdown has completed and
-// exits when it has.
+// a wake-up, a SchedulerWorkerThread runs Tasks from Sequences returned by the
+// GetWork() method of its delegate as long as it doesn't return nullptr. It
+// also periodically checks with its TaskTracker whether shutdown has completed
+// and exits when it has.
 //
 // This class is thread-safe.
 class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
  public:
-  // Callback invoked to get a Sequence from which to run a Task on
-  // |worker_thread|.
-  using GetWorkCallback =
-      Callback<scoped_refptr<Sequence>(SchedulerWorkerThread* worker_thread)>;
+  // Delegate interface for SchedulerWorkerThread. The methods are always called
+  // from the thread managed by the SchedulerWorkerThread instance.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
 
-  // Callback invoked after |worker_thread| has tried to run a Task from
-  // |sequence| (a TaskTracker might have prevented the Task from running).
-  using RanTaskFromSequenceCallback =
-      Callback<void(const SchedulerWorkerThread* worker_thread,
-                    scoped_refptr<Sequence> sequence)>;
+    // Called when the main function of the SchedulerWorkerThread enters.
+    virtual void OnMainEntry() = 0;
+
+    // Called when the main function of the SchedulerWorkerThread exits.
+    virtual void OnMainExit() = 0;
+
+    // Called by |worker_thread| to get a Sequence from which to run a Task.
+    virtual scoped_refptr<Sequence> GetWork(
+        SchedulerWorkerThread* worker_thread) = 0;
+
+    // Called after the SchedulerWorkerThread has tried to run a Task from
+    // |sequence| (a TaskTracker might have prevented the Task from running).
+    // The Task is still in |sequence| when this is called.
+    virtual void RanTaskFromSequence(scoped_refptr<Sequence> sequence) = 0;
+  };
 
   // Creates a SchedulerWorkerThread with priority |thread_priority| that runs
-  // Tasks from Sequences returned by |get_work_callback|. |main_entry_callback|
-  // is invoked when the main function of the SchedulerWorkerThread is entered.
-  // |ran_task_from_sequence_callback| is invoked after the
-  // SchedulerWorkerThread has tried to run a Task from a Sequence returned by
-  // |get_work_callback|. |task_tracker| is used to handle shutdown behavior of
-  // Tasks. Returns nullptr if creating the underlying platform thread fails.
+  // Tasks from Sequences returned by |delegate|. |task_tracker| is used to
+  // handle shutdown behavior of Tasks. Returns nullptr if creating the
+  // underlying platform thread fails.
   static std::unique_ptr<SchedulerWorkerThread> CreateSchedulerWorkerThread(
       ThreadPriority thread_priority,
-      const Closure& main_entry_callback,
-      const GetWorkCallback& get_work_callback,
-      const RanTaskFromSequenceCallback& ran_task_from_sequence_callback,
+      Delegate* delegate,
       TaskTracker* task_tracker);
 
   // Destroying a SchedulerWorkerThread in production is not allowed; it is
@@ -63,8 +68,8 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   ~SchedulerWorkerThread() override;
 
   // Wakes up this SchedulerWorkerThread. After this is called, this
-  // SchedulerWorkerThread will run Tasks from Sequences returned by
-  // |get_work_callback_| until it returns nullptr.
+  // SchedulerWorkerThread will run Tasks from Sequences returned by the
+  // GetWork() method of its delegate until it returns nullptr.
   void WakeUp();
 
   // Joins this SchedulerWorkerThread. If a Task is already running, it will be
@@ -72,12 +77,9 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   void JoinForTesting();
 
  private:
-  SchedulerWorkerThread(
-      ThreadPriority thread_priority,
-      const Closure& main_entry_callback,
-      const GetWorkCallback& get_work_callback,
-      const RanTaskFromSequenceCallback& ran_task_from_sequence_callback,
-      TaskTracker* task_tracker);
+  SchedulerWorkerThread(ThreadPriority thread_priority,
+                        Delegate* delegate,
+                        TaskTracker* task_tracker);
 
   // PlatformThread::Delegate:
   void ThreadMain() override;
@@ -90,9 +92,7 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   // Event signaled to wake up this SchedulerWorkerThread.
   WaitableEvent wake_up_event_;
 
-  const Closure main_entry_callback_;
-  const GetWorkCallback get_work_callback_;
-  const RanTaskFromSequenceCallback ran_task_from_sequence_callback_;
+  Delegate* const delegate_;
   TaskTracker* const task_tracker_;
 
   // Synchronizes access to |should_exit_for_testing_|.

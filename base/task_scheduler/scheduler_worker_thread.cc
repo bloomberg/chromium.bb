@@ -17,14 +17,10 @@ namespace internal {
 std::unique_ptr<SchedulerWorkerThread>
 SchedulerWorkerThread::CreateSchedulerWorkerThread(
     ThreadPriority thread_priority,
-    const Closure& main_entry_callback,
-    const GetWorkCallback& get_work_callback,
-    const RanTaskFromSequenceCallback& ran_task_from_sequence_callback,
+    Delegate* delegate,
     TaskTracker* task_tracker) {
   std::unique_ptr<SchedulerWorkerThread> worker_thread(
-      new SchedulerWorkerThread(thread_priority, main_entry_callback,
-                                get_work_callback,
-                                ran_task_from_sequence_callback, task_tracker));
+      new SchedulerWorkerThread(thread_priority, delegate, task_tracker));
 
   if (worker_thread->thread_handle_.is_null())
     return nullptr;
@@ -48,20 +44,13 @@ void SchedulerWorkerThread::JoinForTesting() {
   PlatformThread::Join(thread_handle_);
 }
 
-SchedulerWorkerThread::SchedulerWorkerThread(
-    ThreadPriority thread_priority,
-    const Closure& main_entry_callback,
-    const GetWorkCallback& get_work_callback,
-    const RanTaskFromSequenceCallback& ran_task_from_sequence_callback,
-    TaskTracker* task_tracker)
+SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
+                                             Delegate* delegate,
+                                             TaskTracker* task_tracker)
     : wake_up_event_(false, false),
-      main_entry_callback_(main_entry_callback),
-      get_work_callback_(get_work_callback),
-      ran_task_from_sequence_callback_(ran_task_from_sequence_callback),
+      delegate_(delegate),
       task_tracker_(task_tracker) {
-  DCHECK(!main_entry_callback_.is_null());
-  DCHECK(!get_work_callback_.is_null());
-  DCHECK(!ran_task_from_sequence_callback_.is_null());
+  DCHECK(delegate_);
   DCHECK(task_tracker_);
 
   static const size_t kDefaultStackSize = 0;
@@ -70,14 +59,14 @@ SchedulerWorkerThread::SchedulerWorkerThread(
 }
 
 void SchedulerWorkerThread::ThreadMain() {
-  main_entry_callback_.Run();
+  delegate_->OnMainEntry();
 
   // A SchedulerWorkerThread starts out sleeping.
   wake_up_event_.Wait();
 
   while (!task_tracker_->shutdown_completed() && !ShouldExitForTesting()) {
     // Get the sequence containing the next task to execute.
-    scoped_refptr<Sequence> sequence = get_work_callback_.Run(this);
+    scoped_refptr<Sequence> sequence = delegate_->GetWork(this);
 
     if (!sequence) {
       wake_up_event_.Wait();
@@ -85,15 +74,17 @@ void SchedulerWorkerThread::ThreadMain() {
     }
 
     task_tracker_->RunTask(sequence->PeekTask());
-    ran_task_from_sequence_callback_.Run(this, std::move(sequence));
+    delegate_->RanTaskFromSequence(std::move(sequence));
 
     // Calling WakeUp() guarantees that this SchedulerWorkerThread will run
-    // Tasks from Sequences returned by |get_work_callback_| until the callback
-    // returns nullptr. Resetting |wake_up_event_| here doesn't break this
-    // invariant and avoids a useless loop iteration before going to sleep if
-    // WakeUp() is called while this SchedulerWorkerThread is awake.
+    // Tasks from Sequences returned by the GetWork() method of |delegate_|
+    // until it returns nullptr. Resetting |wake_up_event_| here doesn't break
+    // this invariant and avoids a useless loop iteration before going to sleep
+    // if WakeUp() is called while this SchedulerWorkerThread is awake.
     wake_up_event_.Reset();
   }
+
+  delegate_->OnMainExit();
 }
 
 bool SchedulerWorkerThread::ShouldExitForTesting() const {
