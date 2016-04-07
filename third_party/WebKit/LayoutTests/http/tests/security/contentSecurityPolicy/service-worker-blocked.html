@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="child-src 'none';">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+    var t = async_test('Test that a service worker cannot be registered if the CSP does not allow it');
+    navigator.serviceWorker.register("resources/service-worker.js").then(function (registration) {
+    }).catch(function (error) {
+        t.done();
+    });
+</script>
+</head>
+<body>

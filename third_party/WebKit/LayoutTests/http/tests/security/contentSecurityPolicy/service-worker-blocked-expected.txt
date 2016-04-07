@@ -1,0 +1,6 @@
+CONSOLE ERROR: Refused to create a child context containing 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/service-worker.js' because it violates the following Content Security Policy directive: "child-src 'none'".
+
+This is a testharness.js-based test.
+PASS Test that a service worker cannot be registered if the CSP does not allow it 
+Harness: the test ran to completion.
+

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="child-src 'self';">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+    var t = async_test('Test that a service worker can be registered');
+    navigator.serviceWorker.register("resources/service-worker.js").then(function (registration) {
+        t.done();
+    });
+</script>
+</head>
+<body>
