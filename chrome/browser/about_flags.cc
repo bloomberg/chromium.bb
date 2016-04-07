@@ -1646,7 +1646,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-autofill-credit-card-upload",
      IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME,
      IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_DESCRIPTION,
-     kOsCrOS | kOsWin | kOsLinux | kOsAndroid,
+     kOsCrOS | kOsWin | kOsLinux | kOsAndroid | kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(
          autofill::switches::kEnableOfferUploadCreditCards,
          autofill::switches::kDisableOfferUploadCreditCards)},
