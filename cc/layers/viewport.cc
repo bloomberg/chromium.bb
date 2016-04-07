@@ -64,6 +64,62 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
   return result;
 }
 
+bool Viewport::ShouldAnimateViewport(const gfx::Vector2dF& viewport_delta,
+                                     const gfx::Vector2dF& pending_delta) {
+  float max_dim_viewport_delta =
+      std::max(std::abs(viewport_delta.x()), std::abs(viewport_delta.y()));
+  float max_dim_pending_delta =
+      std::max(std::abs(pending_delta.x()), std::abs(pending_delta.y()));
+  return max_dim_viewport_delta > max_dim_pending_delta;
+}
+
+gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta) {
+  ScrollTree& scroll_tree =
+      host_impl_->active_tree()->property_trees()->scroll_tree;
+
+  float scale_factor = host_impl_->active_tree()->current_page_scale_factor();
+  gfx::Vector2dF scaled_delta = delta;
+  scaled_delta.Scale(1.f / scale_factor);
+
+  ScrollNode* inner_node =
+      scroll_tree.Node(InnerScrollLayer()->scroll_tree_index());
+  gfx::Vector2dF inner_delta =
+      host_impl_->ComputeScrollDelta(inner_node, delta);
+
+  gfx::Vector2dF pending_delta = scaled_delta - inner_delta;
+  pending_delta.Scale(scale_factor);
+
+  ScrollNode* outer_node =
+      scroll_tree.Node(OuterScrollLayer()->scroll_tree_index());
+  gfx::Vector2dF outer_delta =
+      host_impl_->ComputeScrollDelta(outer_node, pending_delta);
+
+  if (inner_delta.IsZero() && outer_delta.IsZero())
+    return gfx::Vector2dF(0, 0);
+
+  // Animate the viewport to which the majority of scroll delta will be applied.
+  // The animation system only supports running one scroll offset animation.
+  // TODO(ymalik): Fix the visible jump seen by instant scrolling one of the
+  // viewports.
+  bool will_animate = false;
+  if (ShouldAnimateViewport(inner_delta, outer_delta)) {
+    scroll_tree.ScrollBy(outer_node, outer_delta, host_impl_->active_tree());
+    will_animate = host_impl_->ScrollAnimationCreate(inner_node, inner_delta);
+  } else {
+    scroll_tree.ScrollBy(inner_node, inner_delta, host_impl_->active_tree());
+    will_animate = host_impl_->ScrollAnimationCreate(outer_node, outer_delta);
+  }
+
+  if (will_animate) {
+    // Consume entire scroll delta as long as we are starting an animation.
+    return delta;
+  }
+
+  pending_delta = scaled_delta - inner_delta - outer_delta;
+  pending_delta.Scale(scale_factor);
+  return pending_delta;
+}
+
 void Viewport::SnapPinchAnchorIfWithinMargin(const gfx::Point& anchor) {
   gfx::SizeF viewport_size = gfx::SizeF(
       host_impl_->active_tree()->InnerViewportContainerLayer()->bounds());

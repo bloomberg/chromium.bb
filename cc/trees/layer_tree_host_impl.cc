@@ -2559,14 +2559,6 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   if (potentially_scrolling_layer_impl == OuterViewportScrollLayer())
     potentially_scrolling_layer_impl = InnerViewportScrollLayer();
 
-  // Animated wheel scrolls need to scroll the outer viewport layer, and do not
-  // go through Viewport::ScrollBy which would normally handle the distribution.
-  // NOTE: This will need refactoring if we want smooth scrolling on Android.
-  if (type == ANIMATED_WHEEL &&
-      potentially_scrolling_layer_impl == InnerViewportScrollLayer()) {
-    potentially_scrolling_layer_impl = OuterViewportScrollLayer();
-  }
-
   return potentially_scrolling_layer_impl;
 }
 
@@ -2722,6 +2714,54 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   return scroll_status;
 }
 
+gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
+    ScrollNode* scroll_node,
+    const gfx::Vector2dF& delta) {
+  ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
+  float scale_factor = active_tree()->current_page_scale_factor();
+
+  gfx::Vector2dF adjusted_scroll(delta);
+  adjusted_scroll.Scale(1.f / scale_factor);
+  if (!scroll_node->data.user_scrollable_horizontal)
+    adjusted_scroll.set_x(0);
+  if (!scroll_node->data.user_scrollable_vertical)
+    adjusted_scroll.set_y(0);
+
+  gfx::ScrollOffset old_offset =
+      scroll_tree.current_scroll_offset(scroll_node->owner_id);
+  gfx::ScrollOffset new_offset = scroll_tree.ClampScrollOffsetToLimits(
+      old_offset + gfx::ScrollOffset(adjusted_scroll), scroll_node);
+
+  gfx::ScrollOffset scrolled = new_offset - old_offset;
+  return gfx::Vector2dF(scrolled.x(), scrolled.y());
+}
+
+bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
+                                              const gfx::Vector2dF& delta) {
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+
+  const float kEpsilon = 0.1f;
+  bool scroll_animated =
+      (std::abs(delta.x()) > kEpsilon || std::abs(delta.y()) > kEpsilon);
+  if (!scroll_animated) {
+    scroll_tree.ScrollBy(scroll_node, delta, active_tree());
+    return false;
+  }
+
+  scroll_tree.set_currently_scrolling_node(scroll_node->id);
+
+  gfx::ScrollOffset current_offset =
+      scroll_tree.current_scroll_offset(scroll_node->owner_id);
+  gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
+      current_offset + gfx::ScrollOffset(delta), scroll_node);
+  animation_host_->ImplOnlyScrollAnimationCreate(scroll_node->owner_id,
+                                                 target_offset, current_offset);
+
+  SetNeedsOneBeginImplFrame();
+
+  return true;
+}
+
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta) {
@@ -2764,42 +2804,26 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     if (scroll_node) {
       for (; scroll_tree.parent(scroll_node);
            scroll_node = scroll_tree.parent(scroll_node)) {
-        if (!scroll_node->data.scrollable)
+        if (!scroll_node->data.scrollable ||
+            scroll_node->data.is_outer_viewport_scroll_layer)
           continue;
 
-        gfx::ScrollOffset current_offset =
-            scroll_tree.current_scroll_offset(scroll_node->owner_id);
-        gfx::ScrollOffset target_offset =
-            ScrollOffsetWithDelta(current_offset, pending_delta);
-        target_offset.SetToMax(gfx::ScrollOffset());
-        target_offset.SetToMin(scroll_tree.MaxScrollOffset(scroll_node->id));
-        gfx::Vector2dF actual_delta = target_offset.DeltaFrom(current_offset);
-
-        if (!scroll_node->data.user_scrollable_horizontal) {
-          actual_delta.set_x(0);
-          target_offset.set_x(current_offset.x());
-        }
-        if (!scroll_node->data.user_scrollable_vertical) {
-          actual_delta.set_y(0);
-          target_offset.set_y(current_offset.y());
-        }
-
-        const float kEpsilon = 0.1f;
-        bool can_layer_scroll = (std::abs(actual_delta.x()) > kEpsilon ||
-                                 std::abs(actual_delta.y()) > kEpsilon);
-
-        if (!can_layer_scroll) {
-          scroll_tree.ScrollBy(scroll_node, actual_delta, active_tree());
-          pending_delta -= actual_delta;
+        if (scroll_node->data.is_inner_viewport_scroll_layer) {
+          gfx::Vector2dF scrolled = viewport()->ScrollAnimated(pending_delta);
+          // Viewport::ScrollAnimated returns pending_delta as long as it
+          // starts an animation.
+          if (scrolled == pending_delta)
+            return scroll_status;
+          pending_delta -= scrolled;
           continue;
         }
 
-        scroll_tree.set_currently_scrolling_node(scroll_node->id);
+        gfx::Vector2dF scroll_delta =
+            ComputeScrollDelta(scroll_node, pending_delta);
+        if (ScrollAnimationCreate(scroll_node, scroll_delta))
+          return scroll_status;
 
-        ScrollAnimationCreate(scroll_node, target_offset, current_offset);
-
-        SetNeedsOneBeginImplFrame();
-        return scroll_status;
+        pending_delta -= scroll_delta;
       }
     }
   }
@@ -3736,14 +3760,6 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
 
 void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
   return animation_host_->ScrollAnimationAbort(false /* needs_completion */);
-}
-
-void LayerTreeHostImpl::ScrollAnimationCreate(
-    ScrollNode* scroll_node,
-    const gfx::ScrollOffset& target_offset,
-    const gfx::ScrollOffset& current_offset) {
-  return animation_host_->ImplOnlyScrollAnimationCreate(
-      scroll_node->owner_id, target_offset, current_offset);
 }
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(

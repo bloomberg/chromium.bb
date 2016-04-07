@@ -536,6 +536,11 @@ class CC_EXPORT LayerTreeHostImpl
     bool opaque;
   };
 
+  // Returns the amount of delta that can be applied to scroll_node, taking
+  // page scale into account.
+  gfx::Vector2dF ComputeScrollDelta(ScrollNode* scroll_node,
+                                    const gfx::Vector2dF& delta);
+
   void ScheduleMicroBenchmark(scoped_ptr<MicroBenchmarkImpl> benchmark);
 
   CompositorFrameMetadata MakeCompositorFrameMetadata() const;
@@ -615,6 +620,11 @@ class CC_EXPORT LayerTreeHostImpl
                                        InputHandler::ScrollInputType type,
                                        const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
+
+  // Returns true if a scroll offset animation is created and false if we scroll
+  // by the desired amount without an animation.
+  bool ScrollAnimationCreate(ScrollNode* scroll_node,
+                             const gfx::Vector2dF& scroll_amount);
 
  protected:
   LayerTreeHostImpl(
@@ -714,9 +724,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ScrollAnimationAbort(LayerImpl* layer_impl);
 
-  void ScrollAnimationCreate(ScrollNode* scroll_node,
-                             const gfx::ScrollOffset& target_offset,
-                             const gfx::ScrollOffset& current_offset);
   bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
                                    const gfx::Vector2dF& scroll_delta);
 

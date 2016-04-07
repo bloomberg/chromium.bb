@@ -609,6 +609,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);
+  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset,
+                                              ScrollNode* scroll_node) const;
 
  private:
   int currently_scrolling_node_id_;
@@ -620,8 +622,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void UpdateScrollOffsetMapEntry(int key,
                                   ScrollOffsetMap* new_scroll_offset_map,
                                   LayerTreeImpl* layer_tree_impl);
-  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset,
-                                              ScrollNode* scroll_node) const;
 };
 
 class CC_EXPORT PropertyTrees final {

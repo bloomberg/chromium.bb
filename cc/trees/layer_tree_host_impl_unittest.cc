@@ -480,6 +480,15 @@ class LayerTreeHostImplTest : public testing::Test,
           layer_impl->id(), layer_impl->transform_tree_index());
   }
 
+  void BeginImplFrameAndAnimate(BeginFrameArgs begin_frame_args,
+                                base::TimeTicks frame_time) {
+    begin_frame_args.frame_time = frame_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+    host_impl_->DidFinishImplFrame();
+  }
+
   FakeImplTaskRunnerProvider task_runner_provider_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
 
@@ -9518,11 +9527,9 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 200));
-
-  // Shrink the outer viewport clip layer so that the outer viewport can scroll.
-  host_impl_->OuterViewportScrollLayer()->parent()->SetBounds(
-      gfx::Size(50, 100));
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(50, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
   SetNeedsRebuildPropertyTrees();
   DrawFrame();
@@ -9777,6 +9784,153 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
                    scrolling_layer->CurrentScrollOffset());
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
   host_impl_->DidFinishImplFrame();
+}
+
+// Test that the scroll delta for an animated scroll is distributed correctly
+// between the inner and outer viewport.
+TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
+  const gfx::Size content_size(200, 200);
+  const gfx::Size viewport_size(100, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+
+  // Zoom into the page by a 2X factor
+  float min_page_scale = 1.f, max_page_scale = 4.f;
+  float page_scale_factor = 2.f;
+  RebuildPropertyTrees();
+  host_impl_->active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, min_page_scale, max_page_scale);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+
+  // Scroll by a small amount, there should be no bubbling to the outer
+  // viewport.
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(250);
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(10.f, 20.f))
+                .thread);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(inner_scroll_layer, host_impl_->CurrentlyScrollingLayer());
+
+  BeginImplFrameAndAnimate(begin_frame_args, start_time);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 10),
+                   inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0),
+                   outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), outer_scroll_layer->CurrentScrollOffset());
+
+  // Scroll by the inner viewport's max scroll extent, the remainder
+  // should bubble up to the outer viewport.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(100.f, 100.f))
+          .thread);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(inner_scroll_layer, host_impl_->CurrentlyScrollingLayer());
+
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(350));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50),
+                   inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 10),
+                   outer_scroll_layer->CurrentScrollOffset());
+
+  // Scroll by the outer viewport's max scroll extent, it should all go to the
+  // outer viewport.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(190.f, 180.f))
+          .thread);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(outer_scroll_layer, host_impl_->CurrentlyScrollingLayer());
+
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(850));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50),
+                   inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(100, 100),
+                   outer_scroll_layer->CurrentScrollOffset());
+
+  // Scroll upwards by the max scroll extent. The inner viewport should animate
+  // and the remainder should bubble to the outer viewport.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(-110.f, -120.f))
+          .thread);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(inner_scroll_layer, host_impl_->CurrentlyScrollingLayer());
+
+  BeginImplFrameAndAnimate(
+      begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1200));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0),
+                   inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(95, 90),
+                   outer_scroll_layer->CurrentScrollOffset());
+}
+
+// Test that the correct viewport scroll layer is updated when the target offset
+// is updated.
+TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimatedUpdate) {
+  const gfx::Size content_size(200, 200);
+  const gfx::Size viewport_size(100, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+
+  // Zoom into the page by a 2X factor
+  float min_page_scale = 1.f, max_page_scale = 4.f;
+  float page_scale_factor = 2.f;
+  RebuildPropertyTrees();
+  host_impl_->active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, min_page_scale, max_page_scale);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+
+  // Scroll the inner viewport.
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(50);
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(90, 90)).thread);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(inner_scroll_layer, host_impl_->CurrentlyScrollingLayer());
+
+  BeginImplFrameAndAnimate(begin_frame_args, start_time);
+  float inner_x = inner_scroll_layer->CurrentScrollOffset().x();
+  float inner_y = inner_scroll_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(inner_x > 0 && inner_x < 45);
+  EXPECT_TRUE(inner_y > 0 && inner_y < 45);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0),
+                   outer_scroll_layer->CurrentScrollOffset());
+
+  // Update target.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(50, 50)).thread);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(inner_scroll_layer, host_impl_->CurrentlyScrollingLayer());
+
+  // Verify that all the delta is applied to the inner viewport and nothing is
+  // carried forward.
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(350));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50),
+                   inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0),
+                   outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), outer_scroll_layer->CurrentScrollOffset());
 }
 
 // Test that smooth scroll offset animation doesn't happen for non user

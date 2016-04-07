@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_VIEWPORT_H_
 #define CC_LAYERS_VIEWPORT_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_impl.h"
@@ -46,12 +47,19 @@ class CC_EXPORT Viewport {
                         bool is_wheel_scroll,
                         bool affect_top_controls);
 
+  // Scrolls the viewport, bubbling the delta between the inner and outer
+  // viewport. Only animates either of the two viewports.
+  gfx::Vector2dF ScrollAnimated(const gfx::Vector2dF& delta);
+
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd();
 
  private:
   explicit Viewport(LayerTreeHostImpl* host_impl);
 
+  // Returns true if viewport_delta is stricly less than pending_delta.
+  static bool ShouldAnimateViewport(const gfx::Vector2dF& viewport_delta,
+                                    const gfx::Vector2dF& pending_delta);
   bool ShouldTopControlsConsumeScroll(const gfx::Vector2dF& scroll_delta) const;
   gfx::Vector2dF AdjustOverscroll(const gfx::Vector2dF& delta) const;
 
@@ -73,6 +81,8 @@ class CC_EXPORT Viewport {
   // The pinch zoom anchor point is adjusted by this amount during a pinch. This
   // is used to "snap" a pinch-zoom to the edge of the screen.
   gfx::Vector2d pinch_anchor_adjustment_;
+
+  FRIEND_TEST_ALL_PREFIXES(ViewportTest, ShouldAnimateViewport);
 
   DISALLOW_COPY_AND_ASSIGN(Viewport);
 };
