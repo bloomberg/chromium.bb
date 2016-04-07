@@ -164,11 +164,53 @@ struct TextStyle {
       NativeTheme::kColorId_ResultsTableHoveredText,
       NativeTheme::kColorId_ResultsTableSelectedText},
      gfx::NORMAL_BASELINE},
+    // 14 IMMERSIVE_DESCRIPTION_TEXT (deprecated)
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 15 DATE_TEXT (deprecated)
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 16 PREVIEW_TEXT (deprecated)
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 17 ANSWER_TEXT_MEDIUM
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 18 ANSWER_TEXT_LARGE
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 19 SUGGESTION_SECONDARY_TEXT_SMALL
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::NORMAL_BASELINE},
+    // 20 SUGGESTION_SECONDARY_TEXT_MEDIUM
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::NORMAL_BASELINE},
 };
 
 const TextStyle& GetTextStyle(int type) {
   if (type < 1 || static_cast<size_t>(type) > arraysize(kTextStyles))
-    type = 1;
+    type = 8;
   // Subtract one because the types are one based (not zero based).
   return kTextStyles[type - 1];
 }

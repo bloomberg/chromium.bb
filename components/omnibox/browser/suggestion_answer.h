@@ -52,6 +52,13 @@ class SuggestionAnswer {
     SUGGESTION_LINK = 11,
     STATUS = 12,
     PERSONALIZED_SUGGESTION = 13,
+    // Deprecated: IMMERSIVE_DESCRIPTION_TEXT = 14,
+    // Deprecated: DATE_TEXT = 15,
+    // Deprecated: PREVIEW_TEXT = 16,
+    ANSWER_TEXT_MEDIUM = 17,
+    ANSWER_TEXT_LARGE = 18,
+    SUGGESTION_SECONDARY_TEXT_SMALL = 19,
+    SUGGESTION_SECONDARY_TEXT_MEDIUM = 20,
   };
 
   class TextField {
