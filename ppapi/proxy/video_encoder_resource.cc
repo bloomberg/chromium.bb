@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_array_output.h"
@@ -58,8 +59,9 @@ std::vector<PP_VideoProfileDescription_0_1> PP_VideoProfileDescriptionTo_0_1(
 
 }  // namespace
 
-VideoEncoderResource::ShmBuffer::ShmBuffer(uint32_t id,
-                                           scoped_ptr<base::SharedMemory> shm)
+VideoEncoderResource::ShmBuffer::ShmBuffer(
+    uint32_t id,
+    std::unique_ptr<base::SharedMemory> shm)
     : id(id), shm(std::move(shm)) {}
 
 VideoEncoderResource::ShmBuffer::~ShmBuffer() {
@@ -349,7 +351,7 @@ void VideoEncoderResource::OnPluginMsgGetVideoFramesReply(
 
   if (!buffer_manager_.SetBuffers(
           frame_count, frame_length,
-          make_scoped_ptr(new base::SharedMemory(buffer_handle, false)),
+          base::WrapUnique(new base::SharedMemory(buffer_handle, false)),
           true)) {
     NotifyError(PP_ERROR_FAILED);
     return;
@@ -396,7 +398,7 @@ void VideoEncoderResource::OnPluginMsgBitstreamBuffers(
   }
 
   for (uint32_t i = 0; i < shm_handles.size(); ++i) {
-    scoped_ptr<base::SharedMemory> shm(
+    std::unique_ptr<base::SharedMemory> shm(
         new base::SharedMemory(shm_handles[i], true));
     CHECK(shm->Map(buffer_length));
 

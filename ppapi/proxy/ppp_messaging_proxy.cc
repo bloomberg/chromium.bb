@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/message_handler.h"
@@ -119,8 +120,8 @@ void PPP_Messaging_Proxy::OnMsgHandleBlockingMessage(
   MessageHandler* message_handler = GetMessageHandler(dispatcher(), instance);
   if (message_handler) {
     if (message_handler->LoopIsValid()) {
-      message_handler->HandleBlockingMessage(
-          received_var, scoped_ptr<IPC::Message>(reply_msg));
+      message_handler->HandleBlockingMessage(received_var,
+                                             base::WrapUnique(reply_msg));
       return;
     } else {
       // If the MessageHandler's loop has been quit, then we should treat it as

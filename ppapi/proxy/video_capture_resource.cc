@@ -154,7 +154,7 @@ void VideoCaptureResource::OnPluginMsgOnDeviceInfo(
 
   PluginResourceTracker* tracker =
       PluginGlobals::Get()->plugin_resource_tracker();
-  scoped_ptr<PP_Resource[]> resources(new PP_Resource[buffers.size()]);
+  std::unique_ptr<PP_Resource[]> resources(new PP_Resource[buffers.size()]);
   for (size_t i = 0; i < buffers.size(); ++i) {
     // We assume that the browser created a new set of resources.
     DCHECK(!tracker->PluginResourceForHostResource(buffers[i]));

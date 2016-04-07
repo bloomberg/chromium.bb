@@ -68,7 +68,7 @@ struct InstanceData {
 
   // The message handler which should handle JavaScript->Plugin messages, if
   // one has been registered, otherwise NULL.
-  scoped_ptr<MessageHandler> message_handler;
+  std::unique_ptr<MessageHandler> message_handler;
 
   // Flush info for PpapiCommandBufferProxy::OrderingBarrier().
   struct FlushInfo {
@@ -208,7 +208,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   typedef base::hash_map<std::string, const void*> InterfaceMap;
   InterfaceMap plugin_interfaces_;
 
-  typedef base::ScopedPtrHashMap<PP_Instance, scoped_ptr<InstanceData>>
+  typedef base::ScopedPtrHashMap<PP_Instance, std::unique_ptr<InstanceData>>
       InstanceDataMap;
   InstanceDataMap instance_map_;
 

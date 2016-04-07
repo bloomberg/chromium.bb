@@ -150,7 +150,7 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
     return NULL;
   }
 
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle.shmem(), false));
 
   // Map the shared memory on demand.

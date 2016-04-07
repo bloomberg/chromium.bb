@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -44,13 +44,13 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
 
  private:
   struct ShmBuffer {
-    ShmBuffer(uint32_t id, scoped_ptr<base::SharedMemory> shm);
+    ShmBuffer(uint32_t id, std::unique_ptr<base::SharedMemory> shm);
     ~ShmBuffer();
 
     // Index of the buffer in the ScopedVector. Buffers have the same id in
     // the plugin and the host.
     uint32_t id;
-    scoped_ptr<base::SharedMemory> shm;
+    std::unique_ptr<base::SharedMemory> shm;
   };
 
   struct BitstreamBuffer {

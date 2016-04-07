@@ -24,7 +24,7 @@ class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
   explicit ContentRendererPepperHostFactory(RendererPpapiHostImpl* host);
   ~ContentRendererPepperHostFactory() override;
 
-  scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
+  std::unique_ptr<ppapi::host::ResourceHost> CreateResourceHost(
       ppapi::host::PpapiHost* host,
       PP_Resource resource,
       PP_Instance instance,

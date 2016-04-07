@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/shared_impl/resource.h"
@@ -66,7 +66,7 @@ class PPAPI_SHARED_EXPORT PPB_X509Certificate_Private_Shared
                         PPB_X509Certificate_Fields* result);
 
  private:
-  scoped_ptr<PPB_X509Certificate_Fields> fields_;
+  std::unique_ptr<PPB_X509Certificate_Fields> fields_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_X509Certificate_Private_Shared);
 };

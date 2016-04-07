@@ -63,7 +63,7 @@ class TranslatorLinkListener : public IPC::Listener {
     Send(reply_msg);
   }
 
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
   CallbackFunc func_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslatorLinkListener);

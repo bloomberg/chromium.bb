@@ -55,7 +55,7 @@ class ResourceMessageTestSink : public IPC::TestSink {
   ResourceReplyVector GetAllResourceRepliesMatching(uint32_t id);
 
  private:
-  scoped_ptr<IPC::Message> sync_reply_msg_;
+  std::unique_ptr<IPC::Message> sync_reply_msg_;
 };
 
 // This is a message handler which generates reply messages for synchronous

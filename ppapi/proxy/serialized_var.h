@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -198,7 +198,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     // which means we cannot create some types of PP_Var
     // (e.g. PP_VARTYPE_STRING). The data is stored in |raw_var_data_| and the
     // PP_Var is constructed when |GetVar()| is called.
-    scoped_ptr<RawVarDataGraph> raw_var_data_;
+    std::unique_ptr<RawVarDataGraph> raw_var_data_;
 
     DISALLOW_COPY_AND_ASSIGN(Inner);
   };

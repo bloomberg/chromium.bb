@@ -171,7 +171,7 @@ PP_Resource MediaStreamAudioTrackResource::GetAudioBuffer() {
   scoped_refptr<AudioBufferResource> resource =
       new AudioBufferResource(pp_instance(), index, buffer);
   // Add |pp_resource()| and |resource| into |buffers_|.
-  // |buffers_| uses scoped_ptr<> to hold a ref of |resource|. It keeps the
+  // |buffers_| uses std::unique_ptr<> to hold a ref of |resource|. It keeps the
   // resource alive.
   buffers_.insert(BufferMap::value_type(resource->pp_resource(), resource));
   return resource->GetReference();

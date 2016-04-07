@@ -114,7 +114,8 @@ void SerializedVar::Inner::WriteToMessage(base::Pickle* m) const {
   DCHECK(!has_been_serialized_);
   has_been_serialized_ = true;
 #endif
-  scoped_ptr<RawVarDataGraph> data = RawVarDataGraph::Create(var_, instance_);
+  std::unique_ptr<RawVarDataGraph> data =
+      RawVarDataGraph::Create(var_, instance_);
   if (data) {
     m->WriteBool(true);  // Success.
     data->Write(m, base::Bind(&DefaultHandleWriter));

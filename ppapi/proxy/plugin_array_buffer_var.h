@@ -5,10 +5,10 @@
 #ifndef PPAPI_PROXY_PLUGIN_ARRAY_BUFFER_VAR_H_
 #define PPAPI_PROXY_PLUGIN_ARRAY_BUFFER_VAR_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
@@ -40,7 +40,7 @@ class PluginArrayBufferVar : public ArrayBufferVar {
 
   // Shared memory
   base::SharedMemoryHandle plugin_handle_;
-  scoped_ptr<base::SharedMemory> shmem_;
+  std::unique_ptr<base::SharedMemory> shmem_;
   uint32_t size_in_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginArrayBufferVar);

@@ -8,8 +8,8 @@ namespace ppapi {
 
 namespace {
 
-template<typename T>
-void Copy(scoped_ptr<T>* a, const scoped_ptr<T>& b) {
+template <typename T>
+void Copy(std::unique_ptr<T>* a, const std::unique_ptr<T>& b) {
   if (b) {
     if (!(*a))
       a->reset(new T());

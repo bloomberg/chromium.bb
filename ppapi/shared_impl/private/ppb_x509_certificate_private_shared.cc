@@ -15,7 +15,7 @@ PPB_X509Certificate_Fields::PPB_X509Certificate_Fields() {}
 
 PPB_X509Certificate_Fields::PPB_X509Certificate_Fields(
     const PPB_X509Certificate_Fields& fields) {
-  scoped_ptr<base::ListValue> new_values(fields.values_.DeepCopy());
+  std::unique_ptr<base::ListValue> new_values(fields.values_.DeepCopy());
   values_.Swap(new_values.get());
 }
 
@@ -115,7 +115,7 @@ PP_Bool PPB_X509Certificate_Private_Shared::Initialize(const char* bytes,
     return PP_FALSE;
 
   std::vector<char> der(bytes, bytes + length);
-  scoped_ptr<PPB_X509Certificate_Fields> fields(
+  std::unique_ptr<PPB_X509Certificate_Fields> fields(
       new PPB_X509Certificate_Fields());
   bool success = ParseDER(der, fields.get());
   if (success) {

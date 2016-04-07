@@ -191,7 +191,7 @@ PP_Resource MediaStreamVideoTrackResource::GetVideoFrame() {
   scoped_refptr<VideoFrameResource> resource =
       new VideoFrameResource(pp_instance(), index, buffer);
   // Add |pp_resource()| and |resource| into |frames_|.
-  // |frames_| uses scoped_ptr<> to hold a ref of |resource|. It keeps the
+  // |frames_| uses std::unique_ptr<> to hold a ref of |resource|. It keeps the
   // resource alive.
   frames_.insert(FrameMap::value_type(resource->pp_resource(), resource));
   return resource->GetReference();

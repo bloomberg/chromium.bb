@@ -255,12 +255,12 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
   DCHECK(!track_.isNull());
 }
 
-bool PepperMediaStreamVideoTrackHost::IsMediaStreamVideoTrackHost() {
-  return true;
-}
-
 PepperMediaStreamVideoTrackHost::~PepperMediaStreamVideoTrackHost() {
   OnClose();
+}
+
+bool PepperMediaStreamVideoTrackHost::IsMediaStreamVideoTrackHost() {
+  return true;
 }
 
 void PepperMediaStreamVideoTrackHost::InitBuffers() {

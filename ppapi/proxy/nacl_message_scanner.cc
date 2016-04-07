@@ -45,7 +45,7 @@ struct ScanningResults {
   // check for NULL before writing to it. In some cases, a ScanParam overload
   // may set this to NULL when it can determine that there are no parameters
   // that need conversion. (See the ResourceMessageReplyParams overload.)
-  scoped_ptr<IPC::Message> new_msg;
+  std::unique_ptr<IPC::Message> new_msg;
   // Resource id for resource messages. Save this when scanning resource replies
   // so when we audit the nested message, we know which resource it is for.
   PP_Resource pp_resource;
@@ -338,7 +338,7 @@ bool NaClMessageScanner::ScanMessage(
     const IPC::Message& msg,
     uint32_t type,
     std::vector<SerializedHandle>* handles,
-    scoped_ptr<IPC::Message>* new_msg_ptr) {
+    std::unique_ptr<IPC::Message>* new_msg_ptr) {
   DCHECK(handles);
   DCHECK(handles->empty());
   DCHECK(new_msg_ptr);
@@ -389,7 +389,7 @@ bool NaClMessageScanner::ScanMessage(
 
 void NaClMessageScanner::ScanUntrustedMessage(
     const IPC::Message& untrusted_msg,
-    scoped_ptr<IPC::Message>* new_msg_ptr) {
+    std::unique_ptr<IPC::Message>* new_msg_ptr) {
   // Audit FileIO and FileSystem messages to ensure that the plugin doesn't
   // exceed its file quota. If we find the message is malformed, just pass it
   // through - we only care about well formed messages to the host.

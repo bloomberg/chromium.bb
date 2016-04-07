@@ -5,10 +5,10 @@
 #ifndef PPAPI_PROXY_PPP_INSTANCE_PROXY_H_
 #define PPAPI_PROXY_PPP_INSTANCE_PROXY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -54,7 +54,7 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                                      int pending_loader_host_id,
                                      const URLResponseInfoData& data);
 
-  scoped_ptr<PPP_Instance_Combined> combined_interface_;
+  std::unique_ptr<PPP_Instance_Combined> combined_interface_;
 };
 
 }  // namespace proxy

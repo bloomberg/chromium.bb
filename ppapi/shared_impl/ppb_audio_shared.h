@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
@@ -111,18 +112,18 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
 
   // Socket used to notify us when audio is ready to accept new samples. This
   // pointer is created in StreamCreated().
-  scoped_ptr<base::CancelableSyncSocket> socket_;
+  std::unique_ptr<base::CancelableSyncSocket> socket_;
 
   // Sample buffer in shared memory. This pointer is created in
   // StreamCreated(). The memory is only mapped when the audio thread is
   // created.
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;
 
   // When the callback is set, this thread is spawned for calling it.
-  scoped_ptr<base::DelegateSimpleThread> audio_thread_;
+  std::unique_ptr<base::DelegateSimpleThread> audio_thread_;
   uintptr_t nacl_thread_id_;
   bool nacl_thread_active_;
 
@@ -135,11 +136,11 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   void* user_data_;
 
   // AudioBus for shuttling data across the shared memory.
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
 
   // Internal buffer for client's integer audio data.
   int client_buffer_size_bytes_;
-  scoped_ptr<uint8_t[]> client_buffer_;
+  std::unique_ptr<uint8_t[]> client_buffer_;
 
   // The size (in bytes) of one second of audio data. Used to calculate latency.
   size_t bytes_per_second_;

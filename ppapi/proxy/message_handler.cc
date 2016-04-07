@@ -36,7 +36,7 @@ void HandleBlockingMessageWrapper(HandleBlockingMessageFunc function,
                                   PP_Instance instance,
                                   void* user_data,
                                   ScopedPPVar message_data,
-                                  scoped_ptr<IPC::Message> reply_msg) {
+                                  std::unique_ptr<IPC::Message> reply_msg) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -57,13 +57,13 @@ void HandleBlockingMessageWrapper(HandleBlockingMessageFunc function,
 }  // namespace
 
 // static
-scoped_ptr<MessageHandler> MessageHandler::Create(
-      PP_Instance instance,
-      const PPP_MessageHandler_0_2* handler_if,
-      void* user_data,
-      PP_Resource message_loop,
-      int32_t* error) {
-  scoped_ptr<MessageHandler> result;
+std::unique_ptr<MessageHandler> MessageHandler::Create(
+    PP_Instance instance,
+    const PPP_MessageHandler_0_2* handler_if,
+    void* user_data,
+    PP_Resource message_loop,
+    int32_t* error) {
+  std::unique_ptr<MessageHandler> result;
   // The interface and all function pointers must be valid.
   if (!handler_if ||
       !handler_if->HandleMessage ||
@@ -113,8 +113,9 @@ void MessageHandler::HandleMessage(ScopedPPVar var) {
                                            instance_, user_data_, var)));
 }
 
-void MessageHandler::HandleBlockingMessage(ScopedPPVar var,
-                                           scoped_ptr<IPC::Message> reply_msg) {
+void MessageHandler::HandleBlockingMessage(
+    ScopedPPVar var,
+    std::unique_ptr<IPC::Message> reply_msg) {
   message_loop_->task_runner()->PostTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(

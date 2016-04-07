@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/pepper/pepper_helper.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/renderer/pepper/chrome_renderer_pepper_host_factory.h"
 #include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -18,9 +21,7 @@ void PepperHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
   // TODO(brettw) figure out how to hook up the host factory. It needs some
   // kind of filter-like system to allow dynamic additions.
   host->GetPpapiHost()->AddHostFactoryFilter(
-      scoped_ptr<ppapi::host::HostFactory>(
-          new ChromeRendererPepperHostFactory(host)));
+      base::WrapUnique(new ChromeRendererPepperHostFactory(host)));
   host->GetPpapiHost()->AddInstanceMessageFilter(
-      scoped_ptr<ppapi::host::InstanceMessageFilter>(
-          new PepperSharedMemoryMessageFilter(host)));
+      base::WrapUnique(new PepperSharedMemoryMessageFilter(host)));
 }

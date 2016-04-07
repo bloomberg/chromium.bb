@@ -7,9 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "ppapi/c/pp_bool.h"
@@ -56,14 +57,15 @@ class RawVarDataTest : public testing::Test {
 
 bool WriteAndRead(const PP_Var& var, PP_Var* result) {
   PP_Instance dummy_instance = 1234;
-  scoped_ptr<RawVarDataGraph> expected_data(RawVarDataGraph::Create(
-      var, dummy_instance));
+  std::unique_ptr<RawVarDataGraph> expected_data(
+      RawVarDataGraph::Create(var, dummy_instance));
   if (!expected_data)
     return false;
   IPC::Message m;
   expected_data->Write(&m, base::Bind(&DefaultHandleWriter));
   base::PickleIterator iter(m);
-  scoped_ptr<RawVarDataGraph> actual_data(RawVarDataGraph::Read(&m, &iter));
+  std::unique_ptr<RawVarDataGraph> actual_data(
+      RawVarDataGraph::Read(&m, &iter));
   *result = actual_data->CreatePPVar(dummy_instance);
   return true;
 }

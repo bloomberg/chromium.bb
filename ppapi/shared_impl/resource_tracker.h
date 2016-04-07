@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_checker_impl.h"
@@ -106,7 +106,8 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
     // going away (otherwise, they may crash if they outlive the instance).
     ResourceSet resources;
   };
-  typedef base::hash_map<PP_Instance, scoped_ptr<InstanceData>> InstanceMap;
+  typedef base::hash_map<PP_Instance, std::unique_ptr<InstanceData>>
+      InstanceMap;
 
   InstanceMap instance_map_;
 
@@ -128,7 +129,7 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   // thread. This is to protect us from accidentally using the tracker from
   // other threads (especially the IO thread). On the plugin side, the tracker
   // is protected by the proxy lock and is thread-safe, so this will be NULL.
-  scoped_ptr<base::ThreadChecker> thread_checker_;
+  std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   base::WeakPtrFactory<ResourceTracker> weak_ptr_factory_;
 

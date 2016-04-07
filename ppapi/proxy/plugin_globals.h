@@ -5,12 +5,12 @@
 #ifndef PPAPI_PROXY_PLUGIN_GLOBALS_H_
 #define PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_local_storage.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -170,7 +170,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   PluginVarTracker plugin_var_tracker_;
   scoped_refptr<CallbackTracker> callback_tracker_;
 
-  scoped_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;
+  std::unique_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;
   // Note that loop_for_main_thread's constructor sets msg_loop_slot_, so it
   // must be initialized after msg_loop_slot_ (hence the order here).
   scoped_refptr<MessageLoopResource> loop_for_main_thread_;
@@ -183,13 +183,13 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // called.
   std::string command_line_;
 
-  scoped_ptr<BrowserSender> browser_sender_;
+  std::unique_ptr<BrowserSender> browser_sender_;
 
   scoped_refptr<base::TaskRunner> ipc_task_runner_;
 
   // Thread for performing potentially blocking file operations. It's created
   // lazily, since it might not be needed.
-  scoped_ptr<base::Thread> file_thread_;
+  std::unique_ptr<base::Thread> file_thread_;
 
   scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
 

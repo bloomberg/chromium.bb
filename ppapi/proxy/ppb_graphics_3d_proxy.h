@@ -62,7 +62,7 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   gpu::GpuControl* GetGpuControl() override;
   int32_t DoSwapBuffers(const gpu::SyncToken& sync_token) override;
 
-  scoped_ptr<PpapiCommandBufferProxy> command_buffer_;
+  std::unique_ptr<PpapiCommandBufferProxy> command_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics3D);
 };

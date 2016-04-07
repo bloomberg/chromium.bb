@@ -92,7 +92,7 @@ class TranslatorCompileListener : public IPC::Listener {
     Send(reply_msg);
   }
 
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
   const struct nacl_irt_pnacl_compile_funcs* funcs_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslatorCompileListener);

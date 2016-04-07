@@ -787,7 +787,7 @@ int32_t PPB_Instance_Proxy::RegisterMessageHandler(
     return PP_ERROR_BADARGUMENT;
 
   int32_t result = PP_ERROR_FAILED;
-  scoped_ptr<MessageHandler> message_handler = MessageHandler::Create(
+  std::unique_ptr<MessageHandler> message_handler = MessageHandler::Create(
       instance, handler, user_data, message_loop, &result);
   if (message_handler)
     data->message_handler = std::move(message_handler);

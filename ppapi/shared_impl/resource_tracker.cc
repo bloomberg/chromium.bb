@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/id_assignment.h"
@@ -96,7 +97,7 @@ void ResourceTracker::DidCreateInstance(PP_Instance instance) {
   // instead.
   if (instance_map_.find(instance) != instance_map_.end())
     return;
-  instance_map_[instance] = make_scoped_ptr(new InstanceData);
+  instance_map_[instance] = base::WrapUnique(new InstanceData);
 }
 
 void ResourceTracker::DidDeleteInstance(PP_Instance instance) {

@@ -266,7 +266,8 @@ void PluginDispatcher::DidCreateInstance(PP_Instance instance) {
   if (!g_instance_to_dispatcher)
     g_instance_to_dispatcher = new InstanceToDispatcherMap;
   (*g_instance_to_dispatcher)[instance] = this;
-  instance_map_.set(instance, scoped_ptr<InstanceData>(new InstanceData()));
+  instance_map_.set(instance,
+                    std::unique_ptr<InstanceData>(new InstanceData()));
 }
 
 void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {

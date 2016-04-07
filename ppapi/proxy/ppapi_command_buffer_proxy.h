@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -94,7 +95,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
 
   gpu::Capabilities capabilities_;
   State last_state_;
-  scoped_ptr<base::SharedMemory> shared_state_shm_;
+  std::unique_ptr<base::SharedMemory> shared_state_shm_;
 
   HostResource resource_;
   PluginDispatcher* dispatcher_;

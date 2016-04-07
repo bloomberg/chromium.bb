@@ -27,7 +27,7 @@ const size_t UDPSocketFilter::kPluginReceiveBufferSlots = 32u;
 namespace {
 
 int32_t SetRecvFromOutput(PP_Instance pp_instance,
-                          const scoped_ptr<std::string>& data,
+                          const std::unique_ptr<std::string>& data,
                           const PP_NetAddress_Private& addr,
                           char* output_buffer,
                           int32_t num_bytes,
@@ -69,7 +69,7 @@ void UDPSocketFilter::AddUDPResource(
   ProxyLock::AssertAcquired();
   base::AutoLock acquire(lock_);
   DCHECK(!queues_.contains(resource));
-  queues_.add(resource, scoped_ptr<RecvQueue>(new RecvQueue(
+  queues_.add(resource, std::unique_ptr<RecvQueue>(new RecvQueue(
                             instance, private_api, slot_available_callback)));
 }
 
@@ -182,7 +182,7 @@ void UDPSocketFilter::RecvQueue::DataReceivedOnIOThread(
     //    (Since the callback will complete on another thread, it's possible
     //     that the resource will be deleted and abort the callback before it
     //     is actually run.)
-    scoped_ptr<std::string> data_to_pass(new std::string(data));
+    std::unique_ptr<std::string> data_to_pass(new std::string(data));
     recvfrom_callback_->set_completion_task(base::Bind(
         &SetRecvFromOutput, pp_instance_, base::Passed(std::move(data_to_pass)),
         addr, base::Unretained(read_buffer_), bytes_to_read_,
@@ -225,7 +225,7 @@ int32_t UDPSocketFilter::RecvQueue::RequestData(
       return PP_ERROR_MESSAGE_TOO_BIG;
 
     int32_t result = static_cast<int32_t>(front.data.size());
-    scoped_ptr<std::string> data_to_pass(new std::string);
+    std::unique_ptr<std::string> data_to_pass(new std::string);
     data_to_pass->swap(front.data);
     SetRecvFromOutput(pp_instance_, std::move(data_to_pass), front.addr,
                       buffer_out, num_bytes, addr_out, PP_OK);

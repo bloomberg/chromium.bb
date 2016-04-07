@@ -48,7 +48,7 @@ ResourceMessageTestSink::~ResourceMessageTestSink() {
 
 bool ResourceMessageTestSink::Send(IPC::Message* msg) {
   int message_id = 0;
-  scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer;
+  std::unique_ptr<IPC::MessageReplyDeserializer> reply_deserializer;
   if (msg->is_sync()) {
     reply_deserializer.reset(
         static_cast<IPC::SyncMessage*>(msg)->GetReplyDeserializer());

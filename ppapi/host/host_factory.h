@@ -5,7 +5,8 @@
 #ifndef PPAPI_HOST_HOST_FACTORY_H_
 #define PPAPI_HOST_HOST_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
@@ -31,7 +32,7 @@ class HostFactory {
  public:
   virtual ~HostFactory() {}
 
-  virtual scoped_ptr<ResourceHost> CreateResourceHost(
+  virtual std::unique_ptr<ResourceHost> CreateResourceHost(
       PpapiHost* host,
       PP_Resource resource,
       PP_Instance instance,

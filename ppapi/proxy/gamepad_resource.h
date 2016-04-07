@@ -5,9 +5,10 @@
 #ifndef PPAPI_PROXY_GAMEPAD_RESOURCE_H_
 #define PPAPI_PROXY_GAMEPAD_RESOURCE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -44,7 +45,7 @@ class PPAPI_PROXY_EXPORT GamepadResource
  private:
   void OnPluginMsgSendMemory(const ResourceMessageReplyParams& params);
 
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   const ContentGamepadHardwareBuffer* buffer_;
 
   // Last data returned so we can use this in the event of a read failure.

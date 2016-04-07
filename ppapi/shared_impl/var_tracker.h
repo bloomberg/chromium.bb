@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_checker.h"
 #include "ppapi/c/pp_instance.h"
@@ -235,7 +235,7 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // thread. This is to protect us from accidentally using the tracker from
   // other threads (especially the IO thread). On the plugin side, the tracker
   // is protected by the proxy lock and is thread-safe, so this will be NULL.
-  scoped_ptr<base::ThreadChecker> thread_checker_;
+  std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(VarTracker);
 };

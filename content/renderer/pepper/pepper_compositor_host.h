@@ -38,6 +38,8 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   PepperCompositorHost(RendererPpapiHost* host,
                        PP_Instance instance,
                        PP_Resource resource);
+  ~PepperCompositorHost() override;
+
   // Associates this device with the given plugin instance. You can pass NULL
   // to clear the existing device. Returns true on success. In this case, a
   // repaint of the page will also be scheduled. Failure means that the device
@@ -49,8 +51,6 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   void ViewInitiatedPaint();
 
  private:
-  ~PepperCompositorHost() override;
-
   void ImageReleased(int32_t id,
                      scoped_ptr<base::SharedMemory> shared_memory,
                      scoped_ptr<cc::SharedBitmap> bitmap,

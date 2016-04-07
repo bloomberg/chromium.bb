@@ -6,6 +6,7 @@
 
 #include <cstring>
 
+#include "base/memory/ptr_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -72,7 +73,7 @@ const std::string* FlashFontFileResource::AddFontTable(
     uint32_t table,
     const std::string& contents) {
   FontTableMap::const_iterator it =
-      font_tables_.set(table, make_scoped_ptr(new std::string(contents)));
+      font_tables_.set(table, base::WrapUnique(new std::string(contents)));
   return it->second;
 }
 

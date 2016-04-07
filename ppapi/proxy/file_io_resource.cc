@@ -82,7 +82,7 @@ int32_t FileIOResource::ReadOp::DoWork() {
 
 FileIOResource::WriteOp::WriteOp(scoped_refptr<FileHolder> file_holder,
                                  int64_t offset,
-                                 scoped_ptr<char[]> buffer,
+                                 std::unique_ptr<char[]> buffer,
                                  int32_t bytes_to_write,
                                  bool append)
     : file_holder_(file_holder),
@@ -301,7 +301,7 @@ int32_t FileIOResource::Write(int64_t offset,
     if (increase > 0) {
       // Request a quota reservation. This makes the Write asynchronous, so we
       // must copy the plugin's buffer.
-      scoped_ptr<char[]> copy(new char[bytes_to_write]);
+      std::unique_ptr<char[]> copy(new char[bytes_to_write]);
       memcpy(copy.get(), buffer, bytes_to_write);
       int64_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
@@ -515,7 +515,7 @@ int32_t FileIOResource::WriteValidated(
 
   // For the non-blocking case, post a task to the file thread. We must copy the
   // plugin's buffer at this point.
-  scoped_ptr<char[]> copy(new char[bytes_to_write]);
+  std::unique_ptr<char[]> copy(new char[bytes_to_write]);
   memcpy(copy.get(), buffer, bytes_to_write);
   scoped_refptr<WriteOp> write_op(new WriteOp(
       file_holder_, offset, std::move(copy), bytes_to_write, append));
@@ -582,7 +582,7 @@ int32_t FileIOResource::OnReadComplete(scoped_refptr<ReadOp> read_op,
 
 void FileIOResource::OnRequestWriteQuotaComplete(
     int64_t offset,
-    scoped_ptr<char[]> buffer,
+    std::unique_ptr<char[]> buffer,
     int32_t bytes_to_write,
     scoped_refptr<TrackedCallback> callback,
     int64_t granted) {

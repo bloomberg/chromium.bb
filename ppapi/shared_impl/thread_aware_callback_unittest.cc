@@ -4,11 +4,12 @@
 
 #include "ppapi/shared_impl/thread_aware_callback.h"
 
+#include <memory>
+
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
@@ -93,7 +94,7 @@ class ThreadAwareCallbackMultiThreadTest
     }
   }
 
-  scoped_ptr<ThreadAwareCallback<CallbackFunc> > main_thread_callback_;
+  std::unique_ptr<ThreadAwareCallback<CallbackFunc>> main_thread_callback_;
   bool main_thread_callback_called_;
 };
 
@@ -142,7 +143,7 @@ class ThreadAwareCallbackAbortTest : public proxy::PluginProxyMultiThreadTest {
     main_thread_callback_.reset(NULL);
   }
 
-  scoped_ptr<ThreadAwareCallback<CallbackFunc> > main_thread_callback_;
+  std::unique_ptr<ThreadAwareCallback<CallbackFunc>> main_thread_callback_;
 };
 
 }  // namespace
@@ -159,33 +160,33 @@ TEST_F(ThreadAwareCallbackTest, Basics) {
   // Exercise all the template code.
   called_num = 0;
   typedef void (*FuncType_0)();
-  scoped_ptr<ThreadAwareCallback<FuncType_0> > callback_0(
+  std::unique_ptr<ThreadAwareCallback<FuncType_0>> callback_0(
       ThreadAwareCallback<FuncType_0>::Create(TestCallback_0));
   callback_0->RunOnTargetThread();
 
   typedef void (*FuncType_1)(int);
-  scoped_ptr<ThreadAwareCallback<FuncType_1> > callback_1(
+  std::unique_ptr<ThreadAwareCallback<FuncType_1>> callback_1(
       ThreadAwareCallback<FuncType_1>::Create(TestCallback_1));
   callback_1->RunOnTargetThread(1);
 
   typedef void (*FuncType_2)(int, const double*);
-  scoped_ptr<ThreadAwareCallback<FuncType_2> > callback_2(
+  std::unique_ptr<ThreadAwareCallback<FuncType_2>> callback_2(
       ThreadAwareCallback<FuncType_2>::Create(TestCallback_2));
   callback_2->RunOnTargetThread(1, &double_arg);
 
   typedef void (*FuncType_3)(int, const double*, bool*);
-  scoped_ptr<ThreadAwareCallback<FuncType_3> > callback_3(
+  std::unique_ptr<ThreadAwareCallback<FuncType_3>> callback_3(
       ThreadAwareCallback<FuncType_3>::Create(TestCallback_3));
   callback_3->RunOnTargetThread(1, &double_arg, &bool_arg);
 
   typedef void (*FuncType_4)(int, const double*, bool*, TestParameter);
-  scoped_ptr<ThreadAwareCallback<FuncType_4> > callback_4(
+  std::unique_ptr<ThreadAwareCallback<FuncType_4>> callback_4(
       ThreadAwareCallback<FuncType_4>::Create(TestCallback_4));
   callback_4->RunOnTargetThread(1, &double_arg, &bool_arg, object_arg);
 
   typedef void (*FuncType_5)(
       int, const double*, bool*, TestParameter, const TestParameter&);
-  scoped_ptr<ThreadAwareCallback<FuncType_5> > callback_5(
+  std::unique_ptr<ThreadAwareCallback<FuncType_5>> callback_5(
       ThreadAwareCallback<FuncType_5>::Create(TestCallback_5));
   callback_5->RunOnTargetThread(
       1, &double_arg, &bool_arg, object_arg, object_arg);

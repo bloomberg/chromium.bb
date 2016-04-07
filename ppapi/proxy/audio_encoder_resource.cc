@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/proxy/audio_encoder_resource.h"
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/proxy/audio_buffer_resource.h"
-#include "ppapi/proxy/audio_encoder_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
@@ -230,7 +232,7 @@ void AudioEncoderResource::OnPluginMsgInitializeReply(
   if (!params.TakeSharedMemoryHandleAtIndex(0, &buffer_handle) ||
       !audio_buffer_manager_.SetBuffers(
           audio_buffer_count, audio_buffer_size,
-          make_scoped_ptr(new base::SharedMemory(buffer_handle, false)),
+          base::WrapUnique(new base::SharedMemory(buffer_handle, false)),
           true)) {
     RunCallback(&initialize_callback_, PP_ERROR_NOMEMORY);
     return;
@@ -240,7 +242,7 @@ void AudioEncoderResource::OnPluginMsgInitializeReply(
   if (!params.TakeSharedMemoryHandleAtIndex(1, &buffer_handle) ||
       !bitstream_buffer_manager_.SetBuffers(
           bitstream_buffer_count, bitstream_buffer_size,
-          make_scoped_ptr(new base::SharedMemory(buffer_handle, false)),
+          base::WrapUnique(new base::SharedMemory(buffer_handle, false)),
           false)) {
     RunCallback(&initialize_callback_, PP_ERROR_NOMEMORY);
     return;

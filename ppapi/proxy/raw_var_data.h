@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
@@ -56,8 +56,8 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
  public:
   // Construct a RawVarDataGraph from a given root PP_Var. A null pointer
   // is returned upon failure.
-  static scoped_ptr<RawVarDataGraph> Create(const PP_Var& var,
-                                            PP_Instance instance);
+  static std::unique_ptr<RawVarDataGraph> Create(const PP_Var& var,
+                                                 PP_Instance instance);
 
   // Constructs an empty RawVarDataGraph.
   RawVarDataGraph();
@@ -73,8 +73,8 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
   void Write(base::Pickle* m, const HandleWriter& handle_writer);
 
   // Create a RawVarDataGraph from the given message.
-  static scoped_ptr<RawVarDataGraph> Read(const base::Pickle* m,
-                                          base::PickleIterator* iter);
+  static std::unique_ptr<RawVarDataGraph> Read(const base::Pickle* m,
+                                               base::PickleIterator* iter);
 
   // Returns a vector of SerializedHandles associated with this RawVarDataGraph.
   // Ownership of the pointers remains with the elements of the RawVarDataGraph.
@@ -88,7 +88,7 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
 
  private:
   // A list of the nodes in the graph.
-  std::vector<scoped_ptr<RawVarData>> data_;
+  std::vector<std::unique_ptr<RawVarData>> data_;
 
   DISALLOW_COPY_AND_ASSIGN(RawVarDataGraph);
 };
@@ -295,7 +295,7 @@ class ResourceRawVarData : public RawVarData {
   // resource. The message type will vary based on the resource type, and will
   // usually contain a pending resource host ID, and other required information.
   // If the resource was created directly, this is NULL.
-  scoped_ptr<IPC::Message> creation_message_;
+  std::unique_ptr<IPC::Message> creation_message_;
 };
 
 }  // namespace proxy

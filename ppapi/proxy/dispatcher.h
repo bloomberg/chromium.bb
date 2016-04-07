@@ -92,7 +92,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   friend class PluginDispatcherTest;
 
   // Lists all lazily-created interface proxies.
-  scoped_ptr<InterfaceProxy> proxies_[API_ID_COUNT];
+  std::unique_ptr<InterfaceProxy> proxies_[API_ID_COUNT];
 
   PP_GetInterface_Func local_get_interface_;
 

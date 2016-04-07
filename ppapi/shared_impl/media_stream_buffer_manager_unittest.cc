@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,9 +17,9 @@ using base::SharedMemoryCreateOptions;
 
 namespace {
 
-scoped_ptr<SharedMemory> CreateSharedMemory(int32_t buffer_size,
-                                            int32_t number_of_buffers) {
-  scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
+std::unique_ptr<SharedMemory> CreateSharedMemory(int32_t buffer_size,
+                                                 int32_t number_of_buffers) {
+  std::unique_ptr<SharedMemory> shared_memory(new SharedMemory());
   SharedMemoryCreateOptions options;
   options.size = buffer_size * number_of_buffers;
   options.executable = false;
@@ -48,7 +47,7 @@ TEST(MediaStreamBufferManager, General) {
     const int32_t kBufferSize = 128;
     MockDelegate delegate;
     MediaStreamBufferManager manager(&delegate);
-    scoped_ptr<SharedMemory> shared_memory =
+    std::unique_ptr<SharedMemory> shared_memory =
         CreateSharedMemory(kBufferSize, kNumberOfBuffers);
     // SetBuffers with enqueue_all_buffers = true;
     EXPECT_TRUE(manager.SetBuffers(kNumberOfBuffers, kBufferSize,
@@ -105,7 +104,7 @@ TEST(MediaStreamBufferManager, General) {
     const int32_t kBufferSize = 128;
     MockDelegate delegate;
     MediaStreamBufferManager manager(&delegate);
-    scoped_ptr<SharedMemory> shared_memory =
+    std::unique_ptr<SharedMemory> shared_memory =
         CreateSharedMemory(kBufferSize, kNumberOfBuffers);
     // SetBuffers with enqueue_all_buffers = false;
     EXPECT_TRUE(manager.SetBuffers(kNumberOfBuffers, kBufferSize,
@@ -134,7 +133,7 @@ TEST(MediaStreamBufferManager, ResetBuffers) {
   MockDelegate delegate;
   MediaStreamBufferManager manager(&delegate);
   {
-    scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
+    std::unique_ptr<SharedMemory> shared_memory(new SharedMemory());
     SharedMemoryCreateOptions options;
     options.size = kBufferSize1 * kNumberOfBuffers1;
     options.executable = false;
@@ -160,7 +159,7 @@ TEST(MediaStreamBufferManager, ResetBuffers) {
   }
 
   {
-    scoped_ptr<SharedMemory> shared_memory =
+    std::unique_ptr<SharedMemory> shared_memory =
         CreateSharedMemory(kBufferSize2, kNumberOfBuffers2);
     // SetBuffers with enqueue_all_buffers = true;
     EXPECT_TRUE(manager.SetBuffers(kNumberOfBuffers2, kBufferSize2,

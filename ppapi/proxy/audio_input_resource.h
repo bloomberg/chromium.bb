@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
@@ -104,18 +105,18 @@ class AudioInputResource : public PluginResource,
 
   // Socket used to notify us when new samples are available. This pointer is
   // created in SetStreamInfo().
-  scoped_ptr<base::CancelableSyncSocket> socket_;
+  std::unique_ptr<base::CancelableSyncSocket> socket_;
 
   // Sample buffer in shared memory. This pointer is created in
   // SetStreamInfo(). The memory is only mapped when the audio thread is
   // created.
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;
 
   // When the callback is set, this thread is spawned for calling it.
-  scoped_ptr<base::DelegateSimpleThread> audio_input_thread_;
+  std::unique_ptr<base::DelegateSimpleThread> audio_input_thread_;
 
   // Callback to call when new samples are available.
   PPB_AudioInput_Callback_0_3 audio_input_callback_0_3_;
@@ -139,12 +140,12 @@ class AudioInputResource : public PluginResource,
   size_t bytes_per_second_;
 
   // AudioBus for shuttling data across the shared memory.
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
   int sample_frame_count_;
 
   // Internal buffer for client's integer audio data.
   int client_buffer_size_bytes_;
-  scoped_ptr<uint8_t[]> client_buffer_;
+  std::unique_ptr<uint8_t[]> client_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputResource);
 };

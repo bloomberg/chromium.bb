@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -130,7 +131,7 @@ class PPAPI_PROXY_EXPORT UDPSocketFilter : public ResourceMessageFilter {
   // 1 ppapi::ProxyLock
   // \-->2 Filter lock_
   mutable base::Lock lock_;
-  base::ScopedPtrHashMap<PP_Resource, scoped_ptr<RecvQueue>> queues_;
+  base::ScopedPtrHashMap<PP_Resource, std::unique_ptr<RecvQueue>> queues_;
 };
 
 }  // namespace proxy

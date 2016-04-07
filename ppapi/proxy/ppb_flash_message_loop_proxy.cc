@@ -135,7 +135,7 @@ void PPB_Flash_MessageLoop_Proxy::OnMsgRun(
 
   PPB_Flash_MessageLoop_API::RunFromHostProxyCallback callback =
       base::Bind(&PPB_Flash_MessageLoop_Proxy::WillQuitSoon, AsWeakPtr(),
-                 base::Passed(scoped_ptr<IPC::Message>(reply)));
+                 base::Passed(std::unique_ptr<IPC::Message>(reply)));
 
   EnterHostFromHostResource<PPB_Flash_MessageLoop_API>
       enter(flash_message_loop);
@@ -154,7 +154,7 @@ void PPB_Flash_MessageLoop_Proxy::OnMsgQuit(
 }
 
 void PPB_Flash_MessageLoop_Proxy::WillQuitSoon(
-    scoped_ptr<IPC::Message> reply_message,
+    std::unique_ptr<IPC::Message> reply_message,
     int32_t result) {
   PpapiHostMsg_PPBFlashMessageLoop_Run::WriteReplyParams(reply_message.get(),
                                                          result);

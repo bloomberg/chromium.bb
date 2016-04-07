@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -70,7 +71,7 @@ class PPAPI_PROXY_EXPORT DeviceEnumerationResourceHelper
   bool pending_enumerate_devices_;
 
   uint32_t monitor_callback_id_;
-  scoped_ptr<ThreadAwareCallback<PP_MonitorDeviceChangeCallback> >
+  std::unique_ptr<ThreadAwareCallback<PP_MonitorDeviceChangeCallback>>
       monitor_callback_;
   void* monitor_user_data_;
 

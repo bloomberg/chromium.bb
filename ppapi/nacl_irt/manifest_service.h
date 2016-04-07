@@ -5,9 +5,10 @@
 #ifndef PPAPI_NACL_IRT_MANIFEST_SERVICE_H_
 #define PPAPI_NACL_IRT_MANIFEST_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -34,7 +35,7 @@ class ManifestService {
   bool OpenResource(const char* file, int* fd);
 
  private:
-  scoped_ptr<IPC::ChannelProxy> channel_;
+  std::unique_ptr<IPC::ChannelProxy> channel_;
   scoped_refptr<IPC::SyncMessageFilter> filter_;
 
   base::Lock open_resource_lock_;

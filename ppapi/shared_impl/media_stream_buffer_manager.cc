@@ -25,10 +25,11 @@ MediaStreamBufferManager::MediaStreamBufferManager(Delegate* delegate)
 
 MediaStreamBufferManager::~MediaStreamBufferManager() {}
 
-bool MediaStreamBufferManager::SetBuffers(int32_t number_of_buffers,
-                                          int32_t buffer_size,
-                                          scoped_ptr<base::SharedMemory> shm,
-                                          bool enqueue_all_buffers) {
+bool MediaStreamBufferManager::SetBuffers(
+    int32_t number_of_buffers,
+    int32_t buffer_size,
+    std::unique_ptr<base::SharedMemory> shm,
+    bool enqueue_all_buffers) {
   DCHECK(shm);
   DCHECK_GT(number_of_buffers, 0);
   DCHECK_GT(buffer_size,

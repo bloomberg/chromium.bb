@@ -6,11 +6,11 @@
 #define PPAPI_HOST_PPAPI_HOST_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -69,22 +69,23 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
       const std::vector<proxy::SerializedHandle>& handles);
 
   // Create a ResourceHost with the given |nested_msg|.
-  scoped_ptr<ResourceHost> CreateResourceHost(PP_Resource resource,
-                                              PP_Instance instance,
-                                              const IPC::Message& nested_msg);
+  std::unique_ptr<ResourceHost> CreateResourceHost(
+      PP_Resource resource,
+      PP_Instance instance,
+      const IPC::Message& nested_msg);
 
   // Adds the given host resource as a pending one (with no corresponding
   // PluginResource object and no PP_Resource ID yet). The pending resource ID
   // is returned. See PpapiHostMsg_AttachToPendingHost.
-  int AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host);
+  int AddPendingResourceHost(std::unique_ptr<ResourceHost> resource_host);
 
   // Adds the given host factory filter to the host. The PpapiHost will take
   // ownership of the pointer.
-  void AddHostFactoryFilter(scoped_ptr<HostFactory> filter);
+  void AddHostFactoryFilter(std::unique_ptr<HostFactory> filter);
 
   // Adds the given message filter to the host. The PpapiHost will take
   // ownership of the pointer.
-  void AddInstanceMessageFilter(scoped_ptr<InstanceMessageFilter> filter);
+  void AddInstanceMessageFilter(std::unique_ptr<InstanceMessageFilter> filter);
 
   // Returns null if the resource doesn't exist.
   host::ResourceHost* GetResourceHost(PP_Resource resource) const;
@@ -123,21 +124,21 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // deleting these dynamically we don't need to worry about modifications
   // during iteration. If we add that capability, this should be replaced with
   // an base::ObserverList.
-  std::vector<scoped_ptr<HostFactory>> host_factory_filters_;
+  std::vector<std::unique_ptr<HostFactory>> host_factory_filters_;
 
   // Filters for instance messages. Note that since we don't support deleting
   // these dynamically we don't need to worry about modifications during
   // iteration. If we add that capability, this should be replaced with an
   // base::ObserverList.
-  std::vector<scoped_ptr<InstanceMessageFilter>> instance_message_filters_;
+  std::vector<std::unique_ptr<InstanceMessageFilter>> instance_message_filters_;
 
-  typedef std::map<PP_Resource, scoped_ptr<ResourceHost>> ResourceMap;
+  typedef std::map<PP_Resource, std::unique_ptr<ResourceHost>> ResourceMap;
   ResourceMap resources_;
 
   // Resources that have been created in the host and have not yet had the
   // corresponding PluginResource associated with them.
   // See PpapiHostMsg_AttachToPendingHost.
-  typedef std::map<int, scoped_ptr<ResourceHost>> PendingHostResourceMap;
+  typedef std::map<int, std::unique_ptr<ResourceHost>> PendingHostResourceMap;
   PendingHostResourceMap pending_resource_hosts_;
   int next_pending_resource_host_id_;
 

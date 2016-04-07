@@ -126,11 +126,11 @@ void PpapiHost::SendUnsolicitedReplyWithHandles(
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
 }
 
-scoped_ptr<ResourceHost> PpapiHost::CreateResourceHost(
+std::unique_ptr<ResourceHost> PpapiHost::CreateResourceHost(
     PP_Resource resource,
     PP_Instance instance,
     const IPC::Message& nested_msg) {
-  scoped_ptr<ResourceHost> resource_host;
+  std::unique_ptr<ResourceHost> resource_host;
   DCHECK(!host_factory_filters_.empty());  // Caller forgot to add a factory.
   for (size_t i = 0; i < host_factory_filters_.size(); i++) {
     resource_host = host_factory_filters_[i]->CreateResourceHost(
@@ -141,7 +141,8 @@ scoped_ptr<ResourceHost> PpapiHost::CreateResourceHost(
   return resource_host;
 }
 
-int PpapiHost::AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host) {
+int PpapiHost::AddPendingResourceHost(
+    std::unique_ptr<ResourceHost> resource_host) {
   // The resource ID should not be assigned.
   if (!resource_host.get() || resource_host->pp_resource() != 0) {
     NOTREACHED();
@@ -158,12 +159,12 @@ int PpapiHost::AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host) {
   return pending_id;
 }
 
-void PpapiHost::AddHostFactoryFilter(scoped_ptr<HostFactory> filter) {
+void PpapiHost::AddHostFactoryFilter(std::unique_ptr<HostFactory> filter) {
   host_factory_filters_.push_back(std::move(filter));
 }
 
 void PpapiHost::AddInstanceMessageFilter(
-    scoped_ptr<InstanceMessageFilter> filter) {
+    std::unique_ptr<InstanceMessageFilter> filter) {
   instance_message_filters_.push_back(std::move(filter));
 }
 
@@ -235,7 +236,7 @@ void PpapiHost::OnHostMsgResourceCreated(
   }
 
   // Run through all filters until one grabs this message.
-  scoped_ptr<ResourceHost> resource_host =
+  std::unique_ptr<ResourceHost> resource_host =
       CreateResourceHost(params.pp_resource(), instance, nested_msg);
 
   if (!resource_host.get()) {
@@ -274,7 +275,8 @@ void PpapiHost::OnHostMsgResourceDestroyed(PP_Resource resource) {
   // element will be there or not. Therefore, we delay destruction of the
   // HostResource until after we've made sure the map no longer contains
   // |resource|.
-  scoped_ptr<ResourceHost> delete_at_end_of_scope(std::move(found->second));
+  std::unique_ptr<ResourceHost> delete_at_end_of_scope(
+      std::move(found->second));
   resources_.erase(found);
 }
 

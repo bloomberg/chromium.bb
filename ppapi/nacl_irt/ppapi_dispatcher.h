@@ -95,7 +95,7 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WaitableEvent* shutdown_event_;
   int renderer_ipc_fd_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
 };
 
 }  // namespace ppapi

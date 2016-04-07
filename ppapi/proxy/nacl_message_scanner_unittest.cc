@@ -46,7 +46,7 @@ class NaClMessageScannerTest : public PluginProxyTest {
                      PP_Resource file_system) {
     std::vector<SerializedHandle> unused_handles;
     ResourceMessageReplyParams fio_reply_params(file_io, 0);
-    scoped_ptr<IPC::Message> new_msg_ptr;
+    std::unique_ptr<IPC::Message> new_msg_ptr;
     scanner->ScanMessage(
         PpapiPluginMsg_ResourceReply(
             fio_reply_params,
@@ -65,7 +65,7 @@ TEST_F(NaClMessageScannerTest, FileOpenClose) {
   ResourceMessageCallParams fs_call_params(kFileSystem, 0);
   ResourceMessageReplyParams fio_reply_params(kFileIO, 0);
   ResourceMessageReplyParams fs_reply_params(kFileSystem, 0);
-  scoped_ptr<IPC::Message> new_msg_ptr;
+  std::unique_ptr<IPC::Message> new_msg_ptr;
 
   EXPECT_EQ(NULL, FindFileSystem(test, kFileSystem));
   EXPECT_EQ(NULL, FindFileIO(test, kFileIO));
@@ -143,7 +143,7 @@ TEST_F(NaClMessageScannerTest, QuotaAuditing) {
   ResourceMessageCallParams fs_call_params(kFileSystem, 0);
   ResourceMessageReplyParams fio_reply_params(kFileIO, 0);
   ResourceMessageReplyParams fs_reply_params(kFileSystem, 0);
-  scoped_ptr<IPC::Message> new_msg_ptr;
+  std::unique_ptr<IPC::Message> new_msg_ptr;
 
   OpenQuotaFile(&test, kFileIO, kFileSystem);
   NaClMessageScanner::FileSystem* fs = FindFileSystem(test, kFileSystem);
@@ -215,7 +215,7 @@ TEST_F(NaClMessageScannerTest, SetLength) {
   ResourceMessageCallParams fs_call_params(kFileSystem, 0);
   ResourceMessageReplyParams fio_reply_params(kFileIO, 0);
   ResourceMessageReplyParams fs_reply_params(kFileSystem, 0);
-  scoped_ptr<IPC::Message> new_msg_ptr;
+  std::unique_ptr<IPC::Message> new_msg_ptr;
 
   OpenQuotaFile(&test, kFileIO, kFileSystem);
   NaClMessageScanner::FileSystem* fs = FindFileSystem(test, kFileSystem);

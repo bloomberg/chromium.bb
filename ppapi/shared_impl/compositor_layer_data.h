@@ -8,8 +8,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/ppb_compositor_layer.h"
@@ -112,9 +113,9 @@ struct PPAPI_SHARED_EXPORT CompositorLayerData {
   const CompositorLayerData& operator=(const CompositorLayerData& other);
 
   LayerCommon common;
-  scoped_ptr<ColorLayer> color;
-  scoped_ptr<TextureLayer> texture;
-  scoped_ptr<ImageLayer> image;
+  std::unique_ptr<ColorLayer> color;
+  std::unique_ptr<TextureLayer> texture;
+  std::unique_ptr<ImageLayer> image;
 };
 
 }  // namespace ppapi

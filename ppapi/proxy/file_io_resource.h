@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -147,7 +147,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
     scoped_refptr<FileHolder> file_holder_;
     int64_t offset_;
     int32_t bytes_to_read_;
-    scoped_ptr<char[]> buffer_;
+    std::unique_ptr<char[]> buffer_;
   };
 
   // Class to perform file write operations across multiple threads.
@@ -155,7 +155,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
    public:
     WriteOp(scoped_refptr<FileHolder> file_holder,
             int64_t offset,
-            scoped_ptr<char[]> buffer,
+            std::unique_ptr<char[]> buffer,
             int32_t bytes_to_write,
             bool append);
 
@@ -169,13 +169,13 @@ class PPAPI_PROXY_EXPORT FileIOResource
 
     scoped_refptr<FileHolder> file_holder_;
     int64_t offset_;
-    scoped_ptr<char[]> buffer_;
+    std::unique_ptr<char[]> buffer_;
     int32_t bytes_to_write_;
     bool append_;
   };
 
   void OnRequestWriteQuotaComplete(int64_t offset,
-                                   scoped_ptr<char[]> buffer,
+                                   std::unique_ptr<char[]> buffer,
                                    int32_t bytes_to_write,
                                    scoped_refptr<TrackedCallback> callback,
                                    int64_t granted);

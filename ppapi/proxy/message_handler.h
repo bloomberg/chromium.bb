@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppp_message_handler.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -44,7 +45,7 @@ class PPAPI_PROXY_EXPORT MessageHandler {
   //                thread. If it's the main thread loop, |error| will be set
   //                to PP_ERROR_WRONGTHREAD.
   // |error| is an out-param that will be set on failure.
-  static scoped_ptr<MessageHandler> Create(
+  static std::unique_ptr<MessageHandler> Create(
       PP_Instance instance,
       const PPP_MessageHandler_0_2* handler_if,
       void* user_data,
@@ -56,7 +57,7 @@ class PPAPI_PROXY_EXPORT MessageHandler {
 
   void HandleMessage(ScopedPPVar var);
   void HandleBlockingMessage(ScopedPPVar var,
-                             scoped_ptr<IPC::Message> reply_msg);
+                             std::unique_ptr<IPC::Message> reply_msg);
 
  private:
   MessageHandler(PP_Instance instance,

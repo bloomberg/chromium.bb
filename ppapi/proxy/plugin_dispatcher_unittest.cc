@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppp_instance.h"

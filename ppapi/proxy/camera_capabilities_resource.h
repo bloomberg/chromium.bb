@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_camera_capabilities_api.h"
@@ -38,7 +38,7 @@ class PPAPI_PROXY_EXPORT CameraCapabilitiesResource
 
  private:
   size_t num_video_capture_formats_;
-  scoped_ptr<PP_VideoCaptureFormat[]> video_capture_formats_;
+  std::unique_ptr<PP_VideoCaptureFormat[]> video_capture_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraCapabilitiesResource);
 };

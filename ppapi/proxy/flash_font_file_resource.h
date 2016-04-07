@@ -47,7 +47,7 @@ class FlashFontFileResource : public PluginResource,
   const std::string* AddFontTable(uint32_t table, const std::string& contents);
 
   using FontTableMap =
-      base::ScopedPtrHashMap<uint32_t, scoped_ptr<std::string>>;
+      base::ScopedPtrHashMap<uint32_t, std::unique_ptr<std::string>>;
   FontTableMap font_tables_;
 
   SerializedFontDescription description_;
