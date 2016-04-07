@@ -247,6 +247,9 @@ public:
 
     LayoutUnit& freeSpaceForDirection(GridTrackSizingDirection direction) { return direction == ForColumns ? freeSpaceForColumns : freeSpaceForRows; }
 
+    enum SizingOperation { TrackSizing, IntrinsicSizeComputation };
+    SizingOperation sizingOperation { TrackSizing };
+
 private:
     LayoutUnit freeSpaceForColumns { };
     LayoutUnit freeSpaceForRows { };
@@ -330,6 +333,7 @@ void LayoutGrid::computeTrackSizesForDirection(GridTrackSizingDirection directio
 {
     ASSERT(freeSpace >= 0);
     sizingData.freeSpaceForDirection(direction) = freeSpace - guttersSize(direction, direction == ForRows ? gridRowCount() : gridColumnCount());
+    sizingData.sizingOperation = GridSizingData::TrackSizing;
 
     LayoutUnit baseSizes, growthLimits;
     computeUsedBreadthOfGridTracks(direction, sizingData, baseSizes, growthLimits, AvailableSpaceDefinite);
@@ -419,6 +423,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
     sizingData.freeSpaceForDirection(ForColumns) = LayoutUnit();
+    sizingData.sizingOperation = GridSizingData::IntrinsicSizeComputation;
     const_cast<LayoutGrid*>(this)->computeUsedBreadthOfGridTracks(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth, AvailableSpaceIndefinite);
 
     LayoutUnit totalGuttersSize = guttersSize(ForColumns, sizingData.columnTracks.size());
@@ -434,6 +439,7 @@ void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
 {
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForColumns, sizingData));
     sizingData.freeSpaceForDirection(ForRows) = LayoutUnit();
+    sizingData.sizingOperation = GridSizingData::IntrinsicSizeComputation;
     computeUsedBreadthOfGridTracks(ForRows, sizingData, m_minContentHeight, m_maxContentHeight, AvailableSpaceIndefinite);
 
     LayoutUnit totalGuttersSize = guttersSize(ForRows, gridRowCount());
@@ -683,10 +689,8 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
 LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, GridSizingData& sizingData)
 {
     SubtreeLayoutScope layoutScope(child);
-    LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child.hasOverrideContainingBlockLogicalWidth() ? child.overrideContainingBlockContentLogicalWidth() : LayoutUnit();
-    LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, sizingData.columnTracks);
     bool shouldClearContainingBlockLogicalHeight = child.hasRelativeLogicalHeight() || child.styleRef().logicalHeight().isIntrinsicOrAuto();
-    if (shouldClearContainingBlockLogicalHeight || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth)
+    if (shouldClearContainingBlockLogicalHeight)
         layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
 
     bool hasOverrideHeight = child.hasOverrideLogicalContentHeight();
@@ -694,7 +698,6 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, GridSizingData& s
     if (hasOverrideHeight && child.needsLayout())
         child.clearOverrideLogicalContentHeight();
 
-    child.setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
     // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
     // what we are interested in here. Thus we need to set the override logical height to -1 (no possible resolution).
     if (shouldClearContainingBlockLogicalHeight)
@@ -717,10 +720,26 @@ LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child, GridTrackSizingDirectio
     if (!childSize.isAuto() || childMinSize.isAuto())
         return minContentForChild(child, direction, sizingData);
 
-    if (isRowAxis)
-        return child.computeLogicalWidthUsing(MinSize, childMinSize, contentLogicalWidth(), this);
+    bool overrideLogicalWidthHasChanged = updateOverrideContainingBlockContentLogicalWidthForChild(child, sizingData);
+    if (isRowAxis) {
+        LayoutUnit marginLogicalWidth = sizingData.sizingOperation == GridSizingData::TrackSizing ? computeMarginLogicalSizeForChild(InlineDirection, child) : marginIntrinsicLogicalWidthForChild(child);
+        return child.computeLogicalWidthUsing(MinSize, childMinSize, child.overrideContainingBlockContentLogicalWidth(), this) + marginLogicalWidth;
+    }
 
-    return child.computeLogicalHeightUsing(MinSize, childMinSize, child.intrinsicLogicalHeight()) + child.scrollbarLogicalHeight();
+    if (overrideLogicalWidthHasChanged)
+        child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
+    child.layoutIfNeeded();
+    return child.computeLogicalHeightUsing(MinSize, childMinSize, child.intrinsicLogicalHeight()) + child.marginLogicalHeight() + child.scrollbarLogicalHeight();
+}
+
+bool LayoutGrid::updateOverrideContainingBlockContentLogicalWidthForChild(LayoutBox& child, GridSizingData& sizingData)
+{
+    LayoutUnit overrideWidth = gridAreaBreadthForChild(child, ForColumns, sizingData.columnTracks);
+    if (child.hasOverrideContainingBlockLogicalWidth() && child.overrideContainingBlockContentLogicalWidth() == overrideWidth)
+        return false;
+
+    child.setOverrideContainingBlockContentLogicalWidth(overrideWidth);
+    return true;
 }
 
 LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData)
@@ -741,6 +760,9 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
         return child.minPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(child);
     }
 
+    SubtreeLayoutScope layouter(child);
+    if (updateOverrideContainingBlockContentLogicalWidthForChild(child, sizingData))
+        child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     return logicalHeightForChild(child, sizingData);
 }
 
@@ -762,6 +784,9 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
         return child.maxPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(child);
     }
 
+    SubtreeLayoutScope layouter(child);
+    if (updateOverrideContainingBlockContentLogicalWidthForChild(child, sizingData))
+        child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     return logicalHeightForChild(child, sizingData);
 }
 
@@ -1667,18 +1692,21 @@ LayoutUnit LayoutGrid::marginLogicalHeightForChild(const LayoutBox& child) const
     return isHorizontalWritingMode() ? child.marginHeight() : child.marginWidth();
 }
 
-LayoutUnit LayoutGrid::computeMarginLogicalHeightForChild(const LayoutBox& child) const
+LayoutUnit LayoutGrid::computeMarginLogicalSizeForChild(MarginDirection forDirection, const LayoutBox& child) const
 {
     if (!child.styleRef().hasMargin())
         return LayoutUnit();
 
-    LayoutUnit marginBefore;
-    LayoutUnit marginAfter;
-    child.computeMarginsForDirection(BlockDirection, this, child.containingBlockLogicalWidthForContent(), child.logicalHeight(), marginBefore, marginAfter,
-        child.style()->marginBeforeUsing(style()),
-        child.style()->marginAfterUsing(style()));
+    bool isRowAxis = forDirection == InlineDirection;
+    LayoutUnit marginStart;
+    LayoutUnit marginEnd;
+    LayoutUnit logicalSize = isRowAxis ? child.logicalWidth() : child.logicalHeight();
+    Length marginStartLength = isRowAxis ? child.styleRef().marginStart() : child.styleRef().marginBeforeUsing(style());
+    Length marginEndLength = isRowAxis ? child.styleRef().marginEnd() : child.styleRef().marginAfterUsing(style());
+    child.computeMarginsForDirection(forDirection, this, child.containingBlockLogicalWidthForContent(), logicalSize,
+        marginStart, marginEnd, marginStartLength, marginEndLength);
 
-    return marginBefore + marginAfter;
+    return marginStart + marginEnd;
 }
 
 LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox& child) const
@@ -1686,7 +1714,7 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
     // Because we want to avoid multiple layouts, stretching logic might be performed before
     // children are laid out, so we can't use the child cached values. Hence, we need to
     // compute margins in order to determine the available height before stretching.
-    return gridAreaBreadthForChild - (child.needsLayout() ? computeMarginLogicalHeightForChild(child) : marginLogicalHeightForChild(child));
+    return gridAreaBreadthForChild - (child.needsLayout() ? computeMarginLogicalSizeForChild(BlockDirection, child) : marginLogicalHeightForChild(child));
 }
 
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.

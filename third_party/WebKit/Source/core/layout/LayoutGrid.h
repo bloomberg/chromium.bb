@@ -148,6 +148,7 @@ private:
 
     GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t) const;
 
+    bool updateOverrideContainingBlockContentLogicalWidthForChild(LayoutBox&, GridSizingData&);
     LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&);
     LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
     LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
@@ -169,7 +170,7 @@ private:
     void paintChildren(const PaintInfo&, const LayoutPoint&) const override;
 
     LayoutUnit marginLogicalHeightForChild(const LayoutBox&) const;
-    LayoutUnit computeMarginLogicalHeightForChild(const LayoutBox&) const;
+    LayoutUnit computeMarginLogicalSizeForChild(MarginDirection, const LayoutBox&) const;
     LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox&) const;
     void applyStretchAlignmentToChildIfNeeded(LayoutBox&);
     bool hasAutoMarginsInColumnAxis(const LayoutBox&) const;
