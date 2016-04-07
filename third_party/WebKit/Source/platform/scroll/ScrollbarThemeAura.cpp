@@ -248,7 +248,7 @@ void ScrollbarThemeAura::paintTickmarks(GraphicsContext& context, const Scrollba
 void ScrollbarThemeAura::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
 {
     // Just assume a forward track part. We only paint the track as a single piece when there is no thumb.
-    if (!hasThumb(scrollbar))
+    if (!hasThumb(scrollbar) && !rect.isEmpty())
         paintTrackPiece(context, scrollbar, rect, ForwardTrackPart);
 }
 
