@@ -93,8 +93,11 @@ bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   chrome_exe_command_line.SetProgram(
       chrome_exe.DirName().Append(installer::kChromeExe));
 
-  return base::LaunchProcess(chrome_exe_command_line, base::LaunchOptions())
-      .IsValid();
+  // Set the working directory to the exe's directory. This avoids a handle to
+  // the version directory being kept open in the relaunched child process.
+  base::LaunchOptions launch_options;
+  launch_options.current_directory = chrome_exe.DirName();
+  return base::LaunchProcess(chrome_exe_command_line, launch_options).IsValid();
 }
 
 bool IsUpdatePendingRestart() {
