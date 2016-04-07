@@ -205,6 +205,7 @@ void ClientSessionTest::ConnectClientSession() {
   EXPECT_TRUE(connection_->clipboard_stub());
   EXPECT_TRUE(connection_->input_stub());
 
+  client_session_->CreateVideoStreams(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 }
 

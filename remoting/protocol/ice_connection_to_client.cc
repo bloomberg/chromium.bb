@@ -206,6 +206,7 @@ void IceConnectionToClient::NotifyIfChannelsReady() {
     return;
   }
   event_handler_->OnConnectionChannelsConnected(this);
+  event_handler_->CreateVideoStreams(this);
 }
 
 void IceConnectionToClient::CloseChannels() {

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -74,6 +75,8 @@ class WebrtcConnectionToClient : public ConnectionToClient,
 
   std::unique_ptr<HostControlDispatcher> control_dispatcher_;
   std::unique_ptr<HostEventDispatcher> event_dispatcher_;
+
+  base::WeakPtrFactory<WebrtcConnectionToClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToClient);
 };

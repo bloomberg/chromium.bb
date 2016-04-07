@@ -44,13 +44,16 @@ class InputInjector;
 class MouseShapePump;
 class ScreenControls;
 
+namespace protocol {
+class VideoLayout;
+}  // namespace protocol
+
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
-class ClientSession
-    : public base::NonThreadSafe,
-      public protocol::HostStub,
-      public protocol::ConnectionToClient::EventHandler,
-      public ClientSessionControl {
+class ClientSession : public base::NonThreadSafe,
+                      public protocol::HostStub,
+                      public protocol::ConnectionToClient::EventHandler,
+                      public ClientSessionControl {
  public:
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
@@ -112,6 +115,7 @@ class ClientSession
       protocol::ConnectionToClient* connection) override;
   void OnConnectionAuthenticated(
       protocol::ConnectionToClient* connection) override;
+  void CreateVideoStreams(protocol::ConnectionToClient* connection) override;
   void OnConnectionChannelsConnected(
       protocol::ConnectionToClient* connection) override;
   void OnConnectionClosed(protocol::ConnectionToClient* connection,
@@ -219,12 +223,19 @@ class ClientSession
   std::unique_ptr<HostExtensionSessionManager> extension_manager_;
 
   // Set to true if the client was authenticated successfully.
-  bool is_authenticated_;
+  bool is_authenticated_ = false;
+
+  // Set to true after all data channels have been connected.
+  bool channels_connected_ = false;
 
   // Used to store video channel pause & lossless parameters.
-  bool pause_video_;
-  bool lossless_video_encode_;
-  bool lossless_video_color_;
+  bool pause_video_ = false;
+  bool lossless_video_encode_ = false;
+  bool lossless_video_color_ = false;
+
+  // VideoLayout is sent only after the control channel is connected. Until
+  // then it's stored in |pending_video_layout_message_|.
+  std::unique_ptr<protocol::VideoLayout> pending_video_layout_message_;
 
   // Used to disable callbacks to |this| once DisconnectSession() has been
   // called.

@@ -41,6 +41,10 @@ class ConnectionToClient {
     // Called when the network connection is authenticated.
     virtual void OnConnectionAuthenticated(ConnectionToClient* connection) = 0;
 
+    // Called to request creation of video streams. May be called before or
+    // after OnConnectionChannelsConnected().
+    virtual void CreateVideoStreams(ConnectionToClient* connection) = 0;
+
     // Called when the network connection is authenticated and all
     // channels are connected.
     virtual void OnConnectionChannelsConnected(

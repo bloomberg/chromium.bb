@@ -42,7 +42,8 @@ WebrtcConnectionToClient::WebrtcConnectionToClient(
                  this),
       session_(std::move(session)),
       control_dispatcher_(new HostControlDispatcher()),
-      event_dispatcher_(new HostEventDispatcher()) {
+      event_dispatcher_(new HostEventDispatcher()),
+      weak_factory_(this) {
   session_->SetEventHandler(this);
   session_->SetTransport(&transport_);
 }
@@ -81,7 +82,6 @@ std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     return nullptr;
   }
   return std::move(stream);
-
 }
 
 AudioStub* WebrtcConnectionToClient::audio_stub() {
@@ -122,12 +122,22 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
     case Session::ACCEPTED:
       // Don't care about these events.
       break;
+
     case Session::AUTHENTICATING:
       event_handler_->OnConnectionAuthenticating(this);
       break;
-    case Session::AUTHENTICATED:
+
+    case Session::AUTHENTICATED: {
+      base::WeakPtr<WebrtcConnectionToClient> self = weak_factory_.GetWeakPtr();
       event_handler_->OnConnectionAuthenticated(this);
+
+      // OnConnectionAuthenticated() call above may result in the connection
+      // being torn down.
+      if (self)
+        event_handler_->CreateVideoStreams(this);
       break;
+    }
+
     case Session::CLOSED:
     case Session::FAILED:
       control_dispatcher_.reset();

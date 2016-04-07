@@ -80,9 +80,6 @@ ClientSession::ClientSession(
       max_duration_(max_duration),
       audio_task_runner_(audio_task_runner),
       pairing_registry_(pairing_registry),
-      is_authenticated_(false),
-      pause_video_(false),
-      lossless_video_encode_(false),
       // Note that |lossless_video_color_| defaults to true, but actually only
       // controls VP9 video stream color quality.
       lossless_video_color_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -198,8 +195,6 @@ void ClientSession::SetCapabilities(
 
   VLOG(1) << "Client capabilities: " << *client_capabilities_;
 
-  // Calculate the set of capabilities enabled by both client and host and
-  // pass it to the desktop environment if it is available.
   desktop_environment_->SetCapabilities(capabilities_);
 }
 
@@ -296,10 +291,33 @@ void ClientSession::OnConnectionAuthenticated(
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
 }
 
+void ClientSession::CreateVideoStreams(
+    protocol::ConnectionToClient* connection) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(connection_.get(), connection);
+
+  // Create a VideoStream to pump frames from the capturer to the client.
+  video_stream_ = connection_->StartVideoStream(
+      desktop_environment_->CreateVideoCapturer());
+
+  video_stream_->SetSizeCallback(
+      base::Bind(&ClientSession::OnScreenSizeChanged, base::Unretained(this)));
+
+  // Apply video-control parameters to the new stream.
+  video_stream_->SetLosslessEncode(lossless_video_encode_);
+  video_stream_->SetLosslessColor(lossless_video_color_);
+
+  // Pause capturing if necessary.
+  video_stream_->Pause(pause_video_);
+}
+
 void ClientSession::OnConnectionChannelsConnected(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+
+  DCHECK(!channels_connected_);
+  channels_connected_ = true;
 
   // Negotiate capabilities with the client.
   VLOG(1) << "Host capabilities: " << host_capabilities_;
@@ -316,20 +334,6 @@ void ClientSession::OnConnectionChannelsConnected(
       new MouseShapePump(desktop_environment_->CreateMouseCursorMonitor(),
                          connection_->client_stub()));
 
-  // Create a VideoStream to pump frames from the capturer to the client.
-  video_stream_ = connection_->StartVideoStream(
-      desktop_environment_->CreateVideoCapturer());
-
-  video_stream_->SetSizeCallback(
-      base::Bind(&ClientSession::OnScreenSizeChanged, base::Unretained(this)));
-
-  // Apply video-control parameters to the new stream.
-  video_stream_->SetLosslessEncode(lossless_video_encode_);
-  video_stream_->SetLosslessColor(lossless_video_color_);
-
-  // Pause capturing if necessary.
-  video_stream_->Pause(pause_video_);
-
   // Create an AudioPump if audio is enabled, to pump audio samples.
   if (connection_->session()->config().is_audio_enabled()) {
     std::unique_ptr<AudioEncoder> audio_encoder =
@@ -337,6 +341,11 @@ void ClientSession::OnConnectionChannelsConnected(
     audio_pump_.reset(new AudioPump(
         audio_task_runner_, desktop_environment_->CreateAudioCapturer(),
         std::move(audio_encoder), connection_->audio_stub()));
+  }
+
+  if (pending_video_layout_message_) {
+    connection_->client_stub()->SetVideoLayout(*pending_video_layout_message_);
+    pending_video_layout_message_.reset();
   }
 
   // Notify the event handler that all our channels are now connected.
@@ -449,7 +458,15 @@ void ClientSession::OnScreenSizeChanged(const webrtc::DesktopSize& size,
     video_track->set_height(size.height() * kDefaultDpi / dpi.y());
     video_track->set_x_dpi(dpi.x());
     video_track->set_y_dpi(dpi.y());
-    connection_->client_stub()->SetVideoLayout(layout);
+
+    // VideoLayout can be sent only after the control channel is connected.
+    // TODO(sergeyu): Change client_stub() implementation to allow queuing while
+    // connection is being established.
+    if (channels_connected_) {
+      connection_->client_stub()->SetVideoLayout(layout);
+    } else {
+      pending_video_layout_message_.reset(new protocol::VideoLayout(layout));
+    }
   }
 }
 
