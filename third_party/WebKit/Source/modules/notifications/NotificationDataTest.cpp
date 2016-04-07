@@ -33,9 +33,12 @@ const bool kNotificationRenotify = true;
 const bool kNotificationSilent = false;
 const bool kNotificationRequireInteraction = true;
 
+const WebNotificationAction::Type kWebNotificationActionType = WebNotificationAction::Text;
+const char kNotificationActionType[] = "text";
 const char kNotificationActionAction[] = "my_action";
 const char kNotificationActionTitle[] = "My Action";
 const char kNotificationActionIcon[] = "https://example.com/action_icon.png";
+const char kNotificationActionPlaceholder[] = "Placeholder...";
 
 const unsigned kNotificationVibrationUnnormalized[] = { 10, 1000000, 50, 42 };
 const int kNotificationVibrationNormalized[] = { 10, 10000, 50 };
@@ -65,9 +68,11 @@ TEST_F(NotificationDataTest, ReflectProperties)
     HeapVector<NotificationAction> actions;
     for (size_t i = 0; i < Notification::maxActions(); ++i) {
         NotificationAction action;
+        action.setType(kNotificationActionType);
         action.setAction(kNotificationActionAction);
         action.setTitle(kNotificationActionTitle);
         action.setIcon(kNotificationActionIcon);
+        action.setPlaceholder(kNotificationActionPlaceholder);
 
         actions.append(action);
     }
@@ -111,8 +116,10 @@ TEST_F(NotificationDataTest, ReflectProperties)
     EXPECT_EQ(kNotificationRequireInteraction, notificationData.requireInteraction);
     EXPECT_EQ(actions.size(), notificationData.actions.size());
     for (const auto& action : notificationData.actions) {
+        EXPECT_EQ(kWebNotificationActionType, action.type);
         EXPECT_EQ(kNotificationActionAction, action.action);
         EXPECT_EQ(kNotificationActionTitle, action.title);
+        EXPECT_EQ(kNotificationActionPlaceholder, action.placeholder);
     }
 }
 
@@ -134,6 +141,24 @@ TEST_F(NotificationDataTest, SilentNotificationWithVibration)
     ASSERT_TRUE(exceptionState.hadException());
 
     EXPECT_EQ("Silent notifications must not specify vibration patterns.", exceptionState.message());
+}
+
+TEST_F(NotificationDataTest, ActionTypeButtonWithPlaceholder)
+{
+    HeapVector<NotificationAction> actions;
+    NotificationAction action;
+    action.setType("button");
+    action.setPlaceholder("I'm afraid I can't do that...");
+    actions.append(action);
+
+    NotificationOptions options;
+    options.setActions(actions);
+
+    TrackExceptionState exceptionState;
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
+    ASSERT_TRUE(exceptionState.hadException());
+
+    EXPECT_EQ("Notifications of type \"button\" cannot specify a placeholder.", exceptionState.message());
 }
 
 TEST_F(NotificationDataTest, RenotifyWithEmptyTag)

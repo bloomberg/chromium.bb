@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -21,6 +22,8 @@ namespace content {
 const int64_t kNotificationId = 42;
 const int64_t kServiceWorkerRegistrationId = 9001;
 
+const PlatformNotificationActionType kNotificationActionType =
+    PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
 const char kOrigin[] = "https://example.com/";
 const char kNotificationTitle[] = "My Notification";
 const char kNotificationLang[] = "nl";
@@ -58,9 +61,12 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.data = developer_data;
   for (size_t i = 0; i < kPlatformNotificationMaxActions; i++) {
     PlatformNotificationAction notification_action;
+    notification_action.type = kNotificationActionType;
     notification_action.action = base::SizeTToString(i);
     notification_action.title = base::SizeTToString16(i);
     notification_action.icon = GURL(kNotificationActionIconUrl);
+    notification_action.placeholder =
+        base::NullableString16(base::SizeTToString16(i), false);
     notification_data.actions.push_back(notification_action);
   }
 
@@ -114,12 +120,44 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   ASSERT_EQ(notification_data.actions.size(),
             copied_notification_data.actions.size());
   for (size_t i = 0; i < notification_data.actions.size(); ++i) {
+    EXPECT_EQ(notification_data.actions[i].type,
+              copied_notification_data.actions[i].type);
     EXPECT_EQ(notification_data.actions[i].action,
               copied_notification_data.actions[i].action);
     EXPECT_EQ(notification_data.actions[i].title,
               copied_notification_data.actions[i].title);
     EXPECT_EQ(notification_data.actions[i].icon,
               copied_notification_data.actions[i].icon);
+    EXPECT_EQ(notification_data.actions[i].placeholder,
+              copied_notification_data.actions[i].placeholder);
+    EXPECT_FALSE(copied_notification_data.actions[i].placeholder.is_null());
+  }
+}
+
+TEST(NotificationDatabaseDataTest, SerializeAndDeserializeActionTypes) {
+  PlatformNotificationActionType action_types[] = {
+      PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON,
+      PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT};
+
+  for (PlatformNotificationActionType action_type : action_types) {
+    PlatformNotificationData notification_data;
+
+    PlatformNotificationAction action;
+    action.type = action_type;
+    notification_data.actions.push_back(action);
+
+    NotificationDatabaseData database_data;
+    database_data.notification_data = notification_data;
+
+    std::string serialized_data;
+    ASSERT_TRUE(
+        SerializeNotificationDatabaseData(database_data, &serialized_data));
+
+    NotificationDatabaseData copied_data;
+    ASSERT_TRUE(
+        DeserializeNotificationDatabaseData(serialized_data, &copied_data));
+
+    EXPECT_EQ(action_type, copied_data.notification_data.actions[0].type);
   }
 }
 
@@ -146,6 +184,28 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
 
     EXPECT_EQ(directions[i], copied_data.notification_data.direction);
   }
+}
+
+TEST(NotificationDatabaseDataTest, SerializeAndDeserializeNullPlaceholder) {
+  PlatformNotificationAction action;
+  action.type = kNotificationActionType;
+  action.placeholder = base::NullableString16();  // null string.
+
+  PlatformNotificationData notification_data;
+  notification_data.actions.push_back(action);
+
+  NotificationDatabaseData database_data;
+  database_data.notification_data = notification_data;
+
+  std::string serialized_data;
+  ASSERT_TRUE(
+      SerializeNotificationDatabaseData(database_data, &serialized_data));
+
+  NotificationDatabaseData copied_data;
+  ASSERT_TRUE(
+      DeserializeNotificationDatabaseData(serialized_data, &copied_data));
+
+  EXPECT_TRUE(copied_data.notification_data.actions[0].placeholder.is_null());
 }
 
 }  // namespace content

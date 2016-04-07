@@ -30,6 +30,7 @@ const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
 const char kAction1Name[] = "btn1";
 const char kAction1Title[] = "Button 1";
 const char kAction1IconUrl[] = "https://example.com/action_icon_1.png";
+const char kAction1Placeholder[] = "Run into the... friendliness pellets.";
 const char kAction2Name[] = "btn2";
 const char kAction2Title[] = "Button 2";
 const char kAction2IconUrl[] = "https://example.com/action_icon_2.png";
@@ -54,12 +55,17 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
 
   web_data.actions =
       blink::WebVector<blink::WebNotificationAction>(static_cast<size_t>(2));
+  web_data.actions[0].type = blink::WebNotificationAction::Button;
   web_data.actions[0].action = blink::WebString::fromUTF8(kAction1Name);
   web_data.actions[0].title = blink::WebString::fromUTF8(kAction1Title);
   web_data.actions[0].icon = blink::WebURL(GURL(kAction1IconUrl));
+  web_data.actions[0].placeholder =
+      blink::WebString::fromUTF8(kAction1Placeholder);
+  web_data.actions[1].type = blink::WebNotificationAction::Text;
   web_data.actions[1].action = blink::WebString::fromUTF8(kAction2Name);
   web_data.actions[1].title = blink::WebString::fromUTF8(kAction2Title);
   web_data.actions[1].icon = blink::WebURL(GURL(kAction2IconUrl));
+  web_data.actions[1].placeholder = blink::WebString();
 
   PlatformNotificationData platform_data = ToPlatformNotificationData(web_data);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationTitle), platform_data.title);
@@ -82,12 +88,20 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   for (size_t i = 0; i < web_data.data.size(); ++i)
     EXPECT_EQ(web_data.data[i], platform_data.data[i]);
   ASSERT_EQ(web_data.actions.size(), platform_data.actions.size());
+  EXPECT_EQ(PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON,
+            platform_data.actions[0].type);
   EXPECT_EQ(kAction1Name, platform_data.actions[0].action);
   EXPECT_EQ(base::ASCIIToUTF16(kAction1Title), platform_data.actions[0].title);
   EXPECT_EQ(kAction1IconUrl, platform_data.actions[0].icon.spec());
+  EXPECT_EQ(base::ASCIIToUTF16(kAction1Placeholder),
+            platform_data.actions[0].placeholder.string());
+  EXPECT_FALSE(platform_data.actions[0].placeholder.is_null());
+  EXPECT_EQ(PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT,
+            platform_data.actions[1].type);
   EXPECT_EQ(kAction2Name, platform_data.actions[1].action);
   EXPECT_EQ(base::ASCIIToUTF16(kAction2Title), platform_data.actions[1].title);
   EXPECT_EQ(kAction2IconUrl, platform_data.actions[1].icon.spec());
+  EXPECT_TRUE(platform_data.actions[1].placeholder.is_null());
 }
 
 TEST(NotificationDataConversionsTest, ToWebNotificationData) {
@@ -113,12 +127,17 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.require_interaction = true;
   platform_data.data = developer_data;
   platform_data.actions.resize(2);
+  platform_data.actions[0].type = PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
   platform_data.actions[0].action = kAction1Name;
   platform_data.actions[0].title = base::ASCIIToUTF16(kAction1Title);
   platform_data.actions[0].icon = GURL(kAction1IconUrl);
+  platform_data.actions[0].placeholder =
+      base::NullableString16(base::ASCIIToUTF16(kAction1Placeholder), false);
+  platform_data.actions[1].type = PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
   platform_data.actions[1].action = kAction2Name;
   platform_data.actions[1].title = base::ASCIIToUTF16(kAction2Title);
   platform_data.actions[1].icon = GURL(kAction2IconUrl);
+  platform_data.actions[1].placeholder = base::NullableString16();
 
   blink::WebNotificationData web_data = ToWebNotificationData(platform_data);
   EXPECT_EQ(kNotificationTitle, web_data.title);
@@ -144,12 +163,16 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
     EXPECT_EQ(developer_data[i], web_data.data[i]);
 
   ASSERT_EQ(platform_data.actions.size(), web_data.actions.size());
+  EXPECT_EQ(blink::WebNotificationAction::Button, web_data.actions[0].type);
   EXPECT_EQ(kAction1Name, web_data.actions[0].action);
   EXPECT_EQ(kAction1Title, web_data.actions[0].title);
   EXPECT_EQ(kAction1IconUrl, web_data.actions[0].icon.string());
+  EXPECT_EQ(kAction1Placeholder, web_data.actions[0].placeholder);
+  EXPECT_EQ(blink::WebNotificationAction::Text, web_data.actions[1].type);
   EXPECT_EQ(kAction2Name, web_data.actions[1].action);
   EXPECT_EQ(kAction2Title, web_data.actions[1].title);
   EXPECT_EQ(kAction2IconUrl, web_data.actions[1].icon.string());
+  EXPECT_TRUE(web_data.actions[1].placeholder.isNull());
 }
 
 TEST(NotificationDataConversionsTest, NotificationDataDirectionality) {

@@ -116,6 +116,20 @@
                 });
             }, 'Providing non-empty `actions` for a non-persistent notification should throw a TypeError.');
 
+            // Notification actions should only support the placeholder attribute if they are type text.
+            assert_throws(new TypeError(), function() {
+                new Notification("My Notification", {
+                    actions: [{ action: "foo", title: "Foo", placeholder: "I'm sorry, Dave." }]
+                });
+            }, 'Providing a placeholder for an action that is not type text should throw a TypeError.');
+
+            // Notification actions should not accept invalid types.
+            assert_throws(new TypeError(), function() {
+                new Notification("My Notification", {
+                    actions: [{ type: "blah", action: "foo", title: "Foo" }]
+                });
+            }, 'Providing an invalid type for an action should throw a TypeError.');
+
       }, 'Checks the properties exposed on the Notification object.');
     </script>
   </body>

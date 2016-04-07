@@ -302,9 +302,20 @@ HeapVector<NotificationAction> Notification::actions() const
     actions.grow(m_data.actions.size());
 
     for (size_t i = 0; i < m_data.actions.size(); ++i) {
+        switch (m_data.actions[i].type) {
+        case WebNotificationAction::Button:
+            actions[i].setType("button");
+            break;
+        case WebNotificationAction::Text:
+            actions[i].setType("text");
+            break;
+        default:
+            NOTREACHED() << "Unknown action type: " << m_data.actions[i].type;
+        }
         actions[i].setAction(m_data.actions[i].action);
         actions[i].setTitle(m_data.actions[i].title);
         actions[i].setIcon(m_data.actions[i].icon.string());
+        actions[i].setPlaceholder(m_data.actions[i].placeholder);
     }
 
     return actions;

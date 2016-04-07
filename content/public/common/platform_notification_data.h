@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -17,10 +18,19 @@
 
 namespace content {
 
-// A notification action (button); corresponds to Blink WebNotificationAction.
+enum CONTENT_EXPORT PlatformNotificationActionType {
+  PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON = 0,
+  PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT,
+};
+
+// A notification action (button or text input); corresponds to Blink
+// WebNotificationAction.
 struct CONTENT_EXPORT PlatformNotificationAction {
   PlatformNotificationAction();
   ~PlatformNotificationAction();
+
+  // Type of the action (button or text input).
+  PlatformNotificationActionType type;
 
   // Action name that the author can use to distinguish them.
   std::string action;
@@ -30,6 +40,10 @@ struct CONTENT_EXPORT PlatformNotificationAction {
 
   // URL of the icon for the button. May be empty if no url was specified.
   GURL icon;
+
+  // Optional text to use as placeholder for text inputs. May be null if it was
+  // not specified.
+  base::NullableString16 placeholder;
 };
 
 // Structure representing the information associated with a Web Notification.

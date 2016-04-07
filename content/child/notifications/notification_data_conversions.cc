@@ -51,11 +51,24 @@ PlatformNotificationData ToPlatformNotificationData(
   platform_data.data.assign(web_data.data.begin(), web_data.data.end());
   platform_data.actions.resize(web_data.actions.size());
   for (size_t i = 0; i < web_data.actions.size(); ++i) {
+    switch (web_data.actions[i].type) {
+      case blink::WebNotificationAction::Button:
+        platform_data.actions[i].type =
+            PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+        break;
+      case blink::WebNotificationAction::Text:
+        platform_data.actions[i].type = PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+        break;
+      default:
+        NOTREACHED() << "Unknown notification action type: "
+                     << web_data.actions[i].type;
+    }
     platform_data.actions[i].action =
         base::UTF16ToUTF8(base::StringPiece16(web_data.actions[i].action));
     platform_data.actions[i].title = web_data.actions[i].title;
     platform_data.actions[i].icon =
         blink::WebStringToGURL(web_data.actions[i].icon.string());
+    platform_data.actions[i].placeholder = web_data.actions[i].placeholder;
   }
 
   return platform_data;
@@ -93,10 +106,22 @@ WebNotificationData ToWebNotificationData(
       platform_data.actions.size());
   web_data.actions.swap(resized);
   for (size_t i = 0; i < platform_data.actions.size(); ++i) {
+    switch (platform_data.actions[i].type) {
+      case PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
+        web_data.actions[i].type = blink::WebNotificationAction::Button;
+        break;
+      case PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
+        web_data.actions[i].type = blink::WebNotificationAction::Text;
+        break;
+      default:
+        NOTREACHED() << "Unknown platform data type: "
+                     << platform_data.actions[i].type;
+    }
     web_data.actions[i].action =
         blink::WebString::fromUTF8(platform_data.actions[i].action);
     web_data.actions[i].title = platform_data.actions[i].title;
     web_data.actions[i].icon = blink::WebURL(platform_data.actions[i].icon);
+    web_data.actions[i].placeholder = platform_data.actions[i].placeholder;
   }
 
   return web_data;

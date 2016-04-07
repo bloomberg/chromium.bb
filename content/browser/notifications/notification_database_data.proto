@@ -20,11 +20,19 @@ message NotificationDatabaseDataProto {
 
   // A notification action, corresponds to content::PlatformNotificationAction.
   //
-  // Next tag: 4
+  // Next tag: 6
   message NotificationAction {
+    // Corresponds to PlatformNotificationActionType.
+    enum Type {
+      BUTTON = 0;
+      TEXT = 1;
+    }
+
     optional string action = 1;
     optional string title = 2;
     optional string icon = 3;
+    optional Type type = 4;
+    optional string placeholder = 5;
   }
 
   // Actual data payload of the notification. This message is the protocol

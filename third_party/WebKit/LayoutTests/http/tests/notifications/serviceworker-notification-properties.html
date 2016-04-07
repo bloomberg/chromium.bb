@@ -54,9 +54,11 @@
           // Deliberately add more actions than are supported.
           for (var i = 0; i < 2 * Notification.maxActions; i++) {
               options.actions.push({
+                  type: i % 2 == 0 ? 'button' : 'text',
                   action: 'a' + i,
                   title: 'Action ' + i,
-                  icon: 'https://example/action_icon_' + i + '.png'
+                  icon: 'https://example/action_icon_' + i + '.png',
+                  placeholder: i % 2 == 0 ? null : 'Type a reply...'
               });
           }
 

@@ -93,6 +93,20 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
         webAction.action = action.action();
         webAction.title = action.title();
 
+        if (action.type() == "button")
+            webAction.type = WebNotificationAction::Button;
+        else if (action.type() == "text")
+            webAction.type = WebNotificationAction::Text;
+        else
+            NOTREACHED() << "Unknown action type: " << action.type();
+
+        if (action.hasPlaceholder() && webAction.type == WebNotificationAction::Button) {
+            exceptionState.throwTypeError("Notifications of type \"button\" cannot specify a placeholder.");
+            return WebNotificationData();
+        }
+
+        webAction.placeholder = action.placeholder();
+
         if (action.hasIcon() && !action.icon().isEmpty())
             webAction.icon = completeURL(executionContext, action.icon());
 
