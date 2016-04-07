@@ -32,10 +32,12 @@
   // its tip.
   BOOL dropArrowShown_;
   NSPoint dropArrowPosition_;
+  BOOL inATabDraggingOverlayWindow_;
 }
 
 @property(assign, nonatomic) BOOL dropArrowShown;
 @property(assign, nonatomic) NSPoint dropArrowPosition;
+@property(assign, nonatomic) BOOL inATabDraggingOverlayWindow;
 
 // Name starts with "get" because methods staring with "new" return retained
 // objects according to Cocoa's create rule.

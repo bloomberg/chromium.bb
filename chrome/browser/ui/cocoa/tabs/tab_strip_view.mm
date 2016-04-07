@@ -30,6 +30,7 @@
 
 @synthesize dropArrowShown = dropArrowShown_;
 @synthesize dropArrowPosition = dropArrowPosition_;
+@synthesize inATabDraggingOverlayWindow = inATabDraggingOverlayWindow_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
@@ -118,11 +119,15 @@
   BOOL supportsVibrancy = [self visualEffectView] != nil;
   BOOL isMainWindow = [[self window] isMainWindow];
 
-  if (themeProvider && !hasCustomThemeImage && isModeMaterial) {
+  // If in Material Design mode, decrease the tabstrip background's translucency
+  // by overlaying it with a partially-transparent gray (but only if not themed,
+  // and not being used to drag tabs between browser windows). The gray is
+  // somewhat opaque for Incognito mode, very opaque for non-Incognito mode, and
+  // completely opaque when the window is not active.
+  if (themeProvider && !hasCustomThemeImage && isModeMaterial &&
+      !inATabDraggingOverlayWindow_) {
     NSColor* theColor = nil;
     if (isMainWindow) {
-      // The vibrancy overlay makes the Incognito NSVisualEffectView
-      // somewhat darker, and the non-Incognito NSVisualEffectView much darker.
       if (supportsVibrancy &&
           !themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
         theColor = themeProvider->GetNSColor(
@@ -131,7 +136,6 @@
         theColor = themeProvider->GetNSColor(ThemeProperties::COLOR_FRAME);
       }
     } else {
-      // Inactive MD windows always draw a solid color.
       theColor = themeProvider->GetNSColor(
           ThemeProperties::COLOR_FRAME_INACTIVE);
     }

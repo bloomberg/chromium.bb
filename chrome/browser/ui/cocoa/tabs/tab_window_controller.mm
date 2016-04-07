@@ -178,6 +178,7 @@
     // content view (rather than using setContentView:) because the overlay
     // window has a different content size (due to it being borderless).
     [[overlayWindow_ contentView] addSubview:[self tabStripView]];
+    [[self tabStripView] setInATabDraggingOverlayWindow:YES];
     [[overlayWindow_ contentView] addSubview:originalContentView_];
 
     [overlayWindow_ orderFront:nil];
@@ -193,6 +194,7 @@
                           relativeTo:nil];
     originalContentView_.frame = [[window contentView] bounds];
     [[window contentView] addSubview:[self tabStripView]];
+    [[self tabStripView] setInATabDraggingOverlayWindow:NO];
     [[window contentView] updateTrackingAreas];
 
     [focusBeforeOverlay_ restoreFocusInWindow:window];
