@@ -395,11 +395,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
-crbug.com/591793 [ Mac ] fast/forms/textarea/basic-textareas-quirks.html [ NeedsRebaseline ]
-crbug.com/591793 [ Mac ] fast/forms/textarea/basic-textareas.html [ NeedsRebaseline ]
-crbug.com/591793 [ Mac ] fast/loader/text-document-wrapping.html [ NeedsRebaseline ]
-crbug.com/591793 [ Mac10.10 Mac10.11 Retina Win ] fast/text/midword-break-after-breakable-char.html [ NeedsRebaseline ]
-
 # Rebaseline didn't fix this. It's flaking between two different failures due to rounding error.
 # It consistently fails on debug builds and sometiems on release+asserts builds.
 # But consistently passes on release builds.
