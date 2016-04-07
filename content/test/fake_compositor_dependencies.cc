@@ -53,7 +53,7 @@ bool FakeCompositorDependencies::IsGpuMemoryBufferCompositorResourcesEnabled() {
 }
 
 bool FakeCompositorDependencies::IsElasticOverscrollEnabled() {
-  return false;
+  return true;
 }
 std::vector<unsigned> FakeCompositorDependencies::GetImageTextureTargets() {
   return std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,

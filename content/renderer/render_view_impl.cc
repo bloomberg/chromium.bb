@@ -1486,12 +1486,6 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
     blink::WebView* web_view,
     CompositorDependencies* compositor_deps) {
   ApplyWebPreferences(prefs, web_view);
-#if defined(OS_MACOSX)
-  DCHECK(compositor_deps);
-  bool is_elastic_overscroll_enabled =
-      compositor_deps->IsElasticOverscrollEnabled();
-  web_view->settings()->setReportWheelOverscroll(is_elastic_overscroll_enabled);
-#endif
 }
 
 void RenderViewImpl::OnForceRedraw(int id) {

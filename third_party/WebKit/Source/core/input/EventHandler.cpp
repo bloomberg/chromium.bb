@@ -1906,7 +1906,7 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     if (consumed)
         wheelEvent->setDefaultHandled();
 
-    if (m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
+    if (m_frame->isMainFrame())
         handleOverscroll(result);
 }
 

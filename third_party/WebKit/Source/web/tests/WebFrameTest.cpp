@@ -8339,14 +8339,6 @@ TEST_P(WebFrameOverscrollTest, ReportingLatestOverscrollForElasticOverscroll)
     webViewHelper.initializeAndLoad(m_baseURL + "overscroll/overscroll.html", true, 0, &client, configureAndroid);
     webViewHelper.resize(WebSize(200, 200));
 
-    // On disabling ReportWheelOverscroll, overscroll is not reported on MouseWheel.
-    webViewHelper.webView()->settings()->setReportWheelOverscroll(false);
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollByWheel(&webViewHelper, 10, 10, 1000, 1000);
-    Mock::VerifyAndClearExpectations(&client);
-
-    // On enabling ReportWheelOverscroll, overscroll is reported on MouseWheel.
-    webViewHelper.webView()->settings()->setReportWheelOverscroll(true);
     EXPECT_CALL(client, didOverscroll(WebFloatSize(-1000, -1000), WebFloatSize(-1000, -1000), WebFloatPoint(), WebFloatSize()));
     ScrollByWheel(&webViewHelper, 10, 10, 1000, 1000);
     Mock::VerifyAndClearExpectations(&client);

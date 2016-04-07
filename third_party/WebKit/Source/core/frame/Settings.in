@@ -363,8 +363,6 @@ textTrackMarginPercentage type=double, initial=0
 
 lowPriorityIframes initial=false
 
-reportWheelOverscroll initial=false
-
 mainResourceOnlyProgress initial=false
 
 # Do we want to try to save screen real estate in the media player by hiding
