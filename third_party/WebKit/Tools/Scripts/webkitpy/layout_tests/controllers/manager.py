@@ -84,8 +84,6 @@ class Manager(object):
         self.INSPECTOR_SUBDIR = 'inspector' + port.TEST_PATH_SEPARATOR
         self.PERF_SUBDIR = 'perf'
         self.WEBSOCKET_SUBDIR = 'websocket' + port.TEST_PATH_SEPARATOR
-        self.VIRTUAL_HTTP_SUBDIR = port.TEST_PATH_SEPARATOR.join([
-            'virtual', 'stable', 'http'])
         self.LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
         self.ARCHIVED_RESULTS_LIMIT = 25
         self._http_server_started = False
@@ -225,7 +223,7 @@ class Manager(object):
         return (
             test.startswith(self.HTTP_SUBDIR) or
             self._is_websocket_test(test) or
-            self.VIRTUAL_HTTP_SUBDIR in test
+            self._port.TEST_PATH_SEPARATOR + self.HTTP_SUBDIR in test
         )
 
     def _is_inspector_test(self, test):
