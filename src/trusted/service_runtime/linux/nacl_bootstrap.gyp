@@ -76,6 +76,8 @@
         '-stdlib=libc++',
         # ld_bfd.py cannot link LTO objects.
         '-flto',
+        # This feature requires LTO.
+        '-fwhole-program-vtables',
       ],
       'cflags/': [
         # ld_bfd.py that is used to link nacl_bootstrap_raw doesn't recognize
