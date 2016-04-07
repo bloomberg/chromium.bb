@@ -75,3 +75,116 @@ building for x86 or MIPS devices, change `target_arch` to "ia32" or
  **NOTE:** If you are using the `GYP_DEFINES` environment variable, it
 will override any settings in this file. Either clear it or set it to
 the values above before running `gclient runhooks`.
+
+ See
+[build/android/developer\_recommended\_flags.gypi](https://code.google.com/p/chromium/codesearch#chromium/src/build/android/developer_recommended_flags.gypi&sq=package:chromium&type=cs&q=file:android/developer_recommended_flags.gypi&l=1)
+for other recommended GYP settings.
+ Once chromium.gyp_env is ready, you need to run the following command
+to update projects from gyp files. You may need to run this again when
+you have added new files, updated gyp files, or sync'ed your
+repository.
+
+```shell
+gclient runhooks
+```
+
+#### This will download more things and prompt you to accept Terms of Service for Android SDK packages.
+
+## Configure GN (recommended)
+
+If you are using GN, create a build directory and set the build flags
+with:
+
+```shell
+gn args out/Default
+```
+
+ You can replace out/Default with another name you choose inside the out
+directory. Do not use GYP's out/Debug or out/Release directories, as
+they may conflict with GYP builds.
+
+Also be aware that some scripts (e.g. tombstones.py, adb_gdb.py)
+require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
+
+This command will bring up your editor with the GN build args. In this
+file add:
+
+```
+target_os = "android"
+target_cpu = "arm"  # (default)
+is_debug = true  # (default)
+
+# Other args you may want to set:
+is_component_build = true
+is_clang = true
+symbol_level = 1  # Faster build with fewer symbols. -g1 rather than -g2
+enable_incremental_javac = true  # Much faster; experimental
+symbol_level = 1 # Faster build with fewer symbols. -g1 rather than -g2
+enable_incremental_javac = true # Much faster; experimental
+```
+
+You can also specify `target_cpu` values of "x86" and "mipsel". Re-run
+gn args on that directory to edit the flags in the future. See the [GN
+build
+configuration](https://www.chromium.org/developers/gn-build-configuration)
+page for other flags you may want to set.
+
+### Install build dependencies
+
+Update the system packages required to build by running:
+
+```shell
+./build/install-build-deps-android.sh
+```
+
+Make also sure that OpenJDK 1.7 is selected as default:
+
+`sudo update-alternatives --config javac`
+`sudo update-alternatives --config java`
+`sudo update-alternatives --config javaws`
+`sudo update-alternatives --config javap`
+`sudo update-alternatives --config jar`
+`sudo update-alternatives --config jarsigner`
+
+### Synchronize sub-directories.
+
+```shell
+gclient sync
+```
+
+## Build and install the APKs
+
+If the `adb_install_apk.py` script below fails, make sure aapt is in
+your PATH. If not, add aapt's path to your PATH environment variable (it
+should be
+`/path/to/src/third_party/android_tools/sdk/build-tools/{latest_version}/`).
+
+Prepare the environment:
+
+```shell
+. build/android/envsetup.sh
+```
+
+### Plug in your Android device
+
+Make sure your Android device is plugged in via USB, and USB Debugging
+is enabled.
+
+To enable USB Debugging:
+
+*   Navigate to Settings \> About Phone \> Build number
+*   Click 'Build number' 7 times
+*   Now navigate back to Settings \> Developer Options
+*   Enable 'USB Debugging' and follow the prompts
+
+You may also be prompted to allow access to your PC once your device is
+plugged in.
+
+You can check if the device is connected by running:
+
+```shell
+third_party/android_tools/sdk/platform-tools/adb devices
+```
+
+Which prints a list of connected devices. If not connected, try
+unplugging and reattaching your device.
