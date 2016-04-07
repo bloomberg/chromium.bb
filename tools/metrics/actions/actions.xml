@@ -8074,6 +8074,30 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileComeToForeground">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    Chrome has come to the foreground.  Only emitted if the foreground content
+    is an Activity that views web content, e.g., not settings.  This will be
+    emitted everytime the Activity goes from entirely hidden to at least
+    partially visible.  Partially visible means that at least some portion of
+    the Activity is visible, but the Activity is not interactable, e.g. being
+    covered by the share dialog, javascript alert dialogs, the voice input
+    dialog, etc.
+
+    Please note, this has the potential to be called many times for a given
+    session.  For further details, see the Android activity concept of onPause
+    and onResume for a better understanding of what circumstances can trigger
+    this.
+
+    Session tracking is based on the same visibility concept, but a session can
+    span multiple live Android Activities, while this metric will be logged when
+    each applicable Activity goes to the foreground (per above).  Since session
+    tracking uses onPause and onResume, this metric is also tied to that to
+    ensure we capture the event.
+  </description>
+</action>
+
 <action name="MobileContextMenuCopyImageLinkAddress">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8236,6 +8260,30 @@ should be able to be added at any place in this file.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
   <obsolete>Deprecated as of 5/2015</obsolete>
+</action>
+
+<action name="MobileGoToBackground">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    Chrome has gone to the background.  Only emitted if the previously
+    foregrounded content was an Activity that views web content, e.g., not
+    settings.  Chrome may be partially visible at this point, but is not
+    directly in the foreground/interactable.  Partially visible means that at
+    least some portion of the Activity is visible, but the Activity is not
+    interactable, e.g. being covered by the share dialog, javascript alert
+    dialogs, the voice input dialog, etc.
+
+    Please note, this has the potential to be called many times for a given
+    session.  For further details, see the Android activity concept of onPause
+    and onResume for a better understanding of what circumstances can trigger
+    this.
+
+    Session tracking is based on the same visibility concept, but a session can
+    span multiple live Android Activities, while this metric will be logged when
+    each applicable Activity goes to the background (per above).  Since session
+    tracking uses onPause and onResume, this metric is also tied to that to
+    ensure we capture the event.
+  </description>
 </action>
 
 <action name="MobileMWSession">

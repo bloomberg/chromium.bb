@@ -632,6 +632,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onResumeWithNative() {
         super.onResumeWithNative();
         markSessionResume();
+        RecordUserAction.record("MobileComeToForeground");
 
         if (getActivityTab() != null) {
             LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
@@ -641,6 +642,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onPauseWithNative() {
+        RecordUserAction.record("MobileGoToBackground");
         markSessionEnd();
         super.onPauseWithNative();
     }
