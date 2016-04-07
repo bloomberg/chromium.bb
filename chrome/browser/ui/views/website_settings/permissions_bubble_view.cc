@@ -32,8 +32,6 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -48,9 +46,6 @@ namespace {
 
 // Spacing between major items should be 9px.
 const int kItemMajorSpacing = 9;
-
-// Button border size, draws inside the spacing distance.
-const int kButtonBorderSize = 2;
 
 // (Square) pixel size of icon.
 const int kIconSize = 18;
@@ -147,32 +142,33 @@ void PermissionCombobox::PermissionChanged(
 
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the permissions bubble.
-class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
-                                      public views::ButtonListener,
-                                      public PermissionCombobox::Listener {
+class PermissionsBubbleDialogDelegateView
+    : public views::BubbleDialogDelegateView,
+      public PermissionCombobox::Listener {
  public:
-  PermissionsBubbleDelegateView(
+  PermissionsBubbleDialogDelegateView(
       views::View* anchor_view,
       views::BubbleBorder::Arrow anchor_arrow,
       PermissionBubbleViewViews* owner,
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state);
-  ~PermissionsBubbleDelegateView() override;
+  ~PermissionsBubbleDialogDelegateView() override;
 
-  void Close();
+  void CloseBubble();
   void SizeToContents();
 
-  // BubbleDelegateView:
+  // BubbleDialogDelegateView:
   bool ShouldShowCloseButton() const override;
-  bool ShouldShowWindowTitle() const override;
   const gfx::FontList& GetTitleFontList() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
   gfx::Size GetPreferredSize() const override;
   void GetAccessibleState(ui::AXViewState* state) override;
-
-  // ButtonListener:
-  void ButtonPressed(views::Button* button, const ui::Event& event) override;
+  bool Cancel() override;
+  bool Accept() override;
+  bool Close() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // PermissionCombobox::Listener:
   void PermissionSelectionChanged(int index, bool allowed) override;
@@ -184,28 +180,25 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
 
  private:
   PermissionBubbleViewViews* owner_;
-  views::Button* allow_;
-  views::Button* deny_;
+  bool multiple_requests_;
   base::string16 display_origin_;
   scoped_ptr<PermissionMenuModel> menu_button_model_;
   std::vector<PermissionCombobox*> customize_comboboxes_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDelegateView);
+  DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDialogDelegateView);
 };
 
-PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
+PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow anchor_arrow,
     PermissionBubbleViewViews* owner,
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state)
-    : views::BubbleDelegateView(anchor_view, anchor_arrow),
+    : views::BubbleDialogDelegateView(anchor_view, anchor_arrow),
       owner_(owner),
-      allow_(nullptr),
-      deny_(nullptr) {
+      multiple_requests_(requests.size() > 1) {
   DCHECK(!requests.empty());
 
-  set_close_on_esc(true);
   set_close_on_deactivate(false);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
@@ -263,115 +256,100 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
 
     AddChildView(row);
   }
-
-  views::View* button_row = new views::View();
-  views::GridLayout* button_layout = new views::GridLayout(button_row);
-  views::ColumnSet* columns = button_layout->AddColumnSet(0);
-  button_row->SetLayoutManager(button_layout);
-  AddChildView(button_row);
-
-  // For multiple permissions: just an "OK" button.
-  if (requests.size() > 1) {
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                       100, views::GridLayout::USE_PREF, 0, 0);
-    button_layout->StartRowWithPadding(0, 0, 0, 4);
-    views::LabelButton* ok_button =
-        new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_OK));
-    ok_button->SetStyle(views::Button::STYLE_BUTTON);
-    button_layout->AddView(ok_button);
-    allow_ = ok_button;
-    return;
-  }
-
-  // For a single permission: lay out the Deny/Allow buttons.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                     100, views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kItemMajorSpacing - (2*kButtonBorderSize));
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                     0, views::GridLayout::USE_PREF, 0, 0);
-  button_layout->StartRow(0, 0);
-
-  base::string16 allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-  views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
-  allow_button->SetStyle(views::Button::STYLE_BUTTON);
-  button_layout->AddView(allow_button);
-  allow_ = allow_button;
-
-  base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
-  views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
-  deny_button->SetStyle(views::Button::STYLE_BUTTON);
-  button_layout->AddView(deny_button);
-  deny_ = deny_button;
 }
 
-PermissionsBubbleDelegateView::~PermissionsBubbleDelegateView() {
+PermissionsBubbleDialogDelegateView::~PermissionsBubbleDialogDelegateView() {
   if (owner_)
     owner_->Closing();
 }
 
-void PermissionsBubbleDelegateView::Close() {
+void PermissionsBubbleDialogDelegateView::CloseBubble() {
   owner_ = nullptr;
   GetWidget()->Close();
 }
 
-bool PermissionsBubbleDelegateView::ShouldShowCloseButton() const {
+bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {
   return true;
 }
 
-bool PermissionsBubbleDelegateView::ShouldShowWindowTitle() const {
-  return true;
-}
-
-const gfx::FontList& PermissionsBubbleDelegateView::GetTitleFontList() const {
+const gfx::FontList& PermissionsBubbleDialogDelegateView::GetTitleFontList()
+    const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetFontList(ui::ResourceBundle::BaseFont);
 }
 
-base::string16 PermissionsBubbleDelegateView::GetWindowTitle() const {
+base::string16 PermissionsBubbleDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                     display_origin_);
 }
 
-void PermissionsBubbleDelegateView::SizeToContents() {
-  BubbleDelegateView::SizeToContents();
+void PermissionsBubbleDialogDelegateView::SizeToContents() {
+  BubbleDialogDelegateView::SizeToContents();
 }
 
-void PermissionsBubbleDelegateView::OnWidgetDestroying(views::Widget* widget) {
-  views::BubbleDelegateView::OnWidgetDestroying(widget);
+void PermissionsBubbleDialogDelegateView::OnWidgetDestroying(
+    views::Widget* widget) {
+  views::BubbleDialogDelegateView::OnWidgetDestroying(widget);
   if (owner_) {
     owner_->Closing();
     owner_ = nullptr;
   }
 }
 
-gfx::Size PermissionsBubbleDelegateView::GetPreferredSize() const {
+gfx::Size PermissionsBubbleDialogDelegateView::GetPreferredSize() const {
   // TODO(estade): bubbles should default to this width.
   const int kWidth = 320 - GetInsets().width();
   return gfx::Size(kWidth, GetHeightForWidth(kWidth));
 }
 
-void PermissionsBubbleDelegateView::GetAccessibleState(ui::AXViewState* state) {
-  views::BubbleDelegateView::GetAccessibleState(state);
+void PermissionsBubbleDialogDelegateView::GetAccessibleState(
+    ui::AXViewState* state) {
+  views::BubbleDialogDelegateView::GetAccessibleState(state);
   state->role = ui::AX_ROLE_ALERT_DIALOG;
 }
 
-void PermissionsBubbleDelegateView::ButtonPressed(views::Button* button,
-                                                  const ui::Event& event) {
-  if (!owner_)
-    return;
-
-  if (button == allow_)
-    owner_->Accept();
-  else if (button == deny_)
-    owner_->Deny();
+int PermissionsBubbleDialogDelegateView::GetDialogButtons() const {
+  int buttons = ui::DIALOG_BUTTON_OK;
+  if (!multiple_requests_)
+    buttons |= ui::DIALOG_BUTTON_CANCEL;
+  return buttons;
 }
 
-void PermissionsBubbleDelegateView::PermissionSelectionChanged(
-    int index, bool allowed) {
+base::string16 PermissionsBubbleDialogDelegateView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+
+  // The text differs based on whether OK is the only visible button.
+  return l10n_util::GetStringUTF16(GetDialogButtons() == ui::DIALOG_BUTTON_OK
+                                       ? IDS_OK
+                                       : IDS_PERMISSION_ALLOW);
+}
+
+bool PermissionsBubbleDialogDelegateView::Cancel() {
+  if (owner_)
+    owner_->Deny();
+  return true;
+}
+
+bool PermissionsBubbleDialogDelegateView::Accept() {
+  if (owner_)
+    owner_->Accept();
+  return true;
+}
+
+bool PermissionsBubbleDialogDelegateView::Close() {
+  // Neither explicit accept nor explicit deny.
+  return true;
+}
+
+void PermissionsBubbleDialogDelegateView::PermissionSelectionChanged(
+    int index,
+    bool allowed) {
   owner_->Toggle(index, allowed);
 }
 
-void PermissionsBubbleDelegateView::UpdateAnchor(
+void PermissionsBubbleDialogDelegateView::UpdateAnchor(
     views::View* anchor_view,
     views::BubbleBorder::Arrow anchor_arrow) {
   if (GetAnchorView() == anchor_view && arrow() == anchor_arrow)
@@ -381,7 +359,7 @@ void PermissionsBubbleDelegateView::UpdateAnchor(
 
   // Update the border in the bubble: will either add or remove the arrow.
   views::BubbleFrameView* frame =
-      views::BubbleDelegateView::GetBubbleFrameView();
+      views::BubbleDialogDelegateView::GetBubbleFrameView();
   views::BubbleBorder::Arrow adjusted_arrow = anchor_arrow;
   if (base::i18n::IsRTL())
     adjusted_arrow = views::BubbleBorder::horizontal_mirror(adjusted_arrow);
@@ -437,18 +415,17 @@ void PermissionBubbleViewViews::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& values) {
   if (bubble_delegate_)
-    bubble_delegate_->Close();
+    bubble_delegate_->CloseBubble();
 
-  bubble_delegate_ =
-      new PermissionsBubbleDelegateView(GetAnchorView(), GetAnchorArrow(), this,
-          requests, values);
+  bubble_delegate_ = new PermissionsBubbleDialogDelegateView(
+      GetAnchorView(), GetAnchorArrow(), this, requests, values);
 
   // Set |parent_window| because some valid anchors can become hidden.
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
       browser_->window()->GetNativeWindow());
   bubble_delegate_->set_parent_window(widget->GetNativeView());
 
-  views::BubbleDelegateView::CreateBubble(bubble_delegate_)->Show();
+  views::BubbleDialogDelegateView::CreateBubble(bubble_delegate_)->Show();
   bubble_delegate_->SizeToContents();
 }
 
@@ -458,7 +435,7 @@ bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {
 
 void PermissionBubbleViewViews::Hide() {
   if (bubble_delegate_) {
-    bubble_delegate_->Close();
+    bubble_delegate_->CloseBubble();
     bubble_delegate_ = nullptr;
   }
 }

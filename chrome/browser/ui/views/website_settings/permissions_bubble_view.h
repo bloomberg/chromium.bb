@@ -17,7 +17,7 @@ class View;
 }
 
 class Browser;
-class PermissionsBubbleDelegateView;
+class PermissionsBubbleDialogDelegateView;
 
 class PermissionBubbleViewViews : public PermissionBubbleView {
  public:
@@ -45,7 +45,7 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
 
   Browser* browser_;
   Delegate* delegate_;
-  PermissionsBubbleDelegateView* bubble_delegate_;
+  PermissionsBubbleDialogDelegateView* bubble_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleViewViews);
 };
