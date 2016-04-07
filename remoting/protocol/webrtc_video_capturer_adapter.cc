@@ -226,7 +226,7 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
 
   cricket::WebRtcVideoFrame video_frame(
       yuv_frame_, (base::TimeTicks::Now() - base::TimeTicks()) /
-                      base::TimeDelta::FromMicroseconds(1),
+                      base::TimeDelta::FromMicroseconds(1) * 1000,
       webrtc::kVideoRotation_0);
 
   OnFrame(this, &video_frame);
