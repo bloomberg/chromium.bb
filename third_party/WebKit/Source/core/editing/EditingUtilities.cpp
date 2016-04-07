@@ -42,6 +42,8 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/HTMLInterchange.h"
 #include "core/editing/state_machines/BackspaceStateMachine.h"
+#include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
+#include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
@@ -555,7 +557,7 @@ int findNextBoundaryOffset(const String& str, int current)
         if (state != TextSegmentationMachineState::NeedMoreCodeUnit)
             break;
     }
-    if (state == TextSegmentationMachineState::NeedMoreCodeUnit)
+    if (current == 0 || state == TextSegmentationMachineState::NeedMoreCodeUnit)
         state = machine.tellEndOfPrecedingText();
     if (state == TextSegmentationMachineState::Finished)
         return current + machine.finalizeAndGetBoundaryOffset();
@@ -571,16 +573,15 @@ int findNextBoundaryOffset(const String& str, int current)
 
 int previousGraphemeBoundaryOf(const Node* node, int current)
 {
-    if (!node->isTextNode())
+    // TODO(yosin): Need to support grapheme crossing |Node| boundary.
+    DCHECK_GE(current, 0);
+    if (current <= 1 || !node->isTextNode())
         return current - 1;
     const String& text = toText(node)->data();
-    if (text.is8Bit())
-        return current - 1; // TODO(nona): Good to support CR x LF.
-    TextBreakIterator* iterator = cursorMovementIterator(text.characters16(), text.length());
-    if (!iterator)
+    // TODO(yosin): Replace with DCHECK for out-of-range request.
+    if (static_cast<unsigned>(current) > text.length())
         return current - 1;
-    const int result = iterator->preceding(current);
-    return result == TextBreakDone ? current - 1 : result;
+    return findNextBoundaryOffset<BackwardGraphemeBoundaryStateMachine>(text, current);
 }
 
 static int previousBackwardDeletionOffsetOf(const Node* node, int current)
@@ -598,16 +599,15 @@ static int previousBackwardDeletionOffsetOf(const Node* node, int current)
 
 int nextGraphemeBoundaryOf(const Node* node, int current)
 {
+    // TODO(yosin): Need to support grapheme crossing |Node| boundary.
     if (!node->isTextNode())
         return current + 1;
     const String& text = toText(node)->data();
-    if (text.is8Bit())
-        return current + 1; // TODO(nona): Good to support CR x LF.
-    TextBreakIterator* iterator = cursorMovementIterator(text.characters16(), text.length());
-    if (!iterator)
+    const int length = text.length();
+    DCHECK_LE(current, length);
+    if (current >= length - 1)
         return current + 1;
-    const int result = iterator->following(current);
-    return result == TextBreakDone ? current + 1 : result;
+    return findNextBoundaryOffset<ForwardGraphemeBoundaryStateMachine>(text, current);
 }
 
 template <typename Strategy>

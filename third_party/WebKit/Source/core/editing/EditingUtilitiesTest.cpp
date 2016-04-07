@@ -156,8 +156,8 @@ TEST_F(EditingUtilitiesTest, NextNodeIndex)
     Node* host = document().getElementById("host");
     Node* two = document().getElementById("two");
 
-    EXPECT_EQ(Position(host, 3), nextPositionOf(Position(two, 2), PositionMoveType::CodeUnit));
-    EXPECT_EQ(PositionInFlatTree(host, 1), nextPositionOf(PositionInFlatTree(two, 2), PositionMoveType::CodeUnit));
+    EXPECT_EQ(Position(host, 3), nextPositionOf(Position(two, 2), PositionMoveType::CodePoint));
+    EXPECT_EQ(PositionInFlatTree(host, 1), nextPositionOf(PositionInFlatTree(two, 2), PositionMoveType::CodePoint));
 }
 
 TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate)
@@ -261,12 +261,10 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     setBodyContent("<p id='target'>a&#x0D;&#x0A;b</p>");
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(3, previousGraphemeBoundaryOf(node, 4));
-    // TODO(nona) : Enable following expectation.
-    // EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 3));
+    EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 3));
     EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
-    // TODO(nona) : Enable following expectation.
-    // EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 1));
+    EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 3));
 
     // GB4,GB5: Break before and after CR/LF/Control.
@@ -396,12 +394,11 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(16, previousGraphemeBoundaryOf(node, 17));
     EXPECT_EQ(12, previousGraphemeBoundaryOf(node, 16));
-    // TODO(nona): Enable following expectations.
-    // EXPECT_EQ(8, previousGraphemeBoundaryOf(node, 12));
-    // EXPECT_EQ(4, previousGraphemeBoundaryOf(node, 8));
-    // EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 4));
-    // EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 0));
-    // EXPECT_EQ(8, nextGraphemeBoundaryOf(node, 4));
+    EXPECT_EQ(8, previousGraphemeBoundaryOf(node, 12));
+    EXPECT_EQ(4, previousGraphemeBoundaryOf(node, 8));
+    EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 4));
+    EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 0));
+    EXPECT_EQ(8, nextGraphemeBoundaryOf(node, 4));
     EXPECT_EQ(12, nextGraphemeBoundaryOf(node, 8));
     EXPECT_EQ(16, nextGraphemeBoundaryOf(node, 12));
     EXPECT_EQ(17, nextGraphemeBoundaryOf(node, 16));
@@ -411,15 +408,13 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(17, previousGraphemeBoundaryOf(node, 18));
     EXPECT_EQ(13, previousGraphemeBoundaryOf(node, 17));
-    // TODO(nona): Enable following expectations.
-    // EXPECT_EQ(9, previousGraphemeBoundaryOf(node, 13));
-    // EXPECT_EQ(5, previousGraphemeBoundaryOf(node, 9));
+    EXPECT_EQ(9, previousGraphemeBoundaryOf(node, 13));
+    EXPECT_EQ(5, previousGraphemeBoundaryOf(node, 9));
     EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 5));
     EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
-    // TODO(nona): Enable following expectations.
-    // EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
-    // EXPECT_EQ(9, nextGraphemeBoundaryOf(node, 5));
+    EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
+    EXPECT_EQ(9, nextGraphemeBoundaryOf(node, 5));
     EXPECT_EQ(13, nextGraphemeBoundaryOf(node, 9));
     EXPECT_EQ(17, nextGraphemeBoundaryOf(node, 13));
     EXPECT_EQ(18, nextGraphemeBoundaryOf(node, 17));
@@ -428,18 +423,16 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     setBodyContent("<p id='target'>a" + flag + flag + flag + flag + "&#x1F1F8;b</p>"); // RI ÷ RI
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(19, previousGraphemeBoundaryOf(node, 20));
-    // TODO(nona): Enable following expectations.
-    // EXPECT_EQ(17, previousGraphemeBoundaryOf(node, 19));
-    // EXPECT_EQ(13, previousGraphemeBoundaryOf(node, 17));
-    // EXPECT_EQ(9, previousGraphemeBoundaryOf(node, 13));
-    // EXPECT_EQ(5, previousGraphemeBoundaryOf(node, 9));
+    EXPECT_EQ(17, previousGraphemeBoundaryOf(node, 19));
+    EXPECT_EQ(13, previousGraphemeBoundaryOf(node, 17));
+    EXPECT_EQ(9, previousGraphemeBoundaryOf(node, 13));
+    EXPECT_EQ(5, previousGraphemeBoundaryOf(node, 9));
     EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 5));
     EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
-    // TODO(nona): Enable following expectations.
-    // EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
-    // EXPECT_EQ(9, nextGraphemeBoundaryOf(node, 5));
-    // EXPECT_EQ(13, nextGraphemeBoundaryOf(node, 9));
+    EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
+    EXPECT_EQ(9, nextGraphemeBoundaryOf(node, 5));
+    EXPECT_EQ(13, nextGraphemeBoundaryOf(node, 9));
     EXPECT_EQ(17, nextGraphemeBoundaryOf(node, 13));
     EXPECT_EQ(19, nextGraphemeBoundaryOf(node, 17));
     EXPECT_EQ(20, nextGraphemeBoundaryOf(node, 19));
@@ -469,9 +462,12 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     EXPECT_EQ(2, nextGraphemeBoundaryOf(node, 0));
     EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 2));
 
-    // GB9b: Do not break after Prepend but Blink breaks after Prepend char to address Bug 24342.
-    // U+0600(ARABIC NUMBER SIGN) has Prepend property.
-    setBodyContent("<p id='target'>a&#x0600;b</p>"); // Prepend x
+    // GB9b: Do not break after Prepend.
+    // TODO(nona): Introduce Prepend test case once ICU grabs Unicode 9.0.
+
+    // For https://bugs.webkit.org/show_bug.cgi?id=24342
+    // The break should happens after Thai character.
+    setBodyContent("<p id='target'>a&#x0E40;b</p>");
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(2, previousGraphemeBoundaryOf(node, 3));
     EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 2));
@@ -490,7 +486,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 3));
 
-    // Additional rule for Virama: Do not break after Virama except for Tamil.
+    // Additional rule for IndicSyllabicCategory=Virama: Do not break after that.
     // See http://www.unicode.org/Public/9.0.0/ucd/IndicSyllabicCategory-9.0.0d2.txt
     // U+0905 is DEVANAGARI LETTER A. This has Extend property.
     // U+094D is DEVANAGARI SIGN VIRAMA. This has Virama property.
@@ -503,10 +499,11 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
     EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 4));
-    // U+0B85 is TAMIL LETTER A. This has Extend property.
-    // U+0BCD is TAMIL SIGN VIRAMA. This has Virama property.
-    // U+0B95 is TAMIL LETTER KA.
-    setBodyContent("<p id='target'>a&#x0B85;&#x0BCD;&#x0B95;b</p>");
+    // U+0E01 is THAI CHARACTER KO KAI
+    // U+0E3A is THAI CHARACTER PHINTHU
+    // Should break after U+0E3A since U+0E3A has Virama property but not listed in
+    // IndicSyllabicCategory=Virama.
+    setBodyContent("<p id='target'>a&#x0E01;&#x0E3A;&#x0E01;b</p>");
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(4, previousGraphemeBoundaryOf(node, 5));
     EXPECT_EQ(3, previousGraphemeBoundaryOf(node, 4));
@@ -516,7 +513,6 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 3));
     EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 4));
-    // TODO(nona): Consider to add Sinhala, Balinese, etc.
 
     // GB10: Do not break within emoji modifier.
     // U+1F385(FATHER CHRISTMAS) has E_Base property.
@@ -524,23 +520,19 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     setBodyContent("<p id='target'>a&#x1F385;&#x1F3FB;b</p>"); // E_Base x E_Modifier
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(5, previousGraphemeBoundaryOf(node, 6));
-    // TODO(nona): Enable following expectation.
-    // EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 5));
+    EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 5));
     EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
-    // TODO(nona): Enable following expectation.
-    // EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
+    EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(6, nextGraphemeBoundaryOf(node, 5));
     // U+1F466(BOY) has EBG property.
     setBodyContent("<p id='target'>a&#x1F466;&#x1F3FB;b</p>"); // EBG x E_Modifier
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(5, previousGraphemeBoundaryOf(node, 6));
-    // TODO(nona): Enable following expectation.
-    // EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 5));
+    EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 5));
     EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
-    // TODO(nona): Enable following expectation.
-    // EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
+    EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(6, nextGraphemeBoundaryOf(node, 5));
 
     // GB11: Do not break within ZWJ emoji sequence.
@@ -548,16 +540,14 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     setBodyContent("<p id='target'>a&#x200D;&#x2764;b</p>"); // ZWJ x Glue_After_Zwj
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(3, previousGraphemeBoundaryOf(node, 4));
-    // TODO(nona): Enable following expectation.
-    // EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 3));
-    // EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 0));
+    EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 3));
+    EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 0));
     EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 3));
     setBodyContent("<p id='target'>a&#x200D;&#x1F466;b</p>"); // ZWJ x EBG
     node = document().getElementById("target")->firstChild();
     EXPECT_EQ(4, previousGraphemeBoundaryOf(node, 5));
-    // TODO(nona): Enable following expectation.
-    // EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 4));
-    // EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 0));
+    EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 4));
+    EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 0));
     EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 4));
 
     // GB999: Otherwise break everywhere.
