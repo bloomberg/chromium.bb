@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -376,6 +377,20 @@ const CGFloat kAnimationDuration = 0.2;
   [self setNeedsDisplay];
 }
 
+- (void)updateColorsToMatchTheme {
+  if (![[self window] inIncognitoMode]) {
+    return;
+  }
+
+  // Invert the textfield's colors when Material Design and Incognito and not
+  // a custom theme.
+  bool inDarkMode = [[self window] inIncognitoModeWithSystemTheme];
+  [self setBackgroundColor:
+      inDarkMode ? [NSColor colorWithCalibratedWhite:115 / 255. alpha:1]
+                 : [NSColor whiteColor]];
+  [self setTextColor:OmniboxViewMac::BaseTextColor(inDarkMode)];
+}
+
 - (void)viewDidMoveToWindow {
   if (![self window]) {
     return;
@@ -387,15 +402,8 @@ const CGFloat kAnimationDuration = 0.2;
     BrowserWindowController* browserWindowController =
         [BrowserWindowController browserWindowControllerForView:self];
     [[browserWindowController toolbarController] locationBarWasAddedToWindow];
-  }
 
-  // Invert the textfield's colors when Material Design and Incognito and not
-  // a custom theme.
-  if (ui::MaterialDesignController::IsModeMaterial() &&
-      [[self window] inIncognitoModeWithSystemTheme]) {
-    [self setTextColor:[NSColor whiteColor]];
-    [self setBackgroundColor:
-        [NSColor colorWithCalibratedWhite:115 / 255. alpha:1]];
+    [self updateColorsToMatchTheme];
   }
 
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
@@ -526,6 +534,19 @@ const CGFloat kAnimationDuration = 0.2;
 
 - (ViewID)viewID {
   return VIEW_ID_OMNIBOX;
+}
+
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return;
+  }
+
+  [self updateColorsToMatchTheme];
+}
+
+- (void)windowDidChangeActive {
 }
 
 @end

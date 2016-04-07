@@ -585,18 +585,31 @@ void LocationBarViewMac::UpdateLocationIcon() {
   Layout();
 }
 
-void LocationBarViewMac::OnAddedToWindow() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
+void LocationBarViewMac::UpdateColorsToMatchTheme() {
+  if (!ui::MaterialDesignController::IsModeMaterial() ||
+      ![[field_ window] inIncognitoMode]) {
     return;
   }
 
   // Update the location-bar icon.
   UpdateLocationIcon();
 
-  // Make sure we're displaying the correct star color for a dark location bar.
-  if ([[field_ window] inIncognitoModeWithSystemTheme]) {
-    star_decoration_->SetStarred(star_decoration_->starred(), true);
-  }
+  // Make sure we're displaying the correct star color for Incognito mode. If
+  // the window is in Incognito mode, switching between a theme and no theme
+  // can move the window in and out of dark mode.
+  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
+  star_decoration_->SetStarred(star_decoration_->starred(), inDarkMode);
+
+  // Update the appearance of the text in the Omnibox.
+  omnibox_view_->Update();
+}
+
+void LocationBarViewMac::OnAddedToWindow() {
+  UpdateColorsToMatchTheme();
+}
+
+void LocationBarViewMac::OnThemeChanged() {
+  UpdateColorsToMatchTheme();
 }
 
 void LocationBarViewMac::OnChanged() {

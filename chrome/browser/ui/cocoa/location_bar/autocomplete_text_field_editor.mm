@@ -78,29 +78,40 @@ BOOL ThePasteboardIsTooDamnBig() {
   return self;
 }
 
+- (void)updateColorsToMatchTheme {
+  if (![[self window] inIncognitoMode]) {
+    return;
+  }
+
+  bool inDarkMode = [[self window] inIncognitoModeWithSystemTheme];
+  // Draw a light insertion point for MD Incognito.
+  NSColor* insertionPointColor =
+      inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.75]
+                 : [NSColor blackColor];
+  [self setInsertionPointColor:insertionPointColor];
+
+  NSColor* textSelectionColor = [NSColor selectedTextBackgroundColor];
+  if (inDarkMode) {
+    // In MD Incognito the text is light gray against a dark background. When
+    // selected, the light gray text against the selection color is illegible.
+    // Rather than tweak or change the selection color, make the text black when
+    // selected.
+    [self setSelectedTextAttributes:@{
+      NSForegroundColorAttributeName : [NSColor blackColor],
+      NSBackgroundColorAttributeName : textSelectionColor
+    }];
+  } else {
+    [self setSelectedTextAttributes:@{
+      NSBackgroundColorAttributeName : textSelectionColor
+    }];
+  }
+}
+
 - (void)viewDidMoveToWindow {
   // Only care about landing in a window when in Material Design mode.
-  if (![self window] || !ui::MaterialDesignController::IsModeMaterial()) {
-    return;
+  if ([self window] && ui::MaterialDesignController::IsModeMaterial()) {
+    [self updateColorsToMatchTheme];
   }
-
-  // Only care about Incognito mode with a non-custom theme.
-  if (![[self window] inIncognitoModeWithSystemTheme]) {
-    return;
-  }
-
-  // Draw a light insertion point for MD Incognito.
-  [self setInsertionPointColor:
-      [NSColor colorWithCalibratedWhite:1 alpha:0.75]];
-  // In MD Incognito the text is light gray against a dark background. When
-  // selected, the light gray text against the selection color is illegible.
-  // Rather than tweak or change the selection color, make the text black when
-  // selected.
-  NSColor* textSelectionColor = [NSColor selectedTextBackgroundColor];
-  [self setSelectedTextAttributes:@{
-    NSForegroundColorAttributeName : [NSColor blackColor],
-    NSBackgroundColorAttributeName : textSelectionColor
-  }];
 }
 
 // If the entire field is selected, drag the same data as would be
@@ -590,6 +601,18 @@ BOOL ThePasteboardIsTooDamnBig() {
   AutocompleteTextFieldObserver* observer = [self observer];
   if (observer)
     observer->OnDidDrawRect();
+}
+
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return;
+  }
+  [self updateColorsToMatchTheme];
+}
+
+- (void)windowDidChangeActive {
 }
 
 @end

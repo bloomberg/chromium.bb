@@ -688,6 +688,10 @@ void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads(
 
 void BrowserWindowCocoa::UserChangedTheme() {
   [controller_ userChangedTheme];
+  LocationBarViewMac* locationBar = [controller_ locationBarBridge];
+  if (locationBar) {
+    locationBar->OnThemeChanged();
+  }
 }
 
 void BrowserWindowCocoa::ShowWebsiteSettings(

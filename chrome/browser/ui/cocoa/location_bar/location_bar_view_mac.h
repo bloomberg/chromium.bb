@@ -162,10 +162,18 @@ class LocationBarViewMac : public LocationBar,
   // Set the location bar's icon to the correct image for the current URL.
   void UpdateLocationIcon();
 
+  // Set the location bar's controls to visibly match the current theme.
+  void UpdateColorsToMatchTheme();
+
   // Notify the location bar that it was added to the browser window. Provides
   // an update point for interface objects that need to set their appearance
   // based on the window's theme.
   void OnAddedToWindow();
+
+  // Notify the location bar that the browser window theme has changed. Provides
+  // an update point for interface objects that need to set their appearance
+  // based on the window's theme.
+  void OnThemeChanged();
 
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;

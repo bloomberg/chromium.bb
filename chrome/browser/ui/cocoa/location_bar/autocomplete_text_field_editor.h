@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 @class AutocompleteTextField;
@@ -18,7 +19,8 @@ class AutocompleteTextFieldObserver;
 // pasteboard).
 
 // Field editor used for the autocomplete field.
-@interface AutocompleteTextFieldEditor : NSTextView<URLDropTarget> {
+@interface AutocompleteTextFieldEditor : NSTextView<URLDropTarget,
+                                                    ThemedWindowDrawing> {
   // Handles being a drag-and-drop target. We handle DnD directly instead
   // allowing the |AutocompletTextField| to handle it (by making an empty
   // |-updateDragTypeRegistration|), since the latter results in a weird

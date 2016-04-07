@@ -9,6 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/styled_text_field.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 @class AutocompleteTextFieldCell;
@@ -120,7 +121,8 @@ class AutocompleteTextFieldObserver {
 };
 
 @interface AutocompleteTextField : StyledTextField<NSTextViewDelegate,
-                                                   URLDropTarget> {
+                                                   URLDropTarget,
+                                                   ThemedWindowDrawing> {
  @private
   // Undo manager for this text field.  We use a specific instance rather than
   // the standard undo manager in order to let us clear the undo stack at will.
