@@ -839,7 +839,7 @@ body.check-select #search-box {
 
 #search-box.has-cursor input,
 #search-box.has-text input {
-  width: 218px;
+  width: 202px;
 }
 
 #search-box .clear {
@@ -851,9 +851,9 @@ body.check-select #search-box {
   display: none;
   height: 16px;
   margin: 0;
-  position: absolute;
+  position: relative;
   right: 0;
-  top: 7px;
+  top: 2px;
   visibility: hidden;
   width: 16px;
 }
