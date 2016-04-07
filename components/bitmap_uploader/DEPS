@@ -6,6 +6,5 @@ include_rules = [
   "+mojo/converters/geometry",
   "+mojo/converters/surfaces",
   "+mojo/public",
-  "+mojo/services/network/public/interfaces",
   "+ui/gfx/geometry",
 ]

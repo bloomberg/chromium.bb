@@ -137,11 +137,6 @@ void Catalog::BindCatalog(mojom::CatalogRequest request) {
 ////////////////////////////////////////////////////////////////////////////////
 // Catalog, mojom::Resolver:
 
-void Catalog::ResolveResponse(mojo::URLResponsePtr response,
-                              const ResolveResponseCallback& callback) {
-  // TODO(beng): implement.
-}
-
 void Catalog::ResolveInterfaces(mojo::Array<mojo::String> interfaces,
                                 const ResolveInterfacesCallback& callback) {
   // TODO(beng): implement.

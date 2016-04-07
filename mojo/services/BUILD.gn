@@ -9,7 +9,6 @@ group("services") {
   testonly = true
   deps = [
     "//mojo/services/catalog",
-    "//mojo/services/network",
     "//mojo/services/tracing",
   ]
 }

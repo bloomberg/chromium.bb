@@ -13,12 +13,10 @@ var TEST_APP_URL = 'system:content_mojo_test';
 define('main', [
   'mojo/public/js/core',
   'mojo/public/js/router',
-  'mojo/services/network/public/interfaces/url_loader.mojom',
   'mojo/shell/public/interfaces/connector.mojom',
   'content/public/renderer/frame_service_registry',
   'content/public/test/test_mojo_service.mojom',
-], function (core, router, urlMojom, connectorMojom, serviceRegistry,
-             testMojom) {
+], function (core, router, connectorMojom, serviceRegistry, testMojom) {
 
   var connectToService = function(serviceProvider, iface) {
     var pipe = core.createMessagePipe();

@@ -62,7 +62,6 @@ component("mus") {
     "//mojo/converters/geometry",
     "//mojo/converters/ime",
     "//mojo/converters/input_events",
-    "//mojo/converters/network",
     "//mojo/converters/surfaces",
     "//mojo/platform_handle:for_component",
     "//mojo/public/c/system:for_component",

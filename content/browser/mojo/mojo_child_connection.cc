@@ -17,7 +17,6 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/public/cpp/connector.h"

@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/shell/public/cpp/shell_client.h"

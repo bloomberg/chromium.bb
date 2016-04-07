@@ -51,9 +51,6 @@ class Catalog : public mojom::Resolver,
       std::map<std::string, std::pair<std::string, std::string>>;
 
   // mojom::Resolver:
-  void ResolveResponse(
-      mojo::URLResponsePtr response,
-      const ResolveResponseCallback& callback) override;
   void ResolveInterfaces(mojo::Array<mojo::String> interfaces,
                          const ResolveInterfacesCallback& callback) override;
   void ResolveMIMEType(const mojo::String& mime_type,

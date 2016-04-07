@@ -30,7 +30,6 @@
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"

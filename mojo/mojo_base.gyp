@@ -177,7 +177,6 @@
         '../base/base.gyp:base_i18n',
         'mojo_application_bindings',
         'mojo_public.gyp:mojo_message_pump_lib',
-        'mojo_services.gyp:network_type_converters',
       ],
     },
     {
@@ -187,10 +186,6 @@
       'dependencies': [
         'mojo_application_bindings_mojom',
         'mojo_public.gyp:mojo_cpp_bindings',
-        'mojo_services.gyp:network_service_bindings_lib',
-      ],
-      'export_dependent_settings': [
-        'mojo_services.gyp:network_service_bindings_lib',
       ],
     },
     {

@@ -41,7 +41,6 @@ source_set("cpp") {
 
   public_deps = [
     "../interfaces",
-    "//mojo/services/network/public/interfaces",
   ]
 
   deps = [

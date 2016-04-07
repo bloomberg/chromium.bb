@@ -863,9 +863,6 @@
         "test": "net_unittests"
       },
       {
-        "test": "network_service_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },

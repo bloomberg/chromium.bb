@@ -1,5 +1,0 @@
-{
-  "name": "exe:network_service_unittests",
-  "display_name": "Network Service Unittests",
-  "capabilities": { "*": [ "*" ] }
-}

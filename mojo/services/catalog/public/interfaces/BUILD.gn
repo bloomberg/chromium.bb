@@ -13,7 +13,6 @@ mojom("interfaces") {
   import_dirs = [ "//mojo/services" ]
 
   deps = [
-    "//mojo/services/network/public/interfaces",
     "//mojo/shell/public/interfaces",
   ]
 }

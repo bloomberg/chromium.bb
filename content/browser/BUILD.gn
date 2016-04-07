@@ -67,7 +67,6 @@ source_set("browser") {
     "//mojo/common",
     "//mojo/common:url_type_converters",
     "//mojo/converters/geometry",
-    "//mojo/converters/network",
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
     "//mojo/shell",
