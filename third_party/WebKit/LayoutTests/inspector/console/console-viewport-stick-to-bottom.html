@@ -6,7 +6,7 @@
 function populateConsoleWithMessages(count)
 {
     for (var i = 0; i < count - 1; ++i)
-        console.log("Message #" + i);
+        console.log("Multiline\nMessage #" + i);
     console.log("hello %cworld", "color: blue");
 }
 
@@ -66,11 +66,12 @@ function test()
 
         function testManualScrollDoesNotStickToBottom(next)
         {
+            const manualScrollValue = 3;
             var initialScrollTop = viewport.element.scrollTop;
-            viewport.element.scrollTop = initialScrollTop - 1;
-            viewport.refresh();
+            viewport.element.scrollTop = initialScrollTop - manualScrollValue;
+            viewport._innerRefresh(true);
             var newScrollTop = viewport.element.scrollTop;
-            var isScrollPreserved = initialScrollTop - newScrollTop === 1;
+            var isScrollPreserved = initialScrollTop - newScrollTop === manualScrollValue;
             InspectorTest.addResult("Scroll preserved: " + isScrollPreserved);
             next();
         },
