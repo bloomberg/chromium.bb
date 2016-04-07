@@ -930,8 +930,6 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   draw_property_utils::FindLayersThatNeedUpdates(
       inputs->root_layer, property_trees->transform_tree,
       property_trees->effect_tree, &update_layer_list);
-  draw_property_utils::ComputeVisibleRectsForTesting(
-      property_trees, can_render_to_separate_surface, &update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
