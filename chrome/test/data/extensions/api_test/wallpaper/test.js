@@ -96,8 +96,11 @@ chrome.test.getConfig(function(config) {
                               expectError);
     },
     function newRequestCancelPreviousRequest() {
-      // The first request should be canceled.
-      testSetWallpaperFromURL('test.png',
+      // The first request should be canceled. The wallpaper in the first
+      // request is chosen from one of the high-resolution built-in wallpapers
+      // to make sure the first setWallpaper request hasn't finished yet when
+      // the second request sends out.
+      testSetWallpaperFromURL('test_image_high_resolution.jpg',
                               false,
                               'Set wallpaper was canceled.');
       testSetWallpaperFromURL('test.jpg', true);
