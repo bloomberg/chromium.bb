@@ -90,7 +90,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // Helper to simplify saving frames.
   void AddFrame(scoped_ptr<std::string> encoded_data,
                 uint8_t track_index,
-                base::TimeTicks timestamp,
+                base::TimeDelta timestamp,
                 bool is_key_frame);
 
   // Used to DCHECK that we are called on the correct thread.
@@ -105,7 +105,8 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   uint8_t audio_track_index_;
 
   // Origin of times for frame timestamps.
-  base::TimeTicks first_frame_timestamp_;
+  base::TimeTicks first_frame_timestamp_video_;
+  base::TimeTicks first_frame_timestamp_audio_;
   base::TimeDelta most_recent_timestamp_;
 
   // Variables to measure and accumulate, respectively, the time in pause state.

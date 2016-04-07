@@ -117,8 +117,8 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
     // http://www.matroska.org/technical/specs/index.html#Tracks
     AddVideoTrack(video_frame->visible_rect().size(),
                   GetFrameRate(video_frame));
-    if (first_frame_timestamp_.is_null())
-      first_frame_timestamp_ = timestamp;
+    if (first_frame_timestamp_video_.is_null())
+      first_frame_timestamp_video_ = timestamp;
   }
 
   // TODO(ajose): Support multiple tracks: http://crbug.com/528523
@@ -134,14 +134,15 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
 
   // Dump all saved encoded video frames if any.
   while (!encoded_frames_queue_.empty()) {
-    AddFrame(std::move(encoded_frames_queue_.front()->data), video_track_index_,
-             encoded_frames_queue_.front()->timestamp,
-             encoded_frames_queue_.front()->is_keyframe);
+    AddFrame(
+        std::move(encoded_frames_queue_.front()->data), video_track_index_,
+        encoded_frames_queue_.front()->timestamp - first_frame_timestamp_video_,
+        encoded_frames_queue_.front()->is_keyframe);
     encoded_frames_queue_.pop_front();
   }
 
-  AddFrame(std::move(encoded_data), video_track_index_, timestamp,
-           is_key_frame);
+  AddFrame(std::move(encoded_data), video_track_index_,
+           timestamp - first_frame_timestamp_video_, is_key_frame);
 }
 
 void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
@@ -152,8 +153,8 @@ void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
 
   if (!audio_track_index_) {
     AddAudioTrack(params);
-    if (first_frame_timestamp_.is_null())
-      first_frame_timestamp_ = timestamp;
+    if (first_frame_timestamp_audio_.is_null())
+      first_frame_timestamp_audio_ = timestamp;
   }
 
   // TODO(ajose): Don't drop audio data: http://crbug.com/547948
@@ -165,13 +166,15 @@ void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
 
   // Dump all saved encoded video frames if any.
   while (!encoded_frames_queue_.empty()) {
-    AddFrame(std::move(encoded_frames_queue_.front()->data), video_track_index_,
-             encoded_frames_queue_.front()->timestamp,
-             encoded_frames_queue_.front()->is_keyframe);
+    AddFrame(
+        std::move(encoded_frames_queue_.front()->data), video_track_index_,
+        encoded_frames_queue_.front()->timestamp - first_frame_timestamp_video_,
+        encoded_frames_queue_.front()->is_keyframe);
     encoded_frames_queue_.pop_front();
   }
 
-  AddFrame(std::move(encoded_data), audio_track_index_, timestamp,
+  AddFrame(std::move(encoded_data), audio_track_index_,
+           timestamp - first_frame_timestamp_audio_,
            true /* is_key_frame -- always true for audio */);
 }
 
@@ -280,15 +283,14 @@ void WebmMuxer::ElementStartNotify(mkvmuxer::uint64 element_id,
 
 void WebmMuxer::AddFrame(scoped_ptr<std::string> encoded_data,
                          uint8_t track_index,
-                         base::TimeTicks timestamp,
+                         base::TimeDelta timestamp,
                          bool is_key_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!has_video_ || video_track_index_);
   DCHECK(!has_audio_ || audio_track_index_);
 
   most_recent_timestamp_ =
-      std::max(most_recent_timestamp_,
-               timestamp - total_time_in_pause_ - first_frame_timestamp_);
+      std::max(most_recent_timestamp_, timestamp - total_time_in_pause_);
 
   segment_.AddFrame(reinterpret_cast<const uint8_t*>(encoded_data->data()),
                     encoded_data->size(), track_index,
