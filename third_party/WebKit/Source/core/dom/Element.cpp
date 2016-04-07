@@ -2364,12 +2364,12 @@ void Element::focus(const FocusParams& params)
         return;
 
     if (authorShadowRoot() && authorShadowRoot()->delegatesFocus()) {
-        if (containsIncludingShadowDOM(document().focusedElement()))
+        if (isShadowIncludingInclusiveAncestorOf(document().focusedElement()))
             return;
 
         // Slide the focus to its inner node.
         Element* found = document().page()->focusController().findFocusableElementInShadowHost(*this);
-        if (found && containsIncludingShadowDOM(found)) {
+        if (found && isShadowIncludingInclusiveAncestorOf(found)) {
             found->focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeForward, nullptr));
             return;
         }

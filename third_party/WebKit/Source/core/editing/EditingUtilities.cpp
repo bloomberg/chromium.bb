@@ -1447,25 +1447,25 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
         return;
     switch (position.anchorType()) {
     case PositionAnchorType::BeforeChildren:
-        if (node.containsIncludingShadowDOM(position.computeContainerNode()))
+        if (node.isShadowIncludingInclusiveAncestorOf(position.computeContainerNode()))
             position = positionInParentBeforeNode(node);
         break;
     case PositionAnchorType::AfterChildren:
-        if (node.containsIncludingShadowDOM(position.computeContainerNode()))
+        if (node.isShadowIncludingInclusiveAncestorOf(position.computeContainerNode()))
             position = positionInParentAfterNode(node);
         break;
     case PositionAnchorType::OffsetInAnchor:
         if (position.computeContainerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
             position = Position(position.computeContainerNode(), position.offsetInContainerNode() - 1);
-        else if (node.containsIncludingShadowDOM(position.computeContainerNode()))
+        else if (node.isShadowIncludingInclusiveAncestorOf(position.computeContainerNode()))
             position = positionInParentBeforeNode(node);
         break;
     case PositionAnchorType::AfterAnchor:
-        if (node.containsIncludingShadowDOM(position.anchorNode()))
+        if (node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
             position = positionInParentAfterNode(node);
         break;
     case PositionAnchorType::BeforeAnchor:
-        if (node.containsIncludingShadowDOM(position.anchorNode()))
+        if (node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
             position = positionInParentBeforeNode(node);
         break;
     }

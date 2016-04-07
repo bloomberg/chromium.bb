@@ -66,7 +66,7 @@ inline NodeChildRemovalTracker::~NodeChildRemovalTracker()
 inline bool NodeChildRemovalTracker::isBeingRemoved(Node* node)
 {
     for (NodeChildRemovalTracker* removal = s_last; removal; removal = removal->previous()) {
-        if (removal->node().containsIncludingShadowDOM(node))
+        if (removal->node().isShadowIncludingInclusiveAncestorOf(node))
             return true;
     }
 

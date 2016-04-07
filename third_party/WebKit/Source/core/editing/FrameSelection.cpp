@@ -395,7 +395,7 @@ static bool removingNodeRemovesPosition(Node& node, const Position& position)
         return false;
 
     Element& element = toElement(node);
-    return element.containsIncludingShadowDOM(position.anchorNode());
+    return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
 }
 
 void FrameSelection::nodeWillBeRemoved(Node& node)
@@ -1055,7 +1055,7 @@ bool FrameSelection::shouldBlinkCaret() const
     if (!focusedElement)
         return false;
 
-    return focusedElement->containsIncludingShadowDOM(selection().start().anchorNode());
+    return focusedElement->isShadowIncludingInclusiveAncestorOf(selection().start().anchorNode());
 }
 
 void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)

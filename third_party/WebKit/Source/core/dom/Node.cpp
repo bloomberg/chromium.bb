@@ -616,11 +616,11 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 }
 #endif
 
-inline static Node& rootInComposedTree(const Node& node)
+Node& Node::shadowIncludingRoot() const
 {
-    if (node.inDocument())
-        return node.document();
-    Node* root = const_cast<Node*>(&node);
+    if (inDocument())
+        return document();
+    Node* root = const_cast<Node*>(this);
     while (Node* host = root->shadowHost())
         root = host;
     while (Node* ancestor = root->parentNode())
@@ -632,7 +632,7 @@ inline static Node& rootInComposedTree(const Node& node)
 #if ENABLE(ASSERT)
 bool Node::needsDistributionRecalc() const
 {
-    return rootInComposedTree(*this).childNeedsDistributionRecalc();
+    return shadowIncludingRoot().childNeedsDistributionRecalc();
 }
 #endif
 
@@ -643,7 +643,7 @@ void Node::updateDistribution()
         return;
     TRACE_EVENT0("blink", "Node::updateDistribution");
     ScriptForbiddenScope forbidScript;
-    Node& root = rootInComposedTree(*this);
+    Node& root = shadowIncludingRoot();
     if (root.childNeedsDistributionRecalc())
         root.recalcDistribution();
 }
@@ -816,7 +816,7 @@ bool Node::contains(const Node* node) const
     return this == node || node->isDescendantOf(this);
 }
 
-bool Node::containsIncludingShadowDOM(const Node* node) const
+bool Node::isShadowIncludingInclusiveAncestorOf(const Node* node) const
 {
     if (!node)
         return false;

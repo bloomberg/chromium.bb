@@ -60,7 +60,7 @@ void ChildFrameDisconnector::disconnectCollectedFrameOwners()
         HTMLFrameOwnerElement* owner = m_frameOwners[i].get();
         // Don't need to traverse up the tree for the first owner since no
         // script could have moved it.
-        if (!i || root().containsIncludingShadowDOM(owner))
+        if (!i || root().isShadowIncludingInclusiveAncestorOf(owner))
             owner->disconnectContentFrame();
     }
 }

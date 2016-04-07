@@ -136,7 +136,7 @@ bool HTMLLabelElement::isInteractiveContent() const
 
 bool HTMLLabelElement::isInInteractiveContent(Node* node) const
 {
-    if (!containsIncludingShadowDOM(node))
+    if (!isShadowIncludingInclusiveAncestorOf(node))
         return false;
     while (node && this != node) {
         if (node->isHTMLElement() && toHTMLElement(node)->isInteractiveContent())
@@ -153,7 +153,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
 
         // If we can't find a control or if the control received the click
         // event, then there's no need for us to do anything.
-        if (!element || (evt->target() && element->containsIncludingShadowDOM(evt->target()->toNode())))
+        if (!element || (evt->target() && element->isShadowIncludingInclusiveAncestorOf(evt->target()->toNode())))
             return;
 
         if (evt->target() && isInInteractiveContent(evt->target()->toNode()))

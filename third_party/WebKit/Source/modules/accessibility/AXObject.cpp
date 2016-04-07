@@ -1532,7 +1532,7 @@ int AXObject::lineForPosition(const VisiblePosition& position) const
 
     // If the position is not in the same editable region as this AX object, return -1.
     Node* containerNode = position.deepEquivalent().computeContainerNode();
-    if (!containerNode->containsIncludingShadowDOM(getNode()) && !getNode()->containsIncludingShadowDOM(containerNode))
+    if (!containerNode->isShadowIncludingInclusiveAncestorOf(getNode()) && !getNode()->isShadowIncludingInclusiveAncestorOf(containerNode))
         return -1;
 
     int lineCount = -1;

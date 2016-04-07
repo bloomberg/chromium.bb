@@ -1186,7 +1186,7 @@ void Range::surroundContents(RawPtr<Node> passNewParent, ExceptionState& excepti
         return;
     }
 
-    if (newParent->containsIncludingShadowDOM(m_start.container())) {
+    if (newParent->isShadowIncludingInclusiveAncestorOf(m_start.container())) {
         exceptionState.throwDOMException(HierarchyRequestError, "The node provided contains the insertion point; it may not be inserted into itself.");
         return;
     }

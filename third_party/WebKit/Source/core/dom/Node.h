@@ -214,6 +214,7 @@ public:
     Node* firstChild() const;
     Node* lastChild() const;
     Node& treeRoot() const;
+    Node& shadowIncludingRoot() const;
 
     void remove(ExceptionState& = ASSERT_NO_EXCEPTION);
 
@@ -497,7 +498,7 @@ public:
 
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;
-    bool containsIncludingShadowDOM(const Node*) const;
+    bool isShadowIncludingInclusiveAncestorOf(const Node*) const;
     bool containsIncludingHostElements(const Node&) const;
     Node* commonAncestor(const Node&, ContainerNode* (*parent)(const Node&)) const;
 

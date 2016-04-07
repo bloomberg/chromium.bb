@@ -394,7 +394,7 @@ WebInputEventResult EventHandler::toWebInputEventResult(
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
 {
-    if (nodeToBeRemoved.containsIncludingShadowDOM(m_clickNode.get())) {
+    if (nodeToBeRemoved.isShadowIncludingInclusiveAncestorOf(m_clickNode.get())) {
         // We don't dispatch click events if the mousedown node is removed
         // before a mouseup event. It is compatible with IE and Firefox.
         m_clickNode = nullptr;
@@ -1783,7 +1783,7 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
 {
     if (element.authorShadowRoot() && element.authorShadowRoot()->delegatesFocus()) {
         Document* doc = m_frame->document();
-        if (element.containsIncludingShadowDOM(doc->focusedElement())) {
+        if (element.isShadowIncludingInclusiveAncestorOf(doc->focusedElement())) {
             // If the inner element is already focused, do nothing.
             return true;
         }
@@ -1792,7 +1792,7 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
         Page* page = m_frame->page();
         ASSERT(page);
         Element* found = page->focusController().findFocusableElementInShadowHost(element);
-        if (found && element.containsIncludingShadowDOM(found)) {
+        if (found && element.isShadowIncludingInclusiveAncestorOf(found)) {
             // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
             found->focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeForward, nullptr));
             return true;

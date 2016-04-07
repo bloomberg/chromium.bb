@@ -81,7 +81,7 @@ static bool removingNodeRemovesPosition(Node& node, const Position& position)
         return false;
 
     Element& element = toElement(node);
-    return element.containsIncludingShadowDOM(position.anchorNode());
+    return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
 }
 
 void DragCaretController::nodeWillBeRemoved(Node& node)

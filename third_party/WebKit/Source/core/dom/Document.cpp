@@ -3543,7 +3543,7 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
     // We can't be focused if we're not in the document.
     if (!node->inDocument())
         return;
-    bool contains = node->containsIncludingShadowDOM(m_focusedElement.get());
+    bool contains = node->isShadowIncludingInclusiveAncestorOf(m_focusedElement.get());
     if (contains && (m_focusedElement != node || !amongChildrenOnly))
         clearFocusedElement();
 }
