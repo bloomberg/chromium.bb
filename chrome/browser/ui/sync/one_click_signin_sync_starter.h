@@ -233,6 +233,11 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   std::string dm_token_;
   std::string client_id_;
 
+  // This only cares about the first AccountAddedToCookie event. Since
+  // SigninTracker always expects an observer, this object will just disregard
+  // following AccountAddedToCookie calls triggered by account reconciliation.
+  bool first_account_added_to_cookie_;
+
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarter);

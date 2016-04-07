@@ -90,6 +90,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
       current_url_(current_url),
       continue_url_(continue_url),
       sync_setup_completed_callback_(sync_setup_completed_callback),
+      first_account_added_to_cookie_(false),
       weak_pointer_factory_(this) {
   DCHECK(profile);
   DCHECK(web_contents || continue_url.is_empty());
@@ -458,6 +459,11 @@ void OneClickSigninSyncStarter::SigninSuccess() {
 
 void OneClickSigninSyncStarter::AccountAddedToCookie(
     const GoogleServiceAuthError& error) {
+  if (first_account_added_to_cookie_)
+    return;
+
+  first_account_added_to_cookie_ = true;
+
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
