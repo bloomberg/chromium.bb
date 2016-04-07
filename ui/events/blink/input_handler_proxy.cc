@@ -1110,6 +1110,14 @@ void InputHandlerProxy::SynchronouslySetRootScrollOffset(
   input_handler_->SetSynchronousInputHandlerRootScrollOffset(root_offset);
 }
 
+void InputHandlerProxy::SynchronouslyZoomBy(float magnify_delta,
+                                            const gfx::Point& anchor) {
+  DCHECK(synchronous_input_handler_);
+  input_handler_->PinchGestureBegin();
+  input_handler_->PinchGestureUpdate(magnify_delta, anchor);
+  input_handler_->PinchGestureEnd();
+}
+
 void InputHandlerProxy::HandleOverscroll(
     const gfx::Point& causal_event_viewport_point,
     const cc::InputHandlerScrollResult& scroll_result) {

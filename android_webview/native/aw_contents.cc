@@ -1016,11 +1016,11 @@ void AwContents::SetBackgroundColor(JNIEnv* env,
   render_view_host_ext_->SetBackgroundColor(color);
 }
 
-void AwContents::SynchronizeRendererScroll(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void AwContents::ZoomBy(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jfloat delta) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  browser_view_renderer_.SynchronizeRendererScroll();
+  browser_view_renderer_.ZoomBy(delta);
 }
 
 void AwContents::OnComputeScroll(JNIEnv* env,

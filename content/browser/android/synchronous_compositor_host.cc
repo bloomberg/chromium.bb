@@ -329,23 +329,25 @@ void SynchronousCompositorHost::UpdateStateTask() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
+void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
+                                                    const gfx::Point& anchor) {
+  SyncCompositorCommonBrowserParams common_browser_params;
+  PopulateCommonParams(&common_browser_params);
+  SyncCompositorCommonRendererParams common_renderer_params;
+  if (!sender_->Send(new SyncCompositorMsg_ZoomBy(
+          routing_id_, common_browser_params, zoom_delta, anchor,
+          &common_renderer_params))) {
+    return;
+  }
+  ProcessCommonParams(common_renderer_params);
+}
+
 void SynchronousCompositorHost::SetIsActive(bool is_active) {
   if (is_active_ == is_active)
     return;
   is_active_ = is_active;
   UpdateNeedsBeginFrames();
   SendAsyncCompositorStateIfNeeded();
-}
-
-void SynchronousCompositorHost::SynchronizeWithRenderer() {
-  SyncCompositorCommonBrowserParams common_browser_params;
-  PopulateCommonParams(&common_browser_params);
-  SyncCompositorCommonRendererParams common_renderer_params;
-  if (!sender_->Send(new SyncCompositorMsg_SynchronousUpdateState(
-          routing_id_, common_browser_params, &common_renderer_params))) {
-    return;
-  }
-  ProcessCommonParams(common_renderer_params);
 }
 
 void SynchronousCompositorHost::OnComputeScroll(

@@ -14,6 +14,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
 #ifndef CONTENT_COMMON_ANDROID_SYNC_COMPOSITOR_MESSAGES_H_
@@ -182,11 +183,10 @@ IPC_SYNC_MESSAGE_ROUTED2_3(SyncCompositorMsg_DemandDrawSw,
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_UpdateState,
                     content::SyncCompositorCommonBrowserParams)
 
-// The synchronous version is used to synchronize state from an earlier
-// asynchronous call only. This should be needed rarely so should prefer the
-// asynchronous version above in general.
-IPC_SYNC_MESSAGE_ROUTED1_1(SyncCompositorMsg_SynchronousUpdateState,
+IPC_SYNC_MESSAGE_ROUTED3_1(SyncCompositorMsg_ZoomBy,
                            content::SyncCompositorCommonBrowserParams,
+                           float /* delta */,
+                           gfx::Point /* anchor */,
                            content::SyncCompositorCommonRendererParams)
 
 // -----------------------------------------------------------------------------

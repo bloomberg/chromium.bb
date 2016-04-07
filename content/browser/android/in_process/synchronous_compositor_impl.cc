@@ -241,6 +241,14 @@ void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset(
       root_offset);
 }
 
+void SynchronousCompositorImpl::SynchronouslyZoomBy(float zoom_delta,
+                                                    const gfx::Point& anchor) {
+  DCHECK(CalledOnValidThread());
+  if (!synchronous_input_handler_proxy_)
+    return;
+  synchronous_input_handler_proxy_->SynchronouslyZoomBy(zoom_delta, anchor);
+}
+
 void SynchronousCompositorImpl::SetIsActive(bool is_active) {
   TRACE_EVENT1("cc", "SynchronousCompositorImpl::SetIsActive", "is_active",
                is_active);
@@ -251,10 +259,6 @@ void SynchronousCompositorImpl::SetIsActive(bool is_active) {
   UpdateNeedsBeginFrames();
   if (begin_frame_source_)
     begin_frame_source_->SetBeginFrameSourcePaused(!is_active_);
-}
-
-void SynchronousCompositorImpl::SynchronizeWithRenderer() {
-  // Intentional no-op. Nothing to synchronize.
 }
 
 void SynchronousCompositorImpl::OnComputeScroll(

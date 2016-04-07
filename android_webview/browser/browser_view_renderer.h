@@ -82,7 +82,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   void OnSizeChanged(int width, int height);
   void OnAttachedToWindow(int width, int height);
   void OnDetachedFromWindow();
-  void SynchronizeRendererScroll();
+  void ZoomBy(float delta);
   void OnComputeScroll(base::TimeTicks animation_time);
 
   // Sets the scale for logical<->physical pixel conversions.

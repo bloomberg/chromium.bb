@@ -21,6 +21,7 @@ class CompositorFrameAck;
 }
 
 namespace gfx {
+class Point;
 class ScrollOffset;
 class Transform;
 };
@@ -89,13 +90,15 @@ class CONTENT_EXPORT SynchronousCompositor {
   virtual void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) = 0;
 
+  // Allows embedder to synchronously update the zoom level, ie page scale
+  // factor, around the anchor point.
+  virtual void SynchronouslyZoomBy(float zoom_delta,
+                                   const gfx::Point& anchor) = 0;
+
   // Called by the embedder to notify that the compositor is active. The
   // compositor won't ask for vsyncs when it's inactive. NOTE: The compositor
   // starts off as inactive and needs a SetActive(true) call to begin.
   virtual void SetIsActive(bool is_active) = 0;
-
-  // Synchronize all renderer state to UI thread. This blocks the UI thread.
-  virtual void SynchronizeWithRenderer() = 0;
 
   // Called by the embedder to notify that the OnComputeScroll step is happening
   // and if any input animation is active, it should tick now.

@@ -38,8 +38,9 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override {}
+  void SynchronouslyZoomBy(float zoom_delta,
+                           const gfx::Point& anchor) override {}
   void SetIsActive(bool is_active) override {}
-  void SynchronizeWithRenderer() override {}
   void OnComputeScroll(base::TimeTicks animate_time) override {}
 
   void SetHardwareFrame(uint32_t output_surface_id,

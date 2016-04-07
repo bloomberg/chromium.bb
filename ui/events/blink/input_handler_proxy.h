@@ -80,6 +80,8 @@ class InputHandlerProxy
   void SynchronouslyAnimate(base::TimeTicks time) override;
   void SynchronouslySetRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
+  void SynchronouslyZoomBy(float magnify_delta,
+                           const gfx::Point& anchor) override;
 
   // blink::WebGestureCurveTarget implementation.
   bool scrollBy(const blink::WebFloatSize& offset,

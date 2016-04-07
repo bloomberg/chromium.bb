@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 
 namespace gfx {
+class Point;
 class ScrollOffset;
 class SizeF;
 }
@@ -65,6 +66,12 @@ class SynchronousInputHandlerProxy {
   // from what was sent.
   virtual void SynchronouslySetRootScrollOffset(
       const gfx::ScrollOffset& root_offset) = 0;
+
+  // Similar to SetRootScrollOffset above, to control the zoom level, ie scale
+  // factor. Note |magnify_delta| is an incremental rather than absolute value.
+  // SynchronousInputHandler should be given back the resulting absolute value.
+  virtual void SynchronouslyZoomBy(float magnify_delta,
+                                   const gfx::Point& anchor) = 0;
 };
 
 }  // namespace ui

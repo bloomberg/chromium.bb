@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -404,10 +405,11 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
   UpdateCompositorIsActive();
 }
 
-void BrowserViewRenderer::SynchronizeRendererScroll() {
+void BrowserViewRenderer::ZoomBy(float delta) {
   if (!compositor_)
     return;
-  compositor_->SynchronizeWithRenderer();
+  compositor_->SynchronouslyZoomBy(
+      delta, gfx::Point(size_.width() / 2, size_.height() / 2));
 }
 
 void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
