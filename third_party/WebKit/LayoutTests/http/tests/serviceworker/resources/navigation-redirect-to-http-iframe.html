@@ -32,7 +32,7 @@ navigator.serviceWorker.getRegistration(SCOPE)
 function on_state_change(event) {
   if (event.target.state != 'activated')
     return;
-  with_iframe(SCOPE)
+  with_iframe(SCOPE, {auto_remove: false})
     .then(function(frame) {
         window.parent.postMessage(
             {results: frame.contentDocument.body.textContent},

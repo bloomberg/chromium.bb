@@ -44,14 +44,21 @@ function unreached_rejection(test, prefix) {
 }
 
 // Adds an iframe to the document and returns a promise that resolves to the
-// iframe when it finishes loading. The caller is responsible for removing the
-// iframe later if needed.
-function with_iframe(url) {
+// iframe when it finishes loading. When |options.auto_remove| is set to
+// |false|, the caller is responsible for removing the iframe
+// later. Otherwise, the frame will be removed after all tests are finished.
+function with_iframe(url, options) {
   return new Promise(function(resolve) {
       var frame = document.createElement('iframe');
       frame.src = url;
       frame.onload = function() { resolve(frame); };
       document.body.appendChild(frame);
+      if (typeof options === 'undefined')
+        options = {};
+      if (typeof options.auto_remove === 'undefined')
+        options.auto_remove = true;
+      if (options.auto_remove)
+        add_completion_callback(function() { frame.remove(); });
     });
 }
 
