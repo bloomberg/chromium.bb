@@ -217,10 +217,10 @@ if (!is_win) {
   } else {
     # Aliases for convenience.
     binary_symlink("microdump_stackwalk") {
-      binary_label = ":dump_syms($host_toolchain)"
+      binary_label = ":$target_name($host_toolchain)"
     }
     binary_symlink("minidump_stackwalk") {
-      binary_label = ":dump_syms($host_toolchain)"
+      binary_label = ":$target_name($host_toolchain)"
     }
     binary_symlink("minidump_dump") {
       binary_label = ":$target_name($host_toolchain)"
