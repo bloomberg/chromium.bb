@@ -28,6 +28,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(profile)
   IPC_STRUCT_TRAITS_MEMBER(is_encrypted)
+  IPC_STRUCT_TRAITS_MEMBER(is_deferred_initialization_allowed)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)
 IPC_STRUCT_TRAITS_END()
 

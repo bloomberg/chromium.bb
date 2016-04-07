@@ -82,9 +82,10 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
         static_cast<AndroidVideoDecodeAccelerator*>(accelerator_.get());
     scoped_refptr<gfx::SurfaceTexture> surface_texture =
         gfx::SurfaceTexture::Create(0);
-    accelerator->surface_ = gfx::ScopedJavaSurface(surface_texture.get());
-    accelerator->codec_ = codec;
-    return accelerator->ConfigureMediaCodec();
+    accelerator->codec_config_->surface_ =
+        gfx::ScopedJavaSurface(surface_texture.get());
+    accelerator->codec_config_->codec_ = codec;
+    return accelerator->ConfigureMediaCodecSynchronously();
   }
 
  private:

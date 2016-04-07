@@ -64,7 +64,7 @@ class GpuVideoDecodeAcceleratorHost
 
   // IPC handlers, proxying VideoDecodeAccelerator::Client for the GPU
   // process.  Should not be called directly.
-  void OnCdmAttached(bool success);
+  void OnInitializationComplete(bool success);
   void OnBitstreamBufferProcessed(int32_t bitstream_buffer_id);
   void OnProvidePictureBuffer(uint32_t num_requested_buffers,
                               uint32_t textures_per_buffer,

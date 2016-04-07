@@ -68,6 +68,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
       // Whether the VDA supports being configured with an output surface for
       // it to render frames to. For example, SurfaceViews on Android.
       SUPPORTS_EXTERNAL_OUTPUT_SURFACE = 1 << 1,
+
+      // If set, the VDA will use deferred initialization if the config
+      // indicates that the client supports it as well.  Refer to
+      // NotifyInitializationComplete for more details.
+      SUPPORTS_DEFERRED_INITIALIZATION = 1 << 2,
     };
 
     SupportedProfiles supported_profiles;
@@ -109,6 +114,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // The flag indicating whether the stream is encrypted.
     bool is_encrypted = false;
 
+    // The flag indicating whether the client supports deferred initialization
+    // or not.
+    bool is_deferred_initialization_allowed = false;
+
     // An optional graphics surface that the VDA should render to. For setting
     // an output SurfaceView on Android. It's only valid when not equal to
     // |kNoSurfaceID|.
@@ -123,10 +132,14 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // implements.
   class MEDIA_EXPORT Client {
    public:
-    // SetCdm completion callback to indicate whether the CDM is successfully
-    // attached to the decoder. The default implementation is a no-op since most
-    // VDAs don't support encrypted video.
-    virtual void NotifyCdmAttached(bool success);
+    // Notify the client that deferred initialization has completed successfully
+    // or not.  This is required if and only if deferred initialization is
+    // supported by the VDA (see Capabilities), and it is supported by the
+    // client (see Config::is_deferred_initialization_allowed), and the initial
+    // call to VDA::Initialize returns true.
+    // The default implementation is a NOTREACHED, since deferred initialization
+    // is not supported by default.
+    virtual void NotifyInitializationComplete(bool success);
 
     // Callback to tell client how many and what size of buffers to provide.
     // Note that the actual count provided through AssignPictureBuffers() can be
@@ -165,7 +178,16 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
   // Initializes the video decoder with specific configuration.  Called once per
   // decoder construction.  This call is synchronous and returns true iff
-  // initialization is successful.
+  // initialization is successful, unless deferred initialization is used.
+  //
+  // By default, deferred initialization is not used.  However, if Config::
+  // is_deferred_initialization_allowed is set by the client, and if
+  // Capabilities::Flags::SUPPORTS_DEFERRED_INITIALIZATION is set by the VDA,
+  // and if VDA::Initialize returns true, then the client can expect a call to
+  // NotifyInitializationComplete with the actual success / failure of
+  // initialization.  Note that a return value of false from VDA::Initialize
+  // indicates that initialization definitely failed, and no callback is needed.
+  // TODO(liberato): should we say that encrypted video requires deferred?
   //
   // For encrpyted video, the decoder needs a CDM to be able to decode encrypted
   // buffers. SetCdm() should be called after Initialize() to set such a CDM.

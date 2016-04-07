@@ -42,7 +42,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     : public media::VideoDecodeAccelerator,
       public AVDAStateProvider {
  public:
-  typedef std::map<int32_t, media::PictureBuffer> OutputBufferMap;
+  using OutputBufferMap = std::map<int32_t, media::PictureBuffer>;
 
   // A BackingStrategy is responsible for making a PictureBuffer's texture
   // contain the image that a MediaCodec decoder buffer tells it to.
@@ -154,12 +154,66 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   enum State {
     NO_ERROR,
     ERROR,
+    // Set when we are asynchronously constructing the codec.  Will transition
+    // to NO_ERROR or ERROR depending on success.
+    WAITING_FOR_CODEC,
+    // Set when we have a codec, but it doesn't yet have a key.
     WAITING_FOR_KEY,
     WAITING_FOR_EOS,
   };
 
+  // Configuration info for MediaCodec.
+  // This is used to shuttle configuration info between threads without needing
+  // to worry about the lifetime of the AVDA instance.  All of these should not
+  // be modified while |state_| is WAITING_FOR_CODEC.
+  class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
+   public:
+    CodecConfig();
+
+    // Codec type. Used when we configure media codec.
+    media::VideoCodec codec_ = media::kUnknownVideoCodec;
+
+    // Whether encryption scheme requires to use protected surface.
+    bool needs_protected_surface_ = false;
+
+    // The surface that MediaCodec is configured to output to. It's created by
+    // the backing strategy.
+    gfx::ScopedJavaSurface surface_;
+
+    // The MediaCrypto object is used in the MediaCodec.configure() in case of
+    // an encrypted stream.
+    media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
+
+   protected:
+    friend class base::RefCountedThreadSafe<CodecConfig>;
+    virtual ~CodecConfig();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(CodecConfig);
+  };
+
   // Configures |media_codec_| with the given codec parameters from the client.
-  bool ConfigureMediaCodec();
+  // This configuration will (probably) not be complete before this call
+  // returns.  Multiple calls before completion will be ignored.  |state_|
+  // must be NO_ERROR or WAITING_FOR_CODEC.  Note that, once you call this,
+  // you should be careful to avoid modifying members of |codec_config_| until
+  // |state_| is no longer WAITING_FOR_CODEC.
+  void ConfigureMediaCodecAsynchronously();
+
+  // Like ConfigureMediaCodecAsynchronously, but synchronous.  Returns true if
+  // and only if |media_codec_| is non-null.  Since all configuration is done
+  // synchronously, there is no concern with modifying |codec_config_| after
+  // this returns.
+  bool ConfigureMediaCodecSynchronously();
+
+  // Instantiate a media codec using |codec_config|.
+  // This may be called on any thread.
+  static scoped_ptr<media::VideoCodecBridge> ConfigureMediaCodecOnAnyThread(
+      scoped_refptr<CodecConfig> codec_config);
+
+  // Called on the main thread to update |media_codec_| and complete codec
+  // configuration.  |media_codec| will be null if configuration failed.
+  void OnCodecConfigured(scoped_ptr<media::VideoCodecBridge> media_codec);
 
   // Sends the decoded frame specified by |codec_buffer_index| to the client.
   void SendDecodedFrameToClient(int32_t codec_buffer_index,
@@ -195,8 +249,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // This callback is called when a new key is added to CDM.
   void OnKeyAdded();
 
-  // Notifies the client of the CDM setting result.
-  void NotifyCdmAttached(bool success);
+  // Notifies the client of the result of deferred initialization.
+  void NotifyInitializationComplete(bool success);
 
   // Notifies the client about the availability of a picture.
   void NotifyPictureReady(const media::Picture& picture);
@@ -246,14 +300,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Callback to get the GLES2Decoder instance.
   GetGLES2DecoderCallback get_gles2_decoder_cb_;
 
-  // Codec type. Used when we configure media codec.
-  media::VideoCodec codec_;
-
   // Whether the stream is encrypted.
   bool is_encrypted_;
-
-  // Whether encryption scheme requires to use protected surface.
-  bool needs_protected_surface_;
 
   // The current state of this class. For now, this is used only for setting
   // error state.
@@ -269,10 +317,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // The low-level decoder which Android SDK provides.
   scoped_ptr<media::VideoCodecBridge> media_codec_;
-
-  // The surface that MediaCodec is configured to output to. It's created by the
-  // backing strategy.
-  gfx::ScopedJavaSurface surface_;
 
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;
@@ -315,9 +359,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // registration id is used for this.
   int cdm_registration_id_;
 
-  // The MediaCrypto object is used in the MediaCodec.configure() in case of
-  // an encrypted stream.
-  media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
+  // Configuration that we use for MediaCodec.
+  // Do not update any of its members while |state_| is WAITING_FOR_CODEC.
+  scoped_refptr<CodecConfig> codec_config_;
 
   // Index of the dequeued and filled buffer that we keep trying to enqueue.
   // Such buffer appears in MEDIA_CODEC_NO_KEY processing.
@@ -329,6 +373,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // PostError will defer sending an error if and only if this is true.
   bool defer_errors_;
+
+  // True if and only if VDA initialization is deferred, and we have not yet
+  // called NotifyInitializationComplete.
+  bool deferred_initialization_pending_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

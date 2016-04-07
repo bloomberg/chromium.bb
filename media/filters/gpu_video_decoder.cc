@@ -80,6 +80,7 @@ GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
       next_bitstream_buffer_id_(0),
       available_pictures_(0),
       needs_all_picture_buffers_to_decode_(false),
+      supports_deferred_initialization_(false),
       weak_factory_(this) {
   DCHECK(factories_);
 }
@@ -183,7 +184,17 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
+  supports_deferred_initialization_ = !!(
+      capabilities.flags &
+      VideoDecodeAccelerator::Capabilities::SUPPORTS_DEFERRED_INITIALIZATION);
   output_cb_ = BindToCurrentLoop(output_cb);
+
+  if (config.is_encrypted() && !supports_deferred_initialization_) {
+    DVLOG(1) << __FUNCTION__
+             << " Encrypted stream requires deferred initialialization.";
+    bound_init_cb.Run(false);
+    return;
+  }
 
   if (previously_initialized) {
     DVLOG(3) << __FUNCTION__
@@ -239,6 +250,7 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
 
   VideoDecodeAccelerator::Config vda_config(config_);
   vda_config.surface_id = surface_id;
+  vda_config.is_deferred_initialization_allowed = true;
   if (!vda_->Initialize(vda_config, this)) {
     DVLOG(1) << "VDA::Initialize failed.";
     base::ResetAndReturn(&init_cb_).Run(false);
@@ -250,13 +262,19 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
   if (config_.is_encrypted()) {
     // TODO(watk,timav): Pass this in the VDA::Config.
     vda_->SetCdm(cdm_id);
-    return;
+    DCHECK(supports_deferred_initialization_);
   }
 
-  base::ResetAndReturn(&init_cb_).Run(true);
+  // We enable deferred initialization in the config, so if the VDA supports it,
+  // then it will be in use.  Otherwise, initialization is already complete.
+  if (!supports_deferred_initialization_) {
+    base::ResetAndReturn(&init_cb_).Run(true);
+  }
+
+  // A call to NotifyInitializationComplete will follow with the status.
 }
 
-void GpuVideoDecoder::NotifyCdmAttached(bool success) {
+void GpuVideoDecoder::NotifyInitializationComplete(bool success) {
   DVLOG_IF(2, !success) << __FUNCTION__ << ": CDM not attached.";
   DCHECK(!init_cb_.is_null());
 

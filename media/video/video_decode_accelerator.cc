@@ -24,8 +24,9 @@ std::string VideoDecodeAccelerator::Config::AsHumanReadableString() const {
   return s.str();
 }
 
-void VideoDecodeAccelerator::Client::NotifyCdmAttached(bool success) {
-  NOTREACHED() << "By default CDM is not supported.";
+void VideoDecodeAccelerator::Client::NotifyInitializationComplete(
+    bool success) {
+  NOTREACHED() << "By default deferred initialization is not supported.";
 }
 
 VideoDecodeAccelerator::~VideoDecodeAccelerator() {}

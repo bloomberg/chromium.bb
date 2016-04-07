@@ -105,8 +105,8 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Destroy)
 // Inform AcceleratedVideoDecoderHost that AcceleratedVideoDecoder has been
 // created.
 
-// Notify the CDM setting result.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_CdmAttached,
+// Notify the deferred initialization result.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_InitializationComplete,
                     bool) /* success */
 
 // Accelerated video decoder has consumed input buffer from transfer buffer.

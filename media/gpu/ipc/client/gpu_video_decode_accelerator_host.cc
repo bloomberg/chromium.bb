@@ -43,8 +43,8 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(CalledOnValidThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAcceleratorHost, msg)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_CdmAttached,
-                        OnCdmAttached)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_InitializationComplete,
+                        OnInitializationComplete)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
                         OnBitstreamBufferProcessed)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
@@ -205,10 +205,10 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   }
 }
 
-void GpuVideoDecodeAcceleratorHost::OnCdmAttached(bool success) {
+void GpuVideoDecodeAcceleratorHost::OnInitializationComplete(bool success) {
   DCHECK(CalledOnValidThread());
   if (client_)
-    client_->NotifyCdmAttached(success);
+    client_->NotifyInitializationComplete(success);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(

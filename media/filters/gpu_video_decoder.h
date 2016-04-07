@@ -65,7 +65,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   int GetMaxDecodeRequests() const override;
 
   // VideoDecodeAccelerator::Client implementation.
-  void NotifyCdmAttached(bool success) override;
+  void NotifyInitializationComplete(bool success) override;
   void ProvidePictureBuffers(uint32_t count,
                              uint32_t textures_per_buffer,
                              const gfx::Size& size,
@@ -222,6 +222,11 @@ class MEDIA_EXPORT GpuVideoDecoder
   // VDA. In other words, the VDA may require all PictureBuffers to be able to
   // proceed with decoding the next frame.
   bool needs_all_picture_buffers_to_decode_;
+
+  // If true, then the VDA supports deferred initialization via
+  // NotifyInitializationComplete.  Otherwise, it will return initialization
+  // status synchronously from VDA::Initialize.
+  bool supports_deferred_initialization_;
 
   // Bound to factories_->GetMessageLoop().
   // NOTE: Weak pointers must be invalidated before all other member variables.

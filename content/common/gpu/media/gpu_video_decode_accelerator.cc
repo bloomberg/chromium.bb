@@ -207,10 +207,11 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void GpuVideoDecodeAccelerator::NotifyCdmAttached(bool success) {
-  if (!Send(new AcceleratedVideoDecoderHostMsg_CdmAttached(host_route_id_,
-                                                           success)))
-    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_CdmAttached) failed";
+void GpuVideoDecodeAccelerator::NotifyInitializationComplete(bool success) {
+  if (!Send(new AcceleratedVideoDecoderHostMsg_InitializationComplete(
+          host_route_id_, success)))
+    DLOG(ERROR)
+        << "Send(AcceleratedVideoDecoderHostMsg_InitializationComplete) failed";
 }
 
 void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
