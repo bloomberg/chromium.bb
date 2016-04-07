@@ -389,6 +389,12 @@ void BufferManager::ValidateAndDoBufferData(
     return;
   }
 
+  if (size > 1024 * 1024 * 1024) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, "glBufferData",
+                            "cannot allocate more than 1GB.");
+    return;
+  }
+
   Buffer* buffer = GetBufferInfoForTarget(context_state, target);
   if (!buffer) {
     ERRORSTATE_SET_GL_ERROR(
