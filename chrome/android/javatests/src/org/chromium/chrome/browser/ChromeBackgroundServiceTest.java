@@ -72,10 +72,6 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     static class MockSnippetsController extends SnippetsController {
         private boolean mDidFetchSnippets = false;
 
-        MockSnippetsController() {
-            super(null);
-        }
-
         @Override
         public void fetchSnippets() {
             mDidFetchSnippets = true;
