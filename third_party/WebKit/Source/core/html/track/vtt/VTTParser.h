@@ -47,13 +47,15 @@ namespace blink {
 class Document;
 class VTTScanner;
 
-class VTTParserClient {
+class VTTParserClient : public GarbageCollectedMixin {
 public:
     virtual ~VTTParserClient() { }
 
     virtual void newCuesParsed() = 0;
     virtual void newRegionsParsed() = 0;
     virtual void fileFailedToParse() = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
@@ -144,7 +146,7 @@ private:
     StringBuilder m_currentContent;
     String m_currentSettings;
 
-    VTTParserClient* m_client;
+    Member<VTTParserClient> m_client;
 
     HeapVector<Member<TextTrackCue>> m_cueList;
 
