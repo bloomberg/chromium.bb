@@ -11,8 +11,8 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/chunked_upload_data_stream.h"
-#include "net/base/network_quality_estimator.h"
 #include "net/base/socket_performance_watcher.h"
+#include "net/base/socket_performance_watcher_factory.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -139,47 +139,53 @@ class ProxyHeadersHandler {
   bool was_called_;
 };
 
-class TestNetworkQualityEstimator : public NetworkQualityEstimator {
+class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
  public:
-  TestNetworkQualityEstimator()
-      : NetworkQualityEstimator(scoped_ptr<net::ExternalEstimateProvider>(),
-                                std::map<std::string, std::string>()),
-        watcher_count_(0) {}
+  explicit TestSocketPerformanceWatcher(bool* rtt_notification_received)
+      : rtt_notification_received_(rtt_notification_received) {}
+  ~TestSocketPerformanceWatcher() override {}
 
-  ~TestNetworkQualityEstimator() override {}
+  bool ShouldNotifyUpdatedRTT() const override { return true; }
 
+  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) override {
+    *rtt_notification_received_ = true;
+  }
+
+  void OnConnectionChanged() override {}
+
+ private:
+  bool* rtt_notification_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSocketPerformanceWatcher);
+};
+
+class TestSocketPerformanceWatcherFactory
+    : public SocketPerformanceWatcherFactory {
+ public:
+  TestSocketPerformanceWatcherFactory()
+      : watcher_count_(0u), rtt_notification_received_(false) {}
+  ~TestSocketPerformanceWatcherFactory() override {}
+
+  // SocketPerformanceWatcherFactory implementation:
   scoped_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
       const Protocol protocol) override {
     if (protocol != PROTOCOL_QUIC) {
-      NOTIMPLEMENTED();
+      return nullptr;
     }
     ++watcher_count_;
-    return NetworkQualityEstimator::CreateSocketPerformanceWatcher(protocol);
+    return scoped_ptr<SocketPerformanceWatcher>(
+        new TestSocketPerformanceWatcher(&rtt_notification_received_));
   }
 
   size_t watcher_count() const { return watcher_count_; }
 
- private:
-  size_t watcher_count_;
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
-};
-
-class TestRTTObserver : public NetworkQualityEstimator::RTTObserver {
- public:
-  TestRTTObserver() : rtt_notification_received_(false) {}
-
   bool rtt_notification_received() const { return rtt_notification_received_; }
 
-  // NetworkQualityEstimator::RttObserver implementation:
-  void OnRTTObservation(
-      int32_t rtt_ms,
-      const base::TimeTicks& timestamp,
-      net::NetworkQualityEstimator::ObservationSource source) override {
-    rtt_notification_received_ = true;
-  }
-
  private:
+  size_t watcher_count_;
   bool rtt_notification_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSocketPerformanceWatcherFactory);
 };
 
 class QuicNetworkTransactionTest
@@ -190,7 +196,6 @@ class QuicNetworkTransactionTest
       : clock_(new MockClock),
         maker_(GetParam(), 0, clock_, kDefaultServerHostName),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
-        test_network_quality_estimator_(new TestNetworkQualityEstimator()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(
@@ -442,7 +447,7 @@ class QuicNetworkTransactionTest
     params_.transport_security_state = &transport_security_state_;
     params_.cert_transparency_verifier = cert_transparency_verifier_.get();
     params_.socket_performance_watcher_factory =
-        test_network_quality_estimator_.get();
+        &test_socket_performance_watcher_factory_;
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
@@ -454,8 +459,6 @@ class QuicNetworkTransactionTest
           "mail.example.com"}) {
       params_.quic_host_whitelist.insert(host);
     }
-
-    test_network_quality_estimator_->AddRTTObserver(&rtt_observer_);
 
     session_.reset(new HttpNetworkSession(params_));
     session_->quic_stream_factory()->set_require_confirmation(false);
@@ -588,8 +591,7 @@ class QuicNetworkTransactionTest
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   scoped_ptr<CTVerifier> cert_transparency_verifier_;
-  scoped_ptr<TestNetworkQualityEstimator> test_network_quality_estimator_;
-  TestRTTObserver rtt_observer_;
+  TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
@@ -649,9 +651,11 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
-  EXPECT_FALSE(rtt_observer_.rtt_notification_received());
+  EXPECT_FALSE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
   SendRequestAndExpectQuicResponse("hello!");
-  EXPECT_TRUE(rtt_observer_.rtt_notification_received());
+  EXPECT_TRUE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
 
   // Check that the NetLog was filled reasonably.
   TestNetLogEntry::List entries;
@@ -711,7 +715,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
-  EXPECT_FALSE(rtt_observer_.rtt_notification_received());
+  EXPECT_FALSE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
   // There is no need to set up an alternate protocol job, because
   // no attempt will be made to speak to the proxy over TCP.
 
@@ -721,7 +726,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   CreateSession();
 
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
-  EXPECT_TRUE(rtt_observer_.rtt_notification_received());
+  EXPECT_TRUE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
 }
 
 // Regression test for https://crbug.com/492458.  Test that for an HTTP
@@ -831,7 +837,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
-  EXPECT_EQ(0U, test_network_quality_estimator_->watcher_count());
+  EXPECT_EQ(0U, test_socket_performance_watcher_factory_.watcher_count());
   for (size_t i = 0; i < 2; ++i) {
     scoped_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
@@ -839,7 +845,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
     int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
     EXPECT_EQ(ERR_IO_PENDING, rv);
     EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
-    EXPECT_EQ(1 + i, test_network_quality_estimator_->watcher_count());
+    EXPECT_EQ(1 + i, test_socket_performance_watcher_factory_.watcher_count());
   }
 }
 
@@ -863,7 +869,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
-  EXPECT_EQ(0U, test_network_quality_estimator_->watcher_count());
+  EXPECT_EQ(0U, test_socket_performance_watcher_factory_.watcher_count());
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
@@ -2292,7 +2298,8 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
 
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   maker_.set_hostname("www.example.org");
-  EXPECT_FALSE(rtt_observer_.rtt_notification_received());
+  EXPECT_FALSE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -2310,7 +2317,8 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponse("hello!");
-  EXPECT_TRUE(rtt_observer_.rtt_notification_received());
+  EXPECT_TRUE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicUpload) {

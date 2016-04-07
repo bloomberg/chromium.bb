@@ -5,8 +5,10 @@
 #include "net/base/network_quality_estimator.h"
 
 #include <stdint.h>
+
 #include <limits>
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -23,10 +25,13 @@
 #include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/socket_performance_watcher.h"
+#include "net/base/socket_performance_watcher_factory.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1071,11 +1076,11 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
   base::RunLoop().Run();
 
   // Both RTT and downstream throughput should be updated.
-  EXPECT_NE(NetworkQualityEstimator::InvalidRTT(),
-            estimator.GetURLRequestRTTEstimateInternal(base::TimeTicks(), 100));
-  EXPECT_NE(NetworkQualityEstimator::kInvalidThroughput,
-            estimator.GetDownlinkThroughputKbpsEstimateInternal(
-                base::TimeTicks(), 100));
+  base::TimeDelta rtt;
+  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+
+  int32_t throughput;
+  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&throughput));
 
   EXPECT_EQ(2U, rtt_observer.observations().size());
   EXPECT_EQ(2U, throughput_observer.observations().size());
@@ -1095,13 +1100,19 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
   base::TimeDelta quic_rtt(base::TimeDelta::FromMilliseconds(2));
 
   scoped_ptr<SocketPerformanceWatcher> tcp_watcher =
-      estimator.CreateSocketPerformanceWatcher(
-          SocketPerformanceWatcherFactory::PROTOCOL_TCP);
+      estimator.GetSocketPerformanceWatcherFactory()
+          ->CreateSocketPerformanceWatcher(
+              SocketPerformanceWatcherFactory::PROTOCOL_TCP);
+
   scoped_ptr<SocketPerformanceWatcher> quic_watcher =
-      estimator.CreateSocketPerformanceWatcher(
-          SocketPerformanceWatcherFactory::PROTOCOL_QUIC);
+      estimator.GetSocketPerformanceWatcherFactory()
+          ->CreateSocketPerformanceWatcher(
+              SocketPerformanceWatcherFactory::PROTOCOL_QUIC);
+
   tcp_watcher->OnUpdatedRTTAvailable(tcp_rtt);
   quic_watcher->OnUpdatedRTTAvailable(quic_rtt);
+
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(4U, rtt_observer.observations().size());
   EXPECT_EQ(2U, throughput_observer.observations().size());

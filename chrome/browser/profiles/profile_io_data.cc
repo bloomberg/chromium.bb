@@ -1291,9 +1291,10 @@ scoped_ptr<net::HttpNetworkSession> ProfileIOData::CreateHttpNetworkSession(
   net::HttpNetworkSession::Params params(io_thread->NetworkSessionParams());
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
                                                                  &params);
-  if (!IsOffTheRecord()) {
+  if (!IsOffTheRecord() && io_thread->globals()->network_quality_estimator) {
     params.socket_performance_watcher_factory =
-        io_thread->globals()->network_quality_estimator.get();
+        io_thread->globals()
+            ->network_quality_estimator->GetSocketPerformanceWatcherFactory();
   }
   if (data_reduction_proxy_io_data_.get())
     params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
