@@ -119,25 +119,25 @@ https://github.com/include-what-you-use/include-what-you-use/issues/100
 
 
 CMake cross compile
-To cross compile libwebm for Windows using mingw64 run cmake with the following
-arguments:
+To cross compile libwebm for Windows using mingw-w64 run cmake with the
+following arguments:
 
-$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw64_toolchain.cmake \
+$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw-w64_toolchain.cmake \
   path/to/libwebm
 
-Note1: As of this writing googletest will not build via mingw64 without
+Note1: As of this writing googletest will not build via mingw-w64 without
 disabling pthreads.
 googletest hash: d225acc90bc3a8c420a9bcd1f033033c1ccd7fe0
 
-To build with tests when using mingw64 use the following arguments when running
-CMake:
+To build with tests when using mingw-w64 use the following arguments when
+running CMake:
 
-$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw64_toolchain.cmake \
+$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw-w64_toolchain.cmake \
   -DENABLE_TESTS=ON -Dgtest_disable_pthreads=ON path/to/libwebm
 
 Note2: i686-w64-mingw32 is the default compiler. This can be controlled using
 the MINGW_PREFIX variable:
 
-$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw64_toolchain.cmake \
+$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw-w64_toolchain.cmake \
   -DMINGW_PREFIX=x86_64-w64-mingw32 path/to/libwebm
 
