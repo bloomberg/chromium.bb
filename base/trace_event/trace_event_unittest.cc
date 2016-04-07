@@ -2330,6 +2330,16 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
   EXPECT_EQ(1, int_value);
 }
 
+TEST_F(TraceEventTestFixture, NameIsEscaped) {
+  TraceLog::GetInstance()->SetEnabled(TraceConfig(kRecordAllCategoryFilter, ""),
+                                      TraceLog::RECORDING_MODE);
+  TRACE_EVENT0("category", "name\\with\\backspaces");
+  EndTraceAndFlush();
+
+  EXPECT_TRUE(FindMatchingValue("cat", "category"));
+  EXPECT_TRUE(FindMatchingValue("name", "name\\with\\backspaces"));
+}
+
 namespace {
 
 bool IsArgNameWhitelisted(const char* arg_name) {

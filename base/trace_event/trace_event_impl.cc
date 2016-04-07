@@ -293,10 +293,10 @@ void TraceEvent::AppendAsJSON(
   // Category group checked at category creation time.
   DCHECK(!strchr(name_, '"'));
   StringAppendF(out, "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
-                     ","
-                     "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":",
-                process_id, thread_id, time_int64, phase_, category_group_name,
-                name_);
+                     ",\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
+                process_id, thread_id, time_int64, phase_, category_group_name);
+  EscapeJSONString(name_, true, out);
+  *out += ",\"args\":";
 
   // Output argument names and values, stop at first NULL argument name.
   // TODO(oysteine): The dual predicates here is a bit ugly; if the filtering
