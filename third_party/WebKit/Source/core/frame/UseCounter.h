@@ -1133,7 +1133,7 @@ public:
     // Return whether the CSSPropertyID was previously counted for this document.
     // NOTE: only for use in testing.
     static bool isCounted(Document&, const String&);
-    bool isCounted(CSSPropertyID);
+    bool isCounted(CSSPropertyID unresolvedProperty);
 
     void didCommitLoad();
 

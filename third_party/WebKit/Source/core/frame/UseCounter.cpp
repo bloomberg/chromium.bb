@@ -696,10 +696,10 @@ bool UseCounter::isCounted(Document& document, const String& string)
     if (!host)
         return false;
 
-    CSSPropertyID propertyID = cssPropertyID(string);
-    if (propertyID == CSSPropertyInvalid)
+    CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(string);
+    if (unresolvedProperty == CSSPropertyInvalid)
         return false;
-    return host->useCounter().isCounted(propertyID);
+    return host->useCounter().isCounted(unresolvedProperty);
 }
 
 void UseCounter::count(const ExecutionContext* context, Feature feature)
