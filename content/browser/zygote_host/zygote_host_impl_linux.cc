@@ -50,7 +50,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   const bool using_namespace_sandbox = ShouldUseNamespaceSandbox();
   // A non empty sandbox_cmd means we want a SUID sandbox.
   const bool using_suid_sandbox =
-      sandbox_binary_.empty() && !using_namespace_sandbox;
+      !sandbox_binary_.empty() && !using_namespace_sandbox;
 
   // Use the SUID sandbox for adjusting OOM scores when we are using the setuid
   // sandbox. This is needed beacuse the processes are non-dumpable, so
