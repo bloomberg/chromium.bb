@@ -15,8 +15,7 @@ enum VendorIDSource {
     GarbageCollected,
     DependentLifetime,
     RuntimeEnabled=WebBluetooth,
-    // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
-    // OriginTrialEnabled=WebBluetooth,
+    OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothDevice : EventTarget
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers

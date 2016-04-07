@@ -1053,8 +1053,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   bool enable_web_bluetooth =
       browser_command_line.HasSwitch(switches::kEnableWebBluetooth);
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-// TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
-// enable_web_bluetooth = true;
+  enable_web_bluetooth = true;
 #endif
 
   if (enable_web_bluetooth) {

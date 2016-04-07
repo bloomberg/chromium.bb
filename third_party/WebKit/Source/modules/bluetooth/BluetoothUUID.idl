@@ -10,8 +10,7 @@
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
-    // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
-    // OriginTrialEnabled=WebBluetooth,
+    OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothUUID {
     [RaisesException] static UUID getService((DOMString or unsigned long) name);
     [RaisesException] static UUID getCharacteristic((DOMString or unsigned long) name);

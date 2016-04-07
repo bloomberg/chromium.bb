@@ -1895,8 +1895,13 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   GetServiceRegistry()->AddService(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebBluetooth)) {
+  bool enable_web_bluetooth = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebBluetooth);
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  enable_web_bluetooth = true;
+#endif
+
+  if (enable_web_bluetooth) {
     GetServiceRegistry()->AddService(
         base::Bind(&RenderFrameHostImpl::CreateWebBluetoothService,
                    base::Unretained(this)));
