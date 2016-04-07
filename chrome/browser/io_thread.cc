@@ -47,6 +47,7 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
+#include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -503,6 +504,14 @@ IOThread::IOThread(
   if (value)
     value->GetAsBoolean(&is_quic_allowed_by_policy_);
 
+  // Some unit tests use IOThread but do not initialize MetricsService. In that
+  // case it is fine not to have |metrics_data_use_forwarder_|.
+  if (g_browser_process->metrics_service()) {
+    // Callback for updating data use prefs should be obtained on UI thread.
+    metrics_data_use_forwarder_ =
+        g_browser_process->metrics_service()->GetDataUseForwardingCallback();
+  }
+
   BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
 
@@ -609,7 +618,8 @@ void IOThread::Init() {
           "466432 IOThread::InitAsync::ChromeNetworkDelegate"));
   scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
-                                &system_enable_referrers_));
+                                &system_enable_referrers_,
+                                metrics_data_use_forwarder_));
   // By default, data usage is considered off the record.
   chrome_network_delegate->set_data_use_aggregator(
       globals_->data_use_aggregator.get(),
@@ -1766,4 +1776,9 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   // system URLRequestContext too. There's no reason this should be tied to a
   // profile.
   return context;
+}
+
+const metrics::UpdateUsagePrefCallbackType&
+IOThread::GetMetricsDataUseForwarder() {
+  return metrics_data_use_forwarder_;
 }

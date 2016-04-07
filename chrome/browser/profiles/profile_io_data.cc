@@ -63,6 +63,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
@@ -1016,14 +1017,13 @@ void ProfileIOData::Init(
   main_request_context_.reset(new net::URLRequestContext());
   extensions_request_context_.reset(new net::URLRequestContext());
 
-  scoped_ptr<ChromeNetworkDelegate> network_delegate(
-      new ChromeNetworkDelegate(
+  scoped_ptr<ChromeNetworkDelegate> network_delegate(new ChromeNetworkDelegate(
 #if defined(ENABLE_EXTENSIONS)
-          io_thread_globals->extension_event_router_forwarder.get(),
+      io_thread_globals->extension_event_router_forwarder.get(),
 #else
-          NULL,
+      NULL,
 #endif
-          &enable_referrers_));
+      &enable_referrers_, io_thread->GetMetricsDataUseForwarder()));
 #if defined(ENABLE_EXTENSIONS)
   network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());

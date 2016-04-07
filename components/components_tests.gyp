@@ -358,6 +358,7 @@
       'metrics/file_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',
       'metrics/machine_id_provider_win_unittest.cc',
+      'metrics/data_use_tracker_unittest.cc',
       'metrics/metrics_log_manager_unittest.cc',
       'metrics/metrics_log_unittest.cc',
       'metrics/metrics_reporting_scheduler_unittest.cc',

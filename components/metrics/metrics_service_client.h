@@ -117,6 +117,9 @@ class MetricsServiceClient {
   // Gets information about the default value for the enable metrics reporting
   // checkbox shown during first-run.
   virtual EnableMetricsDefault GetDefaultOptIn();
+
+  // Returns whether cellular logic is enabled for metrics reporting.
+  virtual bool IsUMACellularUploadLogicEnabled();
 };
 
 }  // namespace metrics

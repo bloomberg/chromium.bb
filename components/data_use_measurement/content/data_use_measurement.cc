@@ -44,9 +44,12 @@ void IncreaseSparseHistogramByValue(const std::string& name,
 
 }  // namespace
 
-DataUseMeasurement::DataUseMeasurement()
+DataUseMeasurement::DataUseMeasurement(
+    const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder)
+    : metrics_data_use_forwarder_(metrics_data_use_forwarder)
 #if defined(OS_ANDROID)
-    : app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
+      ,
+      app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
       app_listener_(new base::android::ApplicationStatusListener(
           base::Bind(&DataUseMeasurement::OnApplicationStateChange,
                      base::Unretained(this))))
@@ -75,26 +78,37 @@ void DataUseMeasurement::ReportDataUseUMA(
   int64_t total_upload_bytes = request->GetTotalSentBytes();
   int64_t total_received_bytes = request->GetTotalReceivedBytes();
 
+  bool is_connection_cellular =
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType());
   RecordUMAHistogramCount(
       GetHistogramName(is_user_traffic ? "DataUse.TrafficSize.User"
                                        : "DataUse.TrafficSize.System",
-                       UPSTREAM),
+                       UPSTREAM, is_connection_cellular),
       total_upload_bytes);
   RecordUMAHistogramCount(
       GetHistogramName(is_user_traffic ? "DataUse.TrafficSize.User"
                                        : "DataUse.TrafficSize.System",
-                       DOWNSTREAM),
+                       DOWNSTREAM, is_connection_cellular),
       total_received_bytes);
 
   DataUseUserData* attached_service_data = reinterpret_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
-
+  DataUseUserData::ServiceName service_name =
+      attached_service_data ? attached_service_data->service_name()
+                            : DataUseUserData::NOT_TAGGED;
   if (!is_user_traffic) {
-    DataUseUserData::ServiceName service_name =
-        attached_service_data ? attached_service_data->service_name()
-                              : DataUseUserData::NOT_TAGGED;
-    ReportDataUsageServices(service_name, UPSTREAM, total_upload_bytes);
-    ReportDataUsageServices(service_name, DOWNSTREAM, total_received_bytes);
+    ReportDataUsageServices(service_name, UPSTREAM, is_connection_cellular,
+                            total_upload_bytes);
+    ReportDataUsageServices(service_name, DOWNSTREAM, is_connection_cellular,
+                            total_received_bytes);
+  }
+
+  // Update data use prefs for cellular connections.
+  if (!metrics_data_use_forwarder_.is_null()) {
+    metrics_data_use_forwarder_.Run(
+        attached_service_data->GetServiceNameAsString(service_name),
+        total_upload_bytes + total_received_bytes, is_connection_cellular);
   }
 }
 
@@ -114,15 +128,15 @@ DataUseMeasurement::AppState DataUseMeasurement::CurrentAppState() const {
   return FOREGROUND;
 }
 
-std::string DataUseMeasurement::GetHistogramName(const char* prefix,
-                                                 TrafficDirection dir) const {
+std::string DataUseMeasurement::GetHistogramName(
+    const char* prefix,
+    TrafficDirection dir,
+    bool is_connection_cellular) const {
   AppState app_state = CurrentAppState();
-  bool is_conn_cellular = net::NetworkChangeNotifier::IsConnectionCellular(
-      net::NetworkChangeNotifier::GetConnectionType());
   return base::StringPrintf(
       "%s.%s.%s.%s", prefix, dir == UPSTREAM ? "Upstream" : "Downstream",
       app_state == BACKGROUND ? "Background" : "Foreground",
-      is_conn_cellular ? "Cellular" : "NotCellular");
+      is_connection_cellular ? "Cellular" : "NotCellular");
 }
 
 #if defined(OS_ANDROID)
@@ -135,14 +149,16 @@ void DataUseMeasurement::OnApplicationStateChange(
 void DataUseMeasurement::ReportDataUsageServices(
     DataUseUserData::ServiceName service,
     TrafficDirection dir,
+    bool is_connection_cellular,
     int64_t message_size) const {
   RecordUMAHistogramCount(
       "DataUse.MessageSize." + DataUseUserData::GetServiceNameAsString(service),
       message_size);
   if (message_size > 0) {
     IncreaseSparseHistogramByValue(
-        GetHistogramName("DataUse.MessageSize.AllServices", dir), service,
-        message_size);
+        GetHistogramName("DataUse.MessageSize.AllServices", dir,
+                         is_connection_cellular),
+        service, message_size);
   }
 }
 

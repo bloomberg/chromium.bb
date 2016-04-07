@@ -3,4 +3,5 @@ include_rules = [
   "+net",
   "+testing",
   "+url",
+  "+components/metrics",
 ]

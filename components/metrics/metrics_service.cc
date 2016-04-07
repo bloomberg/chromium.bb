@@ -149,6 +149,7 @@
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/metrics/data_use_tracker.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -258,6 +259,7 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
   MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
+  DataUseTracker::RegisterPrefs(registry);
 
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
@@ -294,6 +296,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       log_upload_in_progress_(false),
       idle_since_last_transmission_(false),
       session_id_(-1),
+      data_use_tracker_(DataUseTracker::Create(local_state_)),
       self_ptr_factory_(this),
       state_saver_factory_(this) {
   DCHECK(IsSingleThreaded());
@@ -543,6 +546,16 @@ void MetricsService::ClearSavedStabilityMetrics() {
 
 void MetricsService::PushExternalLog(const std::string& log) {
   log_manager_.StoreLog(log, MetricsLog::ONGOING_LOG);
+}
+
+UpdateUsagePrefCallbackType MetricsService::GetDataUseForwardingCallback() {
+  DCHECK(IsSingleThreaded());
+
+  if (data_use_tracker_) {
+    return data_use_tracker_->GetDataUseForwardingCallback(
+        base::ThreadTaskRunnerHandle::Get());
+  }
+  return UpdateUsagePrefCallbackType();
 }
 
 //------------------------------------------------------------------------------
@@ -866,7 +879,16 @@ void MetricsService::SendNextLog() {
   }
   if (!log_manager_.has_staged_log())
     log_manager_.StageNextLogForUpload();
-  SendStagedLog();
+
+  // Proceed to stage the log for upload if log size satisfies cellular log
+  // upload constrains.
+  if (client_->IsUMACellularUploadLogicEnabled() &&
+      !data_use_tracker_->ShouldUploadLogOnCellular(
+          log_manager_.staged_log_hash().size())) {
+    scheduler_->UploadCancelled();
+  } else {
+    SendStagedLog();
+  }
 }
 
 bool MetricsService::ProvidersHaveInitialStabilityMetrics() {

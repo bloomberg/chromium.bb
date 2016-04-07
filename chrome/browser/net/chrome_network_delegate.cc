@@ -286,7 +286,8 @@ void RecordCacheStateStats(const net::URLRequest* request) {
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
     extensions::EventRouterForwarder* event_router,
-    BooleanPrefMember* enable_referrers)
+    BooleanPrefMember* enable_referrers,
+    const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder)
     : profile_(NULL),
       enable_referrers_(enable_referrers),
       enable_do_not_track_(NULL),
@@ -294,9 +295,10 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       force_youtube_safety_mode_(NULL),
       url_blacklist_manager_(NULL),
       domain_reliability_monitor_(NULL),
+      data_use_measurement_(metrics_data_use_forwarder),
       experimental_web_platform_features_enabled_(
-          base::CommandLine::ForCurrentProcess()
-              ->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures)),
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalWebPlatformFeatures)),
       data_use_aggregator_(nullptr),
       is_data_usage_off_the_record_(true) {
   DCHECK(enable_referrers);

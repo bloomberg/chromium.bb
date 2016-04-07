@@ -19,4 +19,8 @@ MetricsServiceClient::GetDefaultOptIn() {
   return DEFAULT_UNKNOWN;
 }
 
+bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
+  return false;
+}
+
 }  // namespace metrics

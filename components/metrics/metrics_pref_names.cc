@@ -169,5 +169,13 @@ const char kUninstallMetricsPageLoadCount[] =
     "uninstall_metrics.page_load_count";
 const char kUninstallMetricsUptimeSec[] = "uninstall_metrics.uptime_sec";
 
+// Dictionary for measuring cellular data used by UMA service during last 7
+// days.
+const char kUmaCellDataUse[] = "user_experience_metrics.uma_cell_datause";
+
+// Dictionary for measuring cellular data used by user including chrome services
+// per day.
+const char kUserCellDataUse[] = "user_experience_metrics.user_call_datause";
+
 }  // namespace prefs
 }  // namespace metrics

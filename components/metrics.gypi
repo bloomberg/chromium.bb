@@ -46,6 +46,8 @@
         'metrics/machine_id_provider.h',
         'metrics/machine_id_provider_stub.cc',
         'metrics/machine_id_provider_win.cc',
+        'metrics/data_use_tracker.cc',
+        'metrics/data_use_tracker.h',
         'metrics/metrics_log.cc',
         'metrics/metrics_log.h',
         'metrics/metrics_log_manager.cc',

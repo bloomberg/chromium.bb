@@ -433,6 +433,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // a result of a field trial or a command line flag.
   static bool ShouldEnableQuicForDataReductionProxy();
 
+  // Returns the callback for updating data use prefs.
+  const metrics::UpdateUsagePrefCallbackType& GetMetricsDataUseForwarder();
+
  private:
   // Provide SystemURLRequestContextGetter with access to
   // InitSystemRequestContext().
@@ -564,6 +567,10 @@ class IOThread : public content::BrowserThreadDelegate {
   bool is_quic_allowed_by_policy_;
 
   const base::TimeTicks creation_time_;
+
+  // Callback for updating data use prefs which needs to be initialized on UI
+  // thread and passed to |ChromeNetworkDelegate|.
+  metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
 
   base::WeakPtrFactory<IOThread> weak_factory_;
 

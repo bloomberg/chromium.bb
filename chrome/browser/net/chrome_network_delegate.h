@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/content/data_use_measurement.h"
+#include "components/metrics/data_use_tracker.h"
 #include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
@@ -67,8 +68,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // |enable_referrers| (and all of the other optional PrefMembers) should be
   // initialized on the UI thread (see below) beforehand. This object's owner is
   // responsible for cleaning them up at shutdown.
-  ChromeNetworkDelegate(extensions::EventRouterForwarder* event_router,
-                        BooleanPrefMember* enable_referrers);
+  ChromeNetworkDelegate(
+      extensions::EventRouterForwarder* event_router,
+      BooleanPrefMember* enable_referrers,
+      const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
   ~ChromeNetworkDelegate() override;
 
   // Pass through to ChromeExtensionsNetworkDelegate::set_extension_info_map().

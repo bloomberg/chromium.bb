@@ -10,6 +10,7 @@ source_set("content") {
   deps = [
     "//base",
     "//components/data_use_measurement/core",
+    "//components/metrics",
     "//content/public/browser",
     "//net",
   ]

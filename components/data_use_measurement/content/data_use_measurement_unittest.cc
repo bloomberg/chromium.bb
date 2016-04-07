@@ -27,18 +27,20 @@ namespace data_use_measurement {
 
 class DataUseMeasurementTest : public testing::Test {
  public:
-  DataUseMeasurementTest() {
+  DataUseMeasurementTest()
+      : data_use_measurement_(
+            base::Bind(&DataUseMeasurementTest::FakeDataUseforwarder,
+                       base::Unretained(this))) {
     // During the test it is expected to not have cellular connection.
     DCHECK(!net::NetworkChangeNotifier::IsConnectionCellular(
         net::NetworkChangeNotifier::GetConnectionType()));
   }
 
-  // This function makes a user request and confirms that its effect is
-  // reflected in proper histograms.
-  void TestForAUserRequest(const std::string& target_dimension) {
+  // Sends a request and reports data use attaching either user data or service
+  // data based on |is_user_request|.
+  void SendRequest(bool is_user_request) {
     net::TestDelegate test_delegate;
     InitializeContext();
-    base::HistogramTester histogram_tester;
     net::MockRead reads[] = {net::MockRead("HTTP/1.1 200 OK\r\n"
                                            "Content-Length: 12\r\n\r\n"),
                              net::MockRead("Test Content")};
@@ -48,14 +50,28 @@ class DataUseMeasurementTest : public testing::Test {
 
     scoped_ptr<net::URLRequest> request(context_->CreateRequest(
         GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
-    request->SetUserData(
-        data_use_measurement::DataUseUserData::kUserDataKey,
-        new data_use_measurement::DataUseUserData(
-            data_use_measurement::DataUseUserData::SUGGESTIONS));
+    if (is_user_request) {
+      request->SetUserData(
+          data_use_measurement::DataUseUserData::kUserDataKey,
+          new data_use_measurement::DataUseUserData(
+              data_use_measurement::DataUseUserData::SUGGESTIONS));
+    } else {
+      content::ResourceRequestInfo::AllocateForTesting(
+          request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
+          true, false, true, true, false);
+    }
+
     request->Start();
     loop_.RunUntilIdle();
 
     data_use_measurement_.ReportDataUseUMA(request.get());
+  }
+
+  // This function makes a user request and confirms that its effect is
+  // reflected in proper histograms.
+  void TestForAUserRequest(const std::string& target_dimension) {
+    base::HistogramTester histogram_tester;
+    SendRequest(true);
     histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Downstream." +
                                           target_dimension + kConnectionType,
                                       1);
@@ -69,26 +85,8 @@ class DataUseMeasurementTest : public testing::Test {
   // This function makes a service request and confirms that its effect is
   // reflected in proper histograms.
   void TestForAServiceRequest(const std::string& target_dimension) {
-    net::TestDelegate test_delegate;
-    InitializeContext();
     base::HistogramTester histogram_tester;
-
-    net::MockRead reads[] = {net::MockRead("HTTP/1.1 200 OK\r\n"
-                                           "Content-Length: 12\r\n\r\n"),
-                             net::MockRead("Test Content")};
-    net::StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr,
-                                              0);
-    socket_factory_->AddSocketDataProvider(&socket_data);
-
-    scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-        GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
-    content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-        true, false, true, true, false);
-    request->Start();
-    loop_.RunUntilIdle();
-
-    data_use_measurement_.ReportDataUseUMA(request.get());
+    SendRequest(false);
     histogram_tester.ExpectTotalCount("DataUse.TrafficSize.User.Downstream." +
                                           target_dimension + kConnectionType,
                                       1);
@@ -107,6 +105,8 @@ class DataUseMeasurementTest : public testing::Test {
 
   DataUseMeasurement* data_use_measurement() { return &data_use_measurement_; }
 
+  bool IsDataUseForwarderCalled() { return is_data_use_forwarder_called_; }
+
  private:
   void InitializeContext() {
     context_.reset(new net::TestURLRequestContext(true));
@@ -115,11 +115,18 @@ class DataUseMeasurementTest : public testing::Test {
     context_->Init();
   }
 
+  void FakeDataUseforwarder(const std::string& service_name,
+                            int message_size,
+                            bool is_celllular) {
+    is_data_use_forwarder_called_ = true;
+  }
+
   base::MessageLoopForIO loop_;
   DataUseMeasurement data_use_measurement_;
   scoped_ptr<net::MockClientSocketFactory> socket_factory_;
   scoped_ptr<net::TestURLRequestContext> context_;
   const std::string kConnectionType = "NotCellular";
+  bool is_data_use_forwarder_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMeasurementTest);
 };
@@ -149,5 +156,11 @@ TEST_F(DataUseMeasurementTest, ApplicationStateTest) {
   TestForAUserRequest("Background.");
 }
 #endif
+
+TEST_F(DataUseMeasurementTest, DataUseForwarderIsCalled) {
+  EXPECT_FALSE(IsDataUseForwarderCalled());
+  SendRequest(true);
+  EXPECT_TRUE(IsDataUseForwarderCalled());
+}
 
 }  // namespace data_use_measurement

@@ -9,10 +9,12 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/metrics/data_use_tracker.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -32,7 +34,8 @@ namespace data_use_measurement {
 // http://crbug.com/527460
 class DataUseMeasurement {
  public:
-  DataUseMeasurement();
+  explicit DataUseMeasurement(
+      const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
   ~DataUseMeasurement();
 
   // Records the data use of the |request|, thus |request| must be non-null.
@@ -63,7 +66,9 @@ class DataUseMeasurement {
   // ("Downstream") path, whether the app was in the "Foreground" or
   // "Background", and whether a "Cellular" or "WiFi" network was use. For
   // example, "Prefix.Upstream.Foreground.Cellular" is a possible output.
-  std::string GetHistogramName(const char* prefix, TrafficDirection dir) const;
+  std::string GetHistogramName(const char* prefix,
+                               TrafficDirection dir,
+                               bool is_connection_cellular) const;
 
 #if defined(OS_ANDROID)
   // Called whenever the application transitions from foreground to background
@@ -79,7 +84,14 @@ class DataUseMeasurement {
   void ReportDataUsageServices(
       data_use_measurement::DataUseUserData::ServiceName service,
       TrafficDirection dir,
+      bool is_connection_cellular,
       int64_t message_size) const;
+
+  // Callback for updating data use prefs.
+  // TODO(rajendrant): If a similar mechanism would need be used for components
+  // other than metrics, then the better approach would be to refactor this
+  // class to support registering arbitrary observers. crbug.com/601185
+  metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
 
 #if defined(OS_ANDROID)
   // Application listener store the last known state of the application in this
