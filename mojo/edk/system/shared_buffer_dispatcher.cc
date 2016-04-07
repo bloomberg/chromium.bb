@@ -26,7 +26,11 @@ namespace {
 
 struct SerializedState {
   uint64_t num_bytes;
+  uint32_t flags;
+  uint32_t padding;
 };
+
+const uint32_t kSerializedStateFlagsReadOnly = 1 << 0;
 
 #pragma pack(pop)
 
@@ -141,9 +145,10 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
 
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
+  bool read_only = (serialization->flags & kSerializedStateFlagsReadOnly);
   scoped_refptr<PlatformSharedBuffer> shared_buffer(
       PlatformSharedBuffer::CreateFromPlatformHandle(
-          static_cast<size_t>(serialization->num_bytes),
+          static_cast<size_t>(serialization->num_bytes), read_only,
           ScopedPlatformHandle(platform_handle)));
   if (!shared_buffer) {
     LOG(ERROR)
@@ -190,6 +195,21 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandle(
   base::AutoLock lock(lock_);
   if (in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if ((validated_options.flags &
+       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY) &&
+      (!shared_buffer_->IsReadOnly())) {
+    // If a read-only duplicate is requested and |shared_buffer_| is not
+    // read-only, make a read-only duplicate of |shared_buffer_|.
+    scoped_refptr<PlatformSharedBuffer> read_only_buffer =
+        shared_buffer_->CreateReadOnlyDuplicate();
+    if (!read_only_buffer)
+      return MOJO_RESULT_FAILED_PRECONDITION;
+    DCHECK(read_only_buffer->IsReadOnly());
+    *new_dispatcher = CreateInternal(std::move(read_only_buffer));
+    return MOJO_RESULT_OK;
+  }
+
   *new_dispatcher = CreateInternal(shared_buffer_);
   return MOJO_RESULT_OK;
 }
@@ -215,8 +235,10 @@ MojoResult SharedBufferDispatcher::MapBuffer(
   DCHECK(mapping);
   *mapping = shared_buffer_->MapNoCheck(static_cast<size_t>(offset),
                                         static_cast<size_t>(num_bytes));
-  if (!*mapping)
+  if (!*mapping) {
+    LOG(ERROR) << "Unable to map: read_only" << shared_buffer_->IsReadOnly();
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
 
   return MOJO_RESULT_OK;
 }
@@ -237,6 +259,9 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
   base::AutoLock lock(lock_);
   serialization->num_bytes =
         static_cast<uint64_t>(shared_buffer_->GetNumBytes());
+  serialization->flags =
+      (shared_buffer_->IsReadOnly() ? kSerializedStateFlagsReadOnly : 0);
+  serialization->padding = 0;
 
   handle_for_transit_ = shared_buffer_->DuplicatePlatformHandle();
   if (!handle_for_transit_.is_valid()) {
@@ -283,7 +308,7 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
     const MojoDuplicateBufferHandleOptions* in_options,
     MojoDuplicateBufferHandleOptions* out_options) {
   const MojoDuplicateBufferHandleOptionsFlags kKnownFlags =
-      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE;
+      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
   static const MojoDuplicateBufferHandleOptions kDefaultOptions = {
       static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions)),
       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};

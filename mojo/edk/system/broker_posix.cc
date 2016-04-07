@@ -112,7 +112,8 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
                            BrokerMessageType::BUFFER_RESPONSE, 1,
                            &incoming_platform_handles)) {
     return PlatformSharedBuffer::CreateFromPlatformHandle(
-        num_bytes, ScopedPlatformHandle(incoming_platform_handles.front()));
+        num_bytes, false /* read_only */,
+        ScopedPlatformHandle(incoming_platform_handles.front()));
   }
 
   return nullptr;

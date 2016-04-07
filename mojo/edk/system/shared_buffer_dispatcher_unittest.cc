@@ -220,6 +220,8 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   MojoDuplicateBufferHandleOptions options[] = {
       {sizeof(MojoDuplicateBufferHandleOptions),
        MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE},
+      {sizeof(MojoDuplicateBufferHandleOptions),
+       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY},
       {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0u}};
   for (size_t i = 0; i < arraysize(options); i++) {
     scoped_refptr<Dispatcher> dispatcher2;
@@ -227,6 +229,10 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
                                   &options[i], &dispatcher2));
     ASSERT_TRUE(dispatcher2);
     EXPECT_EQ(Dispatcher::Type::SHARED_BUFFER, dispatcher2->GetType());
+    {
+      scoped_ptr<PlatformSharedBufferMapping> mapping;
+      EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->MapBuffer(0, 100, 0, &mapping));
+    }
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->Close());
   }
 

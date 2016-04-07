@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/strings/string_piece.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/types.h"
@@ -31,7 +32,7 @@ TEST_F(SharedBufferTest, DuplicateSharedBuffer) {
   MojoHandle h = CreateBuffer(message.size());
   WriteToBuffer(h, 0, message);
 
-  MojoHandle dupe = DuplicateBuffer(h);
+  MojoHandle dupe = DuplicateBuffer(h, false);
   ExpectBufferContents(dupe, 0, message);
 }
 
@@ -40,7 +41,7 @@ TEST_F(SharedBufferTest, PassSharedBufferLocal) {
   MojoHandle h = CreateBuffer(message.size());
   WriteToBuffer(h, 0, message);
 
-  MojoHandle dupe = DuplicateBuffer(h);
+  MojoHandle dupe = DuplicateBuffer(h, false);
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
 
@@ -73,7 +74,7 @@ TEST_F(SharedBufferTest, MAYBE_PassSharedBufferCrossProcess) {
   MojoHandle b = CreateBuffer(message.size());
 
   RUN_CHILD_ON_PIPE(CopyToBufferClient, h)
-    MojoHandle dupe = DuplicateBuffer(b);
+    MojoHandle dupe = DuplicateBuffer(b, false);
     WriteMessageWithHandles(h, message, &dupe, 1);
     WriteMessage(h, "quit");
   END_CHILD()
@@ -120,7 +121,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBuffer, SharedBufferTest, h) {
   MojoHandle b = CreateBuffer(message.size());
 
   // Send a copy of the buffer to the parent and the other child.
-  MojoHandle dupe = DuplicateBuffer(b);
+  MojoHandle dupe = DuplicateBuffer(b, false);
   WriteMessageWithHandles(h, "", &b, 1);
   WriteMessageWithHandles(other_child, "", &dupe, 1);
 
@@ -252,6 +253,93 @@ TEST_F(SharedBufferTest, MAYBE_PassHandleBetweenCousins) {
 
   // The second grandchild should have written this message.
   ExpectBufferContents(b, 0, message);
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndMapWriteSharedBuffer,
+                                  SharedBufferTest, h) {
+  // Receive the shared buffer.
+  MojoHandle b;
+  EXPECT_EQ("hello", ReadMessageWithHandles(h, &b, 1));
+
+  // Read from the bufer.
+  ExpectBufferContents(b, 0, "hello");
+
+  // Extract the shared memory handle and try to map it writable.
+  base::SharedMemoryHandle shm_handle;
+  bool read_only = false;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            PassSharedMemoryHandle(b, &shm_handle, nullptr, &read_only));
+  base::SharedMemory shared_memory(shm_handle, false);
+  EXPECT_TRUE(read_only);
+  EXPECT_FALSE(shared_memory.Map(1234));
+
+  EXPECT_EQ("quit", ReadMessage(h));
+  WriteMessage(h, "ok");
+}
+
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_CreateAndPassReadOnlyBuffer DISABLED_CreateAndPassReadOnlyBuffer
+#else
+#define MAYBE_CreateAndPassReadOnlyBuffer CreateAndPassReadOnlyBuffer
+#endif
+TEST_F(SharedBufferTest, MAYBE_CreateAndPassReadOnlyBuffer) {
+  RUN_CHILD_ON_PIPE(ReadAndMapWriteSharedBuffer, h)
+    // Create a new shared buffer.
+    MojoHandle b = CreateBuffer(1234);
+    WriteToBuffer(b, 0, "hello");
+
+    // Send a read-only copy of the buffer to the child.
+    MojoHandle dupe = DuplicateBuffer(b, true /* read_only */);
+    WriteMessageWithHandles(h, "hello", &dupe, 1);
+
+    WriteMessage(h, "quit");
+    EXPECT_EQ("ok", ReadMessage(h));
+  END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassReadOnlyBuffer,
+                                  SharedBufferTest, h) {
+  // Create a new shared buffer.
+  MojoHandle b = CreateBuffer(1234);
+  WriteToBuffer(b, 0, "hello");
+
+  // Send a read-only copy of the buffer to the parent.
+  MojoHandle dupe = DuplicateBuffer(b, true /* read_only */);
+  WriteMessageWithHandles(h, "", &dupe, 1);
+
+  EXPECT_EQ("quit", ReadMessage(h));
+  WriteMessage(h, "ok");
+}
+
+#if defined(OS_ANDROID) || (defined(OS_POSIX) && !defined(OS_MACOSX))
+// Android multi-process tests are not executing the new process. This is flaky.
+// Non-OSX posix uses a sync broker to create shared memory. Creating read-only
+// duplicates in child processes is not currently supported via the sync broker.
+#define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
+    DISABLED_CreateAndPassFromChildReadOnlyBuffer
+#else
+#define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
+    CreateAndPassFromChildReadOnlyBuffer
+#endif
+TEST_F(SharedBufferTest, MAYBE_CreateAndPassFromChildReadOnlyBuffer) {
+  RUN_CHILD_ON_PIPE(CreateAndPassReadOnlyBuffer, h)
+    MojoHandle b;
+    EXPECT_EQ("", ReadMessageWithHandles(h, &b, 1));
+    ExpectBufferContents(b, 0, "hello");
+
+    // Extract the shared memory handle and try to map it writable.
+    base::SharedMemoryHandle shm_handle;
+    bool read_only = false;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              PassSharedMemoryHandle(b, &shm_handle, nullptr, &read_only));
+    base::SharedMemory shared_memory(shm_handle, false);
+    EXPECT_TRUE(read_only);
+    EXPECT_FALSE(shared_memory.Map(1234));
+
+    WriteMessage(h, "quit");
+    EXPECT_EQ("ok", ReadMessage(h));
+  END_CHILD()
 }
 
 #endif  // !defined(OS_IOS)

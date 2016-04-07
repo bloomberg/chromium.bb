@@ -44,7 +44,7 @@ ScopedPlatformHandle SharedMemoryToPlatformHandle(
 PlatformSharedBuffer* PlatformSharedBuffer::Create(size_t num_bytes) {
   DCHECK_GT(num_bytes, 0u);
 
-  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes);
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes, false);
   if (!rv->Init()) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
@@ -58,10 +58,11 @@ PlatformSharedBuffer* PlatformSharedBuffer::Create(size_t num_bytes) {
 // static
 PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandle(
     size_t num_bytes,
+    bool read_only,
     ScopedPlatformHandle platform_handle) {
   DCHECK_GT(num_bytes, 0u);
 
-  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes);
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes, read_only);
   if (!rv->InitFromPlatformHandle(std::move(platform_handle))) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
@@ -78,9 +79,8 @@ PlatformSharedBuffer* PlatformSharedBuffer::CreateFromSharedMemoryHandle(
     bool read_only,
     base::SharedMemoryHandle handle) {
   DCHECK_GT(num_bytes, 0u);
-  DCHECK(!read_only);
 
-  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes);
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes, read_only);
   rv->InitFromSharedMemoryHandle(handle);
 
   return rv;
@@ -88,6 +88,10 @@ PlatformSharedBuffer* PlatformSharedBuffer::CreateFromSharedMemoryHandle(
 
 size_t PlatformSharedBuffer::GetNumBytes() const {
   return num_bytes_;
+}
+
+bool PlatformSharedBuffer::IsReadOnly() const {
+    return read_only_;
 }
 
 scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::Map(
@@ -125,7 +129,7 @@ scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::MapNoCheck(
     return nullptr;
 
   scoped_ptr<PlatformSharedBufferMapping> mapping(
-      new PlatformSharedBufferMapping(handle, offset, length));
+      new PlatformSharedBufferMapping(handle, read_only_, offset, length));
   if (mapping->Map())
     return make_scoped_ptr(mapping.release());
 
@@ -164,16 +168,34 @@ base::SharedMemoryHandle PlatformSharedBuffer::DuplicateSharedMemoryHandle() {
   return base::SharedMemory::DuplicateHandle(shared_memory_->handle());
 }
 
-PlatformSharedBuffer::PlatformSharedBuffer(size_t num_bytes)
-    : num_bytes_(num_bytes) {}
+PlatformSharedBuffer* PlatformSharedBuffer::CreateReadOnlyDuplicate() {
+  DCHECK(shared_memory_);
+  base::SharedMemoryHandle handle;
+  bool success;
+  {
+    base::AutoLock locker(lock_);
+    success = shared_memory_->ShareReadOnlyToProcess(
+        base::GetCurrentProcessHandle(), &handle);
+  }
+  if (!success || handle == base::SharedMemory::NULLHandle())
+      return nullptr;
+
+  return CreateFromSharedMemoryHandle(num_bytes_, true, handle);
+}
+
+PlatformSharedBuffer::PlatformSharedBuffer(size_t num_bytes, bool read_only)
+    : num_bytes_(num_bytes), read_only_(read_only) {}
 
 PlatformSharedBuffer::~PlatformSharedBuffer() {}
 
 bool PlatformSharedBuffer::Init() {
   DCHECK(!shared_memory_);
+  DCHECK(!read_only_);
 
   base::SharedMemoryCreateOptions options;
   options.size = num_bytes_;
+  // By default, we can share as read-only.
+  options.share_read_only = true;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   options.type = base::SharedMemoryHandle::MACH;
 #endif
@@ -201,7 +223,7 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
   base::SharedMemoryHandle handle(platform_handle.release().handle, false);
 #endif
 
-  shared_memory_.reset(new base::SharedMemory(handle, false));
+  shared_memory_.reset(new base::SharedMemory(handle, read_only_));
   return true;
 }
 
@@ -209,8 +231,7 @@ void PlatformSharedBuffer::InitFromSharedMemoryHandle(
     base::SharedMemoryHandle handle) {
   DCHECK(!shared_memory_);
 
-  // TODO(crbug.com/556587): Support read-only handles.
-  shared_memory_.reset(new base::SharedMemory(handle, false));
+  shared_memory_.reset(new base::SharedMemory(handle, read_only_));
 }
 
 PlatformSharedBufferMapping::~PlatformSharedBufferMapping() {

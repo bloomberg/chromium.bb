@@ -31,9 +31,6 @@ class PlatformSharedBufferMapping;
 //   - Sizes/offsets (of the shared memory and mappings) are arbitrary, and not
 //     restricted by page size. However, more memory may actually be mapped than
 //     requested.
-//
-// It currently does NOT support the following:
-//   - Sharing read-only. (This will probably eventually be supported.)
 class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
     : public base::RefCountedThreadSafe<PlatformSharedBuffer> {
  public:
@@ -45,6 +42,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // handle |platform_handle|. Returns null on failure.
   static PlatformSharedBuffer* CreateFromPlatformHandle(
       size_t num_bytes,
+      bool read_only,
       ScopedPlatformHandle platform_handle);
 
   // Creates a shared buffer of size |num_bytes| from the existing shared memory
@@ -56,6 +54,9 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
 
   // Gets the size of shared buffer (in number of bytes).
   size_t GetNumBytes() const;
+
+  // Returns whether this shared buffer is read-only.
+  bool IsReadOnly() const;
 
   // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
   // must be contained in [0, |num_bytes|], and |length| must be at least 1.
@@ -71,7 +72,6 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
                                                      size_t length);
 
   // Duplicates the underlying platform handle and passes it to the caller.
-  // TODO(vtl): On POSIX, we'll need two FDs to support sharing read-only.
   ScopedPlatformHandle DuplicatePlatformHandle();
 
   // Duplicates the underlying shared memory handle and passes it to the caller.
@@ -83,10 +83,15 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // be disposed of.
   ScopedPlatformHandle PassPlatformHandle();
 
+  // Create and return a read-only duplicate of this shared buffer. If this
+  // shared buffer isn't capable of returning a read-only duplicate, then
+  // nullptr will be returned.
+  PlatformSharedBuffer* CreateReadOnlyDuplicate();
+
  private:
   friend class base::RefCountedThreadSafe<PlatformSharedBuffer>;
 
-  explicit PlatformSharedBuffer(size_t num_bytes);
+  PlatformSharedBuffer(size_t num_bytes, bool read_only);
   ~PlatformSharedBuffer();
 
   // This is called by |Create()| before this object is given to anyone.
@@ -100,6 +105,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   void InitFromSharedMemoryHandle(base::SharedMemoryHandle handle);
 
   const size_t num_bytes_;
+  const bool read_only_;
 
   base::Lock lock_;
   scoped_ptr<base::SharedMemory> shared_memory_;
@@ -126,12 +132,13 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBufferMapping {
   friend class PlatformSharedBuffer;
 
   PlatformSharedBufferMapping(base::SharedMemoryHandle handle,
+                              bool read_only,
                               size_t offset,
                               size_t length)
       : offset_(offset),
         length_(length),
         base_(nullptr),
-        shared_memory_(handle, false) {}
+        shared_memory_(handle, read_only) {}
 
   bool Map();
   void Unmap();

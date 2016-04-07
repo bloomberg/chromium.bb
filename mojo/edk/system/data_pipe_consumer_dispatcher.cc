@@ -403,6 +403,7 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       PlatformSharedBuffer::CreateFromPlatformHandle(
           state->options.capacity_num_bytes,
+          false /* read_only */,
           ScopedPlatformHandle(buffer_handle));
   if (!ring_buffer) {
     DLOG(ERROR) << "Failed to deserialize shared buffer handle.";

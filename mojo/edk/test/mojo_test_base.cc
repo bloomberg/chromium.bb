@@ -224,10 +224,16 @@ MojoHandle MojoTestBase::CreateBuffer(uint64_t size) {
 }
 
 // static
-MojoHandle MojoTestBase::DuplicateBuffer(MojoHandle h) {
+MojoHandle MojoTestBase::DuplicateBuffer(MojoHandle h, bool read_only) {
   MojoHandle new_handle;
+  MojoDuplicateBufferHandleOptions options = {
+    sizeof(MojoDuplicateBufferHandleOptions),
+    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE
+  };
+  if (read_only)
+    options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoDuplicateBufferHandle(h, nullptr, &new_handle));
+            MojoDuplicateBufferHandle(h, &options, &new_handle));
   return new_handle;
 }
 

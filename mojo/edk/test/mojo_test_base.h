@@ -115,7 +115,7 @@ class MojoTestBase : public testing::Test {
   static MojoHandle CreateBuffer(uint64_t size);
 
   // Duplicates a shared buffer to a new handle.
-  static MojoHandle DuplicateBuffer(MojoHandle h);
+  static MojoHandle DuplicateBuffer(MojoHandle h, bool read_only);
 
   // Maps a buffer, writes some data into it, and unmaps it.
   static void WriteToBuffer(MojoHandle h,

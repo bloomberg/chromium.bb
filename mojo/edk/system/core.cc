@@ -160,7 +160,6 @@ MojoResult Core::CreateSharedBufferWrapper(
     bool read_only,
     MojoHandle* mojo_wrapper_handle) {
   DCHECK(num_bytes);
-  CHECK(!read_only);
   scoped_refptr<PlatformSharedBuffer> platform_buffer =
       PlatformSharedBuffer::CreateFromSharedMemoryHandle(num_bytes, read_only,
                                                          shared_memory_handle);
@@ -214,7 +213,7 @@ MojoResult Core::PassSharedMemoryHandle(
   if (num_bytes)
     *num_bytes = platform_shared_buffer->GetNumBytes();
   if (read_only)
-    *read_only = false;
+    *read_only = platform_shared_buffer->IsReadOnly();
   *shared_memory_handle = platform_shared_buffer->DuplicateSharedMemoryHandle();
 
   shm_dispatcher->Close();

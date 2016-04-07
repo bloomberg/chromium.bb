@@ -56,6 +56,9 @@ MOJO_STATIC_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
 //   |MojoDuplicateBufferHandleOptionsFlags flags|: Reserved for future use.
 //       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE|: No flags; default
 //       mode.
+//       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY|: The duplicate
+//       shared buffer can only be mapped read-only. A read-only duplicate can
+//       only be created before the buffer is passed over a message pipe.
 //
 // TODO(vtl): Add flags to remove writability (and executability)? Also, COW?
 
@@ -64,6 +67,8 @@ typedef uint32_t MojoDuplicateBufferHandleOptionsFlags;
 #ifdef __cplusplus
 const MojoDuplicateBufferHandleOptionsFlags
     MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE = 0;
+const MojoDuplicateBufferHandleOptionsFlags
+    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY = 1 << 0;
 #else
 #define MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE \
   ((MojoDuplicateBufferHandleOptionsFlags)0)

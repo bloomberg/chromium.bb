@@ -94,8 +94,6 @@ PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
 // |read_only| is whether the handle is a read-only handle to shared memory.
 // This |MojoHandle| is a Mojo shared buffer and can be manipulated using the
 // shared buffer functions and transferred over a message pipe.
-// TODO(crbug.com/556587): Support read-only handles. Currently, |read_only|
-// must be false.
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
 CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
                           size_t num_bytes,
@@ -109,8 +107,6 @@ CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
 // Note: The value of |shared_memory_handle| may be
 // base::SharedMemory::NULLHandle(), even if this function returns success.
 // Callers should perform appropriate checks.
-// TODO(crbug.com/556587): Support read-only handles. Currently, |read_only|
-// will always return |false|.
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassSharedMemoryHandle(MojoHandle mojo_handle,
                        base::SharedMemoryHandle* shared_memory_handle,
