@@ -99,16 +99,13 @@ bool Resolve(const SourceDir& current_dir,
   size_t offset = 0;
 #if defined(OS_WIN)
   if (IsPathAbsolute(input)) {
-    if (input[0] != '/') {
-      *err = Err(original_value, "Bad absolute path.",
-                 "Absolute paths must be of the form /C:\\ but this is \"" +
-                     input.as_string() + "\".");
-      return false;
-    }
-    if (input.size() > 3 && input[2] == ':' && IsSlash(input[3]) &&
-        base::IsAsciiAlpha(input[1])) {
+    size_t drive_letter_pos = input[0] == '/' ? 1 : 0;
+    if (input.size() > drive_letter_pos + 2 &&
+        input[drive_letter_pos + 1] == ':' &&
+        IsSlash(input[drive_letter_pos + 2]) &&
+        base::IsAsciiAlpha(input[drive_letter_pos])) {
       // Skip over the drive letter colon.
-      offset = 3;
+      offset = drive_letter_pos + 2;
     }
   }
 #endif

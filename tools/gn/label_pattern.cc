@@ -130,16 +130,12 @@ LabelPattern LabelPattern::GetPattern(const SourceDir& current_dir,
   size_t offset = 0;
 #if defined(OS_WIN)
   if (IsPathAbsolute(str)) {
-    if (str[0] != '/') {
-      *err = Err(value, "Bad absolute path.",
-                 "Absolute paths must be of the form /C:\\ but this is \"" +
-                     str.as_string() + "\".");
-      return LabelPattern();
-    }
-    if (str.size() > 3 && str[2] == ':' && IsSlash(str[3]) &&
-        base::IsAsciiAlpha(str[1])) {
+    size_t drive_letter_pos = str[0] == '/' ? 1 : 0;
+    if (str.size() > drive_letter_pos + 2 && str[drive_letter_pos + 1] == ':' &&
+        IsSlash(str[drive_letter_pos + 2]) &&
+        base::IsAsciiAlpha(str[drive_letter_pos])) {
       // Skip over the drive letter colon.
-      offset = 3;
+      offset = drive_letter_pos + 2;
     }
   }
 #endif
