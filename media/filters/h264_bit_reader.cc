@@ -79,7 +79,7 @@ bool H264BitReader::ReadBits(int num_bits, int* out) {
   }
 
   *out |= (curr_byte_ >> (num_remaining_bits_in_curr_byte_ - bits_left));
-  *out &= ((1 << num_bits) - 1);
+  *out &= ((1u << num_bits) - 1u);
   num_remaining_bits_in_curr_byte_ -= bits_left;
 
   return true;
