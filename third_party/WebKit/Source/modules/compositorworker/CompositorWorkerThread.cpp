@@ -160,7 +160,7 @@ WebThreadSupportingGC* CompositorWorkerThread::sharedBackingThread()
     return CompositorWorkerSharedState::instance().compositorWorkerThread();
 }
 
-RawPtr<WorkerGlobalScope> CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+WorkerGlobalScope*CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorWorkerThread::createWorkerGlobalScope");
     return CompositorWorkerGlobalScope::create(this, startupData, m_timeOrigin);

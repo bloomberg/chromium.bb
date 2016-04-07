@@ -50,7 +50,7 @@ SharedWorkerThread::~SharedWorkerThread()
 {
 }
 
-RawPtr<WorkerGlobalScope> SharedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+WorkerGlobalScope* SharedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return SharedWorkerGlobalScope::create(m_name, this, startupData);
 }

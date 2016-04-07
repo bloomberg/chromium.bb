@@ -41,7 +41,7 @@ class ExecutionContext;
 class WorkerEventQueue final : public EventQueue {
 public:
 
-    static RawPtr<WorkerEventQueue> create(ExecutionContext*);
+    static WorkerEventQueue* create(ExecutionContext*);
     ~WorkerEventQueue() override;
     DECLARE_TRACE();
 

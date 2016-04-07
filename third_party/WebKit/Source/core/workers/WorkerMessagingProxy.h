@@ -76,7 +76,7 @@ public:
     ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
 
 protected:
-    WorkerMessagingProxy(InProcessWorkerBase*, RawPtr<WorkerClients>);
+    WorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
     ~WorkerMessagingProxy() override;
 
     virtual PassOwnPtr<WorkerThread> createWorkerThread(double originTime) = 0;

@@ -71,7 +71,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
 
 } // namespace
 
-WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, RawPtr<WorkerClients> workerClients)
+WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, WorkerClients* workerClients)
     : m_executionContext(workerObject->getExecutionContext())
     , m_workerObjectProxy(WorkerObjectProxy::create(this))
     , m_workerObject(workerObject)
@@ -169,7 +169,7 @@ void WorkerMessagingProxy::reportException(const String& errorMessage, int lineN
     // We don't bother checking the askedToTerminate() flag here, because exceptions should *always* be reported even if the thread is terminated.
     // This is intentionally different than the behavior in MessageWorkerTask, because terminated workers no longer deliver messages (section 4.6 of the WebWorker spec), but they do report exceptions.
 
-    RawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, nullptr);
+    ErrorEvent* event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, nullptr);
     DispatchEventResult dispatchResult = m_workerObject->dispatchEvent(event);
     postTaskToWorkerGlobalScope(createCrossThreadTask(&processExceptionOnWorkerGlobalScope, exceptionId, dispatchResult != DispatchEventResult::NotCanceled));
 }
@@ -185,9 +185,9 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
     if (!frame)
         return;
 
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
     consoleMessage->setWorkerInspectorProxy(m_workerInspectorProxy.get());
-    frame->console().addMessage(consoleMessage.release());
+    frame->console().addMessage(consoleMessage);
 }
 
 void WorkerMessagingProxy::workerThreadCreated()

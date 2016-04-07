@@ -206,7 +206,7 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
     WorkerGlobalScope::importScripts(urls, exceptionState);
 }
 
-RawPtr<CachedMetadataHandler> ServiceWorkerGlobalScope::createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData)
+CachedMetadataHandler* ServiceWorkerGlobalScope::createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData)
 {
     return ServiceWorkerScriptCachedMetadataHandler::create(this, scriptURL, metaData);
 }

@@ -69,7 +69,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
 public:
     typedef WorkerGlobalScope Base;
 
-    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, RawPtr<WorkerClients> workerClients)
+    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
         : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients)
         , m_thread(thread)
     {
@@ -124,7 +124,7 @@ public:
         WorkerThread::willDestroyIsolate();
     }
 
-    RawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData) override
+    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData) override
     {
         return new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
     }
@@ -145,7 +145,7 @@ public:
         CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
         headers->append(headerAndType);
 
-        RawPtr<WorkerClients> clients = nullptr;
+        WorkerClients* clients = nullptr;
 
         start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
@@ -155,7 +155,7 @@ public:
             DontPauseWorkerGlobalScopeOnStart,
             headers.release(),
             securityOrigin,
-            clients.release(),
+            clients,
             WebAddressSpaceLocal,
             V8CacheOptionsDefault));
     }

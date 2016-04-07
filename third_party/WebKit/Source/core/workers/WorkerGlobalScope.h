@@ -109,7 +109,7 @@ public:
     // WorkerUtils
     virtual void importScripts(const Vector<String>& urls, ExceptionState&);
     // Returns null if caching is not supported.
-    virtual RawPtr<CachedMetadataHandler> createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
+    virtual CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
 
     WorkerNavigator* navigator() const;
 
@@ -152,11 +152,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, RawPtr<WorkerClients>);
+    WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     void applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers);
 
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override;
-    void addMessageToWorkerConsole(RawPtr<ConsoleMessage>);
+    void addMessageToWorkerConsole(ConsoleMessage*);
     void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 
     void removeURLFromMemoryCache(const KURL&) override;

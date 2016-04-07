@@ -49,7 +49,7 @@ ServiceWorkerThread::~ServiceWorkerThread()
 {
 }
 
-RawPtr<WorkerGlobalScope> ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+WorkerGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return ServiceWorkerGlobalScope::create(this, startupData);
 }

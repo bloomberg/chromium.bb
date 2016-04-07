@@ -55,7 +55,7 @@ public:
     static const char* supplementName();
 };
 
-CORE_EXPORT void provideWorkerGlobalScopeProxyProviderTo(Page&, RawPtr<WorkerGlobalScopeProxyProvider>);
+CORE_EXPORT void provideWorkerGlobalScopeProxyProviderTo(Page&, WorkerGlobalScopeProxyProvider*);
 
 } // namespace blink
 

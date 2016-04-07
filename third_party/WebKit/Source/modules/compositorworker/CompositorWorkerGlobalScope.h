@@ -17,7 +17,7 @@ class WorkerThreadStartupData;
 class CompositorWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CompositorWorkerGlobalScope> create(CompositorWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
+    static CompositorWorkerGlobalScope* create(CompositorWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
     ~CompositorWorkerGlobalScope() override;
 
     // EventTarget

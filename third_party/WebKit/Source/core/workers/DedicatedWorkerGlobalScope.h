@@ -46,7 +46,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
-    static RawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
+    static DedicatedWorkerGlobalScope* create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
     ~DedicatedWorkerGlobalScope() override;
 
     bool isDedicatedWorkerGlobalScope() const override { return true; }
@@ -65,7 +65,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, RawPtr<WorkerClients>);
+    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
 };
 
 } // namespace blink

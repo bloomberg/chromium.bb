@@ -33,7 +33,7 @@
 
 namespace blink {
 
-RawPtr<WorkerEventQueue> WorkerEventQueue::create(ExecutionContext* context)
+WorkerEventQueue* WorkerEventQueue::create(ExecutionContext* context)
 {
     return new WorkerEventQueue(context);
 }
@@ -58,7 +58,7 @@ DEFINE_TRACE(WorkerEventQueue)
 
 class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<EventDispatcherTask> create(RawPtr<Event> event, WorkerEventQueue* eventQueue)
+    static PassOwnPtr<EventDispatcherTask> create(Event* event, WorkerEventQueue* eventQueue)
     {
         return adoptPtr(new EventDispatcherTask(event, eventQueue));
     }
@@ -69,13 +69,8 @@ public:
             m_eventQueue->removeEvent(m_event.get());
     }
 
-    void dispatchEvent(ExecutionContext* context, RawPtr<Event> prpEvent)
+    void dispatchEvent(ExecutionContext* context, Event* event)
     {
-        // Stash the event on the stack in a RawPtr; trying to do this
-        // in a single line causes an optimization bug with MSVC. MSVC generates code
-        // that passes the event arg (forcing RawPtr to be released)
-        // before the target is queried.
-        RawPtr<Event> event = prpEvent;
         InspectorInstrumentation::AsyncTask asyncTask(context, event);
         event->target()->dispatchEvent(event);
     }
@@ -96,7 +91,7 @@ public:
     }
 
 private:
-    EventDispatcherTask(RawPtr<Event> event, WorkerEventQueue* eventQueue)
+    EventDispatcherTask(Event* event, WorkerEventQueue* eventQueue)
         : m_event(event)
         , m_eventQueue(eventQueue)
         , m_isCancelled(false)

@@ -44,7 +44,7 @@ const char* WorkerGlobalScopeProxyProvider::supplementName()
     return "WorkerGlobalScopeProxyProvider";
 }
 
-void provideWorkerGlobalScopeProxyProviderTo(Page& page, RawPtr<WorkerGlobalScopeProxyProvider> provider)
+void provideWorkerGlobalScopeProxyProviderTo(Page& page, WorkerGlobalScopeProxyProvider* provider)
 {
     Supplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
 }

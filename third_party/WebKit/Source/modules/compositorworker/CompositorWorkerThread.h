@@ -30,7 +30,7 @@ protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
 
     // WorkerThread:
-    RawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
     WebThreadSupportingGC& backingThread() override;
     void didStartWorkerThread() override { }
     void willStopWorkerThread() override { }

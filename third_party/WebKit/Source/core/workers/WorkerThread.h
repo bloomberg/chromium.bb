@@ -118,7 +118,7 @@ protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     // Factory method for creating a new worker context for the thread.
-    virtual RawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
+    virtual WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
 
     virtual void postInitialize() { }
 
@@ -160,7 +160,7 @@ private:
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
-    RawPtr<WebScheduler> m_webScheduler; // Not owned.
+    WebScheduler* m_webScheduler; // Not owned.
 
     // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate|, |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;

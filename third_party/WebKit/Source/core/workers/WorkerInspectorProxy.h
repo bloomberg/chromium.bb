@@ -21,7 +21,7 @@ class WorkerGlobalScopeProxy;
 // All of these methods should be called on the main thread.
 class CORE_EXPORT WorkerInspectorProxy final : public GarbageCollectedFinalized<WorkerInspectorProxy> {
 public:
-    static RawPtr<WorkerInspectorProxy> create();
+    static WorkerInspectorProxy* create();
 
     ~WorkerInspectorProxy();
     DECLARE_TRACE();

@@ -62,7 +62,7 @@ public:
     bool isExecutionTerminating() const;
 
     // Returns true if the evaluation completed with no uncaught exception.
-    bool evaluate(const ScriptSourceCode&, RawPtr<ErrorEvent>* = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
+    bool evaluate(const ScriptSourceCode&, ErrorEvent** = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
 
     // Prevents future JavaScript execution. See
     // willScheduleExecutionTermination, isExecutionForbidden.

@@ -71,7 +71,7 @@
 
 namespace blink {
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, RawPtr<WorkerClients> workerClients)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, WorkerClients* workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
@@ -103,7 +103,7 @@ WorkerGlobalScope::~WorkerGlobalScope()
 void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers)
 {
     if (!contentSecurityPolicy()) {
-        RawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+        ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
         setContentSecurityPolicy(csp);
     }
     for (const auto& policyAndType : headers)
@@ -206,7 +206,7 @@ void WorkerGlobalScope::dispose()
     // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,
     // which become dangling once Heap is destroyed.
     for (auto it = m_eventListeners.begin(); it != m_eventListeners.end(); ) {
-        RawPtr<V8AbstractEventListener> listener = *it;
+        V8AbstractEventListener* listener = *it;
         // clearListenerObject() will unregister the listener from
         // m_eventListeners, and invalidate the iterator, so we have to advance
         // it first.
@@ -269,12 +269,12 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
         InspectorInstrumentation::scriptImported(&executionContext, scriptLoader->identifier(), scriptLoader->script());
         scriptLoaded(scriptLoader->script().length(), scriptLoader->cachedMetadata() ? scriptLoader->cachedMetadata()->size() : 0);
 
-        RawPtr<ErrorEvent> errorEvent = nullptr;
+        ErrorEvent* errorEvent = nullptr;
         OwnPtr<Vector<char>> cachedMetaData(scriptLoader->releaseCachedMetadata());
-        RawPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
-        m_scriptController->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
+        CachedMetadataHandler* handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
+        m_scriptController->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent, handler, m_v8CacheOptions);
         if (errorEvent) {
-            m_scriptController->rethrowExceptionFromImportedScript(errorEvent.release(), exceptionState);
+            m_scriptController->rethrowExceptionFromImportedScript(errorEvent, exceptionState);
             return;
         }
     }
@@ -288,7 +288,7 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
 void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
 {
     unsigned long exceptionId = ++m_workerExceptionUniqueIdentifier;
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
     consoleMessage->setCallStack(callStack);
     m_pendingMessages.set(exceptionId, consoleMessage);
 
@@ -303,12 +303,12 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
 void WorkerGlobalScope::addConsoleMessage(RawPtr<ConsoleMessage> prpConsoleMessage)
 {
     ASSERT(isContextThread());
-    RawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
+    ConsoleMessage* consoleMessage = prpConsoleMessage;
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);
-    addMessageToWorkerConsole(consoleMessage.release());
+    addMessageToWorkerConsole(consoleMessage);
 }
 
-void WorkerGlobalScope::addMessageToWorkerConsole(RawPtr<ConsoleMessage> consoleMessage)
+void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage)
 {
     ASSERT(isContextThread());
     m_messageStorage->reportMessage(this, consoleMessage);
@@ -369,9 +369,9 @@ ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
 
 void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
 {
-    RawPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
+    ConsoleMessage* consoleMessage = m_pendingMessages.take(exceptionId);
     if (!isHandled)
-        addConsoleMessage(consoleMessage.release());
+        addConsoleMessage(consoleMessage);
 }
 
 bool WorkerGlobalScope::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const

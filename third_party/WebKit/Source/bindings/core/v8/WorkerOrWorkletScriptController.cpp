@@ -244,7 +244,7 @@ ScriptValue WorkerOrWorkletScriptController::evaluate(const CompressibleString& 
     return ScriptValue(m_scriptState.get(), result);
 }
 
-bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCode, RawPtr<ErrorEvent>* errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
+bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCode, ErrorEvent** errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (isExecutionForbidden())
         return false;
@@ -264,7 +264,7 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
                 *errorEvent = ErrorEvent::createSanitizedError(m_world.get());
             else
                 *errorEvent = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(m_scriptState.get(), errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global());
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(m_scriptState.get(), *errorEvent, state.exception.v8Value(), m_scriptState->context()->Global());
         } else {
             ASSERT(!m_globalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RawPtr<ErrorEvent> event = nullptr;

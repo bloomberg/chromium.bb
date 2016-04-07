@@ -39,7 +39,7 @@ WorkerInspectorProxy::WorkerInspectorProxy()
 {
 }
 
-RawPtr<WorkerInspectorProxy> WorkerInspectorProxy::create()
+WorkerInspectorProxy* WorkerInspectorProxy::create()
 {
     return new WorkerInspectorProxy();
 }

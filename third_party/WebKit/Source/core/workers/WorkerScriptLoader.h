@@ -80,7 +80,7 @@ public:
     const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
     ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
-    RawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+    ContentSecurityPolicy* releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
     WebAddressSpace responseAddressSpace() const { return m_responseAddressSpace; }
 
