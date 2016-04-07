@@ -115,12 +115,14 @@ POWER_PLATFORM_ROLE GetPlatformRole() {
   return PowerDeterminePlatformRoleEx(POWER_PLATFORM_ROLE_V2);
 }
 
+}  // namespace
+
 // Uses the Windows 10 WRL API's to query the current system state. The API's
 // we are using in the function below are supported in Win32 apps as per msdn.
 // It looks like the API implementation is buggy at least on Surface 4 causing
 // it to always return UserInteractionMode_Touch which as per documentation
 // indicates tablet mode.
-bool IsWindows10TabletDevice() {
+bool IsWindows10TabletMode(HWND hwnd) {
   if (GetVersion() < VERSION_WIN10)
     return false;
 
@@ -179,7 +181,7 @@ bool IsWindows10TabletDevice() {
   // Avoid using GetForegroundWindow here and pass in the HWND of the window
   // intiating the request to display the keyboard.
   hr = view_settings_interop->GetForWindow(
-      ::GetForegroundWindow(),
+      hwnd,
       __uuidof(ABI::Windows::UI::ViewManagement::IUIViewSettings),
       view_settings.ReceiveVoid());
   if (FAILED(hr))
@@ -190,8 +192,6 @@ bool IsWindows10TabletDevice() {
   view_settings->get_UserInteractionMode(&mode);
   return mode == ABI::Windows::UI::ViewManagement::UserInteractionMode_Touch;
 }
-
-}  // namespace
 
 // Returns true if a physical keyboard is detected on Windows 8 and up.
 // Uses the Setup APIs to enumerate the attached keyboards and returns true
@@ -476,7 +476,7 @@ bool IsTabletDevice(std::string* reason) {
     return false;
   }
 
-  if (IsWindows10TabletDevice())
+  if (IsWindows10TabletMode(::GetForegroundWindow()))
     return true;
 
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {

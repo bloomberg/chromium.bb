@@ -123,6 +123,10 @@ BASE_EXPORT bool ShouldCrashOnProcessDetach();
 // process is aborted.
 BASE_EXPORT void SetAbortBehaviorForCrashReporting();
 
+// Checks whether the supplied |hwnd| is in Windows 10 tablet mode. Will return
+// false on versions below 10.
+BASE_EXPORT bool IsWindows10TabletMode(HWND hwnd);
+
 // A tablet is a device that is touch enabled and also is being used
 // "like a tablet". This is used by the following:-
 // 1. Metrics:- To gain insight into how users use Chrome.
