@@ -496,6 +496,9 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("swipe", &GpuBenchmarking::Swipe)
       .SetMethod("scrollBounce", &GpuBenchmarking::ScrollBounce)
       .SetMethod("pinchBy", &GpuBenchmarking::PinchBy)
+      .SetMethod("pageScaleFactor", &GpuBenchmarking::PageScaleFactor)
+      .SetMethod("visualViewportX", &GpuBenchmarking::VisualViewportX)
+      .SetMethod("visualViewportY", &GpuBenchmarking::VisualViewportY)
       .SetMethod("visualViewportHeight", &GpuBenchmarking::VisualViewportHeight)
       .SetMethod("visualViewportWidth", &GpuBenchmarking::VisualViewportWidth)
       .SetMethod("tap", &GpuBenchmarking::Tap)
@@ -765,6 +768,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   scoped_ptr<SyntheticPinchGestureParams> gesture_params(
       new SyntheticPinchGestureParams);
 
+  // TODO(bokan): Remove page scale here when change land in Catapult.
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
   float page_scale_factor = context.web_view()->pageScaleFactor();
 
@@ -789,6 +793,27 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
                  base::RetainedRef(callback_and_context)));
 
   return true;
+}
+
+float GpuBenchmarking::PageScaleFactor() {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return 0.0;
+  return context.web_view()->pageScaleFactor();
+}
+
+float GpuBenchmarking::VisualViewportY() {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return 0.0;
+  return context.web_view()->visualViewportOffset().y;
+}
+
+float GpuBenchmarking::VisualViewportX() {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return 0.0;
+  return context.web_view()->visualViewportOffset().x;
 }
 
 float GpuBenchmarking::VisualViewportHeight() {
