@@ -398,8 +398,8 @@ struct ArraySerializationStrategy<ArrayType, true> {
     for (size_t i = 0; i < input->size(); ++i) {
       // We don't short-circuit on failure since we can't know what the native
       // type's ParamTraits' expectations are.
-      success =
-          success && DeserializeNative_(input->at(i), &result[i], context);
+      if (!DeserializeNative_(input->at(i), &result[i], context))
+        success = false;
     }
     output->Swap(&result);
     return success;
