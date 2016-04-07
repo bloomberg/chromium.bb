@@ -52,11 +52,6 @@ CSSStyleSheetResource* CSSStyleSheetResource::createForTest(const ResourceReques
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
     : StyleSheetResource(resourceRequest, CSSStyleSheet, options, "text/css", charset)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptCSS, ("text/css,*/*;q=0.1"));
-
-    // Prefer text/css but accept any type (dell.com serves a stylesheet
-    // as text/html; see <http://bugs.webkit.org/show_bug.cgi?id=11451>).
-    setAccept(acceptCSS);
 }
 
 CSSStyleSheetResource::~CSSStyleSheetResource()

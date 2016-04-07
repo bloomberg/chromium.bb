@@ -34,6 +34,10 @@ struct WebPluginInfo;
 // subsequent reads until it's done buffering.  As a result, the buffer
 // returned by the next ResourceHandler must have a capacity of at least
 // net::kMaxBytesToSniff * 2.
+//
+// Before a request is sent, this ResourceHandler will also set an appropriate
+// Accept header on the request based on its ResourceType, if one isn't already
+// present.
 class CONTENT_EXPORT MimeTypeResourceHandler
     : public LayeredResourceHandler,
       public ResourceController {
@@ -49,6 +53,7 @@ class CONTENT_EXPORT MimeTypeResourceHandler
   // ResourceHandler implementation:
   void SetController(ResourceController* controller) override;
   bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  bool OnWillStart(const GURL&, bool* defer) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;

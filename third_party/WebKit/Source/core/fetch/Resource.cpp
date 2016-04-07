@@ -261,8 +261,6 @@ void Resource::load(ResourceFetcher* fetcher)
 
     ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
     KURL url = request.url();
-    if (!accept().isEmpty())
-        request.setHTTPAccept(accept());
     request.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
 
     m_loader = ResourceLoader::create(fetcher, this);

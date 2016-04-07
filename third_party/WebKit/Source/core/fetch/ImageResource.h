@@ -152,7 +152,6 @@ private:
 
     void clear();
 
-    void setCustomAcceptHeader();
     void createImage();
     void updateImage(bool allDataReceived);
     void clearImage();

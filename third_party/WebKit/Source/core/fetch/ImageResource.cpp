@@ -65,7 +65,6 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, const Resou
     , m_hasDevicePixelRatioHeaderValue(false)
 {
     WTF_LOG(Timers, "new ImageResource(ResourceRequest) %p", this);
-    setCustomAcceptHeader();
 }
 
 ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& options)
@@ -76,7 +75,6 @@ ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& o
 {
     WTF_LOG(Timers, "new ImageResource(Image) %p", this);
     setStatus(Cached);
-    setCustomAcceptHeader();
 }
 
 ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Image* image, const ResourceLoaderOptions& options)
@@ -85,7 +83,6 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Imag
 {
     WTF_LOG(Timers, "new ImageResource(ResourceRequest, Image) %p", this);
     setStatus(Cached);
-    setCustomAcceptHeader();
 }
 
 ImageResource::~ImageResource()
@@ -311,12 +308,6 @@ void ImageResource::clear()
     prune();
     clearImage();
     setEncodedSize(0);
-}
-
-void ImageResource::setCustomAcceptHeader()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptImages, ("image/webp,image/*,*/*;q=0.8"));
-    setAccept(acceptImages);
 }
 
 inline void ImageResource::createImage()

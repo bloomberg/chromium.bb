@@ -79,8 +79,6 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   headers.AddHeadersFromString(entry.extra_headers());
   headers.SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
                              GetContentClient()->GetUserAgent());
-  // TODO(clamy): match what blink is doing with accept headers.
-  headers.SetHeaderIfMissing("Accept", "*/*");
 
   // Fill POST data from the browser in the request body.
   scoped_refptr<ResourceRequestBody> request_body;

@@ -45,7 +45,6 @@ class TestResourceHandler : public ResourceHandler {
   }
 
   bool OnWillStart(const GURL& url, bool* defer) override {
-    NOTREACHED();
     return false;
   }
 
@@ -220,6 +219,11 @@ class MimeTypeResourceHandlerTest : public testing::Test {
                                bool must_download,
                                ResourceType request_resource_type);
 
+  std::string TestAcceptHeaderSetting(ResourceType request_resource_type);
+  std::string TestAcceptHeaderSettingWithURLRequest(
+      ResourceType request_resource_type,
+      net::URLRequest* request);
+
  private:
   // Whether the URL request should be intercepted as a stream.
   bool stream_has_handler_;
@@ -271,6 +275,88 @@ bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
   content::RunAllPendingInMessageLoop();
   EXPECT_LT(host.intercepted_as_stream_count(), 2);
   return host.intercepted_as_stream();
+}
+
+std::string MimeTypeResourceHandlerTest::TestAcceptHeaderSetting(
+    ResourceType request_resource_type) {
+  net::URLRequestContext context;
+  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  return TestAcceptHeaderSettingWithURLRequest(
+      request_resource_type, request.get());
+}
+
+std::string MimeTypeResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
+    ResourceType request_resource_type,
+    net::URLRequest* request) {
+  bool is_main_frame = request_resource_type == RESOURCE_TYPE_MAIN_FRAME;
+  ResourceRequestInfo::AllocateForTesting(
+      request,
+      request_resource_type,
+      nullptr,          // context
+      0,                // render_process_id
+      0,                // render_view_id
+      0,                // render_frame_id
+      is_main_frame,    // is_main_frame
+      false,            // parent_is_main_frame
+      false,            // allow_download
+      true,             // is_async
+      false);           // is_using_lofi
+
+  TestResourceDispatcherHost host(stream_has_handler_);
+  TestResourceDispatcherHostDelegate host_delegate(false);
+  host.SetDelegate(&host_delegate);
+
+  scoped_ptr<ResourceHandler> mime_sniffing_handler(new MimeTypeResourceHandler(
+      scoped_ptr<ResourceHandler>(new TestResourceHandler()), &host,
+      nullptr, request));
+
+  bool defer = false;
+  mime_sniffing_handler->OnWillStart(request->url(), &defer);
+  content::RunAllPendingInMessageLoop();
+
+  std::string accept_header;
+  request->extra_request_headers().GetHeader("Accept", &accept_header);
+  return accept_header;
+}
+
+// Test that the proper Accept: header is set based on the ResourceType
+TEST_F(MimeTypeResourceHandlerTest, AcceptHeaders) {
+  EXPECT_EQ(
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
+          "*/*;q=0.8",
+      TestAcceptHeaderSetting(RESOURCE_TYPE_MAIN_FRAME));
+  EXPECT_EQ(
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
+          "*/*;q=0.8",
+    TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_FRAME));
+  EXPECT_EQ("text/css,*/*;q=0.1",
+      TestAcceptHeaderSetting(RESOURCE_TYPE_STYLESHEET));
+  EXPECT_EQ("*/*",
+      TestAcceptHeaderSetting(RESOURCE_TYPE_SCRIPT));
+  EXPECT_EQ("image/webp,image/*,*/*;q=0.8",
+      TestAcceptHeaderSetting(RESOURCE_TYPE_IMAGE));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_FONT_RESOURCE));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_RESOURCE));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_OBJECT));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_MEDIA));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_WORKER));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SHARED_WORKER));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PREFETCH));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_FAVICON));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_XHR));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PING));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SERVICE_WORKER));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_CSP_REPORT));
+  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PLUGIN_RESOURCE));
+
+  // Ensure that if an Accept header is already set, it is not overwritten.
+  net::URLRequestContext context;
+  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  request->SetExtraRequestHeaderByName("Accept", "*", true);
+  EXPECT_EQ("*",
+      TestAcceptHeaderSettingWithURLRequest(RESOURCE_TYPE_XHR, request.get()));
 }
 
 // Test that stream requests are correctly intercepted under the right

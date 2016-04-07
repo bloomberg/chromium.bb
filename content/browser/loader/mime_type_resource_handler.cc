@@ -35,10 +35,19 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
 namespace {
+
+const char kAcceptHeader[] = "Accept";
+const char kFrameAcceptHeader[] =
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
+    "*/*;q=0.8";
+const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
+const char kImageAcceptHeader[] = "image/webp,image/*,*/*;q=0.8";
+const char kDefaultAcceptHeader[] = "*/*";
 
 // Used to write into an existing IOBuffer at a given offset.
 class DependentIOBuffer : public net::WrappedIOBuffer {
@@ -114,6 +123,46 @@ bool MimeTypeResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   state_ = STATE_PROCESSING;
   return ProcessResponse(defer);
+}
+
+bool MimeTypeResourceHandler::OnWillStart(const GURL& url, bool* defer) {
+  const char* accept_value = nullptr;
+  switch (GetRequestInfo()->GetResourceType()) {
+    case RESOURCE_TYPE_MAIN_FRAME:
+    case RESOURCE_TYPE_SUB_FRAME:
+      accept_value = kFrameAcceptHeader;
+      break;
+    case RESOURCE_TYPE_STYLESHEET:
+      accept_value = kStylesheetAcceptHeader;
+      break;
+    case RESOURCE_TYPE_IMAGE:
+      accept_value = kImageAcceptHeader;
+      break;
+    case RESOURCE_TYPE_SCRIPT:
+    case RESOURCE_TYPE_FONT_RESOURCE:
+    case RESOURCE_TYPE_SUB_RESOURCE:
+    case RESOURCE_TYPE_OBJECT:
+    case RESOURCE_TYPE_MEDIA:
+    case RESOURCE_TYPE_WORKER:
+    case RESOURCE_TYPE_SHARED_WORKER:
+    case RESOURCE_TYPE_PREFETCH:
+    case RESOURCE_TYPE_FAVICON:
+    case RESOURCE_TYPE_XHR:
+    case RESOURCE_TYPE_PING:
+    case RESOURCE_TYPE_SERVICE_WORKER:
+    case RESOURCE_TYPE_CSP_REPORT:
+    case RESOURCE_TYPE_PLUGIN_RESOURCE:
+      accept_value = kDefaultAcceptHeader;
+      break;
+    case RESOURCE_TYPE_LAST_TYPE:
+      NOTREACHED();
+      break;
+  }
+
+  // The false parameter prevents overwriting an existing accept header value,
+  // which is needed because JS can manually set an accept header on an XHR.
+  request()->SetExtraRequestHeaderByName(kAcceptHeader, accept_value, false);
+  return next_handler_->OnWillStart(url, defer);
 }
 
 bool MimeTypeResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,

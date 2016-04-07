@@ -302,11 +302,6 @@ namespace content {
 
 namespace {
 
-const char kDefaultAcceptHeader[] =
-    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/"
-    "*;q=0.8";
-const char kAcceptHeader[] = "Accept";
-
 const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
 typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
@@ -3756,15 +3751,6 @@ void RenderFrameImpl::willSendRequest(
         request.setHTTPHeaderField("X-Requested-With", requested_with);
     }
     stream_override = old_extra_data->TakeStreamOverrideOwnership();
-  }
-
-  // Add the default accept header for frame request if it has not been set
-  // already.
-  if ((request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel ||
-       request.getFrameType() == blink::WebURLRequest::FrameTypeNested) &&
-      request.httpHeaderField(WebString::fromUTF8(kAcceptHeader)).isEmpty()) {
-    request.setHTTPHeaderField(WebString::fromUTF8(kAcceptHeader),
-                               WebString::fromUTF8(kDefaultAcceptHeader));
   }
 
   // Add an empty HTTP origin header for non GET methods if none is currently

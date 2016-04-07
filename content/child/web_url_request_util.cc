@@ -34,7 +34,7 @@ const char kThrottledErrorDescription[] =
 
 class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
  public:
-  HeaderFlattener() : has_accept_header_(false) {}
+  HeaderFlattener() {}
 
   void visitHeader(const WebString& name, const WebString& value) override {
     // Headers are latin1.
@@ -46,29 +46,17 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
     if (base::LowerCaseEqualsASCII(name_latin1, "referer"))
       return;
 
-    if (base::LowerCaseEqualsASCII(name_latin1, "accept"))
-      has_accept_header_ = true;
-
     if (!buffer_.empty())
       buffer_.append("\r\n");
     buffer_.append(name_latin1 + ": " + value_latin1);
   }
 
   const std::string& GetBuffer() {
-    // In some cases, WebKit doesn't add an Accept header, but not having the
-    // header confuses some web servers.  See bug 808613.
-    if (!has_accept_header_) {
-      if (!buffer_.empty())
-        buffer_.append("\r\n");
-      buffer_.append("Accept: */*");
-      has_accept_header_ = true;
-    }
     return buffer_;
   }
 
  private:
   std::string buffer_;
-  bool has_accept_header_;
 };
 
 }  // namespace

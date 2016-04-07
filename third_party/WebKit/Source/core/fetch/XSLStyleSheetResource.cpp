@@ -35,10 +35,22 @@
 
 namespace blink {
 
+static void applyXSLRequestProperties(ResourceRequest& request)
+{
+    request.setRequestContext(WebURLRequest::RequestContextXSLT);
+    // TODO(japhet): Accept: headers can be set manually on XHRs from script,
+    // in the browser process, and... here. The browser process can't tell the
+    // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
+    // stylesheets are all CSS unless they already have an Accept: header set.
+    // Should we teach the browser process the difference?
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml"));
+    request.setHTTPAccept(acceptXSLT);
+}
+
 XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(FetchRequest& request, ResourceFetcher* fetcher)
 {
+    applyXSLRequestProperties(request.mutableResourceRequest());
     request.mutableResourceRequest().setTimeoutInterval(10);
-    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextXSLT);
     ResourceLoaderOptions options(request.options());
     options.synchronousPolicy = RequestSynchronously;
     request.setOptions(options);
@@ -51,19 +63,13 @@ XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(FetchRequest& r
 XSLStyleSheetResource* XSLStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextXSLT);
+    applyXSLRequestProperties(request.mutableResourceRequest());
     return toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
 }
 
 XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
     : StyleSheetResource(resourceRequest, XSLStyleSheet, options, "text/xsl", charset)
 {
-    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml"));
-
-    // It's XML we want.
-    // FIXME: This should accept more general xml formats */*+xml, image/svg+xml for example.
-    setAccept(acceptXSLT);
 }
 
 void XSLStyleSheetResource::didAddClient(ResourceClient* c)

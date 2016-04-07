@@ -148,7 +148,6 @@ public:
     void setHTTPUserAgent(const AtomicString& httpUserAgent) { setHTTPHeaderField(HTTPNames::User_Agent, httpUserAgent); }
     void clearHTTPUserAgent();
 
-    const AtomicString& httpAccept() const { return httpHeaderField(HTTPNames::Accept); }
     void setHTTPAccept(const AtomicString& httpAccept) { setHTTPHeaderField(HTTPNames::Accept, httpAccept); }
 
     EncodedFormData* httpBody() const;

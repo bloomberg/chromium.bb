@@ -198,11 +198,6 @@ public:
 
     String reasonNotDeletable() const;
 
-    // List of acceptable MIME types separated by ",".
-    // A MIME type may contain a wildcard, e.g. "text/*".
-    AtomicString accept() const { return m_accept; }
-    void setAccept(const AtomicString& accept) { m_accept = accept; }
-
     AtomicString httpContentType() const;
 
     bool wasCanceled() const { return m_error.isCancellation(); }
@@ -303,7 +298,6 @@ protected:
 
     ResourceRequest m_resourceRequest;
     ResourceRequest m_revalidatingRequest;
-    AtomicString m_accept;
     Member<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
 
