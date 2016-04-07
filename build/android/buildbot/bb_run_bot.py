@@ -129,6 +129,7 @@ def GetBotStepMap():
   flakiness_server = (
       '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
   experimental = ['--experimental']
+  run_mb = ['--run-mb']
   bisect_chrome_output_dir = os.path.abspath(
       os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
                    os.pardir, 'bisect', 'src', 'out'))
@@ -180,7 +181,7 @@ def GetBotStepMap():
         H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
       B('gpu-builder-tests-dbg',
-        H(compile_step),
+        H(compile_step, extra_args=run_mb),
         T(['gpu'], ['--install=ContentShell'])),
       # Pass empty T([]) so that logcat monitor and device status check are run.
       B('perf-bisect-builder-tests-dbg',
