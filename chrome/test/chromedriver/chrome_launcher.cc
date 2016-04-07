@@ -495,6 +495,14 @@ Status LaunchAndroidChrome(
     return status;
   }
 
+  std::string package = devtools_http_client->browser_info()->android_package;
+  if (package != capabilities.android_package) {
+    device->TearDown();
+    return Status(
+        kSessionNotCreatedException,
+        base::StringPrintf("please close %s and try again", package.c_str()));
+  }
+
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
