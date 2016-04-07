@@ -85,7 +85,7 @@ void RunTest(TestResult expected_result,
 
   scoped_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
-  bool result = VerifyDeviceCert2(certs, time, &context, &policy);
+  bool result = VerifyDeviceCert(certs, time, &context, &policy);
 
   if (expected_result == RESULT_SUCCESS) {
     ASSERT_TRUE(result);
@@ -98,8 +98,7 @@ void RunTest(TestResult expected_result,
     // Test that an invalid signature fails.
 
     EXPECT_FALSE(
-        context->VerifySignatureOverData("bogus signature", "bogus data")
-            .Success());
+        context->VerifySignatureOverData("bogus signature", "bogus data"));
 
     // Note that testing that a correct signature succeeds would be a natural
     // test to follow with, but we don't have signed data for these device
@@ -299,7 +298,7 @@ TEST(VerifyCastDeviceCertTest, AudioRefDevTestChain3VerifySignedData) {
 
   scoped_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
-  ASSERT_TRUE(VerifyDeviceCert2(certs, AprilFirst2016(), &context, &policy));
+  ASSERT_TRUE(VerifyDeviceCert(certs, AprilFirst2016(), &context, &policy));
 
   unsigned char kData[] = {
       0x5f, 0x76, 0x0d, 0xc8, 0x4b, 0xe7, 0x6e, 0xcb, 0x31, 0x58, 0xca, 0xd3,
@@ -373,17 +372,13 @@ TEST(VerifyCastDeviceCertTest, AudioRefDevTestChain3VerifySignedData) {
       0x15, 0x0e, 0xf0, 0x4e, 0x4a, 0x10, 0x99, 0x62, 0xdd, 0xf4, 0x32, 0x6b,
       0xf6, 0x23, 0x12, 0x90};
 
-  EXPECT_TRUE(context
-                  ->VerifySignatureOverData(CreateString(kSha1Signature),
-                                            CreateString(kData))
-                  .Success());
+  EXPECT_TRUE(context->VerifySignatureOverData(CreateString(kSha1Signature),
+                                               CreateString(kData)));
 
   // Verify using a VALID SHA-256 signature. This only fails because it is
   // expecting a SHA-1 signature not a SHA-256 signature.
-  EXPECT_FALSE(context
-                   ->VerifySignatureOverData(CreateString(kSha256Signature),
-                                             CreateString(kData))
-                   .Success());
+  EXPECT_FALSE(context->VerifySignatureOverData(CreateString(kSha256Signature),
+                                                CreateString(kData)));
 }
 
 // ------------------------------------------------------
@@ -440,10 +435,8 @@ TEST(VerifyCastDeviceCertTest, VerifySignature1024BitRsa) {
   auto context =
       CertVerificationContextImplForTest(CreateString(kEx1PublicKeySpki));
 
-  EXPECT_FALSE(context
-                   ->VerifySignatureOverData(CreateString(kEx1Signature),
-                                             CreateString(kEx1Message))
-                   .Success());
+  EXPECT_FALSE(context->VerifySignatureOverData(CreateString(kEx1Signature),
+                                                CreateString(kEx1Message)));
 }
 
 // ------------------------------------------------------
@@ -516,10 +509,8 @@ TEST(VerifyCastDeviceCertTest, VerifySignature2048BitRsa) {
   auto context =
       CertVerificationContextImplForTest(CreateString(kEx2PublicKeySpki));
 
-  EXPECT_TRUE(context
-                  ->VerifySignatureOverData(CreateString(kEx2Signature),
-                                            CreateString(kEx2Message))
-                  .Success());
+  EXPECT_TRUE(context->VerifySignatureOverData(CreateString(kEx2Signature),
+                                               CreateString(kEx2Message)));
 }
 
 }  // namespace

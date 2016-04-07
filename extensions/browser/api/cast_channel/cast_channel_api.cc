@@ -18,7 +18,6 @@
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
@@ -552,19 +551,12 @@ CastChannelSetAuthorityKeysFunction::~CastChannelSetAuthorityKeysFunction() {
 }
 
 bool CastChannelSetAuthorityKeysFunction::Prepare() {
-  params_ = cast_channel::SetAuthorityKeys::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void CastChannelSetAuthorityKeysFunction::AsyncWorkStart() {
-  std::string& keys = params_->keys;
-  std::string& signature = params_->signature;
-  if (signature.empty() || keys.empty() ||
-      !cast_channel::SetTrustedCertificateAuthorities(keys, signature)) {
-    SetError("Unable to set authority keys.");
-  }
-
+  // TODO(eroman): crbug.com/601171: Delete this once the API is
+  // removed. It is currently a no-op.
   AsyncWorkCompleted();
 }
 

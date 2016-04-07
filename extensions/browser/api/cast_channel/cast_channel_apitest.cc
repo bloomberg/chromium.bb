@@ -472,7 +472,11 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysInvalid) {
       extensions::test_util::CreateEmptyExtension());
   scoped_refptr<extensions::CastChannelSetAuthorityKeysFunction>
       cast_channel_set_authority_keys_function;
-  std::string errorResult = "Unable to set authority keys.";
+  // TODO(eroman): crbug.com/601171: Delete this test once the API has
+  // been removed. The API is deprecated and will trivially return
+  // success. So this is just testing that it succeeds for all inputs
+  // (even invalid ones).
+  std::string errorResult = "";
 
   cast_channel_set_authority_keys_function =
       CreateSetAuthorityKeysFunction(empty_extension);

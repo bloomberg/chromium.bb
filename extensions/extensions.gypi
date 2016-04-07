@@ -272,8 +272,6 @@
       'browser/api/bluetooth_socket/bluetooth_socket_api.h',
       'browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.cc',
       'browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h',
-      'browser/api/cast_channel/cast_auth_ica.cc',
-      'browser/api/cast_channel/cast_auth_ica.h',
       'browser/api/cast_channel/cast_auth_util.cc',
       'browser/api/cast_channel/cast_auth_util.h',
       'browser/api/cast_channel/cast_channel_api.cc',

@@ -50,6 +50,19 @@ bool VerifyCredentials(
     const std::string& signature,
     const std::string& data,
     const std::string& connected_mac) {
+  base::Time::Exploded now;
+  base::Time::Now().UTCExplode(&now);
+  return VerifyCredentialsAtTime(certificate, intermediate_certificates,
+                                 signature, data, connected_mac, now);
+}
+
+bool VerifyCredentialsAtTime(
+    const std::string& certificate,
+    const std::vector<std::string>& intermediate_certificates,
+    const std::string& signature,
+    const std::string& data,
+    const std::string& connected_mac,
+    const base::Time::Exploded& time) {
   static const char kErrorPrefix[] = "Device verification failed. ";
 
   std::vector<std::string> headers;
@@ -61,29 +74,30 @@ bool VerifyCredentials(
     LOG(ERROR) << kErrorPrefix << "Failed to parse device certificate.";
     return false;
   }
-  std::string der_certificate = pem_tokenizer.data();
+
+  // |certs| is a vector with the DER for all the certificates.
+  std::vector<std::string> certs;
+  certs.push_back(pem_tokenizer.data());
 
   // Convert intermediate certificates from PEM to raw DER
-  std::vector<std::string> der_intermediate_certificates;
   for (size_t idx = 0; idx < intermediate_certificates.size(); ++idx) {
     net::PEMTokenizer ica_pem_tokenizer(intermediate_certificates[idx],
                                         headers);
     if (ica_pem_tokenizer.GetNext()) {
-      der_intermediate_certificates.push_back(ica_pem_tokenizer.data());
+      certs.push_back(ica_pem_tokenizer.data());
     } else {
       LOG(WARNING) << "Failed to parse intermediate certificates.";
     }
   }
 
-  // Verify device certificate
-  scoped_ptr<cast_crypto::CertVerificationContext> verification_context;
-  cast_crypto::VerificationResult verification_result =
-      cast_crypto::VerifyDeviceCert(der_certificate,
-                                    der_intermediate_certificates,
-                                    &verification_context);
+  // Note that the device certificate's policy is not enforced here. The goal
+  // is simply to verify that the device belongs to the Cast ecosystem.
+  cast_crypto::CastDeviceCertPolicy unused_policy;
 
-  if (verification_result.Failure()) {
-    LOG(ERROR) << kErrorPrefix << verification_result.error_message;
+  scoped_ptr<cast_crypto::CertVerificationContext> verification_context;
+  if (!cast_crypto::VerifyDeviceCert(certs, time, &verification_context,
+                                     &unused_policy)) {
+    LOG(ERROR) << kErrorPrefix << "Failed verifying cast device cert";
     return false;
   }
 
@@ -100,11 +114,9 @@ bool VerifyCredentials(
 
   // Use the public key from verified certificate to verify |signature| over
   // |data|.
-  verification_result =
-      verification_context->VerifySignatureOverData(signature, data);
-
-  if (verification_result.Failure()) {
-    LOG(ERROR) << kErrorPrefix << verification_result.error_message;
+  if (!verification_context->VerifySignatureOverData(signature, data)) {
+    LOG(ERROR) << kErrorPrefix
+               << "Failed verifying signature using cast device cert";
     return false;
   }
   return true;

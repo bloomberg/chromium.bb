@@ -273,6 +273,8 @@ class CastChannelGetLogsFunction : public CastChannelAsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(CastChannelGetLogsFunction);
 };
 
+// TODO(eroman): crbug.com/601171: Delete this entire extension API. It
+// is currently deprecated and calling the function has no effect.
 class CastChannelSetAuthorityKeysFunction : public CastChannelAsyncApiFunction {
  public:
   CastChannelSetAuthorityKeysFunction();
@@ -287,8 +289,6 @@ class CastChannelSetAuthorityKeysFunction : public CastChannelAsyncApiFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.setAuthorityKeys",
                              CAST_CHANNEL_SETAUTHORITYKEYS)
-
-  scoped_ptr<cast_channel::SetAuthorityKeys::Params> params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelSetAuthorityKeysFunction);
 };

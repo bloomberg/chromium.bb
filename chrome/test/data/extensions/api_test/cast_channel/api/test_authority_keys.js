@@ -160,6 +160,11 @@ chrome.test.runTests([
   function testInvalid() {
     chrome.cast.channel.setAuthorityKeys(
         generateBase64Data(INVALID_AUTHORITY_KEYS),
-        generateBase64Data(VALID_SIGNATURE), onInvalidAuthorityKeys);
+        // TODO(eroman): crbug.com/601171: Remove this entire test once
+        // chrome.cast.channel.setAuthorityKeys() is removed.
+        //
+        // For now the test has been modified so that even passing
+        // invalid keys is successful, as the API is deprecated.
+        generateBase64Data(VALID_SIGNATURE), onValidAuthorityKeys);
   }
 ]);

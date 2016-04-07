@@ -14,6 +14,7 @@
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/cast/cast_cert_validator.h"
 #include "net/cert/x509_certificate.h"
+#include "net/der/parse_values.h"
 
 namespace extensions {
 namespace api {
@@ -21,9 +22,6 @@ namespace cast_channel {
 namespace {
 
 const char* const kParseErrorPrefix = "Failed to parse auth message: ";
-
-const unsigned char kAudioOnlyPolicy[] =
-    {0x06, 0x0A, 0x2B, 0x06, 0x01, 0x04, 0x01, 0xD6, 0x79, 0x02, 0x05, 0x02};
 
 // The maximum number of days a cert can live for.
 const int kMaxSelfSignedCertLifetimeInDays = 4;
@@ -63,32 +61,6 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
         "Auth message has no response field", AuthResult::ERROR_NO_RESPONSE);
   }
   return AuthResult();
-}
-
-AuthResult TranslateVerificationResult(
-    const cast_crypto::VerificationResult& result) {
-  AuthResult translated;
-  translated.error_message = result.error_message;
-  switch (result.error_type) {
-    case cast_crypto::VerificationResult::ERROR_NONE:
-      translated.error_type = AuthResult::ERROR_NONE;
-      break;
-    case cast_crypto::VerificationResult::ERROR_CERT_INVALID:
-      translated.error_type = AuthResult::ERROR_CERT_PARSING_FAILED;
-      break;
-    case cast_crypto::VerificationResult::ERROR_CERT_UNTRUSTED:
-      translated.error_type = AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA;
-      break;
-    case cast_crypto::VerificationResult::ERROR_SIGNATURE_INVALID:
-      translated.error_type = AuthResult::ERROR_SIGNED_BLOBS_MISMATCH;
-      break;
-    case cast_crypto::VerificationResult::ERROR_INTERNAL:
-      translated.error_type = AuthResult::ERROR_UNEXPECTED_AUTH_LIBRARY_RESULT;
-      break;
-    default:
-      translated.error_type = AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA;
-  }
-  return translated;
 }
 
 }  // namespace
@@ -151,27 +123,15 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
   }
 
   const AuthResponse& response = auth_message.response();
-  result = VerifyCredentials(response, peer_cert_der);
-  if (!result.success()) {
-    return result;
-  }
-
-  std::string audio_policy(
-      reinterpret_cast<const char*>(kAudioOnlyPolicy),
-      (arraysize(kAudioOnlyPolicy) / sizeof(unsigned char)));
-  if (response.client_auth_certificate().find(audio_policy) !=
-      std::string::npos) {
-    result.channel_policies |= AuthResult::POLICY_AUDIO_ONLY;
-  }
-
-  return result;
+  return VerifyCredentials(response, peer_cert_der);
 }
 
 // This function does the following
-// * Verifies that the trusted CA |response.intermediate_certificate| is
-//   whitelisted for use.
-// * Verifies that |response.client_auth_certificate| is signed
-//   by the trusted CA certificate.
+//
+// * Verifies that the certificate chain |response.client_auth_certificate| +
+//   |response.intermediate_certificate| is valid and chains to a trusted
+//   Cast root.
+//
 // * Verifies that |response.signature| matches the signature
 //   of |signature_input| by |response.client_auth_certificate|'s public
 //   key.
@@ -179,17 +139,45 @@ AuthResult VerifyCredentials(const AuthResponse& response,
                              const std::string& signature_input) {
   // Verify the certificate
   scoped_ptr<cast_crypto::CertVerificationContext> verification_context;
-  cast_crypto::VerificationResult ret = cast_crypto::VerifyDeviceCert(
-      response.client_auth_certificate(),
-      std::vector<std::string>(response.intermediate_certificate().begin(),
-                               response.intermediate_certificate().end()),
-      &verification_context);
 
-  if (ret.Success())
-    ret = verification_context->VerifySignatureOverData(response.signature(),
-                                                        signature_input);
+  // Build a single vector containing the certificate chain.
+  std::vector<std::string> cert_chain;
+  cert_chain.push_back(response.client_auth_certificate());
+  cert_chain.insert(cert_chain.end(),
+                    response.intermediate_certificate().begin(),
+                    response.intermediate_certificate().end());
 
-  return TranslateVerificationResult(ret);
+  // Use the current time when checking certificate validity.
+  base::Time::Exploded now;
+  base::Time::Now().UTCExplode(&now);
+
+  cast_crypto::CastDeviceCertPolicy device_policy;
+  if (!cast_crypto::VerifyDeviceCert(cert_chain, now, &verification_context,
+                                     &device_policy)) {
+    // TODO(eroman): The error information was lost; this error is ambiguous.
+    return AuthResult("Failed verifying cast device certificate",
+                      AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+  }
+
+  if (!verification_context->VerifySignatureOverData(response.signature(),
+                                                     signature_input)) {
+    return AuthResult("Failed verifying signature over data",
+                      AuthResult::ERROR_SIGNED_BLOBS_MISMATCH);
+  }
+
+  AuthResult success;
+
+  // Set the policy into the result.
+  switch (device_policy) {
+    case cast_crypto::CastDeviceCertPolicy::AUDIO_ONLY:
+      success.channel_policies = AuthResult::POLICY_AUDIO_ONLY;
+      break;
+    case cast_crypto::CastDeviceCertPolicy::NONE:
+      success.channel_policies = AuthResult::POLICY_NONE;
+      break;
+  }
+
+  return success;
 }
 
 }  // namespace cast_channel
