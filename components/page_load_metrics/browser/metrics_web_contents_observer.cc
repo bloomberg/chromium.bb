@@ -118,6 +118,16 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     }
   }
 
+  if (timing.parse_blocked_on_script_load_from_document_write_duration >
+      timing.parse_blocked_on_script_load_duration) {
+    NOTREACHED()
+        << "Invalid parse_blocked_on_script_load_from_document_write_duration "
+        << timing.parse_blocked_on_script_load_from_document_write_duration
+        << " for parse_blocked_on_script_load_duration "
+        << timing.parse_blocked_on_script_load_duration;
+    return false;
+  }
+
   if (!EventsInOrder(timing.dom_loading,
                      timing.dom_content_loaded_event_start)) {
     NOTREACHED() << "Invalid dom_loading " << timing.dom_loading

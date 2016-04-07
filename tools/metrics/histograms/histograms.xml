@@ -34560,6 +34560,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the load of scripts
+    inserted from document.write, for main frame documents that started parsing.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the load of scripts
+    inserted from document.write, for main frame documents that finished
+    parsing.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing2.ParseDuration" units="ms">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
@@ -90289,6 +90311,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad"/>
   <affected-histogram
       name="PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"/>
   <affected-histogram name="PageLoad.Timing2.ParseDuration"/>
 </histogram_suffixes>
 

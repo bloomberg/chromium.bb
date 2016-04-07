@@ -25,7 +25,9 @@ bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
          first_image_paint == other.first_image_paint &&
          parse_start == other.parse_start && parse_stop == other.parse_stop &&
          parse_blocked_on_script_load_duration ==
-             other.parse_blocked_on_script_load_duration;
+             other.parse_blocked_on_script_load_duration &&
+         parse_blocked_on_script_load_from_document_write_duration ==
+             other.parse_blocked_on_script_load_from_document_write_duration;
 }
 
 bool PageLoadTiming::IsEmpty() const {
@@ -35,7 +37,8 @@ bool PageLoadTiming::IsEmpty() const {
          first_paint.is_zero() && first_text_paint.is_zero() &&
          first_image_paint.is_zero() && parse_start.is_zero() &&
          parse_stop.is_zero() &&
-         parse_blocked_on_script_load_duration.is_zero();
+         parse_blocked_on_script_load_duration.is_zero() &&
+         parse_blocked_on_script_load_from_document_write_duration.is_zero();
 }
 
 }  // namespace page_load_metrics

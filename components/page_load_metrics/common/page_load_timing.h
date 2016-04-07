@@ -62,6 +62,13 @@ struct PageLoadTiming {
   // must be less than or equal to parser_stop - parser_start.
   base::TimeDelta parse_blocked_on_script_load_duration;
 
+  // Sum of times when the parser is blocked waiting on the load of a script
+  // that was inserted from document.write. This duration must be less than or
+  // equal to parse_blocked_on_script_load_duration. Note that some uncommon
+  // cases where scripts are loaded via document.write are not currently covered
+  // by this field. See crbug/600711 for details.
+  base::TimeDelta parse_blocked_on_script_load_from_document_write_duration;
+
   // If you add additional members, also be sure to update operator==,
   // page_load_metrics_messages.h, and IsEmpty().
 };
