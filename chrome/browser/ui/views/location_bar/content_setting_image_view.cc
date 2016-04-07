@@ -273,7 +273,7 @@ void ContentSettingImageView::OnClick() {
                     web_contents, parent_->profile()),
                 web_contents, this, views::BubbleBorder::TOP_RIGHT);
     views::Widget* bubble_widget =
-        parent_->delegate()->CreateViewsBubble(bubble_view_);
+        views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
     bubble_widget->AddObserver(this);
     // This is triggered by an input event. If the user clicks the icon while
     // it's not animating, the icon will be placed in an active state, so the

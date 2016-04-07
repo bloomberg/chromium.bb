@@ -54,7 +54,7 @@ void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,
           views::BubbleBorder::Arrow::TOP_RIGHT);
   contents->set_parent_window(parent_view);
   contents->SetAnchorRect(gfx::Rect(anchor, gfx::Size()));
-  views::BubbleDelegateView::CreateBubble(contents)->Show();
+  views::BubbleDialogDelegateView::CreateBubble(contents)->Show();
 }
 
 }  // namespace chrome

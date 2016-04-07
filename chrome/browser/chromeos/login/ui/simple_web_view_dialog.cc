@@ -35,7 +35,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/views/background.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -295,11 +294,6 @@ ToolbarModel* SimpleWebViewDialog::GetToolbarModel() {
 
 const ToolbarModel* SimpleWebViewDialog::GetToolbarModel() const {
   return toolbar_model_.get();
-}
-
-views::Widget* SimpleWebViewDialog::CreateViewsBubble(
-    views::BubbleDelegateView* bubble_delegate) {
-  return views::BubbleDelegateView::CreateBubble(bubble_delegate);
 }
 
 ContentSettingBubbleModelDelegate*

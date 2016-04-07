@@ -138,7 +138,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow)
     : content::WebContentsObserver(web_contents),
-      BubbleDelegateView(anchor_view, arrow),
+      BubbleDialogDelegateView(anchor_view, arrow),
       content_setting_bubble_model_(content_setting_bubble_model),
       custom_link_(NULL),
       manage_link_(NULL),
@@ -373,34 +373,29 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
-  const int kDoubleColumnSetId = 1;
-  views::ColumnSet* double_column_set =
-      layout->AddColumnSet(kDoubleColumnSetId);
   if (!bubble_content_empty) {
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-      layout->StartRow(0, kSingleColumnSetId);
-      layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
-                      GridLayout::FILL, GridLayout::FILL);
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    }
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->StartRow(0, kSingleColumnSetId);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
+                    GridLayout::FILL, GridLayout::FILL);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  }
+}
 
-    double_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
-                                 GridLayout::USE_PREF, 0, 0);
-    double_column_set->AddPaddingColumn(
-        0, views::kUnrelatedControlHorizontalSpacing);
-    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                                 GridLayout::USE_PREF, 0, 0);
+views::View* ContentSettingBubbleContents::CreateExtraView() {
+  manage_link_ = new views::Link(base::UTF8ToUTF16(
+      content_setting_bubble_model_->bubble_content().manage_link));
+  manage_link_->set_listener(this);
+  return manage_link_;
+}
 
-    layout->StartRow(0, kDoubleColumnSetId);
-    manage_link_ =
-        new views::Link(base::UTF8ToUTF16(bubble_content.manage_link));
-    manage_link_->set_listener(this);
-    layout->AddView(manage_link_);
+int ContentSettingBubbleContents::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK;
+}
 
-    close_button_ =
-        new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
-    close_button_->SetStyle(views::Button::STYLE_BUTTON);
-    layout->AddView(close_button_);
+base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
 void ContentSettingBubbleContents::DidNavigateMainFrame(

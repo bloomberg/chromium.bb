@@ -399,11 +399,6 @@ void ToolbarView::ShowWebsiteSettings(
   chrome::ShowWebsiteSettings(browser_, web_contents, url, security_info);
 }
 
-views::Widget* ToolbarView::CreateViewsBubble(
-    views::BubbleDelegateView* bubble_delegate) {
-  return views::BubbleDelegateView::CreateBubble(bubble_delegate);
-}
-
 PageActionImageView* ToolbarView::CreatePageActionImageView(
     LocationBarView* owner, ExtensionAction* action) {
   return new PageActionImageView(owner, action, browser_);

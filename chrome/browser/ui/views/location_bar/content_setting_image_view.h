@@ -28,7 +28,7 @@ class FontList;
 }
 
 namespace views {
-class BubbleDelegateView;
+class BubbleDialogDelegateView;
 class ImageView;
 class InkDropDelegate;
 class Label;
@@ -95,7 +95,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   gfx::SlideAnimation slide_animator_;
   bool pause_animation_;
   double pause_animation_state_;
-  views::BubbleDelegateView* bubble_view_;
+  views::BubbleDialogDelegateView* bubble_view_;
 
   // This is used to check if the bubble was showing during the mouse pressed
   // event. If this is true then the mouse released event is ignored to prevent

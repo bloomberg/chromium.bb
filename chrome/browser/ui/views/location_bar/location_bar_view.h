@@ -54,7 +54,6 @@ class SaveCardIconView;
 }
 
 namespace views {
-class BubbleDelegateView;
 class Label;
 class Widget;
 }
@@ -84,10 +83,6 @@ class LocationBarView : public LocationBar,
 
     virtual ToolbarModel* GetToolbarModel() = 0;
     virtual const ToolbarModel* GetToolbarModel() const = 0;
-
-    // Creates Widget for the given delegate.
-    virtual views::Widget* CreateViewsBubble(
-        views::BubbleDelegateView* bubble_delegate) = 0;
 
     // Creates PageActionImageView. Caller gets an ownership.
     virtual PageActionImageView* CreatePageActionImageView(

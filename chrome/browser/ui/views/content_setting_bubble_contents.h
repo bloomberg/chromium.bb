@@ -12,7 +12,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/link_listener.h"
@@ -46,7 +46,7 @@ class RadioButton;
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
 class ContentSettingBubbleContents : public content::WebContentsObserver,
-                                     public views::BubbleDelegateView,
+                                     public views::BubbleDialogDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener,
                                      public views::MenuButtonListener {
@@ -65,8 +65,11 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
                        const std::string& label);
 
  protected:
-  // views::BubbleDelegateView:
+  // views::BubbleDialogDelegateView:
   void Init() override;
+  View* CreateExtraView() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
  private:
   class Favicon;
