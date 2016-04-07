@@ -4,12 +4,12 @@
 
 #include "remoting/host/security_key/remote_security_key_main.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/host/host_exit_codes.h"
@@ -48,7 +48,7 @@ int StartRemoteSecurityKey() {
 
   base::RunLoop run_loop;
 
-  scoped_ptr<RemoteSecurityKeyIpcClient> ipc_client(
+  std::unique_ptr<RemoteSecurityKeyIpcClient> ipc_client(
       new RemoteSecurityKeyIpcClient());
 
   RemoteSecurityKeyMessageHandler message_handler;
