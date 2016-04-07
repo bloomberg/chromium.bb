@@ -137,8 +137,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kRendererStartupDialog,
     ::switches::kRootLayerScrolls,
     ::switches::kEnableShareGroupAsyncTextureUpload,
-    ::switches::kTabCaptureUpscaleQuality,
-    ::switches::kTabCaptureDownscaleQuality,
 #if defined(USE_X11) || defined(USE_OZONE)
     ::switches::kTouchCalibration,
 #endif

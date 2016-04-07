@@ -41,12 +41,6 @@ enum TestFlags {
                                  // when on GPU, nor to 60hz when not on GPU.
   kTestThroughWebRTC   = 1 << 3, // Send captured frames through webrtc
   kSmallWindow         = 1 << 4, // 1 = 800x600, 0 = 2000x1000
-
-  kScaleQualityMask    = 3 << 5, // two bits select which scaling quality
-  kScaleQualityDefault = 0 << 5, // to use on aura.
-  kScaleQualityFast    = 1 << 5,
-  kScaleQualityGood    = 2 << 5,
-  kScaleQualityBest    = 3 << 5,
 };
 
 class TabCapturePerformanceTest
@@ -63,19 +57,6 @@ class TabCapturePerformanceTest
     return base::CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
   }
 
-  std::string ScalingMethod() const {
-    switch (GetParam() & kScaleQualityMask) {
-      case kScaleQualityFast:
-        return "fast";
-      case kScaleQualityGood:
-        return "good";
-      case kScaleQualityBest:
-        return "best";
-      default:
-        return "";
-    }
-  }
-
   std::string GetSuffixForTestFlags() {
     std::string suffix;
     if (HasFlag(kForceGpuComposited))
@@ -86,8 +67,6 @@ class TabCapturePerformanceTest
       suffix += "_novsync";
     if (HasFlag(kTestThroughWebRTC))
       suffix += "_webrtc";
-    if (!ScalingMethod().empty())
-      suffix += "_scale" + ScalingMethod();
     if (HasFlag(kSmallWindow))
       suffix += "_small";
     return suffix;
@@ -99,13 +78,6 @@ class TabCapturePerformanceTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (!ScalingMethod().empty()) {
-      command_line->AppendSwitchASCII(switches::kTabCaptureUpscaleQuality,
-                                      ScalingMethod());
-      command_line->AppendSwitchASCII(switches::kTabCaptureDownscaleQuality,
-                                      ScalingMethod());
-    }
-
     // Some of the tests may launch http requests through JSON or AJAX
     // which causes a security error (cross domain request) when the page
     // is loaded from the local file system ( file:// ). The following switch
@@ -239,24 +211,3 @@ INSTANTIATE_TEST_CASE_P(
         kTestThroughWebRTC | kDisableVsync,
         kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited));
 
-#if defined(USE_AURA)
-// TODO(hubbe):
-// These are temporary tests for the purpose of determining what the
-// appropriate scaling quality is. Once that has been determined,
-// these tests will be removed.
-
-const int kScalingTestBase =
-    kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited;
-
-INSTANTIATE_TEST_CASE_P(
-    ScalingTests,
-    TabCapturePerformanceTest,
-    testing::Values(
-        kScalingTestBase | kScaleQualityFast,
-        kScalingTestBase | kScaleQualityGood,
-        kScalingTestBase | kScaleQualityBest,
-        kScalingTestBase | kScaleQualityFast | kSmallWindow,
-        kScalingTestBase | kScaleQualityGood | kSmallWindow,
-        kScalingTestBase | kScaleQualityBest | kSmallWindow));
-
-#endif  // USE_AURA

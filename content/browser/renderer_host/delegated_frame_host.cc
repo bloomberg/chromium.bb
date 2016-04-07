@@ -684,22 +684,19 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       yuv_readback_pipeline->scaler()->SrcSize() != result_rect.size() ||
       yuv_readback_pipeline->scaler()->SrcSubrect() != result_rect ||
       yuv_readback_pipeline->scaler()->DstSize() != region_in_frame.size()) {
-    GLHelper::ScalerQuality quality = GLHelper::SCALER_QUALITY_FAST;
-    std::string quality_switch = switches::kTabCaptureDownscaleQuality;
-    // If we're scaling up, we can use the "best" quality.
-    if (result_rect.size().width() < region_in_frame.size().width() &&
-        result_rect.size().height() < region_in_frame.size().height())
-      quality_switch = switches::kTabCaptureUpscaleQuality;
-
-    std::string switch_value =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            quality_switch);
-    if (switch_value == "fast")
-      quality = GLHelper::SCALER_QUALITY_FAST;
-    else if (switch_value == "good")
-      quality = GLHelper::SCALER_QUALITY_GOOD;
-    else if (switch_value == "best")
-      quality = GLHelper::SCALER_QUALITY_BEST;
+    // The scaler chosen here is based on performance measurements of full
+    // end-to-end systems.  When down-scaling, always use the "fast" scaler
+    // because it performs well on both low- and high- end machines, provides
+    // decent image quality, and doesn't overwhelm downstream video encoders
+    // with too much entropy (which can drastically increase CPU utilization).
+    // When up-scaling, always use "best" because the quality improvement is
+    // huge with insignificant performance penalty.  Note that this strategy
+    // differs from single-frame snapshot capture.
+    GLHelper::ScalerQuality quality =
+        ((result_rect.size().width() < region_in_frame.size().width()) &&
+         (result_rect.size().height() < region_in_frame.size().height()))
+            ? GLHelper::SCALER_QUALITY_BEST
+            : GLHelper::SCALER_QUALITY_FAST;
 
     dfh->yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
         quality, result_rect.size(), result_rect, region_in_frame.size(), true,

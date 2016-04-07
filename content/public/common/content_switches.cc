@@ -771,14 +771,6 @@ const char kStartFullscreen[] = "start-fullscreen";
 const char kStatsCollectionController[] =
     "enable-stats-collection-bindings";
 
-// Upscale defaults to "good".
-const char kTabCaptureDownscaleQuality[]    = "tab-capture-downscale-quality";
-
-// Scaling quality for capturing tab. Should be one of "fast", "good" or "best".
-// One flag for upscaling, one for downscaling.
-// Upscale defaults to "best".
-const char kTabCaptureUpscaleQuality[]      = "tab-capture-upscale-quality";
-
 // Allows for forcing socket connections to http/https to use fixed ports.
 const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
 const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
