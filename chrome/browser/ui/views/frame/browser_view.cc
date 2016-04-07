@@ -218,22 +218,22 @@ void PaintHorizontalBorder(gfx::Canvas* canvas,
   canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
 }
 
-// TODO(kuan): These functions are temporarily for the bookmark bar while its
-// detached state is at the top of the page;  it'll be moved to float on the
-// content page in the very near future, at which time, these local functions
-// will be removed.
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
-                              BookmarkBarView* view,
-                              Profile* profile) {
+                              BookmarkBarView* view) {
   // Paint background for detached state; if animating, this is fade in/out.
-  const ui::ThemeProvider& tp =
-      ThemeService::GetThemeProviderForProfile(profile);
+  const ui::ThemeProvider* tp = view->GetThemeProvider();
+  // In detached mode, the bar is meant to overlap with |contents_container_|.
+  // Since the layer for |view| is opaque, we have to recreate that base color
+  // here. (The detached background color may be partially transparent.)
   canvas->DrawColor(
-      tp.GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND));
+      tp->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND));
+  canvas->DrawColor(
+      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND));
+
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
   SkColor separator_color =
-      tp.GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
+      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     BrowserView::Paint1pxHorizontalLine(
@@ -262,8 +262,7 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                                  const ui::ThemeProvider* theme_provider,
                                  const gfx::Rect& bounds,
                                  const gfx::Point& background_origin) {
-  canvas->FillRect(bounds,
-                   theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
+  canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
   // Always tile the background image in pre-MD. In MD, only tile if there's a
   // non-default image.
@@ -439,7 +438,7 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
   // While animating, set opacity to cross-fade between attached and detached
   // backgrounds including their respective separators.
   canvas->SaveLayerAlpha(detached_alpha);
-  PaintDetachedBookmarkBar(canvas, bookmark_bar_view_, browser_->profile());
+  PaintDetachedBookmarkBar(canvas, bookmark_bar_view_);
   canvas->Restore();
 }
 
