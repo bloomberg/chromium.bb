@@ -173,7 +173,7 @@ void NTPSnippetsService::Init(bool enabled) {
 
 void NTPSnippetsService::Shutdown() {
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceShutdown(this));
+                    NTPSnippetsServiceShutdown());
 }
 
 void NTPSnippetsService::FetchSnippets() {
@@ -201,7 +201,7 @@ bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
   observers_.AddObserver(observer);
-  observer->NTPSnippetsServiceLoaded(this);
+  observer->NTPSnippetsServiceLoaded();
 }
 
 void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
@@ -224,7 +224,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
   StoreSnippetsToPrefs();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded(this));
+                    NTPSnippetsServiceLoaded());
 
   FetchSnippetsImpl(hosts);
 }
@@ -360,7 +360,7 @@ void NTPSnippetsService::RemoveExpiredSnippets() {
   StoreDiscardedSnippetsToPrefs();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded(this));
+                    NTPSnippetsServiceLoaded());
 
   // If there are any snippets left, schedule a timer for the next expiry.
   if (snippets_.empty() && discarded_snippets_.empty())

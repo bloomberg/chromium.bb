@@ -21,8 +21,6 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaLongArray;
-using ntp_snippets::NTPSnippetsService;
-using ntp_snippets::NTPSnippetsServiceObserver;
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
@@ -36,14 +34,14 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
     : snippet_service_observer_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   ntp_snippets_service_ = NTPSnippetsServiceFactory::GetForProfile(profile);
-  snippet_service_observer_.Add(ntp_snippets_service_);
 }
 
 void NTPSnippetsBridge::SetObserver(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     const JavaParamRef<jobject>& j_observer) {
   observer_.Reset(env, j_observer);
-  NTPSnippetsServiceLoaded(ntp_snippets_service_);
+  // This will call NTPSnippetsServiceLoaded.
+  snippet_service_observer_.Add(ntp_snippets_service_);
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
@@ -59,16 +57,15 @@ void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
       GURL(ConvertJavaStringToUTF8(env, url)));
 }
 
-void NTPSnippetsBridge::NTPSnippetsServiceLoaded(NTPSnippetsService* service) {
-  if (observer_.is_null())
-    return;
+void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
+  DCHECK(!observer_.is_null());
 
   std::vector<std::string> titles;
   std::vector<std::string> urls;
   std::vector<std::string> thumbnail_urls;
   std::vector<std::string> snippets;
   std::vector<int64_t> timestamps;
-  for (const ntp_snippets::NTPSnippet& snippet : *service) {
+  for (const ntp_snippets::NTPSnippet& snippet : *ntp_snippets_service_) {
     titles.push_back(snippet.title());
     urls.push_back(snippet.url().spec());
     thumbnail_urls.push_back(snippet.salient_image_url().spec());
@@ -85,8 +82,7 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded(NTPSnippetsService* service) {
       ToJavaLongArray(env, timestamps).obj());
 }
 
-void NTPSnippetsBridge::NTPSnippetsServiceShutdown(
-    NTPSnippetsService* service) {
+void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {
   observer_.Reset();
   snippet_service_observer_.Remove(ntp_snippets_service_);
 }

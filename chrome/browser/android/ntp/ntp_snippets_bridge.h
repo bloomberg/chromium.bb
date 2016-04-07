@@ -34,10 +34,8 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   ~NTPSnippetsBridge() override;
 
   // NTPSnippetsServiceObserver overrides
-  void NTPSnippetsServiceLoaded(
-      ntp_snippets::NTPSnippetsService* service) override;
-  void NTPSnippetsServiceShutdown(
-      ntp_snippets::NTPSnippetsService* service) override;
+  void NTPSnippetsServiceLoaded() override;
+  void NTPSnippetsServiceShutdown() override;
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
 

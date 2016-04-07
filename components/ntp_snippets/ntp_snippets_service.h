@@ -178,9 +178,9 @@ class NTPSnippetsService : public KeyedService {
 class NTPSnippetsServiceObserver {
  public:
   // Sent every time the service loads a new set of data.
-  virtual void NTPSnippetsServiceLoaded(NTPSnippetsService* service) = 0;
+  virtual void NTPSnippetsServiceLoaded() = 0;
   // Sent when the service is shutting down.
-  virtual void NTPSnippetsServiceShutdown(NTPSnippetsService* service) = 0;
+  virtual void NTPSnippetsServiceShutdown() = 0;
 
  protected:
   virtual ~NTPSnippetsServiceObserver() {}
