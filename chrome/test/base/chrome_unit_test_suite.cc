@@ -61,6 +61,20 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content_client_.reset();
     content::SetContentClient(NULL);
 
+    // AsyncPolicyProvider is a lazily created KeyedService that may need to be
+    // shut down here. However, AsyncPolicyProvider::Shutdown() will want to
+    // post tasks to delete its policy loaders. This goes through
+    // BrowserThreadTaskRunner::PostNonNestableDelayedTask(), which can invoke
+    // LazyInstance<BrowserThreadGlobals>::Get() and try to create it for the
+    // first time. It might be created during the test, but it might not (see
+    // comments in TestingBrowserProcess::browser_policy_connector()). Since
+    // creating BrowserThreadGlobals requires creating a SequencedWorkerPool,
+    // and that needs a MessageLoop, make sure there is one here so that tests
+    // don't get obscure errors. Tests can also invoke TestingBrowserProcess::
+    // DeleteInstance() themselves (after ensuring any TestingProfile instances
+    // are deleted). But they shouldn't have to worry about that.
+    DCHECK(!base::MessageLoop::current());
+    base::MessageLoopForUI message_loop;
     TestingBrowserProcess::DeleteInstance();
   }
 

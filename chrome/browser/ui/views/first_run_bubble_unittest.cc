@@ -5,7 +5,6 @@
 #include "base/macros.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/views/first_run_bubble.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -60,15 +59,14 @@ class FirstRunBubbleTest : public views::ViewsTestBase,
 
   // Overrides from views::ViewsTestBase:
   void SetUp() override;
-  void TearDown() override;
 
   void CreateAndCloseBubbleOnEventTest(ui::Event* event);
 
  protected:
-  TestingProfile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return &profile_; }
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleTest);
 };
@@ -79,18 +77,11 @@ FirstRunBubbleTest::~FirstRunBubbleTest() {}
 
 void FirstRunBubbleTest::SetUp() {
   ViewsTestBase::SetUp();
-  profile_.reset(new TestingProfile());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile_.get(), &TemplateURLServiceFactory::BuildInstanceFor);
+      profile(), &TemplateURLServiceFactory::BuildInstanceFor);
   TemplateURLService* turl_model =
-      TemplateURLServiceFactory::GetForProfile(profile_.get());
+      TemplateURLServiceFactory::GetForProfile(profile());
   turl_model->Load();
-}
-
-void FirstRunBubbleTest::TearDown() {
-  ViewsTestBase::TearDown();
-  profile_.reset();
-  TestingBrowserProcess::DeleteInstance();
 }
 
 void FirstRunBubbleTest::CreateAndCloseBubbleOnEventTest(ui::Event* event) {

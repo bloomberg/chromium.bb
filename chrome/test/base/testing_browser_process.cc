@@ -150,6 +150,13 @@ policy::BrowserPolicyConnector*
     EXPECT_FALSE(created_browser_policy_connector_);
     created_browser_policy_connector_ = true;
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
+
+    // Note: creating the ChromeBrowserPolicyConnector invokes BrowserThread::
+    // GetMessageLoopProxyForThread(), which initializes a base::LazyInstance of
+    // BrowserThreadTaskRunners. However, the threads that these task runners
+    // would run tasks on are *also* created lazily and might not exist yet.
+    // Creating them requires a MessageLoop, which a test can optionally create
+    // and manage itself, so don't do it here.
   }
   return browser_policy_connector_.get();
 }
