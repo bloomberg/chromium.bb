@@ -169,20 +169,22 @@ AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
     int64_t response_id) {
   if (simulated_reader_)
     return simulated_reader_.release();
-  return new AppCacheResponseReader(response_id, group_id, disk_cache());
+  return new AppCacheResponseReader(response_id, group_id,
+                                    disk_cache()->GetWeakPtr());
 }
 
 AppCacheResponseWriter* MockAppCacheStorage::CreateResponseWriter(
     const GURL& manifest_url,
     int64_t group_id) {
-  return new AppCacheResponseWriter(NewResponseId(),  group_id, disk_cache());
+  return new AppCacheResponseWriter(NewResponseId(), group_id,
+                                    disk_cache()->GetWeakPtr());
 }
 
 AppCacheResponseMetadataWriter*
 MockAppCacheStorage::CreateResponseMetadataWriter(int64_t group_id,
                                                   int64_t response_id) {
   return new AppCacheResponseMetadataWriter(response_id, group_id,
-                                            disk_cache());
+                                            disk_cache()->GetWeakPtr());
 }
 
 void MockAppCacheStorage::DoomResponses(

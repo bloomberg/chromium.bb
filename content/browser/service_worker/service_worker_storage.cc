@@ -520,19 +520,19 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
 scoped_ptr<ServiceWorkerResponseReader>
 ServiceWorkerStorage::CreateResponseReader(int64_t resource_id) {
   return make_scoped_ptr(
-      new ServiceWorkerResponseReader(resource_id, disk_cache()));
+      new ServiceWorkerResponseReader(resource_id, disk_cache()->GetWeakPtr()));
 }
 
 scoped_ptr<ServiceWorkerResponseWriter>
 ServiceWorkerStorage::CreateResponseWriter(int64_t resource_id) {
   return make_scoped_ptr(
-      new ServiceWorkerResponseWriter(resource_id, disk_cache()));
+      new ServiceWorkerResponseWriter(resource_id, disk_cache()->GetWeakPtr()));
 }
 
 scoped_ptr<ServiceWorkerResponseMetadataWriter>
 ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
-  return make_scoped_ptr(
-      new ServiceWorkerResponseMetadataWriter(resource_id, disk_cache()));
+  return make_scoped_ptr(new ServiceWorkerResponseMetadataWriter(
+      resource_id, disk_cache()->GetWeakPtr()));
 }
 
 void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {

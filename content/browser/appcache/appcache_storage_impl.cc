@@ -1736,20 +1736,22 @@ AppCacheResponseReader* AppCacheStorageImpl::CreateResponseReader(
     const GURL& manifest_url,
     int64_t group_id,
     int64_t response_id) {
-  return new AppCacheResponseReader(response_id, group_id, disk_cache());
+  return new AppCacheResponseReader(response_id, group_id,
+                                    disk_cache()->GetWeakPtr());
 }
 
 AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
     const GURL& manifest_url,
     int64_t group_id) {
-  return new AppCacheResponseWriter(NewResponseId(), group_id, disk_cache());
+  return new AppCacheResponseWriter(NewResponseId(), group_id,
+                                    disk_cache()->GetWeakPtr());
 }
 
 AppCacheResponseMetadataWriter*
 AppCacheStorageImpl::CreateResponseMetadataWriter(int64_t group_id,
                                                   int64_t response_id) {
   return new AppCacheResponseMetadataWriter(response_id, group_id,
-                                            disk_cache());
+                                            disk_cache()->GetWeakPtr());
 }
 
 void AppCacheStorageImpl::DoomResponses(

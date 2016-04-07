@@ -29,8 +29,10 @@ class CONTENT_EXPORT ServiceWorkerResponseReader
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseReader(int64_t resource_id,
-                              ServiceWorkerDiskCache* disk_cache);
+
+  ServiceWorkerResponseReader(
+      int64_t resource_id,
+      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseWriter
@@ -38,8 +40,10 @@ class CONTENT_EXPORT ServiceWorkerResponseWriter
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseWriter(int64_t resource_id,
-                              ServiceWorkerDiskCache* disk_cache);
+
+  ServiceWorkerResponseWriter(
+      int64_t resource_id,
+      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
@@ -47,8 +51,10 @@ class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseMetadataWriter(int64_t resource_id,
-                                      ServiceWorkerDiskCache* disk_cache);
+
+  ServiceWorkerResponseMetadataWriter(
+      int64_t resource_id,
+      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 };
 
 }  // namespace content

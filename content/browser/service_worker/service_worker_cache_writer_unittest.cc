@@ -37,7 +37,10 @@ namespace {
 // there are any expected reads that have not yet happened.
 class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
  public:
-  MockServiceWorkerResponseReader() : ServiceWorkerResponseReader(0, nullptr) {}
+  MockServiceWorkerResponseReader()
+      : ServiceWorkerResponseReader(
+            0,
+            base::WeakPtr<AppCacheDiskCacheInterface>()) {}
   ~MockServiceWorkerResponseReader() override {}
 
   // ServiceWorkerResponseReader overrides
@@ -195,7 +198,9 @@ void MockServiceWorkerResponseReader::CompletePendingRead() {
 class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
  public:
   MockServiceWorkerResponseWriter()
-      : ServiceWorkerResponseWriter(0, nullptr),
+      : ServiceWorkerResponseWriter(
+            0,
+            base::WeakPtr<AppCacheDiskCacheInterface>()),
         info_written_(0),
         data_written_(0) {}
   ~MockServiceWorkerResponseWriter() override {}
