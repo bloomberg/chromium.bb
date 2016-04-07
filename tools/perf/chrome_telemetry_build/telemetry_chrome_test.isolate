@@ -6,6 +6,7 @@
   # that run in Chromium.
   'includes': [
     '../../../chrome/breakpad.isolate',
+    '../../../chrome/cdb.isolate',
     '../../../chrome/chrome.isolate',
     'telemetry_binary_manager.isolate',
   ],

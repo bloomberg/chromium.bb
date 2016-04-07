@@ -3265,6 +3265,12 @@
                 '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
               ],
             }],
+            ['OS=="win"', {
+              'dependencies': [
+                # TODO(kbr): port this dependency to GN.
+                'copy_cdb_to_output',
+              ],
+            }],
           ],
         },
         {
@@ -3421,6 +3427,34 @@
         },
       ],
       'conditions': [
+        ['OS=="win"', {
+          'targets': [
+            {
+              # TODO(kbr): port this target to GN.
+              'target_name': 'copy_cdb_to_output',
+              'type': 'none',
+              'actions': [
+                {
+                  'action_name': 'copy_cdb',
+                  'inputs': [
+                    '<(DEPTH)/build/win/copy_cdb_to_output.py',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/cdb/cdb.exe',
+                    '<(PRODUCT_DIR)/cdb/dbgeng.dll',
+                    '<(PRODUCT_DIR)/cdb/dbghelp.dll',
+                    '<(PRODUCT_DIR)/cdb/dbgmodel.dll',
+                  ],
+                  'action': ['python',
+                             '<(DEPTH)/build/win/copy_cdb_to_output.py',
+                             '<(PRODUCT_DIR)/cdb',
+                             '<(target_arch)'],
+                  'message': 'Copying cdb and deps to <(PRODUCT_DIR)/cdb',
+                },
+              ],
+            },
+          ],
+        }],
         ['archive_gpu_tests==1', {
           'targets': [
             {

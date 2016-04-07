@@ -14,8 +14,8 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
 
   # TODO(dyen): For now this doesn't work on Android but continue to
   # expand this.
-  # TODO(kbr): this test doesn't work on the Windows Swarming bots
-  # yet. http://crbug.com/561763
+  # TODO(kbr): currently failing on Windows because the symbolized
+  # stack trace format is unexpected. http://crbug.com/561763
   @decorators.Enabled('mac', 'linux')
   # Stack traces do not currently work on 10.6, but they are also being
   # disabled shortly so just disable it for now.
@@ -26,9 +26,7 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
       self.assertIn('Thread 0 (crashed)', '\n'.join(c.exception.stack_trace))
 
   # Stack traces aren't working on Android yet.
-  # TODO(kbr): this test doesn't work on the Windows Swarming bots
-  # yet. http://crbug.com/561763
-  @decorators.Enabled('mac', 'linux')
+  @decorators.Enabled('mac', 'linux', 'win')
   @decorators.Disabled('snowleopard')
   def testCrashSymbols(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
