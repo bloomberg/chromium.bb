@@ -835,7 +835,15 @@ TEST_F(URLRequestTest, DataURLImageTest) {
 #if !defined(DISABLE_FILE_SUPPORT)
 TEST_F(URLRequestTest, FileTest) {
   base::FilePath app_path;
+
+#if defined(OS_ANDROID)
+  // Android devices are not guaranteed to be able to read /proc/self/exe
+  // Use /etc/hosts instead
+  app_path = base::FilePath("/etc/hosts");
+#else
   PathService::Get(base::FILE_EXE, &app_path);
+#endif  // OS_ANDROID
+
   GURL app_url = FilePathToFileURL(app_path);
 
   TestDelegate d;
