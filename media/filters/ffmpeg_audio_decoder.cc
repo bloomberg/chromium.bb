@@ -300,10 +300,18 @@ bool FFmpegAudioDecoder::FFmpegDecode(
       ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
           codec_context_->channel_layout, codec_context_->channels);
 
-      if (av_frame_->sample_rate != config_.samples_per_second() ||
-          channel_layout != config_.channel_layout() ||
+      bool is_config_stale =
+          av_frame_->sample_rate != config_.samples_per_second() ||
           channels != ChannelLayoutToChannelCount(config_.channel_layout()) ||
-          av_frame_->format != av_sample_format_) {
+          av_frame_->format != av_sample_format_;
+
+      // Only consider channel layout changes for AAC.
+      // TODO(tguilbert, dalecurtis): Due to http://crbug.com/600538 we need to
+      // allow channel layout changes for the moment. See if ffmpeg is fixable.
+      if (config_.codec() == kCodecAAC)
+        is_config_stale |= channel_layout != config_.channel_layout();
+
+      if (is_config_stale) {
         // Only allow midstream configuration changes for AAC. Sample format is
         // not expected to change between AAC profiles.
         if (config_.codec() == kCodecAAC &&
@@ -322,7 +330,8 @@ bool FFmpegAudioDecoder::FFmpegDecode(
                              config_.extra_data(), config_.encryption_scheme(),
                              config_.seek_preroll(), config_.codec_delay());
           config_changed = true;
-          ResetTimestampState();
+          if (av_frame_->sample_rate != config_.samples_per_second())
+            ResetTimestampState();
         } else {
           MEDIA_LOG(ERROR, media_log_)
               << "Unsupported midstream configuration change!"

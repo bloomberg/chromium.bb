@@ -535,6 +535,26 @@ void AudioRendererImpl::DecodedAudioReady(
       }
     }
   } else {
+    // TODO(chcunningham, tguilbert): Figure out if we want to support implicit
+    // config changes during src=. Doing so requires resampling each individual
+    // stream which is inefficient when there are many tags in a page.
+    //
+    // Check if the buffer we received matches the expected configuration.
+    // Note: We explicitly do not check channel layout here to avoid breaking
+    // weird behavior with multichannel wav files: http://crbug.com/600538.
+    if (!buffer->end_of_stream() &&
+        (buffer->sample_rate() != audio_parameters_.sample_rate() ||
+         buffer->channel_count() != audio_parameters_.channels())) {
+      MEDIA_LOG(ERROR, media_log_)
+          << "Unsupported midstream configuration change!"
+          << " Sample Rate: " << buffer->sample_rate() << " vs "
+          << audio_parameters_.sample_rate()
+          << ", Channels: " << buffer->channel_count() << " vs "
+          << audio_parameters_.channels();
+      HandleAbortedReadOrDecodeError(PIPELINE_ERROR_DECODE);
+      return;
+    }
+
     if (!splicer_->AddInput(buffer)) {
       HandleAbortedReadOrDecodeError(AUDIO_RENDERER_ERROR_SPLICE_FAILED);
       return;
