@@ -24,7 +24,7 @@ Element* elementForId(int elementId)
 }
 } // namespace
 
-RawPtr<ScrollState> ScrollState::create(ScrollStateInit init)
+ScrollState* ScrollState::create(ScrollStateInit init)
 {
     OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
     scrollStateData->delta_x = init.deltaX();
@@ -44,7 +44,7 @@ RawPtr<ScrollState> ScrollState::create(ScrollStateInit init)
     return scrollState;
 }
 
-RawPtr<ScrollState> ScrollState::create(PassOwnPtr<ScrollStateData> data)
+ScrollState* ScrollState::create(PassOwnPtr<ScrollStateData> data)
 {
     ScrollState* scrollState = new ScrollState(data);
     return scrollState;

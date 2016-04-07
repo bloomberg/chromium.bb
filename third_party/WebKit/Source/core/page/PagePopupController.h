@@ -45,7 +45,7 @@ class PagePopupClient;
 class PagePopupController final : public GarbageCollected<PagePopupController>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<PagePopupController> create(PagePopup&, PagePopupClient*);
+    static PagePopupController* create(PagePopup&, PagePopupClient*);
     void setValueAndClosePopup(int numValue, const String& stringValue);
     void setValue(const String&);
     void closePopup();

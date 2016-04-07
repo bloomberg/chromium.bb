@@ -657,19 +657,19 @@ void ChromeClientImpl::printDelegate(LocalFrame* frame)
         m_webView->client()->printPage(WebLocalFrameImpl::fromFrame(frame));
 }
 
-RawPtr<ColorChooser> ChromeClientImpl::openColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
+ColorChooser* ChromeClientImpl::openColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
     notifyPopupOpeningObservers();
-    RawPtr<ColorChooserUIController> controller = nullptr;
+    ColorChooserUIController* controller = nullptr;
     if (RuntimeEnabledFeatures::pagePopupEnabled())
         controller = ColorChooserPopupUIController::create(frame, this, chooserClient);
     else
         controller = ColorChooserUIController::create(frame, chooserClient);
     controller->openUI();
-    return controller.release();
+    return controller;
 }
 
-RawPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
+DateTimeChooser* ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
 {
     notifyPopupOpeningObservers();
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -876,7 +876,7 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-RawPtr<PopupMenu> ChromeClientImpl::openPopupMenu(LocalFrame& frame, HTMLSelectElement& select)
+PopupMenu* ChromeClientImpl::openPopupMenu(LocalFrame& frame, HTMLSelectElement& select)
 {
     notifyPopupOpeningObservers();
     if (WebViewImpl::useExternalPopupMenus())

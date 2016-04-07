@@ -44,7 +44,7 @@ PagePopupController::PagePopupController(PagePopup& popup, PagePopupClient* clie
     ASSERT(client);
 }
 
-RawPtr<PagePopupController> PagePopupController::create(PagePopup& popup, PagePopupClient* client)
+PagePopupController* PagePopupController::create(PagePopup& popup, PagePopupClient* client)
 {
     return new PagePopupController(popup, client);
 }

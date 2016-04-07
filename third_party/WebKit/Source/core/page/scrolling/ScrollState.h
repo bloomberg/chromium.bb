@@ -19,8 +19,8 @@ class CORE_EXPORT ScrollState final : public GarbageCollectedFinalized<ScrollSta
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static RawPtr<ScrollState> create(ScrollStateInit);
-    static RawPtr<ScrollState> create(PassOwnPtr<ScrollStateData>);
+    static ScrollState* create(ScrollStateInit);
+    static ScrollState* create(PassOwnPtr<ScrollStateData>);
 
     ~ScrollState()
     {

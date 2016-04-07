@@ -51,10 +51,10 @@ class RemoteFrame;
 class CORE_EXPORT FocusController final : public GarbageCollectedFinalized<FocusController> {
     WTF_MAKE_NONCOPYABLE(FocusController);
 public:
-    static RawPtr<FocusController> create(Page*);
+    static FocusController* create(Page*);
 
-    void setFocusedFrame(RawPtr<Frame>, bool notifyEmbedder = true);
-    void focusDocumentView(RawPtr<Frame>, bool notifyEmbedder = true);
+    void setFocusedFrame(Frame*, bool notifyEmbedder = true);
+    void focusDocumentView(Frame*, bool notifyEmbedder = true);
     LocalFrame* focusedFrame() const;
     Frame* focusedOrMainFrame() const;
 
@@ -72,10 +72,10 @@ public:
     bool advanceFocusAcrossFrames(WebFocusType, RemoteFrame* from, LocalFrame* to, InputDeviceCapabilities* sourceCapabilities = nullptr);
     Element* findFocusableElementInShadowHost(const Element& shadowHost);
 
-    bool setFocusedElement(Element*, RawPtr<Frame>, const FocusParams&);
+    bool setFocusedElement(Element*, Frame*, const FocusParams&);
     // |setFocusedElement| variant with SelectionBehaviorOnFocus::None,
     // |WebFocusTypeNone, and null InputDeviceCapabilities.
-    bool setFocusedElement(Element*, RawPtr<Frame>);
+    bool setFocusedElement(Element*, Frame*);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }

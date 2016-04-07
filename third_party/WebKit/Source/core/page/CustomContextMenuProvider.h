@@ -20,7 +20,7 @@ class CustomContextMenuProvider final : public ContextMenuProvider {
 public:
     ~CustomContextMenuProvider() override;
 
-    static RawPtr<CustomContextMenuProvider> create(HTMLMenuElement& menu, HTMLElement& subject)
+    static CustomContextMenuProvider* create(HTMLMenuElement& menu, HTMLElement& subject)
     {
         return new CustomContextMenuProvider(menu, subject);
     }

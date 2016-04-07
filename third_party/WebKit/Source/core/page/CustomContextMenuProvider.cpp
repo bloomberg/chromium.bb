@@ -44,9 +44,9 @@ void CustomContextMenuProvider::populateContextMenu(ContextMenu* menu)
 void CustomContextMenuProvider::contextMenuItemSelected(const ContextMenuItem* item)
 {
     if (HTMLElement* element = menuItemAt(item->action())) {
-        RawPtr<MouseEvent> click = MouseEvent::create(EventTypeNames::click, m_menu->document().domWindow(), Event::create(), SimulatedClickCreationScope::FromUserAgent);
+        MouseEvent* click = MouseEvent::create(EventTypeNames::click, m_menu->document().domWindow(), Event::create(), SimulatedClickCreationScope::FromUserAgent);
         click->setRelatedTarget(m_subjectElement.get());
-        element->dispatchEvent(click.release());
+        element->dispatchEvent(click);
     }
 }
 

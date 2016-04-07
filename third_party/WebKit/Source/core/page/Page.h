@@ -92,13 +92,13 @@ public:
         SpellCheckerClient* spellCheckerClient;
     };
 
-    static RawPtr<Page> create(PageClients& pageClients)
+    static Page* create(PageClients& pageClients)
     {
         return new Page(pageClients);
     }
 
     // An "ordinary" page is a fully-featured page owned by a web view.
-    static RawPtr<Page> createOrdinary(PageClients&);
+    static Page* createOrdinary(PageClients&);
 
     ~Page() override;
 
@@ -153,7 +153,7 @@ public:
     ContextMenuController& contextMenuController() const { return *m_contextMenuController; }
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient& validationMessageClient() const { return *m_validationMessageClient; }
-    void setValidationMessageClient(RawPtr<ValidationMessageClient>);
+    void setValidationMessageClient(ValidationMessageClient*);
 
     ScrollingCoordinator* scrollingCoordinator();
 

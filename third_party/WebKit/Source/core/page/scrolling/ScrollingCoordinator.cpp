@@ -82,7 +82,7 @@ WebLayer* toWebLayer(blink::GraphicsLayer* layer)
 
 namespace blink {
 
-RawPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
+ScrollingCoordinator* ScrollingCoordinator::create(Page* page)
 {
     return new ScrollingCoordinator(page);
 }

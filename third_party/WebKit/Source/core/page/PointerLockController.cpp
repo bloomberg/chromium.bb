@@ -40,7 +40,7 @@ PointerLockController::PointerLockController(Page* page)
 {
 }
 
-RawPtr<PointerLockController> PointerLockController::create(Page* page)
+PointerLockController* PointerLockController::create(Page* page)
 {
     return new PointerLockController(page);
 }

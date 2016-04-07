@@ -21,7 +21,7 @@ PageAnimator::PageAnimator(Page& page)
 {
 }
 
-RawPtr<PageAnimator> PageAnimator::create(Page& page)
+PageAnimator* PageAnimator::create(Page& page)
 {
     return new PageAnimator(page);
 }
@@ -33,7 +33,6 @@ DEFINE_TRACE(PageAnimator)
 
 void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
-    RawPtr<PageAnimator> protector(this);
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
     clock().updateTime(monotonicAnimationStartTime);
 
@@ -80,7 +79,7 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
 
 void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame)
 {
-    RawPtr<FrameView> view = rootFrame.view();
+    FrameView* view = rootFrame.view();
     TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
     view->updateAllLifecyclePhases();
 }

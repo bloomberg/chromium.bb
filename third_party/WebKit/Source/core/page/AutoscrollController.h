@@ -54,7 +54,7 @@ enum AutoscrollType {
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
 class CORE_EXPORT AutoscrollController final : public GarbageCollected<AutoscrollController> {
 public:
-    static RawPtr<AutoscrollController> create(Page&);
+    static AutoscrollController* create(Page&);
     DECLARE_TRACE();
 
     static const int noPanScrollRadius = 15;

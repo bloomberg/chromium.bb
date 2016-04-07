@@ -40,7 +40,7 @@ class PlatformMouseEvent;
 class CORE_EXPORT PointerLockController final : public GarbageCollected<PointerLockController> {
     WTF_MAKE_NONCOPYABLE(PointerLockController);
 public:
-    static RawPtr<PointerLockController> create(Page*);
+    static PointerLockController* create(Page*);
 
     void requestPointerLock(Element* target);
     void requestPointerUnlock();

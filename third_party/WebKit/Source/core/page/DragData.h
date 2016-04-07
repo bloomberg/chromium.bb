@@ -67,7 +67,7 @@ public:
     String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = nullptr) const;
     String asPlainText() const;
     void asFilePaths(Vector<String>&) const;
-    RawPtr<DocumentFragment> asFragment(LocalFrame*) const;
+    DocumentFragment* asFragment(LocalFrame*) const;
     bool canSmartReplace() const;
     bool containsFiles() const;
     int modifiers() const;

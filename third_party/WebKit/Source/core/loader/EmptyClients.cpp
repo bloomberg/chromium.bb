@@ -86,17 +86,17 @@ WebTaskRunner* EmptyFrameScheduler::timerTaskRunner()
     return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
-RawPtr<PopupMenu> EmptyChromeClient::openPopupMenu(LocalFrame&, HTMLSelectElement&)
+PopupMenu* EmptyChromeClient::openPopupMenu(LocalFrame&, HTMLSelectElement&)
 {
     return new EmptyPopupMenu();
 }
 
-RawPtr<ColorChooser> EmptyChromeClient::openColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
+ColorChooser* EmptyChromeClient::openColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
 {
     return nullptr;
 }
 
-RawPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&)
+DateTimeChooser* EmptyChromeClient::openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&)
 {
     return nullptr;
 }

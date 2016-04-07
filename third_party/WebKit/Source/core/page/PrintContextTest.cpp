@@ -71,7 +71,7 @@ private:
 
 class PrintContextTest : public RenderingTest {
 protected:
-    explicit PrintContextTest(RawPtr<FrameLoaderClient> frameLoaderClient = nullptr)
+    explicit PrintContextTest(FrameLoaderClient* frameLoaderClient = nullptr)
         : RenderingTest(frameLoaderClient) { }
 
     void SetUp() override

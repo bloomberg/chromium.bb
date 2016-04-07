@@ -55,7 +55,7 @@ class WebLayerTreeView;
 class CORE_EXPORT ScrollingCoordinator final : public GarbageCollectedFinalized<ScrollingCoordinator> {
     WTF_MAKE_NONCOPYABLE(ScrollingCoordinator);
 public:
-    static RawPtr<ScrollingCoordinator> create(Page*);
+    static ScrollingCoordinator* create(Page*);
 
     ~ScrollingCoordinator();
     DECLARE_TRACE();

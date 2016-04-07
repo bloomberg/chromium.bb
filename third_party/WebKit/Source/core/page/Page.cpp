@@ -106,12 +106,12 @@ float deviceScaleFactor(LocalFrame* frame)
     return page->deviceScaleFactor();
 }
 
-RawPtr<Page> Page::createOrdinary(PageClients& pageClients)
+Page* Page::createOrdinary(PageClients& pageClients)
 {
-    RawPtr<Page> page = create(pageClients);
-    ordinaryPages().add(page.get());
-    page->memoryPurgeController().registerClient(page.get());
-    return page.release();
+    Page* page = create(pageClients);
+    ordinaryPages().add(page);
+    page->memoryPurgeController().registerClient(page);
+    return page;
 }
 
 Page::Page(PageClients& pageClients)
@@ -282,7 +282,7 @@ void Page::unmarkAllTextMatches()
     } while (frame);
 }
 
-void Page::setValidationMessageClient(RawPtr<ValidationMessageClient> client)
+void Page::setValidationMessageClient(ValidationMessageClient* client)
 {
     m_validationMessageClient = client;
 }
@@ -545,7 +545,7 @@ void Page::willBeClosed()
 
 void Page::willBeDestroyed()
 {
-    RawPtr<Frame> mainFrame = m_mainFrame;
+    Frame* mainFrame = m_mainFrame;
 
     mainFrame->detach(FrameDetachType::Remove);
 

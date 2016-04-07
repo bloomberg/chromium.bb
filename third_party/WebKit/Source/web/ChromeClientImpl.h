@@ -106,8 +106,8 @@ public:
     void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
     void printDelegate(LocalFrame*) override;
     void annotatedRegionsChanged() override;
-    RawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
-    RawPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    ColorChooser* openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    DateTimeChooser* openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
     void enumerateChosenDirectory(FileChooser*) override;
     void setCursor(const Cursor&, LocalFrame* localRoot) override;
@@ -142,7 +142,7 @@ public:
     void setCursorOverridden(bool);
 
     bool hasOpenedPopup() const override;
-    RawPtr<PopupMenu> openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
+    PopupMenu* openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     DOMWindow* pagePopupWindowForTesting() const override;

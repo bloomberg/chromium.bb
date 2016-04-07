@@ -119,7 +119,7 @@ public:
     bool openJavaScriptPromptDelegate(LocalFrame*, const String&, const String&, String&) override { return false; }
 
     bool hasOpenedPopup() const override { return false; }
-    RawPtr<PopupMenu> openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
+    PopupMenu* openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
     DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
     void setStatusbarText(const String&) override {}
@@ -144,8 +144,8 @@ public:
 
     void enumerateChosenDirectory(FileChooser*) override {}
 
-    RawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
-    RawPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    ColorChooser* openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    DateTimeChooser* openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void openTextDataListChooser(HTMLInputElement&) override;
 
     void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;

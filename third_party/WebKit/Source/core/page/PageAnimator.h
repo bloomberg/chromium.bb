@@ -16,7 +16,7 @@ class Page;
 
 class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
 public:
-    static RawPtr<PageAnimator> create(Page&);
+    static PageAnimator* create(Page&);
     DECLARE_TRACE();
     void scheduleVisualUpdate(LocalFrame*);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);

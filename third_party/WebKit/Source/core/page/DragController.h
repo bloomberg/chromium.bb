@@ -55,7 +55,7 @@ class CORE_EXPORT DragController final : public GarbageCollectedFinalized<DragCo
 public:
     ~DragController();
 
-    static RawPtr<DragController> create(Page*, DragClient*);
+    static DragController* create(Page*, DragClient*);
 
     DragSession dragEntered(DragData*);
     void dragExited(DragData*);
