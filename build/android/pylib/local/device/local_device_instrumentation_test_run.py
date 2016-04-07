@@ -141,6 +141,8 @@ class LocalDeviceInstrumentationTestRun(
         self._test_instance.GetDataDependencies())
 
   def TearDown(self):
+    @local_device_test_run.handle_shard_failures_with(
+        self._env.BlacklistDevice)
     def individual_device_tear_down(dev):
       if str(dev) in self._flag_changers:
         self._flag_changers[str(dev)].Restore()
