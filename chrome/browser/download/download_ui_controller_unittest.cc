@@ -4,13 +4,14 @@
 
 #include "chrome/browser/download/download_ui_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/download/download_history.h"
@@ -64,13 +65,13 @@ class TestDownloadService : public DownloadServiceImpl {
   explicit TestDownloadService(Profile* profile);
   ~TestDownloadService() override;
 
-  void set_download_history(scoped_ptr<DownloadHistory> download_history) {
+  void set_download_history(std::unique_ptr<DownloadHistory> download_history) {
     download_history_.swap(download_history);
   }
   DownloadHistory* GetDownloadHistory() override;
 
  private:
-  scoped_ptr<DownloadHistory> download_history_;
+  std::unique_ptr<DownloadHistory> download_history_;
 };
 
 TestDownloadService::TestDownloadService(Profile* profile)
@@ -95,7 +96,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 
   // Returns a TestDelegate. Invoking OnNewDownloadReady on the returned
   // delegate results in the DownloadItem* being stored in |notified_item_|.
-  scoped_ptr<DownloadUIController::Delegate> GetTestDelegate();
+  std::unique_ptr<DownloadUIController::Delegate> GetTestDelegate();
 
   MockDownloadManager* manager() { return manager_.get(); }
 
@@ -120,7 +121,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
     return download_history_manager_observer_;
   }
 
-  scoped_ptr<MockDownloadItem> CreateMockInProgressDownload();
+  std::unique_ptr<MockDownloadItem> CreateMockInProgressDownload();
 
  private:
   // A private history adapter that stores the DownloadQueryCallback when
@@ -138,10 +139,10 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
   };
 
   // Constructs and returns a TestDownloadService.
-  static scoped_ptr<KeyedService> TestingDownloadServiceFactory(
+  static std::unique_ptr<KeyedService> TestingDownloadServiceFactory(
       content::BrowserContext* browser_context);
 
-  scoped_ptr<MockDownloadManager> manager_;
+  std::unique_ptr<MockDownloadManager> manager_;
   content::DownloadManager::Observer* download_history_manager_observer_;
   content::DownloadManager::Observer* manager_observer_;
   content::DownloadItem* notified_item_;
@@ -151,10 +152,10 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 };
 
 // static
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 DownloadUIControllerTest::TestingDownloadServiceFactory(
     content::BrowserContext* browser_context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new TestDownloadService(Profile::FromBrowserContext(browser_context)));
 }
 
@@ -179,9 +180,9 @@ void DownloadUIControllerTest::SetUp() {
           static_cast<content::DownloadManager::Observer*>(NULL)));
   EXPECT_CALL(*manager_, GetAllDownloads(_)).Times(AnyNumber());
 
-  scoped_ptr<HistoryAdapter> history_adapter(new HistoryAdapter);
+  std::unique_ptr<HistoryAdapter> history_adapter(new HistoryAdapter);
   history_adapter_ = history_adapter.get();
-  scoped_ptr<DownloadHistory> download_history(
+  std::unique_ptr<DownloadHistory> download_history(
       new DownloadHistory(manager_.get(), std::move(history_adapter)));
   ASSERT_TRUE(download_history_manager_observer_);
 
@@ -199,9 +200,9 @@ void DownloadUIControllerTest::SetUp() {
   download_service->set_download_history(std::move(download_history));
 }
 
-scoped_ptr<MockDownloadItem>
+std::unique_ptr<MockDownloadItem>
 DownloadUIControllerTest::CreateMockInProgressDownload() {
-  scoped_ptr<MockDownloadItem> item(
+  std::unique_ptr<MockDownloadItem> item(
       new testing::StrictMock<MockDownloadItem>());
   EXPECT_CALL(*item, GetBrowserContext())
       .WillRepeatedly(Return(browser_context()));
@@ -241,9 +242,9 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   return item;
 }
 
-scoped_ptr<DownloadUIController::Delegate>
+std::unique_ptr<DownloadUIController::Delegate>
 DownloadUIControllerTest::GetTestDelegate() {
-  scoped_ptr<DownloadUIController::Delegate> delegate(
+  std::unique_ptr<DownloadUIController::Delegate> delegate(
       new TestDelegate(notified_item_receiver_factory_.GetWeakPtr()));
   return delegate;
 }
@@ -251,7 +252,7 @@ DownloadUIControllerTest::GetTestDelegate() {
 // New downloads should be presented to the UI when GetTargetFilePath() returns
 // a non-empty path.  I.e. once the download target has been determined.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
-  scoped_ptr<MockDownloadItem> item(CreateMockInProgressDownload());
+  std::unique_ptr<MockDownloadItem> item(CreateMockInProgressDownload());
   DownloadUIController controller(manager(), GetTestDelegate());
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
@@ -273,7 +274,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
 
 // A download that's created in an interrupted state should also be displayed.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic_Interrupted) {
-  scoped_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
+  std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
   DownloadUIController controller(manager(), GetTestDelegate());
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(content::DownloadItem::INTERRUPTED));
@@ -287,7 +288,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic_Interrupted) {
 // state should be displayed in the UI immediately without requiring an
 // additional OnDownloadUpdated() notification.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
-  scoped_ptr<MockDownloadItem> item(CreateMockInProgressDownload());
+  std::unique_ptr<MockDownloadItem> item(CreateMockInProgressDownload());
   DownloadUIController controller(manager(), GetTestDelegate());
 
   ASSERT_TRUE(manager_observer());
@@ -309,14 +310,14 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   // from history.
   ASSERT_TRUE(download_history_manager_observer());
 
-  scoped_ptr<std::vector<history::DownloadRow> > history_downloads;
+  std::unique_ptr<std::vector<history::DownloadRow>> history_downloads;
   history_downloads.reset(new std::vector<history::DownloadRow>());
   history_downloads->push_back(history::DownloadRow());
   history_downloads->front().id = 1;
 
   std::vector<GURL> url_chain;
   GURL url;
-  scoped_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
+  std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
 
   EXPECT_CALL(*item, GetOriginalMimeType());
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());

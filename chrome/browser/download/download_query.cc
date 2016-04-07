@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -186,7 +186,7 @@ DownloadQuery::FilterCallback BuildRegexFilter(
     std::string (*accessor)(const DownloadItem&)) {
   std::string regex_str;
   if (!GetAs(regex_value, &regex_str)) return DownloadQuery::FilterCallback();
-  scoped_ptr<RE2> pattern(new RE2(regex_str));
+  std::unique_ptr<RE2> pattern(new RE2(regex_str));
   if (!pattern->ok()) return DownloadQuery::FilterCallback();
   return base::Bind(&FindRegex, base::Owned(pattern.release()),
                     base::Bind(accessor));

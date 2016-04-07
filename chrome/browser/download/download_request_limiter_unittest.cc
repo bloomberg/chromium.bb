@@ -132,7 +132,7 @@ class TestingDelegate {
   }
 
  private:
-  scoped_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
+  std::unique_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
 };
 #endif
 }  // namespace
@@ -249,7 +249,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   TestingDelegate testing_delegate_;
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_Allow) {
@@ -462,7 +462,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnReload) {
 
 #if defined(OS_ANDROID)
 TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
-  scoped_ptr<WebContents> web_contents(CreateTestWebContents());
+  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
 
   GURL url("http://foo.com/bar");
   web_contents->GetController().LoadURL(

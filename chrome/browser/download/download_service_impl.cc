@@ -60,14 +60,14 @@ DownloadServiceImpl::GetDownloadManagerDelegate() {
     history->GetNextDownloadId(
         manager_delegate_->GetDownloadIdReceiverCallback());
     download_history_.reset(new DownloadHistory(
-        manager, scoped_ptr<DownloadHistory::HistoryAdapter>(
+        manager, std::unique_ptr<DownloadHistory::HistoryAdapter>(
                      new DownloadHistory::HistoryAdapter(history))));
   }
 
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
-      manager, scoped_ptr<DownloadUIController::Delegate>()));
+      manager, std::unique_ptr<DownloadUIController::Delegate>()));
 
   // Include this download manager in the set monitored by the
   // global status updater.
@@ -118,7 +118,7 @@ void DownloadServiceImpl::CancelDownloads() {
 }
 
 void DownloadServiceImpl::SetDownloadManagerDelegateForTesting(
-    scoped_ptr<ChromeDownloadManagerDelegate> new_delegate) {
+    std::unique_ptr<ChromeDownloadManagerDelegate> new_delegate) {
   manager_delegate_.swap(new_delegate);
   DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
   dm->SetDelegate(manager_delegate_.get());

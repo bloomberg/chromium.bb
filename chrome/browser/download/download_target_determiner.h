@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_DETERMINER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_DETERMINER_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
@@ -53,7 +54,7 @@ enum DownloadDangerType;
 class DownloadTargetDeterminer
     : public content::DownloadItem::Observer {
  public:
-  typedef base::Callback<void(scoped_ptr<DownloadTargetInfo>)>
+  typedef base::Callback<void(std::unique_ptr<DownloadTargetInfo>)>
       CompletionCallback;
 
   // Start the process of determing the target of |download|.

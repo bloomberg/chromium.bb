@@ -412,7 +412,8 @@ void DownloadItemNotification::UpdateNotificationData(
   UpdateNotificationIcon();
 
   std::vector<message_center::ButtonInfo> notification_actions;
-  scoped_ptr<std::vector<DownloadCommands::Command>> actions(GetExtraActions());
+  std::unique_ptr<std::vector<DownloadCommands::Command>> actions(
+      GetExtraActions());
 
   button_actions_.reset(new std::vector<DownloadCommands::Command>);
   for (auto it = actions->begin(); it != actions->end(); it++) {
@@ -627,9 +628,9 @@ void DownloadItemNotification::OnDecodeImageFailed() {
   UpdateNotificationData(UPDATE);
 }
 
-scoped_ptr<std::vector<DownloadCommands::Command>>
+std::unique_ptr<std::vector<DownloadCommands::Command>>
 DownloadItemNotification::GetExtraActions() const {
-  scoped_ptr<std::vector<DownloadCommands::Command>> actions(
+  std::unique_ptr<std::vector<DownloadCommands::Command>> actions(
       new std::vector<DownloadCommands::Command>());
 
   if (item_->IsDangerous()) {

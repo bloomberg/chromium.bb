@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/download_dir_policy_handler.h"
+
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/drive/drive_pref_names.h"
@@ -53,7 +55,7 @@ class DownloadDirPolicyHandlerTest
         &handler_list_,
         policy::POLICY_LEVEL_RECOMMENDED);
     handler_list_.AddHandler(
-        make_scoped_ptr<policy::ConfigurationPolicyHandler>(
+        base::WrapUnique<policy::ConfigurationPolicyHandler>(
             new DownloadDirPolicyHandler));
   }
 

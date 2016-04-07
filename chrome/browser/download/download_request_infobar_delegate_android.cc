@@ -39,7 +39,7 @@ void DownloadRequestInfoBarDelegateAndroid::Create(
     host->Cancel();
   } else {
     infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-        scoped_ptr<ConfirmInfoBarDelegate>(
+        std::unique_ptr<ConfirmInfoBarDelegate>(
             new DownloadRequestInfoBarDelegateAndroid(host))));
   }
 }

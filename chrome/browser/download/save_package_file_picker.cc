@@ -236,7 +236,7 @@ void SavePackageFilePicker::SetShouldPromptUser(bool should_prompt) {
 
 void SavePackageFilePicker::FileSelected(
     const base::FilePath& path, int index, void* unused_params) {
-  scoped_ptr<SavePackageFilePicker> delete_this(this);
+  std::unique_ptr<SavePackageFilePicker> delete_this(this);
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;

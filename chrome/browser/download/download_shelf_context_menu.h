@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_CONTEXT_MENU_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_CONTEXT_MENU_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_commands.h"
@@ -64,16 +65,16 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
-  scoped_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
-  scoped_ptr<ui::SimpleMenuModel> in_progress_download_paused_menu_model_;
-  scoped_ptr<ui::SimpleMenuModel> finished_download_menu_model_;
-  scoped_ptr<ui::SimpleMenuModel> interrupted_download_menu_model_;
-  scoped_ptr<ui::SimpleMenuModel> maybe_malicious_download_menu_model_;
-  scoped_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> in_progress_download_paused_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> finished_download_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> interrupted_download_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> maybe_malicious_download_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
 
   // Information source.
   content::DownloadItem* download_item_;
-  scoped_ptr<DownloadCommands> download_commands_;
+  std::unique_ptr<DownloadCommands> download_commands_;
 
 #if defined(OS_WIN)
   bool is_adobe_pdf_reader_up_to_date_;

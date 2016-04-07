@@ -73,7 +73,7 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
 
 DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
     Profile* profile) {
-  scoped_ptr<MockDownloadManagerDelegate> mock_delegate(
+  std::unique_ptr<MockDownloadManagerDelegate> mock_delegate(
       new MockDownloadManagerDelegate(profile));
   test_delegate_ = mock_delegate->GetWeakPtr();
   DownloadServiceFactory::GetForBrowserContext(profile)

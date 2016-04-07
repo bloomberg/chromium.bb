@@ -101,7 +101,8 @@ class DownloadItemNotification : public DownloadNotification,
   Profile* profile() const;
 
   // Returns the list of possible extra (all except the default) actions.
-  scoped_ptr<std::vector<DownloadCommands::Command>> GetExtraActions() const;
+  std::unique_ptr<std::vector<DownloadCommands::Command>> GetExtraActions()
+      const;
 
   // Flag to show the notification on next update. If true, the notification
   // goes visible. The initial value is true so it gets shown on initial update.
@@ -116,9 +117,9 @@ class DownloadItemNotification : public DownloadNotification,
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;
-  scoped_ptr<Notification> notification_;
+  std::unique_ptr<Notification> notification_;
   content::DownloadItem* item_;
-  scoped_ptr<std::vector<DownloadCommands::Command>> button_actions_;
+  std::unique_ptr<std::vector<DownloadCommands::Command>> button_actions_;
 
   // Status of the preview image decode.
   ImageDecodeStatus image_decode_status_ = NOT_STARTED;

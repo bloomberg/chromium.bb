@@ -31,9 +31,9 @@ class DownloadRequestInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
 
 #if defined(UNIT_TEST)
-  static scoped_ptr<DownloadRequestInfoBarDelegateAndroid> Create(
+  static std::unique_ptr<DownloadRequestInfoBarDelegateAndroid> Create(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
-    return scoped_ptr<DownloadRequestInfoBarDelegateAndroid>(
+    return std::unique_ptr<DownloadRequestInfoBarDelegateAndroid>(
         new DownloadRequestInfoBarDelegateAndroid(host));
   }
 #endif

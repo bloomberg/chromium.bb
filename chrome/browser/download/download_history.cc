@@ -105,7 +105,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
   static const char kKey[];
 
   PersistenceState state_;
-  scoped_ptr<history::DownloadRow> info_;
+  std::unique_ptr<history::DownloadRow> info_;
   bool was_restored_from_history_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryData);
@@ -213,7 +213,7 @@ bool DownloadHistory::IsPersisted(const content::DownloadItem* item) {
 }
 
 DownloadHistory::DownloadHistory(content::DownloadManager* manager,
-                                 scoped_ptr<HistoryAdapter> history)
+                                 std::unique_ptr<HistoryAdapter> history)
     : notifier_(manager, this),
       history_(std::move(history)),
       loading_id_(content::DownloadItem::kInvalidId),
@@ -263,7 +263,7 @@ bool DownloadHistory::WasRestoredFromHistory(
          download->GetId() == loading_id_;
 }
 
-void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
+void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // ManagerGoingDown() may have happened before the history loaded.
   if (!notifier_.GetManager())

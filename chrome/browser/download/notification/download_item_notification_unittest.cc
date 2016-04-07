@@ -74,7 +74,8 @@ class DownloadItemNotificationTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user");
 
-    scoped_ptr<NotificationUIManager> ui_manager(new StubNotificationUIManager);
+    std::unique_ptr<NotificationUIManager> ui_manager(
+        new StubNotificationUIManager);
     TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
         std::move(ui_manager));
 
@@ -170,13 +171,13 @@ class DownloadItemNotificationTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
 
-  scoped_ptr<NiceMock<content::MockDownloadItem>> download_item_;
-  scoped_ptr<DownloadNotificationManagerForProfile>
+  std::unique_ptr<NiceMock<content::MockDownloadItem>> download_item_;
+  std::unique_ptr<DownloadNotificationManagerForProfile>
       download_notification_manager_;
-  scoped_ptr<MockMessageCenter> message_center_;
+  std::unique_ptr<MockMessageCenter> message_center_;
   DownloadItemNotification* download_item_notification_;
 };
 

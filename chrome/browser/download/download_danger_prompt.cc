@@ -74,7 +74,7 @@ class DownloadDangerPromptImpl : public DownloadDangerPrompt,
   bool show_context_;
   OnDone done_;
 
-  scoped_ptr<ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<ExperienceSamplingEvent> sampling_event_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptImpl);
 };

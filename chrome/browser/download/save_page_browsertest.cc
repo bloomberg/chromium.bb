@@ -501,7 +501,7 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 #endif
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
   GURL url = NavigateToMockURL("a");
-  scoped_ptr<DelayingDownloadManagerDelegate> delaying_delegate(
+  std::unique_ptr<DelayingDownloadManagerDelegate> delaying_delegate(
       new DelayingDownloadManagerDelegate(browser()->profile()));
   delaying_delegate->GetDownloadIdReceiverCallback().Run(
       content::DownloadItem::kInvalidId + 1);

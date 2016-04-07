@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_request_infobar_delegate_android.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -28,7 +29,7 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
 
  private:
   // The actual infobar delegate we're listening to.
-  scoped_ptr<DownloadRequestInfoBarDelegateAndroid> infobar_delegate_;
+  std::unique_ptr<DownloadRequestInfoBarDelegateAndroid> infobar_delegate_;
 
   // True if we have gotten some sort of response.
   bool responded_;

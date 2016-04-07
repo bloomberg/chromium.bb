@@ -104,7 +104,7 @@ class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
   MockWebContentsDelegate delegate_;
   scoped_refptr<DownloadRequestLimiter> limiter_;
   ::testing::NiceMock<MockResourceController> resource_controller_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 #if BUILDFLAG(ANDROID_JAVA_UI)
   chrome::android::MockDownloadControllerAndroid download_controller_;
 #endif

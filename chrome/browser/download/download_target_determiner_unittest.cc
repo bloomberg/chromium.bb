@@ -233,7 +233,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
 
   // Runs |test_case| with |item|. When the DownloadTargetDeterminer is done,
   // returns the resulting DownloadTargetInfo.
-  scoped_ptr<DownloadTargetInfo> RunDownloadTargetDeterminer(
+  std::unique_ptr<DownloadTargetInfo> RunDownloadTargetDeterminer(
       const base::FilePath& initial_virtual_path,
       content::MockDownloadItem* item);
 
@@ -266,7 +266,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  scoped_ptr<DownloadPrefs> download_prefs_;
+  std::unique_ptr<DownloadPrefs> download_prefs_;
   ::testing::NiceMock<MockDownloadTargetDeterminerDelegate> delegate_;
   NullWebContentsDelegate web_contents_delegate_;
   base::ScopedTempDir test_download_dir_;
@@ -377,24 +377,24 @@ void DownloadTargetDeterminerTest::RunTestCase(
     const DownloadTestCase& test_case,
     const base::FilePath& initial_virtual_path,
     content::MockDownloadItem* item) {
-  scoped_ptr<DownloadTargetInfo> target_info =
+  std::unique_ptr<DownloadTargetInfo> target_info =
       RunDownloadTargetDeterminer(initial_virtual_path, item);
   VerifyDownloadTarget(test_case, target_info.get());
 }
 
 void CompletionCallbackWrapper(
     const base::Closure& closure,
-    scoped_ptr<DownloadTargetInfo>* target_info_receiver,
-    scoped_ptr<DownloadTargetInfo> target_info) {
+    std::unique_ptr<DownloadTargetInfo>* target_info_receiver,
+    std::unique_ptr<DownloadTargetInfo> target_info) {
   target_info_receiver->swap(target_info);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
 }
 
-scoped_ptr<DownloadTargetInfo>
+std::unique_ptr<DownloadTargetInfo>
 DownloadTargetDeterminerTest::RunDownloadTargetDeterminer(
     const base::FilePath& initial_virtual_path,
     content::MockDownloadItem* item) {
-  scoped_ptr<DownloadTargetInfo> target_info;
+  std::unique_ptr<DownloadTargetInfo> target_info;
   base::RunLoop run_loop;
   DownloadTargetDeterminer::Start(
       item, initial_virtual_path, download_prefs_.get(), delegate(),
@@ -410,7 +410,7 @@ void DownloadTargetDeterminerTest::RunTestCasesWithActiveItem(
     const DownloadTestCase test_cases[],
     size_t test_case_count) {
   for (size_t i = 0; i < test_case_count; ++i) {
-    scoped_ptr<content::MockDownloadItem> item(
+    std::unique_ptr<content::MockDownloadItem> item(
         CreateActiveDownloadItem(i, test_cases[i]));
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     RunTestCase(test_cases[i], base::FilePath(), item.get());
@@ -893,7 +893,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_InactiveDownload) {
   for (size_t i = 0; i < arraysize(kInactiveTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const DownloadTestCase& test_case = kInactiveTestCases[i];
-    scoped_ptr<content::MockDownloadItem> item(
+    std::unique_ptr<content::MockDownloadItem> item(
         CreateActiveDownloadItem(i, test_case));
     EXPECT_CALL(*item.get(), GetState())
         .WillRepeatedly(Return(content::DownloadItem::CANCELLED));
@@ -1248,7 +1248,7 @@ TEST_F(DownloadTargetDeterminerTest,
       EXPECT_CRDOWNLOAD};
 
   const DownloadTestCase& test_case = kNotifyExtensionsTestCase;
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       CreateActiveDownloadItem(0, test_case));
   base::FilePath overridden_path(FILE_PATH_LITERAL("overridden/foo.txt"));
   base::FilePath full_overridden_path =
@@ -1296,7 +1296,7 @@ TEST_F(DownloadTargetDeterminerTest,
       EXPECT_CRDOWNLOAD};
 
   const DownloadTestCase& test_case = kNotifyExtensionsTestCase;
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       CreateActiveDownloadItem(0, test_case));
   base::FilePath overridden_path(FILE_PATH_LITERAL("overridden/foo.txt"));
   base::FilePath full_overridden_path =
@@ -1338,7 +1338,7 @@ TEST_F(DownloadTargetDeterminerTest,
       EXPECT_CRDOWNLOAD};
 
   const DownloadTestCase& test_case = kInitialPathTestCase;
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       CreateActiveDownloadItem(1, test_case));
   EXPECT_CALL(*item, GetLastReason())
       .WillRepeatedly(Return(
@@ -1408,7 +1408,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedNoPrompt) {
   for (size_t i = 0; i < arraysize(kResumedTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const DownloadTestCase& test_case = kResumedTestCases[i];
-    scoped_ptr<content::MockDownloadItem> item(
+    std::unique_ptr<content::MockDownloadItem> item(
         CreateActiveDownloadItem(i, test_case));
     base::FilePath expected_path =
         GetPathInDownloadDir(test_case.expected_local_path);
@@ -1451,7 +1451,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedForcedDownload) {
   const DownloadTestCase& test_case = kResumedForcedDownload;
   base::FilePath expected_path =
       GetPathInDownloadDir(test_case.expected_local_path);
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       CreateActiveDownloadItem(0, test_case));
   ON_CALL(*item.get(), GetLastReason())
       .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
@@ -1536,7 +1536,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
     const DownloadTestCase& test_case = kResumedTestCases[i];
     base::FilePath expected_path =
         GetPathInDownloadDir(test_case.expected_local_path);
-    scoped_ptr<content::MockDownloadItem> item(
+    std::unique_ptr<content::MockDownloadItem> item(
         CreateActiveDownloadItem(i, test_case));
     ON_CALL(*item.get(), GetLastReason())
         .WillByDefault(Return(
@@ -1649,7 +1649,7 @@ TEST_F(DownloadTargetDeterminerTest,
   for (size_t i = 0; i < arraysize(kIntermediateNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const IntermediateNameTestCase& test_case = kIntermediateNameTestCases[i];
-    scoped_ptr<content::MockDownloadItem> item(
+    std::unique_ptr<content::MockDownloadItem> item(
         CreateActiveDownloadItem(i, test_case.general));
 
     ON_CALL(*item.get(), GetLastReason())
@@ -1661,7 +1661,7 @@ TEST_F(DownloadTargetDeterminerTest,
     ON_CALL(*item.get(), GetDangerType())
         .WillByDefault(Return(test_case.general.expected_danger_type));
 
-    scoped_ptr<DownloadTargetInfo> target_info =
+    std::unique_ptr<DownloadTargetInfo> target_info =
         RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
                                     item.get());
     VerifyDownloadTarget(test_case.general, target_info.get());
@@ -1758,9 +1758,9 @@ TEST_F(DownloadTargetDeterminerTest,
   for (size_t i = 0; i < arraysize(kMIMETypeTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const MIMETypeTestCase& test_case = kMIMETypeTestCases[i];
-    scoped_ptr<content::MockDownloadItem> item(
+    std::unique_ptr<content::MockDownloadItem> item(
         CreateActiveDownloadItem(i, test_case.general));
-    scoped_ptr<DownloadTargetInfo> target_info =
+    std::unique_ptr<DownloadTargetInfo> target_info =
         RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
                                     item.get());
     EXPECT_EQ(test_case.expected_mime_type, target_info->mime_type);
@@ -1918,11 +1918,10 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       GetPathInDownloadDir(FILE_PATH_LITERAL("foo.fakeext")), _))
       .WillByDefault(WithArg<1>(
           ScheduleCallback(kTestMIMEType)));
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       CreateActiveDownloadItem(1, kSecureHandlingTestCase));
-  scoped_ptr<DownloadTargetInfo> target_info =
-      RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
-                                  item.get());
+  std::unique_ptr<DownloadTargetInfo> target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
 
   // Register a PPAPI plugin. This should count as handling the filetype
@@ -1988,11 +1987,10 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       GetPathInDownloadDir(FILE_PATH_LITERAL("foo.fakeext")), _))
       .WillByDefault(WithArg<1>(
           ScheduleCallback(kTestMIMEType)));
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       CreateActiveDownloadItem(1, kSecureHandlingTestCase));
-  scoped_ptr<DownloadTargetInfo> target_info =
-      RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
-                                  item.get());
+  std::unique_ptr<DownloadTargetInfo> target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
 
   // Register a BrowserPlugin. This should count as handling the filetype

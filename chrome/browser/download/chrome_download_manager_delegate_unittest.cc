@@ -157,7 +157,8 @@ class ChromeDownloadManagerDelegateTest
   void VerifyAndClearExpectations();
 
   // Creates MockDownloadItem and sets up default expectations.
-  scoped_ptr<content::MockDownloadItem> CreateActiveDownloadItem(int32_t id);
+  std::unique_ptr<content::MockDownloadItem> CreateActiveDownloadItem(
+      int32_t id);
 
   // Given the relative path |path|, returns the full path under the temporary
   // downloads directory.
@@ -183,8 +184,8 @@ class ChromeDownloadManagerDelegateTest
  private:
   syncable_prefs::TestingPrefServiceSyncable* pref_service_;
   base::ScopedTempDir test_download_dir_;
-  scoped_ptr<content::MockDownloadManager> download_manager_;
-  scoped_ptr<TestChromeDownloadManagerDelegate> delegate_;
+  std::unique_ptr<content::MockDownloadManager> download_manager_;
+  std::unique_ptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
 };
 
@@ -215,9 +216,9 @@ void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {
   ::testing::Mock::VerifyAndClearExpectations(delegate_.get());
 }
 
-scoped_ptr<content::MockDownloadItem>
+std::unique_ptr<content::MockDownloadItem>
 ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
-  scoped_ptr<content::MockDownloadItem> item(
+  std::unique_ptr<content::MockDownloadItem> item(
       new ::testing::NiceMock<content::MockDownloadItem>());
   ON_CALL(*item, GetBrowserContext())
       .WillByDefault(Return(profile()));
@@ -332,7 +333,7 @@ DownloadPrefs* ChromeDownloadManagerDelegateTest::download_prefs() {
 TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
   GURL download_url("http://example.com/foo.txt");
 
-  scoped_ptr<content::MockDownloadItem> save_as_download =
+  std::unique_ptr<content::MockDownloadItem> save_as_download =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*save_as_download, GetURL())
       .Times(::testing::AnyNumber())
@@ -341,7 +342,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
       .Times(::testing::AnyNumber())
       .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_PROMPT));
 
-  scoped_ptr<content::MockDownloadItem> automatic_download =
+  std::unique_ptr<content::MockDownloadItem> automatic_download =
       CreateActiveDownloadItem(1);
   EXPECT_CALL(*automatic_download, GetURL())
       .Times(::testing::AnyNumber())
@@ -405,7 +406,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
 TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
   GURL url("http://example.com/foo");
 
-  scoped_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<content::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(url));
   EXPECT_CALL(*download_item, GetTargetDisposition())
@@ -463,7 +464,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
       default_download_path().AppendASCII("bar");
   base::WriteFile(existing_path, kData, kDataLength);
 
-  scoped_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<content::MockDownloadItem> download_item =
       CreateActiveDownloadItem(1);
   EXPECT_CALL(*download_item, GetTargetFilePath())
       .WillRepeatedly(ReturnRef(existing_path));
@@ -511,7 +512,8 @@ class ChromeDownloadManagerDelegateTestWithSafeBrowsing
   }
 
  private:
-  scoped_ptr<TestDownloadProtectionService> test_download_protection_service_;
+  std::unique_ptr<TestDownloadProtectionService>
+      test_download_protection_service_;
 };
 
 void ChromeDownloadManagerDelegateTestWithSafeBrowsing::SetUp() {
@@ -637,7 +639,7 @@ INSTANTIATE_TEST_CASE_P(_,
 TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing, CheckClientDownload) {
   const SafeBrowsingTestParameters& kParameters = GetParam();
 
-  scoped_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<content::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*delegate(), GetDownloadProtectionService());
   EXPECT_CALL(*download_protection_service(), MockCheckClientDownload())

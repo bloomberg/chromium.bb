@@ -116,7 +116,7 @@ DownloadUIController::Delegate::~Delegate() {
 }
 
 DownloadUIController::DownloadUIController(content::DownloadManager* manager,
-                                           scoped_ptr<Delegate> delegate)
+                                           std::unique_ptr<Delegate> delegate)
     : download_notifier_(manager, this), delegate_(std::move(delegate)) {
 #if defined(OS_ANDROID)
   if (!delegate_)

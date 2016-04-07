@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -51,14 +52,14 @@ class DownloadShelfTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<content::MockDownloadItem> GetInProgressMockDownload();
+  std::unique_ptr<content::MockDownloadItem> GetInProgressMockDownload();
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<content::MockDownloadItem> download_item_;
-  scoped_ptr<content::MockDownloadManager> download_manager_;
+  std::unique_ptr<content::MockDownloadItem> download_item_;
+  std::unique_ptr<content::MockDownloadManager> download_manager_;
   TestDownloadShelf shelf_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 DownloadShelfTest::DownloadShelfTest()

@@ -456,7 +456,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   content::WebContents* web_contents = download->GetWebContents();
   Browser* browser =
       web_contents ? chrome::FindBrowserWithWebContents(web_contents) : NULL;
-  scoped_ptr<chrome::ScopedTabbedBrowserDisplayer> browser_displayer;
+  std::unique_ptr<chrome::ScopedTabbedBrowserDisplayer> browser_displayer;
   if (!browser ||
       !browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     browser_displayer.reset(new chrome::ScopedTabbedBrowserDisplayer(profile_));
@@ -727,7 +727,7 @@ void ChromeDownloadManagerDelegate::Observe(
 void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
     int32_t download_id,
     const content::DownloadTargetCallback& callback,
-    scoped_ptr<DownloadTargetInfo> target_info) {
+    std::unique_ptr<DownloadTargetInfo> target_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (item) {

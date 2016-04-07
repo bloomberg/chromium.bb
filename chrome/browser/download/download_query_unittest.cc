@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/download_query.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_query.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,13 +105,13 @@ class DownloadQueryTest : public testing::Test {
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, bool cpp_value) {
-  scoped_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
+  std::unique_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, int cpp_value) {
-  scoped_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
+  std::unique_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
@@ -131,7 +132,7 @@ template<> void DownloadQueryTest::AddFilter(
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, std::vector<base::string16> cpp_value) {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (std::vector<base::string16>::const_iterator it = cpp_value.begin();
        it != cpp_value.end(); ++it) {
     list->Append(new base::StringValue(*it));
@@ -141,7 +142,7 @@ template<> void DownloadQueryTest::AddFilter(
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, std::vector<std::string> cpp_value) {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (std::vector<std::string>::const_iterator it = cpp_value.begin();
        it != cpp_value.end(); ++it) {
     list->Append(new base::StringValue(*it));
@@ -162,7 +163,7 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_ZeroItems) {
 }
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_InvalidFilter) {
-  scoped_ptr<base::Value> value(new base::FundamentalValue(0));
+  std::unique_ptr<base::Value> value(new base::FundamentalValue(0));
   EXPECT_FALSE(query()->AddFilter(static_cast<DownloadQuery::FilterType>(
                                       std::numeric_limits<int32_t>::max()),
                                   *value.get()));

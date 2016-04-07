@@ -742,7 +742,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
             << " Should prompt:" << should_prompt_
             << " Danger type:" << danger_type_
             << " Danger level:" << danger_level_;
-  scoped_ptr<DownloadTargetInfo> target_info(new DownloadTargetInfo);
+  std::unique_ptr<DownloadTargetInfo> target_info(new DownloadTargetInfo);
 
   target_info->target_path = local_path_;
   target_info->target_disposition =

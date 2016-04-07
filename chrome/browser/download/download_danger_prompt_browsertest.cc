@@ -181,7 +181,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   DownloadDangerPrompt* prompt_;
   DownloadDangerPrompt::Action expected_action_;
   bool did_receive_callback_;
-  scoped_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
+  std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
   std::string expected_serialized_report_;
   bool report_sent_;
 

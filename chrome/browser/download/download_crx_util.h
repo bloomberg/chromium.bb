@@ -7,9 +7,9 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_
 
+#include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 class ExtensionInstallPrompt;
 class Profile;
@@ -27,7 +27,7 @@ namespace download_crx_util {
 // Allow tests to install a mock ExtensionInstallPrompt object, to fake
 // user clicks on the permissions dialog.
 void SetMockInstallPromptForTesting(
-    scoped_ptr<ExtensionInstallPrompt> mock_prompt);
+    std::unique_ptr<ExtensionInstallPrompt> mock_prompt);
 
 // Create and pre-configure a CrxInstaller for a given |download_item|.
 scoped_refptr<extensions::CrxInstaller> CreateCrxInstaller(
