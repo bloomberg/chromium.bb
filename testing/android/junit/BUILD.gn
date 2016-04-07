@@ -34,7 +34,7 @@ java_library("junit_test_support") {
 }
 
 # GYP: //testing/android/junit_test.gyp:junit_unit_tests
-junit_binary("junit_unittests") {
+junit_binary("junit_unit_tests") {
   java_files = [
     "javatests/src/org/chromium/testing/local/GtestFilterTest.java",
     "javatests/src/org/chromium/testing/local/GtestLoggerTest.java",
