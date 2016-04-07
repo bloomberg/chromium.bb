@@ -44,6 +44,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/compositor/compositor.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -439,15 +440,16 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   GetRootWindowSettings(GetWindow(non_primary_host))->display_id =
       old_primary_display.id();
 
-  const DisplayLayout& layout = GetDisplayManager()->GetCurrentDisplayLayout();
+  const display::DisplayLayout& layout =
+      GetDisplayManager()->GetCurrentDisplayLayout();
   // The requested primary id can be same as one in the stored layout
   // when the primary id is set after new displays are connected.
   // Only update the layout if it is requested to swap primary display.
   if (layout.primary_id != new_primary_display.id()) {
-    scoped_ptr<DisplayLayout> swapped_layout(layout.Copy());
+    scoped_ptr<display::DisplayLayout> swapped_layout(layout.Copy());
     swapped_layout->placement_list[0].Swap();
     swapped_layout->primary_id = new_primary_display.id();
-    DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+    display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(
         list, std::move(swapped_layout));
   }
@@ -764,8 +766,8 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   DisplayManager* display_manager = GetDisplayManager();
   DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
-    DisplayIdList list = display_manager->GetCurrentDisplayIdList();
-    const DisplayLayout& layout =
+    display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+    const display::DisplayLayout& layout =
         layout_store->GetRegisteredDisplayLayout(list);
     layout_store->UpdateMultiDisplayState(
         list, display_manager->IsInMirrorMode(), layout.default_unified);

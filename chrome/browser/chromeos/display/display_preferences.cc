@@ -118,7 +118,7 @@ void LoadDisplayLayouts() {
       prefs::kSecondaryDisplays);
   for (base::DictionaryValue::Iterator it(*layouts);
        !it.IsAtEnd(); it.Advance()) {
-    scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
+    scoped_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
     if (!ash::JsonToDisplayLayout(it.value(), layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
       continue;
@@ -134,7 +134,7 @@ void LoadDisplayLayouts() {
           continue;
         ids.push_back(id);
       }
-      ash::DisplayIdList list =
+      display::DisplayIdList list =
           ash::GenerateDisplayIdList(ids.begin(), ids.end());
       layout_store->RegisterLayoutForDisplayIdList(list, std::move(layout));
     }
@@ -212,8 +212,8 @@ void LoadDisplayRotationState() {
       static_cast<gfx::Display::Rotation>(rotation));
 }
 
-void StoreDisplayLayoutPref(const ash::DisplayIdList& list,
-                            const ash::DisplayLayout& display_layout) {
+void StoreDisplayLayoutPref(const display::DisplayIdList& list,
+                            const display::DisplayLayout& display_layout) {
   std::string name = ash::DisplayIdListToString(list);
 
   PrefService* local_state = g_browser_process->local_state();
@@ -236,8 +236,8 @@ void StoreCurrentDisplayLayoutPrefs() {
     return;
   }
 
-  ash::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
-  const ash::DisplayLayout& display_layout =
+  display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  const display::DisplayLayout& display_layout =
       display_manager->layout_store()->GetRegisteredDisplayLayout(list);
   StoreDisplayLayoutPref(list, display_layout);
 }
@@ -391,8 +391,8 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
 }
 
 // Stores the display layout for given display pairs.
-void StoreDisplayLayoutPrefForTest(const ash::DisplayIdList& list,
-                                   const ash::DisplayLayout& layout) {
+void StoreDisplayLayoutPrefForTest(const display::DisplayIdList& list,
+                                   const display::DisplayLayout& layout) {
   StoreDisplayLayoutPref(list, layout);
 }
 

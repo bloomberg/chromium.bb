@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -29,6 +28,8 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_builder.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -339,7 +340,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_display->Set("availableColorProfiles", available_color_profiles);
 
     if (display_manager->GetNumDisplays() > 1) {
-      const ash::DisplayPlacement placement =
+      const display::DisplayPlacement placement =
           display_manager->GetCurrentDisplayLayout().FindPlacementById(
               display.id());
       if (placement.display_id != gfx::Display::kInvalidDisplayID) {
@@ -409,7 +410,8 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
   content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
 
   ash::DisplayManager* display_manager = GetDisplayManager();
-  ash::DisplayLayoutBuilder builder(display_manager->GetCurrentDisplayLayout());
+  display::DisplayLayoutBuilder builder(
+      display_manager->GetCurrentDisplayLayout());
   builder.ClearPlacements();
   for (const base::Value* layout : *layouts) {
     const base::DictionaryValue* dictionary;
@@ -435,11 +437,11 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
 
     builder.AddDisplayPlacement(
         display_id, parent_id,
-        static_cast<ash::DisplayPlacement::Position>(position), offset);
+        static_cast<display::DisplayPlacement::Position>(position), offset);
   }
-  scoped_ptr<ash::DisplayLayout> layout = builder.Build();
-  if (!ash::DisplayLayout::Validate(display_manager->GetCurrentDisplayIdList(),
-                                    *layout)) {
+  scoped_ptr<display::DisplayLayout> layout = builder.Build();
+  if (!display::DisplayLayout::Validate(
+          display_manager->GetCurrentDisplayIdList(), *layout)) {
     LOG(ERROR) << "Invalid layout: " << layout->ToString();
     return;
   }

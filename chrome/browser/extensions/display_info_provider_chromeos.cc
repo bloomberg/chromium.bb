@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -66,7 +67,7 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
          static_cast<int64_t>(point.y()) * static_cast<int64_t>(vector.x());
 }
 
-// Created ash::DisplayPlacement value for |rectangle| compared to the
+// Created display::DisplayPlacement value for |rectangle| compared to the
 // |reference|
 // rectangle.
 // The layout consists of two values:
@@ -97,7 +98,7 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
 //
 // The rectangle shares an egde with the reference's bottom edge, but it's
 // center point is in the left area.
-ash::DisplayPlacement CreatePlacementForRectangles(
+display::DisplayPlacement CreatePlacementForRectangles(
     const gfx::Rect& reference,
     const gfx::Rect& rectangle) {
   // Translate coordinate system so origin is in the reference's top left point
@@ -120,13 +121,13 @@ ash::DisplayPlacement CreatePlacementForRectangles(
 
   bool is_bottom_right = PointIsOverRadiusVector(center, up_diag);
 
-  ash::DisplayPlacement::Position position;
+  display::DisplayPlacement::Position position;
   if (is_top_right) {
-    position = is_bottom_right ? ash::DisplayPlacement::RIGHT
-                               : ash::DisplayPlacement::TOP;
+    position = is_bottom_right ? display::DisplayPlacement::RIGHT
+                               : display::DisplayPlacement::TOP;
   } else {
-    position = is_bottom_right ? ash::DisplayPlacement::BOTTOM
-                               : ash::DisplayPlacement::LEFT;
+    position = is_bottom_right ? display::DisplayPlacement::BOTTOM
+                               : display::DisplayPlacement::LEFT;
   }
 
   // If the rectangle with the calculated position would not have common side
@@ -135,25 +136,25 @@ ash::DisplayPlacement CreatePlacementForRectangles(
   if (is_top_right == is_bottom_right) {
     if (rectangle.y() > reference.y() + reference.height()) {
       // The rectangle is left or right, but completely under the reference.
-      position = ash::DisplayPlacement::BOTTOM;
+      position = display::DisplayPlacement::BOTTOM;
     } else if (rectangle.y() + rectangle.height() < reference.y()) {
       // The rectangle is left or right, but completely over the reference.
-      position = ash::DisplayPlacement::TOP;
+      position = display::DisplayPlacement::TOP;
     }
   } else {
     if (rectangle.x() > reference.x() + reference.width()) {
       // The rectangle is over or under, but completely right of the reference.
-      position = ash::DisplayPlacement::RIGHT;
+      position = display::DisplayPlacement::RIGHT;
     } else if (rectangle.x() + rectangle.width() < reference.x()) {
       // The rectangle is over or under, but completely left of the reference.
-      position = ash::DisplayPlacement::LEFT;
+      position = display::DisplayPlacement::LEFT;
     }
   }
-  int offset = (position == ash::DisplayPlacement::LEFT ||
-                position == ash::DisplayPlacement::RIGHT)
+  int offset = (position == display::DisplayPlacement::LEFT ||
+                position == display::DisplayPlacement::RIGHT)
                    ? rectangle.y()
                    : rectangle.x();
-  return ash::DisplayPlacement(position, offset);
+  return display::DisplayPlacement(position, offset);
 }
 
 // Updates the display layout for the target display in reference to the primary
@@ -162,12 +163,12 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int64_t primary_display_id,
                          const gfx::Rect& target_display_bounds,
                          int64_t target_display_id) {
-  ash::DisplayPlacement placement(CreatePlacementForRectangles(
+  display::DisplayPlacement placement(CreatePlacementForRectangles(
       primary_display_bounds, target_display_bounds));
   placement.display_id = target_display_id;
   placement.parent_display_id = primary_display_id;
 
-  scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
+  scoped_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
   layout->placement_list.push_back(placement);
   layout->primary_id = primary_display_id;
 

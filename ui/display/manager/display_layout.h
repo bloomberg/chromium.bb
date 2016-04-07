@@ -1,19 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_LAYOUT_H_
-#define ASH_DISPLAY_DISPLAY_LAYOUT_H_
+#ifndef UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_H_
+#define UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_H_
 
 #include <stdint.h>
 
 #include <string>
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "ui/display/display_export.h"
 
 namespace base {
 class Value;
@@ -24,7 +24,7 @@ namespace gfx {
 class Display;
 }
 
-namespace ash {
+namespace display {
 
 // An identifier used to manage display layout in DisplayManager /
 // DisplayLayoutStore.
@@ -45,7 +45,7 @@ using DisplayList = std::vector<gfx::Display>;
 //                        |        |
 //                        +--------+
 //
-struct ASH_EXPORT DisplayPlacement {
+struct DISPLAY_EXPORT DisplayPlacement {
   // The id of the display this placement will be applied to.
   int64_t display_id;
 
@@ -73,7 +73,7 @@ struct ASH_EXPORT DisplayPlacement {
                                Position* position);
 };
 
-class ASH_EXPORT DisplayLayout final {
+class DISPLAY_EXPORT DisplayLayout final {
  public:
   DisplayLayout();
   ~DisplayLayout();
@@ -109,6 +109,6 @@ class ASH_EXPORT DisplayLayout final {
   DISALLOW_COPY_AND_ASSIGN(DisplayLayout);
 };
 
-}  // namespace ash
+}  // namespace display
 
-#endif
+#endif  // UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_H_

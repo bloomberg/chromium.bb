@@ -4,27 +4,27 @@
 
 #include "ash/display/json_converter.h"
 
-#include "ash/display/display_layout.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/manager/display_layout.h"
 
 namespace ash {
 
 TEST(JsonConverterTest, JsonFromToDisplayLayout) {
-  DisplayLayout layout;
+  display::DisplayLayout layout;
   layout.primary_id = 1;
   layout.mirrored = true;
   layout.default_unified = false;
-  layout.placement_list.push_back(DisplayPlacement());
-  layout.placement_list.push_back(DisplayPlacement());
+  layout.placement_list.push_back(display::DisplayPlacement());
+  layout.placement_list.push_back(display::DisplayPlacement());
   layout.placement_list[0].display_id = 2;
   layout.placement_list[0].parent_display_id = 1;
-  layout.placement_list[0].position = DisplayPlacement::BOTTOM;
+  layout.placement_list[0].position = display::DisplayPlacement::BOTTOM;
 
   layout.placement_list[1].display_id = 3;
   layout.placement_list[1].parent_display_id = 2;
-  layout.placement_list[1].position = DisplayPlacement::LEFT;
+  layout.placement_list[1].position = display::DisplayPlacement::LEFT;
   layout.placement_list[1].offset = 30;
 
   base::DictionaryValue value;
@@ -55,7 +55,7 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
                            << error_column;
   EXPECT_TRUE(value.Equals(read_value.get()));
 
-  DisplayLayout read_layout;
+  display::DisplayLayout read_layout;
   EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
   EXPECT_EQ(read_layout.mirrored, layout.mirrored);
   EXPECT_EQ(read_layout.primary_id, layout.primary_id);
@@ -79,13 +79,14 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
   ASSERT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
                            << error_column;
 
-  DisplayLayout read_layout;
+  display::DisplayLayout read_layout;
   EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
   EXPECT_EQ(true, read_layout.mirrored);
   EXPECT_EQ(1, read_layout.primary_id);
   EXPECT_EQ(false, read_layout.default_unified);
   ASSERT_EQ(1u, read_layout.placement_list.size());
-  EXPECT_EQ(DisplayPlacement::BOTTOM, read_layout.placement_list[0].position);
+  EXPECT_EQ(display::DisplayPlacement::BOTTOM,
+            read_layout.placement_list[0].position);
   EXPECT_EQ(20, read_layout.placement_list[0].offset);
 }
 

@@ -235,22 +235,22 @@ bool ComputeBoundary(const gfx::Display& a_display,
   int rr = std::min(a_bounds.right(), b_bounds.right());
   int rb = std::min(a_bounds.bottom(), b_bounds.bottom());
 
-  DisplayPlacement::Position position;
+  display::DisplayPlacement::Position position;
   if ((rb - ry) == 0) {
     // top bottom
     if (a_bounds.bottom() == b_bounds.y()) {
-      position = DisplayPlacement::BOTTOM;
+      position = display::DisplayPlacement::BOTTOM;
     } else if (a_bounds.y() == b_bounds.bottom()) {
-      position = DisplayPlacement::TOP;
+      position = display::DisplayPlacement::TOP;
     } else {
       return false;
     }
   } else {
     // left right
     if (a_bounds.right() == b_bounds.x()) {
-      position = DisplayPlacement::RIGHT;
+      position = display::DisplayPlacement::RIGHT;
     } else if (a_bounds.x() == b_bounds.right()) {
-      position = DisplayPlacement::LEFT;
+      position = display::DisplayPlacement::LEFT;
     } else {
       DCHECK_NE(rr, rx);
       return false;
@@ -258,11 +258,11 @@ bool ComputeBoundary(const gfx::Display& a_display,
   }
 
   switch (position) {
-    case DisplayPlacement::TOP:
-    case DisplayPlacement::BOTTOM: {
+    case display::DisplayPlacement::TOP:
+    case display::DisplayPlacement::BOTTOM: {
       int left = std::max(a_bounds.x(), b_bounds.x());
       int right = std::min(a_bounds.right(), b_bounds.right());
-      if (position == DisplayPlacement::TOP) {
+      if (position == display::DisplayPlacement::TOP) {
         a_edge_in_screen->SetRect(left, a_bounds.y(), right - left, 1);
         b_edge_in_screen->SetRect(left, b_bounds.bottom() - 1, right - left, 1);
       } else {
@@ -271,11 +271,11 @@ bool ComputeBoundary(const gfx::Display& a_display,
       }
       break;
     }
-    case DisplayPlacement::LEFT:
-    case DisplayPlacement::RIGHT: {
+    case display::DisplayPlacement::LEFT:
+    case display::DisplayPlacement::RIGHT: {
       int top = std::max(a_bounds.y(), b_bounds.y());
       int bottom = std::min(a_bounds.bottom(), b_bounds.bottom());
-      if (position == DisplayPlacement::LEFT) {
+      if (position == display::DisplayPlacement::LEFT) {
         a_edge_in_screen->SetRect(a_bounds.x(), top, 1, bottom - top);
         b_edge_in_screen->SetRect(b_bounds.right() - 1, top, 1, bottom - top);
       } else {
@@ -374,18 +374,18 @@ int FindDisplayIndexContainingPoint(const std::vector<gfx::Display>& displays,
   return iter == displays.end() ? -1 : (iter - displays.begin());
 }
 
-DisplayIdList CreateDisplayIdList(const DisplayList& list) {
+display::DisplayIdList CreateDisplayIdList(const display::DisplayList& list) {
   return GenerateDisplayIdList(
       list.begin(), list.end(),
       [](const gfx::Display& display) { return display.id(); });
 }
 
-void SortDisplayIdList(DisplayIdList* ids) {
+void SortDisplayIdList(display::DisplayIdList* ids) {
   std::sort(ids->begin(), ids->end(),
             [](int64_t a, int64_t b) { return CompareDisplayIds(a, b); });
 }
 
-std::string DisplayIdListToString(const ash::DisplayIdList& list) {
+std::string DisplayIdListToString(const display::DisplayIdList& list) {
   std::stringstream s;
   const char* sep = "";
   for (int64_t id : list) {

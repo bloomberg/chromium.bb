@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -401,7 +402,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
 TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   UpdateDisplay("600x600, 400x520");
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::test::CreateDisplayLayout(ash::DisplayPlacement::LEFT, -40));
+      ash::test::CreateDisplayLayout(display::DisplayPlacement::LEFT, -40));
 
   DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -411,7 +412,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1].bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 40));
+      ash::test::CreateDisplayLayout(display::DisplayPlacement::TOP, 40));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -421,7 +422,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1].bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::test::CreateDisplayLayout(ash::DisplayPlacement::BOTTOM, 80));
+      ash::test::CreateDisplayLayout(display::DisplayPlacement::BOTTOM, 80));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());

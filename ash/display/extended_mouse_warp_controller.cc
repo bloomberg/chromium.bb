@@ -14,6 +14,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -103,7 +104,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
       Shell::GetInstance()->display_manager();
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
                                        : gfx::Display::kInvalidDisplayID;
-  DisplayList display_list = display_manager->active_display_list();
+  display::DisplayList display_list = display_manager->active_display_list();
   // Try to create a Warp region for all possible two displays combination.
   // The following code does it by poping the last element in the list
   // and then pairing with remaining displays in the list, until the list

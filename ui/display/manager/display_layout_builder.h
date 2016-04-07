@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_LAYOUT_BUILDER_H_
-#define ASH_DISPLAY_DISPLAY_LAYOUT_BUILDER_H_
+#ifndef UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_BUILDER_H_
+#define UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_BUILDER_H_
 
-#include "ash/display/display_layout.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/display/display_export.h"
+#include "ui/display/manager/display_layout.h"
 
-namespace ash {
+namespace display {
 
 class DisplayLayout;
 
 // A utility class to create a DisplayLayout instance.
-class ASH_EXPORT DisplayLayoutBuilder final {
+class DISPLAY_EXPORT DisplayLayoutBuilder final {
  public:
   // Creates a builder that uses a copy of the |layout| as a source.
   explicit DisplayLayoutBuilder(const DisplayLayout& layout);
 
-  // Ccreates a builder with the primary display id.
+  // Creates a builder with the primary display id.
   explicit DisplayLayoutBuilder(int64_t primary_id);
 
   ~DisplayLayoutBuilder();
@@ -51,6 +52,6 @@ class ASH_EXPORT DisplayLayoutBuilder final {
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutBuilder);
 };
 
-}  // namespace ash
+}  // namespace display
 
-#endif  // ASH_DISPLAY_DISPLAY_LAYOUT_BUILDER_H_
+#endif  // UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_BUILDER_H_

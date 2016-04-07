@@ -11,14 +11,16 @@ namespace base {
 class Value;
 }
 
+namespace display {
+class DisplayLayout;
+}
+
 namespace ash {
 
-class DisplayLayout;
-
 ASH_EXPORT bool JsonToDisplayLayout(const base::Value& value,
-                                    DisplayLayout* layout);
+                                    display::DisplayLayout* layout);
 
-ASH_EXPORT bool DisplayLayoutToJson(const DisplayLayout& layout,
+ASH_EXPORT bool DisplayLayoutToJson(const display::DisplayLayout& layout,
                                     base::Value* value);
 
 }  // namespace ash

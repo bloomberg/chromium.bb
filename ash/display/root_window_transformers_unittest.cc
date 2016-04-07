@@ -21,6 +21,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
@@ -193,7 +194,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   magnifier->SetEnabled(false);
 
   display_manager->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(DisplayPlacement::BOTTOM, 50));
+      test::CreateDisplayLayout(display::DisplayPlacement::BOTTOM, 50));
   EXPECT_EQ("50,120 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 

@@ -5,11 +5,11 @@
 #include "ash/display/display_configuration_controller.h"
 
 #include "ash/display/display_animator.h"
-#include "ash/display/display_layout.h"
 #include "ash/display/display_manager.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "base/time/time.h"
+#include "ui/display/manager/display_layout.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/display_animator_chromeos.h"
@@ -68,7 +68,7 @@ DisplayConfigurationController::~DisplayConfigurationController() {
 }
 
 void DisplayConfigurationController::SetDisplayLayout(
-    scoped_ptr<DisplayLayout> layout,
+    scoped_ptr<display::DisplayLayout> layout,
     bool user_action) {
   if (user_action && display_animator_) {
     display_animator_->StartFadeOutAnimation(
@@ -147,7 +147,7 @@ bool DisplayConfigurationController::IsLimited() {
 }
 
 void DisplayConfigurationController::SetDisplayLayoutImpl(
-    scoped_ptr<DisplayLayout> layout) {
+    scoped_ptr<display::DisplayLayout> layout) {
   // TODO(oshima/stevenjb): Add support for 3+ displays.
   display_manager_->SetLayoutForCurrentDisplays(std::move(layout));
   if (display_animator_)

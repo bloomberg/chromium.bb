@@ -7,7 +7,6 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
-#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
 #include "ash/display/mirror_window_controller.h"
@@ -26,6 +25,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/manager/display_layout_builder.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
@@ -314,7 +314,8 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
   EXPECT_EQ("960,0 400x300",
             display_manager()->GetDisplayAt(2).bounds().ToString());
 
-  DisplayPlacement default_placement(DisplayPlacement::BOTTOM, 10);
+  display::DisplayPlacement default_placement(display::DisplayPlacement::BOTTOM,
+                                              10);
   display_manager()->layout_store()->SetDefaultDisplayPlacement(
       default_placement);
 
@@ -335,15 +336,16 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
     return;
 
   int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
-  DisplayIdList list = ash::test::CreateDisplayIdListN(
+  display::DisplayIdList list = ash::test::CreateDisplayIdListN(
       3, primary_id, primary_id + 1, primary_id + 2);
   {
     // Layout: [2]
     //         [1][P]
-    DisplayLayoutBuilder builder(primary_id);
-    builder.AddDisplayPlacement(list[1], primary_id, DisplayPlacement::LEFT,
-                                10);
-    builder.AddDisplayPlacement(list[2], list[1], DisplayPlacement::TOP, 10);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id,
+                                display::DisplayPlacement::LEFT, 10);
+    builder.AddDisplayPlacement(list[2], list[1],
+                                display::DisplayPlacement::TOP, 10);
     display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
         list, builder.Build());
 
@@ -361,10 +363,11 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   {
     // Layout: [1]
     //         [P][2]
-    DisplayLayoutBuilder builder(primary_id);
-    builder.AddDisplayPlacement(list[1], primary_id, DisplayPlacement::TOP, 10);
-    builder.AddDisplayPlacement(list[2], primary_id, DisplayPlacement::RIGHT,
-                                10);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id,
+                                display::DisplayPlacement::TOP, 10);
+    builder.AddDisplayPlacement(list[2], primary_id,
+                                display::DisplayPlacement::RIGHT, 10);
     display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
         list, builder.Build());
 
@@ -383,10 +386,11 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
     // Layout: [P]
     //         [2]
     //         [1]
-    DisplayLayoutBuilder builder(primary_id);
-    builder.AddDisplayPlacement(list[1], list[2], DisplayPlacement::BOTTOM, 10);
-    builder.AddDisplayPlacement(list[2], primary_id, DisplayPlacement::BOTTOM,
-                                10);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], list[2],
+                                display::DisplayPlacement::BOTTOM, 10);
+    builder.AddDisplayPlacement(list[2], primary_id,
+                                display::DisplayPlacement::BOTTOM, 10);
     display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
         list, builder.Build());
 
@@ -409,13 +413,15 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
     // Layout: [P][2]
     //      [3][4]
     //      [1]
-    DisplayLayoutBuilder builder(primary_id);
-    builder.AddDisplayPlacement(list[2], primary_id, DisplayPlacement::RIGHT,
-                                10);
-    builder.AddDisplayPlacement(list[1], list[3], DisplayPlacement::BOTTOM, 10);
-    builder.AddDisplayPlacement(list[3], list[4], DisplayPlacement::LEFT, 10);
-    builder.AddDisplayPlacement(list[4], primary_id, DisplayPlacement::BOTTOM,
-                                10);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[2], primary_id,
+                                display::DisplayPlacement::RIGHT, 10);
+    builder.AddDisplayPlacement(list[1], list[3],
+                                display::DisplayPlacement::BOTTOM, 10);
+    builder.AddDisplayPlacement(list[3], list[4],
+                                display::DisplayPlacement::LEFT, 10);
+    builder.AddDisplayPlacement(list[4], primary_id,
+                                display::DisplayPlacement::BOTTOM, 10);
     display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
         list, builder.Build());
 
@@ -1585,32 +1591,56 @@ TEST_F(DisplayManagerTest, MirroredLayout) {
 
 TEST_F(DisplayManagerTest, InvertLayout) {
   EXPECT_EQ("left, 0",
-            DisplayPlacement(DisplayPlacement::RIGHT, 0).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::RIGHT, 0)
+                .Swap()
+                .ToString());
   EXPECT_EQ("left, -100",
-            DisplayPlacement(DisplayPlacement::RIGHT, 100).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::RIGHT, 100)
+                .Swap()
+                .ToString());
   EXPECT_EQ("left, 50",
-            DisplayPlacement(DisplayPlacement::RIGHT, -50).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::RIGHT, -50)
+                .Swap()
+                .ToString());
 
   EXPECT_EQ("right, 0",
-            DisplayPlacement(DisplayPlacement::LEFT, 0).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::LEFT, 0)
+                .Swap()
+                .ToString());
   EXPECT_EQ("right, -90",
-            DisplayPlacement(DisplayPlacement::LEFT, 90).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::LEFT, 90)
+                .Swap()
+                .ToString());
   EXPECT_EQ("right, 60",
-            DisplayPlacement(DisplayPlacement::LEFT, -60).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::LEFT, -60)
+                .Swap()
+                .ToString());
 
   EXPECT_EQ("bottom, 0",
-            DisplayPlacement(DisplayPlacement::TOP, 0).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::TOP, 0)
+                .Swap()
+                .ToString());
   EXPECT_EQ("bottom, -80",
-            DisplayPlacement(DisplayPlacement::TOP, 80).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::TOP, 80)
+                .Swap()
+                .ToString());
   EXPECT_EQ("bottom, 70",
-            DisplayPlacement(DisplayPlacement::TOP, -70).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::TOP, -70)
+                .Swap()
+                .ToString());
 
   EXPECT_EQ("top, 0",
-            DisplayPlacement(DisplayPlacement::BOTTOM, 0).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::BOTTOM, 0)
+                .Swap()
+                .ToString());
   EXPECT_EQ("top, -70",
-            DisplayPlacement(DisplayPlacement::BOTTOM, 70).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::BOTTOM, 70)
+                .Swap()
+                .ToString());
   EXPECT_EQ("top, 80",
-            DisplayPlacement(DisplayPlacement::BOTTOM, -80).Swap().ToString());
+            display::DisplayPlacement(display::DisplayPlacement::BOTTOM, -80)
+                .Swap()
+                .ToString());
 }
 
 TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
@@ -1781,8 +1811,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   // if the displays are configured to use mirroring when running on desktop.
   // This is a workdaround to force the display manager to forget
   // the mirroing layout.
-  DisplayIdList list = test::CreateDisplayIdList2(1, 2);
-  DisplayLayoutBuilder builder(
+  display::DisplayIdList list = test::CreateDisplayIdList2(1, 2);
+  display::DisplayLayoutBuilder builder(
       display_manager()->layout_store()->GetRegisteredDisplayLayout(list));
   builder.SetMirrored(false);
   display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
@@ -1805,8 +1835,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   UpdateDisplay("400x500,300x200");
-  DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
-  DisplayLayoutBuilder builder(
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayLayoutBuilder builder(
       display_manager()->layout_store()->GetRegisteredDisplayLayout(list));
   builder.SetDefaultUnified(false);
   display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
@@ -2026,10 +2056,10 @@ TEST_F(DisplayManagerTest, DockMode) {
 TEST_F(DisplayManagerTest, DontRegisterBadConfig) {
   if (!SupportsMultipleDisplays())
     return;
-  DisplayIdList list = ash::test::CreateDisplayIdList2(1, 2);
-  DisplayLayoutBuilder builder(1);
-  builder.AddDisplayPlacement(2, 1, ash::DisplayPlacement::LEFT, 0);
-  builder.AddDisplayPlacement(3, 1, ash::DisplayPlacement::BOTTOM, 0);
+  display::DisplayIdList list = ash::test::CreateDisplayIdList2(1, 2);
+  display::DisplayLayoutBuilder builder(1);
+  builder.AddDisplayPlacement(2, 1, display::DisplayPlacement::LEFT, 0);
+  builder.AddDisplayPlacement(3, 1, display::DisplayPlacement::BOTTOM, 0);
 
   display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
       list, builder.Build());
@@ -2214,17 +2244,17 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
-  DisplayLayoutBuilder good_builder(id1);
-  good_builder.SetSecondaryPlacement(id2, DisplayPlacement::LEFT, 0);
-  scoped_ptr<DisplayLayout> good(good_builder.Build());
+  display::DisplayLayoutBuilder good_builder(id1);
+  good_builder.SetSecondaryPlacement(id2, display::DisplayPlacement::LEFT, 0);
+  scoped_ptr<display::DisplayLayout> good(good_builder.Build());
 
-  DisplayIdList good_list = test::CreateDisplayIdList2(id1, id2);
+  display::DisplayIdList good_list = test::CreateDisplayIdList2(id1, id2);
   layout_store->RegisterLayoutForDisplayIdList(good_list, good->Copy());
 
-  DisplayLayoutBuilder bad(id1);
-  bad.SetSecondaryPlacement(id2, DisplayPlacement::BOTTOM, 0);
+  display::DisplayLayoutBuilder bad(id1);
+  bad.SetSecondaryPlacement(id2, display::DisplayPlacement::BOTTOM, 0);
 
-  DisplayIdList bad_list(2);
+  display::DisplayIdList bad_list(2);
   bad_list[0] = id2;
   bad_list[1] = id1;
   layout_store->RegisterLayoutForDisplayIdList(bad_list, bad.Build());
@@ -2237,14 +2267,15 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
 
-  scoped_ptr<DisplayLayout> old_layout(new DisplayLayout);
-  old_layout->placement_list.emplace_back(DisplayPlacement::BOTTOM, 0);
+  scoped_ptr<display::DisplayLayout> old_layout(new display::DisplayLayout);
+  old_layout->placement_list.emplace_back(display::DisplayPlacement::BOTTOM, 0);
   old_layout->primary_id = id1;
 
   DisplayLayoutStore* layout_store = display_manager()->layout_store();
-  DisplayIdList list = test::CreateDisplayIdList2(id1, id2);
+  display::DisplayIdList list = test::CreateDisplayIdList2(id1, id2);
   layout_store->RegisterLayoutForDisplayIdList(list, std::move(old_layout));
-  const DisplayLayout& stored = layout_store->GetRegisteredDisplayLayout(list);
+  const display::DisplayLayout& stored =
+      layout_store->GetRegisteredDisplayLayout(list);
 
   EXPECT_EQ(id1, stored.placement_list[0].parent_display_id);
   EXPECT_EQ(id2, stored.placement_list[0].display_id);

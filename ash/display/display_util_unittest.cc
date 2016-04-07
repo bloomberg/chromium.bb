@@ -92,7 +92,7 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
 }
 
 TEST_F(DisplayUtilTest, GenerateDisplayIdList) {
-  DisplayIdList list;
+  display::DisplayIdList list;
   {
     int64_t ids[] = {10, 1};
     list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
@@ -162,13 +162,15 @@ TEST_F(DisplayUtilTest, GenerateDisplayIdList) {
 TEST_F(DisplayUtilTest, DisplayIdListToString) {
   {
     int64_t ids[] = {10, 1, 16};
-    DisplayIdList list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    display::DisplayIdList list =
+        GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ("1,10,16", DisplayIdListToString(list));
   }
   {
     test::ScopedSetInternalDisplayId set_internal(16);
     int64_t ids[] = {10, 1, 16};
-    DisplayIdList list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    display::DisplayIdList list =
+        GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ("16,1,10", DisplayIdListToString(list));
   }
 }

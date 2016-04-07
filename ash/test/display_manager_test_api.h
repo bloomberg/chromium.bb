@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/display/display_layout.h"
 #include "base/macros.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/display/types/display_constants.h"
 
 namespace gfx {
@@ -98,13 +98,13 @@ void SwapPrimaryDisplay();
 // independent of current displays, use DisplayLayoutBuilder or simply
 // create a new DisplayLayout and set display id fields (primary, ids
 // in placement) manually.
-scoped_ptr<DisplayLayout> CreateDisplayLayout(
-    DisplayPlacement::Position position,
+scoped_ptr<display::DisplayLayout> CreateDisplayLayout(
+    display::DisplayPlacement::Position position,
     int offset);
 
 // Creates the DisplayIdList from ints.
-DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2);
-DisplayIdList CreateDisplayIdListN(size_t count, ...);
+display::DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2);
+display::DisplayIdList CreateDisplayIdListN(size_t count, ...);
 
 }  // namespace test
 }  // namespace ash

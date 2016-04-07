@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "ash/display/display_layout.h"
 #include "ash/display/display_pref_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "ui/display/manager/display_layout.h"
 
 namespace ash {
 
@@ -28,17 +28,18 @@ const char kOffsetKey[] = "offset";
 const char kDisplayPlacementDisplayIdKey[] = "display_id";
 const char kDisplayPlacementParentDisplayIdKey[] = "parent_display_id";
 
-bool AddLegacyValuesFromValue(const base::Value& value, DisplayLayout* layout) {
+bool AddLegacyValuesFromValue(const base::Value& value,
+                              display::DisplayLayout* layout) {
   const base::DictionaryValue* dict_value = nullptr;
   if (!value.GetAsDictionary(&dict_value))
     return false;
   int offset;
   if (dict_value->GetInteger(kOffsetKey, &offset)) {
-    DisplayPlacement::Position position;
+    display::DisplayPlacement::Position position;
     std::string position_str;
     if (!dict_value->GetString(kPositionKey, &position_str))
       return false;
-    DisplayPlacement::StringToPosition(position_str, &position);
+    display::DisplayPlacement::StringToPosition(position_str, &position);
     layout->placement_list.emplace_back(position, offset);
   }
   return true;
@@ -86,14 +87,14 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 template <>
 bool UpdateFromDict(const base::DictionaryValue* dict_value,
                     const std::string& field_name,
-                    DisplayPlacement::Position* output) {
+                    display::DisplayPlacement::Position* output) {
   bool (base::Value::*getter)(std::string*) const = &base::Value::GetAsString;
   std::string value;
   if (!UpdateFromDict(dict_value, field_name, getter, &value))
     return false;
 
-  return value.empty() ? true
-                       : DisplayPlacement::StringToPosition(value, output);
+  return value.empty() ? true : display::DisplayPlacement::StringToPosition(
+                                    value, output);
 }
 
 template <>
@@ -111,7 +112,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 template <>
 bool UpdateFromDict(const base::DictionaryValue* dict_value,
                     const std::string& field_name,
-                    std::vector<DisplayPlacement>* output) {
+                    std::vector<display::DisplayPlacement>* output) {
   bool (base::Value::*getter)(const base::ListValue**) const =
       &base::Value::GetAsList;
   const base::ListValue* list = nullptr;
@@ -127,7 +128,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
     if (!list_item->GetAsDictionary(&item_values))
       return false;
 
-    DisplayPlacement item;
+    display::DisplayPlacement item;
     if (!UpdateFromDict(item_values, kOffsetKey, &item.offset) ||
         !UpdateFromDict(item_values, kPositionKey, &item.position) ||
         !UpdateFromDict(item_values, kDisplayPlacementDisplayIdKey,
@@ -144,7 +145,8 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 
 }  // namespace
 
-bool JsonToDisplayLayout(const base::Value& value, DisplayLayout* layout) {
+bool JsonToDisplayLayout(const base::Value& value,
+                         display::DisplayLayout* layout) {
   layout->placement_list.clear();
   const base::DictionaryValue* dict_value = nullptr;
   if (!value.GetAsDictionary(&dict_value))
@@ -166,7 +168,8 @@ bool JsonToDisplayLayout(const base::Value& value, DisplayLayout* layout) {
   return AddLegacyValuesFromValue(value, layout);
 }
 
-bool DisplayLayoutToJson(const DisplayLayout& layout, base::Value* value) {
+bool DisplayLayoutToJson(const display::DisplayLayout& layout,
+                         base::Value* value) {
   base::DictionaryValue* dict_value = nullptr;
   if (!value->GetAsDictionary(&dict_value))
     return false;
@@ -180,7 +183,8 @@ bool DisplayLayoutToJson(const DisplayLayout& layout, base::Value* value) {
     scoped_ptr<base::DictionaryValue> placement_value(
         new base::DictionaryValue);
     placement_value->SetString(
-        kPositionKey, DisplayPlacement::PositionToString(placement.position));
+        kPositionKey,
+        display::DisplayPlacement::PositionToString(placement.position));
     placement_value->SetInteger(kOffsetKey, placement.offset);
     placement_value->SetString(kDisplayPlacementDisplayIdKey,
                                base::Int64ToString(placement.display_id));

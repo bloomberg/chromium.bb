@@ -52,7 +52,6 @@
 #endif
 
 namespace ash {
-typedef std::vector<gfx::Display> DisplayList;
 typedef std::vector<DisplayInfo> DisplayInfoList;
 
 namespace {
@@ -118,7 +117,7 @@ gfx::Size GetMaxNativeSize(const DisplayInfo& info) {
   return size;
 }
 
-gfx::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
+gfx::Display* FindDisplayById(display::DisplayList* display_list, int64_t id) {
   auto iter = std::find_if(
       display_list->begin(), display_list->end(),
       [id](const gfx::Display& display) { return display.id() == id; });
@@ -211,20 +210,20 @@ void DisplayManager::RefreshFontParams() {
 #endif  // OS_CHROMEOS
 }
 
-const DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
+const display::DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
   DCHECK_LE(2U, num_connected_displays());
   if (num_connected_displays() > 1) {
-    DisplayIdList list = GetCurrentDisplayIdList();
+    display::DisplayIdList list = GetCurrentDisplayIdList();
     return layout_store_->GetRegisteredDisplayLayout(list);
   }
   LOG(ERROR) << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
-  static DisplayLayout layout;
+  static display::DisplayLayout layout;
   layout.primary_id = active_display_list_[0].id();
   return layout;
 }
 
-DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
+display::DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   if (IsInUnifiedMode()) {
     return CreateDisplayIdList(software_mirroring_display_list_);
   } else if (IsInMirrorMode()) {
@@ -243,14 +242,14 @@ DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
 }
 
 void DisplayManager::SetLayoutForCurrentDisplays(
-    scoped_ptr<DisplayLayout> layout) {
+    scoped_ptr<display::DisplayLayout> layout) {
   if (GetNumDisplays() == 1)
     return;
-  const DisplayIdList list = GetCurrentDisplayIdList();
+  const display::DisplayIdList list = GetCurrentDisplayIdList();
 
-  DCHECK(DisplayLayout::Validate(list, *layout));
+  DCHECK(display::DisplayLayout::Validate(list, *layout));
 
-  const DisplayLayout& current_layout =
+  const display::DisplayLayout& current_layout =
       layout_store_->GetRegisteredDisplayLayout(list);
 
   if (layout->HasSamePlacementList(current_layout))
@@ -614,11 +613,11 @@ void DisplayManager::OnNativeDisplaysChanged(
 #if defined(OS_CHROMEOS)
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       new_display_info_list.size() > 1) {
-    DisplayIdList list = GenerateDisplayIdList(
+    display::DisplayIdList list = GenerateDisplayIdList(
         new_display_info_list.begin(), new_display_info_list.end(),
         [](const DisplayInfo& info) { return info.id(); });
 
-    const DisplayLayout& layout =
+    const display::DisplayLayout& layout =
         layout_store_->GetRegisteredDisplayLayout(list);
     // Mirror mode is set by DisplayConfigurator on the device.
     // Emulate it when running on linux desktop.
@@ -654,10 +653,10 @@ void DisplayManager::UpdateDisplaysWith(
             DisplayInfoSortFunctor());
 
   if (new_display_info_list.size() > 1) {
-    DisplayIdList list = GenerateDisplayIdList(
+    display::DisplayIdList list = GenerateDisplayIdList(
         new_display_info_list.begin(), new_display_info_list.end(),
         [](const DisplayInfo& info) { return info.id(); });
-    const DisplayLayout& layout =
+    const display::DisplayLayout& layout =
         layout_store_->GetRegisteredDisplayLayout(list);
     current_default_multi_display_mode_ =
         (layout.default_unified && unified_desktop_enabled_) ? UNIFIED
@@ -674,12 +673,12 @@ void DisplayManager::UpdateDisplaysWith(
   if (delegate_)
     delegate_->CloseMirroringDisplayIfNotNecessary();
 
-  DisplayList new_displays;
-  DisplayList removed_displays;
+  display::DisplayList new_displays;
+  display::DisplayList removed_displays;
   std::map<size_t, uint32_t> display_changes;
   std::vector<size_t> added_display_indices;
 
-  DisplayList::iterator curr_iter = active_display_list_.begin();
+  display::DisplayList::iterator curr_iter = active_display_list_.begin();
   DisplayInfoList::const_iterator new_info_iter = new_display_info_list.begin();
 
   while (curr_iter != active_display_list_.end() ||
@@ -854,7 +853,7 @@ const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
 const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
   if (GetNumDisplays() != 2)
     return active_display_list_[0];
-  const DisplayLayout& layout =
+  const display::DisplayLayout& layout =
       layout_store_->GetRegisteredDisplayLayout(GetCurrentDisplayIdList());
   return GetDisplayForId(layout.primary_id);
 }
@@ -971,7 +970,7 @@ void DisplayManager::AddRemoveDisplay() {
 void DisplayManager::ToggleDisplayScaleFactor() {
   DCHECK(!active_display_list_.empty());
   std::vector<DisplayInfo> new_display_info_list;
-  for (DisplayList::const_iterator iter = active_display_list_.begin();
+  for (display::DisplayList::const_iterator iter = active_display_list_.begin();
        iter != active_display_list_.end(); ++iter) {
     DisplayInfo display_info = GetDisplayInfo(iter->id());
     display_info.set_device_scale_factor(
@@ -996,7 +995,7 @@ bool DisplayManager::SoftwareMirroringEnabled() const {
 void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
     MultiDisplayMode mode) {
   DCHECK_NE(MIRRORING, mode);
-  DisplayIdList list = GetCurrentDisplayIdList();
+  display::DisplayIdList list = GetCurrentDisplayIdList();
   layout_store_->UpdateMultiDisplayState(list, IsInMirrorMode(),
                                          mode == UNIFIED);
   ReconfigureDisplays();
@@ -1284,13 +1283,14 @@ gfx::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
 }
 
 void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
-    DisplayList* display_list,
+    display::DisplayList* display_list,
     std::vector<size_t>* updated_indices) {
   if (display_list->size() == 1u)
     return;
 
-  const DisplayLayout& layout = layout_store_->GetRegisteredDisplayLayout(
-      CreateDisplayIdList(*display_list));
+  const display::DisplayLayout& layout =
+      layout_store_->GetRegisteredDisplayLayout(
+          CreateDisplayIdList(*display_list));
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.
@@ -1319,8 +1319,8 @@ void DisplayManager::CreateMirrorWindowIfAny() {
   delegate_->CreateOrUpdateMirroringDisplay(list);
 }
 
-void DisplayManager::ApplyDisplayLayout(const DisplayLayout& layout,
-                                        DisplayList* display_list,
+void DisplayManager::ApplyDisplayLayout(const display::DisplayLayout& layout,
+                                        display::DisplayList* display_list,
                                         std::vector<int64_t>* updated_ids) {
   // Layout from primary, then dependent displays.
   std::set<int64_t> parents;
@@ -1328,7 +1328,7 @@ void DisplayManager::ApplyDisplayLayout(const DisplayLayout& layout,
   while (parents.size()) {
     int64_t parent_id = *parents.begin();
     parents.erase(parent_id);
-    for (const DisplayPlacement& placement : layout.placement_list) {
+    for (const display::DisplayPlacement& placement : layout.placement_list) {
       if (placement.parent_display_id == parent_id) {
         if (ApplyDisplayPlacement(placement, display_list) && updated_ids)
           updated_ids->push_back(placement.display_id);
@@ -1338,8 +1338,9 @@ void DisplayManager::ApplyDisplayLayout(const DisplayLayout& layout,
   }
 }
 
-bool DisplayManager::ApplyDisplayPlacement(const DisplayPlacement& placement,
-                                           DisplayList* display_list) {
+bool DisplayManager::ApplyDisplayPlacement(
+    const display::DisplayPlacement& placement,
+    display::DisplayList* display_list) {
   const gfx::Display& parent_display =
       *FindDisplayById(display_list, placement.parent_display_id);
   DCHECK(parent_display.is_valid());
@@ -1351,13 +1352,13 @@ bool DisplayManager::ApplyDisplayPlacement(const DisplayPlacement& placement,
   const gfx::Rect& target_bounds = target_display->bounds();
   gfx::Point new_target_origin = parent_bounds.origin();
 
-  DisplayPlacement::Position position = placement.position;
+  display::DisplayPlacement::Position position = placement.position;
 
   // Ignore the offset in case the target display doesn't share edges with
   // the parent display.
   int offset = placement.offset;
-  if (position == DisplayPlacement::TOP ||
-      position == DisplayPlacement::BOTTOM) {
+  if (position == display::DisplayPlacement::TOP ||
+      position == display::DisplayPlacement::BOTTOM) {
     offset = std::min(
         offset, parent_bounds.width() - kMinimumOverlapForInvalidOffset);
     offset = std::max(
@@ -1369,16 +1370,16 @@ bool DisplayManager::ApplyDisplayPlacement(const DisplayPlacement& placement,
         offset, -target_bounds.height() + kMinimumOverlapForInvalidOffset);
   }
   switch (position) {
-    case DisplayPlacement::TOP:
+    case display::DisplayPlacement::TOP:
       new_target_origin.Offset(offset, -target_bounds.height());
       break;
-    case DisplayPlacement::RIGHT:
+    case display::DisplayPlacement::RIGHT:
       new_target_origin.Offset(parent_bounds.width(), offset);
       break;
-    case DisplayPlacement::BOTTOM:
+    case display::DisplayPlacement::BOTTOM:
       new_target_origin.Offset(offset, parent_bounds.height());
       break;
-    case DisplayPlacement::LEFT:
+    case display::DisplayPlacement::LEFT:
       new_target_origin.Offset(-target_bounds.width(), offset);
       break;
   }

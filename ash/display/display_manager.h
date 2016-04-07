@@ -13,12 +13,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/display_info.h"
-#include "ash/display/display_layout.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
 
 #if defined(OS_CHROMEOS)
@@ -131,14 +131,14 @@ class ASH_EXPORT DisplayManager
   void RefreshFontParams();
 
   // Returns the display layout used for current displays.
-  const DisplayLayout& GetCurrentDisplayLayout() const;
+  const display::DisplayLayout& GetCurrentDisplayLayout() const;
 
   // Returns the current display list.
-  DisplayIdList GetCurrentDisplayIdList() const;
+  display::DisplayIdList GetCurrentDisplayIdList() const;
 
   // Sets the layout for the current display pair. The |layout| specifies
   // the locaion of the displays relative to their parents.
-  void SetLayoutForCurrentDisplays(scoped_ptr<DisplayLayout> layout);
+  void SetLayoutForCurrentDisplays(scoped_ptr<display::DisplayLayout> layout);
 
   // Returns display for given |id|;
   const gfx::Display& GetDisplayForId(int64_t id) const;
@@ -237,7 +237,7 @@ class ASH_EXPORT DisplayManager
   // when displays are mirrored.
   size_t GetNumDisplays() const;
 
-  const DisplayList& active_display_list() const {
+  const display::DisplayList& active_display_list() const {
     return active_display_list_;
   }
 
@@ -252,7 +252,7 @@ class ASH_EXPORT DisplayManager
   // Returns the mirroring status.
   bool IsInMirrorMode() const;
   int64_t mirroring_display_id() const { return mirroring_display_id_; }
-  const DisplayList& software_mirroring_display_list() const {
+  const display::DisplayList& software_mirroring_display_list() const {
     return software_mirroring_display_list_;
   }
 
@@ -389,7 +389,7 @@ private:
   // the layout registered for the display pair. For more than 2 displays,
   // the bounds are updated using horizontal layout.
   void UpdateNonPrimaryDisplayBoundsForLayout(
-      DisplayList* display_list,
+      display::DisplayList* display_list,
       std::vector<size_t>* updated_indices);
 
   void CreateMirrorWindowIfAny();
@@ -398,14 +398,14 @@ private:
 
   // Applies the |layout| and updates the bounds of displays in |display_list|.
   // |updated_ids| contains the ids for displays whose bounds have changed.
-  void ApplyDisplayLayout(const DisplayLayout& layout,
-                          DisplayList* display_list,
+  void ApplyDisplayLayout(const display::DisplayLayout& layout,
+                          display::DisplayList* display_list,
                           std::vector<int64_t>* updated_ids);
 
   // Apply the display placement to the display layout.
   // Returns true if the display bounds has been updated.
-  bool ApplyDisplayPlacement(const DisplayPlacement& placement,
-                             DisplayList* display_list);
+  bool ApplyDisplayPlacement(const display::DisplayPlacement& placement,
+                             display::DisplayList* display_list);
 
   Delegate* delegate_;  // not owned.
 
@@ -416,7 +416,7 @@ private:
   int64_t first_display_id_;
 
   // List of current active displays.
-  DisplayList active_display_list_;
+  display::DisplayList active_display_list_;
 
   int num_connected_displays_;
 
@@ -439,7 +439,7 @@ private:
   MultiDisplayMode current_default_multi_display_mode_;
 
   int64_t mirroring_display_id_;
-  DisplayList software_mirroring_display_list_;
+  display::DisplayList software_mirroring_display_list_;
 
   // User preference for rotation lock of the internal display.
   bool registered_internal_display_rotation_lock_;

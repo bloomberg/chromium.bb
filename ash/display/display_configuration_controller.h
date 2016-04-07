@@ -17,6 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/display.h"
 
+namespace display {
+class DisplayLayout;
+}
+
 namespace ash {
 
 namespace test {
@@ -25,7 +29,6 @@ class ShellTestApi;
 
 class DisplayAnimator;
 class DisplayManager;
-class DisplayLayout;
 
 class ASH_EXPORT DisplayConfigurationController
     : public WindowTreeHostManager::Observer {
@@ -38,7 +41,8 @@ class ASH_EXPORT DisplayConfigurationController
   // Sets the layout for the current displays with a fade in/out
   // animation. Currently |display_id| is assumed to be the secondary
   // display.  TODO(oshima/stevenjb): Support 3+ displays.
-  void SetDisplayLayout(scoped_ptr<DisplayLayout> layout, bool user_action);
+  void SetDisplayLayout(scoped_ptr<display::DisplayLayout> layout,
+                        bool user_action);
 
   // Sets the mirror mode with a fade-in/fade-out animation. Affects all
   // displays.
@@ -69,7 +73,7 @@ class ASH_EXPORT DisplayConfigurationController
   // *before* starting any animations.
   void SetThrottleTimeout(int64_t throttle_ms);
   bool IsLimited();
-  void SetDisplayLayoutImpl(scoped_ptr<DisplayLayout> layout);
+  void SetDisplayLayoutImpl(scoped_ptr<display::DisplayLayout> layout);
   void SetMirrorModeImpl(bool mirror);
   void SetPrimaryDisplayIdImpl(int64_t display_id);
 

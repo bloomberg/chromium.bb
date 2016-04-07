@@ -30,6 +30,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
 
 namespace em = enterprise_management;
@@ -56,7 +57,7 @@ gfx::Display::Rotation GetRotationOfSecondDisplay() {
         << "Requested rotation of second display while there was only one.";
     return gfx::Display::ROTATE_0;
   }
-  const ash::DisplayIdList display_id_pair =
+  const display::DisplayIdList display_id_pair =
       display_manager->GetCurrentDisplayIdList();
   const gfx::Display& second_display =
       display_manager->GetDisplayForId(display_id_pair[1]);

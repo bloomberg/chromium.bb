@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_layout_builder.h"
+#include "ui/display/manager/display_layout_builder.h"
 
 #include <algorithm>
 
-namespace ash {
+namespace display {
 
 DisplayLayoutBuilder::DisplayLayoutBuilder(const DisplayLayout& layout)
     : layout_(layout.Copy()) {}
@@ -65,4 +65,4 @@ scoped_ptr<DisplayLayout> DisplayLayoutBuilder::Build() {
   return std::move(layout_);
 }
 
-}  // namespace ash
+}  // namespace display

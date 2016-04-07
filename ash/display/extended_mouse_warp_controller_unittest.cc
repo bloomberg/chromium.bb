@@ -4,13 +4,14 @@
 
 #include "ash/display/extended_mouse_warp_controller.h"
 
-#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_builder.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -61,8 +62,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  scoped_ptr<DisplayLayout> layout(
-      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
+  scoped_ptr<display::DisplayLayout> layout(
+      test::CreateDisplayLayout(display::DisplayPlacement::RIGHT, 0));
 
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -133,8 +134,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  scoped_ptr<DisplayLayout> layout(
-      test::CreateDisplayLayout(DisplayPlacement::LEFT, 0));
+  scoped_ptr<display::DisplayLayout> layout(
+      test::CreateDisplayLayout(display::DisplayPlacement::LEFT, 0));
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -174,8 +175,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  scoped_ptr<DisplayLayout> layout(
-      test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
+  scoped_ptr<display::DisplayLayout> layout(
+      test::CreateDisplayLayout(display::DisplayPlacement::TOP, 0));
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
@@ -199,7 +200,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ(gfx::Rect(250, 0, 110, 1), GetIndicatorBounds(display_0_id));
   EXPECT_EQ(gfx::Rect(250, -1, 110, 1), GetIndicatorBounds(display_1_id));
 
-  layout->placement_list[0].position = DisplayPlacement::BOTTOM;
+  layout->placement_list[0].position = display::DisplayPlacement::BOTTOM;
   layout->placement_list[0].offset = 0;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -289,11 +290,11 @@ TEST_F(ExtendedMouseWarpControllerTest,
   //  +-+---+--++
   //    |  2   |
   //    +------+
-  ash::DisplayLayoutBuilder builder(display_0_id);
+  display::DisplayLayoutBuilder builder(display_0_id);
   builder.AddDisplayPlacement(display_1_id, display_0_id,
-                              ash::DisplayPlacement::RIGHT, 0);
+                              display::DisplayPlacement::RIGHT, 0);
   builder.AddDisplayPlacement(display_2_id, display_0_id,
-                              ash::DisplayPlacement::BOTTOM, 100);
+                              display::DisplayPlacement::BOTTOM, 100);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetLayoutForCurrentDisplays(builder.Build());
@@ -340,11 +341,11 @@ TEST_F(ExtendedMouseWarpControllerTest,
   //  +-+---+-+++
   //    |  2   |
   //    +------+
-  ash::DisplayLayoutBuilder builder(display_0_id);
+  display::DisplayLayoutBuilder builder(display_0_id);
   builder.AddDisplayPlacement(display_2_id, display_0_id,
-                              ash::DisplayPlacement::BOTTOM, 100);
+                              display::DisplayPlacement::BOTTOM, 100);
   builder.AddDisplayPlacement(display_1_id, display_2_id,
-                              ash::DisplayPlacement::TOP, 800);
+                              display::DisplayPlacement::TOP, 800);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetLayoutForCurrentDisplays(builder.Build());

@@ -31,6 +31,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -544,7 +545,7 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   // Layout the secondary display to the bottom of the primary.
   ASSERT_GT(gfx::Screen::GetScreen()->GetNumDisplays(), 1);
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(DisplayPlacement::BOTTOM, 0));
+      test::CreateDisplayLayout(display::DisplayPlacement::BOTTOM, 0));
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 1000, 201, 310)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 1000 + 20);

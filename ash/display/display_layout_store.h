@@ -10,9 +10,9 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_layout.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/display/manager/display_layout.h"
 
 namespace ash {
 
@@ -21,32 +21,35 @@ class ASH_EXPORT DisplayLayoutStore {
   DisplayLayoutStore();
   ~DisplayLayoutStore();
 
-  void SetDefaultDisplayPlacement(const DisplayPlacement& placement);
+  void SetDefaultDisplayPlacement(const display::DisplayPlacement& placement);
 
   // Registeres the display layout info for the specified display(s).
-  void RegisterLayoutForDisplayIdList(const DisplayIdList& list,
-                                      scoped_ptr<DisplayLayout> layout);
+  void RegisterLayoutForDisplayIdList(
+      const display::DisplayIdList& list,
+      scoped_ptr<display::DisplayLayout> layout);
 
   // If no layout is registered, it creatas new layout using
   // |default_display_layout_|.
-  const DisplayLayout& GetRegisteredDisplayLayout(const DisplayIdList& list);
+  const display::DisplayLayout& GetRegisteredDisplayLayout(
+      const display::DisplayIdList& list);
 
   // Update the multi display state in the display layout for
   // |display_list|.  This creates new display layout if no layout is
   // registered for |display_list|.
-  void UpdateMultiDisplayState(const DisplayIdList& display_list,
+  void UpdateMultiDisplayState(const display::DisplayIdList& display_list,
                                bool mirrored,
                                bool default_unified);
 
  private:
   // Creates new layout for display list from |default_display_layout_|.
-  DisplayLayout* CreateDefaultDisplayLayout(const DisplayIdList& display_list);
+  display::DisplayLayout* CreateDefaultDisplayLayout(
+      const display::DisplayIdList& display_list);
 
   // The default display placement.
-  DisplayPlacement default_display_placement_;
+  display::DisplayPlacement default_display_placement_;
 
   // Display layout per list of devices.
-  std::map<DisplayIdList, scoped_ptr<DisplayLayout>> layouts_;
+  std::map<display::DisplayIdList, scoped_ptr<display::DisplayLayout>> layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };

@@ -1,22 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_layout.h"
+#include "ui/display/manager/display_layout.h"
 
 #include <algorithm>
 #include <sstream>
 
-#include "ash/ash_switches.h"
-#include "ash/display/display_pref_util.h"
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "ui/gfx/display.h"
 
-namespace ash {
+namespace display {
 namespace  {
 
 // DisplayPlacement Positions
@@ -256,4 +253,4 @@ DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
                                         : DisplayPlacement(*iter);
 }
 
-}  // namespace ash
+}  // namespace display

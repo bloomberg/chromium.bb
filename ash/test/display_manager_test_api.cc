@@ -9,7 +9,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
-#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
@@ -22,15 +21,12 @@
 #include "base/strings/string_split.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/manager/display_layout_builder.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
 namespace test {
-typedef std::vector<gfx::Display> DisplayList;
-typedef DisplayInfo DisplayInfo;
-typedef std::vector<DisplayInfo> DisplayInfoList;
-
 namespace {
 
 std::vector<DisplayInfo> CreateDisplayInfoListFromString(
@@ -41,9 +37,10 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
       specs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   size_t index = 0;
 
-  DisplayList list = display_manager->IsInUnifiedMode()
-                         ? display_manager->software_mirroring_display_list()
-                         : display_manager->active_display_list();
+  display::DisplayList list =
+      display_manager->IsInUnifiedMode()
+          ? display_manager->software_mirroring_display_list()
+          : display_manager->active_display_list();
 
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
@@ -174,29 +171,29 @@ void SwapPrimaryDisplay() {
       ScreenUtil::GetSecondaryDisplay().id());
 }
 
-scoped_ptr<DisplayLayout> CreateDisplayLayout(
-    DisplayPlacement::Position position,
+scoped_ptr<display::DisplayLayout> CreateDisplayLayout(
+    display::DisplayPlacement::Position position,
     int offset) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
 
-  DisplayLayoutBuilder builder(
+  display::DisplayLayoutBuilder builder(
       gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
   builder.SetSecondaryPlacement(ScreenUtil::GetSecondaryDisplay().id(),
                                 position, offset);
   return builder.Build();
 }
 
-DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
-  DisplayIdList list;
+display::DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
+  display::DisplayIdList list;
   list.push_back(id1);
   list.push_back(id2);
   SortDisplayIdList(&list);
   return list;
 }
 
-DisplayIdList CreateDisplayIdListN(size_t count, ...) {
-  DisplayIdList list;
+display::DisplayIdList CreateDisplayIdListN(size_t count, ...) {
+  display::DisplayIdList list;
   va_list args;
   va_start(args, count);
   for (size_t i = 0; i < count; i++) {

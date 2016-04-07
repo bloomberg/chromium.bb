@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_layout_builder.h"
+#include "ui/display/manager/display_layout_builder.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
+namespace display {
 
-typedef testing::Test DisplayLayoutBuilderTest;
-
-TEST_F(DisplayLayoutBuilderTest, SecondaryPlacement) {
+TEST(DisplayLayoutBuilderTest, SecondaryPlacement) {
   DisplayLayoutBuilder builder(1);
   builder.SetSecondaryPlacement(2, DisplayPlacement::LEFT, 30);
   scoped_ptr<DisplayLayout> layout(builder.Build());
@@ -22,7 +20,7 @@ TEST_F(DisplayLayoutBuilderTest, SecondaryPlacement) {
   EXPECT_EQ(DisplayPlacement::LEFT, layout->placement_list[0].position);
 }
 
-TEST_F(DisplayLayoutBuilderTest, MultiplePlacement) {
+TEST(DisplayLayoutBuilderTest, MultiplePlacement) {
   DisplayLayoutBuilder builder(1);
   builder.AddDisplayPlacement(5, 1, DisplayPlacement::TOP, 30);
   builder.AddDisplayPlacement(3, 5, DisplayPlacement::LEFT, 20);
@@ -48,4 +46,4 @@ TEST_F(DisplayLayoutBuilderTest, MultiplePlacement) {
   EXPECT_EQ(DisplayPlacement::TOP, layout->placement_list[2].position);
 }
 
-}  // namespace ash
+}  // namespace display

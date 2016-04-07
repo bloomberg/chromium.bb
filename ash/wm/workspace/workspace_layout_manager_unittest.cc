@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/display/display_layout.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -30,6 +29,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -145,7 +145,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
+      test::CreateDisplayLayout(display::DisplayPlacement::TOP, 0));
   EXPECT_EQ("0,-500 400x500", root_windows[1]->GetBoundsInScreen().ToString());
 
   scoped_ptr<aura::Window> window1(

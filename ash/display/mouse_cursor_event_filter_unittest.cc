@@ -11,6 +11,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ui/aura/env.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -42,11 +43,11 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 
   UpdateDisplay("500x500,500x500");
 
-  ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
-                                         ->display_manager()
-                                         ->GetCurrentDisplayLayout()
-                                         .placement_list[0]
-                                         .position);
+  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
+                                                  ->display_manager()
+                                                  ->GetCurrentDisplayLayout()
+                                                  .placement_list[0]
+                                                  .position);
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 11)));
 
@@ -82,11 +83,11 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
 
   UpdateDisplay("500x500,600x600");  // the second one is larger.
 
-  ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
-                                         ->display_manager()
-                                         ->GetCurrentDisplayLayout()
-                                         .placement_list[0]
-                                         .position);
+  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
+                                                  ->display_manager()
+                                                  ->GetCurrentDisplayLayout()
+                                                  .placement_list[0]
+                                                  .position);
 
   // Touch the left edge of the secondary root window. Pointer should NOT warp
   // because 1px left of (0, 500) is outside the primary root window.
@@ -110,11 +111,11 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
 
   UpdateDisplay("500x500,600x600*2");
 
-  ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
-                                         ->display_manager()
-                                         ->GetCurrentDisplayLayout()
-                                         .placement_list[0]
-                                         .position);
+  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
+                                                  ->display_manager()
+                                                  ->GetCurrentDisplayLayout()
+                                                  .placement_list[0]
+                                                  .position);
 
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
 
@@ -159,7 +160,7 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   UpdateDisplay("400x400,800x800*2");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
+      test::CreateDisplayLayout(display::DisplayPlacement::RIGHT, 0));
   test::CursorManagerTestApi cursor_test_api(
       Shell::GetInstance()->cursor_manager());
 

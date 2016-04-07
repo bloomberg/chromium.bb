@@ -34,6 +34,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/reflector.h"
+#include "ui/display/manager/display_layout.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
@@ -332,9 +333,10 @@ gfx::Display MirrorWindowController::GetDisplayForRootWindow(
     if (pair.second->ash_host->AsWindowTreeHost()->window() == root) {
       // Sanity check to catch an error early.
       int64_t id = pair.first;
-      const DisplayList& list = Shell::GetInstance()
-                                    ->display_manager()
-                                    ->software_mirroring_display_list();
+      const display::DisplayList& list =
+          Shell::GetInstance()
+              ->display_manager()
+              ->software_mirroring_display_list();
       auto iter = std::find_if(
           list.begin(), list.end(),
           [id](const gfx::Display& display) { return display.id() == id; });

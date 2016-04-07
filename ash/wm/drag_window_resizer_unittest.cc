@@ -4,7 +4,6 @@
 
 #include "ash/wm/drag_window_resizer.h"
 
-#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
@@ -24,6 +23,8 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_builder.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -425,12 +426,14 @@ TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
 
   // Layout so that all three displays touch each other.
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
   ASSERT_EQ(3u, list.size());
   ASSERT_EQ(gfx::Screen::GetScreen()->GetPrimaryDisplay().id(), list[0]);
-  DisplayLayoutBuilder builder(list[0]);
-  builder.AddDisplayPlacement(list[1], list[0], DisplayPlacement::RIGHT, 0);
-  builder.AddDisplayPlacement(list[2], list[0], DisplayPlacement::BOTTOM, 0);
+  display::DisplayLayoutBuilder builder(list[0]);
+  builder.AddDisplayPlacement(list[1], list[0],
+                              display::DisplayPlacement::RIGHT, 0);
+  builder.AddDisplayPlacement(list[2], list[0],
+                              display::DisplayPlacement::BOTTOM, 0);
   display_manager->SetLayoutForCurrentDisplays(builder.Build());
   // Sanity check.
   ASSERT_EQ(gfx::Rect(0, 000, 400, 600),
