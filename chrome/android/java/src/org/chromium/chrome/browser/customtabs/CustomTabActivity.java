@@ -23,7 +23,6 @@ import android.view.Window;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -33,7 +32,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -725,32 +723,25 @@ public class CustomTabActivity extends ChromeActivity {
 
         if (willChromeHandleIntent || forceReparenting) {
             intent.setPackage(getPackageName());
+            // Take the activity tab and set it aside for reparenting.
+            final Tab tab = getActivityTab();
+            // TODO(yusufo): The removal should happen as a part of the callback or as a part of
+            // onDestroy when finish() gets called. Find a way to do this properly without
+            // confusing the TabModel and without hiding the tab. crbug.com/590278
+            getCurrentTabModel().removeTab(getActivityTab());
+            mMainTab = null;
+            tab.getContentViewCore().updateWindowAndroid(null);
+            tab.attachTabContentManager(null);
 
-            boolean enableTabReparenting = ChromeVersionInfo.isLocalBuild()
-                    || ChromeVersionInfo.isCanaryBuild() || ChromeVersionInfo.isDevBuild()
-                    || FieldTrialList.findFullName("TabReparenting").startsWith("Enabled")
-                    || forceReparenting;
-            if (enableTabReparenting) {
-                // Take the activity tab and set it aside for reparenting.
-                final Tab tab = getActivityTab();
-                // TODO(yusufo): The removal should happen as a part of the callback or as a part of
-                // onDestroy when finish() gets called. Find a way to do this properly without
-                // confusing the TabModel and without hiding the tab. crbug.com/590278
-                getCurrentTabModel().removeTab(getActivityTab());
-                mMainTab = null;
-                tab.getContentViewCore().updateWindowAndroid(null);
-                tab.attachTabContentManager(null);
-
-                Runnable finalizeCallback = new Runnable() {
-                    @Override
-                    public void run() {
-                        finishAndClose();
-                    }
-                };
-                AsyncTabParamsManager.add(
-                        tab.getId(), new TabReparentingParams(tab, intent, finalizeCallback));
-                intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
-            }
+            Runnable finalizeCallback = new Runnable() {
+                @Override
+                public void run() {
+                    finishAndClose();
+                }
+            };
+            AsyncTabParamsManager.add(
+                    tab.getId(), new TabReparentingParams(tab, intent, finalizeCallback));
+            intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
         }
 
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
