@@ -75,8 +75,9 @@ if (is_ios || is_mac) {
   # This needs to be a separate target from ui_test_pak as ui_base_unittests
   # wants the generate .pak file in the bundle to be named en.lpro/locale.pak
   # while components_unittests wants it to be named ui_test.pak.
-  bundle_data("ui_test_pak_bundle_data") {
+  bundle_data("ui_test_pak_bundle_data_locale") {
     testonly = true
+    visibility = [ ":ui_test_pak_bundle_data" ]
     public_deps = [
       ":ui_test_pak",
     ]
@@ -85,6 +86,43 @@ if (is_ios || is_mac) {
     ]
     outputs = [
       "{{bundle_resources_dir}}/en.lproj/locale.pak",
+    ]
+  }
+
+  bundle_data("ui_test_pak_bundle_data_test_pak") {
+    testonly = true
+    visibility = [ ":ui_test_pak_bundle_data" ]
+    public_deps = [
+      ":ui_test_pak",
+    ]
+    sources = [
+      "$root_out_dir/ui_test.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/ui_test.pak",
+    ]
+  }
+
+  bundle_data("ui_test_pak_bundle_data_100_percent") {
+    testonly = true
+    visibility = [ ":ui_test_pak_bundle_data" ]
+    public_deps = [
+      ":ui_test_pak",
+    ]
+    sources = [
+      "$root_out_dir/ui_test.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/chrome_100_percent.pak",
+    ]
+  }
+
+  group("ui_test_pak_bundle_data") {
+    testonly = true
+    public_deps = [
+      ":ui_test_pak_bundle_data_100_percent",
+      ":ui_test_pak_bundle_data_locale",
+      ":ui_test_pak_bundle_data_test_pak",
     ]
   }
 } else {

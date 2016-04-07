@@ -13,6 +13,8 @@ import("//ui/ozone/ozone.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
+} else if (is_mac) {
+  import("//build/config/mac/rules.gni")
 }
 
 build_ime = !is_ios
@@ -891,8 +893,8 @@ test("ui_base_unittests") {
 
   if (is_mac) {
     deps += [
+      ":ui_unittests Framework",
       "//third_party/mozilla",
-      #'ui_base_tests_bundle',  TODO(GYP)
     ]
   }
 
@@ -947,4 +949,13 @@ test("ui_base_unittests") {
     }
   }
 }
-# TODO(GYP) Mac (ui_base_tests_bundle)
+
+if (is_mac) {
+  mac_framework("ui_unittests Framework") {
+    testonly = true
+    deps = [
+      "//ui/resources:ui_test_pak_bundle_data",
+    ]
+    info_plist = "test/framework-Info.plist"
+  }
+}
