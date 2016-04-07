@@ -15,6 +15,13 @@ void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry);
 // Shows a prompt UI to set the default browser if necessary.
 void ShowDefaultBrowserPrompt(Profile* profile);
 
+// Marks the default browser prompt as having been declined.
+void DefaultBrowserPromptDeclined(Profile* profile);
+
+// Resets the tracking preference for the default browser prompt so that it is
+// re-shown if the browser ceases to be the user's chosen default.
+void ResetDefaultBrowserPrompt(Profile* profile);
+
 // Shows a prompt UI to set the default browser on first run
 // (if necessary and permitted). Returns true if the dialog has been launched.
 bool ShowFirstRunDefaultBrowserPrompt(Profile* profile);

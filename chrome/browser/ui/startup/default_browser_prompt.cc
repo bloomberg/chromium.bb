@@ -44,7 +44,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a default browser infobar and delegate and adds the infobar to
   // |infobar_service|.
-  static void Create(InfoBarService* infobar_service, PrefService* prefs);
+  static void Create(InfoBarService* infobar_service, Profile* profile);
 
  private:
   // Possible user interactions with the default browser info bar.
@@ -59,7 +59,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
     NUM_INFO_BAR_USER_INTERACTION_TYPES
   };
 
-  explicit DefaultBrowserInfoBarDelegate(PrefService* prefs);
+  explicit DefaultBrowserInfoBarDelegate(Profile* profile);
   ~DefaultBrowserInfoBarDelegate() override;
 
   void AllowExpiry() { should_expire_ = true; }
@@ -76,8 +76,8 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
-  // The prefs to use.
-  PrefService* prefs_;
+  // The WebContents's corresponding profile.
+  Profile* profile_;
 
   // Whether the user clicked one of the buttons.
   bool action_taken_;
@@ -93,15 +93,15 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 // static
 void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                           PrefService* prefs) {
+                                           Profile* profile) {
   infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new DefaultBrowserInfoBarDelegate(prefs))));
+          new DefaultBrowserInfoBarDelegate(profile))));
 }
 
-DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(PrefService* prefs)
+DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(Profile* profile)
     : ConfirmInfoBarDelegate(),
-      prefs_(prefs),
+      profile_(profile),
       action_taken_(false),
       should_expire_(false),
       weak_factory_(this) {
@@ -194,7 +194,7 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
                             InfoBarUserInteraction::DONT_ASK_AGAIN,
                             NUM_INFO_BAR_USER_INTERACTION_TYPES);
   // User clicked "Don't ask me again", remember that.
-  prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
+  chrome::DefaultBrowserPromptDeclined(profile_);
   return true;
 }
 
@@ -202,7 +202,7 @@ void ResetCheckDefaultBrowserPref(const base::FilePath& profile_path) {
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
   if (profile)
-    profile->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, true);
+    chrome::ResetDefaultBrowserPrompt(profile);
 }
 
 void ShowPrompt() {
@@ -218,9 +218,7 @@ void ShowPrompt() {
     return;
 
   DefaultBrowserInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents),
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())
-          ->GetPrefs());
+      InfoBarService::FromWebContents(web_contents), browser->profile());
 }
 
 void OnCheckIsDefaultBrowserFinished(
@@ -261,7 +259,7 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
   // Reset preferences if kResetCheckDefaultBrowser is true.
   if (prefs->GetBoolean(prefs::kResetCheckDefaultBrowser)) {
     prefs->SetBoolean(prefs::kResetCheckDefaultBrowser, false);
-    prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
+    ResetDefaultBrowserPrompt(profile);
   }
 
   // Check if Chrome is the default browser but do not prompt if:
@@ -285,6 +283,14 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
       new shell_integration::DefaultBrowserWorker(base::Bind(
           &OnCheckIsDefaultBrowserFinished, profile->GetPath(), show_prompt)))
       ->StartCheckIsDefault();
+}
+
+void DefaultBrowserPromptDeclined(Profile* profile) {
+  profile->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, false);
+}
+
+void ResetDefaultBrowserPrompt(Profile* profile) {
+  profile->GetPrefs()->ClearPref(prefs::kCheckDefaultBrowser);
 }
 
 #if !defined(OS_WIN)

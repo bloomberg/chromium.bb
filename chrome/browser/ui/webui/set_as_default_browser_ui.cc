@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -291,12 +292,10 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
                             dialog_interaction_result_,
                             MAKE_CHROME_DEFAULT_MAX);
 
-  // If the user explicitly elected *not to* make Chrome default, we won't
-  // ask again.
-  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED) {
-    PrefService* prefs = profile_->GetPrefs();
-    prefs->SetBoolean(prefs::kCheckDefaultBrowser, false);
-  }
+  // Suppress showing the default browser infobar if the user explicitly elected
+  // *not to* make Chrome default.
+  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED)
+    chrome::DefaultBrowserPromptDeclined(profile_);
 
   // Carry on with a normal chrome session. For the purpose of surfacing this
   // dialog the actual browser window had to remain hidden. Now it's time to

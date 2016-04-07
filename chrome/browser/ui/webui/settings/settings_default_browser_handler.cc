@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
@@ -56,8 +57,7 @@ void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
 
   // If the user attempted to make Chrome the default browser, notify
   // them when this changes.
-  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kCheckDefaultBrowser, true);
+  chrome::ResetDefaultBrowserPrompt(Profile::FromWebUI(web_ui()));
 }
 
 void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
@@ -65,8 +65,7 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
   if (state == shell_integration::IS_DEFAULT) {
     // Notify the user in the future if Chrome ceases to be the user's chosen
     // default browser.
-    Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-        prefs::kCheckDefaultBrowser, true);
+    chrome::ResetDefaultBrowserPrompt(Profile::FromWebUI(web_ui()));
   }
 
   base::FundamentalValue is_default(state == shell_integration::IS_DEFAULT);
