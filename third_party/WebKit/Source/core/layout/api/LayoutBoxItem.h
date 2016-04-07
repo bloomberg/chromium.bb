@@ -11,6 +11,9 @@
 
 namespace blink {
 
+class LayoutPoint;
+class LayoutSize;
+
 class LayoutBoxItem : public LayoutBoxModel {
 public:
     explicit LayoutBoxItem(LayoutBox* layoutBox)
@@ -36,6 +39,16 @@ public:
     ScrollResult scroll(ScrollGranularity granularity, const FloatSize& delta)
     {
         return toBox()->scroll(granularity, delta);
+    }
+
+    LayoutSize size() const
+    {
+        return toBox()->size();
+    }
+
+    LayoutPoint location() const
+    {
+        return toBox()->location();
     }
 
 private:
