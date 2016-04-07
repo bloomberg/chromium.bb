@@ -26,6 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public class PhysicalWebUma {
     private static final String TAG = "PhysicalWeb";
+    private static final String HAS_DEFERRED_METRICS_KEY = "PhysicalWeb.HasDeferredMetrics";
     private static final String OPT_IN_DECLINE_BUTTON_PRESS_COUNT =
             "PhysicalWeb.OptIn.DeclineButtonPressed";
     private static final String OPT_IN_ENABLE_BUTTON_PRESS_COUNT =
@@ -205,65 +206,19 @@ public class PhysicalWebUma {
         sUploadAllowed = true;
 
         // Read the metrics.
-        UmaUploader uploader = new UmaUploader();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        uploader.urlSelectedCount = prefs.getInt(URL_SELECTED_COUNT, 0);
-        uploader.optInDeclineButtonTapCount = prefs.getInt(OPT_IN_DECLINE_BUTTON_PRESS_COUNT, 0);
-        uploader.optInEnableButtonTapCount = prefs.getInt(OPT_IN_ENABLE_BUTTON_PRESS_COUNT, 0);
-        uploader.optInHighPriorityNotificationCount =
-                prefs.getInt(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT, 0);
-        uploader.optInMinPriorityNotificationCount =
-                prefs.getInt(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT, 0);
-        uploader.optInNotificationPressCount = prefs.getInt(OPT_IN_NOTIFICATION_PRESS_COUNT, 0);
-        uploader.prefsFeatureDisabledCount = prefs.getInt(PREFS_FEATURE_DISABLED_COUNT, 0);
-        uploader.prefsFeatureEnabledCount = prefs.getInt(PREFS_FEATURE_ENABLED_COUNT, 0);
-        uploader.prefsLocationDeniedCount = prefs.getInt(PREFS_LOCATION_DENIED_COUNT, 0);
-        uploader.prefsLocationGrantedCount = prefs.getInt(PREFS_LOCATION_GRANTED_COUNT, 0);
-        uploader.pwsBackgroundResolveTimes = prefs.getString(PWS_BACKGROUND_RESOLVE_TIMES, "[]");
-        uploader.pwsForegroundResolveTimes = prefs.getString(PWS_FOREGROUND_RESOLVE_TIMES, "[]");
-        uploader.standardNotificationPressDelays =
-                prefs.getString(STANDARD_NOTIFICATION_PRESS_DELAYS, "[]");
-        uploader.optInNotificationPressDelays =
-                prefs.getString(OPT_IN_NOTIFICATION_PRESS_DELAYS, "[]");
-        uploader.totalUrlsInitialCounts = prefs.getString(TOTAL_URLS_INITIAL_COUNTS, "[]");
-        uploader.totalUrlsRefreshCounts = prefs.getString(TOTAL_URLS_REFRESH_COUNTS, "[]");
-        uploader.activityReferrals = prefs.getString(ACTIVITY_REFERRALS, "[]");
-
-        // If the metrics are empty, we are done.
-        if (uploader.isEmpty()) {
-            return;
+        if (prefs.getBoolean(HAS_DEFERRED_METRICS_KEY, false)) {
+            AsyncTask.THREAD_POOL_EXECUTOR.execute(new UmaUploader(prefs));
         }
-
-        // Clear out the stored deferred metrics that we are about to upload.
-        prefs.edit()
-                .remove(URL_SELECTED_COUNT)
-                .remove(OPT_IN_DECLINE_BUTTON_PRESS_COUNT)
-                .remove(OPT_IN_ENABLE_BUTTON_PRESS_COUNT)
-                .remove(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT)
-                .remove(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT)
-                .remove(OPT_IN_NOTIFICATION_PRESS_COUNT)
-                .remove(PREFS_FEATURE_DISABLED_COUNT)
-                .remove(PREFS_FEATURE_ENABLED_COUNT)
-                .remove(PREFS_LOCATION_DENIED_COUNT)
-                .remove(PREFS_LOCATION_GRANTED_COUNT)
-                .remove(PWS_BACKGROUND_RESOLVE_TIMES)
-                .remove(PWS_FOREGROUND_RESOLVE_TIMES)
-                .remove(STANDARD_NOTIFICATION_PRESS_DELAYS)
-                .remove(OPT_IN_NOTIFICATION_PRESS_DELAYS)
-                .remove(TOTAL_URLS_INITIAL_COUNTS)
-                .remove(TOTAL_URLS_REFRESH_COUNTS)
-                .remove(ACTIVITY_REFERRALS)
-                .apply();
-
-        // Finally, upload the metrics.
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(uploader);
     }
 
     private static void storeAction(Context context, String key) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor prefsEditor = prefs.edit();
         int count = prefs.getInt(key, 0);
-        prefsEditor.putInt(key, count + 1).apply();
+        prefs.edit()
+                .putBoolean(HAS_DEFERRED_METRICS_KEY, true)
+                .putInt(key, count + 1)
+                .apply();
     }
 
     private static void storeValue(Context context, String key, Object value) {
@@ -273,6 +228,10 @@ public class PhysicalWebUma {
         try {
             values = new JSONArray(prefs.getString(key, "[]"));
             values.put(value);
+            prefsEditor
+                    .putBoolean(HAS_DEFERRED_METRICS_KEY, true)
+                    .putString(key, values.toString())
+                    .apply();
         } catch (JSONException e) {
             Log.e(TAG, "JSONException when storing " + key + " stats", e);
             prefsEditor.remove(key).apply();
@@ -298,78 +257,38 @@ public class PhysicalWebUma {
     }
 
     private static class UmaUploader implements Runnable {
-        public int urlSelectedCount;
-        public int optInDeclineButtonTapCount;
-        public int optInEnableButtonTapCount;
-        public int optInHighPriorityNotificationCount;
-        public int optInMinPriorityNotificationCount;
-        public int optInNotificationPressCount;
-        public int prefsFeatureDisabledCount;
-        public int prefsFeatureEnabledCount;
-        public int prefsLocationDeniedCount;
-        public int prefsLocationGrantedCount;
-        public String pwsBackgroundResolveTimes;
-        public String pwsForegroundResolveTimes;
-        public String standardNotificationPressDelays;
-        public String optInNotificationPressDelays;
-        public String totalUrlsInitialCounts;
-        public String totalUrlsRefreshCounts;
-        public String activityReferrals;
+        SharedPreferences mPrefs;
 
-        public boolean isEmpty() {
-            return urlSelectedCount == 0
-                    && optInDeclineButtonTapCount == 0
-                    && optInEnableButtonTapCount == 0
-                    && optInHighPriorityNotificationCount == 0
-                    && optInMinPriorityNotificationCount == 0
-                    && optInNotificationPressCount == 0
-                    && prefsFeatureDisabledCount == 0
-                    && prefsFeatureEnabledCount == 0
-                    && prefsLocationDeniedCount == 0
-                    && prefsLocationGrantedCount == 0
-                    && pwsBackgroundResolveTimes.equals("[]")
-                    && pwsForegroundResolveTimes.equals("[]")
-                    && standardNotificationPressDelays.equals("[]")
-                    && optInNotificationPressDelays.equals("[]")
-                    && totalUrlsInitialCounts.equals("[]")
-                    && totalUrlsRefreshCounts.equals("[]")
-                    && activityReferrals.equals("[]");
-        }
-
-        UmaUploader() {
+        UmaUploader(SharedPreferences prefs) {
+            mPrefs = prefs;
         }
 
         @Override
         public void run() {
-            uploadActions(urlSelectedCount, URL_SELECTED_COUNT);
-            uploadActions(optInDeclineButtonTapCount, OPT_IN_DECLINE_BUTTON_PRESS_COUNT);
-            uploadActions(optInEnableButtonTapCount, OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
-            uploadActions(optInHighPriorityNotificationCount,
-                    OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT);
-            uploadActions(optInMinPriorityNotificationCount,
-                    OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT);
-            uploadActions(optInNotificationPressCount, OPT_IN_NOTIFICATION_PRESS_COUNT);
-            uploadActions(prefsFeatureDisabledCount, PREFS_FEATURE_DISABLED_COUNT);
-            uploadActions(prefsFeatureEnabledCount, PREFS_FEATURE_ENABLED_COUNT);
-            uploadActions(prefsLocationDeniedCount, PREFS_LOCATION_DENIED_COUNT);
-            uploadActions(prefsLocationGrantedCount, PREFS_LOCATION_GRANTED_COUNT);
-            uploadTimes(pwsBackgroundResolveTimes, PWS_BACKGROUND_RESOLVE_TIMES,
-                    TimeUnit.MILLISECONDS);
-            uploadTimes(pwsForegroundResolveTimes, PWS_FOREGROUND_RESOLVE_TIMES,
-                    TimeUnit.MILLISECONDS);
-            uploadTimes(standardNotificationPressDelays, STANDARD_NOTIFICATION_PRESS_DELAYS,
-                    TimeUnit.MILLISECONDS);
-            uploadTimes(optInNotificationPressDelays, OPT_IN_NOTIFICATION_PRESS_DELAYS,
-                    TimeUnit.MILLISECONDS);
-            uploadCounts(totalUrlsInitialCounts, TOTAL_URLS_INITIAL_COUNTS);
-            uploadCounts(totalUrlsRefreshCounts, TOTAL_URLS_REFRESH_COUNTS);
-            uploadEnums(activityReferrals, ACTIVITY_REFERRALS, ListUrlsActivity.REFERER_BOUNDARY);
+            uploadActions(URL_SELECTED_COUNT);
+            uploadActions(OPT_IN_DECLINE_BUTTON_PRESS_COUNT);
+            uploadActions(OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
+            uploadActions(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT);
+            uploadActions(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT);
+            uploadActions(OPT_IN_NOTIFICATION_PRESS_COUNT);
+            uploadActions(PREFS_FEATURE_DISABLED_COUNT);
+            uploadActions(PREFS_FEATURE_ENABLED_COUNT);
+            uploadActions(PREFS_LOCATION_DENIED_COUNT);
+            uploadActions(PREFS_LOCATION_GRANTED_COUNT);
+            uploadTimes(PWS_BACKGROUND_RESOLVE_TIMES, TimeUnit.MILLISECONDS);
+            uploadTimes(PWS_FOREGROUND_RESOLVE_TIMES, TimeUnit.MILLISECONDS);
+            uploadTimes(STANDARD_NOTIFICATION_PRESS_DELAYS, TimeUnit.MILLISECONDS);
+            uploadTimes(OPT_IN_NOTIFICATION_PRESS_DELAYS, TimeUnit.MILLISECONDS);
+            uploadCounts(TOTAL_URLS_INITIAL_COUNTS);
+            uploadCounts(TOTAL_URLS_REFRESH_COUNTS);
+            uploadEnums(ACTIVITY_REFERRALS, ListUrlsActivity.REFERER_BOUNDARY);
+            removePref(HAS_DEFERRED_METRICS_KEY);
         }
 
-        private static void uploadActions(int count, String key) {
-            for (int i = 0; i < count; i++) {
-                RecordUserAction.record(key);
-            }
+        private void removePref(String key) {
+            mPrefs.edit()
+                    .remove(key)
+                    .apply();
         }
 
         private static Number[] parseJsonNumberArray(String jsonArrayStr) {
@@ -413,7 +332,17 @@ public class PhysicalWebUma {
             return array;
         }
 
-        private static void uploadTimes(String jsonTimesStr, final String key, final TimeUnit tu) {
+        private void uploadActions(String key) {
+            int count = mPrefs.getInt(key, 0);
+            removePref(key);
+            for (int i = 0; i < count; i++) {
+                RecordUserAction.record(key);
+            }
+        }
+
+        private void uploadTimes(final String key, final TimeUnit tu) {
+            String jsonTimesStr = mPrefs.getString(key, "[]");
+            removePref(key);
             Long[] times = parseJsonLongArray(jsonTimesStr);
             if (times == null) {
                 Log.e(TAG, "Error reporting " + key + " with values: " + jsonTimesStr);
@@ -424,7 +353,9 @@ public class PhysicalWebUma {
             }
         }
 
-        private static void uploadCounts(String jsonCountsStr, final String key) {
+        private void uploadCounts(final String key) {
+            String jsonCountsStr = mPrefs.getString(key, "[]");
+            removePref(key);
             Integer[] counts = parseJsonIntegerArray(jsonCountsStr);
             if (counts == null) {
                 Log.e(TAG, "Error reporting " + key + " with values: " + jsonCountsStr);
@@ -435,7 +366,9 @@ public class PhysicalWebUma {
             }
         }
 
-        private static void uploadEnums(String jsonEnumsStr, final String key, int boundary) {
+        private void uploadEnums(final String key, int boundary) {
+            String jsonEnumsStr = mPrefs.getString(key, "[]");
+            removePref(key);
             Integer[] values = parseJsonIntegerArray(jsonEnumsStr);
             if (values == null) {
                 Log.e(TAG, "Error reporting " + key + " with values: " + jsonEnumsStr);
