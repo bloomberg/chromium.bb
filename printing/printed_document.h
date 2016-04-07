@@ -6,11 +6,11 @@
 #define PRINTING_PRINTED_DOCUMENT_H_
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "printing/print_settings.h"
@@ -47,7 +47,7 @@ class PRINTING_EXPORT PrintedDocument
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
   void SetPage(int page_number,
-               scoped_ptr<MetafilePlayer> metafile,
+               std::unique_ptr<MetafilePlayer> metafile,
 #if defined(OS_WIN)
                float shrink,
 #endif  // OS_WIN

@@ -12,6 +12,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "jni/PrintingContext_jni.h"
@@ -63,8 +64,8 @@ void GetPageRanges(JNIEnv* env,
 namespace printing {
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return make_scoped_ptr<PrintingContext>(new PrintingContextAndroid(delegate));
+std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+  return base::WrapUnique(new PrintingContextAndroid(delegate));
 }
 
 // static

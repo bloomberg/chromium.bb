@@ -5,10 +5,10 @@
 #ifndef PRINTING_PRINTING_CONTEXT_WIN_H_
 #define PRINTING_PRINTING_CONTEXT_WIN_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "printing/printing_context.h"
 #include "ui/gfx/native_widget_types.h"
 

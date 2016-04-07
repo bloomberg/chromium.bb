@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -66,8 +67,8 @@ PMPaper MatchPaper(CFArrayRef paper_list,
 }  // namespace
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return make_scoped_ptr<PrintingContext>(new PrintingContextMac(delegate));
+std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+  return base::WrapUnique(new PrintingContextMac(delegate));
 }
 
 PrintingContextMac::PrintingContextMac(Delegate* delegate)

@@ -162,7 +162,7 @@ TEST_F(PrintingContextTest, Base) {
   PrintSettings settings;
   settings.set_device_name(GetDefaultPrinter());
   // Initialize it.
-  scoped_ptr<PrintingContext> context(PrintingContext::Create(this));
+  std::unique_ptr<PrintingContext> context(PrintingContext::Create(this));
   EXPECT_EQ(PrintingContext::OK, context->InitWithSettings(settings));
 
   // The print may lie to use and may not support world transformation.

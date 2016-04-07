@@ -110,7 +110,7 @@ PrintedDocument::~PrintedDocument() {
 }
 
 void PrintedDocument::SetPage(int page_number,
-                              scoped_ptr<MetafilePlayer> metafile,
+                              std::unique_ptr<MetafilePlayer> metafile,
 #if defined(OS_WIN)
                               float shrink,
 #endif  // OS_WIN

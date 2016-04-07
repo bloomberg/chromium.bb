@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <winspool.h>
 
+#include <memory>
+
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -184,7 +185,7 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
                           kLevel, NULL, 0, &bytes_needed, &count_returned);
   if (!bytes_needed)
     return false;
-  scoped_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
+  std::unique_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
   ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, kLevel,
                      printer_info_buffer.get(), bytes_needed, &bytes_needed,
                      &count_returned);
@@ -233,7 +234,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
 
   PrinterSemanticCapsAndDefaults caps;
 
-  scoped_ptr<DEVMODE, base::FreeDeleter> user_settings =
+  std::unique_ptr<DEVMODE, base::FreeDeleter> user_settings =
       CreateDevMode(printer_handle.Get(), NULL);
   if (user_settings) {
     if (user_settings->dmFields & DM_COLOR)
@@ -321,7 +322,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
     }
     ScopedPrinterHandle printer_handle;
     if (printer_handle.OpenPrinter(printer_name_wide.c_str())) {
-      scoped_ptr<DEVMODE, base::FreeDeleter> devmode_out(
+      std::unique_ptr<DEVMODE, base::FreeDeleter> devmode_out(
           CreateDevMode(printer_handle.Get(), NULL));
       if (!devmode_out)
         return false;

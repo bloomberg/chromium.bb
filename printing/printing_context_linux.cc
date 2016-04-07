@@ -5,6 +5,7 @@
 #include "printing/printing_context_linux.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "printing/metafile.h"
 #include "printing/print_dialog_gtk_interface.h"
@@ -27,8 +28,8 @@ gfx::Size (*get_pdf_paper_size_)(
 namespace printing {
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return make_scoped_ptr<PrintingContext>(new PrintingContextLinux(delegate));
+std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+  return base::WrapUnique(new PrintingContextLinux(delegate));
 }
 
 PrintingContextLinux::PrintingContextLinux(Delegate* delegate)

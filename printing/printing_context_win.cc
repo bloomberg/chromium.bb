@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "printing/backend/print_backend.h"
@@ -32,12 +33,11 @@ void AssingResult(PrintingContext::Result* out, PrintingContext::Result in) {
 }  // namespace
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 #if defined(ENABLE_BASIC_PRINTING)
-  return make_scoped_ptr<PrintingContext>(
-      new PrintingContextSytemDialogWin(delegate));
+  return base::WrapUnique(new PrintingContextSytemDialogWin(delegate));
 #else   // ENABLE_BASIC_PRINTING
-  return make_scoped_ptr<PrintingContext>(new PrintingContextWin(delegate));
+  return base::WrapUnique(new PrintingContextWin(delegate));
 #endif  // EENABLE_BASIC_PRINTING
 }
 
@@ -66,7 +66,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   if (!default_printer.empty()) {
     ScopedPrinterHandle printer;
     if (printer.OpenPrinter(default_printer.c_str())) {
-      scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+      std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
           CreateDevMode(printer.Get(), NULL);
       if (InitializeSettings(default_printer, dev_mode.get()) == OK)
         return OK;
@@ -82,7 +82,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
                        NULL, 2, NULL, 0, &bytes_needed, &count_returned);
   if (bytes_needed) {
     DCHECK_GE(bytes_needed, count_returned * sizeof(PRINTER_INFO_2));
-    scoped_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
+    std::unique_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
     BOOL ret = ::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
                               NULL, 2, printer_info_buffer.get(),
                               bytes_needed, &bytes_needed,
@@ -96,7 +96,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
         ScopedPrinterHandle printer;
         if (!printer.OpenPrinter(info_2->pPrinterName))
           continue;
-        scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+        std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
             CreateDevMode(printer.Get(), NULL);
         if (InitializeSettings(info_2->pPrinterName, dev_mode.get()) == OK)
           return OK;
@@ -152,7 +152,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
 
   // Make printer changes local to Chrome.
   // See MSDN documentation regarding DocumentProperties.
-  scoped_ptr<DEVMODE, base::FreeDeleter> scoped_dev_mode =
+  std::unique_ptr<DEVMODE, base::FreeDeleter> scoped_dev_mode =
       CreateDevModeWithColor(printer.Get(), settings_.device_name(),
                              settings_.color() != GRAY);
   if (!scoped_dev_mode)
@@ -229,7 +229,7 @@ PrintingContext::Result PrintingContextWin::InitWithSettings(
   if (!printer.OpenPrinter(settings_.device_name().c_str()))
     return FAILED;
 
-  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+  std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
       CreateDevMode(printer.Get(), NULL);
 
   return InitializeSettings(settings_.device_name(), dev_mode.get());

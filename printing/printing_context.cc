@@ -49,7 +49,8 @@ PrintingContext::Result PrintingContext::OnError() {
 }
 
 PrintingContext::Result PrintingContext::UsePdfSettings() {
-  scoped_ptr<base::DictionaryValue> pdf_settings(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> pdf_settings(
+      new base::DictionaryValue);
   pdf_settings->SetBoolean(kSettingHeaderFooterEnabled, false);
   pdf_settings->SetBoolean(kSettingShouldPrintBackgrounds, false);
   pdf_settings->SetBoolean(kSettingShouldPrintSelectionOnly, false);

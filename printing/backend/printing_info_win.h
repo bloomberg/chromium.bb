@@ -9,7 +9,8 @@
 #include <stdint.h>
 #include <winspool.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "printing/printing_export.h"
 
 namespace printing {
@@ -34,7 +35,7 @@ class PrinterInfo {
   }
 
  private:
-  scoped_ptr<uint8_t[]> buffer_;
+  std::unique_ptr<uint8_t[]> buffer_;
 };
 
 // This class is designed to work with DRIVER_INFO_X structures
@@ -52,7 +53,7 @@ class DriverInfo {
   }
 
  private:
-  scoped_ptr<uint8_t[]> buffer_;
+  std::unique_ptr<uint8_t[]> buffer_;
 };
 
 }  // namespace internal

@@ -9,7 +9,7 @@
 namespace printing {
 
 PrintedPage::PrintedPage(int page_number,
-                         scoped_ptr<MetafilePlayer> metafile,
+                         std::unique_ptr<MetafilePlayer> metafile,
                          const gfx::Size& page_size,
                          const gfx::Rect& page_content_rect)
     : page_number_(page_number),

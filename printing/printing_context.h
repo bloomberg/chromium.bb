@@ -5,11 +5,11 @@
 #ifndef PRINTING_PRINTING_CONTEXT_H_
 #define PRINTING_PRINTING_CONTEXT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
@@ -118,7 +118,7 @@ class PRINTING_EXPORT PrintingContext {
 
   // Creates an instance of this object. Implementers of this interface should
   // implement this method to create an object of their implementation.
-  static scoped_ptr<PrintingContext> Create(Delegate* delegate);
+  static std::unique_ptr<PrintingContext> Create(Delegate* delegate);
 
   void set_margin_type(MarginType type);
 

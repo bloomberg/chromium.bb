@@ -5,16 +5,16 @@
 #ifndef PRINTING_EMF_WIN_H_
 #define PRINTING_EMF_WIN_H_
 
-#include <windows.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <windows.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "printing/metafile.h"
 
 namespace base {
@@ -88,11 +88,11 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Returns new metafile with only bitmap created by playback of the current
   // metafile. Returns NULL if fails.
-  scoped_ptr<Emf> RasterizeMetafile(int raster_area_in_pixels) const;
+  std::unique_ptr<Emf> RasterizeMetafile(int raster_area_in_pixels) const;
 
   // Returns new metafile where AlphaBlend replaced by bitmaps. Returns NULL
   // if fails.
-  scoped_ptr<Emf> RasterizeAlphaBlend() const;
+  std::unique_ptr<Emf> RasterizeAlphaBlend() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);

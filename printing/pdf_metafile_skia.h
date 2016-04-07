@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "printing/metafile.h"
 #include "skia/ext/platform_canvas.h"
@@ -70,7 +71,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
 #endif  // if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
   // Return a new metafile containing just the current page in draft mode.
-  scoped_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();
+  std::unique_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();
 
   // This method calls StartPage and then returns an appropriate
   // PlatformCanvas implementation bound to the context created by
@@ -83,7 +84,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
                                       const float& scale_factor);
 
  private:
-  scoped_ptr<PdfMetafileSkiaData> data_;
+  std::unique_ptr<PdfMetafileSkiaData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);
 };

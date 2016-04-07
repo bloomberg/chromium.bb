@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -360,7 +361,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
       bool play_normally = true;
       res = false;
       HDC hdc = context->hdc;
-      scoped_ptr<SkBitmap> bitmap;
+      std::unique_ptr<SkBitmap> bitmap;
       if (bmih->biCompression == BI_JPEG) {
         if (!DIBFormatNativelySupported(hdc, CHECKJPEGFORMAT, bits,
                                         bmih->biSizeImage)) {
@@ -524,7 +525,7 @@ bool Emf::IsAlphaBlendUsed() const {
   return result;
 }
 
-scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
+std::unique_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   gfx::Rect page_bounds = GetPageBounds(1);
   gfx::Size page_size(page_bounds.size());
   if (page_size.GetArea() <= 0) {
@@ -544,7 +545,7 @@ scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   RECT rect = bitmap_rect.ToRECT();
   Playback(bitmap.context(), &rect);
 
-  scoped_ptr<Emf> result(new Emf);
+  std::unique_ptr<Emf> result(new Emf);
   result->Init();
   HDC hdc = result->context();
   DCHECK(hdc);
@@ -572,7 +573,7 @@ scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   return result;
 }
 
-scoped_ptr<Emf> Emf::RasterizeAlphaBlend() const {
+std::unique_ptr<Emf> Emf::RasterizeAlphaBlend() const {
   gfx::Rect page_bounds = GetPageBounds(1);
   if (page_bounds.size().GetArea() <= 0) {
     NOTREACHED() << "Metafile is empty";
@@ -590,7 +591,7 @@ scoped_ptr<Emf> Emf::RasterizeAlphaBlend() const {
                  static_cast<float>(-page_bounds.y())};
   ::SetWorldTransform(bitmap.context(), &xform);
 
-  scoped_ptr<Emf> result(new Emf);
+  std::unique_ptr<Emf> result(new Emf);
   result->Init();
   HDC hdc = result->context();
   DCHECK(hdc);

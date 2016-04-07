@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -370,7 +370,7 @@ std::string GetDriverInfo(HANDLE printer) {
     info[0] = base::WideToUTF8(info_6.get()->pName);
 
   if (info_6.get()->pDriverPath) {
-    scoped_ptr<FileVersionInfo> version_info(
+    std::unique_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(
             base::FilePath(info_6.get()->pDriverPath)));
     if (version_info.get()) {
@@ -389,10 +389,10 @@ std::string GetDriverInfo(HANDLE printer) {
   return driver_info;
 }
 
-scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
+std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     const base::string16& printer_name,
     const std::string& print_ticket) {
-  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
+  std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode;
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
@@ -428,11 +428,11 @@ scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
   return dev_mode;
 }
 
-scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
+std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
     HANDLE printer,
     const base::string16& printer_name,
     bool color) {
-  scoped_ptr<DEVMODE, base::FreeDeleter> default_ticket =
+  std::unique_ptr<DEVMODE, base::FreeDeleter> default_ticket =
       CreateDevMode(printer, NULL);
   if (!default_ticket)
     return default_ticket;
@@ -462,7 +462,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
 
   const char* xps_color = color ? kXpsTicketColor : kXpsTicketMonochrome;
   std::string xps_ticket = base::StringPrintf(kXpsTicketTemplate, xps_color);
-  scoped_ptr<DEVMODE, base::FreeDeleter> ticket =
+  std::unique_ptr<DEVMODE, base::FreeDeleter> ticket =
       printing::XpsTicketToDevMode(printer_name, xps_ticket);
   if (!ticket)
     return default_ticket;
@@ -470,24 +470,24 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
   return ticket;
 }
 
-scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
-                                                     DEVMODE* in) {
+std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
+                                                          DEVMODE* in) {
   LONG buffer_size = DocumentProperties(
       NULL, printer, const_cast<wchar_t*>(L""), NULL, NULL, 0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
-    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+    return std::unique_ptr<DEVMODE, base::FreeDeleter>();
 
   // Some drivers request buffers with size smaller than dmSize + dmDriverExtra.
   // crbug.com/421402
   buffer_size *= 2;
 
-  scoped_ptr<DEVMODE, base::FreeDeleter> out(
+  std::unique_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER;
   if (DocumentProperties(
           NULL, printer, const_cast<wchar_t*>(L""), out.get(), in, flags) !=
       IDOK) {
-    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+    return std::unique_ptr<DEVMODE, base::FreeDeleter>();
   }
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
@@ -495,7 +495,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
   return out;
 }
 
-scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
+std::unique_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
     HANDLE printer,
     const base::string16& printer_name,
     DEVMODE* in,
@@ -509,13 +509,13 @@ scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
                          NULL,
                          0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
-    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+    return std::unique_ptr<DEVMODE, base::FreeDeleter>();
 
   // Some drivers request buffers with size smaller than dmSize + dmDriverExtra.
   // crbug.com/421402
   buffer_size *= 2;
 
-  scoped_ptr<DEVMODE, base::FreeDeleter> out(
+  std::unique_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER | DM_IN_PROMPT;
   LONG result = DocumentProperties(window,
@@ -527,7 +527,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
   if (canceled)
     *canceled = (result == IDCANCEL);
   if (result != IDOK)
-    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+    return std::unique_ptr<DEVMODE, base::FreeDeleter>();
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
   CHECK_GE(buffer_size, size + extra_size);

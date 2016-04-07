@@ -8,6 +8,7 @@
 #include <unicode/ulocdata.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
@@ -16,9 +17,8 @@
 namespace printing {
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return make_scoped_ptr<PrintingContext>(
-      new PrintingContextNoSystemDialog(delegate));
+std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+  return base::WrapUnique(new PrintingContextNoSystemDialog(delegate));
 }
 
 PrintingContextNoSystemDialog::PrintingContextNoSystemDialog(Delegate* delegate)

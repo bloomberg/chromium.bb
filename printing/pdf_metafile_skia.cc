@@ -58,7 +58,7 @@ bool WriteAssetToBuffer(const SkStreamAsset* asset,
                         void* buffer,
                         size_t size) {
   // Calling duplicate() keeps original asset state unchanged.
-  scoped_ptr<SkStreamAsset> assetCopy(asset->duplicate());
+  std::unique_ptr<SkStreamAsset> assetCopy(asset->duplicate());
   size_t length = assetCopy->getLength();
   if (length > size)
     return false;
@@ -88,7 +88,7 @@ struct PdfMetafileSkiaData {
   SkPictureRecorder recorder_;  // Current recording
 
   std::vector<Page> pages_;
-  scoped_ptr<SkStreamAsset> pdf_data_;
+  std::unique_ptr<SkStreamAsset> pdf_data_;
 
 #if defined(OS_MACOSX)
   PdfMetafileCg pdf_cg_;
@@ -257,7 +257,7 @@ bool PdfMetafileSkia::SaveTo(base::File* file) const {
     return false;
 
   // Calling duplicate() keeps original asset state unchanged.
-  scoped_ptr<SkStreamAsset> asset(data_->pdf_data_->duplicate());
+  std::unique_ptr<SkStreamAsset> asset(data_->pdf_data_->duplicate());
 
   const size_t maximum_buffer_size = 1024 * 1024;
   std::vector<char> buffer(std::min(maximum_buffer_size, asset->getLength()));
@@ -296,10 +296,10 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
 PdfMetafileSkia::PdfMetafileSkia() : data_(new PdfMetafileSkiaData) {
 }
 
-scoped_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
+std::unique_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
   // If we only ever need the metafile for the last page, should we
   // only keep a handle on one SkPicture?
-  scoped_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia);
+  std::unique_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia);
 
   if (data_->pages_.size() == 0)
     return metafile;

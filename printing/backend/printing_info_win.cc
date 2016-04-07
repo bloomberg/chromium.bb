@@ -18,7 +18,7 @@ uint8_t* GetDriverInfo(HANDLE printer, int level) {
   if (size == 0) {
     return NULL;
   }
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
   memset(buffer.get(), 0, size);
   if (!::GetPrinterDriver(printer, NULL, level, buffer.get(), size, &size)) {
     return NULL;
@@ -34,7 +34,7 @@ uint8_t* GetPrinterInfo(HANDLE printer, int level) {
                     ", error = " << GetLastError();
     return NULL;
   }
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
   memset(buffer.get(), 0, size);
   if (!::GetPrinter(printer, level, buffer.get(), size, &size)) {
     LOG(WARNING) << "Failed to get PRINTER_INFO_" << level <<

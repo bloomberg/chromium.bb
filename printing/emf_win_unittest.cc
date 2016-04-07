@@ -9,12 +9,12 @@
 #include <wingdi.h>
 #include <winspool.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/win/scoped_hdc.h"
 #include "printing/printing_context.h"
@@ -88,7 +88,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   settings.set_device_name(L"UnitTest Printer");
 
   // Initialize it.
-  scoped_ptr<PrintingContext> context(PrintingContext::Create(this));
+  std::unique_ptr<PrintingContext> context(PrintingContext::Create(this));
   EXPECT_EQ(context->InitWithSettings(settings), PrintingContext::OK);
 
   base::FilePath emf_file;
@@ -218,7 +218,7 @@ TEST(EmfTest, RasterizeMetafile) {
   }
   EXPECT_TRUE(emf.FinishDocument());
 
-  scoped_ptr<Emf> raster(emf.RasterizeMetafile(1));
+  std::unique_ptr<Emf> raster(emf.RasterizeMetafile(1));
   // Just 1px bitmap but should be stretched to the same bounds.
   EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 
