@@ -28,6 +28,7 @@ class WebContentsCaptureClient {
   virtual ~WebContentsCaptureClient() {}
 
   virtual bool IsScreenshotEnabled() = 0;
+  virtual bool ClientAllowsTransparency() = 0;
 
   enum FailureReason {
     FAILURE_REASON_UNKNOWN,

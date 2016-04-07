@@ -43,7 +43,7 @@ class WebViewInternalCaptureVisibleRegionFunction
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
                              WEBVIEWINTERNAL_CAPTUREVISIBLEREGION);
-  WebViewInternalCaptureVisibleRegionFunction() {}
+  WebViewInternalCaptureVisibleRegionFunction();
 
  protected:
   ~WebViewInternalCaptureVisibleRegionFunction() override {}
@@ -54,8 +54,11 @@ class WebViewInternalCaptureVisibleRegionFunction
 
   // extensions::WebContentsCaptureClient:
   bool IsScreenshotEnabled() override;
+  bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(FailureReason reason) override;
+
+  bool is_guest_transparent_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalCaptureVisibleRegionFunction);
 };

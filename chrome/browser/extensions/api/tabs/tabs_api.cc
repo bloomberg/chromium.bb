@@ -1667,6 +1667,10 @@ bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() {
   return true;
 }
 
+bool TabsCaptureVisibleTabFunction::ClientAllowsTransparency() {
+  return false;
+}
+
 WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
   Browser* browser = NULL;
   if (!GetBrowserFromWindowID(&chrome_details_, window_id, &browser))

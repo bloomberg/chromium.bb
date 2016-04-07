@@ -217,6 +217,7 @@ class TabsCaptureVisibleTabFunction
 
   // extensions::WebContentsCaptureClient:
   bool IsScreenshotEnabled() override;
+  bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(FailureReason reason) override;
 

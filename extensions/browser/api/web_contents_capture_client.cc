@@ -107,6 +107,7 @@ bool WebContentsCaptureClient::EncodeBitmap(const SkBitmap& bitmap,
   DCHECK(base64_result);
   std::vector<unsigned char> data;
   SkAutoLockPixels screen_capture_lock(bitmap);
+  const bool should_discard_alpha = !ClientAllowsTransparency();
   bool encoded = false;
   std::string mime_type;
   switch (image_format_) {
@@ -118,10 +119,8 @@ bool WebContentsCaptureClient::EncodeBitmap(const SkBitmap& bitmap,
       mime_type = kMimeTypeJpeg;
       break;
     case api::extension_types::IMAGE_FORMAT_PNG:
-      encoded =
-          gfx::PNGCodec::EncodeBGRASkBitmap(bitmap,
-                                            true,  // Discard transparency.
-                                            &data);
+      encoded = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, should_discard_alpha,
+                                                  &data);
       mime_type = kMimeTypePng;
       break;
     default:

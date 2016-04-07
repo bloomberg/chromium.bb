@@ -258,6 +258,10 @@ bool WebViewInternalExtensionFunction::RunAsync() {
   return RunAsyncSafe(guest);
 }
 
+WebViewInternalCaptureVisibleRegionFunction::
+    WebViewInternalCaptureVisibleRegionFunction()
+    : is_guest_transparent_(false) {}
+
 bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
     WebViewGuest* guest) {
   using api::extension_types::ImageDetails;
@@ -273,6 +277,7 @@ bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
     image_details = ImageDetails::FromValue(*spec);
   }
 
+  is_guest_transparent_ = guest->allow_transparency();
   return CaptureAsync(guest->web_contents(), image_details.get(),
                       base::Bind(&WebViewInternalCaptureVisibleRegionFunction::
                                      CopyFromBackingStoreComplete,
@@ -281,6 +286,10 @@ bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
 bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() {
   // TODO(wjmaclean): Is it ok to always return true here?
   return true;
+}
+
+bool WebViewInternalCaptureVisibleRegionFunction::ClientAllowsTransparency() {
+  return is_guest_transparent_;
 }
 
 void WebViewInternalCaptureVisibleRegionFunction::OnCaptureSuccess(
