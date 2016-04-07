@@ -42,10 +42,6 @@ NavigatorStorageQuota::NavigatorStorageQuota(LocalFrame* frame)
 {
 }
 
-NavigatorStorageQuota::~NavigatorStorageQuota()
-{
-}
-
 const char* NavigatorStorageQuota::supplementName()
 {
     return "NavigatorStorageQuota";

@@ -17,10 +17,6 @@ NavigatorCredentials::NavigatorCredentials(Navigator& navigator)
 {
 }
 
-NavigatorCredentials::~NavigatorCredentials()
-{
-}
-
 NavigatorCredentials& NavigatorCredentials::from(Navigator& navigator)
 {
     NavigatorCredentials* supplement = static_cast<NavigatorCredentials*>(Supplement<Navigator>::from(navigator, supplementName()));

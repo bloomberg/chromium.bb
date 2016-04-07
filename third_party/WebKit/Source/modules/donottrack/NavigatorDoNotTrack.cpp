@@ -41,10 +41,6 @@ NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
 {
 }
 
-NavigatorDoNotTrack::~NavigatorDoNotTrack()
-{
-}
-
 DEFINE_TRACE(NavigatorDoNotTrack)
 {
     Supplement<Navigator>::trace(visitor);

@@ -43,12 +43,10 @@ class Navigator;
 class StorageManager;
 class StorageQuota;
 
-class NavigatorStorageQuota final : public GarbageCollectedFinalized<NavigatorStorageQuota>, public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorStorageQuota final : public GarbageCollected<NavigatorStorageQuota>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
 public:
     static NavigatorStorageQuota& from(Navigator&);
-    virtual ~NavigatorStorageQuota();
-
     static StorageQuota* storageQuota(Navigator&);
     static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator&);
     static DeprecatedStorageQuota* webkitPersistentStorage(Navigator&);

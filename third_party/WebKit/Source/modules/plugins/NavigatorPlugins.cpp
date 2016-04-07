@@ -17,10 +17,6 @@ NavigatorPlugins::NavigatorPlugins(Navigator& navigator)
 {
 }
 
-NavigatorPlugins::~NavigatorPlugins()
-{
-}
-
 // static
 NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator)
 {

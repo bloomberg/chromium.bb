@@ -17,15 +17,12 @@ class ExceptionState;
 class Navigator;
 class ServiceWorkerContainer;
 
-class MODULES_EXPORT NavigatorServiceWorker final : public GarbageCollectedFinalized<NavigatorServiceWorker>, public Supplement<Navigator>, public DOMWindowProperty {
+class MODULES_EXPORT NavigatorServiceWorker final : public GarbageCollected<NavigatorServiceWorker>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 public:
     static NavigatorServiceWorker* from(Document&);
     static NavigatorServiceWorker& from(Navigator&);
     static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
-
-    virtual ~NavigatorServiceWorker();
-
     static ServiceWorkerContainer* serviceWorker(ExecutionContext*, Navigator&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();

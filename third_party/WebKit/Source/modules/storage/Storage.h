@@ -39,13 +39,11 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class Storage final : public GarbageCollectedFinalized<Storage>, public ScriptWrappable, public DOMWindowProperty {
+class Storage final : public GarbageCollected<Storage>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Storage);
 public:
     static Storage* create(LocalFrame*, StorageArea*);
-    virtual ~Storage();
-
     unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
     String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, m_frame); }
     String getItem(const String& key, ExceptionState& ec) const { return m_storageArea->getItem(key, ec, m_frame); }

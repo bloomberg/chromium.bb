@@ -22,14 +22,12 @@ class Navigator;
 class VRController;
 class VRHardwareUnitCollection;
 
-class MODULES_EXPORT NavigatorVRDevice final : public GarbageCollectedFinalized<NavigatorVRDevice>, public Supplement<Navigator>, public DOMWindowProperty {
+class MODULES_EXPORT NavigatorVRDevice final : public GarbageCollected<NavigatorVRDevice>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorVRDevice);
     WTF_MAKE_NONCOPYABLE(NavigatorVRDevice);
 public:
     static NavigatorVRDevice* from(Document&);
     static NavigatorVRDevice& from(Navigator&);
-    virtual ~NavigatorVRDevice();
-
     static ScriptPromise getVRDevices(ScriptState*, Navigator&);
     ScriptPromise getVRDevices(ScriptState*);
 

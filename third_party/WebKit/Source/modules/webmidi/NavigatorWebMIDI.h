@@ -41,12 +41,10 @@ namespace blink {
 
 class Navigator;
 
-class NavigatorWebMIDI final : public GarbageCollectedFinalized<NavigatorWebMIDI>, public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorWebMIDI);
 public:
     static NavigatorWebMIDI& from(Navigator&);
-    virtual ~NavigatorWebMIDI();
-
     static ScriptPromise requestMIDIAccess(ScriptState*, Navigator&, const MIDIOptions&);
     ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions&);
 

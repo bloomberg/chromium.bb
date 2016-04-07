@@ -85,10 +85,6 @@ NavigatorVRDevice::NavigatorVRDevice(LocalFrame* frame)
     m_hardwareUnits = new VRHardwareUnitCollection(this);
 }
 
-NavigatorVRDevice::~NavigatorVRDevice()
-{
-}
-
 const char* NavigatorVRDevice::supplementName()
 {
     return "NavigatorVRDevice";

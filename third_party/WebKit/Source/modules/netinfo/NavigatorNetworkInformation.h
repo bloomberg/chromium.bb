@@ -13,14 +13,11 @@ namespace blink {
 class Navigator;
 class NetworkInformation;
 
-class NavigatorNetworkInformation final : public GarbageCollectedFinalized<NavigatorNetworkInformation>, public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorNetworkInformation final : public GarbageCollected<NavigatorNetworkInformation>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
 public:
     static NavigatorNetworkInformation& from(Navigator&);
     static NavigatorNetworkInformation* toNavigatorNetworkInformation(Navigator&);
-
-    virtual ~NavigatorNetworkInformation();
-
     static NetworkInformation* connection(Navigator&);
 
     DECLARE_VIRTUAL_TRACE();

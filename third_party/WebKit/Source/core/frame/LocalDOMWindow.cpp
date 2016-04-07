@@ -91,12 +91,6 @@ LocalDOMWindow::WindowFrameObserver* LocalDOMWindow::WindowFrameObserver::create
     return new WindowFrameObserver(window, frame);
 }
 
-#if !ENABLE(OILPAN)
-LocalDOMWindow::WindowFrameObserver::~WindowFrameObserver()
-{
-}
-#endif
-
 DEFINE_TRACE(LocalDOMWindow::WindowFrameObserver)
 {
     visitor->trace(m_window);
@@ -297,9 +291,7 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     , m_hasBeenReset(false)
 #endif
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 void LocalDOMWindow::clearDocument()
@@ -451,14 +443,8 @@ void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
 
 LocalDOMWindow::~LocalDOMWindow()
 {
-#if ENABLE(OILPAN)
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
-#else
-    ASSERT(m_hasBeenReset);
-    ASSERT(m_document->isStopped());
-    clearDocument();
-#endif
 }
 
 void LocalDOMWindow::dispose()
@@ -470,9 +456,6 @@ void LocalDOMWindow::dispose()
     // Arrange for that removal to happen using a prefinalizer action. Making LocalDOMWindow
     // eager finalizable is problematic as other eagerly finalized objects may well
     // want to access their associated LocalDOMWindow from their destructors.
-    //
-    // (Non-Oilpan, LocalDOMWindow::reset() will always be invoked, the last opportunity
-    // being via ~LocalFrame's setDOMWindow() call. Asserted for in the destructor.)
     if (!frame())
         return;
 

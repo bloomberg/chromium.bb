@@ -15,12 +15,10 @@ namespace blink {
 class CredentialsContainer;
 class Navigator;
 
-class NavigatorCredentials final : public GarbageCollectedFinalized<NavigatorCredentials>, public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorCredentials final : public GarbageCollected<NavigatorCredentials>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorCredentials);
 public:
     static NavigatorCredentials& from(Navigator&);
-    virtual ~NavigatorCredentials();
-
     // NavigatorCredentials.idl
     static CredentialsContainer* credentials(Navigator&);
 

@@ -34,7 +34,7 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMMimeTypeArray final : public GarbageCollectedFinalized<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 public:

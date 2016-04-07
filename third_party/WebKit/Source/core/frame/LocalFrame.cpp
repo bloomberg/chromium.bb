@@ -236,11 +236,6 @@ LocalFrame::~LocalFrame()
     // Verify that the FrameView has been cleared as part of detaching
     // the frame owner.
     ASSERT(!m_view);
-#if !ENABLE(OILPAN)
-    // Oilpan: see setDOMWindow() comment why it is acceptable not to
-    // explicitly call setDOMWindow() here.
-    setDOMWindow(nullptr);
-#endif
 }
 
 DEFINE_TRACE(LocalFrame)

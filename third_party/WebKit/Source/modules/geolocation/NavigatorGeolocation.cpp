@@ -34,10 +34,6 @@ NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
 {
 }
 
-NavigatorGeolocation::~NavigatorGeolocation()
-{
-}
-
 const char* NavigatorGeolocation::supplementName()
 {
     return "NavigatorGeolocation";

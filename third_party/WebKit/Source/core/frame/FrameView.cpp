@@ -184,11 +184,6 @@ FrameView* FrameView::create(LocalFrame* frame, const IntSize& initialSize)
 FrameView::~FrameView()
 {
     ASSERT(m_hasBeenDisposed);
-#if !ENABLE(OILPAN)
-    // Verify that the LocalFrame has a different FrameView or
-    // that it is being detached and destructed.
-    ASSERT(frame().view() != this || !layoutView());
-#endif
 }
 
 DEFINE_TRACE(FrameView)
@@ -934,13 +929,6 @@ void FrameView::layout()
     TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData", InspectorLayoutEvent::beginData(this));
 
     performPreLayoutTasks();
-
-#if !ENABLE(OILPAN)
-    // If there is only one ref to this view left, then its going to be destroyed as soon as we exit,
-    // so there's no point to continuing to layout
-    if (protector->hasOneRef())
-        return;
-#endif
 
     Document* document = m_frame->document();
 

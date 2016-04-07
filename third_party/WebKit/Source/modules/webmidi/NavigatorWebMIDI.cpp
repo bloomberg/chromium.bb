@@ -47,10 +47,6 @@ NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
 {
 }
 
-NavigatorWebMIDI::~NavigatorWebMIDI()
-{
-}
-
 DEFINE_TRACE(NavigatorWebMIDI)
 {
     Supplement<Navigator>::trace(visitor);

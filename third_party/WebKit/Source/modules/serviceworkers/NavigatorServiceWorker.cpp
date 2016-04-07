@@ -17,10 +17,6 @@ NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
 {
 }
 
-NavigatorServiceWorker::~NavigatorServiceWorker()
-{
-}
-
 NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document)
 {
     if (!document.frame() || !document.frame()->domWindow())

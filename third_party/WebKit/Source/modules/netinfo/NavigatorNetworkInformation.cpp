@@ -16,10 +16,6 @@ NavigatorNetworkInformation::NavigatorNetworkInformation(Navigator& navigator)
 {
 }
 
-NavigatorNetworkInformation::~NavigatorNetworkInformation()
-{
-}
-
 NavigatorNetworkInformation& NavigatorNetworkInformation::from(Navigator& navigator)
 {
     NavigatorNetworkInformation* supplement = toNavigatorNetworkInformation(navigator);

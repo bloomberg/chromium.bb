@@ -45,10 +45,6 @@ Storage::Storage(LocalFrame* frame, StorageArea* storageArea)
     ASSERT(m_storageArea);
 }
 
-Storage::~Storage()
-{
-}
-
 String Storage::anonymousIndexedGetter(unsigned index, ExceptionState& exceptionState)
 {
     return anonymousNamedGetter(AtomicString::number(index), exceptionState);

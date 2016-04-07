@@ -40,10 +40,6 @@ Navigator::Navigator(LocalFrame* frame)
 {
 }
 
-Navigator::~Navigator()
-{
-}
-
 String Navigator::productSub() const
 {
     return "20030107";

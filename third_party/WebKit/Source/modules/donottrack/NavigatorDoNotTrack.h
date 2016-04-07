@@ -41,12 +41,10 @@ namespace blink {
 class LocalFrame;
 class Navigator;
 
-class NavigatorDoNotTrack final : public GarbageCollectedFinalized<NavigatorDoNotTrack>, public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorDoNotTrack);
 public:
     static NavigatorDoNotTrack& from(Navigator&);
-    virtual ~NavigatorDoNotTrack();
-
     static String doNotTrack(Navigator&);
 
     String doNotTrack();

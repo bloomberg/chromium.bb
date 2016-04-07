@@ -37,7 +37,7 @@ class LocalFrame;
 typedef int ExceptionCode;
 
 class Navigator final
-    : public GarbageCollectedFinalized<Navigator>
+    : public GarbageCollected<Navigator>
     , public NavigatorCPU
     , public NavigatorID
     , public NavigatorLanguage
@@ -52,8 +52,6 @@ public:
     {
         return new Navigator(frame);
     }
-
-    virtual ~Navigator();
 
     bool cookieEnabled() const;
 

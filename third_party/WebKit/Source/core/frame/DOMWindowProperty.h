@@ -46,18 +46,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    // TODO(Oilpan): when ~DOMWindowProperty is removed, check classes that derive
-    // from it. Several will then be able to derive from GarbageCollected<> instead.
-#if !ENABLE(OILPAN)
-    virtual ~DOMWindowProperty();
-#endif
-
     Member<LocalFrame> m_frame;
-
-#if !ENABLE(OILPAN)
-private:
-    LocalDOMWindow* m_associatedDOMWindow;
-#endif
 };
 
 } // namespace blink

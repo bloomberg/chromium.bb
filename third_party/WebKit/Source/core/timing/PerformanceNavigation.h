@@ -40,7 +40,7 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT PerformanceNavigation final : public GarbageCollectedFinalized<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+class CORE_EXPORT PerformanceNavigation final : public GarbageCollected<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 public:
