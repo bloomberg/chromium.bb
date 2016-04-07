@@ -214,9 +214,9 @@
     },
 
     'chromium.gpu': {
-      'Android Debug (Nexus 5)': 'tbd',
-      'Android Debug (Nexus 6)': 'tbd',
-      'Android Debug (Nexus 9)': 'tbd',
+      'Android Debug (Nexus 5)': 'android_gyp_debug_static_bot',
+      'Android Debug (Nexus 6)': 'android_gyp_debug_static_bot',
+      'Android Debug (Nexus 9)': 'android_gyp_debug_static_bot_arm64',
       'GPU Mac Builder': 'tbd',
       'GPU Mac Builder (dbg)': 'tbd',
 
@@ -1011,6 +1011,10 @@
 
     'android_gyp_debug_static_bot': [
       'android', 'gyp', 'debug_static_bot',
+    ],
+
+    'android_gyp_debug_static_bot_arm64': [
+      'android', 'gyp', 'debug_static_bot', 'arm64',
     ],
 
     'android_gyp_debug_static_bot_x86': [
