@@ -20,10 +20,11 @@ void setIndexedDBClientCreateFunction(CreateIndexedDBClient createFunction)
 
 IndexedDBClient* IndexedDBClient::create()
 {
-    ASSERT(idbClientCreateFunction);
+    CreateIndexedDBClient* createFunction = reinterpret_cast<CreateIndexedDBClient*>(acquireLoad(&idbClientCreateFunction));
+    ASSERT(createFunction);
     // There's no reason why we need to allocate a new proxy each time, but
     // there's also no strong reason not to.
-    return reinterpret_cast<CreateIndexedDBClient*>(idbClientCreateFunction)();
+    return createFunction();
 }
 
 } // namespace blink
