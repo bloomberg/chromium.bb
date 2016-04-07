@@ -62,6 +62,9 @@ class CONTENT_EXPORT ChildProcess {
   // itself down when the ref count reaches 0.
   // For example, in the renderer process, generally each tab managed by this
   // process will hold a reference to the process, and release when closed.
+  // However for renderer processes specifically, there is also fast shutdown
+  // code path initiated by the browser process. The process refcount does
+  // not influence fast shutdown. See blink::Platform::suddenTerminationChanged.
   void AddRefProcess();
   void ReleaseProcess();
 
