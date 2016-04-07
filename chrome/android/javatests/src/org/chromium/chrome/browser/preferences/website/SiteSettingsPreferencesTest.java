@@ -455,6 +455,27 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
+     * Tests Reset Site not crashing on host names (issue 600232).
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testResetCrash600232() throws Exception {
+        Website website = new Website(WebsiteAddress.create("example.com"));
+        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SingleWebsitePreferences websitePreferences =
+                        (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
+                websitePreferences.resetSite();
+            }
+        });
+        preferenceActivity.finish();
+    }
+
+    /**
      * Sets Allow Camera Enabled to be false and make sure it is set correctly.
      * @throws Exception
      */

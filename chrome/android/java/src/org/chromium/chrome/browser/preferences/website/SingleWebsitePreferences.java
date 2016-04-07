@@ -23,6 +23,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
@@ -639,7 +640,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
         return true;
     }
 
-    private void resetSite() {
+    /**
+     * Resets the current site, clearing all permissions and storage used (inc. cookies).
+     */
+    @VisibleForTesting
+    protected void resetSite() {
         if (getActivity() == null) return;
         // Clear the screen.
         // TODO(mvanouwerkerk): Refactor this class so that it does not depend on the screen state
@@ -655,7 +660,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setBackgroundSyncPermission(ContentSetting.DEFAULT);
         mSite.setCameraPermission(ContentSetting.DEFAULT);
         mSite.setCookiePermission(ContentSetting.DEFAULT);
-        WebsitePreferenceBridge.nativeClearCookieData(mSite.getAddress().getOrigin());
+        WebsitePreferenceBridge.nativeClearCookieData(mSite.getAddress().getTitle());
         mSite.setFullscreenPermission(ContentSetting.DEFAULT);
         mSite.setGeolocationPermission(ContentSetting.DEFAULT);
         mSite.setJavaScriptPermission(ContentSetting.DEFAULT);
