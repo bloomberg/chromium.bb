@@ -26,20 +26,20 @@ public:
     DECLARE_TRACE();
 
     WebInputEventResult sendMousePointerEvent(
-        RawPtr<Node>, const AtomicString& type,
+        Node*, const AtomicString& type,
         int clickCount, const PlatformMouseEvent&,
-        RawPtr<Node> relatedTarget,
-        RawPtr<AbstractView>,
-        RawPtr<Node> lastNodeUnderMouse);
+        Node* relatedTarget,
+        AbstractView*,
+        Node* lastNodeUnderMouse);
 
     // Returns whether the event is consumed or not
     WebInputEventResult sendTouchPointerEvent(
-        RawPtr<EventTarget>,
+        EventTarget*,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,
         const double width, const double height,
         const double clientX, const double clientY);
 
-    void sendTouchCancelPointerEvent(RawPtr<EventTarget>,
+    void sendTouchCancelPointerEvent(EventTarget*,
         const PlatformTouchPoint&);
 
     // Sends node transition events mouseout/leave/over/enter to the
@@ -54,10 +54,10 @@ public:
     // and their corresponding transition events will be handled altogether by
     // sendMousePointerEvent function.
     void sendMouseAndPossiblyPointerNodeTransitionEvents(
-        RawPtr<Node> exitedNode,
-        RawPtr<Node> enteredNode,
+        Node* exitedNode,
+        Node* enteredNode,
         const PlatformMouseEvent&,
-        RawPtr<AbstractView>, bool isFrameBoundaryTransition);
+        AbstractView*, bool isFrameBoundaryTransition);
 
     // Clear all the existing ids.
     void clear();
@@ -82,27 +82,27 @@ private:
         EventTargetAttributes()
         : target(nullptr)
         , hasRecievedOverEvent(false) {}
-        EventTargetAttributes(RawPtr<EventTarget> target,
+        EventTargetAttributes(EventTarget* target,
             bool hasRecievedOverEvent)
         : target(target)
         , hasRecievedOverEvent(hasRecievedOverEvent) {}
     };
 
     void sendNodeTransitionEvents(
-        RawPtr<EventTarget> exitedTarget,
-        RawPtr<EventTarget> enteredTarget,
-        RawPtr<PointerEvent>,
+        EventTarget* exitedTarget,
+        EventTarget* enteredTarget,
+        PointerEvent*,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
-    void setNodeUnderPointer(RawPtr<PointerEvent>,
-        RawPtr<EventTarget>, bool sendEvent = true);
+    void setNodeUnderPointer(PointerEvent*,
+        EventTarget*, bool sendEvent = true);
 
     // Returns whether the pointer capture is changed. In this case this
     // function will take care of transition events and setNodeUnderPointer
     // should not send transition events.
     bool processPendingPointerCapture(
-        const RawPtr<PointerEvent>,
-        const RawPtr<EventTarget>,
+        PointerEvent*,
+        EventTarget*,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
 
@@ -111,22 +111,22 @@ private:
     // setPointerPosition is true. It also sends corresponding transition events
     // for mouse if sendMouseEvent is true.
     void processCaptureAndPositionOfPointerEvent(
-        const RawPtr<PointerEvent>,
-        const RawPtr<EventTarget> hitTestTarget,
-        const RawPtr<EventTarget> lastNodeUnderMouse = nullptr,
+        PointerEvent*,
+        EventTarget* hitTestTarget,
+        EventTarget* lastNodeUnderMouse = nullptr,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false,
         bool setPointerPosition = true);
 
     void removeTargetFromPointerCapturingMapping(
         PointerCapturingMap&, const EventTarget*);
-    RawPtr<EventTarget> getEffectiveTargetForPointerEvent(
-        RawPtr<EventTarget>, int);
+    EventTarget* getEffectiveTargetForPointerEvent(
+        EventTarget*, int);
     EventTarget* getCapturingNode(int);
-    void removePointer(const RawPtr<PointerEvent>);
+    void removePointer(PointerEvent*);
     WebInputEventResult dispatchPointerEvent(
-        RawPtr<EventTarget>,
-        RawPtr<PointerEvent>,
+        EventTarget*,
+        PointerEvent*,
         bool checkForListener = false);
     void releasePointerCapture(int);
 

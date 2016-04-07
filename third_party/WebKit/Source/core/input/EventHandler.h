@@ -113,7 +113,7 @@ public:
 
     bool mousePressed() const { return m_mousePressed; }
 
-    void setCapturingMouseEventsNode(RawPtr<Node>); // A caller is responsible for resetting capturing node to 0.
+    void setCapturingMouseEventsNode(Node*); // A caller is responsible for resetting capturing node to 0.
 
     WebInputEventResult updateDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
     void cancelDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
@@ -312,7 +312,7 @@ private:
 
     void invalidateClick();
 
-    RawPtr<Node> updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
+    Node* updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
     void updateMouseEventTargetNodeAndSendEvents(Node*, const PlatformMouseEvent&, bool isFrameBoundaryTransition = false);
 
 
