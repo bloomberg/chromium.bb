@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -96,6 +97,10 @@ void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
     host_->OnLegacyWindowDestroyed();
     host_ = NULL;
   }
+
+  // Re-enable flicks for just a moment
+  base::win::EnableFlicks(hwnd);
+
   delete this;
 }
 
@@ -135,6 +140,9 @@ bool LegacyRenderWidgetHostHWND::Init() {
       gfx::win::DirectManipulationHelper::CreateInstance();
   if (direct_manipulation_helper_)
     direct_manipulation_helper_->Initialize(hwnd());
+
+  // Disable pen flicks (http://crbug.com/506977)
+  base::win::DisableFlicks(hwnd());
 
   return !!SUCCEEDED(hr);
 }

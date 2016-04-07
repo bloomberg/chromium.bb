@@ -178,6 +178,12 @@ BASE_EXPORT bool IsUser32AndGdi32Available();
 BASE_EXPORT bool GetLoadedModulesSnapshot(HANDLE process,
                                           std::vector<HMODULE>* snapshot);
 
+// Adds or removes the MICROSOFT_TABLETPENSERVICE_PROPERTY property with the
+// TABLET_DISABLE_FLICKS & TABLET_DISABLE_FLICKFALLBACKKEYS flags in order to
+// disable pen flick gestures for the given HWND.
+BASE_EXPORT void EnableFlicks(HWND hwnd);
+BASE_EXPORT void DisableFlicks(HWND hwnd);
+
 }  // namespace win
 }  // namespace base
 

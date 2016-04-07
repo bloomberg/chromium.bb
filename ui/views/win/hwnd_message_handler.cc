@@ -8,7 +8,6 @@
 #include <oleacc.h>
 #include <shellapi.h>
 #include <tchar.h>
-#include <tpcshrd.h>
 
 #include <utility>
 
@@ -385,9 +384,7 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
     direct_manipulation_helper_->Initialize(hwnd());
 
   // Disable pen flicks (http://crbug.com/506977)
-  ::SetProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY,
-            reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
-                                     TABLET_DISABLE_FLICKFALLBACKKEYS));
+  base::win::DisableFlicks(hwnd());
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -414,9 +411,8 @@ void HWNDMessageHandler::Close() {
   // they can activate as foreground windows upon this window's destruction.
   RestoreEnabledIfNecessary();
 
-  // Remove the property which disables pen flicks (http://crbug.com/506977)
-  // for this window.
-  ::RemoveProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY);
+  // Re-enable flicks which removes the window property.
+  base::win::EnableFlicks(hwnd());
 
   if (!waiting_for_close_now_) {
     // And we delay the close so that if we are called from an ATL callback,

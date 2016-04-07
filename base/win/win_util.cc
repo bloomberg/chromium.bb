@@ -22,6 +22,8 @@
 #include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <tchar.h> // Must be before tpcshrd.h or for any use of _T macro
+#include <tpcshrd.h>
 #include <uiviewsettingsinterop.h>
 #include <windows.ui.viewmanagement.h>
 #include <winstring.h>
@@ -693,6 +695,16 @@ bool GetLoadedModulesSnapshot(HANDLE process, std::vector<HMODULE>* snapshot) {
 
   DLOG(ERROR) << "Failed to enumerate modules.";
   return false;
+}
+
+void EnableFlicks(HWND hwnd) {
+  ::RemoveProp(hwnd, MICROSOFT_TABLETPENSERVICE_PROPERTY);
+}
+
+void DisableFlicks(HWND hwnd) {
+  ::SetProp(hwnd, MICROSOFT_TABLETPENSERVICE_PROPERTY,
+      reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
+          TABLET_DISABLE_FLICKFALLBACKKEYS));
 }
 
 }  // namespace win
