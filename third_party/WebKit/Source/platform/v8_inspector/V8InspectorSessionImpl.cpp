@@ -89,9 +89,14 @@ void V8InspectorSessionImpl::discardInjectedScripts()
 
 InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorString, int contextId)
 {
+    if (!contextId) {
+        *errorString = "Cannot find context with specified id";
+        return nullptr;
+    }
+
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
     if (!contexts || !contexts->contains(contextId)) {
-        *errorString = "Inspected frame has gone";
+        *errorString = "Cannot find context with specified id";
         return nullptr;
     }
 

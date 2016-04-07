@@ -3,7 +3,7 @@ Page reloaded.
 {
     error : {
         code : -32000
-        message : Inspected frame has gone
+        message : Cannot find context with specified id
     }
     id : 0
 }
