@@ -541,29 +541,28 @@ void CalculateRenderTarget(LayerImpl* layer,
       draw_property_utils::LayerShouldBeSkipped(
           layer, layer_is_drawn, property_trees->transform_tree)) {
     layer->draw_properties().render_target = nullptr;
-    return;
-  }
-
-  bool render_to_separate_surface =
-      IsRootLayer(layer) ||
-      (can_render_to_separate_surface && layer->render_surface());
-
-  if (render_to_separate_surface) {
-    DCHECK(layer->render_surface()) << IsRootLayer(layer)
-                                    << can_render_to_separate_surface
-                                    << layer->has_render_surface();
-    layer->draw_properties().render_target = layer;
-
-    if (layer->mask_layer())
-      layer->mask_layer()->draw_properties().render_target = layer;
-
-    if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-      layer->replica_layer()->mask_layer()->draw_properties().render_target =
-          layer;
-
   } else {
-    DCHECK(!IsRootLayer(layer));
-    layer->draw_properties().render_target = layer->parent()->render_target();
+    bool render_to_separate_surface =
+        IsRootLayer(layer) ||
+        (can_render_to_separate_surface && layer->render_surface());
+
+    if (render_to_separate_surface) {
+      DCHECK(layer->render_surface()) << IsRootLayer(layer)
+                                      << can_render_to_separate_surface
+                                      << layer->has_render_surface();
+      layer->draw_properties().render_target = layer;
+
+      if (layer->mask_layer())
+        layer->mask_layer()->draw_properties().render_target = layer;
+
+      if (layer->replica_layer() && layer->replica_layer()->mask_layer())
+        layer->replica_layer()->mask_layer()->draw_properties().render_target =
+            layer;
+
+    } else {
+      DCHECK(!IsRootLayer(layer));
+      layer->draw_properties().render_target = layer->parent()->render_target();
+    }
   }
   for (size_t i = 0; i < layer->children().size(); ++i) {
     CalculateRenderTarget(
@@ -609,6 +608,13 @@ void CalculateRenderSurfaceLayerList(
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
     layer->draw_properties().render_target = nullptr;
+    for (auto* child_layer : layer->children()) {
+      CalculateRenderSurfaceLayerList(
+          child_layer, property_trees, render_surface_layer_list, descendants,
+          nearest_occlusion_immune_ancestor, layer_is_drawn,
+          can_render_to_separate_surface, current_render_surface_layer_list_id,
+          max_texture_size);
+    }
     return;
   }
 
@@ -655,11 +661,10 @@ void CalculateRenderSurfaceLayerList(
     descendants = &(layer->render_surface()->layer_list());
   }
 
-  size_t descendants_size = descendants->size();
-
   bool layer_should_be_skipped = !draw_property_utils::LayerNeedsUpdate(
       layer, layer_is_drawn, property_trees->transform_tree);
   if (!layer_should_be_skipped) {
+    DCHECK(layer->draw_properties().render_target);
     MarkLayerWithRenderSurfaceLayerListId(layer,
                                           current_render_surface_layer_list_id);
     descendants->push_back(layer);
@@ -738,7 +743,7 @@ void CalculateRenderSurfaceLayerList(
       layer->render_surface()->SetContentRect(surface_content_rect);
     }
     const LayerImpl* parent_target = layer->parent()->render_target();
-    if (!IsRootLayer(parent_target)) {
+    if (parent_target && !IsRootLayer(parent_target)) {
       gfx::Rect surface_content_rect =
           parent_target->render_surface()->accumulated_content_rect();
       if (render_to_separate_surface) {
@@ -766,13 +771,6 @@ void CalculateRenderSurfaceLayerList(
   if (render_to_separate_surface && !IsRootLayer(layer) &&
       layer->render_surface()->DrawableContentRect().IsEmpty()) {
     RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
-    return;
-  }
-
-  // If neither this layer nor any of its children were added, early out.
-  if (descendants_size == descendants->size()) {
-    DCHECK(!render_to_separate_surface || IsRootLayer(layer));
-    return;
   }
 }
 
@@ -873,8 +871,6 @@ void CalculateDrawPropertiesInternal(
   DCHECK(inputs->can_render_to_separate_surface ==
          inputs->property_trees->non_root_surfaces_enabled);
   const bool subtree_visible_from_ancestor = true;
-  for (auto* layer : *inputs->root_layer->layer_tree_impl())
-    layer->draw_properties().render_target = nullptr;
   CalculateRenderTarget(inputs->root_layer, inputs->property_trees,
                         subtree_visible_from_ancestor,
                         inputs->can_render_to_separate_surface);
