@@ -11,6 +11,16 @@
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
 
+namespace {
+
+void LogAndCallServiceRestartCallback(const std::string& url,
+                                      const base::Closure& callback) {
+  LOG(ERROR) << "Restarting service: " << url;
+  callback.Run();
+}
+
+}  // namespace
+
 namespace mash {
 namespace session {
 
@@ -128,7 +138,8 @@ void Session::StartRestartableService(
   std::unique_ptr<mojo::Connection> connection = connector_->Connect(url);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
-    connection->SetConnectionLostClosure(restart_callback);
+    connection->SetConnectionLostClosure(
+        base::Bind(&LogAndCallServiceRestartCallback, url, restart_callback));
     connection->AddInterface<mojom::Session>(this);
     connections_[url] = std::move(connection);
   }
