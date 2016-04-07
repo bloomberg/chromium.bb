@@ -97,6 +97,7 @@
   'variables': {
     'public_browser_sources': [
       'public/browser/access_token_store.h',
+      'public/browser/android/service_registry_android.h',
       'public/browser/android/browser_media_player_manager_register.cc',
       'public/browser/android/browser_media_player_manager_register.h',
       'public/browser/android/compositor.h',
@@ -405,6 +406,8 @@
       'browser/android/devtools_auth.cc',
       'browser/android/in_process_surface_texture_manager.cc',
       'browser/android/in_process_surface_texture_manager.h',
+      'browser/android/service_registry_android_impl.cc',
+      'browser/android/service_registry_android_impl.h',
       'browser/android/url_request_content_job.cc',
       'browser/android/url_request_content_job.h',
       'browser/appcache/appcache.cc',
@@ -1127,8 +1130,6 @@
       'browser/mojo/mojo_shell_context.h',
       'browser/mojo/service_registrar_android.cc',
       'browser/mojo/service_registrar_android.h',
-      'browser/mojo/service_registry_android.cc',
-      'browser/mojo/service_registry_android.h',
       'browser/net/browser_online_state_observer.cc',
       'browser/net/browser_online_state_observer.h',
       'browser/net/network_errors_listing_ui.cc',

@@ -36,9 +36,11 @@
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/notifications/notification.mojom',
-            'platform/modules/payments/payment_request.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
+        ],
+        'blink_android_mojo_sources': [
+            'platform/modules/payments/payment_request.mojom',
         ],
     },
     'targets': [
@@ -98,7 +100,10 @@
             'target_name': 'mojo_bindings_blink_mojom',
             'type': 'none',
             'variables': {
-                'mojom_files': ['<@(blink_mojo_sources)'],
+                'mojom_files': [
+                    '<@(blink_mojo_sources)',
+                    '<@(blink_android_mojo_sources)',
+                ],
                 'mojom_variant': 'wtf',
                 'for_blink': 'true',
             },
@@ -126,5 +131,30 @@
                 '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
             ],
         },
+    ],
+    'conditions': [
+        ['OS == "android"', {
+            'targets': [
+                {
+                    'target_name': 'android_mojo_bindings_mojom',
+                    'type': 'none',
+                    'variables': {
+                        'mojom_files': ['<@(blink_android_mojo_sources)'],
+                    },
+                    'includes': [
+                        '../../../mojo/mojom_bindings_generator_explicit.gypi',
+                    ],
+                },
+                {
+                    # GN version: //third_party/WebKit/public:android_mojo_bindings_java
+                    'target_name': 'android_mojo_bindings_java',
+                    'type': 'static_library',
+                    'dependencies': [
+                        'android_mojo_bindings_mojom',
+                        '../../../mojo/mojo_public.gyp:mojo_bindings_java',
+                    ],
+                },
+            ],
+        }],
     ],
 }

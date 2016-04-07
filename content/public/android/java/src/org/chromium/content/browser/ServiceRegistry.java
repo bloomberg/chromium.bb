@@ -19,11 +19,20 @@ import org.chromium.mojo.system.impl.CoreImpl;
 @JNINamespace("content")
 public class ServiceRegistry {
 
-    interface ImplementationFactory<I extends Interface> {
+    /**
+     * The interface that a factory should implement.
+     */
+    public interface ImplementationFactory<I extends Interface> {
         I createImpl();
     }
 
-    <I extends Interface, P extends Proxy> void addService(
+    /**
+     * Adds a service factory.
+     *
+     * @param manager The interface manager.
+     * @param factory The service factory.
+     */
+    public <I extends Interface, P extends Proxy> void addService(
             Interface.Manager<I, P> manager, ImplementationFactory<I> factory) {
         nativeAddService(mNativeServiceRegistryAndroid, manager, factory, manager.getName());
     }

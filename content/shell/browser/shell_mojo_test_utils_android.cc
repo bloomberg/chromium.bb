@@ -9,8 +9,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/browser/mojo/service_registry_android.h"
 #include "content/common/mojo/service_registry_impl.h"
+#include "content/public/browser/android/service_registry_android.h"
 #include "jni/ShellMojoTestUtils_jni.h"
 
 namespace {
@@ -57,10 +57,10 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
   registry_a->BindRemoteServiceProvider(std::move(exposed_services_b));
 
   content::ServiceRegistryAndroid* wrapper_a =
-      new ServiceRegistryAndroid(registry_a);
+      ServiceRegistryAndroid::Create(registry_a).release();
   test_environment->wrappers.push_back(wrapper_a);
   content::ServiceRegistryAndroid* wrapper_b =
-      new ServiceRegistryAndroid(registry_b);
+      ServiceRegistryAndroid::Create(registry_b).release();
   test_environment->wrappers.push_back(wrapper_b);
 
   return Java_ShellMojoTestUtils_makePair(env, wrapper_a->GetObj().obj(),

@@ -2254,8 +2254,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   service_registry_->BindRemoteServiceProvider(std::move(services));
 
 #if defined(OS_ANDROID)
-  service_registry_android_.reset(
-      new ServiceRegistryAndroid(service_registry_.get()));
+  service_registry_android_ =
+      ServiceRegistryAndroid::Create(service_registry_.get());
   ServiceRegistrarAndroid::RegisterFrameHostServices(
       service_registry_android_.get());
 #endif

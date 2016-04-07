@@ -6,7 +6,7 @@
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
-#include "content/browser/mojo/service_registry_android.h"
+#include "content/public/browser/android/service_registry_android.h"
 #include "jni/ServiceRegistrar_jni.h"
 
 namespace content {

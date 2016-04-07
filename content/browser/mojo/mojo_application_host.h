@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/mojo/service_registry_android.h"
+#include "content/public/browser/android/service_registry_android.h"
 #endif
 
 namespace IPC {

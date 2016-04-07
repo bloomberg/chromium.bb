@@ -42,8 +42,8 @@ class ApplicationSetupImpl : public mojom::ApplicationSetup {
 
 MojoApplicationHost::MojoApplicationHost() : did_activate_(false) {
 #if defined(OS_ANDROID)
-  service_registry_android_.reset(
-      new ServiceRegistryAndroid(&service_registry_));
+  service_registry_android_ =
+      ServiceRegistryAndroid::Create(&service_registry_);
 #endif
 }
 

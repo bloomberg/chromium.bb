@@ -216,6 +216,7 @@
 #endif
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/mojo/chrome_service_registrar_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
@@ -2791,6 +2792,10 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
     registry->AddService(
         base::Bind(&CreateWebUsbChooserService, render_frame_host));
   }
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(registry);
+#endif
 }
 
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
