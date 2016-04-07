@@ -518,8 +518,15 @@ int TaskManagerTableModel::CompareValues(int row1,
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
       int64_t allocated1, allocated2, used1, used2;
-      observed_task_manager()->GetV8Memory(tasks_[row1], &allocated1, &used1);
-      observed_task_manager()->GetV8Memory(tasks_[row2], &allocated2, &used2);
+      bool row1_valid = observed_task_manager()->GetV8Memory(tasks_[row1],
+                                                             &allocated1,
+                                                             &used1);
+      bool row2_valid = observed_task_manager()->GetV8Memory(tasks_[row2],
+                                                             &allocated2,
+                                                             &used2);
+      if (!row1_valid || !row2_valid)
+        return OrderUnavailableValue(row1_valid, row2_valid);
+
       return ValueCompare(allocated1, allocated2);
     }
 
