@@ -462,6 +462,7 @@ void DownloadItemViewMd::GetAccessibleState(ui::AXViewState* state) {
 
 void DownloadItemViewMd::OnThemeChanged() {
   UpdateColorsFromTheme();
+  SchedulePaint();
 }
 
 void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -588,6 +589,13 @@ void DownloadItemViewMd::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void DownloadItemViewMd::OnPaint(gfx::Canvas* canvas) {
+  // Make sure to draw |this| opaquely. Since the toolbar color can be partially
+  // transparent, start with a black backdrop (which is the default initialized
+  // color for opaque canvases).
+  canvas->DrawColor(SK_ColorBLACK);
+  canvas->DrawColor(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
+
   DrawStatusText(canvas);
   DrawFilename(canvas);
   DrawIcon(canvas);
