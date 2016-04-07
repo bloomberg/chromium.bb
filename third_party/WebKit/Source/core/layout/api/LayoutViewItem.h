@@ -75,6 +75,11 @@ public:
         return toView()->hitTest(result);
     }
 
+    IntRect selectionBounds()
+    {
+        return toView()->selectionBounds();
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }

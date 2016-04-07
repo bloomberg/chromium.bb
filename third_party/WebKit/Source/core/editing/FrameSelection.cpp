@@ -66,7 +66,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/EditorClient.h"
 #include "core/page/FocusController.h"
@@ -1024,8 +1024,7 @@ void FrameSelection::updateAppearance()
         setCaretRectNeedsUpdate();
     }
 
-    LayoutView* view = m_frame->contentLayoutObject();
-    if (!view)
+    if (m_frame->contentLayoutItem().isNull())
         return;
     m_pendingSelection->setHasPendingSelection();
 }
@@ -1168,13 +1167,13 @@ LayoutRect FrameSelection::bounds() const
 LayoutRect FrameSelection::unclippedBounds() const
 {
     FrameView* view = m_frame->view();
-    LayoutView* layoutView = m_frame->contentLayoutObject();
+    LayoutViewItem layoutView = m_frame->contentLayoutItem();
 
-    if (!view || !layoutView)
+    if (!view || layoutView.isNull())
         return LayoutRect();
 
     view->updateLifecycleToLayoutClean();
-    return LayoutRect(layoutView->selectionBounds());
+    return LayoutRect(layoutView.selectionBounds());
 }
 
 static inline HTMLFormElement* associatedFormElement(HTMLElement& element)
