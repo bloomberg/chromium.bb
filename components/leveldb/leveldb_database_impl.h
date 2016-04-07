@@ -37,8 +37,30 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
   void GetFromSnapshot(uint64_t snapshot_id,
                        mojo::Array<uint8_t> key,
                        const GetCallback& callback) override;
+  void NewIterator(const NewIteratorCallback& callback) override;
+  void NewIteratorFromSnapshot(uint64_t snapshot_id,
+                               const NewIteratorCallback& callback) override;
+  void ReleaseIterator(uint64_t iterator_id) override;
+  void IteratorSeekToFirst(
+      uint64_t iterator_id,
+      const IteratorSeekToFirstCallback& callback) override;
+  void IteratorSeekToLast(uint64_t iterator_id,
+                          const IteratorSeekToLastCallback& callback) override;
+  void IteratorSeek(uint64_t iterator_id,
+                    mojo::Array<uint8_t> target,
+                    const IteratorSeekToLastCallback& callback) override;
+  void IteratorNext(uint64_t iterator_id,
+                    const IteratorNextCallback& callback) override;
+  void IteratorPrev(uint64_t iterator_id,
+                    const IteratorPrevCallback& callback) override;
 
  private:
+  // Returns the state of |it| to a caller. Note: This assumes that all the
+  // iterator movement methods have the same callback signature. We don't
+  // directly reference the underlying type in case of bindings change.
+  void ReplyToIteratorMessage(leveldb::Iterator* it,
+                              const IteratorSeekToFirstCallback& callback);
+
   mojo::StrongBinding<LevelDBDatabase> binding_;
   scoped_ptr<leveldb::Env> environment_;
   scoped_ptr<leveldb::DB> db_;

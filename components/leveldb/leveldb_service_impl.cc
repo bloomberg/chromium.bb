@@ -6,7 +6,7 @@
 
 #include "components/leveldb/env_mojo.h"
 #include "components/leveldb/leveldb_database_impl.h"
-#include "components/leveldb/util.h"
+#include "components/leveldb/public/cpp/util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -26,17 +26,25 @@ void LevelDBServiceImpl::Open(filesystem::DirectoryPtr directory,
                               const mojo::String& dbname,
                               leveldb::LevelDBDatabaseRequest database,
                               const OpenCallback& callback) {
-  // This is the place where we open a database.
+  OpenWithOptions(leveldb::OpenOptions::New(), std::move(directory), dbname,
+                  std::move(database), callback);
+}
+
+void LevelDBServiceImpl::OpenWithOptions(
+    leveldb::OpenOptionsPtr open_options,
+    filesystem::DirectoryPtr directory,
+    const mojo::String& dbname,
+    leveldb::LevelDBDatabaseRequest database,
+    const OpenCallback& callback) {
   leveldb::Options options;
-  options.create_if_missing = true;
-  options.paranoid_checks = true;
-  // TODO(erg): Do we need a filter policy?
+  options.create_if_missing = open_options->create_if_missing;
+  options.error_if_exists = open_options->error_if_exists;
+  options.paranoid_checks = open_options->paranoid_checks;
+  options.write_buffer_size = open_options->write_buffer_size;
+  options.max_open_files = open_options->max_open_files;
+
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   options.compression = leveldb::kSnappyCompression;
-
-  // For info about the troubles we've run into with this parameter, see:
-  // https://code.google.com/p/chromium/issues/detail?id=227313#c11
-  options.max_open_files = 80;
 
   // Register our directory with the file thread.
   LevelDBMojoProxy::OpaqueDir* dir =
@@ -61,7 +69,6 @@ void LevelDBServiceImpl::OpenInMemory(leveldb::LevelDBDatabaseRequest database,
   leveldb::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum.
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
   scoped_ptr<leveldb::Env> env(leveldb::NewMemEnv(leveldb::Env::Default()));
   options.env = env.get();

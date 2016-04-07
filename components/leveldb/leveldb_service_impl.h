@@ -23,6 +23,11 @@ class LevelDBServiceImpl : public LevelDBService {
             const mojo::String& dbname,
             leveldb::LevelDBDatabaseRequest database,
             const OpenCallback& callback) override;
+  void OpenWithOptions(leveldb::OpenOptionsPtr open_options,
+                       filesystem::DirectoryPtr directory,
+                       const mojo::String& dbname,
+                       leveldb::LevelDBDatabaseRequest database,
+                       const OpenCallback& callback) override;
   void OpenInMemory(leveldb::LevelDBDatabaseRequest database,
                     const OpenInMemoryCallback& callback) override;
 

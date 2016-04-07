@@ -26,12 +26,42 @@ struct BatchedOperation {
   array<uint8>? value;
 };
 
+// Options which control the behavior of a database. (This struct corresponds
+// with the struct in leveldb's options.h.)
+struct OpenOptions {
+  // TODO(erg): Find all comparators and copy them into the service.
+
+  // If true, the database will be created if it is missing.
+  bool create_if_missing = false;
+
+  // If true, an error is raised if the database already exists.
+  bool error_if_exists = false;
+
+  // If true, the implementation will do aggressive checking of the
+  // data it is processing and will stop early if it detects any
+  // errors.
+  bool paranoid_checks = false;
+
+  // Default size is 4 megabytes.
+  uint64 write_buffer_size = 4194304;
+
+  // Number of open files that can be used by the DB. (Note: we globally set
+  // the default here to 80 instead of leveldb's default 1000 because we don't
+  // want to consume all file descriptors. See
+  // https://code.google.com/p/chromium/issues/detail?id=227313#c11 for
+  // details.)
+  int32 max_open_files = 80;
+};
+
 // Service which hands out databases.
 interface LevelDBService {
-  // TODO(erg): What options do we want to export? All? None?
   Open(filesystem.Directory directory,
        string dbname,
        LevelDBDatabase& database) => (DatabaseError status);
+  OpenWithOptions(OpenOptions options,
+                  filesystem.Directory directory,
+                  string dbname,
+                  LevelDBDatabase& database) => (DatabaseError status);
 
   OpenInMemory(LevelDBDatabase& database) => (DatabaseError status);
 };
@@ -65,4 +95,37 @@ interface LevelDBDatabase {
   // value. Otherwise return NOT_FOUND.
   GetFromSnapshot(uint64 snapshot_id, array<uint8> key)
       => (DatabaseError status, array<uint8> value);
+
+  // Iteartors -------------------------------------------------------------
+
+  // Creates an iterator, either from the current view or from a snapshot.
+  NewIterator() => (uint64 iterator_id);
+  NewIteratorFromSnapshot(uint64 snapshot_id) => (uint64 iterator_id);
+
+  ReleaseIterator(uint64 iterator_id);
+
+  // Positions the iterator at the first key, last key, or the first key after
+  // |target|.
+  [Sync]
+  IteratorSeekToFirst(uint64 iterator_id)
+      => (bool valid, DatabaseError status, array<uint8>? key,
+          array<uint8>? value);
+  [Sync]
+  IteratorSeekToLast(uint64 iterator_id)
+      => (bool valid, DatabaseError status, array<uint8>? key,
+          array<uint8>? value);
+  [Sync]
+  IteratorSeek(uint64 iterator_id, array<uint8> target)
+      => (bool valid, DatabaseError status, array<uint8>? key,
+          array<uint8>? value);
+
+  // Moves forward or backwards in iterator space.
+  [Sync]
+  IteratorNext(uint64 iterator_id)
+      => (bool valid, DatabaseError status, array<uint8>? key,
+          array<uint8>? value);
+  [Sync]
+  IteratorPrev(uint64 iterator_id)
+      => (bool valid, DatabaseError status, array<uint8>? key,
+          array<uint8>? value);
 };

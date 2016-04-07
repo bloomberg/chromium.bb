@@ -19,10 +19,10 @@ using mojo::Capture;
 namespace leveldb {
 namespace {
 
-class LevelDBApptest : public mojo::test::ShellTest {
+class LevelDBServiceTest : public mojo::test::ShellTest {
  public:
-  LevelDBApptest() : ShellTest("exe:leveldb_service_unittests") {}
-  ~LevelDBApptest() override {}
+  LevelDBServiceTest() : ShellTest("exe:leveldb_service_unittests") {}
+  ~LevelDBServiceTest() override {}
 
  protected:
   // Overridden from mojo::test::ApplicationTestBase:
@@ -55,10 +55,10 @@ class LevelDBApptest : public mojo::test::ShellTest {
   filesystem::FileSystemPtr files_;
   LevelDBServicePtr leveldb_;
 
-  DISALLOW_COPY_AND_ASSIGN(LevelDBApptest);
+  DISALLOW_COPY_AND_ASSIGN(LevelDBServiceTest);
 };
 
-TEST_F(LevelDBApptest, Basic) {
+TEST_F(LevelDBServiceTest, Basic) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
@@ -103,7 +103,7 @@ TEST_F(LevelDBApptest, Basic) {
   EXPECT_EQ("", value.To<std::string>());
 }
 
-TEST_F(LevelDBApptest, WriteBatch) {
+TEST_F(LevelDBServiceTest, WriteBatch) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
@@ -156,7 +156,7 @@ TEST_F(LevelDBApptest, WriteBatch) {
   EXPECT_EQ("more", value.To<std::string>());
 }
 
-TEST_F(LevelDBApptest, Reconnect) {
+TEST_F(LevelDBServiceTest, Reconnect) {
   DatabaseError error;
 
   {
@@ -202,7 +202,7 @@ TEST_F(LevelDBApptest, Reconnect) {
   }
 }
 
-TEST_F(LevelDBApptest, GetSnapshotSimple) {
+TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
   DatabaseError error;
 
   filesystem::DirectoryPtr directory;
@@ -220,7 +220,7 @@ TEST_F(LevelDBApptest, GetSnapshotSimple) {
   EXPECT_NE(static_cast<uint64_t>(0), snapshot_id);
 }
 
-TEST_F(LevelDBApptest, GetFromSnapshots) {
+TEST_F(LevelDBServiceTest, GetFromSnapshots) {
   DatabaseError error;
 
   filesystem::DirectoryPtr directory;
@@ -274,7 +274,7 @@ TEST_F(LevelDBApptest, GetFromSnapshots) {
   EXPECT_EQ("value", value.To<std::string>());
 }
 
-TEST_F(LevelDBApptest, InvalidArgumentOnInvalidSnapshot) {
+TEST_F(LevelDBServiceTest, InvalidArgumentOnInvalidSnapshot) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
@@ -297,7 +297,7 @@ TEST_F(LevelDBApptest, InvalidArgumentOnInvalidSnapshot) {
   EXPECT_EQ(DatabaseError::INVALID_ARGUMENT, error);
 }
 
-TEST_F(LevelDBApptest, MemoryDBReadWrite) {
+TEST_F(LevelDBServiceTest, MemoryDBReadWrite) {
   LevelDBDatabasePtr database;
   DatabaseError error = DatabaseError::INVALID_ARGUMENT;
   leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));

@@ -1,0 +1,146 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <map>
+
+#include "base/macros.h"
+#include "components/leveldb/public/cpp/remote_iterator.h"
+#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "mojo/common/common_type_converters.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/public/cpp/shell_test.h"
+#include "mojo/util/capture_util.h"
+
+using mojo::Capture;
+
+namespace leveldb {
+namespace {
+
+class RemoteIteratorTest : public mojo::test::ShellTest {
+ public:
+  RemoteIteratorTest() : ShellTest("exe:leveldb_service_unittests") {}
+  ~RemoteIteratorTest() override {}
+
+ protected:
+  // Overridden from mojo::test::ApplicationTestBase:
+  void SetUp() override {
+    ShellTest::SetUp();
+    connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
+
+    DatabaseError error;
+    leveldb()->OpenInMemory(GetProxy(&database_), Capture(&error));
+    ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+    EXPECT_EQ(DatabaseError::OK, error);
+
+    std::map<std::string, std::string> data{
+        {"a", "first"}, {"b:suffix", "second"}, {"c", "third"}};
+
+    for (auto p : data) {
+      // Write a key to the database.
+      error = DatabaseError::INVALID_ARGUMENT;
+      database_->Put(mojo::Array<uint8_t>::From(p.first),
+                     mojo::Array<uint8_t>::From(p.second), Capture(&error));
+      ASSERT_TRUE(database_.WaitForIncomingResponse());
+      EXPECT_EQ(DatabaseError::OK, error);
+    }
+  }
+
+  void TearDown() override {
+    leveldb_.reset();
+    ShellTest::TearDown();
+  }
+
+  LevelDBServicePtr& leveldb() { return leveldb_; }
+  LevelDBDatabasePtr& database() { return database_; }
+
+ private:
+  LevelDBServicePtr leveldb_;
+  LevelDBDatabasePtr database_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoteIteratorTest);
+};
+
+TEST_F(RemoteIteratorTest, Seeking) {
+  uint64_t iterator_id = 0;
+  database()->NewIterator(Capture(&iterator_id));
+  ASSERT_TRUE(database().WaitForIncomingResponse());
+  EXPECT_NE(0u, iterator_id);
+
+  RemoteIterator it(database().get(), iterator_id);
+  EXPECT_FALSE(it.Valid());
+
+  it.SeekToFirst();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("a", it.key());
+  EXPECT_EQ("first", it.value());
+
+  it.SeekToLast();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("c", it.key());
+  EXPECT_EQ("third", it.value());
+
+  it.Seek("b");
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("b:suffix", it.key());
+  EXPECT_EQ("second", it.value());
+}
+
+TEST_F(RemoteIteratorTest, Next) {
+  uint64_t iterator_id = 0;
+  database()->NewIterator(Capture(&iterator_id));
+  ASSERT_TRUE(database().WaitForIncomingResponse());
+  EXPECT_NE(0u, iterator_id);
+
+  RemoteIterator it(database().get(), iterator_id);
+  EXPECT_FALSE(it.Valid());
+
+  it.SeekToFirst();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("a", it.key());
+  EXPECT_EQ("first", it.value());
+
+  it.Next();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("b:suffix", it.key());
+  EXPECT_EQ("second", it.value());
+
+  it.Next();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("c", it.key());
+  EXPECT_EQ("third", it.value());
+
+  it.Next();
+  EXPECT_FALSE(it.Valid());
+}
+
+TEST_F(RemoteIteratorTest, Prev) {
+  uint64_t iterator_id = 0;
+  database()->NewIterator(Capture(&iterator_id));
+  ASSERT_TRUE(database().WaitForIncomingResponse());
+  EXPECT_NE(0u, iterator_id);
+
+  RemoteIterator it(database().get(), iterator_id);
+  EXPECT_FALSE(it.Valid());
+
+  it.SeekToLast();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("c", it.key());
+  EXPECT_EQ("third", it.value());
+
+  it.Prev();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("b:suffix", it.key());
+  EXPECT_EQ("second", it.value());
+
+  it.Prev();
+  EXPECT_TRUE(it.Valid());
+  EXPECT_EQ("a", it.key());
+  EXPECT_EQ("first", it.value());
+
+  it.Prev();
+  EXPECT_FALSE(it.Valid());
+}
+
+}  // namespace
+}  // namespace leveldb

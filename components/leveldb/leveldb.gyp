@@ -26,13 +26,29 @@
         'leveldb_mojo_proxy.h',
         'leveldb_service_impl.cc',
         'leveldb_service_impl.h',
-        'util.cc',
-        'util.h',
+      ],
+      'dependencies': [
+        'leveldb_public_lib',
+        '../../components/filesystem/filesystem.gyp:filesystem_lib',
+        '../../mojo/mojo_base.gyp:mojo_application_base',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+      ]
+    },
+    {
+      # GN version: //components/leveldb/public/cpp:cpp
+      'target_name': 'leveldb_public_lib',
+      'type': 'static_library',
+      'sources': [
+        'public/cpp/remote_iterator.cc',
+        'public/cpp/remote_iterator.h',
+        'public/cpp/util.cc',
+        'public/cpp/util.h',
       ],
       'dependencies': [
         'leveldb_bindings_mojom',
-        '../../components/filesystem/filesystem.gyp:filesystem_lib',
         '../../mojo/mojo_base.gyp:mojo_application_base',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ]
