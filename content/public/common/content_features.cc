@@ -39,6 +39,13 @@ const base::Feature kExperimentalFramework{"ExperimentalFramework",
 const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// FeatureList definition for trials to enable the download button on
+// MediaDocument.
+const base::Feature kMediaDocumentDownloadButton{
+    "MediaDocumentDownloadButton",
+    base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
 // See https://crbug.com/558829
 const base::Feature kNonValidatingReloadOnRefreshContent{

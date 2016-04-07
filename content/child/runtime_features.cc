@@ -188,6 +188,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kDocumentWriteEvaluator))
     WebRuntimeFeatures::enableDocumentWriteEvaluator(true);
 
+  WebRuntimeFeatures::enableMediaDocumentDownloadButton(
+      base::FeatureList::IsEnabled(features::kMediaDocumentDownloadButton));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

@@ -105,6 +105,7 @@ struct WebLocalizedString {
         DateFormatMonthLabel,
         DateFormatYearLabel,
         DetailsLabel,
+        DownloadButtonLabel,
         FileButtonChooseFileLabel,
         FileButtonChooseMultipleFilesLabel,
         FileButtonNoFileSelectedLabel,

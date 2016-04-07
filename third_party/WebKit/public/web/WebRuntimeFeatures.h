@@ -79,6 +79,7 @@ public:
     BLINK_EXPORT static void enableFileSystem(bool);
     BLINK_EXPORT static void enableImageColorProfiles(bool);
     BLINK_EXPORT static void enableMediaCapture(bool);
+    BLINK_EXPORT static void enableMediaDocumentDownloadButton(bool);
     BLINK_EXPORT static void enableNavigatorContentUtils(bool);
     BLINK_EXPORT static void enableNetworkInformation(bool);
     BLINK_EXPORT static void enableNewMediaPlaybackUi(bool);

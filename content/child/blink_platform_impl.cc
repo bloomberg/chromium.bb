@@ -225,6 +225,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_DATE_FORMAT_YEAR;
     case WebLocalizedString::DetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
+    case WebLocalizedString::DownloadButtonLabel:
+      return IDS_DOWNLOAD_BUTTON_LABEL;
     case WebLocalizedString::FileButtonChooseFileLabel:
       return IDS_FORM_FILE_BUTTON_LABEL;
     case WebLocalizedString::FileButtonChooseMultipleFilesLabel:

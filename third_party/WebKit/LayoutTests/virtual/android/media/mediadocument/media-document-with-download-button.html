@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../../../resources/run-after-layout-and-paint.js"></script>
+<script>
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+
+    function frameLoaded()
+    {
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+</script>
+<p>
+    This tests that in a standalone media document with audio content, a download button is positioned below the
+    media element.
+</p>
+<iframe src="../../../../media/content/silence.wav" id="fr" width=380 height=330 onload="frameLoaded()"></iframe>

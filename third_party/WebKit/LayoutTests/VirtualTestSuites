@@ -98,6 +98,11 @@
              "--disable-composited-antialiasing"]
   },
   {
+    "prefix": "android",
+    "base": "media/mediadocument",
+    "args": ["--enable-features=MediaDocumentDownloadButton"]
+  },
+  {
     "prefix": "stable",
     "base": "fast/css3-text/css3-text-decoration/stable",
     "args": ["--stable-release-mode"]

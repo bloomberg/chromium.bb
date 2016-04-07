@@ -3341,6 +3341,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.MediaDocument.DownloadButton"
+    enum="MediaDocumentDownloadButtonType">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Records how the download button on the MediaDocument is used.
+  </summary>
+</histogram>
+
 <histogram name="Blink.MediaElement.Autoplay" enum="MediaElementAutoPlay">
   <owner>oysteine@chromium.org</owner>
   <summary>
@@ -75818,6 +75826,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Fullscreen"/>
   <int value="2" label="No scripts allowed"/>
   <int value="3" label="Not shown"/>
+</enum>
+
+<enum name="MediaDocumentDownloadButtonType" type="int">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Clicked"/>
 </enum>
 
 <enum name="MediaElementAutoPlay" type="int">

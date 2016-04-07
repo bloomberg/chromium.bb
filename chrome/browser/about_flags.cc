@@ -776,6 +776,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_NAME,
      IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSystemDownloadManager)},
+    {"enable-media-document-download-button",
+     IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_NAME,
+     IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kMediaDocumentDownloadButton)},
 #endif
 #if defined(OS_CHROMEOS)
     {"download-notification", IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME,

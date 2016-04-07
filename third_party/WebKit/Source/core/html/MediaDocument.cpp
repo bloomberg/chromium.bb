@@ -29,22 +29,45 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/Event.h"
+#include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLContentElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLSourceElement.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace blink {
 
 using namespace HTMLNames;
+
+// Enums used for UMA histogram.
+enum MediaDocumentDownloadButtonValue {
+    MediaDocumentDownloadButtonShown,
+    MediaDocumentDownloadButtonClicked,
+    // Only append new enums here.
+    MediaDocumentDownloadButtonMax
+};
+
+void recordDownloadMetric(MediaDocumentDownloadButtonValue value)
+{
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, mediaDocumentDownloadButtonHistogram, ("Blink.MediaDocument.DownloadButton", MediaDocumentDownloadButtonMax));
+    mediaDocumentDownloadButtonHistogram.count(value);
+}
 
 // FIXME: Share more code with PluginDocumentParser.
 class MediaDocumentParser : public RawDataDocumentParser {
@@ -66,6 +89,36 @@ private:
     void createDocumentStructure();
 
     bool m_didBuildDocumentStructure;
+};
+
+class MediaDownloadEventListener final : public EventListener {
+public:
+    static RawPtr<MediaDownloadEventListener> create()
+    {
+        return new MediaDownloadEventListener();
+    }
+
+    bool operator==(const EventListener& other) const override
+    {
+        return this == &other;
+    }
+
+private:
+    MediaDownloadEventListener()
+        : EventListener(CPPEventListenerType)
+        , m_clicked(false)
+    {
+    }
+
+    void handleEvent(ExecutionContext* context, Event* event) override
+    {
+        if (!m_clicked) {
+            recordDownloadMetric(MediaDocumentDownloadButtonClicked);
+            m_clicked = true;
+        }
+    }
+
+    bool m_clicked;
 };
 
 void MediaDocumentParser::createDocumentStructure()
@@ -100,8 +153,63 @@ void MediaDocumentParser::createDocumentStructure()
     media->appendChild(source.release());
 
     RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
-    body->appendChild(media.release());
+    body->setAttribute(styleAttr, "margin: 0px;");
 
+    RawPtr<HTMLDivElement> div = HTMLDivElement::create(*document());
+    // Style sheets for media controls are lazily loaded until a media element is encountered.
+    // As a result, elements encountered before the media element will not get the right
+    // style at first if we put the styles in mediacontrols.css. To solve this issue, set the
+    // styles inline so that they will be applied when the page loads.
+    // See w3c example on how to centering an element: https://www.w3.org/Style/Examples/007/center.en.html
+    div->setAttribute(styleAttr,
+        "display: flex;"
+        "flex-direction: column;"
+        "justify-content: center;"
+        "align-items: center;"
+        "min-height: min-content;"
+        "height: 100%;");
+    RawPtr<HTMLContentElement> content = HTMLContentElement::create(*document());
+    div->appendChild(content.release());
+
+    if (RuntimeEnabledFeatures::mediaDocumentDownloadButtonEnabled()) {
+        RawPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(*document());
+        anchor->setAttribute(downloadAttr, "");
+        anchor->setURL(document()->url());
+        anchor->setTextContent(document()->getCachedLocale(document()->contentLanguage()).queryString(WebLocalizedString::DownloadButtonLabel).upper());
+        // Using CSS style according to Android material design.
+        anchor->setAttribute(styleAttr,
+            "display: inline-block;"
+            "margin-top: 32px;"
+            "padding: 0 16px 0 16px;"
+            "height: 36px;"
+            "background: #4285F4;"
+            "font-family: Roboto;"
+            "font-size: 14px;"
+            "border-radius: 5px;"
+            "color: white;"
+            "font-weight: bold;"
+            "text-decoration: none;"
+            "min-width: 300px;"
+            "line-height: 36px;");
+        RawPtr<EventListener> listener = MediaDownloadEventListener::create();
+        anchor->addEventListener(EventTypeNames::click, listener, false);
+        RawPtr<HTMLDivElement> buttonContainer = HTMLDivElement::create(*document());
+        buttonContainer->setAttribute(styleAttr,
+            "position: absolute;"
+            "text-align: center;"
+            "left: 0;"
+            "right: 0;");
+        buttonContainer->appendChild(anchor.release());
+        div->appendChild(buttonContainer.release());
+        recordDownloadMetric(MediaDocumentDownloadButtonShown);
+    }
+
+    // According to https://html.spec.whatwg.org/multipage/browsers.html#read-media,
+    // MediaDocument should have a single child which is the video element. Use
+    // shadow root to hide all the elements we added here.
+    ShadowRoot& shadowRoot = body->ensureUserAgentShadowRoot();
+    shadowRoot.appendChild(div.release());
+    body->appendChild(media.release());
     rootElement->appendChild(head.release());
     rootElement->appendChild(body.release());
 

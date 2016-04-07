@@ -118,6 +118,7 @@ MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=test
 MediaConstraints status=experimental
 MediaDevices status=stable
+MediaDocumentDownloadButton
 MediaRecorder status=stable
 MediaSession
 MediaSourceExperimental status=experimental

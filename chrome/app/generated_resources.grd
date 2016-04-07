@@ -5684,6 +5684,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_DESCRIPTION" desc="Description for the flag to use system download manager.">
           Allow downloads to be handled by the system download manager when applicable.
         </message>
+        <message name="IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_NAME" desc="Title for the flag to enable the download button on MediaDocument.">
+          Download button when opening a page with media url.
+        </message>
+        <message name="IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_DESCRIPTION" desc="Description for the flag to enable download button on MediaDocument.">
+          Allow a download button to show up when opening a page with media url.
+        </message>
       </if>
       <message name="IDS_FLAGS_DOWNLOAD_RESUMPTION_NAME" desc="Title for the flag to enable the download resume feature.">
         Download Resumption

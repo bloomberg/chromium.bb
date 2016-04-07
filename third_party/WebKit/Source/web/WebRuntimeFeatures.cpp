@@ -150,6 +150,11 @@ void WebRuntimeFeatures::enableMediaCapture(bool enable)
     RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableMediaDocumentDownloadButton(bool enable)
+{
+    RuntimeEnabledFeatures::setMediaDocumentDownloadButtonEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableNotificationActionIcons(bool enable)
 {
     RuntimeEnabledFeatures::setNotificationActionIconsEnabled(enable);
