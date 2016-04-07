@@ -49,6 +49,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -765,6 +766,37 @@ void bind_subcompositor(wl_client* client,
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_surface_interface:
 
+class ShellSurfaceSizeObserver : public views::WidgetObserver {
+ public:
+  ShellSurfaceSizeObserver(wl_resource* shell_surface_resource,
+                           const gfx::Size& initial_size)
+      : shell_surface_resource_(shell_surface_resource),
+        old_size_(initial_size) {
+    wl_shell_surface_send_configure(shell_surface_resource,
+                                    WL_SHELL_SURFACE_RESIZE_NONE,
+                                    old_size_.width(), old_size_.height());
+  }
+
+  // Overridden from view::WidgetObserver:
+  void OnWidgetDestroyed(views::Widget* widget) override { delete this; }
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override {
+    if (old_size_ == new_bounds.size())
+      return;
+
+    wl_shell_surface_send_configure(shell_surface_resource_,
+                                    WL_SHELL_SURFACE_RESIZE_NONE,
+                                    new_bounds.width(), new_bounds.height());
+    old_size_ = new_bounds.size();
+  }
+
+ private:
+  wl_resource* shell_surface_resource_;
+  gfx::Size old_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceSizeObserver);
+};
+
 void shell_surface_pong(wl_client* client,
                         wl_resource* resource,
                         uint32_t serial) {
@@ -804,13 +836,16 @@ void shell_surface_set_fullscreen(wl_client* client,
                                   uint32_t method,
                                   uint32_t framerate,
                                   wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
-  gfx::Rect bounds = GetUserDataAs<ShellSurface>(resource)
-                         ->GetWidget()
-                         ->GetWindowBoundsInScreen();
-  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
-                                  bounds.width(), bounds.height());
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  if (shell_surface->enabled())
+    return;
+
+  shell_surface->SetEnabled(true);
+  shell_surface->SetFullscreen(true);
+
+  views::Widget* widget = shell_surface->GetWidget();
+  widget->AddObserver(new ShellSurfaceSizeObserver(
+      resource, widget->GetWindowBoundsInScreen().size()));
 }
 
 void shell_surface_set_popup(wl_client* client,
@@ -827,13 +862,16 @@ void shell_surface_set_popup(wl_client* client,
 void shell_surface_set_maximized(wl_client* client,
                                  wl_resource* resource,
                                  wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
-  GetUserDataAs<ShellSurface>(resource)->Maximize();
-  gfx::Rect bounds = GetUserDataAs<ShellSurface>(resource)
-                         ->GetWidget()
-                         ->GetWindowBoundsInScreen();
-  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
-                                  bounds.width(), bounds.height());
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  if (shell_surface->enabled())
+    return;
+
+  shell_surface->SetEnabled(true);
+  shell_surface->Maximize();
+
+  views::Widget* widget = shell_surface->GetWidget();
+  widget->AddObserver(new ShellSurfaceSizeObserver(
+      resource, widget->GetWindowBoundsInScreen().size()));
 }
 
 void shell_surface_set_title(wl_client* client,
