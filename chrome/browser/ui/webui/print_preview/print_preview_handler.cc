@@ -1360,8 +1360,8 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
 
 void PrintPreviewHandler::SendCloudPrintJob(const base::RefCountedBytes* data) {
   // BASE64 encode the job data.
-  std::string raw_data(reinterpret_cast<const char*>(data->front()),
-                       data->size());
+  const base::StringPiece raw_data(reinterpret_cast<const char*>(data->front()),
+                                   data->size());
   std::string base64_data;
   base::Base64Encode(raw_data, &base64_data);
   base::StringValue data_value(base64_data);

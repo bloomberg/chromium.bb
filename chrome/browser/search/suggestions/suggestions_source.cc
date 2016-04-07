@@ -205,8 +205,10 @@ void SuggestionsSource::OnThumbnailAvailable(RequestContext* context,
     gfx::PNGCodec::EncodeBGRASkBitmap(*bitmap, false, &output);
 
     std::string encoded_output;
-    base::Base64Encode(std::string(output.begin(), output.end()),
-                       &encoded_output);
+    base::Base64Encode(
+        base::StringPiece(reinterpret_cast<const char*>(output.data()),
+                          output.size()),
+        &encoded_output);
     context->base64_encoded_pngs[url] = "data:image/png;base64,";
     context->base64_encoded_pngs[url] += encoded_output;
   }

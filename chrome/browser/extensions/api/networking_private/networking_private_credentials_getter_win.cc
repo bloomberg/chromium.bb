@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
@@ -89,8 +90,10 @@ void CredentialsGetterHostClient::OnGotCredentials(const std::string& key_data,
     }
 
     std::string base64_encoded_key_data;
-    base::Base64Encode(std::string(ciphertext.begin(), ciphertext.end()),
-                       &base64_encoded_key_data);
+    base::Base64Encode(
+        base::StringPiece(reinterpret_cast<const char*>(ciphertext.data()),
+                          ciphertext.size()),
+        &base64_encoded_key_data);
     callback_.Run(base64_encoded_key_data, "");
   } else {
     callback_.Run("", "Get Credentials Failed");

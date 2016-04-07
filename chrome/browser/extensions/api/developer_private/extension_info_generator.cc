@@ -590,7 +590,7 @@ std::string ExtensionInfoGenerator::GetIconUrlFromImage(
   }
 
   std::string base_64;
-  base::Base64Encode(std::string(data->front_as<char>(), data->size()),
+  base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
                      &base_64);
   const char kDataUrlPrefix[] = "data:image/png;base64,";
   return GURL(kDataUrlPrefix + base_64).spec();

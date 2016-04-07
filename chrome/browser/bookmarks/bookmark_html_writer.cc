@@ -272,8 +272,9 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
       if (itr != favicons_map_->end()) {
         scoped_refptr<base::RefCountedMemory> data(itr->second.get());
         std::string favicon_base64_encoded;
-        base::Base64Encode(std::string(data->front_as<char>(), data->size()),
-                           &favicon_base64_encoded);
+        base::Base64Encode(
+            base::StringPiece(data->front_as<char>(), data->size()),
+            &favicon_base64_encoded);
         GURL favicon_url("data:image/png;base64," + favicon_base64_encoded);
         favicon_string = favicon_url.spec();
       }

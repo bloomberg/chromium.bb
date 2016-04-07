@@ -82,8 +82,10 @@ std::string DoVerifyAndEncryptData(
   }
 
   std::string base64_encoded_ciphertext;
-  base::Base64Encode(std::string(ciphertext.begin(), ciphertext.end()),
-                     &base64_encoded_ciphertext);
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(ciphertext.data()),
+                        ciphertext.size()),
+      &base64_encoded_ciphertext);
   return base64_encoded_ciphertext;
 }
 

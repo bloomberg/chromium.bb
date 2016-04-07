@@ -146,8 +146,9 @@ void ThumbnailListSource::OnMostVisitedURLsAvailable(
   for (size_t i = 0; i < num_mv; ++i) {
     scoped_refptr<base::RefCountedMemory> data;
     if (thumbnail_service_->GetPageThumbnail(mvurl_list[i].url, false, &data)) {
-      base::Base64Encode(std::string(data->front_as<char>(), data->size()),
-                         &base64_encoded_pngs[i]);
+      base::Base64Encode(
+          base::StringPiece(data->front_as<char>(), data->size()),
+          &base64_encoded_pngs[i]);
       ++num_mv_with_thumb;
     }
   }

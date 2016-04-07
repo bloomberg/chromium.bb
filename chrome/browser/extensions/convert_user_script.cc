@@ -82,7 +82,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   char raw[crypto::kSHA256Length] = {0};
   std::string key;
   crypto::SHA256HashString(script_name, raw, crypto::kSHA256Length);
-  base::Base64Encode(std::string(raw, crypto::kSHA256Length), &key);
+  base::Base64Encode(base::StringPiece(raw, crypto::kSHA256Length), &key);
 
   // The script may not have a name field, but we need one for an extension. If
   // it is missing, use the filename of the original URL.
