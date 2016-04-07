@@ -53,7 +53,7 @@ struct gbm_driver
 		uint32_t format;
 		enum gbm_bo_flags usage;
 	}
-	format_list[16];
+	format_list[18];
 };
 
 #endif

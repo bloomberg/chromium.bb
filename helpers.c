@@ -25,6 +25,9 @@ size_t gbm_num_planes_from_format(uint32_t format)
 	switch(format)
 	{
 		case GBM_FORMAT_C8:
+		case GBM_FORMAT_R8:
+		case GBM_FORMAT_RG88:
+		case GBM_FORMAT_GR88:
 		case GBM_FORMAT_RGB332:
 		case GBM_FORMAT_BGR233:
 		case GBM_FORMAT_XRGB4444:
@@ -87,6 +90,7 @@ int gbm_bpp_from_format(uint32_t format)
 	switch(format)
 	{
 		case GBM_FORMAT_C8:
+		case GBM_FORMAT_R8:
 		case GBM_FORMAT_RGB332:
 		case GBM_FORMAT_BGR233:
 			return 8;
@@ -94,6 +98,8 @@ int gbm_bpp_from_format(uint32_t format)
 		case GBM_FORMAT_NV12:
 			return 12;
 
+		case GBM_FORMAT_RG88:
+		case GBM_FORMAT_GR88:
 		case GBM_FORMAT_XRGB4444:
 		case GBM_FORMAT_XBGR4444:
 		case GBM_FORMAT_RGBX4444:
