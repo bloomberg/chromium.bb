@@ -551,7 +551,7 @@ public:
     uint32_t compositorMutableProperties() const;
 
     // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
-    // the element is inDocument() and the context is an isolated world.
+    // the element is inShadowIncludingDocument() and the context is an isolated world.
     void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1);
     void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2);
     void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2, const QualifiedName& attr3);
@@ -849,8 +849,8 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 {
     ASSERT(!childNeedsStyleInvalidation());
     ASSERT(!needsStyleInvalidation());
-    ASSERT(insertionPoint->inDocument() || insertionPoint->isInShadowTree() || isContainerNode());
-    if (insertionPoint->inDocument()) {
+    ASSERT(insertionPoint->inShadowIncludingDocument() || insertionPoint->isInShadowTree() || isContainerNode());
+    if (insertionPoint->inShadowIncludingDocument()) {
         setFlag(InDocumentFlag);
         insertionPoint->document().incrementNodeCount();
     }
@@ -863,8 +863,8 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 
 inline void Node::removedFrom(ContainerNode* insertionPoint)
 {
-    ASSERT(insertionPoint->inDocument() || isContainerNode() || isInShadowTree());
-    if (insertionPoint->inDocument()) {
+    ASSERT(insertionPoint->inShadowIncludingDocument() || isContainerNode() || isInShadowTree());
+    if (insertionPoint->inShadowIncludingDocument()) {
         clearFlag(InDocumentFlag);
         insertionPoint->document().decrementNodeCount();
     }

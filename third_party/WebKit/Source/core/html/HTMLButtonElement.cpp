@@ -101,7 +101,7 @@ void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicSt
         else
             m_type = SUBMIT;
         setNeedsWillValidateCheck();
-        if (formOwner() && inDocument())
+        if (formOwner() && inShadowIncludingDocument())
             formOwner()->invalidateDefaultButtonStyle();
     } else {
         if (name == formactionAttr)

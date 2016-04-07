@@ -164,7 +164,7 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
 {
     ASSERT(styleSheetCandidateNode);
     TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
-    if (styleSheetCandidateNode->inDocument())
+    if (styleSheetCandidateNode->inShadowIncludingDocument())
         markTreeScopeDirty(*treeScope);
 
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
@@ -188,7 +188,7 @@ void StyleEngine::setNeedsActiveStyleUpdate(StyleSheet* sheet, StyleResolverUpda
 
     if (sheet && document().isActive()) {
         Node* node = sheet->ownerNode();
-        if (node && node->inDocument()) {
+        if (node && node->inShadowIncludingDocument()) {
             TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
             ASSERT(isStyleElement(*node) || node->treeScope() == m_document);
             markTreeScopeDirty(treeScope);
@@ -200,7 +200,7 @@ void StyleEngine::setNeedsActiveStyleUpdate(StyleSheet* sheet, StyleResolverUpda
 
 void StyleEngine::addStyleSheetCandidateNode(Node* node)
 {
-    if (!node->inDocument() || document().isDetached())
+    if (!node->inShadowIncludingDocument() || document().isDetached())
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
@@ -237,7 +237,7 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope
 
 void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
 {
-    if (!node->inDocument())
+    if (!node->inShadowIncludingDocument())
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;

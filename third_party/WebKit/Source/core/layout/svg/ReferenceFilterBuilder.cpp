@@ -102,7 +102,7 @@ Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect
     FloatRect referenceBox;
     if (referenceBoxSize) {
         referenceBox = FloatRect(FloatPoint(), *referenceBoxSize);
-    } else if (element->inDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
+    } else if (element->inShadowIncludingDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
         FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
         referenceBox = FloatRect(FloatPoint(), size);
     }

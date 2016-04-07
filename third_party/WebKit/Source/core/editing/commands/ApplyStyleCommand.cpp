@@ -789,7 +789,7 @@ public:
 
     bool startAndEndAreStillInDocument()
     {
-        return start && end && start->inDocument() && end->inDocument();
+        return start && end && start->inShadowIncludingDocument() && end->inShadowIncludingDocument();
     }
 
     DEFINE_INLINE_TRACE()
@@ -936,7 +936,7 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style,
 {
     ASSERT(runStart && runEnd);
     RawPtr<Node> next = runStart;
-    for (RawPtr<Node> node = next; node && node->inDocument() && node != pastEndNode; node = next) {
+    for (RawPtr<Node> node = next; node && node->inShadowIncludingDocument() && node != pastEndNode; node = next) {
         if (editingIgnoresContent(node.get())) {
             ASSERT(!node->contains(pastEndNode.get()));
             next = NodeTraversal::nextSkippingChildren(*node);
@@ -953,7 +953,7 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style,
         removeInlineStyleFromElement(style, &element, editingState, RemoveAlways);
         if (editingState->isAborted())
             return;
-        if (!element.inDocument()) {
+        if (!element.inShadowIncludingDocument()) {
             // FIXME: We might need to update the start and the end of current selection here but need a test.
             if (runStart == element)
                 runStart = previousSibling ? previousSibling->nextSibling() : parent->firstChild();
@@ -985,7 +985,7 @@ bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, RawPtr
     if (editingState->isAborted())
         return false;
 
-    if (!element->inDocument())
+    if (!element->inShadowIncludingDocument())
         return removed;
 
     // If the node was converted to a span, the span may still contain relevant
@@ -1180,8 +1180,8 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
-    ASSERT(start.inDocument());
-    ASSERT(end.inDocument());
+    ASSERT(start.inShadowIncludingDocument());
+    ASSERT(end.inShadowIncludingDocument());
     ASSERT(Position::commonAncestorTreeScope(start, end));
     ASSERT(comparePositions(start, end) <= 0);
     // FIXME: We should assert that start/end are not in the middle of a text node.
@@ -1244,7 +1244,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
             removeInlineStyleFromElement(style, elem.get(), editingState, RemoveIfNeeded, styleToPushDown.get());
             if (editingState->isAborted())
                 return;
-            if (!elem->inDocument()) {
+            if (!elem->inShadowIncludingDocument()) {
                 if (s.anchorNode() == elem) {
                     // Since elem must have been fully selected, and it is at the start
                     // of the selection, it is clear we can set the new s offset to 0.
@@ -1516,7 +1516,7 @@ void ApplyStyleCommand::addBlockStyle(const StyleChange& styleChange, HTMLElemen
 
 void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, RawPtr<Node> passedStart, RawPtr<Node> passedEnd, EditingState* editingState)
 {
-    if (!passedStart || !passedEnd || !passedStart->inDocument() || !passedEnd->inDocument())
+    if (!passedStart || !passedEnd || !passedStart->inShadowIncludingDocument() || !passedEnd->inShadowIncludingDocument())
         return;
 
     RawPtr<Node> start = passedStart;
@@ -1552,8 +1552,8 @@ void ApplyStyleCommand::applyInlineStyleChange(RawPtr<Node> passedStart, RawPtr<
 {
     RawPtr<Node> startNode = passedStart;
     RawPtr<Node> endNode = passedEnd;
-    ASSERT(startNode->inDocument());
-    ASSERT(endNode->inDocument());
+    ASSERT(startNode->inShadowIncludingDocument());
+    ASSERT(endNode->inShadowIncludingDocument());
 
     // Find appropriate font and span elements top-down.
     HTMLFontElement* fontContainer = nullptr;

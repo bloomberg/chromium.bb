@@ -1179,7 +1179,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
     if (!document().styleResolver())
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
 
-    if (inDocument()) {
+    if (inShadowIncludingDocument()) {
         if (AXObjectCache* cache = document().existingAXObjectCache())
             cache->handleAttributeChanged(name, this);
     }
@@ -1330,7 +1330,7 @@ void Element::stripScriptingAttributes(Vector<Attribute>& attributeVector) const
 
 void Element::parserSetAttributes(const Vector<Attribute>& attributeVector)
 {
-    ASSERT(!inDocument());
+    ASSERT(!inShadowIncludingDocument());
     ASSERT(!parentNode());
     ASSERT(!m_elementData);
 
@@ -1400,7 +1400,7 @@ LayoutObject* Element::createLayoutObject(const ComputedStyle& style)
 
 Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertionPoint)
 {
-    // need to do superclass processing first so inDocument() is true
+    // need to do superclass processing first so inShadowIncludingDocument() is true
     // by the time we reach updateId
     ContainerNode::insertedInto(insertionPoint);
 
@@ -1419,7 +1419,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
             rareData->intersectionObserverData()->activateValidIntersectionObservers(*this);
     }
 
-    if (isUpgradedCustomElement() && inDocument())
+    if (isUpgradedCustomElement() && inShadowIncludingDocument())
         CustomElement::didAttach(this, document());
 
     TreeScope& scope = insertionPoint->treeScope();
@@ -1442,7 +1442,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
 
 void Element::removedFrom(ContainerNode* insertionPoint)
 {
-    bool wasInDocument = insertionPoint->inDocument();
+    bool wasInDocument = insertionPoint->inShadowIncludingDocument();
 
     ASSERT(!hasRareData() || !elementRareData()->hasPseudoElements());
 
@@ -2350,7 +2350,7 @@ bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
 
 void Element::focus(const FocusParams& params)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
 
     if (document().focusedElement() == this)
@@ -2465,7 +2465,7 @@ bool Element::isFocusable() const
     // Style cannot be cleared out for non-active documents, so in that case the
     // needsLayoutTreeUpdateForNode check is invalid.
     ASSERT(!document().isActive() || !document().needsLayoutTreeUpdateForNode(*this));
-    return inDocument() && supportsFocus() && !isInert() && layoutObjectIsFocusable();
+    return inShadowIncludingDocument() && supportsFocus() && !isInert() && layoutObjectIsFocusable();
 }
 
 bool Element::isKeyboardFocusable() const
@@ -2649,7 +2649,7 @@ void Element::setPointerCapture(int pointerId, ExceptionState& exceptionState)
     if (document().frame()) {
         if (!document().frame()->eventHandler().isPointerEventActive(pointerId))
             exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
-        else if (!inDocument())
+        else if (!inShadowIncludingDocument())
             exceptionState.throwDOMException(InvalidStateError, "InvalidStateError");
         // TODO(crbug.com/579553): This next "else if" is a hack to notify JS that we don't (yet) support
         // explicit set/release of touch pointers (which are implicitly captured for performance reasons).
@@ -3120,7 +3120,7 @@ bool Element::hasNamedNodeMap() const
 
 inline void Element::updateName(const AtomicString& oldName, const AtomicString& newName)
 {
-    if (!inDocument() || isInShadowTree())
+    if (!inShadowIncludingDocument() || isInShadowTree())
         return;
 
     if (oldName == newName)
@@ -3618,7 +3618,7 @@ bool Element::supportsStyleSharing() const
 
 void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
     V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
     if (!activityLogger)
@@ -3631,7 +3631,7 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], co
 
 void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
     V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
     if (!activityLogger)
@@ -3645,7 +3645,7 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], co
 
 void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2, const QualifiedName& attr3)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
     V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
     if (!activityLogger)
@@ -3660,7 +3660,7 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(const char element[], co
 
 void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attributeName, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
     V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
     if (!activityLogger)

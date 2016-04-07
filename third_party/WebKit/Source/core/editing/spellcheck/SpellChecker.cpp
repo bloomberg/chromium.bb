@@ -804,7 +804,7 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
             && closeTyping
             && !isSelectionInTextField(oldSelection)
             && (isSelectionInTextArea(oldSelection) || oldSelection.isContentEditable())
-            && oldSelection.start().inDocument()) {
+            && oldSelection.start().inShadowIncludingDocument()) {
             spellCheckOldSelection(oldSelection, newAdjacentWords);
         }
     }

@@ -558,7 +558,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
             }
         }
 
-        if (m_downstreamEnd.anchorNode() != startNode && !m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode()) && m_downstreamEnd.inDocument() && m_downstreamEnd.computeEditingOffset() >= caretMinOffset(m_downstreamEnd.anchorNode())) {
+        if (m_downstreamEnd.anchorNode() != startNode && !m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode()) && m_downstreamEnd.inShadowIncludingDocument() && m_downstreamEnd.computeEditingOffset() >= caretMinOffset(m_downstreamEnd.anchorNode())) {
             if (m_downstreamEnd.atLastEditingPositionForNode() && !canHaveChildrenForEditing(m_downstreamEnd.anchorNode())) {
                 // The node itself is fully selected, not just its contents.  Delete it.
                 removeNode(m_downstreamEnd.anchorNode(), editingState);
@@ -575,7 +575,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
                 // know how many children to remove.
                 // FIXME: Make m_upstreamStart a position we update as we remove content, then we can
                 // always know which children to remove.
-                } else if (!(startNodeWasDescendantOfEndNode && !m_upstreamStart.inDocument())) {
+                } else if (!(startNodeWasDescendantOfEndNode && !m_upstreamStart.inShadowIncludingDocument())) {
                     int offset = 0;
                     if (m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode())) {
                         Node* n = m_upstreamStart.anchorNode();
@@ -633,7 +633,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
     ASSERT(!m_pruneStartBlockIfNecessary);
 
     // FIXME: Deletion should adjust selection endpoints as it removes nodes so that we never get into this state (4099839).
-    if (!m_downstreamEnd.inDocument() || !m_upstreamStart.inDocument())
+    if (!m_downstreamEnd.inShadowIncludingDocument() || !m_upstreamStart.inShadowIncludingDocument())
         return;
 
     // FIXME: The deletion algorithm shouldn't let this happen.
@@ -718,7 +718,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
 
 void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState* editingState)
 {
-    if (m_endTableRow && m_endTableRow->inDocument() && m_endTableRow != m_startTableRow) {
+    if (m_endTableRow && m_endTableRow->inShadowIncludingDocument() && m_endTableRow != m_startTableRow) {
         Node* row = m_endTableRow->previousSibling();
         while (row && row != m_startTableRow) {
             RawPtr<Node> previousRow = row->previousSibling();
@@ -735,7 +735,7 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState
     }
 
     // Remove empty rows after the start row.
-    if (m_startTableRow && m_startTableRow->inDocument() && m_startTableRow != m_endTableRow) {
+    if (m_startTableRow && m_startTableRow->inShadowIncludingDocument() && m_startTableRow != m_endTableRow) {
         Node* row = m_startTableRow->nextSibling();
         while (row && row != m_endTableRow) {
             RawPtr<Node> nextRow = row->nextSibling();
@@ -748,7 +748,7 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState
         }
     }
 
-    if (m_endTableRow && m_endTableRow->inDocument() && m_endTableRow != m_startTableRow) {
+    if (m_endTableRow && m_endTableRow->inShadowIncludingDocument() && m_endTableRow != m_startTableRow) {
         if (isTableRowEmpty(m_endTableRow.get())) {
             // Don't remove m_endTableRow if it's where we're putting the ending
             // selection.
@@ -916,7 +916,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         }
         // handleGeneralDelete cause DOM mutation events so |m_endingPosition|
         // can be out of document.
-        if (m_endingPosition.inDocument()) {
+        if (m_endingPosition.inShadowIncludingDocument()) {
             insertNodeAt(placeholder.get(), m_endingPosition, editingState);
             if (editingState->isAborted())
                 return;

@@ -95,7 +95,7 @@ void ScriptLoader::didNotifySubtreeInsertionsToDocument()
 
 void ScriptLoader::childrenChanged()
 {
-    if (!m_parserInserted && m_element->inDocument())
+    if (!m_parserInserted && m_element->inShadowIncludingDocument())
         prepareScript(); // FIXME: Provide a real starting line number here.
 }
 
@@ -208,7 +208,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
     if (!client->hasSourceAttribute() && !m_element->hasChildren())
         return false;
 
-    if (!m_element->inDocument())
+    if (!m_element->inShadowIncludingDocument())
         return false;
 
     if (!isScriptTypeSupported(supportLegacyTypes))
@@ -287,7 +287,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
     ASSERT(m_element);
 
     RawPtr<Document> elementDocument(m_element->document());
-    if (!m_element->inDocument() || m_element->document() != elementDocument)
+    if (!m_element->inShadowIncludingDocument() || m_element->document() != elementDocument)
         return false;
 
     ASSERT(!m_resource);
@@ -484,7 +484,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
 bool ScriptLoader::ignoresLoadRequest() const
 {
-    return m_alreadyStarted || m_isExternalScript || m_parserInserted || !element() || !element()->inDocument();
+    return m_alreadyStarted || m_isExternalScript || m_parserInserted || !element() || !element()->inShadowIncludingDocument();
 }
 
 bool ScriptLoader::isScriptForEventSupported() const

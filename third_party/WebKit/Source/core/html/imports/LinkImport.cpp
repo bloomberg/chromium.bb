@@ -62,7 +62,7 @@ LinkImport::~LinkImport()
 
 Document* LinkImport::importedDocument() const
 {
-    if (!m_child || !m_owner || !m_owner->inDocument())
+    if (!m_child || !m_owner || !m_owner->inShadowIncludingDocument())
         return nullptr;
     if (m_child->loader()->hasError())
         return nullptr;
@@ -101,7 +101,7 @@ void LinkImport::process()
 
 void LinkImport::didFinish()
 {
-    if (!m_owner || !m_owner->inDocument())
+    if (!m_owner || !m_owner->inShadowIncludingDocument())
         return;
     m_owner->scheduleEvent();
 }

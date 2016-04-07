@@ -534,7 +534,7 @@ void HTMLInputElement::updateType()
     addToRadioButtonGroup();
 
     setNeedsValidityCheck();
-    if ((couldBeSuccessfulSubmitButton || canBeSuccessfulSubmitButton()) && formOwner() && inDocument())
+    if ((couldBeSuccessfulSubmitButton || canBeSuccessfulSubmitButton()) && formOwner() && inShadowIncludingDocument())
         formOwner()->invalidateDefaultButtonStyle();
     notifyFormStateChanged();
 }
@@ -910,7 +910,7 @@ bool HTMLInputElement::isTextField() const
 
 void HTMLInputElement::dispatchChangeEventIfNeeded()
 {
-    if (inDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged())
+    if (inShadowIncludingDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged())
         dispatchChangeEvent();
 }
 
@@ -949,7 +949,7 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
     // unchecked to match other browsers. DOM is not a useful standard for this
     // because it says only to fire change events at "lose focus" time, which is
     // definitely wrong in practice for these types of elements.
-    if (eventBehavior != DispatchNoEvent && inDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged()) {
+    if (eventBehavior != DispatchNoEvent && inShadowIncludingDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged()) {
         setTextAsOfLastFormControlChangeEvent(String());
         if (eventBehavior == DispatchInputAndChangeEvent)
             dispatchFormControlInputEvent();
@@ -1526,7 +1526,7 @@ void HTMLInputElement::didChangeForm()
 Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLTextFormControlElement::insertedInto(insertionPoint);
-    if (insertionPoint->inDocument() && !form())
+    if (insertionPoint->inShadowIncludingDocument() && !form())
         addToRadioButtonGroup();
     resetListAttributeTargetObserver();
     logAddElementIfIsolatedWorldAndInDocument("input", typeAttr, formactionAttr);
@@ -1536,10 +1536,10 @@ Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode*
 void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
 {
     m_inputTypeView->closePopupView();
-    if (insertionPoint->inDocument() && !form())
+    if (insertionPoint->inShadowIncludingDocument() && !form())
         removeFromRadioButtonGroup();
     HTMLTextFormControlElement::removedFrom(insertionPoint);
-    ASSERT(!inDocument());
+    ASSERT(!inShadowIncludingDocument());
     resetListAttributeTargetObserver();
 }
 
@@ -1632,7 +1632,7 @@ void HTMLInputElement::setListAttributeTargetObserver(RawPtr<ListAttributeTarget
 
 void HTMLInputElement::resetListAttributeTargetObserver()
 {
-    if (inDocument())
+    if (inShadowIncludingDocument())
         setListAttributeTargetObserver(ListAttributeTargetObserver::create(fastGetAttribute(listAttr), this));
     else
         setListAttributeTargetObserver(nullptr);
@@ -1764,7 +1764,7 @@ RadioButtonGroupScope* HTMLInputElement::radioButtonGroupScope() const
         return nullptr;
     if (HTMLFormElement* formElement = form())
         return &formElement->radioButtonGroupScope();
-    if (inDocument())
+    if (inShadowIncludingDocument())
         return &treeScope().radioButtonGroupScope();
     return nullptr;
 }

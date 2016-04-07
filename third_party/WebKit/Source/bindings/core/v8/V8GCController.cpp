@@ -78,7 +78,7 @@ static void addReferencesForNodeWithEventListeners(v8::Isolate* isolate, Node* n
 Node* V8GCController::opaqueRootForGC(v8::Isolate*, Node* node)
 {
     ASSERT(node);
-    if (node->inDocument()) {
+    if (node->inShadowIncludingDocument()) {
         Document& document = node->document();
         if (HTMLImportsController* controller = document.importsController())
             return controller->master();

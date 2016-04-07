@@ -91,7 +91,7 @@ void SVGFEImageElement::fetchImageResource()
 void SVGFEImageElement::buildPendingResource()
 {
     clearResourceReferences();
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
 
     AtomicString id;
@@ -139,13 +139,13 @@ Node::InsertionNotificationRequest SVGFEImageElement::insertedInto(ContainerNode
 void SVGFEImageElement::removedFrom(ContainerNode* rootParent)
 {
     SVGFilterPrimitiveStandardAttributes::removedFrom(rootParent);
-    if (rootParent->inDocument())
+    if (rootParent->inShadowIncludingDocument())
         clearResourceReferences();
 }
 
 void SVGFEImageElement::notifyFinished(Resource*)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
 
     Element* parent = parentElement();

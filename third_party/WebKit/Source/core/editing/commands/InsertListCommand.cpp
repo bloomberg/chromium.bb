@@ -175,7 +175,7 @@ void InsertListCommand::doApply(EditingState* editingState)
                 // infinite loop and because there is no more work to be done.
                 // FIXME(<rdar://problem/5983974>): The endingSelection() may be incorrect here.  Compute
                 // the new location of endOfSelection and use it as the end of the new selection.
-                if (!startOfLastParagraph.deepEquivalent().inDocument())
+                if (!startOfLastParagraph.deepEquivalent().inShadowIncludingDocument())
                     return;
                 setEndingSelection(startOfCurrentParagraph);
 
@@ -288,7 +288,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             // Manually remove listNode because moveParagraphWithClones sometimes leaves it behind in the document.
             // See the bug 33668 and editing/execCommand/insert-list-orphaned-item-with-nested-lists.html.
             // FIXME: This might be a bug in moveParagraphWithClones or deleteSelection.
-            if (listElement && listElement->inDocument()) {
+            if (listElement && listElement->inShadowIncludingDocument()) {
                 removeNode(listElement, editingState);
                 if (editingState->isAborted())
                     return false;

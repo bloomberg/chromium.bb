@@ -180,7 +180,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
     ASSERT(startPosition.computeContainerNode());
     Position positionBeforeStartNode(positionInParentBeforeNode(*startPosition.computeContainerNode()));
     deleteInsignificantText(startPosition, mostForwardCaretPosition(startPosition));
-    if (!startPosition.inDocument())
+    if (!startPosition.inShadowIncludingDocument())
         startPosition = positionBeforeStartNode;
     if (!isVisuallyEquivalentCandidate(startPosition))
         startPosition = mostForwardCaretPosition(startPosition);

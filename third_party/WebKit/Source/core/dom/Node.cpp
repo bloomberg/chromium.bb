@@ -618,7 +618,7 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 
 Node& Node::shadowIncludingRoot() const
 {
-    if (inDocument())
+    if (inShadowIncludingDocument())
         return document();
     Node* root = const_cast<Node*>(this);
     while (Node* host = root->shadowHost())
@@ -639,7 +639,7 @@ bool Node::needsDistributionRecalc() const
 void Node::updateDistribution()
 {
     // Extra early out to avoid spamming traces.
-    if (inDocument() && !document().childNeedsDistributionRecalc())
+    if (inShadowIncludingDocument() && !document().childNeedsDistributionRecalc())
         return;
     TRACE_EVENT0("blink", "Node::updateDistribution");
     ScriptForbiddenScope forbidScript;
@@ -694,7 +694,7 @@ void Node::markAncestorsWithChildNeedsStyleInvalidation()
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
 {
     ScriptForbiddenScope forbidScriptDuringRawIteration;
-    if (RuntimeEnabledFeatures::shadowDOMV1Enabled() && inDocument() && !document().childNeedsDistributionRecalc()) {
+    if (RuntimeEnabledFeatures::shadowDOMV1Enabled() && inShadowIncludingDocument() && !document().childNeedsDistributionRecalc()) {
         // TODO(hayato): Support a non-document composed tree.
         // TODO(hayato): Enqueue a task only if a 'slotchange' event listner is registered in the document composed tree.
         Microtask::enqueueMicrotask(WTF::bind(&Document::updateDistribution, RawPtr<Document>(&document())));
@@ -752,7 +752,7 @@ void Node::clearNeedsStyleRecalc()
 
 bool Node::inActiveDocument() const
 {
-    return inDocument() && document().isActive();
+    return inShadowIncludingDocument() && document().isActive();
 }
 
 Node* Node::focusDelegate()
@@ -796,7 +796,7 @@ void Node::clearNodeLists()
 bool Node::isDescendantOf(const Node *other) const
 {
     // Return true if other is an ancestor of this, otherwise false
-    if (!other || !other->hasChildren() || inDocument() != other->inDocument())
+    if (!other || !other->hasChildren() || inShadowIncludingDocument() != other->inShadowIncludingDocument())
         return false;
     if (other->treeScope() != treeScope())
         return false;
@@ -827,7 +827,7 @@ bool Node::isShadowIncludingInclusiveAncestorOf(const Node* node) const
     if (document() != node->document())
         return false;
 
-    if (inDocument() != node->inDocument())
+    if (inShadowIncludingDocument() != node->inShadowIncludingDocument())
         return false;
 
     bool hasChildren = isContainerNode() && toContainerNode(this)->hasChildren();
@@ -1416,8 +1416,8 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
 
     // If one node is in the document and the other is not, we must be disconnected.
     // If the nodes have different owning documents, they must be disconnected.  Note that we avoid
-    // comparing Attr nodes here, since they return false from inDocument() all the time (which seems like a bug).
-    if (start1->inDocument() != start2->inDocument() || (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())) {
+    // comparing Attr nodes here, since they return false from inShadowIncludingDocument() all the time (which seems like a bug).
+    if (start1->inShadowIncludingDocument() != start2->inShadowIncludingDocument() || (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())) {
         unsigned short direction = (this > otherNode) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
     }

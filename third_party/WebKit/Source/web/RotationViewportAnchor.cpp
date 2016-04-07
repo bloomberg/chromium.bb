@@ -192,7 +192,7 @@ void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint
 
 FloatPoint RotationViewportAnchor::getInnerOrigin(const FloatSize& innerSize) const
 {
-    if (!m_anchorNode || !m_anchorNode->inDocument())
+    if (!m_anchorNode || !m_anchorNode->inShadowIncludingDocument())
         return m_visualViewportInDocument;
 
     const LayoutRect currentNodeBounds = m_anchorNode->boundingBox();

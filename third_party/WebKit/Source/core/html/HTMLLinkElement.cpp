@@ -166,7 +166,7 @@ HTMLLinkElement::~HTMLLinkElement()
     m_sizes->setObserver(nullptr);
     m_relList->setObserver(nullptr);
     m_link.clear();
-    if (inDocument())
+    if (inShadowIncludingDocument())
         document().styleEngine().removeStyleSheetCandidateNode(this);
     linkLoadEventSender().cancelEvent(this);
 #endif
@@ -212,7 +212,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
 
 bool HTMLLinkElement::shouldLoadLink()
 {
-    return inDocument();
+    return inShadowIncludingDocument();
 }
 
 bool HTMLLinkElement::loadLink(const String& type, const String& as, const String& media, const KURL& url)
@@ -222,7 +222,7 @@ bool HTMLLinkElement::loadLink(const String& type, const String& as, const Strin
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()
 {
-    bool visible = inDocument() && !m_isInShadowTree;
+    bool visible = inShadowIncludingDocument() && !m_isInShadowTree;
     if (!visible) {
         ASSERT(!linkStyle() || !linkStyle()->hasSheet());
         return nullptr;
@@ -280,7 +280,7 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
 {
     HTMLElement::insertedInto(insertionPoint);
     logAddElementIfIsolatedWorldAndInDocument("link", relAttr, hrefAttr);
-    if (!insertionPoint->inDocument())
+    if (!insertionPoint->inShadowIncludingDocument())
         return InsertionDone;
 
     m_isInShadowTree = isInShadowTree();
@@ -303,7 +303,7 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
 void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement::removedFrom(insertionPoint);
-    if (!insertionPoint->inDocument())
+    if (!insertionPoint->inShadowIncludingDocument())
         return;
 
     m_linkLoader->released();
@@ -514,7 +514,7 @@ enum StyleSheetCacheStatus {
 
 void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* cachedStyleSheet)
 {
-    if (!m_owner->inDocument()) {
+    if (!m_owner->inShadowIncludingDocument()) {
         ASSERT(!m_sheet);
         return;
     }

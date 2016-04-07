@@ -196,7 +196,7 @@ void IntersectionObserver::unobserve(Element* target)
 
 void IntersectionObserver::computeIntersectionObservations()
 {
-    if (!m_root || !m_root->inDocument())
+    if (!m_root || !m_root->inShadowIncludingDocument())
         return;
     Document* callbackDocument = toDocument(m_callback->getExecutionContext());
     if (!callbackDocument)

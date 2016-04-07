@@ -532,17 +532,17 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 #endif
 
     for (unsigned i = 0; i < animationsToApplySize; ++i) {
-        if (animationsToApply[i]->inDocument() && animationsToApply[i]->isSVGDiscardElement()) {
+        if (animationsToApply[i]->inShadowIncludingDocument() && animationsToApply[i]->isSVGDiscardElement()) {
             SVGSMILElement* animDiscard = animationsToApply[i];
             SVGElement* targetElement = animDiscard->targetElement();
-            if (targetElement && targetElement->inDocument()) {
+            if (targetElement && targetElement->inShadowIncludingDocument()) {
                 targetElement->remove(IGNORE_EXCEPTION);
-                ASSERT(!targetElement->inDocument());
+                ASSERT(!targetElement->inShadowIncludingDocument());
             }
 
-            if (animDiscard->inDocument()) {
+            if (animDiscard->inShadowIncludingDocument()) {
                 animDiscard->remove(IGNORE_EXCEPTION);
-                ASSERT(!animDiscard->inDocument());
+                ASSERT(!animDiscard->inShadowIncludingDocument());
             }
         }
     }

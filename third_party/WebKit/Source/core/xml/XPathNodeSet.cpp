@@ -199,7 +199,7 @@ static Node* findRootNode(Node* node)
 {
     if (node->isAttributeNode())
         node = toAttr(node)->ownerElement();
-    if (node->inDocument()) {
+    if (node->inShadowIncludingDocument()) {
         node = &node->document();
     } else {
         while (Node* parent = node->parentNode())

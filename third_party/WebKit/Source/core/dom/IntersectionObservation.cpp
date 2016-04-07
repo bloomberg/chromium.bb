@@ -151,7 +151,7 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
     // the IntersectionObservation alive).  During that interval, we need to check that m_target
     // hasn't been cleared.
     Element* targetElement = target();
-    if (!targetElement || !targetElement->inDocument())
+    if (!targetElement || !targetElement->inShadowIncludingDocument())
         return false;
     LayoutObject* targetLayoutObject = targetElement->layoutObject();
     ASSERT(m_observer);

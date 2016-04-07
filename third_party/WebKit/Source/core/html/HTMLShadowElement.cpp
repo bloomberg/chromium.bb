@@ -68,7 +68,7 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
 
 Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
+    if (insertionPoint->inShadowIncludingDocument()) {
         // Warn if trying to reproject between user agent and author shadows.
         ShadowRoot* root = containingShadowRoot();
         if (root && root->olderShadowRoot() && root->type() != root->olderShadowRoot()->type()) {

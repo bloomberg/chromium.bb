@@ -120,7 +120,7 @@ bool SVGTextPathElement::layoutObjectIsNeeded(const ComputedStyle& style)
 void SVGTextPathElement::buildPendingResource()
 {
     clearResourceReferences();
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
 
     AtomicString id;
@@ -154,7 +154,7 @@ Node::InsertionNotificationRequest SVGTextPathElement::insertedInto(ContainerNod
 void SVGTextPathElement::removedFrom(ContainerNode* rootParent)
 {
     SVGTextContentElement::removedFrom(rootParent);
-    if (rootParent->inDocument())
+    if (rootParent->inShadowIncludingDocument())
         clearResourceReferences();
 }
 

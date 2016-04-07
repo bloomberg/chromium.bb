@@ -52,9 +52,9 @@ SpellCheckRequest::SpellCheckRequest(
     , m_requestNumber(requestNumber)
 {
     ASSERT(m_checkingRange);
-    ASSERT(m_checkingRange->inDocument());
+    ASSERT(m_checkingRange->inShadowIncludingDocument());
     ASSERT(m_paragraphRange);
-    ASSERT(m_paragraphRange->inDocument());
+    ASSERT(m_paragraphRange->inShadowIncludingDocument());
     ASSERT(m_rootEditableElement);
 }
 
@@ -117,7 +117,7 @@ const TextCheckingRequestData& SpellCheckRequest::data() const
 
 bool SpellCheckRequest::isValid() const
 {
-    return m_checkingRange->inDocument() && m_paragraphRange->inDocument() && m_rootEditableElement->inDocument();
+    return m_checkingRange->inShadowIncludingDocument() && m_paragraphRange->inShadowIncludingDocument() && m_rootEditableElement->inShadowIncludingDocument();
 }
 
 void SpellCheckRequest::didSucceed(const Vector<TextCheckingResult>& results)

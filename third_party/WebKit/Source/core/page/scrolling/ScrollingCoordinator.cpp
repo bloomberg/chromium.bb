@@ -797,7 +797,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
     for (const auto& eventTarget : *targets) {
         EventTarget* target = eventTarget.key;
         Node* node = target->toNode();
-        if (!node || !node->inDocument())
+        if (!node || !node->inShadowIncludingDocument())
             continue;
 
         // If the document belongs to an invisible subframe it does not have a composited layer

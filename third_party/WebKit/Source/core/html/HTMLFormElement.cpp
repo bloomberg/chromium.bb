@@ -149,7 +149,7 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
 {
     HTMLElement::insertedInto(insertionPoint);
     logAddElementIfIsolatedWorldAndInDocument("form", methodAttr, actionAttr);
-    if (insertionPoint->inDocument())
+    if (insertionPoint->inShadowIncludingDocument())
         this->document().didAssociateFormControl(this);
     return InsertionDone;
 }
@@ -605,7 +605,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
     Node* scope = mutableThis;
     if (m_hasElementsAssociatedByParser)
         scope = &NodeTraversal::highestAncestorOrSelf(*mutableThis);
-    if (inDocument() && m_hasElementsAssociatedByFormAttribute)
+    if (inShadowIncludingDocument() && m_hasElementsAssociatedByFormAttribute)
         scope = &treeScope().rootNode();
     ASSERT(scope);
     collectAssociatedElements(*scope, mutableThis->m_associatedElements);

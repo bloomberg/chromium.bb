@@ -155,11 +155,11 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         // indentIntoBlockquote could move more than one paragraph if the paragraph
         // is in a list item or a table. As a result, endAfterSelection could refer to a position
         // no longer in the document.
-        if (endAfterSelection.isNotNull() && !endAfterSelection.deepEquivalent().inDocument())
+        if (endAfterSelection.isNotNull() && !endAfterSelection.deepEquivalent().inShadowIncludingDocument())
             break;
         // Sanity check: Make sure our moveParagraph calls didn't remove endOfNextParagraph.deepEquivalent().anchorNode()
         // If somehow, e.g. mutation event handler, we did, return to prevent crashes.
-        if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().inDocument())
+        if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().inShadowIncludingDocument())
             return;
         endOfCurrentParagraph = endOfNextParagraph;
     }

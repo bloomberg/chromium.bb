@@ -278,7 +278,7 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(Containe
     fieldSetAncestorsSetNeedsValidityCheck(insertionPoint);
 
     // Trigger for elements outside of forms.
-    if (!formOwner() && insertionPoint->inDocument())
+    if (!formOwner() && insertionPoint->inShadowIncludingDocument())
         document().didAssociateFormControl(this);
 
     return InsertionDone;
@@ -309,7 +309,7 @@ void HTMLFormControlElement::didChangeForm()
 {
     FormAssociatedElement::didChangeForm();
     formOwnerSetNeedsValidityCheck();
-    if (formOwner() && inDocument() && canBeSuccessfulSubmitButton())
+    if (formOwner() && inShadowIncludingDocument() && canBeSuccessfulSubmitButton())
         formOwner()->invalidateDefaultButtonStyle();
 }
 
@@ -544,7 +544,7 @@ bool HTMLFormControlElement::checkValidity(HeapVector<Member<HTMLFormControlElem
     RawPtr<HTMLFormControlElement> protector(this);
     RawPtr<Document> originalDocument(document());
     DispatchEventResult dispatchResult = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
-    if (dispatchResult == DispatchEventResult::NotCanceled && unhandledInvalidControls && inDocument() && originalDocument == document())
+    if (dispatchResult == DispatchEventResult::NotCanceled && unhandledInvalidControls && inShadowIncludingDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
     return false;
 }

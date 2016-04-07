@@ -279,7 +279,7 @@ bool FlatTreeTraversal::isDescendantOf(const Node& node, const Node& other)
 {
     assertPrecondition(node);
     assertPrecondition(other);
-    if (!hasChildren(other) || node.inDocument() != other.inDocument())
+    if (!hasChildren(other) || node.inShadowIncludingDocument() != other.inShadowIncludingDocument())
         return false;
     for (const ContainerNode* n = traverseParent(node); n; n = traverseParent(*n)) {
         if (n == other)

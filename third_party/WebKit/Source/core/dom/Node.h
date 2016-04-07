@@ -476,9 +476,9 @@ public:
 
     bool inActiveDocument() const;
 
-    // Returns true if this node is associated with a document and is in its associated document's
+    // Returns true if this node is associated with a shadow-including document and is in its associated document's
     // node tree, false otherwise.
-    bool inDocument() const
+    bool inShadowIncludingDocument() const
     {
         return getFlag(InDocumentFlag);
     }
@@ -571,7 +571,7 @@ public:
     // dispatching.
     //
     // WebKit notifies this callback regardless if the subtree of the node is a document tree or a floating subtree.
-    // Implementation can determine the type of subtree by seeing insertionPoint->inDocument().
+    // Implementation can determine the type of subtree by seeing insertionPoint->inShadowIncludingDocument().
     // For a performance reason, notifications are delivered only to ContainerNode subclasses if the insertionPoint is out of document.
     //
     // There are another callback named didNotifySubtreeInsertionsToDocument(), which is called after all the descendant is notified,

@@ -117,10 +117,10 @@ void Range::dispose()
 #endif
 }
 
-bool Range::inDocument() const
+bool Range::inShadowIncludingDocument() const
 {
-    ASSERT(m_start.inDocument() == m_end.inDocument());
-    return m_start.inDocument();
+    ASSERT(m_start.inShadowIncludingDocument() == m_end.inShadowIncludingDocument());
+    return m_start.inShadowIncludingDocument();
 }
 
 void Range::setDocument(Document& document)

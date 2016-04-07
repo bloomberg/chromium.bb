@@ -402,7 +402,7 @@ void DOMSelection::addRange(Range* newRange)
     if (!m_frame)
         return;
 
-    if (!newRange->inDocument()) {
+    if (!newRange->inShadowIncludingDocument()) {
         addConsoleError("The given range isn't in document.");
         return;
     }

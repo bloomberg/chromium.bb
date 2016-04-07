@@ -89,13 +89,13 @@ void HTMLMapElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             if (document().isHTMLDocument())
                 return;
         }
-        if (inDocument())
+        if (inShadowIncludingDocument())
             treeScope().removeImageMap(this);
         String mapName = value;
         if (mapName[0] == '#')
             mapName = mapName.substring(1);
         m_name = AtomicString(document().isHTMLDocument() ? mapName.lower() : mapName);
-        if (inDocument())
+        if (inShadowIncludingDocument())
             treeScope().addImageMap(this);
 
         return;
@@ -111,14 +111,14 @@ RawPtr<HTMLCollection> HTMLMapElement::areas()
 
 Node::InsertionNotificationRequest HTMLMapElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument())
+    if (insertionPoint->inShadowIncludingDocument())
         treeScope().addImageMap(this);
     return HTMLElement::insertedInto(insertionPoint);
 }
 
 void HTMLMapElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument())
+    if (insertionPoint->inShadowIncludingDocument())
         treeScope().removeImageMap(this);
     HTMLElement::removedFrom(insertionPoint);
 }

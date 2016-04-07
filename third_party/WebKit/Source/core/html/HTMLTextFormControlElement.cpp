@@ -73,7 +73,7 @@ HTMLTextFormControlElement::~HTMLTextFormControlElement()
 Node::InsertionNotificationRequest HTMLTextFormControlElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLFormControlElementWithState::insertedInto(insertionPoint);
-    if (!insertionPoint->inDocument())
+    if (!insertionPoint->inShadowIncludingDocument())
         return InsertionDone;
     String initialValue = value();
     setTextAsOfLastFormControlChangeEvent(initialValue.isNull() ? emptyString() : initialValue);
@@ -353,7 +353,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     start = std::min(std::max(start, 0), end);
     cacheSelection(start, end, direction);
 
-    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this) || !inDocument()) {
+    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this) || !inShadowIncludingDocument()) {
         if (eventBehaviour == DispatchSelectEvent)
             scheduleSelectEvent();
         return;

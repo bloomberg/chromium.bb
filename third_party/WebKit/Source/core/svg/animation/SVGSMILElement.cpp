@@ -232,7 +232,7 @@ void SVGSMILElement::buildPendingResource()
 {
     clearResourceAndEventBaseReferences();
 
-    if (!inDocument()) {
+    if (!inShadowIncludingDocument()) {
         // Reset the target element if we are no longer in the document.
         setTargetElement(nullptr);
         return;
@@ -247,7 +247,7 @@ void SVGSMILElement::buildPendingResource()
         target = SVGURIReference::targetElementFromIRIString(href, treeScope(), &id);
     SVGElement* svgTarget = target && target->isSVGElement() ? toSVGElement(target) : nullptr;
 
-    if (svgTarget && !svgTarget->inDocument())
+    if (svgTarget && !svgTarget->inShadowIncludingDocument())
         svgTarget = nullptr;
 
     if (svgTarget != targetElement())
@@ -323,7 +323,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
 {
     SVGElement::insertedInto(rootParent);
 
-    if (!rootParent->inDocument())
+    if (!rootParent->inShadowIncludingDocument())
         return InsertionDone;
 
     Deprecation::countDeprecation(document(), UseCounter::SVGSMILElementInDocument);
@@ -354,7 +354,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
 
 void SVGSMILElement::removedFrom(ContainerNode* rootParent)
 {
-    if (rootParent->inDocument()) {
+    if (rootParent->inShadowIncludingDocument()) {
         clearResourceAndEventBaseReferences();
         clearConditions();
         setTargetElement(nullptr);
@@ -527,7 +527,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             parseBeginOrEnd(fastGetAttribute(SVGNames::endAttr), End);
         }
         parseBeginOrEnd(value.getString(), Begin);
-        if (inDocument())
+        if (inShadowIncludingDocument())
             connectSyncBaseConditions();
     } else if (name == SVGNames::endAttr) {
         if (!m_conditions.isEmpty()) {
@@ -535,7 +535,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             parseBeginOrEnd(fastGetAttribute(SVGNames::beginAttr), Begin);
         }
         parseBeginOrEnd(value.getString(), End);
-        if (inDocument())
+        if (inShadowIncludingDocument())
             connectSyncBaseConditions();
     } else if (name == SVGNames::onbeginAttr) {
         setAttributeEventListener(EventTypeNames::beginEvent, createAttributeEventListener(this, name, value, eventParameterName()));
@@ -569,7 +569,7 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
         if (m_targetElement)
             clearAnimatedType();
     } else if (attrName == SVGNames::beginAttr || attrName == SVGNames::endAttr) {
-        if (inDocument()) {
+        if (inShadowIncludingDocument()) {
             connectEventBaseConditions();
             if (attrName == SVGNames::beginAttr)
                 beginListChanged(elapsed());

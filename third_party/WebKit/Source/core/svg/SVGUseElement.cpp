@@ -122,7 +122,7 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
 {
     // This functions exists to assure assumptions made in the code regarding SVGElementInstance creation/destruction are satisfied.
     SVGGraphicsElement::insertedInto(rootParent);
-    if (!rootParent->inDocument())
+    if (!rootParent->inShadowIncludingDocument())
         return InsertionDone;
     ASSERT(!m_targetElementInstance || !isWellFormedDocument(&document()));
     ASSERT(!hasPendingResources() || !isWellFormedDocument(&document()));
@@ -133,7 +133,7 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
 void SVGUseElement::removedFrom(ContainerNode* rootParent)
 {
     SVGGraphicsElement::removedFrom(rootParent);
-    if (rootParent->inDocument()) {
+    if (rootParent->inShadowIncludingDocument()) {
         clearShadowTree();
         cancelShadowTreeRecreation();
     }
@@ -320,7 +320,7 @@ void SVGUseElement::buildPendingResource()
         return;
     clearShadowTree();
     cancelShadowTreeRecreation();
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
     Document* externalDocument = this->externalDocument();
     if (isStructurallyExternal() && !externalDocument)
@@ -328,7 +328,7 @@ void SVGUseElement::buildPendingResource()
 
     AtomicString id;
     Element* target = targetElementFromIRIString(hrefString(), treeScope(), &id, externalDocument);
-    if (!target || !target->inDocument()) {
+    if (!target || !target->inShadowIncludingDocument()) {
         // If we can't find the target of an external element, just give up.
         // We can't observe if the target somewhen enters the external document, nor should we do it.
         if (externalDocument)
@@ -369,7 +369,7 @@ static void associateCorrespondingElements(SVGElement& targetRoot, SVGElement& i
 // case).
 static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
 {
-    ASSERT(!subtree.inDocument());
+    ASSERT(!subtree.inShadowIncludingDocument());
     Element* element = ElementTraversal::firstWithin(subtree);
     while (element) {
         if (isDisallowedElement(*element)) {
@@ -652,7 +652,7 @@ void SVGUseElement::invalidateDependentShadowTrees()
     instances.appendRange(rawInstances.begin(), rawInstances.end());
     for (auto& instance : instances) {
         if (SVGUseElement* element = instance->correspondingUseElement()) {
-            ASSERT(element->inDocument());
+            ASSERT(element->inShadowIncludingDocument());
             element->invalidateShadowTree();
         }
     }
@@ -705,7 +705,7 @@ void SVGUseElement::dispatchPendingEvent(SVGUseEventSender* eventSender)
 void SVGUseElement::notifyFinished(Resource* resource)
 {
     ASSERT(m_resource == resource);
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
 
     invalidateShadowTree();

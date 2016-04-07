@@ -38,7 +38,7 @@ DEFINE_NODE_FACTORY(SVGTitleElement)
 Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* rootParent)
 {
     SVGElement::insertedInto(rootParent);
-    if (!rootParent->inDocument())
+    if (!rootParent->inShadowIncludingDocument())
         return InsertionDone;
     if (hasChildren() && document().isSVGDocument())
         document().setTitleElement(this);
@@ -48,14 +48,14 @@ Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* 
 void SVGTitleElement::removedFrom(ContainerNode* rootParent)
 {
     SVGElement::removedFrom(rootParent);
-    if (rootParent->inDocument() && document().isSVGDocument())
+    if (rootParent->inShadowIncludingDocument() && document().isSVGDocument())
         document().removeTitle(this);
 }
 
 void SVGTitleElement::childrenChanged(const ChildrenChange& change)
 {
     SVGElement::childrenChanged(change);
-    if (inDocument() && document().isSVGDocument() && !m_ignoreTitleUpdatesWhenChildrenChange)
+    if (inShadowIncludingDocument() && document().isSVGDocument() && !m_ignoreTitleUpdatesWhenChildrenChange)
         document().setTitleElement(this);
 }
 

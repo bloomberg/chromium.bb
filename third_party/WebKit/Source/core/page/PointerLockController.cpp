@@ -47,7 +47,7 @@ RawPtr<PointerLockController> PointerLockController::create(Page* page)
 
 void PointerLockController::requestPointerLock(Element* target)
 {
-    if (!target || !target->inDocument() || m_documentOfRemovedElementWhileWaitingForUnlock) {
+    if (!target || !target->inShadowIncludingDocument() || m_documentOfRemovedElementWhileWaitingForUnlock) {
         enqueueEvent(EventTypeNames::pointerlockerror, target);
         return;
     }

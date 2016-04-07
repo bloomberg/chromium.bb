@@ -60,9 +60,9 @@ ProcessingInstruction::~ProcessingInstruction()
         clearSheet();
 
     // FIXME: ProcessingInstruction should not be in document here.
-    // However, if we add ASSERT(!inDocument()), fast/xsl/xslt-entity.xml
+    // However, if we add ASSERT(!inShadowIncludingDocument()), fast/xsl/xslt-entity.xml
     // crashes. We need to investigate ProcessingInstruction lifetime.
-    if (inDocument() && m_isCSS)
+    if (inShadowIncludingDocument() && m_isCSS)
         document().styleEngine().removeStyleSheetCandidateNode(this);
     clearEventListenerForXSLT();
 #endif
@@ -203,7 +203,7 @@ bool ProcessingInstruction::sheetLoaded()
 
 void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet)
 {
-    if (!inDocument()) {
+    if (!inShadowIncludingDocument()) {
         ASSERT(!m_sheet);
         return;
     }
@@ -228,7 +228,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
 
 void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
 {
-    if (!inDocument()) {
+    if (!inShadowIncludingDocument()) {
         ASSERT(!m_sheet);
         return;
     }
@@ -259,7 +259,7 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
 Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(ContainerNode* insertionPoint)
 {
     CharacterData::insertedInto(insertionPoint);
-    if (!insertionPoint->inDocument())
+    if (!insertionPoint->inShadowIncludingDocument())
         return InsertionDone;
 
     String href;
@@ -275,7 +275,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
 void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 {
     CharacterData::removedFrom(insertionPoint);
-    if (!insertionPoint->inDocument())
+    if (!insertionPoint->inShadowIncludingDocument())
         return;
 
     // No need to remove XSLStyleSheet from StyleEngine.

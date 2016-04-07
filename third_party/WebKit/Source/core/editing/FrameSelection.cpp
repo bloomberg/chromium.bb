@@ -515,7 +515,7 @@ static Position updatePositionAfterAdoptingTextReplacement(const Position& posit
 void FrameSelection::didUpdateCharacterData(CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
 {
     // The fragment check is a performance optimization. See http://trac.webkit.org/changeset/30062.
-    if (isNone() || !node || !node->inDocument())
+    if (isNone() || !node || !node->inShadowIncludingDocument())
         return;
 
     Position base = updatePositionAfterAdoptingTextReplacement(selection().base(), node, offset, oldLength, newLength);
@@ -544,7 +544,7 @@ static Position updatePostionAfterAdoptingTextNodesMerged(const Position& positi
 
 void FrameSelection::didMergeTextNodes(const Text& oldNode, unsigned offset)
 {
-    if (isNone() || !oldNode.inDocument())
+    if (isNone() || !oldNode.inShadowIncludingDocument())
         return;
     Position base = updatePostionAfterAdoptingTextNodesMerged(selection().base(), oldNode, offset);
     Position extent = updatePostionAfterAdoptingTextNodesMerged(selection().extent(), oldNode, offset);
@@ -568,7 +568,7 @@ static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position
 
 void FrameSelection::didSplitTextNode(const Text& oldNode)
 {
-    if (isNone() || !oldNode.inDocument())
+    if (isNone() || !oldNode.inShadowIncludingDocument())
         return;
     Position base = updatePostionAfterAdoptingTextNodeSplit(selection().base(), oldNode);
     Position extent = updatePostionAfterAdoptingTextNodeSplit(selection().extent(), oldNode);
@@ -864,7 +864,7 @@ void FrameSelection::selectAll()
         if (selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart)) != DispatchEventResult::NotCanceled)
             return;
         // |root| may be detached due to selectstart event.
-        if (!root->inDocument() || root->document() != document)
+        if (!root->inShadowIncludingDocument() || root->document() != document)
             return;
     }
 
@@ -876,7 +876,7 @@ void FrameSelection::selectAll()
 
 bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, SelectionDirectionalMode directional, SetSelectionOptions options)
 {
-    if (!range || !range->inDocument())
+    if (!range || !range->inShadowIncludingDocument())
         return false;
     ASSERT(range->startContainer()->document() == range->endContainer()->document());
     return setSelectedRange(EphemeralRange(range), affinity, directional, options);

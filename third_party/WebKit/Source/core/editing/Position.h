@@ -137,11 +137,11 @@ public:
     Node* anchorNode() const { return m_anchorNode.get(); }
 
     Document* document() const { return m_anchorNode ? &m_anchorNode->document() : 0; }
-    bool inDocument() const { return m_anchorNode && m_anchorNode->inDocument(); }
+    bool inShadowIncludingDocument() const { return m_anchorNode && m_anchorNode->inShadowIncludingDocument(); }
 
     bool isNull() const { return !m_anchorNode; }
     bool isNotNull() const { return m_anchorNode; }
-    bool isOrphan() const { return m_anchorNode && !m_anchorNode->inDocument(); }
+    bool isOrphan() const { return m_anchorNode && !m_anchorNode->inShadowIncludingDocument(); }
 
     int compareTo(const PositionTemplate<Strategy>&) const;
 

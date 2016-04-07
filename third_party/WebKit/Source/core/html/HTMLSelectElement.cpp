@@ -784,7 +784,7 @@ void HTMLSelectElement::setRecalcListItems()
 
     m_shouldRecalcListItems = true;
     setOptionsChangedOnLayoutObject();
-    if (!inDocument()) {
+    if (!inShadowIncludingDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
             collection->invalidateCache();
         invalidateSelectedItems();
@@ -946,7 +946,7 @@ void HTMLSelectElement::scrollToOption(HTMLOptionElement* option)
 void HTMLSelectElement::scrollToOptionTask()
 {
     RawPtr<HTMLOptionElement> option = m_optionToScrollTo.release();
-    if (!option || !inDocument())
+    if (!option || !inShadowIncludingDocument())
         return;
     // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
     // another owner.

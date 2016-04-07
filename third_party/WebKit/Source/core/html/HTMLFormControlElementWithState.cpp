@@ -44,14 +44,14 @@ HTMLFormControlElementWithState::~HTMLFormControlElementWithState()
 
 Node::InsertionNotificationRequest HTMLFormControlElementWithState::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument() && !containingShadowRoot())
+    if (insertionPoint->inShadowIncludingDocument() && !containingShadowRoot())
         document().formController().registerStatefulFormControl(*this);
     return HTMLFormControlElement::insertedInto(insertionPoint);
 }
 
 void HTMLFormControlElementWithState::removedFrom(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument() && !containingShadowRoot() && !insertionPoint->containingShadowRoot())
+    if (insertionPoint->inShadowIncludingDocument() && !containingShadowRoot() && !insertionPoint->containingShadowRoot())
         document().formController().unregisterStatefulFormControl(*this);
     HTMLFormControlElement::removedFrom(insertionPoint);
 }
@@ -75,7 +75,7 @@ void HTMLFormControlElementWithState::notifyFormStateChanged()
 bool HTMLFormControlElementWithState::shouldSaveAndRestoreFormControlState() const
 {
     // We don't save/restore control state in a form with autocomplete=off.
-    return inDocument() && shouldAutocomplete();
+    return inShadowIncludingDocument() && shouldAutocomplete();
 }
 
 FormControlState HTMLFormControlElementWithState::saveFormControlState() const

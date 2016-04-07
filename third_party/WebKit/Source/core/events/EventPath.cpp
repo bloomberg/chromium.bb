@@ -268,7 +268,7 @@ void EventPath::adjustForRelatedTarget(Node& target, EventTarget* relatedTarget)
         return;
     if (target.document() != relatedNode->document())
         return;
-    if (!target.inDocument() || !relatedNode->inDocument())
+    if (!target.inShadowIncludingDocument() || !relatedNode->inShadowIncludingDocument())
         return;
 
     RelatedTargetMap relatedNodeMap;

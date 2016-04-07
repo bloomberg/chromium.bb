@@ -25,8 +25,8 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const PositionTemplate<
     }
     ASSERT(m_endPosition.isNotNull());
     ASSERT(m_startPosition.document() == m_endPosition.document());
-    ASSERT(m_startPosition.inDocument());
-    ASSERT(m_endPosition.inDocument());
+    ASSERT(m_startPosition.inShadowIncludingDocument());
+    ASSERT(m_endPosition.inShadowIncludingDocument());
 }
 
 template <typename Strategy>
@@ -47,7 +47,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range)
 {
     if (!range)
         return;
-    ASSERT(range->inDocument());
+    ASSERT(range->inShadowIncludingDocument());
     m_startPosition = fromPositionInDOMTree<Strategy>(range->startPosition());
     m_endPosition = fromPositionInDOMTree<Strategy>(range->endPosition());
 #if ENABLE(ASSERT)

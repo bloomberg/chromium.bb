@@ -414,7 +414,7 @@ Vector<String> DocumentState::toStateVector()
     OwnPtr<SavedFormStateMap> stateMap = adoptPtr(new SavedFormStateMap);
     for (const auto& formControl : m_formControls) {
         HTMLFormControlElementWithState* control = formControl.get();
-        ASSERT(control->inDocument());
+        ASSERT(control->inShadowIncludingDocument());
         if (!control->shouldSaveAndRestoreFormControlState())
             continue;
         SavedFormStateMap::AddResult result = stateMap->add(keyGenerator->formKey(*control), nullptr);

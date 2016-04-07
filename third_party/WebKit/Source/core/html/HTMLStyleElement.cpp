@@ -67,7 +67,7 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
 {
     if (name == titleAttr && m_sheet) {
         m_sheet->setTitle(value);
-    } else if (name == mediaAttr && inDocument() && document().isActive() && m_sheet) {
+    } else if (name == mediaAttr && inShadowIncludingDocument() && document().isActive() && m_sheet) {
         m_sheet->setMediaQueries(MediaQuerySet::create(value));
         document().styleEngine().setNeedsActiveStyleUpdate(m_sheet.get(), FullStyleUpdate);
     } else {

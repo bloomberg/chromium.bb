@@ -245,7 +245,7 @@ void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)
 
 void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
 {
-    if (!inDocument())
+    if (!inShadowIncludingDocument())
         return;
 
     if (oldForAttributeValue == newForAttributeValue)
@@ -268,7 +268,7 @@ Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode*
     }
 
     // Trigger for elements outside of forms.
-    if (!formOwner() && insertionPoint->inDocument())
+    if (!formOwner() && insertionPoint->inShadowIncludingDocument())
         document().didAssociateFormControl(this);
 
     return result;

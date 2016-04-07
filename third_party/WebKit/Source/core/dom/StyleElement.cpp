@@ -65,7 +65,7 @@ StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& documen
 {
     TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
     ASSERT(element);
-    ASSERT(element->inDocument());
+    ASSERT(element->inShadowIncludingDocument());
 
     m_registeredAsCandidate = true;
     document.styleEngine().addStyleSheetCandidateNode(element);
@@ -77,7 +77,7 @@ StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& documen
 
 void StyleElement::insertedInto(Element* element, ContainerNode* insertionPoint)
 {
-    if (!insertionPoint->inDocument() || !element->isInShadowTree())
+    if (!insertionPoint->inShadowIncludingDocument() || !element->isInShadowTree())
         return;
     if (ShadowRoot* scope = element->containingShadowRoot())
         scope->registerScopedHTMLStyleChild();
@@ -85,7 +85,7 @@ void StyleElement::insertedInto(Element* element, ContainerNode* insertionPoint)
 
 void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
 {
-    if (!insertionPoint->inDocument())
+    if (!insertionPoint->inShadowIncludingDocument())
         return;
 
     ShadowRoot* shadowRoot = element->containingShadowRoot();
@@ -115,7 +115,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (m_registeredAsCandidate) {
-        ASSERT(element->inDocument());
+        ASSERT(element->inShadowIncludingDocument());
         document.styleEngine().removeStyleSheetCandidateNode(element, element->treeScope());
         m_registeredAsCandidate = false;
     }
@@ -140,7 +140,7 @@ StyleElement::ProcessingResult StyleElement::finishParsingChildren(Element* elem
 
 StyleElement::ProcessingResult StyleElement::process(Element* element)
 {
-    if (!element || !element->inDocument())
+    if (!element || !element->inShadowIncludingDocument())
         return ProcessingSuccessful;
     return createSheet(element, element->textFromChildren());
 }
@@ -173,7 +173,7 @@ static bool shouldBypassMainWorldCSP(Element* element)
 StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const String& text)
 {
     ASSERT(e);
-    ASSERT(e->inDocument());
+    ASSERT(e->inShadowIncludingDocument());
     Document& document = e->document();
 
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
