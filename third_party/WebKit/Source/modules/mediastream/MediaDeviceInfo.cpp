@@ -34,7 +34,7 @@ namespace blink {
 
 MediaDeviceInfo* MediaDeviceInfo::create(const WebMediaDeviceInfo& webMediaDeviceInfo)
 {
-    ASSERT(!webMediaDeviceInfo.isNull());
+    DCHECK(!webMediaDeviceInfo.isNull());
     return new MediaDeviceInfo(webMediaDeviceInfo);
 }
 
@@ -59,7 +59,7 @@ String MediaDeviceInfo::kind() const
         return "videoinput";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 

@@ -54,7 +54,7 @@ private:
     NavigatorUserMediaError(const String& name, const String& message, const String& constraintName)
         : m_name(name), m_message(message), m_constraintName(constraintName)
     {
-        ASSERT(!name.isEmpty());
+        DCHECK(!name.isEmpty());
     }
 
     String m_name;

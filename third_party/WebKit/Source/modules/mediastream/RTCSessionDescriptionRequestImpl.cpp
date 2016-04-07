@@ -54,7 +54,7 @@ RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionCont
     , m_errorCallback(errorCallback)
     , m_requester(requester)
 {
-    ASSERT(m_requester);
+    DCHECK(m_requester);
 }
 
 RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl()

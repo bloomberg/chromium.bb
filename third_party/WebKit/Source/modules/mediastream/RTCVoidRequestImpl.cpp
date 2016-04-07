@@ -51,7 +51,7 @@ RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnect
     , m_errorCallback(errorCallback)
     , m_requester(requester)
 {
-    ASSERT(m_requester);
+    DCHECK(m_requester);
 }
 
 RTCVoidRequestImpl::~RTCVoidRequestImpl()

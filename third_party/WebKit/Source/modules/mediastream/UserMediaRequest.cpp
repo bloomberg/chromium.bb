@@ -58,7 +58,7 @@ static WebMediaConstraints parseOptions(ExecutionContext* context, const Boolean
     } else if (options.isMediaTrackConstraintSet()) {
         constraints = MediaConstraintsImpl::create(context, options.getAsMediaTrackConstraintSet(), errorState);
     } else {
-        ASSERT(options.isBoolean());
+        DCHECK(options.isBoolean());
         if (options.getAsBoolean()) {
             constraints = MediaConstraintsImpl::create();
         }
@@ -187,7 +187,7 @@ void UserMediaRequest::failPermissionDenied(const String& message)
 
 void UserMediaRequest::failConstraint(const String& constraintName, const String& message)
 {
-    ASSERT(!constraintName.isEmpty());
+    DCHECK(!constraintName.isEmpty());
     if (!getExecutionContext())
         return;
     m_errorCallback->handleEvent(NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, message, constraintName));
@@ -195,7 +195,7 @@ void UserMediaRequest::failConstraint(const String& constraintName, const String
 
 void UserMediaRequest::failUASpecific(const String& name, const String& message, const String& constraintName)
 {
-    ASSERT(!name.isEmpty());
+    DCHECK(!name.isEmpty());
     if (!getExecutionContext())
         return;
     m_errorCallback->handleEvent(NavigatorUserMediaError::create(name, message, constraintName));

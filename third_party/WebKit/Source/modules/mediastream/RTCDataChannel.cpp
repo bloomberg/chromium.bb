@@ -53,7 +53,7 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
 
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
-    ASSERT(handler);
+    DCHECK(handler);
     return new RTCDataChannel(context, handler);
 }
 
@@ -142,7 +142,7 @@ String RTCDataChannel::readyState() const
         return "closed";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -169,7 +169,7 @@ String RTCDataChannel::binaryType() const
     case BinaryTypeArrayBuffer:
         return "arraybuffer";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -276,7 +276,7 @@ void RTCDataChannel::didReceiveRawData(const char* data, size_t dataLength)
         scheduleDispatchEvent(MessageEvent::create(buffer.release()));
         return;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void RTCDataChannel::didDetectError()

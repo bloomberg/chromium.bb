@@ -39,7 +39,7 @@ RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const String& tone)
 
 RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
 {
-    ASSERT(type == EventTypeNames::tonechange);
+    DCHECK(type == EventTypeNames::tonechange);
     return new RTCDTMFToneChangeEvent(initializer);
 }
 

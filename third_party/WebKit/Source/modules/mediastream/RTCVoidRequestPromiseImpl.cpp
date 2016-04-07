@@ -20,13 +20,13 @@ RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(RTCPeerConnection* requeste
     : m_requester(requester)
     , m_resolver(resolver)
 {
-    ASSERT(m_requester);
-    ASSERT(m_resolver);
+    DCHECK(m_requester);
+    DCHECK(m_resolver);
 }
 
 RTCVoidRequestPromiseImpl::~RTCVoidRequestPromiseImpl()
 {
-    ASSERT(!m_requester);
+    DCHECK(!m_requester);
 }
 
 void RTCVoidRequestPromiseImpl::requestSucceeded()

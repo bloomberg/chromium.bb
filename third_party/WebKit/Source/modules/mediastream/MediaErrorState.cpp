@@ -80,7 +80,7 @@ void MediaErrorState::raiseException(ExceptionState& target)
 {
     switch (m_errorType) {
     case NoError:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     case TypeError:
         target.throwTypeError(m_message);
@@ -97,7 +97,7 @@ void MediaErrorState::raiseException(ExceptionState& target)
         target.throwDOMException(NotSupportedError, "Unsatisfiable constraint " + m_constraint);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -105,7 +105,7 @@ String MediaErrorState::getErrorMessage()
 {
     switch (m_errorType) {
     case NoError:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     case TypeError:
     case DOMException:
@@ -118,7 +118,7 @@ String MediaErrorState::getErrorMessage()
         // TODO(hta): Remove this code. https://crbug.com/576581
         return "Unsatisfiable constraint " + m_constraint;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     return String();
@@ -126,7 +126,7 @@ String MediaErrorState::getErrorMessage()
 
 NavigatorUserMediaError* MediaErrorState::createError()
 {
-    ASSERT(m_errorType == ConstraintError);
+    DCHECK(m_errorType == ConstraintError);
     return NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, m_message, m_constraint);
 }
 

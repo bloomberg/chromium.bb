@@ -63,7 +63,7 @@ Document* MediaDevicesRequest::ownerDocument()
 
 ScriptPromise MediaDevicesRequest::start()
 {
-    ASSERT(m_controller);
+    DCHECK(m_controller);
     m_resolver->keepAliveWhilePending();
     m_controller->requestMediaDevices(this);
     return m_resolver->promise();

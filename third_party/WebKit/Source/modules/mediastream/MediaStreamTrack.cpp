@@ -75,7 +75,7 @@ String MediaStreamTrack::kind() const
         return videoKind;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return audioKind;
 }
 
@@ -134,7 +134,7 @@ String MediaStreamTrack::readyState() const
         return "ended";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -199,6 +199,7 @@ void MediaStreamTrack::sourceChangedState()
 
 void MediaStreamTrack::propagateTrackEnded()
 {
+    // TODO(mcasas): Substitute with CHECK, see https://crbug.com/599867.
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
     m_isIteratingRegisteredMediaStreams = true;
     for (HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
@@ -235,6 +236,7 @@ PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
 
 void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream)
 {
+    // TODO(mcasas): Substitute with CHECK, see https://crbug.com/599867.
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
     RELEASE_ASSERT(!m_registeredMediaStreams.contains(mediaStream));
     m_registeredMediaStreams.add(mediaStream);
@@ -242,6 +244,7 @@ void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream)
 
 void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream)
 {
+    // TODO(mcasas): Substitute with CHECK, see https://crbug.com/599867.
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
     HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.find(mediaStream);
     RELEASE_ASSERT(iter != m_registeredMediaStreams.end());

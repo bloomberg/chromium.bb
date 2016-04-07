@@ -102,7 +102,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const MediaSt
     MediaErrorState errorState;
     UserMediaRequest* request = UserMediaRequest::create(document, userMedia, options, successCallback, errorCallback, errorState);
     if (!request) {
-        ASSERT(errorState.hadException());
+        DCHECK(errorState.hadException());
         if (errorState.canGenerateException()) {
             errorState.raiseException(exceptionState);
             return exceptionState.reject(scriptState);

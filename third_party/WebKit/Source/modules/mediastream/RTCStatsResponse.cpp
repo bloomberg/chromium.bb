@@ -51,7 +51,7 @@ size_t RTCStatsResponse::addReport(const String& id, const String& type, double 
 
 void RTCStatsResponse::addStatistic(size_t report, const String& name, const String& value)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(report >= 0 && report < m_result.size());
+    SECURITY_DCHECK(report >= 0 && report < m_result.size());
     m_result[report]->addStatistic(name, value);
 }
 

@@ -54,7 +54,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const MediaS
     MediaErrorState errorState;
     UserMediaRequest* request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, errorState);
     if (!request) {
-        ASSERT(errorState.hadException());
+        DCHECK(errorState.hadException());
         if (errorState.canGenerateException()) {
             errorState.raiseException(exceptionState);
         } else {

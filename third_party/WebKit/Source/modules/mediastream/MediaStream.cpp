@@ -63,7 +63,7 @@ MediaStream* MediaStream::create(ExecutionContext* context)
 
 MediaStream* MediaStream::create(ExecutionContext* context, MediaStream* stream)
 {
-    ASSERT(stream);
+    DCHECK(stream);
 
     MediaStreamTrackVector audioTracks;
     MediaStreamTrackVector videoTracks;
@@ -319,7 +319,7 @@ ExecutionContext* MediaStream::getExecutionContext() const
 
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 {
-    ASSERT(component);
+    DCHECK(component);
     if (m_stopped)
         return;
 
@@ -345,7 +345,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 
 void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
 {
-    ASSERT(component);
+    DCHECK(component);
     if (m_stopped)
         return;
 

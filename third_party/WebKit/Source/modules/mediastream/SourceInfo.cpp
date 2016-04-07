@@ -31,7 +31,7 @@ namespace blink {
 
 SourceInfo* SourceInfo::create(const WebSourceInfo& webSourceInfo)
 {
-    ASSERT(!webSourceInfo.isNull());
+    DCHECK(!webSourceInfo.isNull());
     return new SourceInfo(webSourceInfo);
 }
 
@@ -56,7 +56,7 @@ String SourceInfo::kind() const
         return "none";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -76,7 +76,7 @@ String SourceInfo::facing() const
         return "environment";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 

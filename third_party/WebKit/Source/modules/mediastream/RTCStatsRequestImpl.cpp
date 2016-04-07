@@ -43,7 +43,7 @@ RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConne
     , m_component(selector ? selector->component() : 0)
     , m_requester(requester)
 {
-    ASSERT(m_requester);
+    DCHECK(m_requester);
 }
 
 RTCStatsRequestImpl::~RTCStatsRequestImpl()

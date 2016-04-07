@@ -58,7 +58,7 @@ String MediaStreamTrackSourcesRequestImpl::origin()
 
 void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const WebVector<WebSourceInfo>& webSourceInfos)
 {
-    ASSERT(m_callback);
+    DCHECK(m_callback);
 
     for (size_t i = 0; i < webSourceInfos.size(); ++i)
         m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));

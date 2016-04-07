@@ -108,7 +108,7 @@ bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingState stat
 
 void asyncCallErrorCallback(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
 {
-    ASSERT(errorCallback);
+    DCHECK(errorCallback);
     Microtask::enqueueMicrotask(bind(&RTCPeerConnectionErrorCallback::handleEvent, errorCallback, exception));
 }
 
@@ -131,7 +131,7 @@ bool isIceCandidateMissingSdp(const RTCIceCandidateInitOrRTCIceCandidate& candid
         return !iceCandidateInit.hasSdpMid() && !iceCandidateInit.hasSdpMLineIndex();
     }
 
-    ASSERT(candidate.isRTCIceCandidate());
+    DCHECK(candidate.isRTCIceCandidate());
     return false;
 }
 
@@ -156,7 +156,7 @@ WebRTCICECandidate convertToWebRTCIceCandidate(const RTCIceCandidateInitOrRTCIce
         return WebRTCICECandidate(iceCandidateInit.candidate(), iceCandidateInit.sdpMid(), iceCandidateInit.sdpMLineIndex());
     }
 
-    ASSERT(candidate.isRTCIceCandidate());
+    DCHECK(candidate.isRTCIceCandidate());
     return candidate.getAsRTCIceCandidate()->webCandidate();
 }
 
@@ -445,7 +445,7 @@ RTCPeerConnection::~RTCPeerConnection()
 {
     // This checks that close() or stop() is called before the destructor.
     // We are assuming that a wrapper is always created when RTCPeerConnection is created.
-    ASSERT(m_closed || m_stopped);
+    DCHECK(m_closed || m_stopped);
 }
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* scriptState, const RTCOfferOptions& options)
@@ -462,8 +462,8 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* scriptState, const RTC
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* scriptState, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& rtcOfferOptions)
 {
-    ASSERT(successCallback);
-    ASSERT(errorCallback);
+    DCHECK(successCallback);
+    DCHECK(errorCallback);
     ExecutionContext* context = scriptState->getExecutionContext();
     UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyFailureCallback);
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
@@ -515,8 +515,8 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* scriptState, const RT
 
 ScriptPromise RTCPeerConnection::createAnswer(ScriptState* scriptState, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& mediaConstraints)
 {
-    ASSERT(successCallback);
-    ASSERT(errorCallback);
+    DCHECK(successCallback);
+    DCHECK(errorCallback);
     ExecutionContext* context = scriptState->getExecutionContext();
     UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyFailureCallback);
     if (mediaConstraints.isObject())
@@ -569,7 +569,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, R
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return ScriptPromise::castUndefined(scriptState);
 
-    ASSERT(sessionDescription);
+    DCHECK(sessionDescription);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
     m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
@@ -612,7 +612,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return ScriptPromise::castUndefined(scriptState);
 
-    ASSERT(sessionDescription);
+    DCHECK(sessionDescription);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
     m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
@@ -692,7 +692,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "The 1st argument provided is an AlgorithmIdentifier, but the algorithm is not supported."));
         break;
     }
-    ASSERT(!keyParams.isNull());
+    DCHECK(!keyParams.isNull());
 
     OwnPtr<WebRTCCertificateGenerator> certificateGenerator = adoptPtr(
         Platform::current()->createRTCCertificateGenerator());
@@ -739,9 +739,9 @@ ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, const
 
 ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, RTCIceCandidate* iceCandidate, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
-    ASSERT(iceCandidate);
-    ASSERT(successCallback);
-    ASSERT(errorCallback);
+    DCHECK(iceCandidate);
+    DCHECK(successCallback);
+    DCHECK(errorCallback);
 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return ScriptPromise::castUndefined(scriptState);
@@ -771,7 +771,7 @@ String RTCPeerConnection::signalingState() const
         return "closed";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -786,7 +786,7 @@ String RTCPeerConnection::iceGatheringState() const
         return "complete";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -809,7 +809,7 @@ String RTCPeerConnection::iceConnectionState() const
         return "closed";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -938,7 +938,7 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(MediaStreamTrack* track, Exce
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return nullptr;
 
-    ASSERT(track);
+    DCHECK(track);
 
     if (!hasLocalStreamWithTrackId(track->id())) {
         exceptionState.throwDOMException(SyntaxError, "No local stream is available for the track provided.");
@@ -961,14 +961,14 @@ void RTCPeerConnection::close(ExceptionState& exceptionState)
 
 void RTCPeerConnection::negotiationNeeded()
 {
-    ASSERT(!m_closed);
+    DCHECK(!m_closed);
     scheduleDispatchEvent(Event::create(EventTypeNames::negotiationneeded));
 }
 
 void RTCPeerConnection::didGenerateICECandidate(const WebRTCICECandidate& webCandidate)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
     if (webCandidate.isNull())
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, nullptr));
     else {
@@ -979,29 +979,29 @@ void RTCPeerConnection::didGenerateICECandidate(const WebRTCICECandidate& webCan
 
 void RTCPeerConnection::didChangeSignalingState(SignalingState newState)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
     changeSignalingState(newState);
 }
 
 void RTCPeerConnection::didChangeICEGatheringState(ICEGatheringState newState)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
     changeIceGatheringState(newState);
 }
 
 void RTCPeerConnection::didChangeICEConnectionState(ICEConnectionState newState)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
     changeIceConnectionState(newState);
 }
 
 void RTCPeerConnection::didAddRemoteStream(const WebMediaStream& remoteStream)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
 
     if (m_signalingState == SignalingStateClosed)
         return;
@@ -1014,11 +1014,11 @@ void RTCPeerConnection::didAddRemoteStream(const WebMediaStream& remoteStream)
 
 void RTCPeerConnection::didRemoveRemoteStream(const WebMediaStream& remoteStream)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
 
     MediaStreamDescriptor* streamDescriptor = remoteStream;
-    ASSERT(streamDescriptor->client());
+    DCHECK(streamDescriptor->client());
 
     MediaStream* stream = static_cast<MediaStream*>(streamDescriptor->client());
     stream->streamEnded();
@@ -1027,7 +1027,7 @@ void RTCPeerConnection::didRemoveRemoteStream(const WebMediaStream& remoteStream
         return;
 
     size_t pos = m_remoteStreams.find(stream);
-    ASSERT(pos != kNotFound);
+    DCHECK(pos != kNotFound);
     m_remoteStreams.remove(pos);
 
     scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::removestream, false, false, stream));
@@ -1035,8 +1035,8 @@ void RTCPeerConnection::didRemoveRemoteStream(const WebMediaStream& remoteStream
 
 void RTCPeerConnection::didAddRemoteDataChannel(WebRTCDataChannelHandler* handler)
 {
-    ASSERT(!m_closed);
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(!m_closed);
+    DCHECK(getExecutionContext()->isContextThread());
 
     if (m_signalingState == SignalingStateClosed)
         return;
@@ -1052,7 +1052,7 @@ void RTCPeerConnection::releasePeerConnectionHandler()
 
 void RTCPeerConnection::closePeerConnection()
 {
-    ASSERT(m_signalingState != RTCPeerConnection::SignalingStateClosed);
+    DCHECK(m_signalingState != RTCPeerConnection::SignalingStateClosed);
     closeInternal();
 }
 
@@ -1122,7 +1122,7 @@ void RTCPeerConnection::changeIceConnectionState(ICEConnectionState iceConnectio
 
 void RTCPeerConnection::closeInternal()
 {
-    ASSERT(m_signalingState != RTCPeerConnection::SignalingStateClosed);
+    DCHECK(m_signalingState != RTCPeerConnection::SignalingStateClosed);
     m_peerHandler->stop();
     m_closed = true;
 
