@@ -60602,6 +60602,41 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="17" label="Volume decibels"/>
   <int value="18" label="Volume scalar"/>
   <int value="19" label="Mute"/>
+  <int value="20" label="Plugin"/>
+  <int value="21" label="Uses variable buffer fram sizes"/>
+  <int value="22" label="IO cycle usage"/>
+  <int value="23" label="IO proc stream usage"/>
+  <int value="24" label="Configuration application"/>
+  <int value="25" label="Device UID"/>
+  <int value="26" label="Mode UID"/>
+  <int value="27" label="Transport type"/>
+  <int value="28" label="Related devices"/>
+  <int value="29" label="Clock domain"/>
+  <int value="30" label="Device can be default device"/>
+  <int value="31" label="Device can be default system device"/>
+  <int value="32" label="Latency"/>
+  <int value="33" label="Streams"/>
+  <int value="34" label="Control list"/>
+  <int value="35" label="Safety offset"/>
+  <int value="36" label="Available nominal sample rates"/>
+  <int value="37" label="Icon"/>
+  <int value="38" label="Is hidden"/>
+  <int value="39" label="Preferred channels for stereo"/>
+  <int value="40" label="Preferred channel layout"/>
+  <int value="41" label="Volume range decibels"/>
+  <int value="42" label="Volume scalar to decibels"/>
+  <int value="43" label="Volume decibel to scalar"/>
+  <int value="44" label="Stereo pan"/>
+  <int value="45" label="Stereo pan channels"/>
+  <int value="46" label="Solo"/>
+  <int value="47" label="Phantom power"/>
+  <int value="48" label="Phase invert"/>
+  <int value="49" label="Clip light"/>
+  <int value="50" label="Talkback"/>
+  <int value="51" label="Listenback"/>
+  <int value="52" label="Clock source"/>
+  <int value="53" label="Clock sources"/>
+  <int value="54" label="Sub mute"/>
 </enum>
 
 <enum name="AudioFramesPerBuffer" type="int">

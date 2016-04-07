@@ -78,6 +78,8 @@ const AudioObjectPropertyAddress
 // Maps internal enumerator values (e.g. kAudioDevicePropertyDeviceHasChanged)
 // into local values that are suitable for UMA stats.
 // See AudioObjectPropertySelector in CoreAudio/AudioHardware.h for details.
+// TODO(henrika): ensure that the "other" bucket contains as few counts as
+// possible by adding more valid enumerators below.
 enum AudioDevicePropertyResult {
   PROPERTY_OTHER = 0,  // Use for all non-supported property changes
   PROPERTY_DEVICE_HAS_CHANGED = 1,
@@ -99,7 +101,42 @@ enum AudioDevicePropertyResult {
   PROPERTY_VOLUME_DECIBELS = 17,
   PROPERTY_VOLUME_SCALAR = 18,
   PROPERTY_MUTE = 19,
-  PROPERTY_MAX = PROPERTY_MUTE
+  PROPERTY_PLUGIN = 20,
+  PROPERTY_USES_VARIABLE_BUFFER_FRAME_SIZES = 21,
+  PROPERTY_IO_CYCLE_USAGE = 22,
+  PROPERTY_IO_PROC_STREAM_USAGE = 23,
+  PROPERTY_CONFIGURATION_APPLICATION = 24,
+  PROPERTY_DEVICE_UID = 25,
+  PROPERTY_MODE_UID = 26,
+  PROPERTY_TRANSPORT_TYPE = 27,
+  PROPERTY_RELATED_DEVICES = 28,
+  PROPERTY_CLOCK_DOMAIN = 29,
+  PROPERTY_DEVICE_CAN_BE_DEFAULT_DEVICE = 30,
+  PROPERTY_DEVICE_CAN_BE_DEFAULT_SYSTEM_DEVICE = 31,
+  PROPERTY_LATENCY = 32,
+  PROPERTY_STREAMS = 33,
+  PROPERTY_CONTROL_LIST = 34,
+  PROPERTY_SAFETY_OFFSET = 35,
+  PROPERTY_AVAILABLE_NOMINAL_SAMPLE_RATES = 36,
+  PROPERTY_ICON = 37,
+  PROPERTY_IS_HIDDEN = 38,
+  PROPERTY_PREFERRED_CHANNELS_FOR_STEREO = 39,
+  PROPERTY_PREFERRED_CHANNEL_LAYOUT = 40,
+  PROPERTY_VOLUME_RANGE_DECIBELS = 41,
+  PROPERTY_VOLUME_SCALAR_TO_DECIBELS = 42,
+  PROPERTY_VOLUME_DECIBEL_TO_SCALAR = 43,
+  PROPERTY_STEREO_PAN = 44,
+  PROPERTY_STEREO_PAN_CHANNELS = 45,
+  PROPERTY_SOLO = 46,
+  PROPERTY_PHANTOM_POWER = 47,
+  PROPERTY_PHASE_INVERT = 48,
+  PROPERTY_CLIP_LIGHT = 49,
+  PROPERTY_TALKBACK = 50,
+  PROPERTY_LISTENBACK = 51,
+  PROPERTY_CLOCK_SOURCE = 52,
+  PROPERTY_CLOCK_SOURCES = 53,
+  PROPERTY_SUB_MUTE = 54,
+  PROPERTY_MAX = PROPERTY_SUB_MUTE
 };
 
 // Add the provided value in |result| to a UMA histogram.
@@ -1200,10 +1237,9 @@ void AUAudioInputStream::AddDevicePropertyChangesToUMA(bool startup_failed) {
   // Scan the map of all available property changes (notification types) and
   // filter out some that make sense to add to UMA stats.
   // TODO(henrika): figure out if the set of stats is sufficient or not.
-  for (auto it = device_property_changes_map_.begin();
-       it != device_property_changes_map_.end(); ++it) {
-    UInt32 device_property = it->first;
-    int change_count = it->second;
+  for (const auto& entry : device_property_changes_map_) {
+    UInt32 device_property = entry.first;
+    int change_count = entry.second;
     AudioDevicePropertyResult uma_result = PROPERTY_OTHER;
     switch (device_property) {
       case kAudioDevicePropertyDeviceHasChanged:
@@ -1281,6 +1317,146 @@ void AUAudioInputStream::AddDevicePropertyChangesToUMA(bool startup_failed) {
       case kAudioDevicePropertyMute:
         uma_result = PROPERTY_MUTE;
         DVLOG(1) << "kAudioDevicePropertyMute";
+        break;
+      case kAudioDevicePropertyPlugIn:
+        uma_result = PROPERTY_PLUGIN;
+        DVLOG(1) << "kAudioDevicePropertyPlugIn";
+        break;
+      case kAudioDevicePropertyUsesVariableBufferFrameSizes:
+        uma_result = PROPERTY_USES_VARIABLE_BUFFER_FRAME_SIZES;
+        DVLOG(1) << "kAudioDevicePropertyUsesVariableBufferFrameSizes";
+        break;
+      case kAudioDevicePropertyIOCycleUsage:
+        uma_result = PROPERTY_IO_CYCLE_USAGE;
+        DVLOG(1) << "kAudioDevicePropertyIOCycleUsage";
+        break;
+      case kAudioDevicePropertyIOProcStreamUsage:
+        uma_result = PROPERTY_IO_PROC_STREAM_USAGE;
+        DVLOG(1) << "kAudioDevicePropertyIOProcStreamUsage";
+        break;
+      case kAudioDevicePropertyConfigurationApplication:
+        uma_result = PROPERTY_CONFIGURATION_APPLICATION;
+        DVLOG(1) << "kAudioDevicePropertyConfigurationApplication";
+        break;
+      case kAudioDevicePropertyDeviceUID:
+        uma_result = PROPERTY_DEVICE_UID;
+        DVLOG(1) << "kAudioDevicePropertyDeviceUID";
+        break;
+      case kAudioDevicePropertyModelUID:
+        uma_result = PROPERTY_MODE_UID;
+        DVLOG(1) << "kAudioDevicePropertyModelUID";
+        break;
+      case kAudioDevicePropertyTransportType:
+        uma_result = PROPERTY_TRANSPORT_TYPE;
+        DVLOG(1) << "kAudioDevicePropertyTransportType";
+        break;
+      case kAudioDevicePropertyRelatedDevices:
+        uma_result = PROPERTY_RELATED_DEVICES;
+        DVLOG(1) << "kAudioDevicePropertyRelatedDevices";
+        break;
+      case kAudioDevicePropertyClockDomain:
+        uma_result = PROPERTY_CLOCK_DOMAIN;
+        DVLOG(1) << "kAudioDevicePropertyClockDomain";
+        break;
+      case kAudioDevicePropertyDeviceCanBeDefaultDevice:
+        uma_result = PROPERTY_DEVICE_CAN_BE_DEFAULT_DEVICE;
+        DVLOG(1) << "kAudioDevicePropertyDeviceCanBeDefaultDevice";
+        break;
+      case kAudioDevicePropertyDeviceCanBeDefaultSystemDevice:
+        uma_result = PROPERTY_DEVICE_CAN_BE_DEFAULT_SYSTEM_DEVICE;
+        DVLOG(1) << "kAudioDevicePropertyDeviceCanBeDefaultSystemDevice";
+        break;
+      case kAudioDevicePropertyLatency:
+        uma_result = PROPERTY_LATENCY;
+        DVLOG(1) << "kAudioDevicePropertyLatency";
+        break;
+      case kAudioDevicePropertyStreams:
+        uma_result = PROPERTY_STREAMS;
+        DVLOG(1) << "kAudioDevicePropertyStreams";
+        break;
+      case kAudioObjectPropertyControlList:
+        uma_result = PROPERTY_CONTROL_LIST;
+        DVLOG(1) << "kAudioObjectPropertyControlList";
+        break;
+      case kAudioDevicePropertySafetyOffset:
+        uma_result = PROPERTY_SAFETY_OFFSET;
+        DVLOG(1) << "kAudioDevicePropertySafetyOffset";
+        break;
+      case kAudioDevicePropertyAvailableNominalSampleRates:
+        uma_result = PROPERTY_AVAILABLE_NOMINAL_SAMPLE_RATES;
+        DVLOG(1) << "kAudioDevicePropertyAvailableNominalSampleRates";
+        break;
+      case kAudioDevicePropertyIcon:
+        uma_result = PROPERTY_ICON;
+        DVLOG(1) << "kAudioDevicePropertyIcon";
+        break;
+      case kAudioDevicePropertyIsHidden:
+        uma_result = PROPERTY_IS_HIDDEN;
+        DVLOG(1) << "kAudioDevicePropertyIsHidden";
+        break;
+      case kAudioDevicePropertyPreferredChannelsForStereo:
+        uma_result = PROPERTY_PREFERRED_CHANNELS_FOR_STEREO;
+        DVLOG(1) << "kAudioDevicePropertyPreferredChannelsForStereo";
+        break;
+      case kAudioDevicePropertyPreferredChannelLayout:
+        uma_result = PROPERTY_PREFERRED_CHANNEL_LAYOUT;
+        DVLOG(1) << "kAudioDevicePropertyPreferredChannelLayout";
+        break;
+      case kAudioDevicePropertyVolumeRangeDecibels:
+        uma_result = PROPERTY_VOLUME_RANGE_DECIBELS;
+        DVLOG(1) << "kAudioDevicePropertyVolumeRangeDecibels";
+        break;
+      case kAudioDevicePropertyVolumeScalarToDecibels:
+        uma_result = PROPERTY_VOLUME_SCALAR_TO_DECIBELS;
+        DVLOG(1) << "kAudioDevicePropertyVolumeScalarToDecibels";
+        break;
+      case kAudioDevicePropertyVolumeDecibelsToScalar:
+        uma_result = PROPERTY_VOLUME_DECIBEL_TO_SCALAR;
+        DVLOG(1) << "kAudioDevicePropertyVolumeDecibelsToScalar";
+        break;
+      case kAudioDevicePropertyStereoPan:
+        uma_result = PROPERTY_STEREO_PAN;
+        DVLOG(1) << "kAudioDevicePropertyStereoPan";
+        break;
+      case kAudioDevicePropertyStereoPanChannels:
+        uma_result = PROPERTY_STEREO_PAN_CHANNELS;
+        DVLOG(1) << "kAudioDevicePropertyStereoPanChannels";
+        break;
+      case kAudioDevicePropertySolo:
+        uma_result = PROPERTY_SOLO;
+        DVLOG(1) << "kAudioDevicePropertySolo";
+        break;
+      case kAudioDevicePropertyPhantomPower:
+        uma_result = PROPERTY_PHANTOM_POWER;
+        DVLOG(1) << "kAudioDevicePropertyPhantomPower";
+        break;
+      case kAudioDevicePropertyPhaseInvert:
+        uma_result = PROPERTY_PHASE_INVERT;
+        DVLOG(1) << "kAudioDevicePropertyPhaseInvert";
+        break;
+      case kAudioDevicePropertyClipLight:
+        uma_result = PROPERTY_CLIP_LIGHT;
+        DVLOG(1) << "kAudioDevicePropertyClipLight";
+        break;
+      case kAudioDevicePropertyTalkback:
+        uma_result = PROPERTY_TALKBACK;
+        DVLOG(1) << "kAudioDevicePropertyTalkback";
+        break;
+      case kAudioDevicePropertyListenback:
+        uma_result = PROPERTY_LISTENBACK;
+        DVLOG(1) << "kAudioDevicePropertyListenback";
+        break;
+      case kAudioDevicePropertyClockSource:
+        uma_result = PROPERTY_CLOCK_SOURCE;
+        DVLOG(1) << "kAudioDevicePropertyClockSource";
+        break;
+      case kAudioDevicePropertyClockSources:
+        uma_result = PROPERTY_CLOCK_SOURCES;
+        DVLOG(1) << "kAudioDevicePropertyClockSources";
+        break;
+      case kAudioDevicePropertySubMute:
+        uma_result = PROPERTY_SUB_MUTE;
+        DVLOG(1) << "kAudioDevicePropertySubMute";
         break;
       default:
         uma_result = PROPERTY_OTHER;
