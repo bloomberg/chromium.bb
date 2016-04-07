@@ -76,6 +76,9 @@ char kLSanDefaultSuppressions[] =
 // http://crbug.com/356306
 "leak:content::SetProcessTitleFromCommandLine\n"
 
+// http://crbug.com/601435
+"leak:mojo/edk/js/handle.h\n"
+
 // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
 // End of suppressions.
