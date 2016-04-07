@@ -94,6 +94,13 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
                 // Access-Control-Request-Headers header.
                 continue;
             }
+            if (equalIgnoringCase(header.key, "save-data")) {
+                // As a short-term fix, exclude Save-Data from
+                // Access-Control-Request-Headers header.
+                // TODO(rajendrant): crbug.com/601092 Longer-term all simple
+                // headers should be excluded as well.
+                continue;
+            }
             headers.append(header.key.lower());
         }
         std::sort(headers.begin(), headers.end(), WTF::codePointCompareLessThan);

@@ -246,6 +246,8 @@ HttpMethod HttpRequestParser::GetMethodType(const std::string& token) const {
     return METHOD_PATCH;
   } else if (token == "connect") {
     return METHOD_CONNECT;
+  } else if (token == "options") {
+    return METHOD_OPTIONS;
   }
   LOG(WARNING) << "Method not implemented: " << token;
   return METHOD_GET;

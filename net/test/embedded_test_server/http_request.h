@@ -32,6 +32,7 @@ enum HttpMethod {
   METHOD_DELETE,
   METHOD_PATCH,
   METHOD_CONNECT,
+  METHOD_OPTIONS,
 };
 
 // Represents a HTTP request. Since it can be big, use scoped_ptr to pass it

@@ -11,8 +11,12 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -215,6 +219,34 @@ scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderNotInRequest(
   auto it = request.headers.find("Save-Data");
   EXPECT_EQ(request.headers.end(), it);
   return make_scoped_ptr(new net::test_server::BasicHttpResponse());
+}
+
+scoped_ptr<net::test_server::HttpResponse>
+VerifySaveDataNotInAccessControlRequestHeader(
+    const net::test_server::HttpRequest& request) {
+  // Save-Data should be present.
+  auto it = request.headers.find("Save-Data");
+  EXPECT_NE(request.headers.end(), it);
+  EXPECT_EQ("on", it->second);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse());
+  if (request.method == net::test_server::METHOD_OPTIONS) {
+    // Access-Control-Request-Headers should contain 'X-Custom-Header' and not
+    // contain 'Save-Data'.
+    auto acrh_iter = request.headers.find("Access-Control-Request-Headers");
+    EXPECT_NE(request.headers.end(), acrh_iter);
+    EXPECT_NE(std::string::npos, acrh_iter->second.find("x-custom-header"));
+    EXPECT_EQ(std::string::npos, acrh_iter->second.find("save-data"));
+    http_response->AddCustomHeader("Access-Control-Allow-Headers",
+                                   acrh_iter->second);
+    http_response->AddCustomHeader("Access-Control-Allow-Methods", "GET");
+    http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+  } else {
+    http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+    http_response->set_content("PASS");
+  }
+  return std::move(http_response);
 }
 
 // The ImportsBustMemcache test requires that the imported script
@@ -1105,6 +1137,52 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
   TitleWatcher title_watcher1(shell()->web_contents(), title1);
   NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
   EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
+
+  SetBrowserClientForTesting(old_client);
+  shell()->Close();
+
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+// Tests that when data saver is enabled and a cross-origin fetch by a webpage
+// is intercepted by a serviceworker, and the serviceworker does a fetch, the
+// preflight request does not have save-data in Access-Control-Request-Headers.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
+  const char kPageUrl[] = "/service_worker/fetch_cross_origin.html";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_pass_through.js";
+  net::EmbeddedTestServer cross_origin_server;
+  cross_origin_server.ServeFilesFromSourceDirectory("content/test/data");
+  cross_origin_server.RegisterRequestHandler(
+      base::Bind(&VerifySaveDataNotInAccessControlRequestHeader));
+  cross_origin_server.Start();
+
+  MockContentBrowserClient content_browser_client;
+  content_browser_client.set_data_saver_enabled(true);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      embedded_test_server()->GetURL(kWorkerUrl),
+      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+  observer->Wait();
+
+  const base::string16 title = base::ASCIIToUTF16("PASS");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL(base::StringPrintf(
+                    "%s?%s", kPageUrl,
+                    cross_origin_server.GetURL("/cross_origin_request.html")
+                        .spec()
+                        .c_str())));
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 
   SetBrowserClientForTesting(old_client);
   shell()->Close();
