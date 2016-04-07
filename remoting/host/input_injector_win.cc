@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -27,6 +28,12 @@
 namespace remoting {
 
 namespace {
+
+using protocol::ClipboardEvent;
+using protocol::KeyEvent;
+using protocol::TextEvent;
+using protocol::MouseEvent;
+using protocol::TouchEvent;
 
 // Helper used to call SendInput() API.
 void SendKeyboardInput(uint32_t flags, uint16_t scancode) {
@@ -53,11 +60,93 @@ void SendKeyboardInput(uint32_t flags, uint16_t scancode) {
     PLOG(ERROR) << "Failed to inject a key event";
 }
 
-using protocol::ClipboardEvent;
-using protocol::KeyEvent;
-using protocol::TextEvent;
-using protocol::MouseEvent;
-using protocol::TouchEvent;
+// Parse move related operations from the input MouseEvent, and insert the
+// result into output.
+void ParseMouseMoveEvent(const MouseEvent& event, std::vector<INPUT>* output) {
+  INPUT input = {0};
+  input.type = INPUT_MOUSE;
+
+  if (event.has_delta_x() && event.has_delta_y()) {
+    input.mi.dx = event.delta_x();
+    input.mi.dy = event.delta_y();
+    input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK;
+  } else if (event.has_x() && event.has_y()) {
+    int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    if (width > 1 && height > 1) {
+      int x = std::max(0, std::min(width, event.x()));
+      int y = std::max(0, std::min(height, event.y()));
+      input.mi.dx = static_cast<int>((x * 65535) / (width - 1));
+      input.mi.dy = static_cast<int>((y * 65535) / (height - 1));
+      input.mi.dwFlags =
+          MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
+    }
+  } else {
+    return;
+  }
+
+  output->push_back(std::move(input));
+}
+
+// Parse click related operations from the input MouseEvent, and insert the
+// result into output.
+void ParseMouseClickEvent(const MouseEvent& event, std::vector<INPUT>* output) {
+  if (event.has_button() && event.has_button_down()) {
+    INPUT input = {0};
+    input.type = INPUT_MOUSE;
+
+    MouseEvent::MouseButton button = event.button();
+    bool down = event.button_down();
+
+    // If the host is configured to swap left & right buttons, inject swapped
+    // events to un-do that re-mapping.
+    if (GetSystemMetrics(SM_SWAPBUTTON)) {
+      if (button == MouseEvent::BUTTON_LEFT) {
+        button = MouseEvent::BUTTON_RIGHT;
+      } else if (button == MouseEvent::BUTTON_RIGHT) {
+        button = MouseEvent::BUTTON_LEFT;
+      }
+    }
+
+    if (button == MouseEvent::BUTTON_MIDDLE) {
+      input.mi.dwFlags = down ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+    } else if (button == MouseEvent::BUTTON_RIGHT) {
+      input.mi.dwFlags = down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+    } else {
+      input.mi.dwFlags = down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+    }
+
+    output->push_back(std::move(input));
+  }
+}
+
+// Parse wheel related operations from the input MouseEvent, and insert the
+// result into output.
+void ParseMouseWheelEvent(const MouseEvent& event, std::vector<INPUT>* output) {
+  if (event.has_wheel_delta_x()) {
+    int delta = static_cast<int>(event.wheel_delta_x());
+    if (delta != 0) {
+      INPUT input = {0};
+      input.type = INPUT_MOUSE;
+      input.mi.mouseData = delta;
+      // According to MSDN, MOUSEEVENTF_HWHELL and MOUSEEVENTF_WHEEL are both
+      // required for a horizontal wheel event.
+      input.mi.dwFlags = MOUSEEVENTF_HWHEEL | MOUSEEVENTF_WHEEL;
+      output->push_back(std::move(input));
+    }
+  }
+
+  if (event.has_wheel_delta_y()) {
+    int delta = static_cast<int>(event.wheel_delta_y());
+    if (delta != 0) {
+      INPUT input = {0};
+      input.type = INPUT_MOUSE;
+      input.mi.mouseData = delta;
+      input.mi.dwFlags = MOUSEEVENTF_WHEEL;
+      output->push_back(std::move(input));
+    }
+  }
+}
 
 // A class to generate events on Windows.
 class InputInjectorWin : public InputInjector {
@@ -277,72 +366,13 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
-  INPUT input;
-  memset(&input, 0, sizeof(input));
-  input.type = INPUT_MOUSE;
+  std::vector<INPUT> inputs;
+  ParseMouseMoveEvent(event, &inputs);
+  ParseMouseClickEvent(event, &inputs);
+  ParseMouseWheelEvent(event, &inputs);
 
-  if (event.has_delta_x() && event.has_delta_y()) {
-    input.mi.dx = event.delta_x();
-    input.mi.dy = event.delta_y();
-    input.mi.dwFlags |= MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK;
-  } else if (event.has_x() && event.has_y()) {
-    int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    if (width > 1 && height > 1) {
-      int x = std::max(0, std::min(width, event.x()));
-      int y = std::max(0, std::min(height, event.y()));
-      input.mi.dx = static_cast<int>((x * 65535) / (width - 1));
-      input.mi.dy = static_cast<int>((y * 65535) / (height - 1));
-      input.mi.dwFlags |=
-          MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
-    }
-  }
-
-  int wheel_delta_x = 0;
-  int wheel_delta_y = 0;
-  if (event.has_wheel_delta_x() && event.has_wheel_delta_y()) {
-    wheel_delta_x = static_cast<int>(event.wheel_delta_x());
-    wheel_delta_y = static_cast<int>(event.wheel_delta_y());
-  }
-
-  if (wheel_delta_x != 0 || wheel_delta_y != 0) {
-    if (wheel_delta_x != 0) {
-      input.mi.mouseData = wheel_delta_x;
-      input.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
-    }
-    if (wheel_delta_y != 0) {
-      input.mi.mouseData = wheel_delta_y;
-      input.mi.dwFlags |= MOUSEEVENTF_WHEEL;
-    }
-  }
-
-  if (event.has_button() && event.has_button_down()) {
-    MouseEvent::MouseButton button = event.button();
-    bool down = event.button_down();
-
-    // If the host is configured to swap left & right buttons, inject swapped
-    // events to un-do that re-mapping.
-    if (GetSystemMetrics(SM_SWAPBUTTON)) {
-      if (button == MouseEvent::BUTTON_LEFT) {
-        button = MouseEvent::BUTTON_RIGHT;
-      } else if (button == MouseEvent::BUTTON_RIGHT) {
-        button = MouseEvent::BUTTON_LEFT;
-      }
-    }
-
-    if (button == MouseEvent::BUTTON_LEFT) {
-      input.mi.dwFlags |= down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-    } else if (button == MouseEvent::BUTTON_MIDDLE) {
-      input.mi.dwFlags |= down ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
-    } else if (button == MouseEvent::BUTTON_RIGHT) {
-      input.mi.dwFlags |= down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
-    } else {
-      input.mi.dwFlags |= down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-    }
-  }
-
-  if (input.mi.dwFlags) {
-    if (SendInput(1, &input, sizeof(INPUT)) == 0)
+  if (!inputs.empty()) {
+    if (SendInput(inputs.size(), inputs.data(), sizeof(INPUT)) != inputs.size())
       PLOG(ERROR) << "Failed to inject a mouse event";
   }
 }
