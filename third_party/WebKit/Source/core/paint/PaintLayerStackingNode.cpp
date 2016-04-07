@@ -43,6 +43,7 @@
 
 #include "core/paint/PaintLayerStackingNode.h"
 
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
@@ -136,8 +137,12 @@ void PaintLayerStackingNode::rebuildZOrderLists()
     // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
     // The layoutObjects of top layer elements are children of the view, sorted in top layer stacking order.
     if (layer()->isRootLayer()) {
-        LayoutView* view = layoutObject()->view();
-        for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {
+        LayoutBlockFlow* rootBlock = layoutObject()->view();
+        // If the viewport is paginated, everything (including "top-layer" elements) gets
+        // redirected to the flow thread. So that's where we have to look, in that case.
+        if (LayoutBlockFlow* multiColumnFlowThread = rootBlock->multiColumnFlowThread())
+            rootBlock = multiColumnFlowThread;
+        for (LayoutObject* child = rootBlock->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
                 PaintLayer* layer = toLayoutBoxModelObject(child)->layer();
