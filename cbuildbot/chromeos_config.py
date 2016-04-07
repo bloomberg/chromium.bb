@@ -194,6 +194,7 @@ class HWTestList(object):
     the `blocking` setting cannot be provided.
     """
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
+                        timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT,
                         priority=constants.HWTEST_PFQ_PRIORITY,
                         retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
