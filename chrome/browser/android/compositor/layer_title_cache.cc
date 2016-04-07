@@ -6,7 +6,8 @@
 
 #include <android/bitmap.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/compositor/decoration_title.h"

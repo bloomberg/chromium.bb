@@ -23,9 +23,10 @@ void MediaThrottleInfoBarDelegate::Create(
     const DecodeRequestGrantedCallback& callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  scoped_ptr<infobars::InfoBar> new_infobar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new MediaThrottleInfoBarDelegate(callback))));
+  std::unique_ptr<infobars::InfoBar> new_infobar(
+      infobar_service->CreateConfirmInfoBar(
+          std::unique_ptr<ConfirmInfoBarDelegate>(
+              new MediaThrottleInfoBarDelegate(callback))));
 
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);

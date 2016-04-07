@@ -263,7 +263,8 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   JavaObjectWeakGlobalRef weak_java_ref_;
   bookmarks::BookmarkModel* bookmark_model_;  // weak
   bookmarks::ManagedBookmarkService* managed_bookmark_service_;  // weak
-  scoped_ptr<bookmarks::ScopedGroupBookmarkActions> grouped_bookmark_actions_;
+  std::unique_ptr<bookmarks::ScopedGroupBookmarkActions>
+      grouped_bookmark_actions_;
   PrefChangeRegistrar pref_change_registrar_;
 
   // Information about the Partner bookmarks (must check for IsLoaded()).

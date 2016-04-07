@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -176,7 +177,7 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string context_language() { return context_language_; }
 
   // The delegate under test.
-  scoped_ptr<ContextualSearchDelegate> delegate_;
+  std::unique_ptr<ContextualSearchDelegate> delegate_;
 
  private:
   void recordSearchTermResolutionResponse(
@@ -217,7 +218,7 @@ class ContextualSearchDelegateTest : public testing::Test {
   base::MessageLoopForIO io_message_loop_;
   net::TestURLFetcherFactory test_factory_;
   net::TestURLFetcher* fetcher_;
-  scoped_ptr<TemplateURLService> template_url_service_;
+  std::unique_ptr<TemplateURLService> template_url_service_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
 
   // Will be owned by the delegate.

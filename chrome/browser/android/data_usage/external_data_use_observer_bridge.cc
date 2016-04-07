@@ -4,11 +4,11 @@
 
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"

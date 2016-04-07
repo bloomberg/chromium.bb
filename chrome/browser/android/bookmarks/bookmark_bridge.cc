@@ -81,9 +81,9 @@ private:
   const icu::Collator* collator_;
 };
 
-scoped_ptr<icu::Collator> GetICUCollator() {
+std::unique_ptr<icu::Collator> GetICUCollator() {
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator_;
+  std::unique_ptr<icu::Collator> collator_;
   collator_.reset(icu::Collator::createInstance(error));
   if (U_FAILURE(error))
     collator_.reset(NULL);
@@ -274,7 +274,7 @@ void BookmarkBridge::GetTopLevelFolderIDs(
       }
     }
 
-    scoped_ptr<icu::Collator> collator = GetICUCollator();
+    std::unique_ptr<icu::Collator> collator = GetICUCollator();
     std::stable_sort(top_level_folders.begin() + special_count,
                      top_level_folders.end(),
                      BookmarkTitleComparer(this, collator.get()));
@@ -296,7 +296,7 @@ void BookmarkBridge::GetAllFoldersWithDepths(
     const JavaParamRef<jobject>& j_depths_obj) {
   DCHECK(IsLoaded());
 
-  scoped_ptr<icu::Collator> collator = GetICUCollator();
+  std::unique_ptr<icu::Collator> collator = GetICUCollator();
 
   // Vector to temporarily contain all child bookmarks at same level for sorting
   std::vector<const BookmarkNode*> bookmarkList;

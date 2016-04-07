@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/ntp/most_visited_sites.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/ntp/most_visited_sites.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -77,12 +79,12 @@ class MostVisitedSitesTest : public testing::Test {
     EXPECT_EQ(result_is_personal, expected_sites_is_personal);
     EXPECT_EQ(result_sites, expected_sites);
   }
-  static scoped_ptr<MostVisitedSites::Suggestion> MakeSuggestionFrom(
+  static std::unique_ptr<MostVisitedSites::Suggestion> MakeSuggestionFrom(
       const TitleURL& title_url,
       bool is_personal,
       bool whitelist) {
-    scoped_ptr<MostVisitedSites::Suggestion> suggestion =
-        make_scoped_ptr(new MostVisitedSites::Suggestion());
+    std::unique_ptr<MostVisitedSites::Suggestion> suggestion =
+        base::WrapUnique(new MostVisitedSites::Suggestion());
     suggestion->title = title_url.title;
     suggestion->url = GURL(title_url.url);
     suggestion->source = whitelist ? MostVisitedSites::WHITELIST

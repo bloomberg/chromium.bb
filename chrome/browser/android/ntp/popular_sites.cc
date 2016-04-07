@@ -121,7 +121,7 @@ base::FilePath GetPopularSitesPath() {
   return dir.AppendASCII(kPopularSitesLocalFilename);
 }
 
-scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
+std::unique_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
     const base::FilePath& path) {
   std::string json;
   if (!base::ReadFileToString(path, &json)) {
@@ -129,7 +129,7 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
     return nullptr;
   }
 
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
   base::ListValue* list;
   if (!value || !value->GetAsList(&list)) {
@@ -137,7 +137,7 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
     return nullptr;
   }
 
-  scoped_ptr<std::vector<PopularSites::Site>> sites(
+  std::unique_ptr<std::vector<PopularSites::Site>> sites(
       new std::vector<PopularSites::Site>);
   for (size_t i = 0; i < list->GetSize(); i++) {
     base::DictionaryValue* item;
@@ -301,7 +301,7 @@ void PopularSites::ParseSiteList(const base::FilePath& path) {
       base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PopularSites::OnJsonParsed(scoped_ptr<std::vector<Site>> sites) {
+void PopularSites::OnJsonParsed(std::unique_ptr<std::vector<Site>> sites) {
   if (sites)
     sites_.swap(*sites);
   else

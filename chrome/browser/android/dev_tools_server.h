@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_ANDROID_DEV_TOOLS_SERVER_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace devtools_http_handler {
 class DevToolsHttpHandler;
@@ -30,7 +32,8 @@ class DevToolsServer {
 
  private:
   std::string socket_name_;
-  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
+  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
+      devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServer);
 };

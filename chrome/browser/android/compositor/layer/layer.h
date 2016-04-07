@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_LAYER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/size.h"

@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -66,7 +67,7 @@ void DataUseMatcher::RegisterURLRegexes(
       invalid_rules++;
       continue;
     }
-    scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
+    std::unique_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
     if (!pattern->ok()) {
       invalid_rules++;
       continue;
@@ -75,7 +76,7 @@ void DataUseMatcher::RegisterURLRegexes(
     if (expiration <= now_ticks)
       continue;  // skip expired matching rules.
     DCHECK(!labels.at(i).empty());
-    matching_rules_.push_back(make_scoped_ptr(new MatchingRule(
+    matching_rules_.push_back(base::WrapUnique(new MatchingRule(
         app_package_name, std::move(pattern), labels.at(i), expiration)));
 
     removed_matching_rule_labels.erase(labels.at(i));
@@ -169,7 +170,7 @@ void DataUseMatcher::ParsePackageField(const std::string& app_package_name,
 }
 
 DataUseMatcher::MatchingRule::MatchingRule(const std::string& app_package_name,
-                                           scoped_ptr<re2::RE2> pattern,
+                                           std::unique_ptr<re2::RE2> pattern,
                                            const std::string& label,
                                            const base::TimeTicks& expiration)
     : app_package_name_(app_package_name),

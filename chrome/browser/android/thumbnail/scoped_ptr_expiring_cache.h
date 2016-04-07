@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/linked_hash_map.h"
 
 template <class Key, class Value>
@@ -24,7 +25,7 @@ class ScopedPtrExpiringCache {
 
   ~ScopedPtrExpiringCache() {}
 
-  void Put(const Key& key, scoped_ptr<Value> value) {
+  void Put(const Key& key, std::unique_ptr<Value> value) {
     Remove(key);
     map_[key] = value.release();
     EvictIfFull();

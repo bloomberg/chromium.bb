@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/history_report/usage_report_util.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +40,7 @@ class UsageReportsBufferBackendTest : public testing::Test {
     EXPECT_TRUE(buffer_->Init());
   }
 
-  scoped_ptr<UsageReportsBufferBackend> buffer_;
+  std::unique_ptr<UsageReportsBufferBackend> buffer_;
   base::ScopedTempDir temp_dir_;
 
  private:
@@ -49,7 +50,7 @@ class UsageReportsBufferBackendTest : public testing::Test {
 TEST_F(UsageReportsBufferBackendTest, AddTypedVisit) {
   buffer_->AddVisit("id", 7, true);
 
-  scoped_ptr<std::vector<UsageReport> > result =
+  std::unique_ptr<std::vector<UsageReport>> result =
       buffer_->GetUsageReportsBatch(1);
 
   EXPECT_TRUE(result.get() != NULL);
@@ -60,7 +61,7 @@ TEST_F(UsageReportsBufferBackendTest, AddTypedVisit) {
 TEST_F(UsageReportsBufferBackendTest, AddNotTypedVisit) {
   buffer_->AddVisit("id", 7, false);
 
-  scoped_ptr<std::vector<UsageReport> > result =
+  std::unique_ptr<std::vector<UsageReport>> result =
       buffer_->GetUsageReportsBatch(1);
 
   EXPECT_TRUE(result.get() != NULL);
@@ -74,7 +75,7 @@ TEST_F(UsageReportsBufferBackendTest, GetUsageReportsBatchNotEnoughReports) {
   buffer_->AddVisit("id3", 12, false);
   buffer_->AddVisit("id4", 5, true);
 
-  scoped_ptr<std::vector<UsageReport> > result =
+  std::unique_ptr<std::vector<UsageReport>> result =
       buffer_->GetUsageReportsBatch(5);
 
   EXPECT_TRUE(result.get() != NULL);
@@ -111,7 +112,7 @@ TEST_F(UsageReportsBufferBackendTest, GetUsageReportsBatchTooManyReports) {
   buffer_->AddVisit("id3", 12, false);
   buffer_->AddVisit("id4", 5, true);
 
-  scoped_ptr<std::vector<UsageReport> > result =
+  std::unique_ptr<std::vector<UsageReport>> result =
       buffer_->GetUsageReportsBatch(3);
 
   EXPECT_TRUE(result.get() != NULL);
@@ -145,7 +146,7 @@ TEST_F(UsageReportsBufferBackendTest, GetUsageReportsBatchTooManyReports) {
 TEST_F(UsageReportsBufferBackendTest, Remove) {
   buffer_->AddVisit("id", 7, true);
 
-  scoped_ptr<std::vector<UsageReport> > result =
+  std::unique_ptr<std::vector<UsageReport>> result =
       buffer_->GetUsageReportsBatch(1);
 
   EXPECT_TRUE(result.get() != NULL);
@@ -179,7 +180,7 @@ TEST_F(UsageReportsBufferBackendTest, Remove) {
 TEST_F(UsageReportsBufferBackendTest, Persistence) {
   buffer_->AddVisit("id", 7, true);
 
-  scoped_ptr<std::vector<UsageReport> > result =
+  std::unique_ptr<std::vector<UsageReport>> result =
       buffer_->GetUsageReportsBatch(2);
 
   EXPECT_TRUE(result.get() != NULL);

@@ -16,18 +16,18 @@
 
 namespace offline_pages {
 
-scoped_ptr<KeyedService> BuildTestOfflinePageModel(
+std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
     content::BrowserContext* context) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
-  scoped_ptr<OfflinePageTestStore> metadata_store(
+  std::unique_ptr<OfflinePageTestStore> metadata_store(
       new OfflinePageTestStore(task_runner));
 
   base::FilePath archives_dir =
       context->GetPath().Append(chrome::kOfflinePageArchviesDirname);
 
-  return scoped_ptr<KeyedService>(new OfflinePageModel(
+  return std::unique_ptr<KeyedService>(new OfflinePageModel(
       std::move(metadata_store), archives_dir, task_runner));
 }
 

@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_LOCATION_SETTINGS_IMPL_H_
 #define CHROME_BROWSER_ANDROID_LOCATION_SETTINGS_IMPL_H_
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/location_settings.h"
 
 class LocationSettingsImpl : public LocationSettings {

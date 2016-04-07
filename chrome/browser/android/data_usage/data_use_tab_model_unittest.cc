@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -192,11 +192,12 @@ class DataUseTabModelTest : public testing::Test {
   // Pointer to the tick clock owned by |data_use_tab_model_|.
   base::SimpleTestTickClock* tick_clock_;
 
-  scoped_ptr<DataUseTabModel> data_use_tab_model_;
+  std::unique_ptr<DataUseTabModel> data_use_tab_model_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ExternalDataUseObserverBridge> external_data_use_observer_bridge_;
+  std::unique_ptr<ExternalDataUseObserverBridge>
+      external_data_use_observer_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTabModelTest);
 };

@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 
 class FaviconHelper {
@@ -41,7 +42,7 @@ class FaviconHelper {
   static bool RegisterFaviconHelper(JNIEnv* env);
 
  private:
-  scoped_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
+  std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
 
   virtual ~FaviconHelper();
 

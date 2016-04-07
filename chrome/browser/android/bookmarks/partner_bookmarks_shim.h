@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -133,7 +134,7 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   void ReloadNodeMapping();
   void SaveNodeMapping();
 
-  scoped_ptr<bookmarks::BookmarkNode> partner_bookmarks_root_;
+  std::unique_ptr<bookmarks::BookmarkNode> partner_bookmarks_root_;
   PrefService* prefs_;
   NodeRenamingMap node_rename_remove_map_;
 

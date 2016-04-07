@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_USB_WEB_USB_CHOOSER_SERVICE_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_USB_WEB_USB_CHOOSER_SERVICE_ANDROID_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -39,7 +39,8 @@ class WebUsbChooserServiceAndroid : public device::usb::ChooserService {
  private:
   content::RenderFrameHost* const render_frame_host_;
   mojo::BindingSet<device::usb::ChooserService> bindings_;
-  std::vector<scoped_ptr<UsbChooserDialogAndroid>> usb_chooser_dialog_android_;
+  std::vector<std::unique_ptr<UsbChooserDialogAndroid>>
+      usb_chooser_dialog_android_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbChooserServiceAndroid);
 };

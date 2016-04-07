@@ -48,7 +48,7 @@ class LogoBridge : public net::URLFetcherDelegate {
 
   // The URLFetcher currently fetching the animated logo. NULL when not
   // fetching.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   // The timestamp for the last time the animated logo started downloading.
   base::TimeTicks animated_logo_download_start_time_;

@@ -74,7 +74,7 @@ class DownloadManagerServiceTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<content::MockDownloadItem> download_;
+  std::unique_ptr<content::MockDownloadItem> download_;
   content::MockDownloadManager manager_;
   DownloadManagerService* service_;
   bool finished_;

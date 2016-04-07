@@ -4,8 +4,10 @@
 
 #include "chrome/browser/android/fullscreen/fullscreen_infobar_delegate.h"
 
+#include <memory>
+
 #include "base/android/jni_string.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -28,7 +30,7 @@ jlong LaunchFullscreenInfoBar(JNIEnv* env,
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(tab_android->web_contents());
   infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(make_scoped_ptr(delegate)));
+      infobar_service->CreateConfirmInfoBar(base::WrapUnique(delegate)));
   return reinterpret_cast<intptr_t>(delegate);
 }
 

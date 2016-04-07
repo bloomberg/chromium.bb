@@ -101,7 +101,7 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(
 
   // Find and remove the corresponding tab entry from TabRestoreService.
   // We take ownership of the returned tab.
-  scoped_ptr<sessions::TabRestoreService::Tab> tab_entry(
+  std::unique_ptr<sessions::TabRestoreService::Tab> tab_entry(
       tab_restore_service_->RemoveTabEntryById(recent_tab_id));
   if (!tab_entry)
     return false;

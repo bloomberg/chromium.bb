@@ -48,7 +48,7 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
 
   base::FilePath store_path =
       profile->GetPath().Append(chrome::kOfflinePageMetadataDirname);
-  scoped_ptr<OfflinePageMetadataStoreImpl> metadata_store(
+  std::unique_ptr<OfflinePageMetadataStoreImpl> metadata_store(
       new OfflinePageMetadataStoreImpl(background_task_runner, store_path));
 
   base::FilePath archives_dir =

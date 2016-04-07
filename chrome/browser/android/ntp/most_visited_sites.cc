@@ -86,12 +86,12 @@ enum MostVisitedTileType {
     NUM_TILE_TYPES,
 };
 
-scoped_ptr<SkBitmap> MaybeFetchLocalThumbnail(
+std::unique_ptr<SkBitmap> MaybeFetchLocalThumbnail(
     const GURL& url,
     const scoped_refptr<TopSites>& top_sites) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   scoped_refptr<base::RefCountedMemory> image;
-  scoped_ptr<SkBitmap> bitmap;
+  std::unique_ptr<SkBitmap> bitmap;
   if (top_sites && top_sites->GetPageThumbnail(url, false, &image))
     bitmap.reset(gfx::JPEGCodec::Decode(image->front(), image->size()));
   return bitmap;
@@ -262,7 +262,7 @@ void MostVisitedSites::GetURLThumbnail(
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jobject>& j_callback_obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<ScopedJavaGlobalRef<jobject>> j_callback(
+  std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback(
       new ScopedJavaGlobalRef<jobject>());
   j_callback->Reset(env, j_callback_obj);
 
@@ -279,8 +279,8 @@ void MostVisitedSites::GetURLThumbnail(
 
 void MostVisitedSites::OnLocalThumbnailFetched(
     const GURL& url,
-    scoped_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
-    scoped_ptr<SkBitmap> bitmap) {
+    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
+    std::unique_ptr<SkBitmap> bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!bitmap.get()) {
     // A thumbnail is not locally available for |url|. Make sure it is put in
@@ -317,7 +317,7 @@ void MostVisitedSites::OnLocalThumbnailFetched(
 
 void MostVisitedSites::OnObtainedThumbnail(
     bool is_local_thumbnail,
-    scoped_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
+    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
     const GURL& url,
     const SkBitmap* bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -473,7 +473,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       continue;
     }
 
-    scoped_ptr<Suggestion> suggestion(new Suggestion());
+    std::unique_ptr<Suggestion> suggestion(new Suggestion());
     suggestion->title = visited.title;
     suggestion->url = visited.url;
     suggestion->source = TOP_SITES;
@@ -510,7 +510,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
       continue;
     }
 
-    scoped_ptr<Suggestion> generated_suggestion(new Suggestion());
+    std::unique_ptr<Suggestion> generated_suggestion(new Suggestion());
     generated_suggestion->title = base::UTF8ToUTF16(suggestion.title());
     generated_suggestion->url = GURL(suggestion.url());
     generated_suggestion->source = SUGGESTIONS_SERVICE;
@@ -563,7 +563,7 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
       continue;
     }
 
-    scoped_ptr<Suggestion> suggestion(new Suggestion());
+    std::unique_ptr<Suggestion> suggestion(new Suggestion());
     suggestion->title = whitelist->title();
     suggestion->url = whitelist->entry_point();
     suggestion->source = WHITELIST;
@@ -610,7 +610,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
       if (hosts.find(host) != hosts.end())
         continue;
 
-      scoped_ptr<Suggestion> suggestion(new Suggestion());
+      std::unique_ptr<Suggestion> suggestion(new Suggestion());
       suggestion->title = popular_site.title;
       suggestion->url = GURL(popular_site.url);
       suggestion->source = POPULAR;
@@ -774,8 +774,8 @@ std::vector<size_t> MostVisitedSites::InsertMatchingSuggestions(
 size_t MostVisitedSites::InsertAllSuggestions(
     size_t start_position,
     const std::vector<size_t>& insert_positions,
-    std::vector<scoped_ptr<Suggestion>>* src_suggestions,
-    std::vector<scoped_ptr<Suggestion>>* dst_suggestions) {
+    std::vector<std::unique_ptr<Suggestion>>* src_suggestions,
+    std::vector<std::unique_ptr<Suggestion>>* dst_suggestions) {
   size_t num_inserts = insert_positions.size();
   size_t num_dests = dst_suggestions->size();
 

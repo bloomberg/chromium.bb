@@ -73,7 +73,7 @@ class OfflinePageUtilsTest
 
  private:
   void CreateOfflinePages();
-  scoped_ptr<OfflinePageTestArchiver> BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(
       const GURL& url,
       const base::FilePath& file_name);
 
@@ -132,7 +132,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
       OfflinePageModelFactory::GetForBrowserContext(profile());
 
   // Create page 1.
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPage1Url, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   offline_pages::ClientId client_id;
   client_id.name_space = BOOKMARK_NAMESPACE;
@@ -164,10 +164,10 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
           .Append(FILE_PATH_LITERAL("missing_file.mhtml")));
 }
 
-scoped_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
+std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
     const GURL& url,
     const base::FilePath& file_name) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       this, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);

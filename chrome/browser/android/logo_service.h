@@ -31,7 +31,7 @@ class LogoService : public KeyedService {
 
  private:
   Profile* profile_;
-  scoped_ptr<search_provider_logos::LogoTracker> logo_tracker_;
+  std::unique_ptr<search_provider_logos::LogoTracker> logo_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(LogoService);
 };

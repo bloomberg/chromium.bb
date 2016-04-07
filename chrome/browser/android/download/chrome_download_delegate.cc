@@ -5,7 +5,9 @@
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 
 #include <jni.h>
+
 #include <string>
+#include <type_traits>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -108,10 +110,13 @@ static void LaunchPermissionUpdateInfoBar(
       base::android::ConvertJavaStringToUTF8(env, jpermission);
 
   // Convert java long long int to c++ pointer, take ownership.
-  scoped_ptr<DownloadControllerAndroid::AcquireFileAccessPermissionCallback> cb(
-      reinterpret_cast<
-          DownloadControllerAndroid::AcquireFileAccessPermissionCallback*>(
-              callback_id));
+  static_assert(
+      std::is_same<
+          DownloadControllerAndroid::AcquireFileAccessPermissionCallback,
+          base::Callback<void(bool)>>::value,
+      "Callback types don't match!");
+  std::unique_ptr<base::Callback<void(bool)>> cb(
+      reinterpret_cast<base::Callback<void(bool)>*>(callback_id));
 
   std::vector<std::string> permissions;
   permissions.push_back(permission);

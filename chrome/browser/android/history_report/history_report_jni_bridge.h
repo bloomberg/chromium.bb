@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_ANDROID_HISTORY_REPORT_HISTORY_REPORT_JNI_BRIDGE_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace bookmarks {
 class BookmarkModel;
@@ -71,11 +72,11 @@ class HistoryReportJniBridge {
 
  private:
   JavaObjectWeakGlobalRef weak_java_provider_;
-  scoped_ptr<DataObserver> data_observer_;
-  scoped_ptr<DataProvider> data_provider_;
-  scoped_ptr<DeltaFileService> delta_file_service_;
-  scoped_ptr<bookmarks::BookmarkModel> bookmark_model_;
-  scoped_ptr<UsageReportsBufferService> usage_reports_buffer_service_;
+  std::unique_ptr<DataObserver> data_observer_;
+  std::unique_ptr<DataProvider> data_provider_;
+  std::unique_ptr<DeltaFileService> delta_file_service_;
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  std::unique_ptr<UsageReportsBufferService> usage_reports_buffer_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryReportJniBridge);
 };

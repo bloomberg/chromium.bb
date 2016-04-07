@@ -4,11 +4,11 @@
 
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
@@ -226,7 +226,7 @@ void OfflinePageBridge::SavePage(
       content::WebContents::FromJavaWebContents(j_web_contents);
   GURL url(web_contents->GetLastCommittedURL());
 
-  scoped_ptr<OfflinePageArchiver> archiver(
+  std::unique_ptr<OfflinePageArchiver> archiver(
       new OfflinePageMHTMLArchiver(web_contents));
 
   offline_pages::ClientId client_id;

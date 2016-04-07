@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
+
 #include <stddef.h>
 
 #include <algorithm>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,8 +25,8 @@ unsigned int GenerateValue(unsigned int key) {
 
 class MockObject {
  public:
-  static scoped_ptr<MockObject> Create(unsigned int key) {
-    return make_scoped_ptr(new MockObject(key));
+  static std::unique_ptr<MockObject> Create(unsigned int key) {
+    return base::WrapUnique(new MockObject(key));
   }
 
   unsigned int value() const { return value_; }

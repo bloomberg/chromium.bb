@@ -7,11 +7,12 @@
 
 #include <jni.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 class UserActionRateCounter;

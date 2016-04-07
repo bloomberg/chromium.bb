@@ -36,7 +36,7 @@ class ThumbnailDelegate {
 
 class Thumbnail : public cc::UIResourceClient {
  public:
-  static scoped_ptr<Thumbnail> Create(
+  static std::unique_ptr<Thumbnail> Create(
       TabId tab_id,
       const base::Time& time_stamp,
       float scale,

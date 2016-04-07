@@ -42,7 +42,7 @@ class TabWebContentsDelegateAndroid
                            bool to_different_document) override;
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
-  scoped_ptr<content::BluetoothChooser> RunBluetoothChooser(
+  std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
   void CloseContents(content::WebContents* web_contents) override;

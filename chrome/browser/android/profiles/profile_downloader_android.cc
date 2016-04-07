@@ -102,7 +102,7 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
   }
 
   // The profile image downloader instance.
-  scoped_ptr<ProfileDownloader> profile_image_downloader_;
+  std::unique_ptr<ProfileDownloader> profile_image_downloader_;
 
   // The browser profile associated with this download request.
   Profile* profile_;

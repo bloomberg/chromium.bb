@@ -150,8 +150,8 @@ class UnixDomainServerSocketFactory
   }
 
  private:
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::UnixDomainServerSocket> socket(
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(auth_callback_,
                                         true /* use_abstract_namespace */));
 
@@ -164,16 +164,17 @@ class UnixDomainServerSocketFactory
     if (socket->BindAndListen(fallback_address, kBackLog) == net::OK)
       return std::move(socket);
 
-    return scoped_ptr<net::ServerSocket>();
+    return std::unique_ptr<net::ServerSocket>();
   }
 
-  scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* name) override {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    scoped_ptr<net::UnixDomainServerSocket> socket(
+    std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(auth_callback_, true));
     if (socket->BindAndListen(*name, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
+      return std::unique_ptr<net::ServerSocket>();
 
     return std::move(socket);
   }
@@ -211,7 +212,7 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       allow_debug_permission ?
           base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
           base::Bind(&content::CanUserConnectToDevTools);
-  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
   devtools_http_handler_.reset(new DevToolsHttpHandler(
       std::move(factory),

@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -103,7 +103,7 @@ class MostVisitedSites : public history::TopSitesObserver,
     DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
-  using SuggestionsVector = std::vector<scoped_ptr<Suggestion>>;
+  using SuggestionsVector = std::vector<std::unique_ptr<Suggestion>>;
 
   ~MostVisitedSites() override;
   void QueryMostVisitedURLs();
@@ -182,14 +182,14 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Runs on the UI Thread.
   void OnLocalThumbnailFetched(
       const GURL& url,
-      scoped_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
-      scoped_ptr<SkBitmap> bitmap);
+      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
+      std::unique_ptr<SkBitmap> bitmap);
 
   // Callback for when the thumbnail lookup is complete.
   // Runs on the UI Thread.
   void OnObtainedThumbnail(
       bool is_local_thumbnail,
-      scoped_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
+      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
       const GURL& url,
       const SkBitmap* bitmap);
 
@@ -225,7 +225,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // recorded once both the previous flags are true.
   bool recorded_uma_;
 
-  scoped_ptr<
+  std::unique_ptr<
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>
       suggestions_subscription_;
 
@@ -233,7 +233,7 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   MostVisitedSource mv_source_;
 
-  scoped_ptr<PopularSites> popular_sites_;
+  std::unique_ptr<PopularSites> popular_sites_;
 
   SuggestionsVector current_suggestions_;
 

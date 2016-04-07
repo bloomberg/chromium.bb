@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_OVERLAY_PANEL_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_OVERLAY_PANEL_LAYER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/android/compositor/layer/layer.h"
 
 namespace cc {

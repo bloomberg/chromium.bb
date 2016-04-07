@@ -7,10 +7,11 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -26,7 +27,7 @@ class ContextualSearchTabHelper {
   void OnContextualSearchPrefChanged();
 
   JavaObjectWeakGlobalRef weak_java_ref_;
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   base::WeakPtrFactory<ContextualSearchTabHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchTabHelper);
 };

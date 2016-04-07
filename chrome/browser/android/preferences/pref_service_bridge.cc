@@ -6,6 +6,8 @@
 
 #include <jni.h>
 #include <stddef.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/android/build_info.h"
@@ -15,7 +17,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -485,7 +486,7 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
 
   void OnBrowsingDataRemoverDone() override {
     // We delete ourselves when done.
-    scoped_ptr<ClearBrowsingDataObserver> auto_delete(this);
+    std::unique_ptr<ClearBrowsingDataObserver> auto_delete(this);
 
     JNIEnv* env = AttachCurrentThread();
     if (weak_chrome_native_preferences_.get(env).is_null())
@@ -755,7 +756,7 @@ static void SetAutoDetectEncodingEnabled(JNIEnv* env,
 
 static void ResetTranslateDefaults(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
-  scoped_ptr<translate::TranslatePrefs> translate_prefs =
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
   translate_prefs->ResetToDefaults();
 }

@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -281,10 +281,10 @@ class DataUseTabModel {
   const base::TimeDelta open_tab_expiration_duration_;
 
   // TickClock used for obtaining the current time.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Stores the matching patterns.
-  scoped_ptr<DataUseMatcher> data_use_matcher_;
+  std::unique_ptr<DataUseMatcher> data_use_matcher_;
 
   // True if the external control app is installed.
   bool is_control_app_installed_;
@@ -296,7 +296,8 @@ class DataUseTabModel {
   // the UI navigation events need to be buffered. If the scoped_ptr contains a
   // vector all navigation events will be added to it. Otherwise all navigation
   // events will be processed immediately.
-  scoped_ptr<std::vector<DataUseUINavigationEvent>> data_use_ui_navigations_;
+  std::unique_ptr<std::vector<DataUseUINavigationEvent>>
+      data_use_ui_navigations_;
 
   base::ThreadChecker thread_checker_;
 

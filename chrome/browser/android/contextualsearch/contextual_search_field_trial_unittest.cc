@@ -4,8 +4,9 @@
 
 #include "chrome/browser/android/contextualsearch/contextual_search_field_trial.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Tests ContextualSearchFieldTrail class.
@@ -34,7 +35,7 @@ class ContextualSearchFieldTrailTest : public testing::Test {
   };
 
   // The class under test.
-  scoped_ptr<ContextualSearchFieldTrailStubbed> field_trial_;
+  std::unique_ptr<ContextualSearchFieldTrailStubbed> field_trial_;
 
  protected:
   void SetUp() override {

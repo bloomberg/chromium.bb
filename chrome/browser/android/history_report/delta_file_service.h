@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 
 class GURL;
@@ -42,8 +42,9 @@ class DeltaFileService {
   // entries for given urls.
   bool Recreate(const std::vector<std::string>& urls);
   // Provides up to limit delta file entries with seqno > last_seq_no.
-  scoped_ptr<std::vector<DeltaFileEntryWithData>> Query(int64_t last_seq_no,
-                                                        int32_t limit);
+  std::unique_ptr<std::vector<DeltaFileEntryWithData>> Query(
+      int64_t last_seq_no,
+      int32_t limit);
   // Removes all entries from delta file.
   void Clear();
 
@@ -53,7 +54,7 @@ class DeltaFileService {
  private:
 
   base::SequencedWorkerPool::SequenceToken worker_pool_token_;
-  scoped_ptr<DeltaFileBackend> delta_file_backend_;
+  std::unique_ptr<DeltaFileBackend> delta_file_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaFileService);
 };

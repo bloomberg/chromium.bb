@@ -7,11 +7,11 @@
 
 #include <jni.h>
 
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 

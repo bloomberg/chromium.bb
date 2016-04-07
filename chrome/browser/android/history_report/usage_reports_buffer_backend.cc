@@ -77,15 +77,16 @@ void UsageReportsBufferBackend::AddVisit(const std::string& id,
     LOG(WARNING) << "AddVisit failed " << status.ToString();
 }
 
-scoped_ptr<std::vector<UsageReport> >
+std::unique_ptr<std::vector<UsageReport>>
 UsageReportsBufferBackend::GetUsageReportsBatch(int batch_size) {
-  scoped_ptr<std::vector<UsageReport> > reports(new std::vector<UsageReport>());
+  std::unique_ptr<std::vector<UsageReport>> reports(
+      new std::vector<UsageReport>());
   if (!db_.get()) {
     return reports;
   }
   reports->reserve(batch_size);
   leveldb::ReadOptions options;
-  scoped_ptr<leveldb::Iterator> db_iter(db_->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> db_iter(db_->NewIterator(options));
   db_iter->SeekToFirst();
   while (batch_size > 0 && db_iter->Valid()) {
     history_report::UsageReport last_report;
@@ -135,7 +136,7 @@ std::string UsageReportsBufferBackend::Dump() {
   dump.append("num pending entries=");
   leveldb::ReadOptions options;
   int num_entries = 0;
-  scoped_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
   for (db_it->SeekToFirst(); db_it->Valid(); db_it->Next()) num_entries++;
   dump.append(base::IntToString(num_entries));
   dump.append("]");

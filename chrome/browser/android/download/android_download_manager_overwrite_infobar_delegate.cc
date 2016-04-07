@@ -4,9 +4,11 @@
 
 #include "chrome/browser/android/download/android_download_manager_overwrite_infobar_delegate.h"
 
+#include <memory>
+
 #include "base/android/jni_string.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -33,7 +35,7 @@ void AndroidDownloadManagerOverwriteInfoBarDelegate::Create(
     jobject chrome_download_delegate,
     jobject download_info) {
   infobar_service->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(
-      make_scoped_ptr(new AndroidDownloadManagerOverwriteInfoBarDelegate(
+      base::WrapUnique(new AndroidDownloadManagerOverwriteInfoBarDelegate(
           file_name, dir_name, dir_full_path, chrome_download_delegate,
           download_info))));
 }

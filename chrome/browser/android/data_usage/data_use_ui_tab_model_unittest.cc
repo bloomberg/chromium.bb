@@ -89,9 +89,9 @@ class DataUseUITabModelTest : public testing::Test {
   DataUseUITabModel data_use_ui_tab_model_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
-  scoped_ptr<TestDataUseTabModel> data_use_tab_model_;
+  std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
+  std::unique_ptr<ExternalDataUseObserver> external_data_use_observer_;
+  std::unique_ptr<TestDataUseTabModel> data_use_tab_model_;
 };
 
 // Tests that DataUseTabModel is notified of tab closure and navigation events,

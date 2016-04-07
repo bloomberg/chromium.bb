@@ -116,9 +116,8 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
     logo_tracker_.reset(new LogoTracker(
         profile_->GetPath().Append(kCachedLogoDirectory),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-        BrowserThread::GetBlockingPool(),
-        profile_->GetRequestContext(),
-        scoped_ptr<search_provider_logos::LogoDelegate>(
+        BrowserThread::GetBlockingPool(), profile_->GetRequestContext(),
+        std::unique_ptr<search_provider_logos::LogoDelegate>(
             new ChromeLogoDelegate())));
   }
 

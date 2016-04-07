@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
@@ -870,7 +871,7 @@ void TabAndroid::SetInterceptNavigationDelegate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InterceptNavigationDelegate::Associate(
       web_contents(),
-      make_scoped_ptr(new ChromeInterceptNavigationDelegate(env, delegate)));
+      base::WrapUnique(new ChromeInterceptNavigationDelegate(env, delegate)));
 }
 
 void TabAndroid::AttachToTabContentManager(

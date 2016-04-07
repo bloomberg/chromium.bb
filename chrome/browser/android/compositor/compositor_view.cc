@@ -4,17 +4,17 @@
 
 #include "chrome/browser/android/compositor/compositor_view.h"
 
-#include <vector>
-
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
+
+#include <memory>
+#include <vector>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/id_map.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"

@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/tick_clock.h"
@@ -146,8 +146,8 @@ class TabDataUseEntryTest : public testing::Test {
   // Pointer to the clock used for spoofing time, owned by |tab_model_|.
   SimpleOffsetTestTickClock* tick_clock_;
 
-  scoped_ptr<DataUseTabModel> tab_model_;
-  scoped_ptr<TabDataUseEntry> tab_entry_;
+  std::unique_ptr<DataUseTabModel> tab_model_;
+  std::unique_ptr<TabDataUseEntry> tab_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(TabDataUseEntryTest);
 };

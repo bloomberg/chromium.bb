@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -81,10 +82,10 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
 
   infobars::InfoBar* infobar = nullptr;
   if (native_app_data_.is_null()) {
-    scoped_ptr<AppBannerInfoBarDelegateAndroid> delegate(
-        new AppBannerInfoBarDelegateAndroid(
-            event_request_id(), this, title, new SkBitmap(*icon),
-            web_app_data()));
+    std::unique_ptr<AppBannerInfoBarDelegateAndroid> delegate(
+        new AppBannerInfoBarDelegateAndroid(event_request_id(), this, title,
+                                            new SkBitmap(*icon),
+                                            web_app_data()));
 
     infobar = new AppBannerInfoBarAndroid(std::move(delegate),
                                           web_app_data().start_url);
@@ -93,7 +94,7 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
     }
   } else {
-    scoped_ptr<AppBannerInfoBarDelegateAndroid> delegate(
+    std::unique_ptr<AppBannerInfoBarDelegateAndroid> delegate(
         new AppBannerInfoBarDelegateAndroid(
             event_request_id(), title, new SkBitmap(*icon), native_app_data_,
             native_app_package_, referrer));
@@ -105,7 +106,7 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
     }
   }
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(make_scoped_ptr(infobar));
+      ->AddInfoBar(base::WrapUnique(infobar));
 }
 
 }  // namespace banners

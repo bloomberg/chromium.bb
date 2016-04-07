@@ -5,8 +5,10 @@
 #include "chrome/browser/android/history_report/delta_file_backend_leveldb.h"
 
 #include <inttypes.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
@@ -25,7 +27,7 @@ const base::FilePath::CharType kDbFileName[] =
 
 int64_t GetLastSeqNo(leveldb::DB* db) {
   leveldb::ReadOptions options;
-  scoped_ptr<leveldb::Iterator> db_iter(db->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> db_iter(db->NewIterator(options));
   db_iter->SeekToLast();
   int64_t seq_no = 0;
   if (db_iter->Valid()) {
@@ -128,7 +130,7 @@ void DeltaFileBackend::PageDeleted(const GURL& url) {
 int64_t DeltaFileBackend::Trim(int64_t lower_bound) {
   if (!EnsureInitialized()) return -1;
   leveldb::ReadOptions read_options;
-  scoped_ptr<leveldb::Iterator> db_iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> db_iter(db_->NewIterator(read_options));
   db_iter->SeekToFirst();
   if (!db_iter->Valid())
     return -1;
@@ -190,16 +192,16 @@ bool DeltaFileBackend::Recreate(const std::vector<std::string>& urls) {
   return false;
 }
 
-scoped_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
+std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
     int64_t last_seq_no,
     int32_t limit) {
   if (!EnsureInitialized())
-    return make_scoped_ptr(new std::vector<DeltaFileEntryWithData>());
+    return base::WrapUnique(new std::vector<DeltaFileEntryWithData>());
   std::string start;
   base::SStringPrintf(&start, "%" PRId64, last_seq_no + 1);
   leveldb::ReadOptions options;
-  scoped_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
-  scoped_ptr<std::vector<DeltaFileEntryWithData> > result(
+  std::unique_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
+  std::unique_ptr<std::vector<DeltaFileEntryWithData>> result(
       new std::vector<DeltaFileEntryWithData>());
   int32_t count = 0;
   for (db_it->Seek(start); db_it->Valid() && count < limit; db_it->Next()) {
@@ -228,7 +230,7 @@ std::string DeltaFileBackend::Dump() {
   }
   dump.append("num pending entries=");
   leveldb::ReadOptions options;
-  scoped_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
   int num_entries = 0;
   for (db_it->SeekToFirst(); db_it->Valid(); db_it->Next()) num_entries++;
   dump.append(base::IntToString(num_entries));

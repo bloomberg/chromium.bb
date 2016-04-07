@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -78,13 +80,13 @@ class OfflinePageTabHelperTest :
   // OfflinePageTestArchiver::Observer implementation:
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
 
-  scoped_ptr<OfflinePageTestArchiver> BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(
       const GURL& url,
       const base::FilePath& file_name);
   void OnSavePageDone(OfflinePageModel::SavePageResult result,
                       int64_t offline_id);
 
-  scoped_ptr<TestNetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
 
   int64_t offline_id_;
@@ -112,7 +114,7 @@ void OfflinePageTabHelperTest::SetUp() {
   // Saves an offline page.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context());
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPageUrl, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   model->SavePage(
       kTestPageUrl, kTestPageBookmarkId, std::move(archiver),
@@ -158,10 +160,10 @@ void OfflinePageTabHelperTest::SetLastPathCreatedByArchiver(
     const base::FilePath& file_path) {
 }
 
-scoped_ptr<OfflinePageTestArchiver> OfflinePageTabHelperTest::BuildArchiver(
-    const GURL& url,
-    const base::FilePath& file_name) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
+std::unique_ptr<OfflinePageTestArchiver>
+OfflinePageTabHelperTest::BuildArchiver(const GURL& url,
+                                        const base::FilePath& file_name) {
+  std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       this, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);

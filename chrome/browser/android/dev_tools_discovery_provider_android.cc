@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/tab_android.h"
@@ -173,25 +174,25 @@ class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
   DISALLOW_COPY_AND_ASSIGN(TabDescriptor);
 };
 
-scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>
+std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>
 CreateNewAndroidTab(const GURL& url) {
   if (TabModelList::empty())
-    return scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
 
   TabModel* tab_model = TabModelList::get(0);
   if (!tab_model)
-    return scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
 
   WebContents* web_contents = tab_model->CreateNewTabForDevTools(url);
   if (!web_contents)
-    return scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   if (!tab)
-    return scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
 
-  return make_scoped_ptr(TabDescriptor::CreateForWebContents(
-      tab->GetAndroidId(), web_contents));
+  return base::WrapUnique(
+      TabDescriptor::CreateForWebContents(tab->GetAndroidId(), web_contents));
 }
 
 }  // namespace
@@ -247,6 +248,6 @@ void DevToolsDiscoveryProviderAndroid::Install() {
   devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
       devtools_discovery::DevToolsDiscoveryManager::GetInstance();
   discovery_manager->AddProvider(
-      make_scoped_ptr(new DevToolsDiscoveryProviderAndroid()));
+      base::WrapUnique(new DevToolsDiscoveryProviderAndroid()));
   discovery_manager->SetCreateCallback(base::Bind(&CreateNewAndroidTab));
 }

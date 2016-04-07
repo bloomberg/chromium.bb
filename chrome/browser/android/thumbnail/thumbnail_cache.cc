@@ -169,7 +169,7 @@ void ThumbnailCache::Put(TabId tab_id,
   DCHECK(thumbnail_meta_data_.find(tab_id) != thumbnail_meta_data_.end());
 
   base::Time time_stamp = thumbnail_meta_data_[tab_id].capture_time();
-  scoped_ptr<Thumbnail> thumbnail = Thumbnail::Create(
+  std::unique_ptr<Thumbnail> thumbnail = Thumbnail::Create(
       tab_id, time_stamp, thumbnail_scale, ui_resource_provider_, this);
   thumbnail->SetBitmap(bitmap);
 
@@ -180,7 +180,7 @@ void ThumbnailCache::Put(TabId tab_id,
   if (use_approximation_thumbnail_) {
     std::pair<SkBitmap, float> approximation =
         CreateApproximation(bitmap, thumbnail_scale);
-    scoped_ptr<Thumbnail> approx_thumbnail = Thumbnail::Create(
+    std::unique_ptr<Thumbnail> approx_thumbnail = Thumbnail::Create(
         tab_id, time_stamp, approximation.second, ui_resource_provider_, this);
     approx_thumbnail->SetBitmap(approximation.first);
     approximation_cache_.Put(tab_id, std::move(approx_thumbnail));
@@ -790,7 +790,7 @@ void ThumbnailCache::PostReadTask(TabId tab_id,
       time_stamp = meta_iter->second.capture_time();
 
     MakeSpaceForNewItemIfNecessary(tab_id);
-    scoped_ptr<Thumbnail> thumbnail = Thumbnail::Create(
+    std::unique_ptr<Thumbnail> thumbnail = Thumbnail::Create(
         tab_id, time_stamp, scale, ui_resource_provider_, this);
     thumbnail->SetCompressedBitmap(compressed_data,
                                    content_size);

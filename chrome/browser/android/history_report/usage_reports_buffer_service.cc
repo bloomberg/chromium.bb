@@ -36,7 +36,7 @@ void DoGetUsageReportsBatch(
     history_report::UsageReportsBufferBackend* backend,
     int32_t batch_size,
     base::WaitableEvent* finished,
-    scoped_ptr<std::vector<history_report::UsageReport>>* result) {
+    std::unique_ptr<std::vector<history_report::UsageReport>>* result) {
   *result = backend->GetUsageReportsBatch(batch_size);
   finished->Signal();
 }
@@ -93,9 +93,9 @@ void UsageReportsBufferService::AddVisit(const std::string& id,
       base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 }
 
-scoped_ptr<std::vector<UsageReport>>
+std::unique_ptr<std::vector<UsageReport>>
 UsageReportsBufferService::GetUsageReportsBatch(int32_t batch_size) {
-  scoped_ptr<std::vector<UsageReport> > result;
+  std::unique_ptr<std::vector<UsageReport>> result;
   base::WaitableEvent finished(false, false);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   // It's ok to pass unretained pointers here because this is a synchronous

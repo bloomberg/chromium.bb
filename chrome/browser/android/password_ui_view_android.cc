@@ -43,7 +43,7 @@ void PasswordUIViewAndroid::ShowPassword(
 }
 
 void PasswordUIViewAndroid::SetPasswordList(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> ui_controller = weak_java_ui_controller_.get(env);
   if (!ui_controller.is_null()) {
@@ -53,7 +53,7 @@ void PasswordUIViewAndroid::SetPasswordList(
 }
 
 void PasswordUIViewAndroid::SetPasswordExceptionList(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>&
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>&
         password_exception_list) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> ui_controller = weak_java_ui_controller_.get(env);

@@ -87,7 +87,7 @@ base::android::ScopedJavaLocalRef<jobjectArray> HistoryReportJniBridge::Query(
     const JavaParamRef<jobject>& obj,
     jlong last_seq_no,
     jint limit) {
-  scoped_ptr<std::vector<DeltaFileEntryWithData> > entries =
+  std::unique_ptr<std::vector<DeltaFileEntryWithData>> entries =
       data_provider_->Query(last_seq_no, limit);
   ScopedJavaLocalRef<jobjectArray> jentries_array =
       history_report::Java_HistoryReportJniBridge_createDeltaFileEntriesArray(
@@ -119,7 +119,7 @@ base::android::ScopedJavaLocalRef<jobjectArray>
 HistoryReportJniBridge::GetUsageReportsBatch(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              jint batch_size) {
-  scoped_ptr<std::vector<UsageReport> > reports =
+  std::unique_ptr<std::vector<UsageReport>> reports =
       usage_reports_buffer_service_->GetUsageReportsBatch(batch_size);
   ScopedJavaLocalRef<jobjectArray> jreports_array =
       history_report::Java_HistoryReportJniBridge_createUsageReportsArray(env,

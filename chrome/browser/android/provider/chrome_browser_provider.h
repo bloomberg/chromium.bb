@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_PROVIDER_CHROME_BROWSER_PROVIDER_H_
 #define CHROME_BROWSER_ANDROID_PROVIDER_CHROME_BROWSER_PROVIDER_H_
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -231,7 +232,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   scoped_refptr<history::TopSites> top_sites_;
   favicon::FaviconService* favicon_service_;
 
-  scoped_ptr<AndroidHistoryProviderService> service_;
+  std::unique_ptr<AndroidHistoryProviderService> service_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 

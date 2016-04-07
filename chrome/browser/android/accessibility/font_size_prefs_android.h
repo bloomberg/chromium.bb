@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 
 class PrefChangeRegistrar;
@@ -56,7 +57,7 @@ class FontSizePrefsAndroid {
   // Callback for ForceEnableZoom changes from pref change registrar.
   void OnForceEnableZoomPrefsChanged();
 
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   PrefService* const pref_service_;
   base::ObserverList<Observer> observers_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

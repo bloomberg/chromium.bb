@@ -48,7 +48,7 @@ bool BrowsingDataCounterBridge::Register(JNIEnv* env) {
 }
 
 void BrowsingDataCounterBridge::onCounterFinished(
-    scoped_ptr<BrowsingDataCounter::Result> result) {
+    std::unique_ptr<BrowsingDataCounter::Result> result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> result_string =
       base::android::ConvertUTF16ToJavaString(

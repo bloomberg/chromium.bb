@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -147,9 +147,9 @@ class ExternalDataUseObserverTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
+  std::unique_ptr<ExternalDataUseObserver> external_data_use_observer_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

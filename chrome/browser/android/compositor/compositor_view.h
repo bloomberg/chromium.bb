@@ -140,7 +140,7 @@ class CompositorView : public content::CompositorClient,
   void SetBackground(bool visible, SkColor color);
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
-  scoped_ptr<content::Compositor> compositor_;
+  std::unique_ptr<content::Compositor> compositor_;
   LayerTitleCache* layer_title_cache_;
   TabContentManager* tab_content_manager_;
 

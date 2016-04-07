@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_OMNIBOX_AUTOCOMPLETE_CONTROLLER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_OMNIBOX_AUTOCOMPLETE_CONTROLLER_ANDROID_H_
 
+#include <memory>
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -135,7 +135,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const base::android::JavaRef<jstring>& j_text,
       bool prevent_inline_autocomplete);
 
-  scoped_ptr<AutocompleteController> autocomplete_controller_;
+  std::unique_ptr<AutocompleteController> autocomplete_controller_;
 
   // Last input we sent to the autocomplete controller.
   AutocompleteInput input_;

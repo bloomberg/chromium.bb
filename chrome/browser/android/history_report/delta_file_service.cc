@@ -30,12 +30,12 @@ void DoTrim(history_report::DeltaFileBackend* backend,
   finished->Signal();
 }
 
-void DoQuery(
-    history_report::DeltaFileBackend* backend,
-    int64_t last_seq_no,
-    int32_t limit,
-    base::WaitableEvent* finished,
-    scoped_ptr<std::vector<history_report::DeltaFileEntryWithData>>* result) {
+void DoQuery(history_report::DeltaFileBackend* backend,
+             int64_t last_seq_no,
+             int32_t limit,
+             base::WaitableEvent* finished,
+             std::unique_ptr<
+                 std::vector<history_report::DeltaFileEntryWithData>>* result) {
   *result = backend->Query(last_seq_no, limit);
   finished->Signal();
 }
@@ -111,10 +111,10 @@ int64_t DeltaFileService::Trim(int64_t lower_bound) {
   return result;
 }
 
-scoped_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
+std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
     int64_t last_seq_no,
     int32_t limit) {
-  scoped_ptr<std::vector<DeltaFileEntryWithData> > result;
+  std::unique_ptr<std::vector<DeltaFileEntryWithData>> result;
   base::WaitableEvent finished(false, false);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   pool->PostSequencedWorkerTaskWithShutdownBehavior(

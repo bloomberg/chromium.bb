@@ -88,7 +88,7 @@ class ContextualSearchManager
   base::android::ScopedJavaGlobalRef<jobject> java_manager_;
 
   // The delegate we're using the do the real work.
-  scoped_ptr<ContextualSearchDelegate> delegate_;
+  std::unique_ptr<ContextualSearchDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchManager);
 };

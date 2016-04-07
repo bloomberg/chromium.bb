@@ -35,7 +35,7 @@ namespace offline_pages {
 // Example:
 //   void SavePageOffline(content::WebContents* web_contents) {
 //     const GURL& url = web_contents->GetLastCommittedURL();
-//     scoped_ptr<OfflinePageMHTMLArchiver> archiver(
+//     std::unique_ptr<OfflinePageMHTMLArchiver> archiver(
 //         new OfflinePageMHTMLArchiver(
 //             web_contents, archive_dir));
 //     // Callback is of type OfflinePageModel::SavePageCallback.

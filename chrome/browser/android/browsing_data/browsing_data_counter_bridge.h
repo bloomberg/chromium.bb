@@ -30,11 +30,10 @@ class BrowsingDataCounterBridge {
   static bool Register(JNIEnv* env);
 
  private:
-  void onCounterFinished(
-      scoped_ptr<BrowsingDataCounter::Result> result);
+  void onCounterFinished(std::unique_ptr<BrowsingDataCounter::Result> result);
 
   base::android::ScopedJavaGlobalRef<jobject> jobject_;
-  scoped_ptr<BrowsingDataCounter> counter_;
+  std::unique_ptr<BrowsingDataCounter> counter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCounterBridge);
 };

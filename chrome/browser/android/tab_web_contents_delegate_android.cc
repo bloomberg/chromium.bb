@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/media/media_throttle_infobar_delegate.h"
@@ -122,10 +123,11 @@ void TabWebContentsDelegateAndroid::RunFileChooser(
   FileSelectHelper::RunFileChooser(web_contents, params);
 }
 
-scoped_ptr<BluetoothChooser> TabWebContentsDelegateAndroid::RunBluetoothChooser(
+std::unique_ptr<BluetoothChooser>
+TabWebContentsDelegateAndroid::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-  return make_scoped_ptr(new BluetoothChooserAndroid(frame, event_handler));
+  return base::WrapUnique(new BluetoothChooserAndroid(frame, event_handler));
 }
 
 void TabWebContentsDelegateAndroid::CloseContents(

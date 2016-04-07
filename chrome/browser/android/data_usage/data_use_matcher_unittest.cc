@@ -101,7 +101,8 @@ class DataUseMatcherTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ExternalDataUseObserverBridge> external_data_use_observer_bridge_;
+  std::unique_ptr<ExternalDataUseObserverBridge>
+      external_data_use_observer_bridge_;
   DataUseMatcher data_use_matcher_;
   DISALLOW_COPY_AND_ASSIGN(DataUseMatcherTest);
 };

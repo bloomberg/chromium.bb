@@ -19,8 +19,8 @@ void HungRendererInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     content::RenderProcessHost* render_process_host) {
   DCHECK(render_process_host);
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new HungRendererInfoBarDelegate(render_process_host))));
 }
 

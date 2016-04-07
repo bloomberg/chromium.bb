@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -41,8 +41,9 @@ class DeltaFileBackend {
   bool Recreate(const std::vector<std::string>& urls);
   // Provides up to |limit| delta file entries with
   // sequence number > |last_seq_no|.
-  scoped_ptr<std::vector<DeltaFileEntryWithData>> Query(int64_t last_seq_no,
-                                                        int32_t limit);
+  std::unique_ptr<std::vector<DeltaFileEntryWithData>> Query(
+      int64_t last_seq_no,
+      int32_t limit);
   // Removes all entries from delta file
   void Clear();
 
@@ -58,8 +59,8 @@ class DeltaFileBackend {
   class DigitsComparator;
 
   base::FilePath path_;
-  scoped_ptr<leveldb::DB> db_;
-  scoped_ptr<DigitsComparator> leveldb_cmp_;
+  std::unique_ptr<leveldb::DB> db_;
+  std::unique_ptr<DigitsComparator> leveldb_cmp_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaFileBackend);
 };

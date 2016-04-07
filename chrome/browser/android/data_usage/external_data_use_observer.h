@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -275,7 +275,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 #if defined(OS_ANDROID)
   // Listens to when Chromium gets backgrounded and submits buffered data use
   // reports.
-  scoped_ptr<base::android::ApplicationStatusListener> app_state_listener_;
+  std::unique_ptr<base::android::ApplicationStatusListener> app_state_listener_;
 #endif
 
   // True if |this| is currently registered as a data use observer.

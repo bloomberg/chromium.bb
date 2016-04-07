@@ -76,7 +76,7 @@ class PartnerBookmarksShimTest : public testing::Test {
     profile_.reset(NULL);
   }
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
   content::TestBrowserThreadBundle thread_bundle_;
 

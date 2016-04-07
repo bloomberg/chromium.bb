@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_BOTTOMBAR_OVERLAY_PANEL_CONTENT_H_
 #define CHROME_BROWSER_ANDROID_BOTTOMBAR_OVERLAY_PANEL_CONTENT_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 
@@ -66,8 +67,8 @@ class OverlayPanelContent {
   base::CancelableTaskTracker history_task_tracker_;
 
   // The WebContents that holds the panel content.
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<web_contents_delegate_android::WebContentsDelegateAndroid>
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<web_contents_delegate_android::WebContentsDelegateAndroid>
       web_contents_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayPanelContent);

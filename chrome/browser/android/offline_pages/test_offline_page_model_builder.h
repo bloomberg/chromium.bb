@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_TEST_OFFLINE_PAGE_MODEL_BUILDER_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_TEST_OFFLINE_PAGE_MODEL_BUILDER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class KeyedService;
 
@@ -18,7 +18,7 @@ namespace offline_pages {
 // Helper function to be used with
 // BrowserContextKeyedServiceFactory::SetTestingFactory() that returns a
 // OfflinePageModel object with mocked store.
-scoped_ptr<KeyedService> BuildTestOfflinePageModel(
+std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
     content::BrowserContext* context);
 
 }  // namespace offline_pages

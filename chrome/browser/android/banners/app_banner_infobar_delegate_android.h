@@ -83,7 +83,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher_;
 
   base::string16 app_title_;
-  scoped_ptr<SkBitmap> app_icon_;
+  std::unique_ptr<SkBitmap> app_icon_;
 
   int event_request_id_;
   content::Manifest web_app_data_;

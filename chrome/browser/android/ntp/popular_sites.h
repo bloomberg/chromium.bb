@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
 #define CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/net/file_downloader.h"
@@ -102,10 +102,10 @@ class PopularSites {
   void OnDownloadDone(bool is_fallback, FileDownloader::Result result);
 
   void ParseSiteList(const base::FilePath& path);
-  void OnJsonParsed(scoped_ptr<std::vector<Site>> sites);
+  void OnJsonParsed(std::unique_ptr<std::vector<Site>> sites);
 
   FinishedCallback callback_;
-  scoped_ptr<FileDownloader> downloader_;
+  std::unique_ptr<FileDownloader> downloader_;
   std::vector<Site> sites_;
   std::string pending_country_;
   std::string pending_version_;

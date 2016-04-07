@@ -133,7 +133,7 @@ void ContextualSearchDelegate::OnURLFetchComplete(
   DCHECK(source == search_term_fetcher_.get());
   int response_code = source->GetResponseCode();
 
-  scoped_ptr<ResolvedSearchTerm> resolved_search_term(
+  std::unique_ptr<ResolvedSearchTerm> resolved_search_term(
       new ResolvedSearchTerm(response_code));
   if (source->GetStatus().is_success() && response_code == net::HTTP_OK) {
     std::string response;
@@ -150,7 +150,7 @@ void ContextualSearchDelegate::OnURLFetchComplete(
   context_.reset();
 }
 
-scoped_ptr<ResolvedSearchTerm>
+std::unique_ptr<ResolvedSearchTerm>
 ContextualSearchDelegate::GetResolvedSearchTermFromJson(
     int response_code,
     const std::string& json_string) {
@@ -184,7 +184,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
     }
   }
   bool is_invalid = response_code == net::URLFetcher::RESPONSE_CODE_INVALID;
-  return scoped_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
+  return std::unique_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
       is_invalid, response_code, search_term, display_text, alternate_term,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language));
@@ -431,7 +431,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   const std::string& proper_json =
       contains_xssi_escape ? response.substr(strlen(kXssiEscape)) : response;
   JSONStringValueDeserializer deserializer(proper_json);
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
   if (root.get() != NULL && root->IsType(base::Value::TYPE_DICTIONARY)) {
     base::DictionaryValue* dict =

@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 
 // The C++ counterpart to Java's LargeIconBridge. Together these classes expose

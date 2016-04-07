@@ -94,13 +94,13 @@ class ConnectivityChecker : public net::URLFetcherDelegate {
   base::android::ScopedJavaGlobalRef<jobject> java_callback_;
 
   // The URLFetcher that executes the connectivity check.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // Whether |this| is already being destroyed, at which point the callback
   // has already happened, and no further action should be taken.
   bool is_being_destroyed_;
 
-  scoped_ptr<base::OneShotTimer> expiration_timer_;
+  std::unique_ptr<base::OneShotTimer> expiration_timer_;
 };
 
 void ConnectivityChecker::OnURLFetchComplete(const net::URLFetcher* source) {

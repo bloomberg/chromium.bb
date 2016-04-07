@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/thumbnail/thumbnail.h"
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -26,13 +28,13 @@ SkBitmap CreateSmallHolderBitmap() {
 
 }  // anonymous namespace
 
-scoped_ptr<Thumbnail> Thumbnail::Create(
+std::unique_ptr<Thumbnail> Thumbnail::Create(
     TabId tab_id,
     const base::Time& time_stamp,
     float scale,
     ui::UIResourceProvider* ui_resource_provider,
     ThumbnailDelegate* thumbnail_delegate) {
-  return make_scoped_ptr(new Thumbnail(
+  return base::WrapUnique(new Thumbnail(
       tab_id, time_stamp, scale, ui_resource_provider, thumbnail_delegate));
 }
 

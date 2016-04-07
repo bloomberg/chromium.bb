@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/resources/ui_resource_client.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -84,7 +85,7 @@ class DecorationTitle {
   bool is_incognito_;
   bool is_rtl_;
   bool is_loading_;
-  scoped_ptr<gfx::Transform> transform_;
+  std::unique_ptr<gfx::Transform> transform_;
 
   ui::ResourceManager* resource_manager_;
 

@@ -230,7 +230,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(
   DictionaryPrefUpdate pref_update(profile_->GetPrefs(),
                                    prefs::kNtpCollapsedForeignSessions);
   base::DictionaryValue* pref_collapsed_sessions = pref_update.Get();
-  scoped_ptr<base::DictionaryValue> collapsed_sessions(
+  std::unique_ptr<base::DictionaryValue> collapsed_sessions(
       pref_collapsed_sessions->DeepCopy());
   pref_collapsed_sessions->Clear();
 

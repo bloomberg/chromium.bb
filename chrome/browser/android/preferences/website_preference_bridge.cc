@@ -577,7 +577,7 @@ class SiteDataDeleteHelper :
   // Keeps track of when we're ready to close batch processing.
   bool ending_batch_processing_;
 
-  scoped_ptr<CookiesTreeModel> cookies_tree_model_;
+  std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataDeleteHelper);
 };

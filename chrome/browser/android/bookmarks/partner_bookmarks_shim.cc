@@ -28,7 +28,7 @@ namespace {
 // PartnerBookmarksShim is responsible to applying and storing the user changes
 // (deletions/renames) in the user profile, thus keeping the hierarchy intact.
 struct PartnerModelKeeper {
-  scoped_ptr<BookmarkNode> partner_bookmarks_root;
+  std::unique_ptr<BookmarkNode> partner_bookmarks_root;
   bool loaded;
 
   PartnerModelKeeper()

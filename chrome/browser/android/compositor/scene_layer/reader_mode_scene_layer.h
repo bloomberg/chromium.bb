@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_READER_MODE_SCENE_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_READER_MODE_SCENE_LAYER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "ui/android/resources/resource_manager_impl.h"
 

@@ -37,7 +37,7 @@ TEST(ExternalEstimateProviderAndroidTest, BasicsTest) {
 class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   TestNetworkQualityEstimator(
-      scoped_ptr<chrome::android::ExternalEstimateProviderAndroid>
+      std::unique_ptr<chrome::android::ExternalEstimateProviderAndroid>
           external_estimate_provider,
       const std::map<std::string, std::string>& variation_params)
       : NetworkQualityEstimator(std::move(external_estimate_provider),
@@ -80,7 +80,8 @@ TEST(ExternalEstimateProviderAndroidTest, DelegateTest) {
 
   base::ShadowingAtExitManager at_exit_manager;
   base::HistogramTester histogram_tester;
-  scoped_ptr<TestExternalEstimateProviderAndroid> external_estimate_provider;
+  std::unique_ptr<TestExternalEstimateProviderAndroid>
+      external_estimate_provider;
   external_estimate_provider.reset(new TestExternalEstimateProviderAndroid());
 
   TestExternalEstimateProviderAndroid* ptr = external_estimate_provider.get();

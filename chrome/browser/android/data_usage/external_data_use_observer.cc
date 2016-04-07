@@ -238,7 +238,7 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
     FetchMatchingRules();
   }
 
-  scoped_ptr<std::string> label(new std::string());
+  std::unique_ptr<std::string> label(new std::string());
 
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,

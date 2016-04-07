@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_CONTENT_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_CONTENT_LAYER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/filter_operations.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
 #include "ui/gfx/geometry/rect.h"
