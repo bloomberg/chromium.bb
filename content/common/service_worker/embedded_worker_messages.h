@@ -34,6 +34,7 @@ IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
   IPC_STRUCT_MEMBER(int, worker_devtools_agent_route_id)
   IPC_STRUCT_MEMBER(bool, pause_after_download)
   IPC_STRUCT_MEMBER(bool, wait_for_debugger)
+  IPC_STRUCT_MEMBER(bool, is_installed)
   IPC_STRUCT_MEMBER(content::EmbeddedWorkerSettings, settings)
 IPC_STRUCT_END()
 

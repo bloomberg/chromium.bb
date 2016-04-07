@@ -166,6 +166,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       const scoped_refptr<base::TaskRunner>& task_runner,
       const base::Closure& task);
 
+  // Allows the embedder to indicate whether it considers startup to be
+  // complete. May be called on any thread. This should be called on a one-off
+  // basis; if you need to poll this function constantly, use the above
+  // PostAfterStartupTask() API instead.
+  virtual bool IsBrowserStartupComplete();
+
   // If content creates the WebContentsView implementation, it will ask the
   // embedder to return an (optional) delegate to customize it. The view will
   // own the delegate.

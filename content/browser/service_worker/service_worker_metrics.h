@@ -18,6 +18,7 @@ namespace content {
 
 class ServiceWorkerMetrics {
  public:
+  // Used for UMA. Append-only.
   enum ReadResponseResult {
     READ_OK,
     READ_HEADERS_ERROR,
@@ -25,6 +26,7 @@ class ServiceWorkerMetrics {
     NUM_READ_RESPONSE_RESULT_TYPES,
   };
 
+  // Used for UMA. Append-only.
   enum WriteResponseResult {
     WRITE_OK,
     WRITE_HEADERS_ERROR,
@@ -32,6 +34,7 @@ class ServiceWorkerMetrics {
     NUM_WRITE_RESPONSE_RESULT_TYPES,
   };
 
+  // Used for UMA. Append-only.
   enum DeleteAndStartOverResult {
     DELETE_OK,
     DELETE_DATABASE_ERROR,
@@ -39,6 +42,7 @@ class ServiceWorkerMetrics {
     NUM_DELETE_AND_START_OVER_RESULT_TYPES,
   };
 
+  // Used for UMA. Append-only.
   enum URLRequestJobResult {
     REQUEST_JOB_FALLBACK_RESPONSE,
     REQUEST_JOB_FALLBACK_FOR_CORS,
@@ -97,6 +101,17 @@ class ServiceWorkerMetrics {
   // Used for UMA. Append only.
   enum class Site { OTHER, NEW_TAB_PAGE, NUM_TYPES };
 
+  // Not used for UMA.
+  enum class StartSituation {
+    UNKNOWN,
+    DURING_STARTUP,
+    EXISTING_PROCESS,
+    NEW_PROCESS
+  };
+
+  // Not used for UMA.
+  enum class LoadSource { NETWORK, HTTP_CACHE, SERVICE_WORKER_STORAGE };
+
   // Converts an event type to a string. Used for tracing.
   static const char* EventTypeToString(EventType event_type);
 
@@ -132,14 +147,15 @@ class ServiceWorkerMetrics {
 
   // Records the time taken to successfully start a worker. |is_installed|
   // indicates whether the version has been installed.
-  static void RecordStartWorkerTime(const base::TimeDelta& time,
-                                    bool is_installed);
+  static void RecordStartWorkerTime(base::TimeDelta time,
+                                    bool is_installed,
+                                    StartSituation start_situation);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);
 
   // Records the time taken to successfully stop a worker.
-  static void RecordStopWorkerTime(const base::TimeDelta& time);
+  static void RecordStopWorkerTime(base::TimeDelta time);
 
   static void RecordActivateEventStatus(ServiceWorkerStatusCode status);
   static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
@@ -155,7 +171,7 @@ class ServiceWorkerMetrics {
 
   // Records the amount of time spent handling an event.
   static void RecordEventDuration(EventType event,
-                                  const base::TimeDelta& time,
+                                  base::TimeDelta time,
                                   bool was_handled);
 
   // Records the result of dispatching a fetch event to a service worker.
@@ -179,7 +195,25 @@ class ServiceWorkerMetrics {
   // Called at the beginning of each ServiceWorkerVersion::Dispatch*Event
   // function. Records the time elapsed since idle (generally the time since the
   // previous event ended).
-  static void RecordTimeBetweenEvents(const base::TimeDelta& time);
+  static void RecordTimeBetweenEvents(base::TimeDelta time);
+
+  // The following record steps of EmbeddedWorkerInstance's start sequence.
+  static void RecordProcessCreated(bool is_new_process);
+  static void RecordTimeToSendStartWorker(base::TimeDelta duration,
+                                          StartSituation start_situation);
+  static void RecordTimeToURLJob(base::TimeDelta duration,
+                                 StartSituation start_situation);
+  static void RecordTimeToLoad(base::TimeDelta duration,
+                               LoadSource source,
+                               StartSituation start_situation);
+  static void RecordTimeToStartThread(base::TimeDelta duration,
+                                      StartSituation start_situation);
+  static void RecordTimeToEvaluateScript(base::TimeDelta duration,
+                                         StartSituation start_situation);
+
+  static const char* LoadSourceToString(LoadSource source);
+  static StartSituation GetStartSituation(bool is_browser_startup_complete,
+                                          bool is_new_process);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

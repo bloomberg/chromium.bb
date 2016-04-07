@@ -10675,6 +10675,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="EmbeddedWorkerInstance.ExistingProcessAllocation" units="ms">
+  <obsolete>
+    Deprecated 03/2016; replaced by
+    EmbeddedWorkerInstance.Start.SendStartWorker_ExistingProcess and
+    EmbeddedWorkerInstance.Start.TimeToURLJob_ExistingProcess.
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     The time taken to allocate a process to start the EmbeddedWorkerInstance.
@@ -10683,6 +10688,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="EmbeddedWorkerInstance.NewProcessAllocation" units="ms">
+  <obsolete>
+    Deprecated 03/2016; replaced by
+    EmbeddedWorkerInstance.Start.SendStartWorker_NewProcess and
+    EmbeddedWorkerInstance.Start.TimeToURLJob_NewProcess.
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     The time taken to allocate a process to start the EmbeddedWorkerInstance.
@@ -10706,11 +10716,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Whether a new renderer process was created for the EmbeddedWorkerInstance or
-    existing one was used.
+    existing one was used. Only recorded for installed workers.
   </summary>
 </histogram>
 
 <histogram name="EmbeddedWorkerInstance.ScriptEvaluate" units="ms">
+  <obsolete>
+    Deprecated as of 03/2016. Replaced by
+    EmbeddedWorkerInstance.Start.TimeToEvaluateScript.
+  </obsolete>
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken to evaluate the script to start the EmbeddedWorkerInstance.
@@ -10718,6 +10732,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess" units="ms">
+  <obsolete>
+    Deprecated as of 03/2016. Replaced by
+    EmbeddedWorkerInstance.Start.TimeToLoad_Network.
+  </obsolete>
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken to load the script file for the EmbeddedWorkerInstance with
@@ -10727,10 +10745,74 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="EmbeddedWorkerInstance.ScriptLoadWithoutNetworkAccess"
     units="ms">
+  <obsolete>
+    Deprecated as of 03/2016. Replaced by
+    EmbeddedWorkerInstance.Start.TimeToLoad_HttpCache and
+    EmbeddedWorkerInstance.Start.TimeToLoad_InstalledScript.
+  </obsolete>
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken to load the script file for the EmbeddedWorkerInstance
     without network access.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToEvaluateScript" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken for initial evaluation of the service worker script.
+    Specifically, the time between ACK from the renderer that the thread started
+    and ACK that the script evaluation finished. Only recorded for installed
+    workers.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToLoad.HttpCache" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken to load a new (not installed) service worker, when it came
+    from the HTTP cache.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToLoad.InstalledScript"
+    units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>The time taken to load an installed service worker.</summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToLoad.Network" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken to load a new (not installed) service worker, when it came
+    from the network.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToSendStartWorker" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken between deciding to start a worker and sending the start
+    worker IPC. Only recorded for installed workers.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToStartThread" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken to start the service worker thread. Specifically, the time
+    between ACK from the renderer that load finished and ACK that the thread
+    started. Does not include script evaluation time. Only recorded for
+    installed workers.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.TimeToURLJob" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The round-trip time between asking the renderer process to start a worker
+    and receiving the corresponding resource request. Only recorded for
+    installed workers.
   </summary>
 </histogram>
 
@@ -82038,7 +82120,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="FETCH_SUB_FRAME"/>
   <int value="12" label="FETCH_SHARED_WORKER"/>
   <int value="13" label="FETCH_SUB_RESOURCE"/>
-  <int value="14" label="UNKOWN"/>
+  <int value="14" label="UNKNOWN"/>
   <int value="15" label="FOREIGN_FETCH"/>
 </enum>
 
@@ -91392,6 +91474,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="interstitial.decision"/>
   <affected-histogram name="interstitial.decision.repeat_visit"/>
   <affected-histogram name="interstitial.interaction"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorker.StartSituation">
+  <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToEvaluateScript"/>
+  <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToLoad.HttpCache"/>
+  <affected-histogram
+      name="EmbeddedWorkerInstance.Start.TimeToLoad.InstalledScript"/>
+  <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToLoad.Network"/>
+  <affected-histogram
+      name="EmbeddedWorkerInstance.Start.TimeToSendStartWorker"/>
+  <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToStartThread"/>
+  <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToURLJob"/>
+  <suffix name="DuringStartup"
+      label="The worker started up during browser startup."/>
+  <suffix name="NewProcess"
+      label="A new process was created for the worker (or is asyncly being
+             created, depending on the histogram)."/>
+  <suffix name="ExistingProcess"
+      label="An existing process was used for the worker."/>
+  <affected-histogram name="ServiceWorker.StartWorker.Time"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorkerCache.Cache" separator=".">

@@ -396,14 +396,18 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
       ServiceWorkerMetrics::EventTypeToString(purpose));
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const bool is_browser_startup_complete =
+      GetContentClient()->browser()->IsBrowserStartupComplete();
   if (!context_) {
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
+                            is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_ABORT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
   if (is_redundant()) {
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
+                            is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_REDUNDANT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
@@ -416,6 +420,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
       !GetContentClient()->browser()->AllowServiceWorker(
           scope_, scope_, context_->wrapper()->resource_context(), -1, -1)) {
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
+                            is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_DISALLOWED);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_DISALLOWED));
     return;
@@ -426,7 +431,8 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   context_->storage()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
       base::Bind(&ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
-                 weak_factory_.GetWeakPtr(), purpose, status_, callback));
+                 weak_factory_.GetWeakPtr(), purpose, status_,
+                 is_browser_startup_complete, callback));
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
@@ -1275,6 +1281,7 @@ void ServiceWorkerVersion::OnRegisterForeignFetchScopes(
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     ServiceWorkerMetrics::EventType purpose,
     Status prestart_status,
+    bool is_browser_startup_complete,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
@@ -1291,12 +1298,14 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     }
   }
   if (status != SERVICE_WORKER_OK) {
-    RecordStartWorkerResult(purpose, prestart_status, kInvalidTraceId, status);
+    RecordStartWorkerResult(purpose, prestart_status, kInvalidTraceId,
+                            is_browser_startup_complete, status);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
   if (is_redundant()) {
     RecordStartWorkerResult(purpose, prestart_status, kInvalidTraceId,
+                            is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_REDUNDANT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
@@ -1319,9 +1328,10 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
             "ServiceWorker", "ServiceWorkerVersion::StartWorker", trace_id,
             "Script", script_url_.spec(), "Purpose",
             ServiceWorkerMetrics::EventTypeToString(purpose));
-        start_callbacks_.push_back(base::Bind(
-            &ServiceWorkerVersion::RecordStartWorkerResult,
-            weak_factory_.GetWeakPtr(), purpose, prestart_status, trace_id));
+        start_callbacks_.push_back(
+            base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
+                       weak_factory_.GetWeakPtr(), purpose, prestart_status,
+                       trace_id, is_browser_startup_complete));
       }
       break;
   }
@@ -1348,9 +1358,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;
+  params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download_;
 
-  DCHECK(!pause_after_download_ || !IsInstalled(status_));
   embedded_worker_->Start(
       std::move(params),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
@@ -1522,6 +1532,7 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
     ServiceWorkerMetrics::EventType purpose,
     Status prestart_status,
     int trace_id,
+    bool is_browser_startup_complete,
     ServiceWorkerStatusCode status) {
   if (trace_id != kInvalidTraceId) {
     TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::StartWorker",
@@ -1539,8 +1550,10 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
 
   if (status == SERVICE_WORKER_OK && !start_time.is_null() &&
       !skip_recording_startup_time_) {
-    ServiceWorkerMetrics::RecordStartWorkerTime(GetTickDuration(start_time),
-                                                IsInstalled(prestart_status));
+    ServiceWorkerMetrics::RecordStartWorkerTime(
+        GetTickDuration(start_time), IsInstalled(prestart_status),
+        ServiceWorkerMetrics::GetStartSituation(
+            is_browser_startup_complete, embedded_worker_->is_new_process()));
   }
 
   if (status != SERVICE_WORKER_ERROR_TIMEOUT)

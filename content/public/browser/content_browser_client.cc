@@ -27,6 +27,10 @@ void ContentBrowserClient::PostAfterStartupTask(
   task_runner->PostTask(from_here, task);
 }
 
+bool ContentBrowserClient::IsBrowserStartupComplete() {
+  return true;
+}
+
 WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
   return nullptr;

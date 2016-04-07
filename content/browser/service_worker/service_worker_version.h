@@ -544,6 +544,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DidEnsureLiveRegistrationForStartWorker(
       ServiceWorkerMetrics::EventType purpose,
       Status prestart_status,
+      bool is_browser_startup_complete,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
@@ -577,6 +578,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void RecordStartWorkerResult(ServiceWorkerMetrics::EventType purpose,
                                Status prestart_status,
                                int trace_id,
+                               bool is_browser_startup_complete,
                                ServiceWorkerStatusCode status);
 
   bool MaybeTimeOutRequest(const RequestInfo& info);

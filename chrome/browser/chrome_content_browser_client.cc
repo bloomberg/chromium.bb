@@ -828,6 +828,10 @@ void ChromeContentBrowserClient::PostAfterStartupTask(
   AfterStartupTaskUtils::PostTask(from_here, task_runner, task);
 }
 
+bool ChromeContentBrowserClient::IsBrowserStartupComplete() {
+  return AfterStartupTaskUtils::IsBrowserStartupComplete();
+}
+
 std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
     content::BrowserContext* browser_context,
     const GURL& site) {

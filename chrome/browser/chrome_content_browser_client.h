@@ -57,6 +57,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void PostAfterStartupTask(const tracked_objects::Location& from_here,
                             const scoped_refptr<base::TaskRunner>& task_runner,
                             const base::Closure& task) override;
+  bool IsBrowserStartupComplete() override;
   std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site) override;
