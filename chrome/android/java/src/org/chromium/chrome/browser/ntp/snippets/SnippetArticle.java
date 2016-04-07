@@ -44,6 +44,11 @@ public class SnippetArticle implements NewTabPageListItem {
 
         ThumbnailRenderingTask(ImageView thumbnailView) {
             mThumbnailView = thumbnailView;
+
+            // The view might be already holding the thumbnail from another snippet, as the view
+            // is recycled. We start by hiding it to avoid having a stale image be displayed while
+            // the new one is being downloaded.
+            mThumbnailView.setVisibility(View.INVISIBLE);
         }
 
         @Override
