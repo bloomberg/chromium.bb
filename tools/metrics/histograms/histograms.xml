@@ -82861,6 +82861,11 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Connection established in response to CONNECT request was
              abnormally closed"/>
   <int value="34" label="Peer exhibiting suspect behavior."/>
+  <int value="35" label="Inadequate security."/>
+  <int value="36" label="HTTP/1.1 required."/>
+<!-- More SpdyFramer::SpdyErrors -->
+
+  <int value="37" label="Invalid control frame size."/>
 </enum>
 
 <enum name="SpdyProtocolVersion" type="int">

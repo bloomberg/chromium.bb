@@ -3599,12 +3599,11 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
   scoped_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   scoped_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
-      0, GOAWAY_PROTOCOL_ERROR, "Framer error: 1 (INVALID_CONTROL_FRAME)."));
+      0, GOAWAY_FRAME_SIZE_ERROR,
+      "Framer error: 12 (INVALID_CONTROL_FRAME_SIZE)."));
   MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 2)};
 
   // Read WINDOW_UPDATE with incorrectly-sized payload.
-  // TODO(jgraettinger): SpdyFramer signals this as an INVALID_CONTROL_FRAME,
-  // which is mapped to a protocol error, and not a frame size error.
   scoped_ptr<SpdySerializedFrame> bad_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, 1));
   test::SetFrameLength(bad_window_update.get(),
@@ -3617,7 +3616,7 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
       CreateGetRequest(), DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
+  EXPECT_EQ(ERR_SPDY_FRAME_SIZE_ERROR, out.rv);
 }
 
 // Test that we shutdown correctly on write errors.

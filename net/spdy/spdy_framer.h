@@ -340,6 +340,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
     SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
     SPDY_UNEXPECTED_FRAME,             // Frame received out of order.
+    SPDY_INVALID_CONTROL_FRAME_SIZE,   // Control frame not sized to spec
 
     LAST_ERROR,  // Must be the last entry in the enum.
   };

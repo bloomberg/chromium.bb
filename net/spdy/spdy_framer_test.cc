@@ -3471,6 +3471,9 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   // Should generate an error, since its not possible to have a
   // settings frame of length kNewLength.
   EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
+            visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
 }
 
 // Tests handling of SETTINGS frames larger than the frame buffer size.
@@ -4228,6 +4231,9 @@ TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
   EXPECT_STREQ("CONTROL_PAYLOAD_TOO_LARGE",
                SpdyFramer::ErrorCodeToString(
                    SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
+  EXPECT_STREQ("INVALID_CONTROL_FRAME_SIZE",
+               SpdyFramer::ErrorCodeToString(
+                   SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE));
   EXPECT_STREQ("ZLIB_INIT_FAILURE",
                SpdyFramer::ErrorCodeToString(
                    SpdyFramer::SPDY_ZLIB_INIT_FAILURE));
@@ -4832,7 +4838,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     } else if (flags & SETTINGS_FLAG_ACK) {
       // The frame is invalid because ACK frames should have no payload.
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
                 framer.error_code())
           << SpdyFramer::ErrorCodeToString(framer.error_code());
     } else {
@@ -5660,7 +5666,68 @@ TEST_P(SpdyFramerTest, ReadIncorrectlySizedPriority) {
   visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
 
   EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
-  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
+            visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
+}
+
+// Tests handling of PING frame with incorrect size.
+TEST_P(SpdyFramerTest, ReadIncorrectlySizedPing) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  // PING frame of size 4, which isn't correct.
+  const unsigned char kFrameData[] = {
+      0x00, 0x00, 0x04, 0x06, 0x00, 0x00, 0x00,
+      0x00, 0x03, 0x00, 0x00, 0x00, 0x01,
+  };
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
+
+  EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
+            visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
+}
+
+// Tests handling of WINDOW_UPDATE frame with incorrect size.
+TEST_P(SpdyFramerTest, ReadIncorrectlySizedWindowUpdate) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  // WINDOW_UPDATE frame of size 3, which isn't correct.
+  const unsigned char kFrameData[] = {
+      0x00, 0x00, 0x03, 0x08, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x01,
+  };
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
+
+  EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
+            visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
+}
+
+// Tests handling of RST_STREAM frame with incorrect size.
+TEST_P(SpdyFramerTest, ReadIncorrectlySizedRstStream) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  // RST_STREAM frame of size 3, which isn't correct.
+  const unsigned char kFrameData[] = {
+      0x00, 0x00, 0x03, 0x03, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x01,
+  };
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
+
+  EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE,
             visitor.framer_.error_code())
       << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
 }

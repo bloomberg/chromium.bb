@@ -374,6 +374,8 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS;
     case SpdyFramer::SPDY_UNEXPECTED_FRAME:
       return SPDY_ERROR_UNEXPECTED_FRAME;
+    case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE:
+      return SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE;
     default:
       NOTREACHED();
       return static_cast<SpdyProtocolErrorDetails>(-1);
@@ -406,6 +408,8 @@ Error MapFramerErrorToNetError(SpdyFramer::SpdyError err) {
       return ERR_SPDY_PROTOCOL_ERROR;
     case SpdyFramer::SPDY_UNEXPECTED_FRAME:
       return ERR_SPDY_PROTOCOL_ERROR;
+    case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE:
+      return ERR_SPDY_FRAME_SIZE_ERROR;
     default:
       NOTREACHED();
       return ERR_SPDY_PROTOCOL_ERROR;

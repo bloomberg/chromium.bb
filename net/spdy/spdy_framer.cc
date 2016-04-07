@@ -423,6 +423,8 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
       return "INVALID_CONTROL_FRAME";
     case SPDY_CONTROL_PAYLOAD_TOO_LARGE:
       return "CONTROL_PAYLOAD_TOO_LARGE";
+    case SPDY_INVALID_CONTROL_FRAME_SIZE:
+      return "INVALID_CONTROL_FRAME_SIZE";
     case SPDY_ZLIB_INIT_FAILURE:
       return "ZLIB_INIT_FAILURE";
     case SPDY_UNSUPPORTED_VERSION:
@@ -903,13 +905,11 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       }
       break;
     case RST_STREAM:
-      // TODO(bnc): Enforce the length of the header, and change error to
-      // FRAME_SIZE_ERROR.
       if ((current_frame_length_ != GetRstStreamMinimumSize() &&
            protocol_version_ == SPDY3) ||
           (current_frame_length_ < GetRstStreamMinimumSize() &&
            protocol_version_ == HTTP2)) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
+        set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
@@ -926,7 +926,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
           % setting_size != values_prefix_size) {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_frame_length_;
-        set_error(SPDY_INVALID_CONTROL_FRAME);
+        set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (protocol_version_ == SPDY3 &&
                  current_frame_flags_ &
                      ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
@@ -937,13 +937,13 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       } else if (protocol_version_ == HTTP2 &&
                  current_frame_flags_ & SETTINGS_FLAG_ACK &&
                  current_frame_length_ > GetSettingsMinimumSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
+        set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       }
       break;
     }
     case PING:
       if (current_frame_length_ != GetPingSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
+        set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if ((protocol_version_ == SPDY3 && current_frame_flags_ != 0) ||
                  (current_frame_flags_ & ~PING_FLAG_ACK)) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -989,7 +989,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       break;
     case WINDOW_UPDATE:
       if (current_frame_length_ != GetWindowUpdateSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
+        set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
@@ -1032,7 +1032,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
     case PRIORITY:
       if (protocol_version_ == SPDY3 ||
           current_frame_length_ != GetPrioritySize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
+        set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
