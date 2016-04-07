@@ -80,6 +80,14 @@ http/tests/navigation/success200-frames-loadsame.html [ Failure ]
 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
+# https://crbug.com/601584 - No OOPIF support for UserGestureIndicator triggers
+#                            cross-origin-iframe.html layout test failure
+http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
+
+# https://crbug.com/601581 - m_persistedPluginWidget->isFrameView() assert
+#                            fails in --site-per-process mode
+http/tests/security/xss-DENIED-object-element.html [ Crash ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 
 # No repro (maybe flaky? maybe really fixed? maybe repros only in debug build?):
