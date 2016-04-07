@@ -56,7 +56,8 @@ metrics.FileSystemProviders = {
   ibfbhbegfkamboeglpnianlggahglbfi: 'Cloud Storage (FB)',
   pmnllmkmjilbojkpgplbdmckghmaocjh: 'Scan (FB)',
   mfhnnfciefdpolbelmfkpmhhmlkehbdf: 'File System for SMB/CIFS (YT)',
-  plmanjiaoflhcilcfdnjeffklbgejmje: 'Add MY Documents (KA)'
+  plmanjiaoflhcilcfdnjeffklbgejmje: 'Add MY Documents (KA)',
+  mljpablpddhocfbnokacjggdbmafjnon: 'Wicked Good Unarchiver (MF)'
 };
 
 /**
