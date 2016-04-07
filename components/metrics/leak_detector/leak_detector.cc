@@ -57,8 +57,6 @@ struct HookData {
   // to handle recursive hook calls. Anything allocated when this flag is set
   // should also be freed when this flag is set.
   bool entered_hook;
-
-  HookData() : alloc_size(0), entered_hook(false) {}
 };
 
 #if defined(OS_CHROMEOS)
@@ -91,24 +89,6 @@ int IterateLoadedObjects(struct dl_phdr_info* shared_object,
   return 0;
 }
 #endif  // defined(OS_CHROMEOS)
-
-// Populates |*tls_data| with a heap-allocated HookData object. Returns the
-// address of the allocated object.
-HookData* CreateTLSHookData(base::ThreadLocalPointer<HookData>* tls_data) {
-  // Allocating a new object will result in a recursive hook function call, when
-  // there is no TLS HookData available. This would turn into an infinite loop
-  // as this function gets called repeatedly in a futile attempt to create the
-  // HookData for the first time, ultimately causing a stack overflow.
-  //
-  // To get around this, fill |*tls_data| with a temporary HookData object
-  // first, and then call the allocator.
-  HookData temp_hook_data;
-  temp_hook_data.entered_hook = true;
-  tls_data->Set(&temp_hook_data);
-
-  tls_data->Set(new HookData);
-  return tls_data->Get();
-}
 
 // Convert a pointer to a hash value. Returns only the upper eight bits.
 inline uint64_t PointerToHash(const void* ptr) {
@@ -145,7 +125,31 @@ void GetReportsForObservers(
 base::LazyInstance<LeakDetector>::Leaky g_instance = LAZY_INSTANCE_INITIALIZER;
 
 // Thread-specific data to be used by hook functions.
-base::LazyInstance<base::ThreadLocalPointer<HookData>>::Leaky g_hook_data_tls;
+base::LazyInstance<base::ThreadLocalPointer<void>>::Leaky g_hook_data_tls =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Returns the contents of |g_hook_data_tls| as a HookData structure.
+inline HookData LoadHookDataFromTLS() {
+  uintptr_t ptr_value =
+      reinterpret_cast<uintptr_t>(g_hook_data_tls.Get().Get());
+
+  // The lower bit of |ptr_value| indicates whether a hook has already been
+  // entered. The remaining bits store the alloc size.
+  HookData result;
+  result.entered_hook = ptr_value & 0x01;
+  result.alloc_size = ptr_value >> 1;
+  return result;
+}
+
+// Stores a HookData structure in |g_hook_data_tls|. HookData is a trivial
+// struct so it is faster to pass by value.
+inline void StoreHookDataToTLS(HookData hook_data) {
+  // NOTE: |alloc_size| loses its upper bit when it gets stored in the TLS here.
+  // The effective max value of |alloc_size| is thus half its nominal max value.
+  uintptr_t ptr_value =
+      (hook_data.entered_hook ? 1 : 0) | (hook_data.alloc_size << 1);
+  g_hook_data_tls.Get().Set(reinterpret_cast<void*>(ptr_value));
+}
 
 }  // namespace
 
@@ -188,7 +192,8 @@ void LeakDetector::Init(float sampling_rate,
       mapping.addr, mapping.size, size_suspicion_threshold,
       call_stack_suspicion_threshold));
 
-  // Register allocator hook functions.
+  // Register allocator hook functions. This must be done last since the
+  // preceding code will need to call the allocator.
   base::allocator::SetHooks(&AllocHook, &FreeHook);
 }
 
@@ -213,22 +218,20 @@ LeakDetector::~LeakDetector() {}
 
 // static
 void LeakDetector::AllocHook(const void* ptr, size_t size) {
-  base::ThreadLocalPointer<HookData>& hook_data_ptr = g_hook_data_tls.Get();
-  HookData* hook_data = hook_data_ptr.Get();
-  if (!hook_data) {
-    hook_data = CreateTLSHookData(&hook_data_ptr);
-  }
-
-  if (hook_data->entered_hook)
+  HookData hook_data = LoadHookDataFromTLS();
+  if (hook_data.entered_hook)
     return;
 
-  hook_data->alloc_size += size;
+  hook_data.alloc_size += size;
 
   LeakDetector* detector = GetInstance();
-  if (!detector->ShouldSample(ptr))
+  if (!detector->ShouldSample(ptr)) {
+    StoreHookDataToTLS(hook_data);
     return;
+  }
 
-  hook_data->entered_hook = true;
+  hook_data.entered_hook = true;
+  StoreHookDataToTLS(hook_data);
 
   // Get stack trace if necessary.
   std::vector<void*> stack;
@@ -251,10 +254,10 @@ void LeakDetector::AllocHook(const void* ptr, size_t size) {
     // shared counter is updated with sufficient granularity. This way, even if
     // a few threads were slow to reach the threshold, the leak analysis would
     // not be delayed by too much.
-    if (hook_data->alloc_size >=
+    if (hook_data.alloc_size >=
         analysis_interval_bytes / kTotalAllocSizeUpdateIntervalDivisor) {
-      total_alloc_size += hook_data->alloc_size;
-      hook_data->alloc_size = 0;
+      total_alloc_size += hook_data.alloc_size;
+      hook_data.alloc_size = 0;
     }
 
     // Check for leaks after |analysis_interval_bytes_| bytes have been
@@ -284,7 +287,8 @@ void LeakDetector::AllocHook(const void* ptr, size_t size) {
     dummy_stack.swap(stack);
   }
 
-  hook_data->entered_hook = false;
+  hook_data.entered_hook = false;
+  StoreHookDataToTLS(hook_data);
 }
 
 // static
@@ -293,23 +297,20 @@ void LeakDetector::FreeHook(const void* ptr) {
   if (!detector->ShouldSample(ptr))
     return;
 
-  base::ThreadLocalPointer<HookData>& hook_data_ptr = g_hook_data_tls.Get();
-  HookData* hook_data = hook_data_ptr.Get();
-  if (!hook_data) {
-    hook_data = CreateTLSHookData(&hook_data_ptr);
-  }
-
-  if (hook_data->entered_hook)
+  HookData hook_data = LoadHookDataFromTLS();
+  if (hook_data.entered_hook)
     return;
 
-  hook_data->entered_hook = true;
+  hook_data.entered_hook = true;
+  StoreHookDataToTLS(hook_data);
 
   {
     base::AutoLock lock(detector->recording_lock_);
     detector->impl_->RecordFree(ptr);
   }
 
-  hook_data->entered_hook = false;
+  hook_data.entered_hook = false;
+  StoreHookDataToTLS(hook_data);
 }
 
 inline bool LeakDetector::ShouldSample(const void* ptr) const {
