@@ -1710,20 +1710,6 @@ struct FuzzTraits<printing::PdfRenderSettings> {
 };
 
 template <>
-struct FuzzTraits<remoting::ScreenResolution> {
-  static bool Fuzz(remoting::ScreenResolution* p, Fuzzer* fuzzer) {
-    webrtc::DesktopSize dimensions = p->dimensions();
-    webrtc::DesktopVector dpi = p->dpi();
-    if (!FuzzParam(&dimensions, fuzzer))
-      return false;
-    if (!FuzzParam(&dpi, fuzzer))
-      return false;
-    *p = remoting::ScreenResolution(dimensions, dpi);
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<SkBitmap> {
   static bool Fuzz(SkBitmap* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): This should actually do something.
@@ -1884,73 +1870,6 @@ struct FuzzTraits<URLPattern> {
     p->SetHost(host);
     p->SetPort(port);
     p->SetPath(path);
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<webrtc::DesktopSize> {
-  static bool Fuzz(webrtc::DesktopSize* p, Fuzzer* fuzzer) {
-    int32_t width = p->width();
-    int32_t height = p->height();
-    if (!FuzzParam(&width, fuzzer))
-      return false;
-    if (!FuzzParam(&height, fuzzer))
-      return false;
-    *p = webrtc::DesktopSize(width, height);
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<webrtc::DesktopVector> {
-  static bool Fuzz(webrtc::DesktopVector* p, Fuzzer* fuzzer) {
-    int32_t x = p->x();
-    int32_t y = p->y();
-    if (!FuzzParam(&x, fuzzer))
-      return false;
-    if (!FuzzParam(&y, fuzzer))
-      return false;
-    p->set(x, y);
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<webrtc::DesktopRect> {
-  static bool Fuzz(webrtc::DesktopRect* p, Fuzzer* fuzzer) {
-    int32_t left = p->left();
-    int32_t top = p->top();
-    int32_t right = p->right();
-    int32_t bottom = p->bottom();
-    if (!FuzzParam(&left, fuzzer))
-      return false;
-    if (!FuzzParam(&top, fuzzer))
-      return false;
-    if (!FuzzParam(&right, fuzzer))
-      return false;
-    if (!FuzzParam(&bottom, fuzzer))
-      return false;
-    *p = webrtc::DesktopRect::MakeLTRB(left, top, right, bottom);
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<webrtc::MouseCursor> {
-  static bool Fuzz(webrtc::MouseCursor* p, Fuzzer* fuzzer) {
-    webrtc::DesktopVector hotspot = p->hotspot();
-    if (!FuzzParam(&hotspot, fuzzer))
-      return false;
-    p->set_hotspot(hotspot);
-
-    // TODO(mbarbella): Find a way to handle the size mutation properly.
-    if (!fuzzer->ShouldGenerate())
-      return false;
-
-    // Using a small size here to avoid OOM or overflow on image allocation.
-    webrtc::DesktopSize size(RandInRange(100), RandInRange(100));
-    p->set_image(new webrtc::BasicDesktopFrame(size));
     return true;
   }
 };
