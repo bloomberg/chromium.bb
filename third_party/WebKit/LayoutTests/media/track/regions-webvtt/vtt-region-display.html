@@ -1,112 +1,70 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests default rendering for TextTrackCues that belong to a VTTRegion.</title>
+<script src="../../media-controls.js"></script>
+<script src="../../media-file.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<video controls></video>
+<script>
+var region;
+var seekTimes = [0.2, 0.5, 1.0, 2.3, 3.0];
+var seekTimeIndex = 0;
 
-        <script src=../../media-controls.js></script>
-        <script src=../../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../video-test.js></script>
-        <script>
-        var testTrack;
-        var region;
-        var container;
-        var totalVisibleLines;
+function countVisibleLines(cueElement)
+{
+    var cueRect = cueElement.getBoundingClientRect();
+    var regionRect = region.getBoundingClientRect();
 
-        var seekTimes = [0.2, 0.5, 1.0, 2.3, 3.0];
-        var crtSeekTime = 0;
+    var linesMatch = cueElement.textContent.match(/\n/g);
+    var linesCount = 1 + (linesMatch == null ? 0 : linesMatch.length);
+    var lineHeight = cueRect.height / linesCount;
 
-        function countVisibleLines(cueElement)
-        {
-            var cueRect = cueElement.getBoundingClientRect();
-            var regionRect = region.getBoundingClientRect();
+    var visibleLines = 0;
+    for (i = 0; i < linesCount; ++i) {
+      var lineTop = cueRect.top + i * lineHeight;
+      var lineBottom = cueRect.top + (i+1) * lineHeight;
 
-            var linesMatch = cueElement.textContent.match(/\n/g);
-            var linesCount = 1 + (linesMatch == null ? 0 : linesMatch.length);
-            var lineHeight = cueRect.height / linesCount;
+      if (lineTop >= regionRect.top && lineBottom <= regionRect.bottom)
+        visibleLines++;
+    }
 
-            var visibleLines = 0;
-            for (i = 0; i < linesCount; ++i) {
-              var lineTop = cueRect.top + i * lineHeight;
-              var lineBottom = cueRect.top + (i+1) * lineHeight;
+    return visibleLines;
+}
 
-              if (lineTop >= regionRect.top && lineBottom <= regionRect.bottom)
-                visibleLines++;
-            }
+async_test(function() {
+    var video = document.querySelector('video');
+    video.src = findMediaFile('video', '../../content/test');
+    var testTrack = document.createElement('track');
+    testTrack.onload = this.step_func(function() {
+        video.oncanplaythrough = this.step_func(function() {
+            track = video.textTracks[0];
 
-            return visibleLines;
-        }
+            assert_equals(track.regions.length, 1);
 
-        function testRegionsDisplay()
-        {
-            video.removeEventListener('canplaythrough', testRegionsDisplay);
+            region = textTrackDisplayElement(video, 'region');
+            var container = textTrackDisplayElement(video, 'region-container');
 
-            testTrack = video.textTracks[0];
+            video.onseeked = this.step_func(function() {
+                var totalVisibleLines = 0;
 
-            consoleWrite("** The text track has only one region **");
-            testExpected("testTrack.regions.length", 1);
+                for (var i = 0; i < container.children.length; ++i) {
+                    var cue = container.children[i];
+                    totalVisibleLines += countVisibleLines(cue);;
+                }
 
-            try {
-              region = textTrackDisplayElement(video, 'region');
-              container = textTrackDisplayElement(video, 'region-container');
-            } catch(e) {
-              consoleWrite(e);
-            }
+                assert_less_than_equal(totalVisibleLines, track.regions[0].height);
 
-            consoleWrite("<br>** Inspecting cues displayed within region**");
-
-            waitForEvent("seeked", inspectRegionTree);
-            seekVideo();
-        }
-
-        function seekVideo()
-        {
-            consoleWrite("");
-            run("video.currentTime = " + seekTimes[crtSeekTime++]);
-        }
-
-        function inspectRegionTree()
-        {
-            consoleWrite("Total cues in region: " + container.children.length);
-            totalVisibleLines = 0;
-
-            for (var i = 0; i < container.children.length; ++i) {
-                var cue = container.children[i];
-                var cueVisibleLines = countVisibleLines(cue);
-                consoleWrite("Cue content is: " + cue.textContent);
-                consoleWrite("Cue lines visible from this cue: " + cueVisibleLines);
-
-                totalVisibleLines += cueVisibleLines;
-            }
-
-            testExpected("totalVisibleLines <= testTrack.regions[0].height", true);
-
-            if (crtSeekTime == seekTimes.length)
-                endTest();
-            else
-                seekVideo();
-        }
-
-        function startTest()
-        {
-            if (!window.VTTRegion) {
-                failTest();
-                return;
-            }
-
-            findMediaElement();
-
-            video.src = findMediaFile('video', '../../content/test');
-            video.addEventListener('canplaythrough', testRegionsDisplay);
-        }
-
-        </script>
-    </head>
-    <body>
-        <p>Tests default rendering for TextTrackCues that belong to a VTTRegion.</p>
-        <video controls>
-            <track src="../captions-webvtt/captions-regions.vtt" kind="captions" default onload="startTest()">
-        </video>
-    </body>
-</html>
+                if (seekTimeIndex == seekTimes.length)
+                    this.done();
+                else
+                    video.currentTime = seekTimes[seekTimeIndex++];
+            });
+            video.currentTime = seekTimes[seekTimeIndex++];
+        });
+    });
+    testTrack.src = '../captions-webvtt/captions-regions.vtt';
+    testTrack.kind = 'captions';
+    testTrack.default = true;
+    video.appendChild(testTrack);
+});
+</script>

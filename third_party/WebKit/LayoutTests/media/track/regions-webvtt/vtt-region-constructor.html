@@ -1,82 +1,66 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests the constructor and mutation of VTTRegion.</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var region = new VTTRegion();
+    assert_true(region instanceof VTTRegion, "instanceof");
 
-        <script src=../../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../video-test.js></script>
-        <script>
-            var region;
-            var invalidPercentageValues;
+    assert_equals(region.track, null);
+    assert_equals(region.scroll, "");
+    assert_equals(region.viewportAnchorX, 0);
+    assert_equals(region.viewportAnchorY, 100);
+    assert_equals(region.regionAnchorX, 0);
+    assert_equals(region.regionAnchorY, 100);
+    assert_equals(region.height, 3);
+    assert_equals(region.width, 100);
 
-            function startTest()
-            {
-                if (!window.VTTRegion) {
-                    failTest();
-                    return;
-                }
+    assert_throws(new SyntaxError, function() { region.scroll = "invalid-scroll-value"; });
+    assert_equals(region.scroll, "");
 
-                region = new VTTRegion();
+    var invalidPercentageValues = [-1, 101];
+    for (var value of invalidPercentageValues) {
+      assert_throws("IndexSizeError", function() { region.viewportAnchorX = value; });
+      assert_equals(region.viewportAnchorX, 0);
+      assert_throws("IndexSizeError", function() { region.viewportAnchorY = value; });
+      assert_equals(region.viewportAnchorY, 100);
+      assert_throws("IndexSizeError", function() { region.regionAnchorX = value; });
+      assert_equals(region.regionAnchorX, 0);
+      assert_throws("IndexSizeError", function() { region.regionAnchorY = value; });
+      assert_equals(region.regionAnchorY, 100);
+      assert_throws("IndexSizeError", function() { region.width = value; });
+      assert_equals(region.width, 100);
+    }
 
-                consoleWrite("** Test instanceof VTTRegion. **");
-                testExpected("region instanceof VTTRegion", true);
+    invalidPercentageValues = [-Infinity, Infinity, NaN];
+    for (var value of invalidPercentageValues) {
+      assert_throws(new TypeError, function() { region.viewportAnchorX = value; });
+      assert_equals(region.viewportAnchorX, 0);
+      assert_throws(new TypeError, function() { region.viewportAnchorY = value; });
+      assert_equals(region.viewportAnchorY, 100);
+      assert_throws(new TypeError, function() { region.regionAnchorX = value; });
+      assert_equals(region.regionAnchorX, 0);
+      assert_throws(new TypeError, function() { region.regionAnchorY = value; });
+      assert_equals(region.regionAnchorY, 100);
+      assert_throws(new TypeError, function() { region.width = value; });
+      assert_equals(region.width, 100);
+    }
 
-                consoleWrite("** Test the default indexs of a region. **");
-                testExpected("region.track", null);
-                testExpected("region.scroll", "");
-                testExpected("region.viewportAnchorX", 0);
-                testExpected("region.viewportAnchorY", 100);
-                testExpected("region.regionAnchorX", 0);
-                testExpected("region.regionAnchorY", 100);
-                testExpected("region.height", 3);
-                testExpected("region.width", 100);
+    assert_throws("IndexSizeError", function() { region.height = -1; });
+    assert_equals(region.height, 3);
 
-                consoleWrite("<br>** Test that incorrect mutation keeps previous valid values. **");
-                run("region.scroll = 'invalid-scroll-value'");
-                testExpected("region.scroll", "");
-
-                invalidPercentageValues = [-1, 101, -Infinity, Infinity, NaN];
-                for (index in invalidPercentageValues) {
-                  consoleWrite("<br>Invalid percentage value: " + invalidPercentageValues[index]);
-                  run("region.viewportAnchorX = invalidPercentageValues[index]");
-                  testExpected("region.viewportAnchorX", 0);
-                  run("region.viewportAnchorY = invalidPercentageValues[index]");
-                  testExpected("region.viewportAnchorY", 100);
-                  run("region.regionAnchorX = invalidPercentageValues[index]");
-                  testExpected("region.regionAnchorX", 0);
-                  run("region.regionAnchorY = invalidPercentageValues[index]");
-                  testExpected("region.regionAnchorY", 100);
-                  run("region.width = invalidPercentageValues[index]");
-                  testExpected("region.width", 100);
-                }
-
-                run("region.height = -1");
-                testExpected("region.height", 3);
-
-                consoleWrite("<br>** Test that proper mutation keeps assigned value. **");
-                run("region.height = 130");
-                testExpected("region.height", 130);
-
-                run("region.viewportAnchorX = 64");
-                testExpected("region.viewportAnchorX", 64);
-                run("region.viewportAnchorY = 32");
-                testExpected("region.viewportAnchorY", 32);
-                run("region.regionAnchorX = 16");
-                testExpected("region.regionAnchorX", 16);
-                run("region.regionAnchorY = 8");
-                testExpected("region.regionAnchorY", 8);
-
-                run("region.width = 42");
-                testExpected("region.width", 42);
-
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body onload="startTest()">
-        <p>Tests the constructor and mutation of VTTRegion.</p>
-    </body>
-</html>
+    region.height = 130;
+    assert_equals(region.height, 130);
+    region.viewportAnchorX = 64;
+    assert_equals(region.viewportAnchorX, 64);
+    region.viewportAnchorY = 32;
+    assert_equals(region.viewportAnchorY, 32);
+    region.regionAnchorX = 16;
+    assert_equals(region.regionAnchorX, 16);
+    region.regionAnchorY = 8;
+    assert_equals(region.regionAnchorY, 8);
+    region.width = 42;
+    assert_equals(region.width, 42);
+});
+</script>

@@ -1,103 +1,63 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests VTTRegionList functionality: length, operator[], and getRegionById().</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var testTrack = document.createElement('track');
+    
+    assert_equals(testTrack.track.mode, 'disabled');
+    assert_equals(testTrack.track.regions, null);
 
-        <script src=../../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../video-test.js></script>
-        <script>
-        var testTrack;
-        var region;
-        var regions;
-        var updatedRegion;
+    testTrack.track.mode = 'hidden';
+    var regions = testTrack.track.regions;
 
-        function startTest()
-        {
-            testTrack = document.getElementsByTagName('track')[0];
+    assert_true(regions instanceof VTTRegionList, 'instanceof');
 
-            consoleWrite("<br>** Implicit mode disabled and the regions attribute is null **");
-            testExpected("testTrack.track.mode", "disabled");
-            testExpected("testTrack.track.regions", null);
+    assert_equals(regions.length, 0);
 
-            testTrack.track.mode = "hidden";
-            regions = testTrack.track.regions;
+    var region = new VTTRegion();
+    region.id = 'TestId';
 
-            consoleWrite("<br>** Test instanceof VTTRegionList **");
-            testExpected("regions instanceof VTTRegionList", true);
+    assert_equals(region.track, null);
 
-            consoleWrite("<br>** The regions attribute should be an empty VTTRegionList **");
-            testExpected("regions != null", true);
-            testExpected("regions.length", 0);
+    testTrack.track.addRegion(region);
 
-            region = new VTTRegion();
-            region.id = "TestId";
+    assert_equals(regions.length, 1);
+    assert_equals(regions[0], region);
+    assert_equals(regions[0].track, testTrack.track);
 
-            consoleWrite("<br>** The default value of the track attribute of the region is null**");
-            testExpected("region.track", null);
+    assert_equals(region.track, testTrack.track);
 
-            testTrack.track.addRegion(region);
+    var updatedRegion = new VTTRegion();
+    updatedRegion.id = region.id;
+    updatedRegion.viewportAnchorX = 59;
+    updatedRegion.viewportAnchorY = 68;
+    updatedRegion.regionAnchorX = 20;
+    updatedRegion.regionAnchorY = 30;
+    updatedRegion.height = 5;
+    updatedRegion.width = 87;
+    updatedRegion.scroll = 'up';
 
-            consoleWrite("<br>** The addRegion() method properly updates the VTTRegionList object **");
-            testExpected("regions.length", 1);
-            testExpected("regions[0] == region", true);
-            testExpected("regions[0].track == testTrack.track", true);
+    testTrack.track.addRegion(updatedRegion);
+    assert_equals(regions[0].viewportAnchorX, updatedRegion.viewportAnchorX);
+    assert_equals(regions[0].viewportAnchorY, updatedRegion.viewportAnchorY);
+    assert_equals(regions[0].regionAnchorX, updatedRegion.regionAnchorX);
+    assert_equals(regions[0].regionAnchorY, updatedRegion.regionAnchorY);
+    assert_equals(regions[0].height, updatedRegion.height);
+    assert_equals(regions[0].width, updatedRegion.width);
+    assert_equals(regions[0].scroll, updatedRegion.scroll);
 
-            consoleWrite("<br>** The track attribute should correctly reflect the track to which the region was added to**");
-            testExpected("region.track == testTrack.track", true);
+    assert_not_equals(regions[0], updatedRegion);
 
-            updatedRegion = new VTTRegion();
-            updatedRegion.id = region.id;
-            updatedRegion.viewportAnchorX = 59;
-            updatedRegion.viewportAnchorY = 68;
-            updatedRegion.regionAnchorX = 20;
-            updatedRegion.regionAnchorY = 30;
-            updatedRegion.height = 5;
-            updatedRegion.width = 87;
-            updatedRegion.scroll = "up";
+    testTrack.track.addRegion(region);
+    assert_equals(regions.length, 1);
+    testTrack.track.removeRegion(region);
+    assert_equals(regions.length, 0);
 
-            consoleWrite("<br>** Adding a region with an existing id should update the existing region **");
-            testTrack.track.addRegion(updatedRegion);
-            testExpected("regions[0].viewportAnchorX", updatedRegion.viewportAnchorX);
-            testExpected("regions[0].viewportAnchorY", updatedRegion.viewportAnchorY);
-            testExpected("regions[0].regionAnchorX", updatedRegion.regionAnchorX);
-            testExpected("regions[0].regionAnchorY", updatedRegion.regionAnchorY);
-            testExpected("regions[0].height", updatedRegion.height);
-            testExpected("regions[0].width", updatedRegion.width);
-            testExpected("regions[0].scroll", updatedRegion.scroll);
+    assert_throws('NotFoundError', function() { testTrack.track.removeRegion(region); });
 
-            testExpected("regions[0] != updatedRegion", true);
-
-            consoleWrite("<br>** Add the region back and check if removeRegion() removes it properly **");
-            testTrack.track.addRegion(region);
-            testExpected("regions.length", 1);
-            testTrack.track.removeRegion(region);
-            testExpected("regions.length", 0);
-
-            consoleWrite("<br>** In case the region is not found, NotFoundError should be thrown **");
-            try {
-              testTrack.track.removeRegion(region);
-            } catch(e) {
-              consoleWrite(e);
-            }
-
-            // FIXME(109818): Update test for multiple initial regions (after parsing is supported).
-
-            consoleWrite("");
-            endTest();
-        }
-
-        function startTestWithDelay()
-        {
-            setTimeout(startTest, 100);
-        }
-        </script>
-    </head>
-    <body onload="startTestWithDelay()">
-        <p>Tests VTTRegionList functionality: length, operator[], and getRegionById()</p>
-        <video>
-            <track id="testTrack" src="captions-webvtt/captions-fast.vtt">
-        </video>
-    </body>
+    // FIXME(109818): Update test for multiple initial regions (after parsing is supported).
+});
+</script>
 </html>

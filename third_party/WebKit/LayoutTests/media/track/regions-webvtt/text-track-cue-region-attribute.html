@@ -1,50 +1,29 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests the regionId attribute of a cue.</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var cue = new VTTCue(0, 1, 'sample');
 
-        <script src=../../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../video-test.js></script>
-        <script>
-            var cue;
+    assert_equals(cue.regionId, '');
+    cue.regionId = 'someId';
+    assert_equals(cue.regionId, 'someId');
 
-            function startTest()
-            {
-                if (!window.VTTRegion) {
-                    failTest();
-                    return;
-                }
+    var video = document.createElement('video');
+    var track = document.createElement('track');
+    track.onload = t.step_func_done(function() {
+        cue = track.track.cues[0];
+        assert_equals(cue.regionId, 'someregionattributeid');
 
-                consoleWrite("<br>** Test the setter and getter through the JS API **");
-                cue = new VTTCue(0.0, 1.0, "sample");
-
-                testExpected("cue.regionId", "");
-                cue.regionId = "someId";
-                testExpected("cue.regionId", "someId");
-
-                consoleWrite("<br>** Test parsing a region attribute of a cue **");
-                findMediaElement();
-
-                cue = video.textTracks[0].cues[0];
-                testExpected("cue.regionId", "someregionattributeid");
-
-                consoleWrite("<br>** Test that region attribute is ignored if either line position or cue size are specified or writing direction is not horizontal **");
-                for (i = 1; i < 4; ++i) {
-                  cue = video.textTracks[0].cues[i];
-                  testExpected("cue.regionId", "");
-                }
-
-                consoleWrite("");
-                endTest();
-            }
-        </script>
-    </head>
-    <body>
-        <p>Tests the regionId attribute of a cue.</p>
-        <video controls>
-            <track src="../captions-webvtt/header-regions.vtt" kind="captions" default onload="startTest()">
-        </video>
-    </body>
-</html>
+        for (i = 1; i < 4; ++i) {
+          cue = track.track.cues[i];
+          assert_equals(cue.regionId, '');
+        }
+    });
+    track.src = '../captions-webvtt/header-regions.vtt';
+    track.kind = 'captions';
+    track.default = true;
+    video.appendChild(track);
+});
+</script>
