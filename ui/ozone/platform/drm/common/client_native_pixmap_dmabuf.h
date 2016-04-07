@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -30,6 +31,7 @@ class ClientNativePixmapDmaBuf : public ClientNativePixmap {
  private:
   ClientNativePixmapDmaBuf(int dmabuf_fd, const gfx::Size& size, int stride);
 
+  base::ScopedFD dmabuf_fd_;
   const gfx::Size size_;
   const int stride_;
   void* data_;

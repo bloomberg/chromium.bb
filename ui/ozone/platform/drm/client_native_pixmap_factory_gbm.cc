@@ -47,7 +47,11 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
                format == gfx::BufferFormat::BGRX_8888;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT: {
+#if defined(OS_CHROMEOS)
         return format == gfx::BufferFormat::BGRA_8888;
+#else
+        return false;
+#endif
       }
     }
     NOTREACHED();
@@ -62,8 +66,13 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     switch (usage) {
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-        return ClientNativePixmapDmaBuf::ImportFromDmabuf(
-            scoped_fd.get(), size, handle.stride);
+#if defined(OS_CHROMEOS)
+        return ClientNativePixmapDmaBuf::ImportFromDmabuf(scoped_fd.release(),
+                                                          size, handle.stride);
+#else
+        NOTREACHED();
+        return nullptr;
+#endif
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
         return make_scoped_ptr<ClientNativePixmapGbm>(
