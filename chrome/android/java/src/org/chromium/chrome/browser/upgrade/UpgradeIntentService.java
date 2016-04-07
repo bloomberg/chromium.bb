@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class UpgradeIntentService extends IntentService {
 
     private static final String TAG = "UpgradeIntentService";
-    private static final long TIMEOUT_MS = 15000;
+    private static final long TIMEOUT_MS = 10000;
 
     public static void startMigrationIfNecessary(Context context) {
         if (!DocumentModeAssassin.getInstance().isMigrationNecessary()) return;
