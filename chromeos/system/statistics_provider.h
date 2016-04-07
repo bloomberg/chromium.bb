@@ -41,6 +41,11 @@ CHROMEOS_EXPORT extern const char kFirmwareTypeValueNormal[];
 // HWID key.
 CHROMEOS_EXPORT extern const char kHardwareClassKey[];
 
+// System vendor key.
+// The value is used to check if Chrome is running on a VM or a real Chrome OS
+// device. On QEMU VMs this value is QEMU.
+CHROMEOS_EXPORT extern const char kSystemVendorKey[];
+
 // OEM customization flag that permits exiting enterprise enrollment flow in
 // OOBE when 'oem_enterprise_managed' flag is set.
 CHROMEOS_EXPORT extern const char kOemCanExitEnterpriseEnrollmentKey[];

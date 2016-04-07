@@ -19,6 +19,8 @@
 
 namespace {
 
+const char kVMSystemVendor[] = "QEMU";
+
 unsigned CalculateCRC32(const std::string& data) {
   return static_cast<unsigned>(crc32(
       0,
@@ -118,9 +120,18 @@ bool IsMachineHWIDCorrect() {
     return true;
   if (!base::SysInfo::IsRunningOnChromeOS())
     return true;
-  std::string hwid;
   chromeos::system::StatisticsProvider* stats =
       chromeos::system::StatisticsProvider::GetInstance();
+
+  std::string system_vendor;
+  if (stats->GetMachineStatistic(chromeos::system::kSystemVendorKey,
+                                 &system_vendor) &&
+      system_vendor == kVMSystemVendor) {
+    // We are running in a VM.
+    return true;
+  }
+
+  std::string hwid;
   if (!stats->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid)) {
     LOG(ERROR) << "Couldn't get machine statistic 'hardware_class'.";
     return false;
