@@ -14,7 +14,6 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -35,14 +34,6 @@
 #endif
 
 namespace content {
-
-namespace {
-
-// Allocation and destruction of buffer are done on the Browser process, so we
-// don't need to handle synchronization here.
-void DestroyGpuMemoryBuffer(const gpu::SyncToken& sync_token) {}
-
-} // namespace
 
 static bool MakeDecoderContextCurrent(
     const base::WeakPtr<GpuCommandBufferStub> stub) {
@@ -334,79 +325,8 @@ void GpuVideoEncodeAccelerator::OnEncode2(
            << params.frame_id << ", size=" << params.size.ToString()
            << ", force_keyframe=" << params.force_keyframe << ", handle type="
            << params.gpu_memory_buffer_handles[0].type;
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, input_format_);
-  DCHECK_EQ(media::VideoFrame::NumPlanes(input_format_),
-            params.gpu_memory_buffer_handles.size());
-
-  bool map_result = true;
-  uint8_t* data[media::VideoFrame::kMaxPlanes];
-  int32_t strides[media::VideoFrame::kMaxPlanes];
-  ScopedVector<gfx::GpuMemoryBuffer> buffers;
-  const auto& handles = params.gpu_memory_buffer_handles;
-  for (size_t i = 0; i < handles.size(); ++i) {
-    const size_t width =
-        media::VideoFrame::Columns(i, input_format_, params.size.width());
-    const size_t height =
-        media::VideoFrame::Rows(i, input_format_, params.size.height());
-    scoped_ptr<gfx::GpuMemoryBuffer> buffer =
-        gpu::GpuMemoryBufferImpl::CreateFromHandle(
-            handles[i], gfx::Size(width, height), gfx::BufferFormat::R_8,
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-            media::BindToCurrentLoop(base::Bind(&DestroyGpuMemoryBuffer)));
-
-    // TODO(emircan): Refactor such that each frame is mapped once.
-    // See http://crbug/536938.
-    if (!buffer.get() || !buffer->Map()) {
-      map_result = false;
-      continue;
-    }
-
-    data[i] = reinterpret_cast<uint8_t*>(buffer->memory(0));
-    strides[i] = buffer->stride(0);
-    buffers.push_back(buffer.release());
-  }
-
-  if (!map_result) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode2(): "
-                << "failed to map buffers";
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-
-  if (!encoder_)
-    return;
-
-  if (params.frame_id < 0) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode2(): invalid frame_id="
-                << params.frame_id;
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalYuvData(
-          input_format_,
-          input_coded_size_,
-          gfx::Rect(input_visible_size_),
-          input_visible_size_,
-          strides[media::VideoFrame::kYPlane],
-          strides[media::VideoFrame::kUPlane],
-          strides[media::VideoFrame::kVPlane],
-          data[media::VideoFrame::kYPlane],
-          data[media::VideoFrame::kUPlane],
-          data[media::VideoFrame::kVPlane],
-          params.timestamp);
-  if (!frame.get()) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode2(): "
-                << "could not create a frame";
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-  frame->AddDestructionObserver(media::BindToCurrentLoop(
-      base::Bind(&GpuVideoEncodeAccelerator::EncodeFrameFinished2,
-                 weak_this_factory_.GetWeakPtr(), params.frame_id,
-                 base::Passed(&buffers))));
-  encoder_->Encode(frame, params.force_keyframe);
+  // Encoding GpuMemoryBuffer backed frames is not supported.
+  NOTREACHED();
 }
 
 void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
@@ -456,17 +376,6 @@ void GpuVideoEncodeAccelerator::EncodeFrameFinished(
   Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
                                                           frame_id));
   // Just let |shm| fall out of scope.
-}
-
-void GpuVideoEncodeAccelerator::EncodeFrameFinished2(
-    int32_t frame_id,
-    ScopedVector<gfx::GpuMemoryBuffer> buffers) {
-  // TODO(emircan): Consider calling Unmap() in dtor.
-  for (const auto& buffer : buffers)
-    buffer->Unmap();
-  Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
-                                                          frame_id));
-  // Just let |buffers| fall out of scope.
 }
 
 void GpuVideoEncodeAccelerator::Send(IPC::Message* message) {

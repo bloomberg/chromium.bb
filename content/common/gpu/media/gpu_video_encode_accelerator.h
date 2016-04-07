@@ -104,8 +104,6 @@ class GpuVideoEncodeAccelerator
 
   void EncodeFrameFinished(int32_t frame_id,
                            scoped_ptr<base::SharedMemory> shm);
-  void EncodeFrameFinished2(int32_t frame_id,
-                            ScopedVector<gfx::GpuMemoryBuffer> buffers);
   void Send(IPC::Message* message);
 
   // Route ID to communicate with the host.
