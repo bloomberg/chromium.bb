@@ -43,7 +43,7 @@ class PaintInvalidationState;
 
 class LayoutScrollbar final : public Scrollbar {
 public:
-    static RawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = nullptr);
+    static Scrollbar* createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = nullptr);
     ~LayoutScrollbar() override;
 
     LayoutBox* owningLayoutObject() const;

@@ -506,9 +506,9 @@ void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int i
         ts << "\n";
         // Creating a placeholder filter which is passed to the builder.
         FloatRect dummyRect;
-        RawPtr<Filter> dummyFilter = Filter::create(dummyRect, dummyRect, 1, Filter::BoundingBox);
+        Filter* dummyFilter = Filter::create(dummyRect, dummyRect, 1, Filter::BoundingBox);
         SVGFilterBuilder builder(dummyFilter->getSourceGraphic());
-        builder.buildGraph(dummyFilter.get(), toSVGFilterElement(*filter->element()), dummyRect);
+        builder.buildGraph(dummyFilter, toSVGFilterElement(*filter->element()), dummyRect);
         if (FilterEffect* lastEffect = builder.lastEffect())
             lastEffect->externalRepresentation(ts, indent + 1);
     } else if (resource->resourceType() == ClipperResourceType) {

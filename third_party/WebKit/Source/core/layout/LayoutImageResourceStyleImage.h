@@ -38,7 +38,7 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
 public:
     ~LayoutImageResourceStyleImage() override;
 
-    static RawPtr<LayoutImageResource> create(StyleImage* styleImage)
+    static LayoutImageResource* create(StyleImage* styleImage)
     {
         return new LayoutImageResourceStyleImage(styleImage);
     }

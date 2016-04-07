@@ -10,7 +10,7 @@
 
 namespace blink {
 
-RenderingTest::RenderingTest(RawPtr<FrameLoaderClient> frameLoaderClient)
+RenderingTest::RenderingTest(FrameLoaderClient* frameLoaderClient)
     : m_frameLoaderClient(frameLoaderClient) { }
 
 void RenderingTest::SetUp()

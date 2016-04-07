@@ -37,7 +37,7 @@ namespace blink {
 class CORE_EXPORT HitTestCache final : public GarbageCollectedFinalized<HitTestCache> {
     WTF_MAKE_NONCOPYABLE(HitTestCache);
 public:
-    static RawPtr<HitTestCache> create()
+    static HitTestCache* create()
     {
         return new HitTestCache;
     }

@@ -54,7 +54,7 @@ namespace blink {
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 class WriteDebugInfoTask : public ExecutionContextTask {
 public:
-    WriteDebugInfoTask(RawPtr<Element> element, AtomicString value)
+    WriteDebugInfoTask(Element* element, AtomicString value)
         : m_element(element)
         , m_value(value)
     {

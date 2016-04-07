@@ -36,7 +36,7 @@
 
 namespace blink {
 
-RawPtr<Scrollbar> LayoutScrollbar::createCustomScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
+Scrollbar* LayoutScrollbar::createCustomScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
 {
     return new LayoutScrollbar(scrollableArea, orientation, ownerNode, owningFrame);
 }

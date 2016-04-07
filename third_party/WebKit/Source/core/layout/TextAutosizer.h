@@ -54,7 +54,7 @@ class LayoutBlock;
 class CORE_EXPORT TextAutosizer final : public GarbageCollectedFinalized<TextAutosizer> {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 public:
-    static RawPtr<TextAutosizer> create(const Document* document)
+    static TextAutosizer* create(const Document* document)
     {
         return new TextAutosizer(document);
     }

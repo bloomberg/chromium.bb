@@ -825,8 +825,6 @@ static void writeCounterValuesFromChildren(TextStream& stream, LayoutObject* par
 
 String counterValueForElement(Element* element)
 {
-    // Make sure the element is not freed during the layout.
-    RawPtr<Element> protector(element);
     element->document().updateLayout();
     TextStream stream;
     bool isFirstCounter = true;
@@ -840,8 +838,6 @@ String counterValueForElement(Element* element)
 
 String markerTextForListItem(Element* element)
 {
-    // Make sure the element is not freed during the layout.
-    RawPtr<Element> protector(element);
     element->document().updateLayout();
 
     LayoutObject* layoutObject = element->layoutObject();

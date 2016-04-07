@@ -69,7 +69,7 @@ void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperatio
 }
 #endif
 
-RawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
+Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     TreeScope* treeScope = &element->treeScope();
 
@@ -110,15 +110,15 @@ RawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, Filte
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
     bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
     Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
-    RawPtr<Filter> result(Filter::create(referenceBox, filterRegion, zoom, unitScaling));
+    Filter* result = Filter::create(referenceBox, filterRegion, zoom, unitScaling);
     if (!previousEffect)
         previousEffect = result->getSourceGraphic();
 
     SVGFilterBuilder builder(previousEffect, nullptr, fillPaint, strokePaint);
-    builder.buildGraph(result.get(), filterElement, referenceBox);
+    builder.buildGraph(result, filterElement, referenceBox);
 
     result->setLastEffect(builder.lastEffect());
-    return result.release();
+    return result;
 }
 
 } // namespace blink

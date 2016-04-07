@@ -38,7 +38,7 @@ class LayoutImageResource : public GarbageCollectedFinalized<LayoutImageResource
 public:
     virtual ~LayoutImageResource();
 
-    static RawPtr<LayoutImageResource> create()
+    static LayoutImageResource* create()
     {
         return new LayoutImageResource;
     }

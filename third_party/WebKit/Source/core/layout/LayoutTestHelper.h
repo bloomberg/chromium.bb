@@ -23,7 +23,7 @@ class RenderingTest : public testing::Test {
 public:
     virtual FrameSettingOverrideFunction settingOverrider() const { return nullptr; }
 
-    RenderingTest(RawPtr<FrameLoaderClient> = nullptr);
+    RenderingTest(FrameLoaderClient* = nullptr);
 
 protected:
     void SetUp() override;
@@ -65,7 +65,7 @@ private:
 
 class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
 public:
-    static RawPtr<SingleChildFrameLoaderClient> create() { return new SingleChildFrameLoaderClient; }
+    static SingleChildFrameLoaderClient* create() { return new SingleChildFrameLoaderClient; }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -86,7 +86,7 @@ private:
 
 class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 public:
-    static RawPtr<FrameLoaderClientWithParent> create(Frame* parent)
+    static FrameLoaderClientWithParent* create(Frame* parent)
     {
         return new FrameLoaderClientWithParent(parent);
     }

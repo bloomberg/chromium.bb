@@ -55,7 +55,7 @@ public:
 
     static LayoutImage* createAnonymous(Document*);
 
-    void setImageResource(RawPtr<LayoutImageResource>);
+    void setImageResource(LayoutImageResource*);
 
     LayoutImageResource* imageResource() { return m_imageResource.get(); }
     const LayoutImageResource* imageResource() const { return m_imageResource.get(); }

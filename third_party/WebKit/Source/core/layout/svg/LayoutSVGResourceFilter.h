@@ -49,7 +49,7 @@ public:
         PaintingFilterCycleDetected
     };
 
-    static RawPtr<FilterData> create()
+    static FilterData* create()
     {
         return new FilterData();
     }
@@ -90,7 +90,7 @@ public:
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     FilterData* getFilterDataForLayoutObject(const LayoutObject* object) { return m_filter.get(const_cast<LayoutObject*>(object)); }
-    void setFilterDataForLayoutObject(LayoutObject* object, RawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
+    void setFilterDataForLayoutObject(LayoutObject* object, FilterData* filterData) { m_filter.set(object, filterData); }
 
 protected:
     void willBeDestroyed() override;
