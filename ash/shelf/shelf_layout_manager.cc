@@ -245,15 +245,13 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
 }
 
 void ShelfLayoutManager::LayoutShelf() {
-  if (shelf_->shelf()) {
-    TargetBounds target_bounds;
-    CalculateTargetBounds(state_, &target_bounds);
-    UpdateBoundsAndOpacity(target_bounds, false, NULL);
+  TargetBounds target_bounds;
+  CalculateTargetBounds(state_, &target_bounds);
+  UpdateBoundsAndOpacity(target_bounds, false, NULL);
 
-    // Update insets in ShelfWindowTargeter when shelf bounds change.
-    FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                      WillChangeVisibilityState(visibility_state()));
-  }
+  // Update insets in ShelfWindowTargeter when shelf bounds change.
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
+                    WillChangeVisibilityState(visibility_state()));
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {

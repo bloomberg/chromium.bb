@@ -666,17 +666,12 @@ typedef test::NoSessionAshTestBase NoSessionRootWindowControllerTest;
 TEST_F(NoSessionRootWindowControllerTest, Event) {
   aura::Window* root = Shell::GetPrimaryRootWindow();
   const gfx::Size size = root->bounds().size();
-  aura::Window* event_target = root->GetEventHandlerForPoint(gfx::Point(0, 0));
-  EXPECT_TRUE(event_target);
-  EXPECT_EQ(event_target,
-            root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
-  EXPECT_EQ(event_target,
-            root->GetEventHandlerForPoint(gfx::Point(size.width() - 1, 0)));
-  EXPECT_EQ(event_target,
-            root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
-  EXPECT_EQ(event_target,
-            root->GetEventHandlerForPoint(
-                gfx::Point(size.width() - 1, size.height() - 1)));
+  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(0, 0)));
+  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
+  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(size.width() - 1, 0)));
+  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
+  EXPECT_TRUE(root->GetEventHandlerForPoint(
+      gfx::Point(size.width() - 1, size.height() - 1)));
 }
 
 class VirtualKeyboardRootWindowControllerTest
