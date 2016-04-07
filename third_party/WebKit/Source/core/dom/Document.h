@@ -1092,8 +1092,7 @@ private:
     SecurityContext& securityContext() final { return *this; }
     EventQueue* getEventQueue() const final;
 
-    // FIXME: Rename the StyleRecalc state to LayoutTreeUpdate.
-    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }
+    bool hasPendingVisualUpdate() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }
 
     bool shouldScheduleLayoutTreeUpdate() const;
     void scheduleLayoutTreeUpdate();
@@ -1417,7 +1416,7 @@ inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type 
 inline void Document::scheduleLayoutTreeUpdateIfNeeded()
 {
     // Inline early out to avoid the function calls below.
-    if (hasPendingStyleRecalc())
+    if (hasPendingVisualUpdate())
         return;
     if (shouldScheduleLayoutTreeUpdate() && needsLayoutTreeUpdate())
         scheduleLayoutTreeUpdate();

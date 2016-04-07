@@ -1559,7 +1559,7 @@ bool Document::shouldScheduleLayoutTreeUpdate() const
 
 void Document::scheduleLayoutTreeUpdate()
 {
-    ASSERT(!hasPendingStyleRecalc());
+    ASSERT(!hasPendingVisualUpdate());
     ASSERT(shouldScheduleLayoutTreeUpdate());
     ASSERT(needsLayoutTreeUpdate());
 
@@ -1575,7 +1575,7 @@ void Document::scheduleLayoutTreeUpdate()
 
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return hasPendingStyleRecalc() && !inStyleRecalc() && getStyleChangeType() >= SubtreeStyleChange;
+    return hasPendingVisualUpdate() && !inStyleRecalc() && getStyleChangeType() >= SubtreeStyleChange;
 }
 
 void Document::updateStyleInvalidationIfNeeded()
