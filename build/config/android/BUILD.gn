@@ -143,7 +143,7 @@ config("runtime_library") {
 
   defines = [ "__GNU_SOURCE=1" ]  # Necessary for clone().
   ldflags = [ "-nostdlib" ]
-  lib_dirs = [ "$android_libcpp_root/libs/$android_app_abi" ]
+  lib_dirs = [ android_libcpp_lib_dir ]
 
   # The libc++ runtime library (must come first).
   # ASan needs to dynamically link to libc++ even in static builds so

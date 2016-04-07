@@ -44,7 +44,7 @@ generate_interface_jar("android_ijar") {
 copy("cpplib_unstripped") {
   _soname = "libc++_shared.so"
   sources = [
-    "${android_libcpp_root}/libs/${android_app_abi}/${_soname}",
+    "${android_libcpp_lib_dir}/${_soname}",
   ]
   outputs = [
     "${root_out_dir}/lib.unstripped/${_soname}",

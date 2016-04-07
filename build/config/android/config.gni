@@ -50,6 +50,9 @@ if (is_android) {
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
 
+    # Libc++ library directory. Override to use a custom libc++ binary.
+    android_libcpp_lib_dir = ""
+
     # Android versionCode for android_apk()s that don't expclitly set one.
     android_default_version_code = "1"
 
@@ -256,5 +259,9 @@ if (is_android) {
     android_app_abi = "mips64"
   } else {
     assert(false, "Unknown Android ABI: " + current_cpu)
+  }
+
+  if (android_libcpp_lib_dir == "") {
+    android_libcpp_lib_dir = "${android_libcpp_root}/libs/${android_app_abi}"
   }
 }
