@@ -266,7 +266,7 @@ public class CustomTabActivity extends ChromeActivity {
         LayoutManagerDocument layoutDriver = new CustomTabLayoutManager(getCompositorViewHolder());
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
-        mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
+        mFindToolbarManager = new FindToolbarManager(this,
                 getToolbarManager().getActionModeController().getActionModeCallback());
         if (getContextualSearchManager() != null) {
             getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);

@@ -150,9 +150,7 @@ public class FindToolbarTablet extends FindToolbar {
                     mCurrentAnimation = null;
                 }
             });
-            mTabModelSelector.getCurrentTab()
-                             .getWindowAndroid()
-                             .startAnimationOverContent(mCurrentAnimation);
+            startAnimationOverContent(mCurrentAnimation);
         }
     }
 
@@ -172,9 +170,7 @@ public class FindToolbarTablet extends FindToolbar {
 
         if (nextAnimator != null) {
             mCurrentAnimation = nextAnimator;
-            mTabModelSelector.getCurrentTab()
-                             .getWindowAndroid()
-                             .startAnimationOverContent(nextAnimator);
+            startAnimationOverContent(nextAnimator);
             postInvalidateOnAnimation();
         }
     }

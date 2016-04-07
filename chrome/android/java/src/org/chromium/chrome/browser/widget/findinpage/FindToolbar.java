@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.widget.findinpage;
 
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -45,6 +46,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 /** A toolbar providing find in page functionality. */
 public class FindToolbar extends LinearLayout
@@ -61,11 +63,12 @@ public class FindToolbar extends LinearLayout
 
     private FindResultBar mResultBar = null;
 
-    protected TabModelSelector mTabModelSelector;
+    private TabModelSelector mTabModelSelector;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final TabModelObserver mTabModelObserver;
     private Tab mCurrentTab;
     private final TabObserver mTabObserver;
+    private WindowAndroid mWindowAndroid;
     private FindInPageBridge mFindInPageBridge;
     private FindToolbarObserver mObserver;
 
@@ -489,6 +492,13 @@ public class FindToolbar extends LinearLayout
     }
 
     /**
+     * Sets the WindowAndroid in which the find toolbar will be shown. Needed for animations.
+     */
+    public void setWindowAndroid(WindowAndroid windowAndroid) {
+        mWindowAndroid = windowAndroid;
+    }
+
+    /**
      * Handles updating any visual elements of the find toolbar based on changes to the tab model.
      * @param isIncognito Whether the current tab model is incognito or not.
      */
@@ -588,6 +598,7 @@ public class FindToolbar extends LinearLayout
 
         mFindInPageBridge.destroy();
         mFindInPageBridge = null;
+        mCurrentTab = null;
         mActive = false;
     }
 
@@ -603,6 +614,13 @@ public class FindToolbar extends LinearLayout
     protected void onHideAnimationStart() {
         // We do this because hiding the bar after the animation ends doesn't look good.
         setResultsBarVisibility(false);
+    }
+
+    /**
+     * @see WindowAndroid#startAnimationOverContent(Animator)
+     */
+    protected void startAnimationOverContent(Animator animation) {
+        mWindowAndroid.startAnimationOverContent(animation);
     }
 
     @VisibleForTesting

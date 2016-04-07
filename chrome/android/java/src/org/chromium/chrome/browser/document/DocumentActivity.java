@@ -718,9 +718,8 @@ public class DocumentActivity extends ChromeActivity {
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
 
-        mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
-                getToolbarManager().getActionModeController()
-                        .getActionModeCallback());
+        mFindToolbarManager = new FindToolbarManager(this,
+                getToolbarManager().getActionModeController().getActionModeCallback());
 
         if (getContextualSearchManager() != null) {
             getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
