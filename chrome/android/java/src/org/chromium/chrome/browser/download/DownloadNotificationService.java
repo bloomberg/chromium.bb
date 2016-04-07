@@ -296,7 +296,7 @@ public class DownloadNotificationService extends Service {
                 intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
         DownloadSharedPreferenceEntry entry = null;
         if (intent.getAction() == ACTION_DOWNLOAD_PAUSE) {
-            removeSharedPreferenceEntry(guid);
+            notifyDownloadPaused(guid, false);
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
             if (!DownloadManagerService.hasDownloadManagerService()) return;
