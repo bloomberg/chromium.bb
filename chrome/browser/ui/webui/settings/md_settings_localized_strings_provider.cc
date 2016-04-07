@@ -203,6 +203,8 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
 void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"certificateManagerPageTitle", IDS_SETTINGS_CERTIFICATE_MANAGER},
+      {"certificateManagerNoCertificates",
+        IDS_SETTINGS_CERTIFICATE_MANAGER_NO_CERTIFICATES},
       {"certificateManagerYourCertificates",
        IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES},
       {"certificateManagerYourCertificatesDescription",

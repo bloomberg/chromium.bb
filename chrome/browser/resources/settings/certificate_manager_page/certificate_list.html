@@ -14,7 +14,8 @@
       }
     </style>
     <div class="settings-box first">
-      <span class="start">[[getDescription_(certificateType)]]</span>
+      <span class="start">
+          [[getDescription_(certificateType, certificates)]]</span>
       <paper-button on-tap="onImportTap_"
           hidden="[[!canImport_(certificateType)]]">
         $i18n{certificateManagerImport}</paper-button>
@@ -23,10 +24,6 @@
       <settings-certificate-entry model="[[item]]"
           certificate-type="[[certificateType]]">
       </settings-certificate-entry>
-    </template>
-    <template is="dom-if" if="[[!certificates.length]]">
-      <!-- TODO(dpapad): Localize string -->
-      You have no certificates
     </template>
   </template>
   <script src="certificate_list.js"></script>

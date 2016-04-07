@@ -27,6 +27,9 @@ Polymer({
    * @private
    */
   getDescription_: function() {
+    if (this.certificates.length == 0)
+      return this.i18n('certificateManagerNoCertificates');
+
     switch (this.certificateType) {
       case settings.CertificateType.PERSONAL:
         return this.i18n('certificateManagerYourCertificatesDescription');
