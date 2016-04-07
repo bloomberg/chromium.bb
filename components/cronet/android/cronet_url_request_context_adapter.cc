@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -56,6 +57,10 @@
 #endif
 
 namespace {
+
+// Use a global NetLog instance. See crbug.com/486120.
+static base::LazyInstance<net::NetLog>::Leaky g_net_log =
+    LAZY_INSTANCE_INITIALIZER;
 
 const char kHttpServerProperties[] = "net.http_server_properties";
 // Current version of disk storage.
@@ -480,7 +485,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   context_builder.set_http_network_session_params(
       custom_http_network_session_params);
 
-  net_log_.reset(new net::NetLog);
   scoped_ptr<net::NetworkDelegate> network_delegate(new BasicNetworkDelegate());
 #if defined(DATA_REDUCTION_PROXY_SUPPORT)
   DCHECK(!data_reduction_proxy_);
@@ -491,7 +495,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         config->data_reduction_proxy_key, config->data_reduction_primary_proxy,
         config->data_reduction_fallback_proxy,
         config->data_reduction_secure_proxy_check_url, config->user_agent,
-        GetNetworkTaskRunner(), net_log_.get()));
+        GetNetworkTaskRunner(), g_net_log.Pointer()));
     network_delegate = data_reduction_proxy_->CreateNetworkDelegate(
         std::move(network_delegate));
     context_builder.set_proxy_delegate(
@@ -502,17 +506,17 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 #endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
   context_builder.set_network_delegate(std::move(network_delegate));
-  context_builder.set_net_log(net_log_.get());
+  context_builder.set_net_log(g_net_log.Pointer());
 
   // Android provides a local HTTP proxy server that handles proxying when a PAC
   // URL is present. Create a proxy service without a resolver and rely on this
   // local HTTP proxy. See: crbug.com/432539.
   context_builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
-          std::move(proxy_config_service_), net_log_.get()));
+          std::move(proxy_config_service_), g_net_log.Pointer()));
 
-  config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get(),
-                                            GetFileThread()->task_runner());
+  config->ConfigureURLRequestContextBuilder(
+      &context_builder, g_net_log.Pointer(), GetFileThread()->task_runner());
 
   // Set up pref file if storage path is specified.
   if (!config->storage_path.empty()) {

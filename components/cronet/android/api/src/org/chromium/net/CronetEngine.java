@@ -728,7 +728,8 @@ public abstract class CronetEngine {
     public abstract void shutdown();
 
     /**
-     * Starts NetLog logging to a file. The NetLog is useful for debugging.
+     * Starts NetLog logging to a file. The NetLog will contain events emitted
+     * by all live CronetEngines. The NetLog is useful for debugging.
      * The file can be viewed using a Chrome browser navigated to
      * chrome://net-internals/#import
      * @param fileName the complete file path. It must not be empty. If the file

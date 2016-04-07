@@ -8,7 +8,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.io.BufferedReader;
@@ -45,7 +44,6 @@ public class DiskStorageTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Crashing on Android Cronet Builder, see crbug.com/601409.
-    @DisabledTest
     public void testReadOnlyStorageDirectory() throws Exception {
         mReadOnlyStoragePath = PathUtils.getDataDirectory(getContext()) + "/read_only";
         File readOnlyStorage = new File(mReadOnlyStoragePath);
@@ -90,7 +88,6 @@ public class DiskStorageTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Crashing on Android Cronet Builder, see crbug.com/601409.
-    @DisabledTest
     public void testPurgeOldVersion() throws Exception {
         String testStorage = CronetTestFramework.getTestStorage(getContext());
         File versionFile = new File(testStorage + "/version");
