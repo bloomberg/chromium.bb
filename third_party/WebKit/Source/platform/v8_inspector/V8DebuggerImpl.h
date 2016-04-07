@@ -47,6 +47,7 @@ using protocol::Maybe;
 struct ScriptBreakpoint;
 class InspectedContext;
 class V8DebuggerAgentImpl;
+class V8InspectorSessionImpl;
 class V8RuntimeAgentImpl;
 
 class V8DebuggerImpl : public V8Debugger {
@@ -56,11 +57,6 @@ public:
     ~V8DebuggerImpl() override;
 
     bool enabled() const;
-
-    void addDebuggerAgent(int contextGroupId, V8DebuggerAgentImpl*);
-    void removeDebuggerAgent(int contextGroupId);
-    void addRuntimeAgent(int contextGroupId, V8RuntimeAgentImpl*);
-    void removeRuntimeAgent(int contextGroupId);
 
     String16 setBreakpoint(const String16& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String16& breakpointId);
@@ -86,6 +82,13 @@ public:
 
     bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged);
     JavaScriptCallFrames currentCallFrames(int limit = 0);
+
+    // Each script inherits debug data from v8::Context where it has been compiled.
+    // Only scripts whose debug data matches |contextGroupId| will be reported.
+    // Passing 0 will result in reporting all scripts.
+    void getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>&);
+    void debuggerAgentEnabled();
+    void debuggerAgentDisabled();
 
     bool isPaused();
     v8::Local<v8::Context> pausedContext() { return m_pausedContext; }
@@ -114,16 +117,13 @@ public:
     using ContextByIdMap = protocol::HashMap<int, OwnPtr<InspectedContext>>;
     void discardInspectedContext(int contextGroupId, int contextId);
     const ContextByIdMap* contextGroup(int contextGroupId);
+    void disconnect(V8InspectorSessionImpl*);
 
 private:
     void enable();
     void disable();
-    // Each script inherits debug data from v8::Context where it has been compiled.
-    // Only scripts whose debug data matches |contextGroupId| will be reported.
-    // Passing 0 will result in reporting all scripts.
-    void getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>&);
-    V8DebuggerAgentImpl* getDebuggerAgentForContext(v8::Local<v8::Context>);
-    V8RuntimeAgentImpl* getRuntimeAgentForContext(v8::Local<v8::Context>);
+    V8DebuggerAgentImpl* findEnabledDebuggerAgent(int contextGroupId);
+    V8DebuggerAgentImpl* findEnabledDebuggerAgent(v8::Local<v8::Context>);
 
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
@@ -146,10 +146,9 @@ private:
     V8DebuggerClient* m_client;
     using ContextsByGroupMap = protocol::HashMap<int, OwnPtr<ContextByIdMap>>;
     ContextsByGroupMap m_contexts;
-    using DebuggerAgentsMap = protocol::HashMap<int, V8DebuggerAgentImpl*>;
-    DebuggerAgentsMap m_debuggerAgentsMap;
-    using RuntimeAgentsMap = protocol::HashMap<int, V8RuntimeAgentImpl*>;
-    RuntimeAgentsMap m_runtimeAgentsMap;
+    using SessionMap = protocol::HashMap<int, V8InspectorSessionImpl*>;
+    SessionMap m_sessions;
+    int m_enabledAgentsCount;
     bool m_breakpointsActivated;
     v8::Global<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::Global<v8::Object> m_debuggerScript;

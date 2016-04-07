@@ -64,12 +64,10 @@ V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8InspectorSessionImpl* session)
     , m_debugger(session->debugger())
     , m_enabled(false)
 {
-    m_debugger->addRuntimeAgent(m_session->contextGroupId(), this);
 }
 
 V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 {
-    m_debugger->removeRuntimeAgent(m_session->contextGroupId());
 }
 
 void V8RuntimeAgentImpl::evaluate(
@@ -455,6 +453,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     if (!m_enabled)
         return;
     m_enabled = false;
+    m_session->discardInjectedScripts();
     reset();
 }
 
@@ -518,8 +517,6 @@ void V8RuntimeAgentImpl::addInspectedObject(PassOwnPtr<Inspectable> inspectable)
 void V8RuntimeAgentImpl::reset()
 {
     m_compiledScripts.clear();
-    // TODO(dgozman): reverse this call.
-    m_session->resetInjectedScripts();
     if (m_enabled) {
         if (const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_session->contextGroupId())) {
             for (auto& idContext : *contexts)

@@ -19,10 +19,7 @@ namespace blink {
 
 class InjectedScript;
 class InjectedScriptHost;
-class InjectedScriptNative;
-class InspectedContext;
 class RemoteObjectIdBase;
-class V8ContextInfo;
 class V8DebuggerAgentImpl;
 class V8DebuggerImpl;
 class V8HeapProfilerAgentImpl;
@@ -37,11 +34,13 @@ public:
 
     V8DebuggerImpl* debugger() const { return m_debugger; }
     V8DebuggerAgentImpl* debuggerAgentImpl() { return m_debuggerAgent.get(); }
+    V8RuntimeAgentImpl* runtimeAgentImpl() { return m_runtimeAgent.get(); }
     int contextGroupId() const { return m_contextGroupId; }
 
     InjectedScript* findInjectedScript(ErrorString*, int contextId);
     InjectedScript* findInjectedScript(ErrorString*, RemoteObjectIdBase*);
-    void resetInjectedScripts();
+    void reset();
+    void discardInjectedScripts();
     void reportAllContexts(V8RuntimeAgentImpl*);
     void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
     void releaseObjectGroup(const String16& objectGroup);
@@ -59,7 +58,6 @@ public:
     V8RuntimeAgent::InspectCallback* inspectCallback() { return m_inspectCallback.get(); }
 
 private:
-    friend class InspectedContext;
     V8InspectorSessionImpl(V8DebuggerImpl*, int contextGroupId);
 
     int m_contextGroupId;

@@ -39,7 +39,8 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
 
 V8InspectorSessionImpl::~V8InspectorSessionImpl()
 {
-    resetInjectedScripts();
+    discardInjectedScripts();
+    m_debugger->disconnect(this);
 }
 
 V8DebuggerAgent* V8InspectorSessionImpl::debuggerAgent()
@@ -62,7 +63,14 @@ V8RuntimeAgent* V8InspectorSessionImpl::runtimeAgent()
     return m_runtimeAgent.get();
 }
 
-void V8InspectorSessionImpl::resetInjectedScripts()
+void V8InspectorSessionImpl::reset()
+{
+    m_debuggerAgent->reset();
+    m_runtimeAgent->reset();
+    discardInjectedScripts();
+}
+
+void V8InspectorSessionImpl::discardInjectedScripts()
 {
     m_injectedScriptHost->clearInspectedObjects();
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);

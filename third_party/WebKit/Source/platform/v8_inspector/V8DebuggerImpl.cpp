@@ -75,6 +75,7 @@ PassOwnPtr<V8Debugger> V8Debugger::create(v8::Isolate* isolate, V8DebuggerClient
 V8DebuggerImpl::V8DebuggerImpl(v8::Isolate* isolate, V8DebuggerClient* client)
     : m_isolate(isolate)
     , m_client(client)
+    , m_enabledAgentsCount(0)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
 {
@@ -138,63 +139,31 @@ static int getGroupId(v8::Local<v8::Context> context)
     return dataString.substring(0, commaPos).toInt();
 }
 
-void V8DebuggerImpl::addDebuggerAgent(int contextGroupId, V8DebuggerAgentImpl* agent)
+void V8DebuggerImpl::debuggerAgentEnabled()
 {
-    ASSERT(contextGroupId);
-    ASSERT(!m_debuggerAgentsMap.contains(contextGroupId));
-    if (m_debuggerAgentsMap.isEmpty())
+    if (!m_enabledAgentsCount++)
         enable();
-    m_debuggerAgentsMap.set(contextGroupId, agent);
-
-    protocol::Vector<V8DebuggerParsedScript> compiledScripts;
-    getCompiledScripts(contextGroupId, compiledScripts);
-    for (size_t i = 0; i < compiledScripts.size(); i++)
-        agent->didParseSource(compiledScripts[i]);
 }
 
-void V8DebuggerImpl::removeDebuggerAgent(int contextGroupId)
+void V8DebuggerImpl::debuggerAgentDisabled()
 {
-    ASSERT(contextGroupId);
-    if (!m_debuggerAgentsMap.contains(contextGroupId))
-        return;
-
-    if (!m_pausedContext.IsEmpty() && getGroupId(m_pausedContext) == contextGroupId)
-        continueProgram();
-
-    m_debuggerAgentsMap.remove(contextGroupId);
-
-    if (m_debuggerAgentsMap.isEmpty())
+    if (!--m_enabledAgentsCount)
         disable();
 }
 
-V8DebuggerAgentImpl* V8DebuggerImpl::getDebuggerAgentForContext(v8::Local<v8::Context> context)
+V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(int contextGroupId)
 {
-    int groupId = getGroupId(context);
-    if (!groupId)
+    if (!contextGroupId)
         return nullptr;
-    return m_debuggerAgentsMap.get(groupId);
+    V8InspectorSessionImpl* session = m_sessions.get(contextGroupId);
+    if (session && session->debuggerAgentImpl()->enabled())
+        return session->debuggerAgentImpl();
+    return nullptr;
 }
 
-void V8DebuggerImpl::addRuntimeAgent(int contextGroupId, V8RuntimeAgentImpl* agent)
+V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(v8::Local<v8::Context> context)
 {
-    ASSERT(contextGroupId);
-    ASSERT(!m_runtimeAgentsMap.contains(contextGroupId));
-    m_runtimeAgentsMap.set(contextGroupId, agent);
-}
-
-void V8DebuggerImpl::removeRuntimeAgent(int contextGroupId)
-{
-    ASSERT(contextGroupId);
-    if (m_runtimeAgentsMap.contains(contextGroupId))
-        m_runtimeAgentsMap.remove(contextGroupId);
-}
-
-V8RuntimeAgentImpl* V8DebuggerImpl::getRuntimeAgentForContext(v8::Local<v8::Context> context)
-{
-    int groupId = getGroupId(context);
-    if (!groupId)
-        return nullptr;
-    return m_runtimeAgentsMap.get(groupId);
+    return findEnabledDebuggerAgent(getGroupId(context));
 }
 
 void V8DebuggerImpl::getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>& result)
@@ -508,7 +477,7 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (m_runningNestedMessageLoop)
         return;
 
-    V8DebuggerAgentImpl* agent = getDebuggerAgentForContext(pausedContext);
+    V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(pausedContext);
     if (!agent)
         return;
 
@@ -531,7 +500,7 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
         ASSERT(groupId);
         m_client->runMessageLoopOnPause(groupId);
         // The agent may have been removed in the nested loop.
-        agent = getDebuggerAgentForContext(pausedContext);
+        agent = findEnabledDebuggerAgent(pausedContext);
         if (agent)
             agent->didContinue();
         m_runningNestedMessageLoop = false;
@@ -576,7 +545,7 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
     v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
     ASSERT(!eventContext.IsEmpty());
 
-    V8DebuggerAgentImpl* agent = getDebuggerAgentForContext(eventContext);
+    V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(eventContext);
     if (agent) {
         v8::HandleScope scope(m_isolate);
         if (event == v8::AfterCompile || event == v8::CompileError) {
@@ -712,13 +681,11 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::runCompiledScript(v8::Local<v8::Contex
 
     v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
     int groupId = getGroupId(context);
-    V8DebuggerAgentImpl* agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
+    if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(groupId))
         agent->willExecuteScript(script->GetUnboundScript()->GetId());
     v8::MaybeLocal<v8::Value> result = script->Run(context);
     // Get agent from the map again, since it could have detached during script execution.
-    agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
+    if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(groupId))
         agent->didExecuteScript();
     return result;
 }
@@ -731,13 +698,11 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::callFunction(v8::Local<v8::Function> f
 
     v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
     int groupId = getGroupId(context);
-    V8DebuggerAgentImpl* agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
+    if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(groupId))
         agent->willExecuteScript(function->ScriptId());
     v8::MaybeLocal<v8::Value> result = function->Call(context, receiver, argc, info);
     // Get agent from the map again, since it could have detached during script execution.
-    agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
+    if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(groupId))
         agent->didExecuteScript();
     return result;
 }
@@ -773,13 +738,22 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
 
 PassOwnPtr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
 {
-    V8DebuggerAgentImpl* agent = getDebuggerAgentForContext(m_isolate->GetCurrentContext());
+    V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
 }
 
 PassOwnPtr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId)
 {
-    return V8InspectorSessionImpl::create(this, contextGroupId);
+    ASSERT(!m_sessions.contains(contextGroupId));
+    OwnPtr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId);
+    m_sessions.set(contextGroupId, session.get());
+    return session.release();
+}
+
+void V8DebuggerImpl::disconnect(V8InspectorSessionImpl* session)
+{
+    ASSERT(m_sessions.contains(session->contextGroupId()));
+    m_sessions.remove(session->contextGroupId());
 }
 
 void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
@@ -800,9 +774,8 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
     InspectedContext* inspectedContext = contextOwner.get();
     m_contexts.get(info.contextGroupId)->set(contextId, contextOwner.release());
 
-    V8RuntimeAgentImpl* agent = getRuntimeAgentForContext(info.context);
-    if (agent)
-        agent->reportExecutionContextCreated(inspectedContext);
+    if (V8InspectorSessionImpl* session = m_sessions.get(info.contextGroupId))
+        session->runtimeAgentImpl()->reportExecutionContextCreated(inspectedContext);
 }
 
 void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
@@ -813,9 +786,8 @@ void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
         return;
 
     InspectedContext* inspectedContext = m_contexts.get(contextGroupId)->get(contextId);
-    V8RuntimeAgentImpl* agent = getRuntimeAgentForContext(context);
-    if (agent)
-        agent->reportExecutionContextDestroyed(inspectedContext);
+    if (V8InspectorSessionImpl* session = m_sessions.get(contextGroupId))
+        session->runtimeAgentImpl()->reportExecutionContextDestroyed(inspectedContext);
 
     m_contexts.get(contextGroupId)->remove(contextId);
     if (m_contexts.get(contextGroupId)->isEmpty())
@@ -824,19 +796,14 @@ void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
 
 void V8DebuggerImpl::resetContextGroup(int contextGroupId)
 {
-    V8DebuggerAgentImpl* debuggerAgent = m_debuggerAgentsMap.get(contextGroupId);
-    if (debuggerAgent)
-        debuggerAgent->reset();
-    V8RuntimeAgentImpl* runtimeAgent = m_runtimeAgentsMap.get(contextGroupId);
-    if (runtimeAgent)
-        runtimeAgent->reset();
-    if (m_contexts.contains(contextGroupId))
-        m_contexts.remove(contextGroupId);
+    if (V8InspectorSessionImpl* session = m_sessions.get(contextGroupId))
+        session->reset();
+    m_contexts.remove(contextGroupId);
 }
 
 PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
 {
-    V8DebuggerAgentImpl* agent = getDebuggerAgentForContext(m_isolate->GetCurrentContext());
+    V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
     return V8StackTraceImpl::capture(agent, maxStackSize);
 }
 
@@ -852,6 +819,8 @@ void V8DebuggerImpl::discardInspectedContext(int contextGroupId, int contextId)
     if (!m_contexts.contains(contextGroupId) || !m_contexts.get(contextGroupId)->contains(contextId))
         return;
     m_contexts.get(contextGroupId)->remove(contextId);
+    if (m_contexts.get(contextGroupId)->isEmpty())
+        m_contexts.remove(contextGroupId);
 }
 
 const V8DebuggerImpl::ContextByIdMap* V8DebuggerImpl::contextGroup(int contextGroupId)

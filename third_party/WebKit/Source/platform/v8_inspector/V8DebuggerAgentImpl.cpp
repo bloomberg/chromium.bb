@@ -196,7 +196,13 @@ void V8DebuggerAgentImpl::enable()
     // debugger().addListener may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
     m_enabled = true;
-    debugger().addDebuggerAgent(m_session->contextGroupId(), this);
+    debugger().debuggerAgentEnabled();
+
+    protocol::Vector<V8DebuggerParsedScript> compiledScripts;
+    debugger().getCompiledScripts(m_session->contextGroupId(), compiledScripts);
+    for (size_t i = 0; i < compiledScripts.size(); i++)
+        didParseSource(compiledScripts[i]);
+
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
 }
@@ -225,7 +231,9 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
 
-    debugger().removeDebuggerAgent(m_session->contextGroupId());
+    if (!m_pausedContext.IsEmpty())
+        debugger().continueProgram();
+    debugger().debuggerAgentDisabled();
     m_pausedContext.Reset();
     JavaScriptCallFrames emptyCallFrames;
     m_pausedCallFrames.swap(emptyCallFrames);
