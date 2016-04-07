@@ -117,9 +117,9 @@ public:
     void reset();
     void reportExecutionContextCreated(InspectedContext*);
     void reportExecutionContextDestroyed(InspectedContext*);
+    void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints);
 
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
-    void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) override;
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
     void disposeObjectGroup(const String16&) override;

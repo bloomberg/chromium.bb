@@ -1825,7 +1825,6 @@
             'inspector/InspectorHistory.h',
             'inspector/InspectorInputAgent.cpp',
             'inspector/InspectorInputAgent.h',
-            'inspector/InspectorInspectorAgent.cpp',
             'inspector/InspectorInstrumentation.cpp',
             'inspector/InspectorInstrumentation.h',
             'inspector/InspectorInstrumentationCustomInl.h',

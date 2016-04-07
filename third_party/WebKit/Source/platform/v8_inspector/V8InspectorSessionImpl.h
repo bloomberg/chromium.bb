@@ -54,8 +54,6 @@ public:
 
     void setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback) { m_clearConsoleCallback = callback; }
     V8RuntimeAgent::ClearConsoleCallback* clearConsoleCallback() { return m_clearConsoleCallback.get(); }
-    void setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback> callback) { m_inspectCallback = callback; }
-    V8RuntimeAgent::InspectCallback* inspectCallback() { return m_inspectCallback.get(); }
 
 private:
     V8InspectorSessionImpl(V8DebuggerImpl*, int contextGroupId);
@@ -70,7 +68,6 @@ private:
     OwnPtr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
     OwnPtr<V8ProfilerAgentImpl> m_profilerAgent;
 
-    OwnPtr<V8RuntimeAgent::InspectCallback> m_inspectCallback;
     OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
 };
 

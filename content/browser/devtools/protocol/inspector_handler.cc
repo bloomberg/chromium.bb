@@ -38,9 +38,12 @@ void InspectorHandler::TargetDetached(const std::string& reason) {
 Response InspectorHandler::Enable() {
   if (host_ && !host_->IsRenderFrameLive())
     client_->TargetCrashed(TargetCrashedParams::Create());
-  return Response::FallThrough();
+  return Response::OK();
 }
 
+Response InspectorHandler::Disable() {
+  return Response::OK();
+}
 
 }  // namespace inspector
 }  // namespace devtools

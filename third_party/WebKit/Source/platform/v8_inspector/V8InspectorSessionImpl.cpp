@@ -32,7 +32,6 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     , m_debuggerAgent(adoptPtr(new V8DebuggerAgentImpl(this)))
     , m_heapProfilerAgent(adoptPtr(new V8HeapProfilerAgentImpl(this)))
     , m_profilerAgent(adoptPtr(new V8ProfilerAgentImpl(this)))
-    , m_inspectCallback(nullptr)
     , m_clearConsoleCallback(nullptr)
 {
 }

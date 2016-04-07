@@ -469,11 +469,6 @@ void V8RuntimeAgentImpl::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::Clea
     m_session->setClearConsoleCallback(callback);
 }
 
-void V8RuntimeAgentImpl::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback> callback)
-{
-    m_session->setInspectObjectCallback(callback);
-}
-
 PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;
@@ -553,6 +548,12 @@ void V8RuntimeAgentImpl::reportExecutionContextDestroyed(InspectedContext* conte
         context->setReported(false);
         m_frontend->executionContextDestroyed(context->contextId());
     }
+}
+
+void V8RuntimeAgentImpl::inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints)
+{
+    if (m_enabled)
+        m_frontend->inspectRequested(objectToInspect, hints);
 }
 
 } // namespace blink

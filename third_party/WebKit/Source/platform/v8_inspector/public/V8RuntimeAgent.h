@@ -31,8 +31,6 @@ public:
     // Embedder API.
     using ClearConsoleCallback = Function<void()>;
     virtual void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) = 0;
-    using InspectCallback = Function<void(PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>)>;
-    virtual void setInspectObjectCallback(PassOwnPtr<InspectCallback>) = 0;
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) = 0;
     // FIXME: remove when console.table moves into V8 inspector.
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) = 0;

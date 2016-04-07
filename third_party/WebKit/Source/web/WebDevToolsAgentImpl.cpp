@@ -44,7 +44,6 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInputAgent.h"
-#include "core/inspector/InspectorInspectorAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
@@ -396,10 +395,6 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_v8Session = mainThreadDebugger->debugger()->connect(mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
     V8RuntimeAgent* runtimeAgent = m_v8Session->runtimeAgent();
 
-    RawPtr<InspectorInspectorAgent> inspectorAgent = InspectorInspectorAgent::create();
-    InspectorInspectorAgent* inspectorAgentPtr = inspectorAgent.get();
-    m_agents.append(inspectorAgent.release());
-
     m_agents.append(PageRuntimeAgent::create(this, runtimeAgent, m_inspectedFrames.get()));
 
     RawPtr<InspectorDOMAgent> domAgent = InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), runtimeAgent, m_overlay.get());
@@ -455,7 +450,6 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(pageAgent.release());
 
     runtimeAgent->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, pageConsoleAgentPtr));
-    runtimeAgent->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, inspectorAgentPtr));
     m_tracingAgent->setLayerTreeId(m_layerTreeId);
     if (m_overlay)
         m_overlay->init(cssAgentPtr, debuggerAgentPtr, m_domAgent);

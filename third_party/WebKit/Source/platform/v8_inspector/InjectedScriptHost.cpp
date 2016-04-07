@@ -34,6 +34,7 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
+#include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
@@ -53,25 +54,16 @@ InjectedScriptHost::~InjectedScriptHost()
 {
 }
 
-void InjectedScriptHost::disconnect()
-{
-    m_debugger = nullptr;
-    m_session = nullptr;
-    m_inspectedObjects.clear();
-}
-
 void InjectedScriptHost::inspectImpl(PassOwnPtr<protocol::Value> object, PassOwnPtr<protocol::Value> hints)
 {
-    if (m_session && m_session->inspectCallback()) {
-        protocol::ErrorSupport errors;
-        OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object.get(), &errors);
-        (*m_session->inspectCallback())(remoteObject.release(), protocol::DictionaryValue::cast(hints));
-    }
+    protocol::ErrorSupport errors;
+    OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object.get(), &errors);
+    m_session->runtimeAgentImpl()->inspect(remoteObject.release(), protocol::DictionaryValue::cast(hints));
 }
 
 void InjectedScriptHost::clearConsoleMessages()
 {
-    if (m_session && m_session->clearConsoleCallback())
+    if (m_session->clearConsoleCallback())
         (*m_session->clearConsoleCallback())();
 }
 
@@ -96,14 +88,12 @@ V8RuntimeAgent::Inspectable* InjectedScriptHost::inspectedObject(unsigned num)
 
 void InjectedScriptHost::debugFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
-    if (m_session)
-        m_session->debuggerAgentImpl()->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
+    m_session->debuggerAgentImpl()->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::undebugFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
-    if (m_session)
-        m_session->debuggerAgentImpl()->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
+    m_session->debuggerAgentImpl()->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::monitorFunction(const String16& scriptId, int lineNumber, int columnNumber, const String16& functionName)
@@ -115,14 +105,12 @@ void InjectedScriptHost::monitorFunction(const String16& scriptId, int lineNumbe
     else
         builder.append(functionName);
     builder.append(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
-    if (m_session)
-        m_session->debuggerAgentImpl()->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource, builder.toString());
+    m_session->debuggerAgentImpl()->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource, builder.toString());
 }
 
 void InjectedScriptHost::unmonitorFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
-    if (m_session)
-        m_session->debuggerAgentImpl()->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource);
+    m_session->debuggerAgentImpl()->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource);
 }
 
 } // namespace blink

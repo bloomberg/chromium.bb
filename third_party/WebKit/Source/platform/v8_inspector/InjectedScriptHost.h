@@ -56,8 +56,6 @@ public:
     static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*, V8InspectorSessionImpl*);
     ~InjectedScriptHost();
 
-    void disconnect();
-
     void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
     void clearInspectedObjects();
     V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
@@ -81,8 +79,6 @@ private:
 
     V8DebuggerImpl* m_debugger;
     V8InspectorSessionImpl* m_session;
-    OwnPtr<V8RuntimeAgent::InspectCallback> m_inspectCallback;
-    OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
     protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };

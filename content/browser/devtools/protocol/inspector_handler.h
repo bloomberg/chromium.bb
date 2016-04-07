@@ -29,6 +29,7 @@ class InspectorHandler {
   void TargetDetached(const std::string& reason);
 
   Response Enable();
+  Response Disable();
 
  private:
   scoped_ptr<Client> client_;

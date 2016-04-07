@@ -12,7 +12,7 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.addSniffer(WebInspector.Main.prototype, "inspect", inspect);
+    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_inspectRequested", inspect);
     InspectorTest.addSniffer(WebInspector.Revealer, "revealPromise", oneRevealPromise, true);
 
     function oneRevealPromise(node, revealPromise)

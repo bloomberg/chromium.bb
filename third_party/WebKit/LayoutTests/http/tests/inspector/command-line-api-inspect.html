@@ -11,7 +11,7 @@ function onload()
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.Main.prototype, "inspect", sniffInspect, true);
+    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_inspectRequested", sniffInspect, true);
 
     function sniffInspect(objectId, hints)
     {

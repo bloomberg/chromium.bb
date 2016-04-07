@@ -9,7 +9,6 @@ Database.disable finished successfully
 Debugger.disable finished successfully
 HeapProfiler.disable finished successfully
 IndexedDB.disable finished successfully
-Inspector.disable finished successfully
 LayerTree.disable finished successfully
 Network.disable finished successfully
 Page.disable finished successfully
@@ -43,9 +42,6 @@ HeapProfiler.disable finished successfully
 
 IndexedDB.enable finished successfully
 IndexedDB.disable finished successfully
-
-Inspector.enable finished successfully
-Inspector.disable finished successfully
 
 LayerTree.enable finished successfully
 LayerTree.disable finished successfully
