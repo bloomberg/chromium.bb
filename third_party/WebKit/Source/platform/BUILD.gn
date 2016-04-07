@@ -164,8 +164,8 @@ action("character_data") {
 
 executable("character_data_generator") {
   sources = [
-    "fonts/CharacterPropertyDataGenerator.cpp",
-    "fonts/CharacterPropertyDataGenerator.h",
+    "text/CharacterPropertyDataGenerator.cpp",
+    "text/CharacterPropertyDataGenerator.h",
   ]
   configs += [ "//third_party/WebKit/Source:config" ]
   deps = [

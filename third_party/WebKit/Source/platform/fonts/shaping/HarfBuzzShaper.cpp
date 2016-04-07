@@ -32,7 +32,6 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 
 #include "platform/Logging.h"
-#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/GlyphBuffer.h"
@@ -40,6 +39,7 @@
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
+#include "platform/text/Character.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"

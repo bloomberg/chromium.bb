@@ -22,12 +22,12 @@
 
 #include "platform/fonts/shaping/SimpleShaper.h"
 
-#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/Latin1TextIterator.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "platform/text/Character.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CharacterNames.h"
 

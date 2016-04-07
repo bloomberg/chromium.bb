@@ -4,7 +4,7 @@
 
 #include "core/editing/state_machines/StateMachineUtil.h"
 
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"

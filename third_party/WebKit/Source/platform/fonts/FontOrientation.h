@@ -26,7 +26,7 @@
 #ifndef FontOrientation_h
 #define FontOrientation_h
 
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 
 namespace blink {
 

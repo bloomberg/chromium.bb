@@ -19,8 +19,8 @@
 
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 
-#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
+#include "platform/text/Character.h"
 
 namespace blink {
 

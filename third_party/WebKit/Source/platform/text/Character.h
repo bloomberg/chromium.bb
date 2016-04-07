@@ -32,7 +32,7 @@
 #define Character_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/CharacterProperty.h"
+#include "platform/text/CharacterProperty.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"

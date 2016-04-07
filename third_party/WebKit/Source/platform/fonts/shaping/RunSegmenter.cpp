@@ -4,11 +4,11 @@
 
 #include "platform/fonts/shaping/RunSegmenter.h"
 
-#include "platform/fonts/Character.h"
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/SymbolsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "platform/text/Character.h"
 #include "wtf/Assertions.h"
 
 namespace blink {

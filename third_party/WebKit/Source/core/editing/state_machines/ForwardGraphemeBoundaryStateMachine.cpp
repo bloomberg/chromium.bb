@@ -6,7 +6,7 @@
 
 #include "core/editing/state_machines/StateMachineUtil.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 #include "wtf/text/Unicode.h"
 #include <ostream> // NOLINT
 

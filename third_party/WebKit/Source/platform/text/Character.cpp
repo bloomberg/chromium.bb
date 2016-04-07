@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"

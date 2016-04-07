@@ -22,7 +22,7 @@
 
 #include "platform/text/TextBreakIterator.h"
 
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"

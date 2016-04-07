@@ -141,8 +141,8 @@
         {
           'action_name': 'CharacterPropertyData',
           'inputs': [
-            'fonts/CharacterPropertyDataGenerator.cpp',
-            'fonts/CharacterPropertyDataGenerator.h'
+            'text/CharacterPropertyDataGenerator.cpp',
+            'text/CharacterPropertyDataGenerator.h'
           ],
           'outputs': [
             '<(blink_platform_output_dir)/CharacterPropertyData.cpp',
@@ -156,7 +156,7 @@
             }, {
               'action': [
                 'cp',
-                'fonts/CharacterPropertyData.cpp',
+                'text/CharacterPropertyData.cpp',
                 '<(blink_platform_output_dir)/CharacterPropertyData.cpp',
               ],
             }]
@@ -169,7 +169,7 @@
       'type': 'executable',
       'toolsets': ['host'],
       'sources': [
-        'fonts/CharacterPropertyDataGenerator.cpp',
+        'text/CharacterPropertyDataGenerator.cpp',
       ],
       'dependencies': [
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc#host',

@@ -4,12 +4,12 @@
 
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 
-#include "platform/fonts/Character.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/text/Character.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextDirection.h"
 

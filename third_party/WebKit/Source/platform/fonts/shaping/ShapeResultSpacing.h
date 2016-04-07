@@ -6,7 +6,7 @@
 #define ShapeResultSpacing_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 
 namespace blink {
 

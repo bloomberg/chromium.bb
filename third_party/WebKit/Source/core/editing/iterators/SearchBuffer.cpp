@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 #include "platform/text/TextBoundaries.h"
 #include "platform/text/TextBreakIteratorInternalICU.h"
 #include "platform/text/UnicodeUtilities.h"

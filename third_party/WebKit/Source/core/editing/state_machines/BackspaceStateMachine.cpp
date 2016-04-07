@@ -4,8 +4,7 @@
 
 #include "core/editing/state_machines/BackspaceStateMachine.h"
 
-// TODO(nona):Move Character.h to platform/text
-#include "platform/fonts/Character.h"
+#include "platform/text/Character.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
 #include <ostream> // NOLINT
