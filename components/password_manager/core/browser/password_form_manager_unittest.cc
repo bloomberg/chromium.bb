@@ -2965,4 +2965,49 @@ TEST_F(PasswordFormManagerTest, FederatedCredentialsFiltered) {
   EXPECT_EQ(*(form_manager()->best_matches().begin()->second), *saved_match());
 }
 
+TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
+  PasswordForm form(*observed_form());
+  form.form_data = saved_match()->form_data;
+
+  PasswordFormManager form_manager(password_manager(), client(),
+                                   client()->driver(), form, false);
+
+  PasswordForm form_to_save(form);
+  form_to_save.preferred = true;
+  form_to_save.username_element = ASCIIToUTF16("observed-username-field");
+  form_to_save.username_value = saved_match()->username_value;
+  form_to_save.password_value = saved_match()->password_value;
+  form_to_save.does_look_like_signup_form = true;
+
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  ScopedVector<PasswordForm> result;
+  form_manager.OnGetPasswordStoreResults(std::move(result));
+
+  autofill::FormStructure pending_structure(form_to_save.form_data);
+  autofill::ServerFieldTypeSet expected_available_field_types;
+  std::map<base::string16, autofill::ServerFieldType> expected_types;
+  expected_types[ASCIIToUTF16("full_name")] = autofill::UNKNOWN_TYPE;
+  expected_available_field_types.insert(autofill::USERNAME);
+  expected_types[saved_match()->username_element] = autofill::USERNAME;
+  expected_available_field_types.insert(
+      autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD);
+  expected_types[saved_match()->password_element] =
+      autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD;
+
+  std::map<base::string16,
+           autofill::AutofillUploadContents::Field::PasswordGenerationType>
+      expected_generation_types;
+
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(
+          CheckUploadFormStructure(pending_structure.FormSignature(),
+                                   expected_types, expected_generation_types),
+          false, expected_available_field_types, std::string(), true));
+
+  form_manager.ProvisionallySave(
+      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+}
+
 }  // namespace password_manager

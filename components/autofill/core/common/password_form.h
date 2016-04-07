@@ -274,6 +274,9 @@ struct PasswordForm {
   // found using affiliation-based match.
   bool is_affiliation_based_match;
 
+  // If true, this form looks like SignUp form according to local heuristics.
+  bool does_look_like_signup_form;
+
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
   bool IsPossibleChangePasswordForm() const;

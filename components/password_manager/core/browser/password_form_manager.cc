@@ -291,6 +291,7 @@ void PasswordFormManager::ProvisionallySave(
   }
   provisionally_saved_form_ = std::move(mutable_provisionally_saved_form);
   other_possible_username_action_ = action;
+  does_look_like_signup_form_ = credentials.does_look_like_signup_form;
 
   if (HasCompletedMatching())
     CreatePendingCredentials();
@@ -618,8 +619,14 @@ void PasswordFormManager::SaveAsNewLogin() {
     UploadGeneratedVote();
   } else if (pending_credentials_.times_used == 0) {
     if (!observed_form_.IsPossibleChangePasswordFormWithoutUsername())
-      UploadPasswordForm(pending_credentials_.form_data, base::string16(),
-                         autofill::PASSWORD, std::string());
+      UploadPasswordForm(pending_credentials_.form_data,
+                         does_look_like_signup_form_
+                             ? pending_credentials_.username_element
+                             : base::string16(),
+                         does_look_like_signup_form_
+                             ? autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD
+                             : autofill::PASSWORD,
+                         std::string());
     } else {
       if (!observed_form_.IsPossibleChangePasswordFormWithoutUsername())
         SendAutofillVotes(observed_form_, &pending_credentials_);
@@ -819,6 +826,7 @@ bool PasswordFormManager::UploadPasswordForm(
     const autofill::ServerFieldType& password_type,
     const std::string& login_form_signature) {
   DCHECK(password_type == autofill::PASSWORD ||
+         password_type == autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD ||
          password_type == autofill::ACCOUNT_CREATION_PASSWORD ||
          autofill::NOT_ACCOUNT_CREATION_PASSWORD);
   DCHECK(!has_generated_password_);

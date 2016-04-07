@@ -389,6 +389,7 @@ bool GetPasswordForm(const SyntheticForm& form,
       form, &ignore_invisible_passwords, &ignore_invisible_usernames);
   std::string layout_sequence;
   layout_sequence.reserve(form.control_elements.size());
+  size_t number_of_non_empty_text_non_password_fields = 0;
   for (size_t i = 0; i < form.control_elements.size(); ++i) {
     WebFormControlElement control_element = form.control_elements[i];
 
@@ -403,6 +404,10 @@ bool GetPasswordForm(const SyntheticForm& form,
           continue;
         layout_sequence.push_back('P');
       } else {
+        if (nonscript_modified_values &&
+            nonscript_modified_values->find(*input_element) !=
+                nonscript_modified_values->end())
+          ++number_of_non_empty_text_non_password_fields;
         if (element_is_invisible && ignore_invisible_usernames)
           continue;
         layout_sequence.push_back('N');
@@ -594,6 +599,14 @@ bool GetPasswordForm(const SyntheticForm& form,
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
 
+  // The password form is considered that it looks like SignUp form if it has
+  // more than 1 text field with user input or it has a new password field and
+  // no current password field.
+  password_form->does_look_like_signup_form =
+      number_of_non_empty_text_non_password_fields > 1 ||
+      (number_of_non_empty_text_non_password_fields == 1 &&
+       password_form->password_element.empty() &&
+       !password_form->new_password_element.empty());
   return true;
 }
 

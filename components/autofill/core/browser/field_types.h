@@ -155,9 +155,13 @@ enum ServerFieldType {
 
   PHONE_HOME_EXTENSION = 93,
 
+  // The first password field in a form that looks like account creation form
+  // for local heuristics.
+  PROBABLY_ACCOUNT_CREATION_PASSWORD = 94,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 94,
+  MAX_VALID_FIELD_TYPE = 95,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
