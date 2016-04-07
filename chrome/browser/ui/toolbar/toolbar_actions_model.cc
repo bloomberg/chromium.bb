@@ -228,7 +228,19 @@ void ToolbarActionsModel::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
+  size_t index = 0u;
+  while (toolbar_items().size() > index &&
+         toolbar_items()[index].id != extension->id())
+    ++index;
+  bool was_visible_and_has_overflow =
+      index < visible_icon_count() && !all_icons_visible();
   RemoveExtension(extension);
+  // If the extension was previously visible and there are overflowed
+  // extensions, and this extension is being uninstalled, we reduce the visible
+  // count so that we don't pop out a previously-hidden extension.
+  if (was_visible_and_has_overflow &&
+      reason == extensions::UnloadedExtensionInfo::REASON_UNINSTALL)
+    SetVisibleIconCount(visible_icon_count() - 1);
 }
 
 void ToolbarActionsModel::OnExtensionUninstalled(

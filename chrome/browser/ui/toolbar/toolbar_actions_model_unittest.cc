@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -1454,6 +1455,30 @@ TEST_F(ToolbarActionsModelUnitTest,
   EXPECT_EQ(5u, observer()->inserted_count());
   EXPECT_EQ(2u, num_toolbar_items());
   EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
+  EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(1u));
+}
+
+TEST_F(ToolbarActionsModelUnitTest,
+       TestUninstallVisibleExtensionDoesntBringOutOther) {
+  Init();
+  ASSERT_TRUE(AddBrowserActionExtensions());
+  toolbar_model()->SetVisibleIconCount(2u);
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(browser_action_a()->id(), GetActionIdAtIndex(0u));
+  EXPECT_EQ(browser_action_b()->id(), GetActionIdAtIndex(1u));
+  EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(2u));
+
+  service()->UninstallExtension(
+      browser_action_b()->id(),
+      extensions::UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing),
+      nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2u, num_toolbar_items());
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(browser_action_a()->id(), GetActionIdAtIndex(0u));
   EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(1u));
 }
 
