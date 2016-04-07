@@ -10,7 +10,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/gl_helper.h"
-#include "content/browser/gpu/compositor_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/in_process_context_factory.h"
