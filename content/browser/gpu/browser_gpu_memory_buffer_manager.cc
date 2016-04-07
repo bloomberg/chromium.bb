@@ -239,8 +239,9 @@ uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
 scoped_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                        gfx::BufferFormat format,
-                                                       gfx::BufferUsage usage) {
-  return AllocateGpuMemoryBufferForSurface(size, format, usage, 0);
+                                                       gfx::BufferUsage usage,
+                                                       int32_t surface_id) {
+  return AllocateGpuMemoryBufferForSurface(size, format, usage, surface_id);
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
@@ -266,16 +267,6 @@ BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
   return std::move(request.result);
-}
-
-scoped_ptr<gfx::GpuMemoryBuffer>
-BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForScanout(
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    int32_t surface_id) {
-  DCHECK_GT(surface_id, 0);
-  return AllocateGpuMemoryBufferForSurface(
-      size, format, gfx::BufferUsage::SCANOUT, surface_id);
 }
 
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(

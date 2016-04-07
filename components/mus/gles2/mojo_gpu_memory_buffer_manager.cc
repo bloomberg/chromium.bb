@@ -16,7 +16,8 @@ MojoGpuMemoryBufferManager::~MojoGpuMemoryBufferManager() {}
 scoped_ptr<gfx::GpuMemoryBuffer>
 MojoGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                     gfx::BufferFormat format,
-                                                    gfx::BufferUsage usage) {
+                                                    gfx::BufferUsage usage,
+                                                    int32_t surface_id) {
   return MojoGpuMemoryBufferImpl::Create(size, format, usage);
 }
 

@@ -220,7 +220,8 @@ RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   scoped_ptr<gfx::GpuMemoryBuffer> buffer =
-      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage);
+      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage,
+                                                          0 /* surface_id */);
   return buffer;
 }
 bool RendererGpuVideoAcceleratorFactories::

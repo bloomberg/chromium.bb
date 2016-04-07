@@ -29,7 +29,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
             overlay_candidate_validator,
         unsigned int target,
         unsigned int internalformat,
-        BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
+        gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,
                                         worker_context,
                                         vsync_manager,

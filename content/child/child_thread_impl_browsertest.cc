@@ -158,7 +158,8 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
 
   scoped_ptr<gfx::GpuMemoryBuffer> buffer =
       child_gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
-          buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+          buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+          0 /* surface_id */);
   ASSERT_TRUE(buffer);
   EXPECT_EQ(format, buffer->GetFormat());
 

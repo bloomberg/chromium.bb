@@ -57,10 +57,15 @@ class StubBrowserGpuMemoryBufferManager : public BrowserGpuMemoryBufferManager {
 
   void set_allocate_succeeds(bool value) { allocate_succeeds_ = value; }
 
-  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
+  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       int32_t surface_id) override {
+    if (!surface_id) {
+      return BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+          size, format, usage, surface_id);
+    }
     if (allocate_succeeds_)
       return make_scoped_ptr<gfx::GpuMemoryBuffer>(new StubGpuMemoryBufferImpl);
     return nullptr;

@@ -344,7 +344,8 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
                   staging_buffer->size, BufferFormat(resource->format()),
                   use_partial_raster_
                       ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
-                      : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+                      : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                  0 /* surface_id */);
     }
 
     gfx::Rect playback_rect = raster_full_rect;

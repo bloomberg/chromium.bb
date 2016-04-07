@@ -109,7 +109,8 @@ void TestGpuMemoryBufferManager::SetGpuMemoryBufferIsInUseByMacOSWindowServer(
 scoped_ptr<gfx::GpuMemoryBuffer>
 TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                     gfx::BufferFormat format,
-                                                    gfx::BufferUsage usage) {
+                                                    gfx::BufferUsage usage,
+                                                    int32_t surface_id) {
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   const size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   if (!shared_memory->CreateAnonymous(buffer_size))

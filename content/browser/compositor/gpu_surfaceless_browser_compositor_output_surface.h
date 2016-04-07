@@ -7,9 +7,12 @@
 
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace content {
 
-class BrowserGpuMemoryBufferManager;
 class BufferQueue;
 class GLHelper;
 
@@ -25,7 +28,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
           overlay_candidate_validator,
       unsigned int target,
       unsigned int internalformat,
-      BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuSurfacelessBrowserCompositorOutputSurface() override;
 
  private:
@@ -45,7 +48,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   unsigned int internalformat_;
   scoped_ptr<GLHelper> gl_helper_;
   scoped_ptr<BufferQueue> output_surface_;
-  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 };
 
 }  // namespace content

@@ -25,9 +25,12 @@ namespace gfx {
 class GpuMemoryBuffer;
 }
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace content {
 
-class BrowserGpuMemoryBufferManager;
 class GLHelper;
 
 // Provides a surface that manages its own buffers, backed by GpuMemoryBuffers
@@ -40,7 +43,7 @@ class CONTENT_EXPORT BufferQueue {
               unsigned int texture_target,
               unsigned int internalformat,
               GLHelper* gl_helper,
-              BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
+              gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
               int surface_id);
   virtual ~BufferQueue();
 
@@ -112,7 +115,7 @@ class CONTENT_EXPORT BufferQueue {
   // may be nullptr, if they represent frames that have been destroyed.
   std::deque<scoped_ptr<AllocatedSurface>> in_flight_surfaces_;
   GLHelper* gl_helper_;
-  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   int surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);

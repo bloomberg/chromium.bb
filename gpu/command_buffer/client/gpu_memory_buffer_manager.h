@@ -22,7 +22,8 @@ class GPU_EXPORT GpuMemoryBufferManager {
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      gfx::BufferUsage usage) = 0;
+      gfx::BufferUsage usage,
+      int32_t surface_id) = 0;
 
   // Creates a GpuMemoryBuffer from existing handle.
   virtual scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(

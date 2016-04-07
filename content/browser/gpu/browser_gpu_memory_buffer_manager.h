@@ -65,7 +65,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      gfx::BufferUsage usage) override;
+      gfx::BufferUsage usage,
+      int32_t surface_id) override;
   scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
@@ -78,12 +79,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   // Overridden from base::trace_event::MemoryDumpProvider:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
-
-  // Virtual for testing.
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      int32_t surface_id);
 
   void AllocateGpuMemoryBufferForChildProcess(
       gfx::GpuMemoryBufferId id,

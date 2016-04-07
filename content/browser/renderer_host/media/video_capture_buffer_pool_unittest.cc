@@ -107,7 +107,8 @@ class VideoCaptureBufferPoolTest
     scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
         const gfx::Size& size,
         gfx::BufferFormat format,
-        gfx::BufferUsage usage) override {
+        gfx::BufferUsage usage,
+        int32_t surface_id) override {
       return make_scoped_ptr(new MockGpuMemoryBuffer(size));
     }
   };

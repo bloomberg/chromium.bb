@@ -34,7 +34,9 @@ ChildGpuMemoryBufferManager::~ChildGpuMemoryBufferManager() {
 scoped_ptr<gfx::GpuMemoryBuffer>
 ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                      gfx::BufferFormat format,
-                                                     gfx::BufferUsage usage) {
+                                                     gfx::BufferUsage usage,
+                                                     int32_t surface_id) {
+  DCHECK_EQ(0, surface_id);
   TRACE_EVENT2("renderer",
                "ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer",
                "width",

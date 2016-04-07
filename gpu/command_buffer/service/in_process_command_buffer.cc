@@ -826,7 +826,7 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
           gpu::DefaultBufferFormatForImageFormat(internalformat),
-          gfx::BufferUsage::SCANOUT));
+          gfx::BufferUsage::SCANOUT, 0 /* surface_id */));
   if (!buffer)
     return -1;
 
