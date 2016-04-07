@@ -2325,15 +2325,15 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
     return;
   Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
 
-  UpdateDisplay("500x500, 500x500");
+  UpdateDisplay("500x400, 500x400");
 
   StatusAreaWidget* status_area_widget =
       Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
   EXPECT_TRUE(status_area_widget->IsVisible());
   // Shelf should be in the first display's area.
-  // TODO: make this test more robust against changes in font, font size.
-  EXPECT_EQ("353,453 147x47",
-            status_area_widget->GetWindowBoundsInScreen().ToString());
+  gfx::Rect status_area_bounds(status_area_widget->GetWindowBoundsInScreen());
+  EXPECT_TRUE(gfx::Rect(0, 0, 500, 400).Contains(status_area_bounds));
+  EXPECT_EQ(gfx::Point(500, 400), status_area_bounds.bottom_right());
 }
 
 }  // namespace ash
