@@ -76,4 +76,32 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, KillSwitchShouldBlock) {
               testing::MatchesRegex("NotFoundError: .*globally disabled.*"));
 }
 
+// Tests that using Finch field trial parameters for blacklist additions has
+// the effect of rejecting requestDevice calls.
+IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlacklistShouldBlock) {
+  // Fake the BluetoothAdapter to say it's present.
+  scoped_refptr<device::MockBluetoothAdapter> adapter =
+      new testing::NiceMock<device::MockBluetoothAdapter>;
+  EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(testing::Return(true));
+  device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
+
+  std::map<std::string, std::string> params;
+  params["blacklist_additions"] = "ee01:e";
+  variations::AssociateVariationParams("WebBluetoothBlacklist", "TestGroup",
+                                       params);
+  base::FieldTrialList::CreateFieldTrial("WebBluetoothBlacklist", "TestGroup");
+
+  std::string rejection;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents_,
+      "navigator.bluetooth.requestDevice({filters: [{services: [0xee01]}]})"
+      "  .then(() => { domAutomationController.send('Success'); },"
+      "        reason => {"
+      "      domAutomationController.send(reason.name + ': ' + reason.message);"
+      "  });",
+      &rejection));
+  EXPECT_THAT(rejection,
+              testing::MatchesRegex("SecurityError: .*blacklisted UUID.*"));
+}
+
 }  // namespace

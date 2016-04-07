@@ -415,6 +415,21 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin);
 
+  // Returns a blacklist of UUIDs that have restrictions when accessed
+  // via Web Bluetooth. Parsed by BluetoothBlacklist::Add().
+  //
+  // The blacklist string must be a comma-separated list of UUID:exclusion
+  // pairs. The pairs may be separated by whitespace. Pair components are
+  // colon-separated and must not have whitespace around the colon.
+  //
+  // UUIDs are a string that BluetoothUUID can parse (See BluetoothUUID
+  // constructor comment). Exclusion values are a single lower case character
+  // string "e", "r", or "w" for EXCLUDE, EXCLUDE_READS, or EXCLUDE_WRITES.
+  //
+  // Example:
+  // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
+  virtual std::string GetWebBluetoothBlacklist();
+
   // Allow the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns nullptr to indicate the
   // regular request context should be used.

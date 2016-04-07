@@ -53,19 +53,11 @@ class CONTENT_EXPORT BluetoothBlacklist final {
   // Adds UUIDs to the blacklist by parsing a blacklist string and calling
   // Add(uuid, value).
   //
-  // The blacklist string must be a comma-separated list of UUID:exclusion
-  // pairs. The pairs may be separated by whitespace. Pair components are
-  // colon-separated and must not have whitespace around the colon.
-  //
-  // UUIDs are a string that BluetoothUUID can parse (See BluetoothUUID
-  // constructor comment). Exclusion values are a single lower case character
-  // string "e", "r", or "w" for EXCLUDE, EXCLUDE_READS, or EXCLUDE_WRITES.
+  // The blacklist string format is defined at
+  // ContentBrowserClient::GetWebBluetoothBlacklist().
   //
   // Malformed pairs in the string are ignored, including invalid UUID or
   // exclusion values. Duplicate UUIDs follow Add()'s merging rule.
-  //
-  // Example:
-  // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   void Add(base::StringPiece blacklist_string);
 
   // Returns if a UUID is excluded from all operations. UUID must be valid.
@@ -96,6 +88,10 @@ class CONTENT_EXPORT BluetoothBlacklist final {
   BluetoothBlacklist();
 
   void PopulateWithDefaultValues();
+
+  // Populates blacklist with values obtained dynamically from a server, able
+  // to be updated without shipping new executable versions.
+  void PopulateWithServerProvidedValues();
 
   // Map of UUID to blacklisted value.
   std::map<device::BluetoothUUID, Value> blacklisted_uuids_;

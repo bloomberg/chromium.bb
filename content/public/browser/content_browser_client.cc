@@ -225,6 +225,10 @@ ContentBrowserClient::AllowWebBluetooth(
   return AllowWebBluetoothResult::ALLOW;
 }
 
+std::string ContentBrowserClient::GetWebBluetoothBlacklist() {
+  return std::string();
+}
+
 QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
 }

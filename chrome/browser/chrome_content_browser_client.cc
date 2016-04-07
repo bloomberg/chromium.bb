@@ -2004,6 +2004,11 @@ ChromeContentBrowserClient::AllowWebBluetooth(
   return AllowWebBluetoothResult::ALLOW;
 }
 
+std::string ChromeContentBrowserClient::GetWebBluetoothBlacklist() {
+  return variations::GetVariationParamValue("WebBluetoothBlacklist",
+                                            "blacklist_additions");
+}
+
 net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, content::ResourceContext* context) {

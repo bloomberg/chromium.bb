@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "content/common/bluetooth/bluetooth_scan_filter.h"
+#include "content/public/browser/content_browser_client.h"
 
 using device::BluetoothUUID;
 
@@ -127,10 +128,12 @@ void BluetoothBlacklist::RemoveExcludedUuids(
 void BluetoothBlacklist::ResetToDefaultValuesForTest() {
   blacklisted_uuids_.clear();
   PopulateWithDefaultValues();
+  PopulateWithServerProvidedValues();
 }
 
 BluetoothBlacklist::BluetoothBlacklist() {
   PopulateWithDefaultValues();
+  PopulateWithServerProvidedValues();
 }
 
 void BluetoothBlacklist::PopulateWithDefaultValues() {
@@ -170,6 +173,10 @@ void BluetoothBlacklist::PopulateWithDefaultValues() {
   Add(BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c"), Value::EXCLUDE);
   Add(BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114"),
       Value::EXCLUDE_READS);
+}
+
+void BluetoothBlacklist::PopulateWithServerProvidedValues() {
+  Add(GetContentClient()->browser()->GetWebBluetoothBlacklist());
 }
 
 }  // namespace content
