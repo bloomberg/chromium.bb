@@ -351,13 +351,17 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUuids_Matching) {
 TEST_F(BluetoothBlacklistTest, VerifyDefaultBlacklistSize) {
   // When adding items to the blacklist the new values should be added in the
   // tests below for each exclusion type.
-  EXPECT_EQ(9u, list_.size());
+  EXPECT_EQ(11u, list_.size());
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeList) {
   EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("1800")));
   EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("1801")));
   EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("1812")));
+  EXPECT_TRUE(
+      list_.IsExcluded(BluetoothUUID("00001530-1212-efde-1523-785feabcd123")));
+  EXPECT_TRUE(
+      list_.IsExcluded(BluetoothUUID("f000ffc0-0451-4000-b000-000000000000")));
   EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("2a03")));
   EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("2a25")));
   EXPECT_TRUE(
