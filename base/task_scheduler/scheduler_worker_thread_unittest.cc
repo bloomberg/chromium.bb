@@ -85,9 +85,9 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
     num_sequences_to_create_ = num_sequences_to_create;
   }
 
-  size_t NumGetWork() const {
+  void SetMaxGetWork(size_t max_get_work) {
     AutoSchedulerLock auto_lock(lock_);
-    return num_get_work_;
+    max_get_work_ = max_get_work;
   }
 
   std::unique_ptr<SchedulerWorkerThread> worker_thread_;
@@ -119,13 +119,16 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
       ++num_get_work_;
       num_get_work_cv_->Signal();
 
+      // Verify that this method isn't called more times than expected.
+      EXPECT_LE(num_get_work_, max_get_work_);
+
       // Check if a Sequence should be returned.
       if (num_sequences_to_create_ == 0)
         return nullptr;
       --num_sequences_to_create_;
     }
 
-    // Create a Sequence that contains 1 Task.
+    // Create a Sequence that contains one Task.
     scoped_refptr<Sequence> sequence(new Sequence);
     task_tracker_.PostTask(
         Bind(IgnoreResult(&Sequence::PushTask), Unretained(sequence.get())),
@@ -146,12 +149,14 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
   void RanTaskFromSequence(scoped_refptr<Sequence> sequence) override {
     AutoSchedulerLock auto_lock(lock_);
     run_sequences_.push_back(std::move(sequence));
+    EXPECT_LE(run_sequences_.size(), created_sequences_.size());
     run_sequences_cv_->Signal();
   }
 
   void RunTaskCallback() {
     AutoSchedulerLock auto_lock(lock_);
     ++num_run_tasks_;
+    EXPECT_LE(num_run_tasks_, created_sequences_.size());
   }
 
   TaskTracker task_tracker_;
@@ -172,6 +177,9 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
   // Number of times that GetWork() has been called.
   size_t num_get_work_ = 0;
 
+  // Maximum number of times that GetWork() can be called.
+  size_t max_get_work_ = 0;
+
   // Condition variable signaled when |num_get_work_| is incremented.
   std::unique_ptr<ConditionVariable> num_get_work_cv_;
 
@@ -191,43 +199,43 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
 };
 
 // Verify that when GetWork() continuously returns Sequences, all Tasks in these
-// Sequences run successfully. The SchedulerWorkerThread is woken up once.
-TEST_F(TaskSchedulerWorkerThreadTest, ContinousWork) {
+// Sequences run successfully. The test wakes up the SchedulerWorkerThread once.
+TEST_F(TaskSchedulerWorkerThreadTest, ContinuousWork) {
   // Set GetWork() to return |kNumSequencesPerTest| Sequences before starting to
   // return nullptr.
   SetNumSequencesToCreate(kNumSequencesPerTest);
+
+  // Expect |kNumSequencesPerTest| calls to GetWork() in which it returns a
+  // Sequence and one call in which its returns nullptr.
+  const size_t kExpectedNumGetWork = kNumSequencesPerTest + 1;
+  SetMaxGetWork(kExpectedNumGetWork);
 
   // Wake up |worker_thread_| and wait until it has run all the Tasks returned
   // by GetWork().
   worker_thread_->WakeUp();
   WaitForAllSequencesToRun();
-
-  // Expect |kNumSequencesPerTest| calls to GetWork() in which it returned a
-  // Sequence and 1 call in which it returned nullptr.
-  const size_t expected_num_get_work = kNumSequencesPerTest + 1;
-  WaitForNumGetWork(expected_num_get_work);
-  EXPECT_EQ(expected_num_get_work, NumGetWork());
+  WaitForNumGetWork(kExpectedNumGetWork);
 }
 
 // Verify that when GetWork() alternates between returning a Sequence and
 // returning nullptr, all Tasks in the returned Sequences run successfully. The
-// SchedulerWorkerThread is woken up once for each Sequence.
+// test wakes up the SchedulerWorkerThread once for each Sequence.
 TEST_F(TaskSchedulerWorkerThreadTest, IntermittentWork) {
   for (size_t i = 0; i < kNumSequencesPerTest; ++i) {
     // Set GetWork() to return 1 Sequence before starting to return
     // nullptr.
     SetNumSequencesToCreate(1);
 
+    // Expect |i + 1| calls to GetWork() in which it returns a Sequence and
+    // |i + 1| calls in which it returns nullptr.
+    const size_t expected_num_get_work = 2 * (i + 1);
+    SetMaxGetWork(expected_num_get_work);
+
     // Wake up |worker_thread_| and wait until it has run the Task returned by
     // GetWork().
     worker_thread_->WakeUp();
     WaitForAllSequencesToRun();
-
-    // Expect |i| calls to GetWork() in which it returned a Sequence and
-    // |i| calls in which it returned nullptr.
-    const size_t expected_num_get_work = 2 * (i + 1);
     WaitForNumGetWork(expected_num_get_work);
-    EXPECT_EQ(expected_num_get_work, NumGetWork());
   }
 }
 
