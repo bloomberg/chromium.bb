@@ -16,7 +16,7 @@ class WindowSurfaceClient {
       mojo::Array<mojom::ReturnedResourcePtr> resources) = 0;
 
  protected:
-  ~WindowSurfaceClient() {}
+  virtual ~WindowSurfaceClient() {}
 };
 
 }  // namespace mus

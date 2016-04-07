@@ -39,8 +39,7 @@ BitmapUploader::BitmapUploader(mus::Window* window)
       height_(0),
       format_(BGRA),
       next_resource_id_(1u),
-      id_namespace_(0u),
-      surface_client_binding_(this) {}
+      id_namespace_(0u) {}
 
 BitmapUploader::~BitmapUploader() {
   MojoGLES2DestroyContext(gles2_context_);
@@ -49,6 +48,7 @@ BitmapUploader::~BitmapUploader() {
 void BitmapUploader::Init(mojo::Connector* connector) {
   surface_ = window_->RequestSurface(mus::mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
+  surface_->set_client(this);
 
   connector->ConnectToInterface("mojo:mus", &gpu_service_);
   mus::mojom::CommandBufferPtr gles2_client;
@@ -231,7 +231,8 @@ void BitmapUploader::SetIdNamespace(uint32_t id_namespace) {
     Upload();
 }
 
-void BitmapUploader::ReturnResources(
+void BitmapUploader::OnResourcesReturned(
+    mus::WindowSurface* surface,
     mojo::Array<mus::mojom::ReturnedResourcePtr> resources) {
   MojoGLES2MakeCurrent(gles2_context_);
   // TODO(jamesr): Recycle.
