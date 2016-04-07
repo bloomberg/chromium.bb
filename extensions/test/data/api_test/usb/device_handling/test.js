@@ -11,6 +11,7 @@ function getDevices() {
   }, function(devices) {
     chrome.test.assertEq(1, devices.length);
     var device = devices[0];
+    chrome.test.assertEq(0x0100, device.version);
     chrome.test.assertEq("Test Device", device.productName);
     chrome.test.assertEq("Test Manufacturer", device.manufacturerName);
     chrome.test.assertEq("ABC123", device.serialNumber);

@@ -56,6 +56,7 @@ void UsbGuidMap::GetApiDevice(scoped_refptr<const device::UsbDevice> device_in,
   device_out->device = GetIdFromGuid(device_in->guid());
   device_out->vendor_id = device_in->vendor_id();
   device_out->product_id = device_in->product_id();
+  device_out->version = device_in->device_version();
   device_out->product_name = base::UTF16ToUTF8(device_in->product_string());
   device_out->manufacturer_name =
       base::UTF16ToUTF8(device_in->manufacturer_string());

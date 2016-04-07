@@ -25,8 +25,13 @@ class UsbDeviceAndroid : public UsbDevice {
 
  private:
   UsbDeviceAndroid(JNIEnv* env,
+                   uint16_t usb_version,
+                   uint8_t device_class,
+                   uint8_t device_subclass,
+                   uint8_t device_protocol,
                    uint16_t vendor_id,
                    uint16_t product_id,
+                   uint16_t device_version,
                    const base::string16& manufacturer_string,
                    const base::string16& product_string,
                    const base::string16& serial_number,

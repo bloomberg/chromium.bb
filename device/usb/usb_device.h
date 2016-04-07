@@ -50,8 +50,13 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   const std::string& guid() const { return guid_; }
 
   // Accessors to basic information.
+  uint16_t usb_version() const { return usb_version_; }
+  uint8_t device_class() const { return device_class_; }
+  uint8_t device_subclass() const { return device_subclass_; }
+  uint8_t device_protocol() const { return device_protocol_; }
   uint16_t vendor_id() const { return vendor_id_; }
   uint16_t product_id() const { return product_id_; }
+  uint16_t device_version() const { return device_version_; }
   const base::string16& manufacturer_string() const {
     return manufacturer_string_;
   }
@@ -83,8 +88,13 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  protected:
   friend class UsbService;
 
-  UsbDevice(uint16_t vendor_id,
+  UsbDevice(uint16_t usb_version,
+            uint8_t device_class,
+            uint8_t device_subclass,
+            uint8_t device_protocol,
+            uint16_t vendor_id,
             uint16_t product_id,
+            uint16_t device_version,
             const base::string16& manufacturer_string,
             const base::string16& product_string,
             const base::string16& serial_number);
@@ -108,8 +118,13 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   friend class base::RefCountedThreadSafe<UsbDevice>;
 
   const std::string guid_;
+  const uint16_t usb_version_;
+  const uint8_t device_class_;
+  const uint8_t device_subclass_;
+  const uint8_t device_protocol_;
   const uint16_t vendor_id_;
   const uint16_t product_id_;
+  const uint16_t device_version_;
 
   base::ObserverList<Observer, true> observer_list_;
 

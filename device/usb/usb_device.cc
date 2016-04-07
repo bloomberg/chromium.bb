@@ -13,8 +13,13 @@ UsbDevice::Observer::~Observer() {}
 
 void UsbDevice::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {}
 
-UsbDevice::UsbDevice(uint16_t vendor_id,
+UsbDevice::UsbDevice(uint16_t usb_version,
+                     uint8_t device_class,
+                     uint8_t device_subclass,
+                     uint8_t device_protocol,
+                     uint16_t vendor_id,
                      uint16_t product_id,
+                     uint16_t device_version,
                      const base::string16& manufacturer_string,
                      const base::string16& product_string,
                      const base::string16& serial_number)
@@ -22,8 +27,13 @@ UsbDevice::UsbDevice(uint16_t vendor_id,
       product_string_(product_string),
       serial_number_(serial_number),
       guid_(base::GenerateGUID()),
+      usb_version_(usb_version),
+      device_class_(device_class),
+      device_subclass_(device_subclass),
+      device_protocol_(device_protocol),
       vendor_id_(vendor_id),
-      product_id_(product_id) {}
+      product_id_(product_id),
+      device_version_(device_version) {}
 
 UsbDevice::~UsbDevice() {
 }

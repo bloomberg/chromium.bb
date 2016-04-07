@@ -490,9 +490,8 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
       return;
     }
 
-    scoped_refptr<UsbDeviceImpl> device(
-        new UsbDeviceImpl(context_, platform_device, descriptor.idVendor,
-                          descriptor.idProduct, blocking_task_runner_));
+    scoped_refptr<UsbDeviceImpl> device(new UsbDeviceImpl(
+        context_, platform_device, descriptor, blocking_task_runner_));
     base::Closure add_device =
         base::Bind(&UsbServiceImpl::AddDevice, weak_factory_.GetWeakPtr(),
                    refresh_complete, device);

@@ -257,8 +257,17 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
     const device::UsbDevice& device) {
   device::usb::DeviceInfoPtr info = device::usb::DeviceInfo::New();
   info->guid = device.guid();
+  info->usb_version_major = device.usb_version() >> 8;
+  info->usb_version_minor = device.usb_version() >> 4 & 0xf;
+  info->usb_version_subminor = device.usb_version() & 0xf;
+  info->class_code = device.device_class();
+  info->subclass_code = device.device_subclass();
+  info->protocol_code = device.device_protocol();
   info->vendor_id = device.vendor_id();
   info->product_id = device.product_id();
+  info->device_version_major = device.device_version() >> 8;
+  info->device_version_minor = device.device_version() >> 4 & 0xf;
+  info->device_version_subminor = device.device_version() & 0xf;
   info->manufacturer_name = base::UTF16ToUTF8(device.manufacturer_string());
   info->product_name = base::UTF16ToUTF8(device.product_string());
   info->serial_number = base::UTF16ToUTF8(device.serial_number());

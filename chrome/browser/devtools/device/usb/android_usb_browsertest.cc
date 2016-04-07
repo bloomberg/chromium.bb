@@ -396,8 +396,13 @@ template <class T>
 class MockUsbDevice : public UsbDevice {
  public:
   MockUsbDevice()
-      : UsbDevice(0,
-                  0,
+      : UsbDevice(0x0200,  // usb_version
+                  0,       // device_class
+                  0,       // device_subclass
+                  0,       // device_protocol
+                  0,       // vendor_id
+                  0,       // product_id
+                  0x0100,  // device_version
                   base::UTF8ToUTF16(kDeviceManufacturer),
                   base::UTF8ToUTF16(kDeviceModel),
                   base::UTF8ToUTF16(kDeviceSerial)),

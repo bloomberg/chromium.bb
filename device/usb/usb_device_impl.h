@@ -20,8 +20,9 @@
 #include "device/usb/webusb_descriptors.h"
 
 struct libusb_device;
-struct libusb_config_descriptor;
+struct libusb_device_descriptor;
 struct libusb_device_handle;
+struct libusb_config_descriptor;
 
 namespace base {
 class SequencedTaskRunner;
@@ -76,8 +77,7 @@ class UsbDeviceImpl : public UsbDevice {
   // Called by UsbServiceImpl only;
   UsbDeviceImpl(scoped_refptr<UsbContext> context,
                 PlatformUsbDevice platform_device,
-                uint16_t vendor_id,
-                uint16_t product_id,
+                const libusb_device_descriptor& descriptor,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   ~UsbDeviceImpl() override;

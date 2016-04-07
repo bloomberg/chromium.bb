@@ -32,8 +32,9 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
     const JavaRef<jobject>& usb_device) {
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbDevice_create(env, usb_device.obj());
-  uint16_t vendor_id = Java_ChromeUsbDevice_getVendorId(env, wrapper.obj());
-  uint16_t product_id = Java_ChromeUsbDevice_getProductId(env, wrapper.obj());
+  uint16_t device_version = 0;
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 23)
+    device_version = Java_ChromeUsbDevice_getDeviceVersion(env, wrapper.obj());
   ScopedJavaLocalRef<jstring> manufacturer_string =
       Java_ChromeUsbDevice_getManufacturerName(env, wrapper.obj());
   ScopedJavaLocalRef<jstring> product_string =
@@ -41,7 +42,13 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
   ScopedJavaLocalRef<jstring> serial_number =
       Java_ChromeUsbDevice_getSerialNumber(env, wrapper.obj());
   return make_scoped_refptr(new UsbDeviceAndroid(
-      env, vendor_id, product_id,
+      env,
+      0x0200,  // USB protocol version, not provided by the Android API.
+      Java_ChromeUsbDevice_getDeviceClass(env, wrapper.obj()),
+      Java_ChromeUsbDevice_getDeviceSubclass(env, wrapper.obj()),
+      Java_ChromeUsbDevice_getDeviceProtocol(env, wrapper.obj()),
+      Java_ChromeUsbDevice_getVendorId(env, wrapper.obj()),
+      Java_ChromeUsbDevice_getProductId(env, wrapper.obj()), device_version,
       ConvertJavaStringToUTF16(env, manufacturer_string),
       ConvertJavaStringToUTF16(env, product_string),
       ConvertJavaStringToUTF16(env, serial_number), wrapper));
@@ -57,14 +64,24 @@ const UsbConfigDescriptor* UsbDeviceAndroid::GetActiveConfiguration() const {
 }
 
 UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
+                                   uint16_t usb_version,
+                                   uint8_t device_class,
+                                   uint8_t device_subclass,
+                                   uint8_t device_protocol,
                                    uint16_t vendor_id,
                                    uint16_t product_id,
+                                   uint16_t device_version,
                                    const base::string16& manufacturer_string,
                                    const base::string16& product_string,
                                    const base::string16& serial_number,
                                    const JavaRef<jobject>& wrapper)
-    : UsbDevice(vendor_id,
+    : UsbDevice(usb_version,
+                device_class,
+                device_subclass,
+                device_protocol,
+                vendor_id,
                 product_id,
+                device_version,
                 manufacturer_string,
                 product_string,
                 serial_number) {
