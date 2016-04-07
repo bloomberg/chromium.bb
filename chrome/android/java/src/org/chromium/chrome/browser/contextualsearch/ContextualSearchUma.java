@@ -728,6 +728,15 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs the duration from opening the panel beyond peek until the panel is closed.
+     * @param durationMs The duration to record.
+     */
+    public static void logPanelOpenDuration(long durationMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                "Search.ContextualSearchPanelOpenDuration", durationMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * Logs whether the promo was seen.
      * Logs multiple histograms, with and without the original triggering gesture.
      * @param wasPanelSeen Whether the panel was seen.
