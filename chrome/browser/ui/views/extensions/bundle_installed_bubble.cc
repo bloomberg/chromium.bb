@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -33,13 +33,13 @@ const int kItemsColumnSetId = 1;
 // The size of extension icons, and width of the corresponding column.
 const int kIconSize = 32;
 
-class BundleInstalledBubble : public views::BubbleDelegateView,
+class BundleInstalledBubble : public views::BubbleDialogDelegateView,
                               public views::ButtonListener {
  public:
   BundleInstalledBubble(const BundleInstaller* bundle,
                         View* anchor_view,
                         views::BubbleBorder::Arrow arrow)
-      : views::BubbleDelegateView(anchor_view, arrow) {
+      : views::BubbleDialogDelegateView(anchor_view, arrow) {
     GridLayout* layout = GridLayout::CreatePanel(this);
     SetLayoutManager(layout);
 
@@ -116,7 +116,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
           BundleInstaller::Item::STATE_FAILED));
     }
 
-    views::BubbleDelegateView::CreateBubble(this)->Show();
+    views::BubbleDialogDelegateView::CreateBubble(this)->Show();
   }
 
   void AddItemList(GridLayout* layout, const BundleInstaller::ItemList& items) {
@@ -142,16 +142,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   }
 
   void AddCloseButton(GridLayout* layout, views::ButtonListener* listener) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-    views::ImageButton* button = new views::ImageButton(listener);
-    button->SetImage(views::CustomButton::STATE_NORMAL,
-                     rb.GetImageSkiaNamed(IDR_CLOSE_2));
-    button->SetImage(views::CustomButton::STATE_HOVERED,
-                     rb.GetImageSkiaNamed(IDR_CLOSE_2_H));
-    button->SetImage(views::CustomButton::STATE_PRESSED,
-                     rb.GetImageSkiaNamed(IDR_CLOSE_2_P));
-    layout->AddView(button);
+    layout->AddView(views::BubbleFrameView::CreateCloseButton(listener));
   }
 
   void AddHeading(GridLayout* layout, const base::string16& heading) {
@@ -163,6 +154,9 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
     heading_label->SizeToFit(kTextColumnWidth);
     layout->AddView(heading_label);
   }
+
+  // views::BubbleDialogDelegate implementation:
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   // views::ButtonListener implementation:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
