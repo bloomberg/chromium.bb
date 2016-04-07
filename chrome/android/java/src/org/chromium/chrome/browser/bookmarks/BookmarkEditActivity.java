@@ -34,6 +34,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 
+import java.util.List;
+
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
  */
@@ -52,6 +54,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
     }
 
     private BookmarkModel mModel;
+    private OfflinePageBridge mOfflinePageBridge;
     private BookmarkId mBookmarkId;
     private EmptyAlertEditText mTitleEditText;
     private EmptyAlertEditText mUrlEditText;
@@ -86,6 +89,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
         setTitle(title);
         BookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(title));
         mModel = new BookmarkModel();
+        mOfflinePageBridge = mModel.getOfflinePageBridge();
         mBookmarkId = BookmarkId.getBookmarkIdFromString(
                 getIntent().getStringExtra(INTENT_BOOKMARK_ID));
         mModel.addObserver(mBookmarkModelObserver);
@@ -108,7 +112,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
             }
         });
 
-        if (OfflinePageBridge.isEnabled() && OfflinePageBridge.canSavePage(
+        if (mOfflinePageBridge != null && OfflinePageBridge.canSavePage(
                 mModel.getBookmarkById(mBookmarkId).getUrl())) {
             mConnectionObserver = new NetworkChangeNotifier.ConnectionTypeObserver() {
                 public void onConnectionTypeChanged(int connectionType) {
@@ -128,7 +132,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                 }
             };
 
-            mModel.getOfflinePageBridge().addObserver(mOfflinePageModelObserver);
+            mOfflinePageBridge.addObserver(mOfflinePageModelObserver);
             // Make offline page section visible and find controls.
             findViewById(R.id.offline_page_group).setVisibility(View.VISIBLE);
             getIntent().setExtrasClassLoader(WebContents.class.getClassLoader());
@@ -202,10 +206,21 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                 String fixedUrl = UrlUtilities.fixupUrl(url);
                 if (fixedUrl != null && !fixedUrl.equals(originalUrl)) {
                     ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
-                    boolean hasOfflinePage = OfflinePageBridge.isEnabled()
-                            && mModel.getOfflinePageBridge().getPageByClientId(clientId) != null;
-                    RecordHistogram.recordBooleanHistogram(
-                            "OfflinePages.Edit.BookmarkUrlChangedForOfflinePage", hasOfflinePage);
+                    if (mOfflinePageBridge != null) {
+                        mOfflinePageBridge.getPagesByClientId(
+                                clientId, new OfflinePageBridge.MultipleOfflinePageItemCallback() {
+                                    @Override
+                                    public void onResult(List<OfflinePageItem> items) {
+                                        // Bookmarks ensures only one item will be present per
+                                        // client ID.
+                                        assert items.size() <= 1;
+
+                                        recordUrlChangeHistogram(!items.isEmpty());
+                                    }
+                                });
+                    } else {
+                        recordUrlChangeHistogram(false);
+                    }
                     mModel.setBookmarkUrl(mBookmarkId, fixedUrl);
                 }
             }
@@ -214,12 +229,17 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
         super.onStop();
     }
 
+    private void recordUrlChangeHistogram(boolean hasOfflinePage) {
+        RecordHistogram.recordBooleanHistogram(
+                "OfflinePages.Edit.BookmarkUrlChangedForOfflinePage", hasOfflinePage);
+    }
+
     @Override
     protected void onDestroy() {
         recordOfflineButtonAction(false);
-        if (OfflinePageBridge.isEnabled()) {
-            mModel.getOfflinePageBridge().removeObserver(
-                    mOfflinePageModelObserver);
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.removeObserver(mOfflinePageModelObserver);
+            mOfflinePageBridge = null;
         }
 
         if (mConnectionObserver != null) {
@@ -233,20 +253,36 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
     }
 
     private void updateOfflineSection() {
-        assert OfflinePageBridge.isEnabled();
+        assert mOfflinePageBridge != null;
 
         // It is possible that callback arrives after the activity was dismissed.
         // See http://crbug.com/566939
         if (mModel == null) return;
 
-        OfflinePageBridge offlinePageBridge = mModel.getOfflinePageBridge();
-        offlinePageBridge.checkOfflinePageMetadata();
+        mOfflinePageBridge.checkOfflinePageMetadata();
+
+        ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
+        mOfflinePageBridge.getPagesByClientId(
+                clientId, new OfflinePageBridge.MultipleOfflinePageItemCallback() {
+                    @Override
+                    public void onResult(List<OfflinePageItem> items) {
+                        offlineItemsRetrieved(items);
+                    }
+                });
+    }
+
+    private void offlineItemsRetrieved(List<OfflinePageItem> items) {
+        // It is possible that callback arrives after the activity was dismissed.
+        // See http://crbug.com/566939
+        if (mModel == null || mOfflinePageBridge == null) return;
 
         Button saveRemoveVisitButton = (Button) findViewById(R.id.offline_page_save_remove_button);
         TextView offlinePageInfoTextView = (TextView) findViewById(R.id.offline_page_info_text);
 
-        ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
-        OfflinePageItem offlinePage = offlinePageBridge.getPageByClientId(clientId);
+        // Bookmarks should enforce that only one item exists per client ID.
+        OfflinePageItem offlinePage = null;
+        if (items.size() > 0) offlinePage = items.get(0);
+
         if (offlinePage != null) {
             // Offline page exists. Show information and button to remove.
             offlinePageInfoTextView.setText(
@@ -255,8 +291,8 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                             Formatter.formatFileSize(this, offlinePage.getFileSize())));
             updateButtonToDeleteOfflinePage(saveRemoveVisitButton);
             saveRemoveVisitButton.setVisibility(View.VISIBLE);
-        } else if (mWebContents != null && !mWebContents.isDestroyed()
-                && offlinePageBridge.canSavePage(mWebContents.getLastCommittedUrl())) {
+        } else if (mWebContents != null && !mWebContents.isDestroyed() && mOfflinePageBridge != null
+                && mOfflinePageBridge.canSavePage(mWebContents.getLastCommittedUrl())) {
             // Offline page is not saved, but a bookmarked page is opened. Show save button.
             offlinePageInfoTextView.setText(
                     getString(OfflinePageUtils.getStringId(R.string.bookmark_offline_page_none)));
@@ -286,7 +322,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                 recordOfflineButtonAction(true);
                 button.setEnabled(false);
                 ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
-                mModel.getOfflinePageBridge().deletePage(clientId, new DeletePageCallback() {
+                mOfflinePageBridge.deletePage(clientId, new DeletePageCallback() {
                     @Override
                     public void onDeletePageDone(int deletePageResult) {
                         // TODO(fgorski): Add snackbar upon failure.
@@ -307,16 +343,14 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                 recordOfflineButtonAction(true);
                 ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
                 button.setEnabled(false);
-                mModel.getOfflinePageBridge().savePage(
-                        mWebContents, clientId, new SavePageCallback() {
-                            @Override
-                            public void onSavePageDone(
-                                    int savePageResult, String url, long offlineId) {
-                                // TODO(fgorski): Add snackbar upon failure.
-                                // Always update UI, as buttons might be disabled.
-                                updateOfflineSection();
-                            }
-                        });
+                mOfflinePageBridge.savePage(mWebContents, clientId, new SavePageCallback() {
+                    @Override
+                    public void onSavePageDone(int savePageResult, String url, long offlineId) {
+                        // TODO(fgorski): Add snackbar upon failure.
+                        // Always update UI, as buttons might be disabled.
+                        updateOfflineSection();
+                    }
+                });
             }
         });
     }

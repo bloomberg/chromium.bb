@@ -275,9 +275,7 @@ public class BookmarkModel extends BookmarkBridge {
         String url = getBookmarkById(bookmarkId).getUrl();
         if (mOfflinePageBridge == null) return url;
 
-        ClientId clientId = ClientId.createClientIdForBookmarkId(bookmarkId);
-        return mOfflinePageBridge.getLaunchUrlAndMarkAccessed(
-                mOfflinePageBridge.getPageByClientId(clientId), url);
+        return mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
     }
 
     /**

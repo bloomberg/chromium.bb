@@ -353,7 +353,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.getPagesByClientIdAsync(
+                mOfflinePageBridge.getPagesByClientId(
                         clientId, new OfflinePageBridge.MultipleOfflinePageItemCallback() {
                             @Override
                             public void onResult(List<OfflinePageItem> items) {
