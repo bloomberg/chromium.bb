@@ -203,7 +203,6 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
 
 void UsbDeviceImpl::HandleClosed(scoped_refptr<UsbDeviceHandle> handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ContainsValue(handles_, handle.get()));
   handles_.remove(handle.get());
 }
 
@@ -214,7 +213,10 @@ const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() const {
 
 void UsbDeviceImpl::OnDisconnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (UsbDeviceHandle* handle : handles_)
+  // Swap out the handle list as HandleClosed() will try to modify it.
+  std::list<UsbDeviceHandle*> handles;
+  handles.swap(handles_);
+  for (UsbDeviceHandle* handle : handles)
     handle->Close();
 }
 
