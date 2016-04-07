@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 
-namespace content {
+namespace media {
 
-// Make sure the enum values of media::VideoCodecProfile and
+// Make sure the enum values of VideoCodecProfile and
 // gpu::VideoCodecProfile match.
-#define STATIC_ASSERT_ENUM_MATCH(name)                                 \
-  static_assert(                                                       \
-      media::name == static_cast<media::VideoCodecProfile>(gpu::name), \
-      #name " value must match in media and gpu.")
+#define STATIC_ASSERT_ENUM_MATCH(name)                             \
+  static_assert(name == static_cast<VideoCodecProfile>(gpu::name), \
+                #name " value must match in media and gpu.")
 
 STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_UNKNOWN);
 STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_MIN);
@@ -34,10 +33,10 @@ STATIC_ASSERT_ENUM_MATCH(VP9PROFILE_PROFILE3);
 STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_MAX);
 
 // static
-media::VideoDecodeAccelerator::Capabilities
+VideoDecodeAccelerator::Capabilities
 GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
     const gpu::VideoDecodeAcceleratorCapabilities& gpu_capabilities) {
-  media::VideoDecodeAccelerator::Capabilities capabilities;
+  VideoDecodeAccelerator::Capabilities capabilities;
   capabilities.supported_profiles =
       ConvertGpuToMediaDecodeProfiles(gpu_capabilities.supported_profiles);
   capabilities.flags = gpu_capabilities.flags;
@@ -45,14 +44,13 @@ GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
 }
 
 // static
-media::VideoDecodeAccelerator::SupportedProfiles
-GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(const
-    gpu::VideoDecodeAcceleratorSupportedProfiles& gpu_profiles) {
-  media::VideoDecodeAccelerator::SupportedProfiles profiles;
+VideoDecodeAccelerator::SupportedProfiles
+GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(
+    const gpu::VideoDecodeAcceleratorSupportedProfiles& gpu_profiles) {
+  VideoDecodeAccelerator::SupportedProfiles profiles;
   for (const auto& gpu_profile : gpu_profiles) {
-    media::VideoDecodeAccelerator::SupportedProfile profile;
-    profile.profile =
-        static_cast<media::VideoCodecProfile>(gpu_profile.profile);
+    VideoDecodeAccelerator::SupportedProfile profile;
+    profile.profile = static_cast<VideoCodecProfile>(gpu_profile.profile);
     profile.max_resolution = gpu_profile.max_resolution;
     profile.min_resolution = gpu_profile.min_resolution;
     profile.encrypted_only = gpu_profile.encrypted_only;
@@ -64,7 +62,7 @@ GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(const
 // static
 gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
-    const media::VideoDecodeAccelerator::Capabilities& media_capabilities) {
+    const VideoDecodeAccelerator::Capabilities& media_capabilities) {
   gpu::VideoDecodeAcceleratorCapabilities capabilities;
   capabilities.supported_profiles =
       ConvertMediaToGpuDecodeProfiles(media_capabilities.supported_profiles);
@@ -74,8 +72,8 @@ GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
 
 // static
 gpu::VideoDecodeAcceleratorSupportedProfiles
-GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeProfiles(const
-    media::VideoDecodeAccelerator::SupportedProfiles& media_profiles) {
+GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeProfiles(
+    const VideoDecodeAccelerator::SupportedProfiles& media_profiles) {
   gpu::VideoDecodeAcceleratorSupportedProfiles profiles;
   for (const auto& media_profile : media_profiles) {
     gpu::VideoDecodeAcceleratorSupportedProfile profile;
@@ -90,14 +88,13 @@ GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeProfiles(const
 }
 
 // static
-media::VideoEncodeAccelerator::SupportedProfiles
-GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(const
-    gpu::VideoEncodeAcceleratorSupportedProfiles& gpu_profiles) {
-  media::VideoEncodeAccelerator::SupportedProfiles profiles;
+VideoEncodeAccelerator::SupportedProfiles
+GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
+    const gpu::VideoEncodeAcceleratorSupportedProfiles& gpu_profiles) {
+  VideoEncodeAccelerator::SupportedProfiles profiles;
   for (const auto& gpu_profile : gpu_profiles) {
-    media::VideoEncodeAccelerator::SupportedProfile profile;
-    profile.profile =
-        static_cast<media::VideoCodecProfile>(gpu_profile.profile);
+    VideoEncodeAccelerator::SupportedProfile profile;
+    profile.profile = static_cast<VideoCodecProfile>(gpu_profile.profile);
     profile.max_resolution = gpu_profile.max_resolution;
     profile.max_framerate_numerator = gpu_profile.max_framerate_numerator;
     profile.max_framerate_denominator = gpu_profile.max_framerate_denominator;
@@ -108,8 +105,8 @@ GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(const
 
 // static
 gpu::VideoEncodeAcceleratorSupportedProfiles
-GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(const
-    media::VideoEncodeAccelerator::SupportedProfiles& media_profiles) {
+GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
+    const VideoEncodeAccelerator::SupportedProfiles& media_profiles) {
   gpu::VideoEncodeAcceleratorSupportedProfiles profiles;
   for (const auto& media_profile : media_profiles) {
     gpu::VideoEncodeAcceleratorSupportedProfile profile;
@@ -125,8 +122,8 @@ GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(const
 
 // static
 void GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
-    const media::VideoDecodeAccelerator::SupportedProfiles& new_profiles,
-    media::VideoDecodeAccelerator::SupportedProfiles* media_profiles) {
+    const VideoDecodeAccelerator::SupportedProfiles& new_profiles,
+    VideoDecodeAccelerator::SupportedProfiles* media_profiles) {
   for (const auto& profile : new_profiles) {
     bool duplicate = false;
     for (const auto& media_profile : *media_profiles) {
@@ -142,8 +139,8 @@ void GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
 
 // static
 void GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
-    const media::VideoEncodeAccelerator::SupportedProfiles& new_profiles,
-    media::VideoEncodeAccelerator::SupportedProfiles* media_profiles) {
+    const VideoEncodeAccelerator::SupportedProfiles& new_profiles,
+    VideoEncodeAccelerator::SupportedProfiles* media_profiles) {
   for (const auto& profile : new_profiles) {
     bool duplicate = false;
     for (const auto& media_profile : *media_profiles) {
@@ -157,4 +154,4 @@ void GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
   }
 }
 
-}  // namespace content
+}  // namespace media

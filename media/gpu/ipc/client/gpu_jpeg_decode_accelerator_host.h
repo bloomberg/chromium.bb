@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#ifndef MEDIA_GPU_IPC_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#define MEDIA_GPU_IPC_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
 
 #include <stdint.h>
 
@@ -25,11 +25,11 @@ class Listener;
 class Message;
 }
 
-namespace content {
+namespace media {
 
 // This class is used to talk to JpegDecodeAccelerator in the GPU process
 // through IPC messages.
-class GpuJpegDecodeAcceleratorHost : public media::JpegDecodeAccelerator,
+class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator,
                                      public base::NonThreadSafe {
  public:
   // VideoCaptureGpuJpegDecoder owns |this| and |channel|. And
@@ -41,12 +41,12 @@ class GpuJpegDecodeAcceleratorHost : public media::JpegDecodeAccelerator,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuJpegDecodeAcceleratorHost() override;
 
-  // media::JpegDecodeAccelerator implementation.
+  // JpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
   // GpuJpegDecodeAcceleratorHost is destroyed.
-  bool Initialize(media::JpegDecodeAccelerator::Client* client) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer,
-              const scoped_refptr<media::VideoFrame>& video_frame) override;
+  bool Initialize(JpegDecodeAccelerator::Client* client) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer,
+              const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
   base::WeakPtr<IPC::Listener> GetReceiver();
@@ -71,6 +71,6 @@ class GpuJpegDecodeAcceleratorHost : public media::JpegDecodeAccelerator,
   DISALLOW_COPY_AND_ASSIGN(GpuJpegDecodeAcceleratorHost);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#endif  // MEDIA_GPU_IPC_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
+#include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace content {
+namespace media {
 
 GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
     gpu::GpuChannelHost* channel,
@@ -68,19 +68,19 @@ void GpuVideoEncodeAcceleratorHost::OnChannelError() {
   PostNotifyError(FROM_HERE, kPlatformFailureError, "OnChannelError()");
 }
 
-media::VideoEncodeAccelerator::SupportedProfiles
+VideoEncodeAccelerator::SupportedProfiles
 GpuVideoEncodeAcceleratorHost::GetSupportedProfiles() {
   DCHECK(CalledOnValidThread());
   if (!channel_)
-    return media::VideoEncodeAccelerator::SupportedProfiles();
+    return VideoEncodeAccelerator::SupportedProfiles();
   return GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
       channel_->gpu_info().video_encode_accelerator_supported_profiles);
 }
 
 bool GpuVideoEncodeAcceleratorHost::Initialize(
-    media::VideoPixelFormat input_format,
+    VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
+    VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     Client* client) {
   DCHECK(CalledOnValidThread());
@@ -93,7 +93,7 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
   int32_t route_id = channel_->GenerateRouteID();
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
-  media::CreateVideoEncoderParams params;
+  CreateVideoEncoderParams params;
   params.input_format = input_format;
   params.input_visible_size = input_visible_size;
   params.output_profile = output_profile;
@@ -112,18 +112,18 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
 }
 
 void GpuVideoEncodeAcceleratorHost::Encode(
-    const scoped_refptr<media::VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame->format());
+  DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
   if (!channel_)
     return;
 
   switch (frame->storage_type()) {
-    case media::VideoFrame::STORAGE_SHMEM:
+    case VideoFrame::STORAGE_SHMEM:
       EncodeSharedMemoryFrame(frame, force_keyframe);
       break;
-    case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS:
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFERS:
       EncodeGpuMemoryBufferFrame(frame, force_keyframe);
       break;
     default:
@@ -139,7 +139,7 @@ void GpuVideoEncodeAcceleratorHost::Encode(
 }
 
 void GpuVideoEncodeAcceleratorHost::UseOutputBitstreamBuffer(
-    const media::BitstreamBuffer& buffer) {
+    const BitstreamBuffer& buffer) {
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
@@ -186,9 +186,9 @@ void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
 }
 
 void GpuVideoEncodeAcceleratorHost::EncodeGpuMemoryBufferFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
-    bool force_keyframe){
-  DCHECK_EQ(media::VideoFrame::NumPlanes(media::PIXEL_FORMAT_I420),
+    const scoped_refptr<VideoFrame>& frame,
+    bool force_keyframe) {
+  DCHECK_EQ(VideoFrame::NumPlanes(PIXEL_FORMAT_I420),
             frame->gpu_memory_buffer_handles().size());
   AcceleratedVideoEncoderMsg_Encode_Params2 params;
   params.frame_id = next_frame_id_;
@@ -213,8 +213,8 @@ void GpuVideoEncodeAcceleratorHost::EncodeGpuMemoryBufferFrame(
 }
 
 void GpuVideoEncodeAcceleratorHost::EncodeSharedMemoryFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
-    bool force_keyframe){
+    const scoped_refptr<VideoFrame>& frame,
+    bool force_keyframe) {
   if (!base::SharedMemory::IsHandleValid(frame->shared_memory_handle())) {
     PostNotifyError(FROM_HERE, kPlatformFailureError,
                     "EncodeSharedMemory(): cannot encode frame with invalid "
@@ -236,19 +236,19 @@ void GpuVideoEncodeAcceleratorHost::EncodeSharedMemoryFrame(
   params.buffer_offset =
       base::checked_cast<uint32_t>(frame->shared_memory_offset());
   params.buffer_size =
-      media::VideoFrame::AllocationSize(frame->format(), frame->coded_size());
+      VideoFrame::AllocationSize(frame->format(), frame->coded_size());
   params.force_keyframe = force_keyframe;
 
   Send(new AcceleratedVideoEncoderMsg_Encode(encoder_route_id_, params));
 }
 
 void GpuVideoEncodeAcceleratorHost::PostNotifyError(
-    const tracked_objects::Location& location, Error error,
+    const tracked_objects::Location& location,
+    Error error,
     const std::string& message) {
   DCHECK(CalledOnValidThread());
-  DLOG(ERROR) << "Error from " << location.function_name()
-              << "(" << location.file_name() << ":"
-              << location.line_number() << ") "
+  DLOG(ERROR) << "Error from " << location.function_name() << "("
+              << location.file_name() << ":" << location.line_number() << ") "
               << message << " (error = " << error << ")";
   // Post the error notification back to this thread, to avoid re-entrancy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -274,8 +274,8 @@ void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
            << ", input_coded_size=" << input_coded_size.ToString()
            << ", output_buffer_size=" << output_buffer_size;
   if (client_) {
-    client_->RequireBitstreamBuffers(
-        input_count, input_coded_size, output_buffer_size);
+    client_->RequireBitstreamBuffers(input_count, input_coded_size,
+                                     output_buffer_size);
   }
 }
 
@@ -287,10 +287,11 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32_t frame_id) {
   // back into the map, we separate the frame's dtor running from the .erase()
   // running by holding on to the frame temporarily.  This isn't "just
   // theoretical" - Android's std::hash_map crashes if we don't do this.
-  scoped_refptr<media::VideoFrame> frame = frame_map_[frame_id];
+  scoped_refptr<VideoFrame> frame = frame_map_[frame_id];
   if (!frame_map_.erase(frame_id)) {
     DLOG(ERROR) << "OnNotifyInputDone(): "
-                   "invalid frame_id=" << frame_id;
+                   "invalid frame_id="
+                << frame_id;
     // See OnNotifyError for why this needs to be the last thing in this
     // function.
     OnNotifyError(kPlatformFailureError);
@@ -305,8 +306,8 @@ void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
     bool key_frame) {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "OnBitstreamBufferReady(): "
-              "bitstream_buffer_id=" << bitstream_buffer_id
-           << ", payload_size=" << payload_size
+              "bitstream_buffer_id="
+           << bitstream_buffer_id << ", payload_size=" << payload_size
            << ", key_frame=" << key_frame;
   if (client_)
     client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame);
@@ -321,9 +322,9 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyError(Error error) {
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!
-  media::VideoEncodeAccelerator::Client* client = NULL;
+  VideoEncodeAccelerator::Client* client = NULL;
   std::swap(client_, client);
   client->NotifyError(error);
 }
 
-}  // namespace content
+}  // namespace media

@@ -10,8 +10,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -21,6 +19,8 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
@@ -451,7 +451,7 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
   media::VideoEncodeAccelerator::SupportedProfiles profiles;
 
   if (EnsureGpuChannel()) {
-    profiles = GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
+    profiles = media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
         channel_->gpu_info().video_encode_accelerator_supported_profiles);
     for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
       if (profile.profile == media::VP9PROFILE_PROFILE1 ||
@@ -540,8 +540,8 @@ bool PepperVideoEncoderHost::InitializeHardware(
   if (!EnsureGpuChannel())
     return false;
 
-  encoder_.reset(
-      new GpuVideoEncodeAcceleratorHost(channel_.get(), command_buffer_.get()));
+  encoder_.reset(new media::GpuVideoEncodeAcceleratorHost(
+      channel_.get(), command_buffer_.get()));
   return encoder_->Initialize(input_format, input_visible_size, output_profile,
                               initial_bitrate, this);
 }

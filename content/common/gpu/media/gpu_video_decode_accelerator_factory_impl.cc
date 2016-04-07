@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
+
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -81,15 +82,15 @@ GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
   media::VideoDecodeAccelerator::SupportedProfiles vda_profiles;
 #if defined(USE_V4L2_CODEC)
   vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();
-  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+  media::GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
   vda_profiles = V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles();
-  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+  media::GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
   vda_profiles = VaapiVideoDecodeAccelerator::GetSupportedProfiles();
-  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+  media::GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
 #endif
 #elif defined(OS_MACOSX)
@@ -99,7 +100,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
   capabilities =
       AndroidVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
 #endif
-  return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
+  return media::GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
       capabilities);
 }
 

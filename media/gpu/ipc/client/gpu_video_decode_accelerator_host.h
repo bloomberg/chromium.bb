@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
+#ifndef MEDIA_GPU_IPC_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
+#define MEDIA_GPU_IPC_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
 
 #include <stdint.h>
 
@@ -21,13 +21,13 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-namespace content {
+namespace media {
 
 // This class is used to talk to VideoDecodeAccelerator in the Gpu process
 // through IPC messages.
 class GpuVideoDecodeAcceleratorHost
     : public IPC::Listener,
-      public media::VideoDecodeAccelerator,
+      public VideoDecodeAccelerator,
       public gpu::CommandBufferProxyImpl::DeletionObserver,
       public base::NonThreadSafe {
  public:
@@ -40,12 +40,11 @@ class GpuVideoDecodeAcceleratorHost
   void OnChannelError() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // media::VideoDecodeAccelerator implementation.
+  // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
   void SetCdm(int cdm_id) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -63,7 +62,7 @@ class GpuVideoDecodeAcceleratorHost
 
   void Send(IPC::Message* message);
 
-  // IPC handlers, proxying media::VideoDecodeAccelerator::Client for the GPU
+  // IPC handlers, proxying VideoDecodeAccelerator::Client for the GPU
   // process.  Should not be called directly.
   void OnCdmAttached(bool success);
   void OnBitstreamBufferProcessed(int32_t bitstream_buffer_id);
@@ -106,6 +105,6 @@ class GpuVideoDecodeAcceleratorHost
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
+#endif  // MEDIA_GPU_IPC_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_

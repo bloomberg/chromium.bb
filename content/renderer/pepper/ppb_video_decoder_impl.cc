@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -17,6 +16,7 @@
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
@@ -131,7 +131,8 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
   // it is okay to immediately send IPC messages.
   gpu::GpuChannelHost* channel = command_buffer->channel();
   if (channel) {
-    decoder_.reset(new GpuVideoDecodeAcceleratorHost(channel, command_buffer));
+    decoder_.reset(
+        new media::GpuVideoDecodeAcceleratorHost(channel, command_buffer));
     return decoder_->Initialize(PPToMediaProfile(profile), this);
   }
   return false;

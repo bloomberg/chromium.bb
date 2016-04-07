@@ -2,6 +2,7 @@ include_rules = [
   "+content/common/media",
   "+content/public/child",
   "+media/base",
+  "+media/gpu/ipc/client",
   "+media/renderers",
   "+media/video",
   "+gin",

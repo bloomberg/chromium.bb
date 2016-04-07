@@ -34,6 +34,7 @@ source_set("renderer_sources") {
     "//content/renderer",
     "//gin",
     "//media",
+    "//media/gpu/ipc/client",
     "//net",
     "//ppapi/c",
     "//skia",

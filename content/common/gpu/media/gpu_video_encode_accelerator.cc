@@ -13,11 +13,11 @@
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
 
 #if defined(OS_CHROMEOS)
@@ -181,10 +181,11 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles(
       continue;
     media::VideoEncodeAccelerator::SupportedProfiles vea_profiles =
         encoder->GetSupportedProfiles();
-    GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
-        vea_profiles, &profiles);
+    media::GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(vea_profiles,
+                                                               &profiles);
   }
-  return GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(profiles);
+  return media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
+      profiles);
 }
 
 // static

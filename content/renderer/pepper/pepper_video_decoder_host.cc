@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -20,6 +19,7 @@
 #include "content/renderer/pepper/video_decoder_shim.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "media/base/limits.h"
+#include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -150,7 +150,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
     gpu::GpuChannelHost* channel = command_buffer->channel();
     if (channel) {
       decoder_.reset(
-          new GpuVideoDecodeAcceleratorHost(channel, command_buffer));
+          new media::GpuVideoDecodeAcceleratorHost(channel, command_buffer));
       if (decoder_->Initialize(profile_, this)) {
         initialized_ = true;
         return PP_OK;

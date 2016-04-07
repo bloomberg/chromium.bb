@@ -5,9 +5,9 @@
 #include "content/renderer/media/rtc_video_encoder_factory.h"
 
 #include "base/command_line.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/rtc_video_encoder.h"
+#include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 

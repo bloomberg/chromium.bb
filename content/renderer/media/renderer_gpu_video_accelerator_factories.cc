@@ -13,14 +13,14 @@
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
+#include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -119,7 +119,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(channel);
 
   return scoped_ptr<media::VideoDecodeAccelerator>(
-      new GpuVideoDecodeAcceleratorHost(
+      new media::GpuVideoDecodeAcceleratorHost(
           channel, context_provider_->GetCommandBufferProxy()));
 }
 
@@ -135,7 +135,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   DCHECK(channel);
 
   return scoped_ptr<media::VideoEncodeAccelerator>(
-      new GpuVideoEncodeAcceleratorHost(
+      new media::GpuVideoEncodeAcceleratorHost(
           channel, context_provider_->GetCommandBufferProxy()));
 }
 
@@ -286,14 +286,14 @@ RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
 
 media::VideoDecodeAccelerator::Capabilities
 RendererGpuVideoAcceleratorFactories::GetVideoDecodeAcceleratorCapabilities() {
-  return GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
+  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
       gpu_channel_host_->gpu_info().video_decode_accelerator_capabilities);
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles
 RendererGpuVideoAcceleratorFactories::
     GetVideoEncodeAcceleratorSupportedProfiles() {
-  return GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
+  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
       gpu_channel_host_->gpu_info()
           .video_encode_accelerator_supported_profiles);
 }

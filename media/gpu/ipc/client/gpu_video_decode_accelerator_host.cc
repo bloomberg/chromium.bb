@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
+#include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -15,8 +15,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "media/gpu/ipc/common/media_messages.h"
 
-using media::VideoDecodeAccelerator;
-namespace content {
+namespace media {
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     gpu::GpuChannelHost* channel,
@@ -52,10 +51,8 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
                         OnProvidePictureBuffer)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_PictureReady,
                         OnPictureReady)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_FlushDone,
-                        OnFlushDone)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ResetDone,
-                        OnResetDone)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_FlushDone, OnFlushDone)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ResetDone, OnResetDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ErrorNotification,
                         OnNotifyError)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer,
@@ -112,11 +109,11 @@ void GpuVideoDecodeAcceleratorHost::SetCdm(int cdm_id) {
 }
 
 void GpuVideoDecodeAcceleratorHost::Decode(
-    const media::BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
-  media::BitstreamBuffer buffer_to_send = bitstream_buffer;
+  BitstreamBuffer buffer_to_send = bitstream_buffer;
   base::SharedMemoryHandle handle =
       channel_->ShareToGpuProcess(bitstream_buffer.handle());
   if (!base::SharedMemory::IsHandleValid(handle)) {
@@ -129,19 +126,19 @@ void GpuVideoDecodeAcceleratorHost::Decode(
 }
 
 void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
-    const std::vector<media::PictureBuffer>& buffers) {
+    const std::vector<PictureBuffer>& buffers) {
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
   // Rearrange data for IPC command.
   std::vector<int32_t> buffer_ids;
-  std::vector<media::PictureBuffer::TextureIds> texture_ids;
+  std::vector<PictureBuffer::TextureIds> texture_ids;
   for (uint32_t i = 0; i < buffers.size(); i++) {
-    const media::PictureBuffer& buffer = buffers[i];
+    const PictureBuffer& buffer = buffers[i];
     if (buffer.size() != picture_buffer_dimensions_) {
       DLOG(ERROR) << "buffer.size() invalid: expected "
-                  << picture_buffer_dimensions_.ToString()
-                  << ", got " << buffer.size().ToString();
+                  << picture_buffer_dimensions_.ToString() << ", got "
+                  << buffer.size().ToString();
       PostNotifyError(INVALID_ARGUMENT);
       return;
     }
@@ -157,8 +154,8 @@ void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
-  Send(new AcceleratedVideoDecoderMsg_ReusePictureBuffer(
-      decoder_route_id_, picture_buffer_id));
+  Send(new AcceleratedVideoDecoderMsg_ReusePictureBuffer(decoder_route_id_,
+                                                         picture_buffer_id));
 }
 
 void GpuVideoDecodeAcceleratorHost::Flush() {
@@ -257,8 +254,8 @@ void GpuVideoDecodeAcceleratorHost::OnPictureReady(
   DCHECK(CalledOnValidThread());
   if (!client_)
     return;
-  media::Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect,
-                         allow_overlay);
+  Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect,
+                  allow_overlay);
   picture.set_size_changed(size_changed);
   client_->PictureReady(picture);
 }
@@ -283,9 +280,9 @@ void GpuVideoDecodeAcceleratorHost::OnNotifyError(uint32_t error) {
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!
-  media::VideoDecodeAccelerator::Client* client = NULL;
+  VideoDecodeAccelerator::Client* client = NULL;
   std::swap(client, client_);
-  client->NotifyError(static_cast<media::VideoDecodeAccelerator::Error>(error));
+  client->NotifyError(static_cast<VideoDecodeAccelerator::Error>(error));
 }
 
-}  // namespace content
+}  // namespace media

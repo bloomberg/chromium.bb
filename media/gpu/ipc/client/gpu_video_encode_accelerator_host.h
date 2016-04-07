@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_ENCODE_ACCELERATOR_HOST_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_ENCODE_ACCELERATOR_HOST_H_
+#ifndef MEDIA_GPU_IPC_CLIENT_GPU_VIDEO_ENCODE_ACCELERATOR_HOST_H_
+#define MEDIA_GPU_IPC_CLIENT_GPU_VIDEO_ENCODE_ACCELERATOR_HOST_H_
 
 #include <stdint.h>
 
@@ -36,13 +36,13 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace content {
+namespace media {
 
 // This class is the renderer-side host for the VideoEncodeAccelerator in the
 // GPU process, coordinated over IPC.
 class GpuVideoEncodeAcceleratorHost
     : public IPC::Listener,
-      public media::VideoEncodeAccelerator,
+      public VideoEncodeAccelerator,
       public gpu::CommandBufferProxyImpl::DeletionObserver,
       public base::NonThreadSafe {
  public:
@@ -55,16 +55,16 @@ class GpuVideoEncodeAcceleratorHost
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
-  // media::VideoEncodeAccelerator implementation.
+  // VideoEncodeAccelerator implementation.
   SupportedProfiles GetSupportedProfiles() override;
-  bool Initialize(media::VideoPixelFormat input_format,
+  bool Initialize(VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   Client* client) override;
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+  void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
+  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate_num) override;
   void Destroy() override;
@@ -77,18 +77,19 @@ class GpuVideoEncodeAcceleratorHost
   ~GpuVideoEncodeAcceleratorHost() override;
 
   // Encode specific video frame types.
-  void EncodeGpuMemoryBufferFrame(const scoped_refptr<media::VideoFrame>& frame,
+  void EncodeGpuMemoryBufferFrame(const scoped_refptr<VideoFrame>& frame,
                                   bool force_keyframe);
-  void EncodeSharedMemoryFrame(const scoped_refptr<media::VideoFrame>& frame,
+  void EncodeSharedMemoryFrame(const scoped_refptr<VideoFrame>& frame,
                                bool force_keyframe);
 
   // Notify |client_| of an error.  Posts a task to avoid re-entrancy.
   void PostNotifyError(const tracked_objects::Location& location,
-                       Error error, const std::string& message);
+                       Error error,
+                       const std::string& message);
 
   void Send(IPC::Message* message);
 
-  // IPC handlers, proxying media::VideoEncodeAccelerator::Client for the GPU
+  // IPC handlers, proxying VideoEncodeAccelerator::Client for the GPU
   // process.  Should not be called directly.
   void OnRequireBitstreamBuffers(uint32_t input_count,
                                  const gfx::Size& input_coded_size,
@@ -115,9 +116,9 @@ class GpuVideoEncodeAcceleratorHost
   // always valid as long as it is not NULL.
   gpu::CommandBufferProxyImpl* impl_;
 
-  // media::VideoFrames sent to the encoder.
+  // VideoFrames sent to the encoder.
   // base::IDMap not used here, since that takes pointers, not scoped_refptr.
-  typedef base::hash_map<int32_t, scoped_refptr<media::VideoFrame>> FrameMap;
+  typedef base::hash_map<int32_t, scoped_refptr<VideoFrame>> FrameMap;
   FrameMap frame_map_;
 
   // ID serial number for the next frame to send to the GPU process.
@@ -129,6 +130,6 @@ class GpuVideoEncodeAcceleratorHost
   DISALLOW_COPY_AND_ASSIGN(GpuVideoEncodeAcceleratorHost);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_ENCODE_ACCELERATOR_HOST_H_
+#endif  // MEDIA_GPU_IPC_CLIENT_GPU_VIDEO_ENCODE_ACCELERATOR_HOST_H_

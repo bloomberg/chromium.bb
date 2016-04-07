@@ -16,10 +16,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/common/gpu/client/gpu_jpeg_decode_accelerator_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/ipc/client/gpu_jpeg_decode_accelerator_host.h"
 
 namespace content {
 
@@ -229,9 +229,9 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
         BrowserGpuChannelHostFactory::instance()->GetIOThreadTaskRunner();
 
     int32_t route_id = gpu_channel_host_->GenerateRouteID();
-    scoped_ptr<GpuJpegDecodeAcceleratorHost> decoder(
-        new GpuJpegDecodeAcceleratorHost(gpu_channel_host_.get(), route_id,
-                                         io_task_runner));
+    scoped_ptr<media::GpuJpegDecodeAcceleratorHost> decoder(
+        new media::GpuJpegDecodeAcceleratorHost(gpu_channel_host_.get(),
+                                                route_id, io_task_runner));
     if (decoder->Initialize(this)) {
       gpu_channel_host_->AddRouteWithTaskRunner(
           route_id, decoder->GetReceiver(), io_task_runner);

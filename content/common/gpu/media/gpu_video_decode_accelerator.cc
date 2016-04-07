@@ -14,10 +14,8 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
