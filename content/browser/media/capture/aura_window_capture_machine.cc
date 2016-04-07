@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/timer/timer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "content/browser/compositor/gl_helper.h"
@@ -39,7 +38,6 @@ namespace content {
 
 AuraWindowCaptureMachine::AuraWindowCaptureMachine()
     : desktop_window_(NULL),
-      timer_(true, true),
       screen_capture_(false),
       weak_factory_(this) {}
 
@@ -91,14 +89,6 @@ bool AuraWindowCaptureMachine::InternalStart(
           PowerSaveBlocker::kReasonOther,
           "DesktopCaptureDevice is running").release());
 
-  // Starts timer.
-  timer_.Start(FROM_HERE,
-               std::max(oracle_proxy_->min_capture_period(),
-                        base::TimeDelta::FromMilliseconds(media::
-                            VideoCaptureOracle::kMinTimerPollPeriodMillis)),
-               base::Bind(&AuraWindowCaptureMachine::Capture,
-                          base::Unretained(this), false));
-
   return true;
 }
 
@@ -130,10 +120,12 @@ void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
     cursor_renderer_.reset();
   }
 
-  // Stop timer.
-  timer_.Stop();
-
   callback.Run();
+}
+
+void AuraWindowCaptureMachine::MaybeCaptureForRefresh() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Capture(false);
 }
 
 void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
@@ -179,7 +171,7 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
   const media::VideoCaptureOracle::Event event =
       dirty ? media::VideoCaptureOracle::kCompositorUpdate
-            : media::VideoCaptureOracle::kTimerPoll;
+            : media::VideoCaptureOracle::kActiveRefreshRequest;
   if (oracle_proxy_->ObserveEventAndDecideCapture(
           event, gfx::Rect(), start_time, &frame, &capture_frame_cb)) {
     scoped_ptr<cc::CopyOutputRequest> request =

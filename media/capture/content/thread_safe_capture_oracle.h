@@ -42,11 +42,26 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
                               base::TimeTicks timestamp,
                               bool success)> CaptureFrameCallback;
 
+  // Record a change |event| along with its |damage_rect| and |event_time|, and
+  // then make a decision whether to proceed with capture. The decision is based
+  // on recent event history, capture activity, and the availability of
+  // resources.
+  //
+  // If this method returns false, the caller should take no further action.
+  // Otherwise, |storage| is set to the destination for the video frame capture;
+  // and, the caller should initiate capture, and then run |callback| once the
+  // video frame has been populated with its content.
   bool ObserveEventAndDecideCapture(VideoCaptureOracle::Event event,
                                     const gfx::Rect& damage_rect,
                                     base::TimeTicks event_time,
                                     scoped_refptr<VideoFrame>* storage,
                                     CaptureFrameCallback* callback);
+
+  // Attempt to re-send the last frame to the VideoCaptureDevice::Client.
+  // Returns true if successful. This can fail if the last frame is no longer
+  // available in the buffer pool, or if the VideoCaptureOracle decides to
+  // reject the "passive" refresh.
+  bool AttemptPassiveRefresh();
 
   base::TimeDelta min_capture_period() const {
     return oracle_.min_capture_period();

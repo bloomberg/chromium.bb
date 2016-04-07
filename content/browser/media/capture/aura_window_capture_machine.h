@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 #include "media/capture/content/screen_capture_device_core.h"
 #include "ui/aura/window.h"
@@ -40,6 +39,7 @@ class AuraWindowCaptureMachine
              const media::VideoCaptureParams& params,
              const base::Callback<void(bool)> callback) override;
   void Stop(const base::Closure& callback) override;
+  void MaybeCaptureForRefresh() override;
 
   // Implements aura::WindowObserver.
   void OnWindowBoundsChanged(aura::Window* window,
@@ -69,7 +69,7 @@ class AuraWindowCaptureMachine
   void InternalStop(const base::Closure& callback);
 
   // Captures a frame.
-  // |dirty| is false for timer polls and true for compositor updates.
+  // |dirty| is false for refresh requests and true for compositor updates.
   void Capture(bool dirty);
 
   // Update capture size. Must be called on the UI thread.
@@ -104,9 +104,6 @@ class AuraWindowCaptureMachine
 
   // The window associated with the desktop.
   aura::Window* desktop_window_;
-
-  // The timer that kicks off period captures.
-  base::Timer timer_;
 
   // Whether screen capturing or window capture.
   bool screen_capture_;

@@ -198,12 +198,12 @@ TEST(VideoCaptureOracleTest, TransitionsSmoothlyBetweenSamplers) {
   }
 }
 
-// Tests that VideoCaptureOracle prevents timer polling from initiating
+// Tests that VideoCaptureOracle prevents refresh request events from initiating
 // simultaneous captures.
-TEST(VideoCaptureOracleTest, SamplesOnlyOneOverdueFrameAtATime) {
+TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
   const base::TimeDelta vsync_interval = base::TimeDelta::FromSeconds(1) / 60;
-  const base::TimeDelta timer_interval = base::TimeDelta::FromMilliseconds(
-      VideoCaptureOracle::kMinTimerPollPeriodMillis);
+  const base::TimeDelta refresh_interval =
+      base::TimeDelta::FromMilliseconds(125);  // 8 FPS
 
   VideoCaptureOracle oracle(Get30HzPeriod(), Get720pSize(),
                             media::RESOLUTION_POLICY_FIXED_RESOLUTION, false);
@@ -236,24 +236,24 @@ TEST(VideoCaptureOracleTest, SamplesOnlyOneOverdueFrameAtATime) {
   }
   int frame_number = oracle.RecordCapture(0.0);
 
-  // Stop providing the compositor events and start providing timer polling
+  // Stop providing the compositor events and start providing refresh request
   // events.  No overdue samplings should be recommended because of the
   // not-yet-complete compositor-based capture.
   for (int i = 0; i < 10; ++i) {
-    t += timer_interval;
+    t += refresh_interval;
     ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
-        VideoCaptureOracle::kTimerPoll, gfx::Rect(), t));
+        VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t));
   }
 
   // Now, complete the oustanding compositor-based capture and continue
-  // providing timer polling events.  The oracle should start recommending
+  // providing refresh request events.  The oracle should start recommending
   // sampling again.
   ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   did_complete_a_capture = false;
   for (int i = 0; i < 10; ++i) {
-    t += timer_interval;
-    if (oracle.ObserveEventAndDecideCapture(VideoCaptureOracle::kTimerPoll,
-                                            gfx::Rect(), t)) {
+    t += refresh_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
       ASSERT_TRUE(
           oracle.CompleteCapture(oracle.RecordCapture(0.0), true, &ignored));
       did_complete_a_capture = true;
@@ -261,30 +261,30 @@ TEST(VideoCaptureOracleTest, SamplesOnlyOneOverdueFrameAtATime) {
   }
   ASSERT_TRUE(did_complete_a_capture);
 
-  // Start one more timer-based capture, but do not notify of completion yet.
+  // Start one more "refresh" capture, but do not notify of completion yet.
   for (int i = 0; i <= 10; ++i) {
     ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
-    t += timer_interval;
-    if (oracle.ObserveEventAndDecideCapture(VideoCaptureOracle::kTimerPoll,
-                                            gfx::Rect(), t)) {
+    t += refresh_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
       break;
     }
   }
   frame_number = oracle.RecordCapture(0.0);
 
   // Confirm that the oracle does not recommend sampling until the outstanding
-  // timer-based capture completes.
+  // "refresh" capture completes.
   for (int i = 0; i < 10; ++i) {
-    t += timer_interval;
+    t += refresh_interval;
     ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
-        VideoCaptureOracle::kTimerPoll, gfx::Rect(), t));
+        VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t));
   }
   ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   for (int i = 0; i <= 10; ++i) {
     ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
-    t += timer_interval;
-    if (oracle.ObserveEventAndDecideCapture(VideoCaptureOracle::kTimerPoll,
-                                            gfx::Rect(), t)) {
+    t += refresh_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
       break;
     }
   }

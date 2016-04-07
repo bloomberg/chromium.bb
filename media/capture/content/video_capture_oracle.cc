@@ -14,16 +14,13 @@ namespace media {
 
 namespace {
 
-// This value controls how many redundant, timer-base captures occur when the
-// content is static. Redundantly capturing the same frame allows iterative
-// quality enhancement, and also allows the buffer to fill in "buffered mode".
-//
-// TODO(nick): Controlling this here is a hack and a layering violation, since
-// it's a strategy specific to the WebRTC consumer, and probably just papers
-// over some frame dropping and quality bugs. It should either be controlled at
-// a higher level, or else redundant frame generation should be pushed down
-// further into the WebRTC encoding stack.
-const int kNumRedundantCapturesOfStaticContent = 200;
+// When a non-compositor event arrives after animation has halted, this
+// controls how much time must elapse before deciding to allow a capture.
+const int kAnimationHaltPeriodBeforeOtherSamplingMicros = 250000;
+
+// When estimating frame durations, this is the hard upper-bound on the
+// estimate.
+const int kUpperBoundDurationEstimateMicros = 1000000;  // 1 second
 
 // The half-life of data points provided to the accumulator used when evaluating
 // the recent utilization of the buffer pool.  This value is based on a
@@ -106,8 +103,7 @@ VideoCaptureOracle::VideoCaptureOracle(
       next_frame_number_(0),
       last_successfully_delivered_frame_number_(-1),
       num_frames_pending_(0),
-      smoothing_sampler_(min_capture_period,
-                         kNumRedundantCapturesOfStaticContent),
+      smoothing_sampler_(min_capture_period),
       content_sampler_(min_capture_period),
       resolution_chooser_(max_frame_size, resolution_change_policy),
       buffer_pool_utilization_(base::TimeDelta::FromMicroseconds(
@@ -164,20 +160,21 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
       break;
     }
 
-    case kTimerPoll:
-      // While the timer is firing, only allow a sampling if there are none
-      // currently in-progress.
-      if (num_frames_pending_ == 0)
-        should_sample = smoothing_sampler_.IsOverdueForSamplingAt(event_time);
-      break;
-
+    case kActiveRefreshRequest:
+    case kPassiveRefreshRequest:
     case kMouseCursorUpdate:
-      // Only allow a sampling if there are none currently in-progress.
+      // Only allow non-compositor samplings when content has not recently been
+      // animating, and only if there are no samplings currently in progress.
       if (num_frames_pending_ == 0) {
-        smoothing_sampler_.ConsiderPresentationEvent(event_time);
-        should_sample = smoothing_sampler_.ShouldSample();
+        if (!content_sampler_.HasProposal() ||
+            ((event_time - last_time_animation_was_detected_).InMicroseconds() >
+             kAnimationHaltPeriodBeforeOtherSamplingMicros)) {
+          smoothing_sampler_.ConsiderPresentationEvent(event_time);
+          should_sample = smoothing_sampler_.ShouldSample();
+        }
       }
       break;
+
     case kNumEvents:
       NOTREACHED();
       break;
@@ -193,8 +190,8 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
       duration_of_next_frame_ =
           event_time - GetFrameTimestamp(next_frame_number_ - 1);
     }
-    const base::TimeDelta upper_bound = base::TimeDelta::FromMilliseconds(
-        SmoothEventSampler::OVERDUE_DIRTY_THRESHOLD_MILLIS);
+    const base::TimeDelta upper_bound =
+        base::TimeDelta::FromMilliseconds(kUpperBoundDurationEstimateMicros);
     duration_of_next_frame_ =
         std::max(std::min(duration_of_next_frame_, upper_bound),
                  smoothing_sampler_.min_capture_period());
@@ -338,6 +335,24 @@ void VideoCaptureOracle::RecordConsumerFeedback(int frame_number,
   const int area_at_full_utilization =
       base::saturated_cast<int>(capture_size_.GetArea() / resource_utilization);
   estimated_capable_area_.Update(area_at_full_utilization, timestamp);
+}
+
+// static
+const char* VideoCaptureOracle::EventAsString(Event event) {
+  switch (event) {
+    case kCompositorUpdate:
+      return "compositor";
+    case kActiveRefreshRequest:
+      return "active_refresh";
+    case kPassiveRefreshRequest:
+      return "passive_refresh";
+    case kMouseCursorUpdate:
+      return "mouse";
+    case kNumEvents:
+      break;
+  }
+  NOTREACHED();
+  return "unknown";
 }
 
 base::TimeTicks VideoCaptureOracle::GetFrameTimestamp(int frame_number) const {

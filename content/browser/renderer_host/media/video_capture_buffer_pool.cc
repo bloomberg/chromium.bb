@@ -374,7 +374,9 @@ int VideoCaptureBufferPool::ResurrectLastForProducer(
       it->second->pixel_format() == format &&
       it->second->storage_type() == storage) {
     it->second->set_held_by_producer(true);
-    return last_relinquished_buffer_id_;
+    const int resurrected_buffer_id = last_relinquished_buffer_id_;
+    last_relinquished_buffer_id_ = kInvalidId;
+    return resurrected_buffer_id;
   }
 
   return kInvalidId;

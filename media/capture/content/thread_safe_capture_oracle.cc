@@ -11,6 +11,7 @@
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -57,63 +58,80 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   // Grab the current time before waiting to acquire the |lock_|.
   const base::TimeTicks capture_begin_time = base::TimeTicks::Now();
 
-  base::AutoLock guard(lock_);
+  gfx::Size visible_size;
+  gfx::Size coded_size;
+  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer;
+  double attenuated_utilization;
+  int frame_number;
+  base::TimeDelta estimated_frame_duration;
+  {
+    base::AutoLock guard(lock_);
 
-  if (!client_)
-    return false;  // Capture is stopped.
+    if (!client_)
+      return false;  // Capture is stopped.
 
-  const bool should_capture =
-      oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
-  const gfx::Size visible_size = oracle_.capture_size();
-  // TODO(miu): Clients should request exact padding, instead of this
-  // memory-wasting hack to make frames that are compatible with all HW
-  // encoders.  http://crbug.com/555911
-  const gfx::Size coded_size(base::bits::Align(visible_size.width(), 16),
-                             base::bits::Align(visible_size.height(), 16));
-
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
-      client_->ReserveOutputBuffer(coded_size,
-                                   params_.requested_format.pixel_format,
-                                   params_.requested_format.pixel_storage));
-  // Get the current buffer pool utilization and attenuate it: The utilization
-  // reported to the oracle is in terms of a maximum sustainable amount (not the
-  // absolute maximum).
-  const double attenuated_utilization =
-      client_->GetBufferPoolUtilization() *
-      (100.0 / kTargetMaxPoolUtilizationPercent);
-
-  const char* event_name =
-      (event == VideoCaptureOracle::kTimerPoll
-           ? "poll"
-           : (event == VideoCaptureOracle::kCompositorUpdate ? "gpu"
-                                                             : "unknown"));
-
-  // Consider the various reasons not to initiate a capture.
-  if (should_capture && !output_buffer.get()) {
-    TRACE_EVENT_INSTANT1("gpu.capture", "PipelineLimited",
-                         TRACE_EVENT_SCOPE_THREAD, "trigger", event_name);
-    oracle_.RecordWillNotCapture(attenuated_utilization);
-    return false;
-  } else if (!should_capture && output_buffer.get()) {
-    if (event == VideoCaptureOracle::kCompositorUpdate) {
+    if (!oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time)) {
       // This is a normal and acceptable way to drop a frame. We've hit our
       // capture rate limit: for example, the content is animating at 60fps but
       // we're capturing at 30fps.
       TRACE_EVENT_INSTANT1("gpu.capture", "FpsRateLimited",
-                           TRACE_EVENT_SCOPE_THREAD, "trigger", event_name);
+                           TRACE_EVENT_SCOPE_THREAD, "trigger",
+                           VideoCaptureOracle::EventAsString(event));
+      return false;
     }
-    return false;
-  } else if (!should_capture && !output_buffer.get()) {
-    // We decided not to capture, but we wouldn't have been able to if we wanted
-    // to because no output buffer was available.
-    TRACE_EVENT_INSTANT1("gpu.capture", "NearlyPipelineLimited",
-                         TRACE_EVENT_SCOPE_THREAD, "trigger", event_name);
-    return false;
+
+    visible_size = oracle_.capture_size();
+    // TODO(miu): Clients should request exact padding, instead of this
+    // memory-wasting hack to make frames that are compatible with all HW
+    // encoders.  http://crbug.com/555911
+    coded_size.SetSize(base::bits::Align(visible_size.width(), 16),
+                       base::bits::Align(visible_size.height(), 16));
+
+    if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
+      output_buffer = client_->ResurrectLastOutputBuffer(
+          coded_size, params_.requested_format.pixel_format,
+          params_.requested_format.pixel_storage);
+      if (!output_buffer) {
+        TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
+                             TRACE_EVENT_SCOPE_THREAD);
+        return false;
+      }
+    } else {
+      output_buffer = client_->ReserveOutputBuffer(
+          coded_size, params_.requested_format.pixel_format,
+          params_.requested_format.pixel_storage);
+    }
+
+    // Get the current buffer pool utilization and attenuate it: The utilization
+    // reported to the oracle is in terms of a maximum sustainable amount (not
+    // the absolute maximum).
+    attenuated_utilization = client_->GetBufferPoolUtilization() *
+                             (100.0 / kTargetMaxPoolUtilizationPercent);
+
+    if (!output_buffer) {
+      TRACE_EVENT_INSTANT2(
+          "gpu.capture", "PipelineLimited", TRACE_EVENT_SCOPE_THREAD, "trigger",
+          VideoCaptureOracle::EventAsString(event), "atten_util_percent",
+          base::saturated_cast<int>(attenuated_utilization * 100.0 + 0.5));
+      oracle_.RecordWillNotCapture(attenuated_utilization);
+      return false;
+    }
+
+    frame_number = oracle_.RecordCapture(attenuated_utilization);
+    estimated_frame_duration = oracle_.estimated_frame_duration();
+  }  // End of critical section.
+
+  if (attenuated_utilization >= 1.0) {
+    TRACE_EVENT_INSTANT2(
+        "gpu.capture", "NearlyPipelineLimited", TRACE_EVENT_SCOPE_THREAD,
+        "trigger", VideoCaptureOracle::EventAsString(event),
+        "atten_util_percent",
+        base::saturated_cast<int>(attenuated_utilization * 100.0 + 0.5));
   }
 
-  const int frame_number = oracle_.RecordCapture(attenuated_utilization);
   TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.get(),
-                           "frame_number", frame_number, "trigger", event_name);
+                           "frame_number", frame_number, "trigger",
+                           VideoCaptureOracle::EventAsString(event));
 
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, params_.requested_format.pixel_storage);
   *storage = VideoFrame::WrapExternalSharedMemory(
@@ -124,10 +142,25 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       base::TimeDelta());
   if (!(*storage))
     return false;
-  *callback =
-      base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this, frame_number,
-                 base::Passed(&output_buffer), capture_begin_time,
-                 oracle_.estimated_frame_duration());
+  *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
+                         frame_number, base::Passed(&output_buffer),
+                         capture_begin_time, estimated_frame_duration);
+
+  return true;
+}
+
+bool ThreadSafeCaptureOracle::AttemptPassiveRefresh() {
+  const base::TimeTicks refresh_time = base::TimeTicks::Now();
+
+  scoped_refptr<VideoFrame> frame;
+  CaptureFrameCallback capture_callback;
+  if (!ObserveEventAndDecideCapture(VideoCaptureOracle::kPassiveRefreshRequest,
+                                    gfx::Rect(), refresh_time, &frame,
+                                    &capture_callback)) {
+    return false;
+  }
+
+  capture_callback.Run(frame, refresh_time, true);
   return true;
 }
 
@@ -163,9 +196,10 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     const scoped_refptr<VideoFrame>& frame,
     base::TimeTicks timestamp,
     bool success) {
-  base::AutoLock guard(lock_);
   TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.get(), "success",
                          success, "timestamp", timestamp.ToInternalValue());
+
+  base::AutoLock guard(lock_);
 
   if (oracle_.CompleteCapture(frame_number, success, &timestamp)) {
     TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",

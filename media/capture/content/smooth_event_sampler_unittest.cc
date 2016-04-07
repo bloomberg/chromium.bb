@@ -28,9 +28,7 @@ void SteadyStateSampleAndAdvance(base::TimeDelta vsync,
   ASSERT_TRUE(sampler->HasUnrecordedEvent());
   sampler->RecordSample();
   ASSERT_FALSE(sampler->HasUnrecordedEvent());
-  ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t));
   *t += vsync;
-  ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t));
 }
 
 void SteadyStateNoSampleAndAdvance(base::TimeDelta vsync,
@@ -38,44 +36,13 @@ void SteadyStateNoSampleAndAdvance(base::TimeDelta vsync,
                                    base::TimeTicks* t) {
   ASSERT_FALSE(AddEventAndConsiderSampling(sampler, *t));
   ASSERT_TRUE(sampler->HasUnrecordedEvent());
-  ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t));
   *t += vsync;
-  ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t));
 }
 
 base::TimeTicks InitialTestTimeTicks() {
   return base::TimeTicks() + base::TimeDelta::FromSeconds(1);
 }
 
-void TestRedundantCaptureStrategy(base::TimeDelta capture_period,
-                                  int redundant_capture_goal,
-                                  SmoothEventSampler* sampler,
-                                  base::TimeTicks* t) {
-  // Before any events have been considered, we're overdue for sampling.
-  ASSERT_TRUE(sampler->IsOverdueForSamplingAt(*t));
-
-  // Consider the first event.  We want to sample that.
-  ASSERT_FALSE(sampler->HasUnrecordedEvent());
-  ASSERT_TRUE(AddEventAndConsiderSampling(sampler, *t));
-  ASSERT_TRUE(sampler->HasUnrecordedEvent());
-  sampler->RecordSample();
-  ASSERT_FALSE(sampler->HasUnrecordedEvent());
-
-  // After more than 250 ms has passed without considering an event, we should
-  // repeatedly be overdue for sampling.  However, once the redundant capture
-  // goal is achieved, we should no longer be overdue for sampling.
-  *t += base::TimeDelta::FromMilliseconds(250);
-  for (int i = 0; i < redundant_capture_goal; i++) {
-    SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_FALSE(sampler->HasUnrecordedEvent());
-    ASSERT_TRUE(sampler->IsOverdueForSamplingAt(*t))
-        << "Should sample until redundant capture goal is hit";
-    sampler->RecordSample();
-    *t += capture_period;  // Timer fires once every capture period.
-  }
-  ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t))
-      << "Should not be overdue once redundant capture goal achieved.";
-}
 
 }  // namespace
 
@@ -83,14 +50,10 @@ void TestRedundantCaptureStrategy(base::TimeDelta capture_period,
 // much more comprehensive before/after/edge-case scenarios than the others.
 TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
-  const int redundant_capture_goal = 200;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 60;
 
-  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period);
   base::TimeTicks t = InitialTestTimeTicks();
-
-  TestRedundantCaptureStrategy(capture_period, redundant_capture_goal, &sampler,
-                               &t);
 
   // Steady state, we should capture every other vsync, indefinitely.
   for (int i = 0; i < 100; i++) {
@@ -103,7 +66,6 @@ TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 20; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 14, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
     ASSERT_TRUE(sampler.HasUnrecordedEvent());
     t += vsync;
@@ -111,7 +73,6 @@ TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
 
   // Now suppose we can sample again. We should be back in the steady state,
   // but at a different phase.
-  ASSERT_TRUE(sampler.IsOverdueForSamplingAt(t));
   for (int i = 0; i < 100; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
     SteadyStateSampleAndAdvance(vsync, &sampler, &t);
@@ -122,14 +83,10 @@ TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
 // 50Hz sampled at 30Hz should produce a sequence where some frames are skipped.
 TEST(SmoothEventSamplerTest, Sample50HertzAt30Hertz) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
-  const int redundant_capture_goal = 2;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 50;
 
-  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period);
   base::TimeTicks t = InitialTestTimeTicks();
-
-  TestRedundantCaptureStrategy(capture_period, redundant_capture_goal, &sampler,
-                               &t);
 
   // Steady state, we should capture 1st, 2nd and 4th frames out of every five
   // frames, indefinitely.
@@ -146,14 +103,12 @@ TEST(SmoothEventSamplerTest, Sample50HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 20; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 11, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
     t += vsync;
   }
 
   // Now suppose we can sample again. We should be back in the steady state
   // again.
-  ASSERT_TRUE(sampler.IsOverdueForSamplingAt(t));
   for (int i = 0; i < 100; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
     SteadyStateSampleAndAdvance(vsync, &sampler, &t);
@@ -167,14 +122,10 @@ TEST(SmoothEventSamplerTest, Sample50HertzAt30Hertz) {
 // 75Hz sampled at 30Hz should produce a sequence where some frames are skipped.
 TEST(SmoothEventSamplerTest, Sample75HertzAt30Hertz) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
-  const int redundant_capture_goal = 32;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 75;
 
-  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period);
   base::TimeTicks t = InitialTestTimeTicks();
-
-  TestRedundantCaptureStrategy(capture_period, redundant_capture_goal, &sampler,
-                               &t);
 
   // Steady state, we should capture 1st and 3rd frames out of every five
   // frames, indefinitely.
@@ -193,14 +144,12 @@ TEST(SmoothEventSamplerTest, Sample75HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 20; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 16, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
     t += vsync;
   }
 
   // Now suppose we can sample again. We capture the next frame, and not the one
   // after that, and then we're back in the steady state again.
-  ASSERT_TRUE(sampler.IsOverdueForSamplingAt(t));
   SteadyStateSampleAndAdvance(vsync, &sampler, &t);
   SteadyStateNoSampleAndAdvance(vsync, &sampler, &t);
   for (int i = 0; i < 100; i++) {
@@ -216,14 +165,10 @@ TEST(SmoothEventSamplerTest, Sample75HertzAt30Hertz) {
 // 30Hz sampled at 30Hz should produce 30Hz.
 TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
-  const int redundant_capture_goal = 1;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 30;
 
-  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period);
   base::TimeTicks t = InitialTestTimeTicks();
-
-  TestRedundantCaptureStrategy(capture_period, redundant_capture_goal, &sampler,
-                               &t);
 
   // Steady state, we should capture every vsync, indefinitely.
   for (int i = 0; i < 200; i++) {
@@ -235,13 +180,11 @@ TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 10; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 7, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
     t += vsync;
   }
 
   // Now suppose we can sample again. We should be back in the steady state.
-  ASSERT_TRUE(sampler.IsOverdueForSamplingAt(t));
   for (int i = 0; i < 100; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
     SteadyStateSampleAndAdvance(vsync, &sampler, &t);
@@ -251,14 +194,10 @@ TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
 // 24Hz sampled at 30Hz should produce 24Hz.
 TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
-  const int redundant_capture_goal = 333;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 24;
 
-  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period);
   base::TimeTicks t = InitialTestTimeTicks();
-
-  TestRedundantCaptureStrategy(capture_period, redundant_capture_goal, &sampler,
-                               &t);
 
   // Steady state, we should capture every vsync, indefinitely.
   for (int i = 0; i < 200; i++) {
@@ -270,13 +209,11 @@ TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 10; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 6, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
     t += vsync;
   }
 
   // Now suppose we can sample again. We should be back in the steady state.
-  ASSERT_TRUE(sampler.IsOverdueForSamplingAt(t));
   for (int i = 0; i < 100; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
     SteadyStateSampleAndAdvance(vsync, &sampler, &t);
@@ -291,13 +228,9 @@ TEST(SmoothEventSamplerTest, Sample60HertzWithVariedCapturePeriods) {
   const base::TimeDelta two_to_one_period = vsync * 2;
   const base::TimeDelta two_and_three_to_one_period =
       base::TimeDelta::FromSeconds(1) / 24;
-  const int redundant_capture_goal = 1;
 
-  SmoothEventSampler sampler(one_to_one_period, redundant_capture_goal);
+  SmoothEventSampler sampler(one_to_one_period);
   base::TimeTicks t = InitialTestTimeTicks();
-
-  TestRedundantCaptureStrategy(one_to_one_period, redundant_capture_goal,
-                               &sampler, &t);
 
   // With the capture rate at 60 Hz, we should capture every vsync.
   for (int i = 0; i < 100; i++) {
@@ -333,30 +266,6 @@ TEST(SmoothEventSamplerTest, Sample60HertzWithVariedCapturePeriods) {
     SteadyStateNoSampleAndAdvance(vsync, &sampler, &t);
     SteadyStateSampleAndAdvance(vsync, &sampler, &t);
   }
-}
-
-TEST(SmoothEventSamplerTest, DoubleDrawAtOneTimeStillDirties) {
-  const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
-  const base::TimeDelta overdue_period = base::TimeDelta::FromSeconds(1);
-
-  SmoothEventSampler sampler(capture_period, 1);
-  base::TimeTicks t = InitialTestTimeTicks();
-
-  ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
-  sampler.RecordSample();
-  ASSERT_FALSE(sampler.IsOverdueForSamplingAt(t))
-      << "Sampled last event; should not be dirty.";
-  t += overdue_period;
-
-  // Now simulate 2 events with the same clock value.
-  ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
-  sampler.RecordSample();
-  ASSERT_FALSE(AddEventAndConsiderSampling(&sampler, t))
-      << "Two events at same time -- expected second not to be sampled.";
-  ASSERT_TRUE(sampler.IsOverdueForSamplingAt(t + overdue_period))
-      << "Second event should dirty the capture state.";
-  sampler.RecordSample();
-  ASSERT_FALSE(sampler.IsOverdueForSamplingAt(t + overdue_period));
 }
 
 namespace {
@@ -459,7 +368,7 @@ TEST(SmoothEventSamplerTest, DrawingAt24FpsWith60HzVsyncSampledAt30Hertz) {
                                           {true, 33.44},
                                           {false, 0}};
 
-  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, 3);
+  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30);
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 
@@ -568,7 +477,7 @@ TEST(SmoothEventSamplerTest, DrawingAt30FpsWith60HzVsyncSampledAt30Hertz) {
                                           {true, 33.44},
                                           {true, 33.44}};
 
-  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, 3);
+  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30);
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 
@@ -701,7 +610,7 @@ TEST(SmoothEventSamplerTest, DrawingAt60FpsWith60HzVsyncSampledAt30Hertz) {
                                           {true, 16.72},
                                           {true, 50.16}};
 
-  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, 3);
+  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30);
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 

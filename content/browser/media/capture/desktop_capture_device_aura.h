@@ -34,6 +34,7 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         scoped_ptr<Client> client) override;
+  void RequestRefreshFrame() override;
   void StopAndDeAllocate() override;
 
  private:

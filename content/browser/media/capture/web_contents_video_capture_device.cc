@@ -183,9 +183,9 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // knows how to do the capture and prepare the result for delivery.
 //
 // In practice, this means (a) installing a RenderWidgetHostFrameSubscriber in
-// the RenderWidgetHostView, to process compositor updates, and (b) running a
-// timer to possibly initiate forced, non-event-driven captures needed by
-// downstream consumers that require frame repeats of unchanged content.
+// the RenderWidgetHostView, to process compositor updates, and (b) occasionally
+// initiating forced, non-event-driven captures needed by downstream consumers
+// that request "refresh frames" of unchanged content.
 //
 // All of this happens on the UI thread, although the
 // RenderWidgetHostViewFrameSubscriber we install may be dispatching updates
@@ -207,8 +207,10 @@ class ContentCaptureSubscription {
       const CaptureCallback& capture_callback);
   ~ContentCaptureSubscription();
 
+  void MaybeCaptureForRefresh();
+
  private:
-  // Called on timer or mouse activity events.
+  // Called for active frame refresh requests, or mouse activity events.
   void OnEvent(FrameSubscriber* subscriber);
 
   // Maintain a weak reference to the RenderWidgetHost (via its routing ID),
@@ -218,10 +220,9 @@ class ContentCaptureSubscription {
   const int render_widget_id_;
 
   VideoFrameDeliveryLog delivery_log_;
-  scoped_ptr<FrameSubscriber> timer_subscriber_;
+  scoped_ptr<FrameSubscriber> refresh_subscriber_;
   scoped_ptr<FrameSubscriber> mouse_activity_subscriber_;
   CaptureCallback capture_callback_;
-  base::Timer timer_;
 
   // Responsible for tracking the cursor state and input events to make
   // decisions and then render the mouse cursor on the video frame after
@@ -266,6 +267,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   bool IsAutoThrottlingEnabled() const override {
     return auto_throttling_enabled_;
   }
+  void MaybeCaptureForRefresh() override;
 
   // Starts a copy from the backing store or the composited surface. Must be run
   // on the UI BrowserThread. |deliver_frame_cb| will be run when the operation
@@ -282,6 +284,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
       const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
       const media::VideoCaptureParams& params);
   void InternalStop(const base::Closure& callback);
+  void InternalMaybeCaptureForRefresh();
   bool IsStarted() const;
 
   // Computes the preferred size of the target RenderWidget for optimal capture.
@@ -426,8 +429,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     : render_process_id_(source.GetProcess()->GetID()),
       render_widget_id_(source.GetRoutingID()),
       delivery_log_(),
-      capture_callback_(capture_callback),
-      timer_(true, true) {
+      capture_callback_(capture_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderWidgetHostView* const view = source.GetView();
@@ -438,8 +440,9 @@ ContentCaptureSubscription::ContentCaptureSubscription(
         WindowActivityTracker::Create(view->GetNativeView());
   }
 #endif
-  timer_subscriber_.reset(new FrameSubscriber(
-      media::VideoCaptureOracle::kTimerPoll, oracle_proxy, &delivery_log_,
+  refresh_subscriber_.reset(new FrameSubscriber(
+      media::VideoCaptureOracle::kActiveRefreshRequest, oracle_proxy,
+      &delivery_log_,
       cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
                        : base::WeakPtr<CursorRenderer>(),
       window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
@@ -464,14 +467,6 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     view->BeginFrameSubscription(std::move(subscriber));
   }
 
-  // Subscribe to timer events. This instance will service these as well.
-  timer_.Start(
-      FROM_HERE,
-      std::max(oracle_proxy->min_capture_period(),
-               base::TimeDelta::FromMilliseconds(
-                   media::VideoCaptureOracle::kMinTimerPollPeriodMillis)),
-      base::Bind(&ContentCaptureSubscription::OnEvent, base::Unretained(this),
-                 timer_subscriber_.get()));
   // Subscribe to mouse movement and mouse cursor update events.
   if (window_activity_tracker_) {
     window_activity_tracker_->RegisterMouseInteractionObserver(
@@ -495,6 +490,11 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
     view->EndFrameSubscription();
 }
 
+void ContentCaptureSubscription::MaybeCaptureForRefresh() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  OnEvent(refresh_subscriber_.get());
+}
+
 void ContentCaptureSubscription::OnEvent(FrameSubscriber* subscriber) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT0("gpu.capture", "ContentCaptureSubscription::OnEvent");
@@ -503,7 +503,7 @@ void ContentCaptureSubscription::OnEvent(FrameSubscriber* subscriber) {
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  DCHECK(subscriber == timer_subscriber_.get() ||
+  DCHECK(subscriber == refresh_subscriber_.get() ||
          subscriber == mouse_activity_subscriber_.get());
   if (subscriber->ShouldCaptureFrame(gfx::Rect(), start_time, &frame,
                                      &deliver_frame_cb)) {
@@ -702,6 +702,21 @@ void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
         FROM_HERE, base::Bind(&DeleteOnWorkerThread,
                               base::Passed(&render_thread_), callback));
   }
+}
+
+void WebContentsCaptureMachine::MaybeCaptureForRefresh() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebContentsCaptureMachine::InternalMaybeCaptureForRefresh,
+                 // Use of Unretained() is safe here since this task must run
+                 // before InternalStop().
+                 base::Unretained(this)));
+}
+
+void WebContentsCaptureMachine::InternalMaybeCaptureForRefresh() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (IsStarted() && subscription_)
+    subscription_->MaybeCaptureForRefresh();
 }
 
 void WebContentsCaptureMachine::Capture(
@@ -954,6 +969,10 @@ void WebContentsVideoCaptureDevice::AllocateAndStart(
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
   core_->AllocateAndStart(params, std::move(client));
+}
+
+void WebContentsVideoCaptureDevice::RequestRefreshFrame() {
+  core_->RequestRefreshFrame();
 }
 
 void WebContentsVideoCaptureDevice::StopAndDeAllocate() {

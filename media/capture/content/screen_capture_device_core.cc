@@ -65,6 +65,17 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
   TransitionStateTo(kCapturing);
 }
 
+void ScreenCaptureDeviceCore::RequestRefreshFrame() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (state_ != kCapturing)
+    return;
+
+  if (oracle_proxy_->AttemptPassiveRefresh())
+    return;
+  capture_machine_->MaybeCaptureForRefresh();
+}
+
 void ScreenCaptureDeviceCore::StopAndDeAllocate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 

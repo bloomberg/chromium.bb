@@ -37,6 +37,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         scoped_ptr<Client> client) override;
+  void RequestRefreshFrame() override;
   void StopAndDeAllocate() override;
 
  private:

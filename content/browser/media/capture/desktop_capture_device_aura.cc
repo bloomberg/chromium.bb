@@ -57,6 +57,10 @@ void DesktopCaptureDeviceAura::AllocateAndStart(
   core_->AllocateAndStart(params, std::move(client));
 }
 
+void DesktopCaptureDeviceAura::RequestRefreshFrame() {
+  core_->RequestRefreshFrame();
+}
+
 void DesktopCaptureDeviceAura::StopAndDeAllocate() {
   core_->StopAndDeAllocate();
 }

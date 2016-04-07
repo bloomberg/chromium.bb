@@ -24,17 +24,11 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureOracle {
  public:
   enum Event {
-    kTimerPoll,
     kCompositorUpdate,
+    kActiveRefreshRequest,
+    kPassiveRefreshRequest,
     kMouseCursorUpdate,
     kNumEvents,
-  };
-
-  enum {
-    // The recommended minimum amount of time between calls to
-    // ObserveEventAndDecideCapture() for the kTimerPoll Event type.  Anything
-    // lower than this isn't harmful, just wasteful.
-    kMinTimerPollPeriodMillis = 125,  // 8 FPS
   };
 
   VideoCaptureOracle(base::TimeDelta min_capture_period,
@@ -103,6 +97,10 @@ class MEDIA_EXPORT VideoCaptureOracle {
   base::TimeTicks last_time_animation_was_detected() const {
     return last_time_animation_was_detected_;
   }
+
+  // Returns a NUL-terminated string containing a short, human-readable form of
+  // |event|.
+  static const char* EventAsString(Event event);
 
  private:
   // Retrieve/Assign a frame timestamp by capture |frame_number|.  Only valid
