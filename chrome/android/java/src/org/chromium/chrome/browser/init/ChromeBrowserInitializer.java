@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.init;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
@@ -160,13 +161,25 @@ public class ChromeBrowserInitializer {
     }
 
     /**
-     * Pre-load shared prefs to avoid being blocked on the
-     * disk access async task in the future.
+     * Pre-load shared prefs to avoid being blocked on the disk access async task in the future.
+     * Running in an AsyncTask as pre-loading itself may cause I/O.
      */
     private void warmUpSharedPrefs() {
-        PreferenceManager.getDefaultSharedPreferences(mApplication);
-        DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
-        ActivityAssigner.warmUpSharedPrefs(mApplication);
+        if (Build.VERSION.CODENAME.equals("N")) {
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    PreferenceManager.getDefaultSharedPreferences(mApplication);
+                    DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+                    ActivityAssigner.warmUpSharedPrefs(mApplication);
+                    return null;
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            PreferenceManager.getDefaultSharedPreferences(mApplication);
+            DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+            ActivityAssigner.warmUpSharedPrefs(mApplication);
+        }
     }
 
     private void preInflationStartup() {
