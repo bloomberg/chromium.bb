@@ -78,15 +78,17 @@ void SplitHost(const GURL& url,
                base::string16* url_host,
                base::string16* url_domain,
                base::string16* url_subdomain) {
-  // Get Host.
-  *url_host = base::UTF8ToUTF16(url.host());
+  // GURL stores IDN hostnames in punycode.  Convert back to Unicode for
+  // display to the user.  (IDNToUnicode() will only perform this conversion
+  // if it's safe to display this host/domain in Unicode.)
+  *url_host = url_formatter::IDNToUnicode(url.host());
 
   // Get domain and registry information from the URL.
-  *url_domain =
-      base::UTF8ToUTF16(net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
-  if (url_domain->empty())
-    *url_domain = *url_host;
+  std::string domain_puny =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  *url_domain = domain_puny.empty() ?
+      *url_host : url_formatter::IDNToUnicode(domain_puny);
 
   // Add port if required.
   if (!url.port().empty()) {

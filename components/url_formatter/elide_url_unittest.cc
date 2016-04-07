@@ -196,6 +196,9 @@ TEST(TextEliderTest, TestHostEliding) {
       {"http://subdomain.reallylongdomainname.com",
        kEllipsisStr + "ain.reallylongdomainname.com", Testcase::NO_IOS},
       {"http://a.b.c.d.e.f.com", kEllipsisStr + ".e.f.com", Testcase::NO_IOS},
+      // IDN - Greek alpha.beta.gamma.delta.epsilon.zeta.com
+      {"http://xn--mxa.xn--nxa.xn--oxa.xn--pxa.xn--qxa.xn--rxa.com",
+       kEllipsisStr + ".\xCE\xB5.\xCE\xB6.com", Testcase::NO_IOS},
   };
 
   for (size_t i = 0; i < arraysize(testcases); ++i) {
