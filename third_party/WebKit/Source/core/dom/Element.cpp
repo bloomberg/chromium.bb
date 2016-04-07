@@ -2519,8 +2519,7 @@ String Element::outerHTML() const
 
 void Element::setInnerHTML(const String& html, ExceptionState& exceptionState)
 {
-    InspectorInstrumentation::willSetInnerHTML(this);
-
+    InspectorInstrumentation::allowNativeBreakpoint(&document(), "setInnerHTML", true);
     if (RawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
         ContainerNode* container = this;
         if (isHTMLTemplateElement(*this))

@@ -72,9 +72,6 @@ interface InspectorInstrumentation {
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
     [DOMDebugger, Inline=FastReturn]
-    void willCloseWindow(ExecutionContext*);
-
-    [DOMDebugger, Inline=FastReturn]
     void willInsertDOMNode([Keep] Node* parent);
 
     [DOM, DOMDebugger, Inline=FastReturn]
@@ -116,9 +113,6 @@ interface InspectorInstrumentation {
     [DOM, Inline=FastReturn]
     void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
 
-    [DOMDebugger]
-    void willSetInnerHTML(Element* element);
-
     [DOMDebugger, Inline=FastReturn]
     void willSendXMLHttpRequest(ExecutionContext*, const String& url);
 
@@ -131,12 +125,6 @@ interface InspectorInstrumentation {
     [DOMDebugger, Inline=FastReturn]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [DOMDebugger, Inline=FastReturn]
-    void didInstallTimer([Keep] ExecutionContext*, int timerId, int timeout, bool singleShot);
-
-    [DOMDebugger, Inline=FastReturn]
-    void didRemoveTimer([Keep] ExecutionContext*, int timerId);
-
     [Debugger, Inline=FastReturn]
     InspectorInstrumentationCookie willExecuteScript(ExecutionContext*, int scriptId);
 
@@ -144,19 +132,7 @@ interface InspectorInstrumentation {
     void didExecuteScript(const InspectorInstrumentationCookie&);
 
     [DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
-
-    [DOMDebugger, Inline=FastReturn]
-    void didHandleEvent(const InspectorInstrumentationCookie&);
-
-    [DOMDebugger, Inline=FastReturn]
-    void willEvaluateScript(ExecutionContext*);
-
-    [DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
-
-    [DOMDebugger, Inline=FastReturn]
-    void didFireTimer(const InspectorInstrumentationCookie&);
+    void willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
 
     [Page, Inline=FastReturn]
     void didUpdateLayout(LocalFrame*);
@@ -290,15 +266,9 @@ interface InspectorInstrumentation {
     [Inline=Forward]
     void removedResourceFromMemoryCache(Resource* cachedResource);
 
-    [DOMDebugger] 
-    void didRequestAnimationFrame([Keep] ExecutionContext*, int callbackId);   
-   
-    [DOMDebugger]    
-    void didCancelAnimationFrame([Keep] ExecutionContext*, int callbackId);    
-   
-    [DOMDebugger]    
-    void willFireAnimationFrame([Keep] ExecutionContext*, int callbackId);   
-    
+    [DOMDebugger]
+    void allowNativeBreakpoint(ExecutionContext*, const String& name, bool sync);
+
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
 

@@ -78,28 +78,18 @@ public:
     void getEventListeners(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
 
     // InspectorInstrumentation API
+    void allowNativeBreakpoint(const String& breakpointName, bool sync);
     void willInsertDOMNode(Node* parent);
     void didInvalidateStyleAttr(Node*);
     void didInsertDOMNode(Node*);
     void willRemoveDOMNode(Node*);
     void didRemoveDOMNode(Node*);
     void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
-    void willSetInnerHTML();
     void willSendXMLHttpRequest(const String& url);
-    void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
-    void didRemoveTimer(ExecutionContext*, int timerId);
-    void willFireTimer(ExecutionContext*, int timerId);
-    void didFireTimer();
-    void didRequestAnimationFrame(ExecutionContext*, int callbackId);
-    void didCancelAnimationFrame(ExecutionContext*, int callbackId);
-    void willFireAnimationFrame(ExecutionContext*, int callbackId);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
-    void didHandleEvent();
-    void willEvaluateScript();
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
-    void willCloseWindow();
 
     void disable(ErrorString*) override;
     void restore() override;

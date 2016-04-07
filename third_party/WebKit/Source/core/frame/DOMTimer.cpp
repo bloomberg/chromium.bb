@@ -55,7 +55,7 @@ int DOMTimer::install(ExecutionContext* context, ScheduledAction* action, int ti
 {
     int timeoutID = context->timers()->installNewTimeout(context, action, timeout, singleShot);
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimerInstallEvent::data(context, timeoutID, timeout, singleShot));
-    InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
+    InspectorInstrumentation::allowNativeBreakpoint(context, "setTimer", true);
     return timeoutID;
 }
 
@@ -63,7 +63,7 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 {
     context->timers()->removeTimeoutByID(timeoutID);
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimerRemove", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimerRemoveEvent::data(context, timeoutID));
-    InspectorInstrumentation::didRemoveTimer(context, timeoutID);
+    InspectorInstrumentation::allowNativeBreakpoint(context, "clearTimer", true);
 }
 
 DOMTimer::DOMTimer(ExecutionContext* context, ScheduledAction* action, int interval, bool singleShot, int timeoutID)
@@ -108,7 +108,7 @@ void DOMTimer::fired()
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
 
     TRACE_EVENT1("devtools.timeline", "TimerFire", "data", InspectorTimerFireEvent::data(context, m_timeoutID));
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireTimer(context, m_timeoutID);
+    InspectorInstrumentation::allowNativeBreakpoint(context, "timerFired", false);
     InspectorInstrumentation::AsyncTask asyncTask(context, this);
 
     // Simple case for non-one-shot timers.
@@ -121,9 +121,6 @@ void DOMTimer::fired()
 
         // No access to member variables after this point, it can delete the timer.
         m_action->execute(context);
-
-        InspectorInstrumentation::didFireTimer(cookie);
-
         return;
     }
 
@@ -134,7 +131,6 @@ void DOMTimer::fired()
 
     action->execute(context);
 
-    InspectorInstrumentation::didFireTimer(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
     // ExecutionContext might be already gone when we executed action->execute().

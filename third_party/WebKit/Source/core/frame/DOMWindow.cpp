@@ -332,7 +332,7 @@ void DOMWindow::close(ExecutionContext* context)
     if (!frame()->shouldClose())
         return;
 
-    InspectorInstrumentation::willCloseWindow(context);
+    InspectorInstrumentation::allowNativeBreakpoint(context, "close", true);
 
     page->chromeClient().closeWindowSoon();
 

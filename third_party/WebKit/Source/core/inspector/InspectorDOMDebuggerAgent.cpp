@@ -63,15 +63,6 @@ const int domBreakpointDerivedTypeShift = 16;
 
 namespace blink {
 
-static const char requestAnimationFrameEventName[] = "requestAnimationFrame";
-static const char cancelAnimationFrameEventName[] = "cancelAnimationFrame";
-static const char animationFrameFiredEventName[] = "animationFrameFired";
-static const char setInnerHTMLEventName[] = "setInnerHTML";
-static const char setTimerEventName[] = "setTimer";
-static const char clearTimerEventName[] = "clearTimer";
-static const char timerFiredEventName[] = "timerFired";
-static const char scriptFirstStatementEventName[] = "scriptFirstStatement";
-static const char windowCloseEventName[] = "close";
 static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
 static const char webglErrorNameProperty[] = "webglErrorName";
@@ -415,6 +406,11 @@ PassOwnPtr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buil
     return value.release();
 }
 
+void InspectorDOMDebuggerAgent::allowNativeBreakpoint(const String& breakpointName, bool sync)
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(breakpointName, 0), sync);
+}
+
 void InspectorDOMDebuggerAgent::willInsertDOMNode(Node* parent)
 {
     if (hasBreakpoint(parent, SubtreeModified)) {
@@ -446,11 +442,6 @@ void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element, const Atomic
         descriptionForDOMEvent(element, AttributeModified, false, eventData.get());
         m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
     }
-}
-
-void InspectorDOMDebuggerAgent::willSetInnerHTML()
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(setInnerHTMLEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, protocol::DictionaryValue* description)
@@ -546,61 +537,11 @@ PassOwnPtr<protocol::DictionaryValue> InspectorDOMDebuggerAgent::preparePauseOnN
     return eventData.release();
 }
 
-void InspectorDOMDebuggerAgent::didInstallTimer(ExecutionContext*, int, int, bool)
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(setTimerEventName, 0), true);
-}
-
-void InspectorDOMDebuggerAgent::didRemoveTimer(ExecutionContext*, int)
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(clearTimerEventName, 0), true);
-}
-
-void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext*, int)
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(timerFiredEventName, 0), false);
-}
-
-void InspectorDOMDebuggerAgent::didFireTimer()
-{
-    m_debuggerAgent->cancelPauseOnNextStatement();
-}
-
-void InspectorDOMDebuggerAgent::didRequestAnimationFrame(ExecutionContext*, int)
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(requestAnimationFrameEventName, 0), true);
-}
-
-void InspectorDOMDebuggerAgent::didCancelAnimationFrame(ExecutionContext*, int)
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(cancelAnimationFrameEventName, 0), true);
-}
-
-void InspectorDOMDebuggerAgent::willFireAnimationFrame(ExecutionContext*, int)
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(animationFrameFiredEventName, 0), false);
-}
-
 void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* event, EventListener*, bool)
 {
     Node* node = target->toNode();
     String targetName = node ? node->nodeName() : target->interfaceName();
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
-}
-
-void InspectorDOMDebuggerAgent::didHandleEvent()
-{
-    m_debuggerAgent->cancelPauseOnNextStatement();
-}
-
-void InspectorDOMDebuggerAgent::willEvaluateScript()
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(scriptFirstStatementEventName, 0), false);
-}
-
-void InspectorDOMDebuggerAgent::willCloseWindow()
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(windowCloseEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::didFireWebGLError(const String& errorName)
