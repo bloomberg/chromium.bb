@@ -5,7 +5,10 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/api/input_ime.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace input_ime = extensions::api::input_ime;
@@ -256,6 +259,16 @@ InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   return router;
 }
 
+void InputImeEventRouterFactory::RemoveProfile(Profile* profile) {
+  if (!profile || router_map_.empty())
+    return;
+  auto it = router_map_.find(profile);
+  if (it != router_map_.end()) {
+    delete it->second;
+    router_map_.erase(it);
+  }
+}
+
 ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
   scoped_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
@@ -368,10 +381,22 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
 
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllSources());
+}
+
+void InputImeAPI::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
+    extensions::InputImeEventRouterFactory::GetInstance()->RemoveProfile(
+        content::Source<Profile>(source).ptr());
+  }
 }
 
 InputImeAPI::~InputImeAPI() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
+  registrar_.RemoveAll();
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI> >

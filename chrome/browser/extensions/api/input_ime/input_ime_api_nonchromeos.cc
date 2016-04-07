@@ -232,7 +232,7 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
 
   // Disable using the warning bubble for testing.
   if (disable_bubble_for_testing_) {
-    GetInputImeEventRouter(profile)->SetActiveEngine(extension_id());
+    event_router->SetActiveEngine(extension_id());
     return RespondNow(NoArguments());
   }
 
@@ -271,7 +271,12 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
 
   // Activates this extension if user presses the 'OK' button.
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  GetInputImeEventRouter(profile)->SetActiveEngine(extension_id());
+  InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
+  if (!event_router) {
+    Respond(Error(kErrorNoActiveEngine));
+    return;
+  }
+  event_router->SetActiveEngine(extension_id());
 
   if (status == ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW) {
     // Updates the extension preference if user checks the 'Never show this
