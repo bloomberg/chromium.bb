@@ -54,7 +54,7 @@ ICOImageDecoder::~ICOImageDecoder()
 {
 }
 
-void ICOImageDecoder::onSetData(SegmentReader* data)
+void ICOImageDecoder::onSetData(SharedBuffer* data)
 {
     m_fastReader.setData(data);
 

@@ -361,19 +361,19 @@ public:
         return true;
     }
 
-    void setData(SegmentReader* data)
+    void setData(SharedBuffer* data)
     {
         if (m_data.get() == data)
             return;
 
         m_data = data;
 
-        // If a restart is needed, the next call to fillBuffer will read from the new SegmentReader.
+        // If a restart is needed, the next call to fillBuffer will read from the new SharedBuffer.
         if (m_needsRestart)
             return;
 
         // Otherwise, empty the buffer, and leave the position the same, so fillBuffer continues
-        // reading from the same position in the new SegmentReader.
+        // reading from the same position in the new SharedBuffer.
         m_nextReadPosition -= m_info.src->bytes_in_buffer;
         clearBuffer();
     }
@@ -637,7 +637,7 @@ private:
         m_lastSetByte = nullptr;
     }
 
-    RefPtr<SegmentReader> m_data;
+    RefPtr<SharedBuffer> m_data;
     JPEGImageDecoder* m_decoder;
 
     // Input reading: True if we need to back up to m_restartPosition.
@@ -723,7 +723,7 @@ bool JPEGImageDecoder::setSize(unsigned width, unsigned height)
     return true;
 }
 
-void JPEGImageDecoder::onSetData(SegmentReader* data)
+void JPEGImageDecoder::onSetData(SharedBuffer* data)
 {
     if (m_reader)
         m_reader->setData(data);

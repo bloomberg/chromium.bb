@@ -30,10 +30,8 @@
 #define WEBPImageDecoder_h
 
 #include "platform/image-decoders/ImageDecoder.h"
-#include "third_party/skia/include/core/SkData.h"
 #include "webp/decode.h"
 #include "webp/demux.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -45,7 +43,7 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "webp"; }
-    void onSetData(SegmentReader* data) override;
+    void onSetData(SharedBuffer* data) override;
     int repetitionCount() const override;
     bool frameIsCompleteAtIndex(size_t) const override;
     float frameDurationAtIndex(size_t) const override;
@@ -85,9 +83,6 @@ private:
 
     void clear();
     void clearDecoder();
-
-    // FIXME: Update libwebp's API so it does not require copying the data on each update.
-    RefPtr<SkData> m_consolidatedData;
 };
 
 } // namespace blink

@@ -43,7 +43,7 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "bmp"; }
-    void onSetData(SegmentReader*) override;
+    void onSetData(SharedBuffer*) override;
     // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
     // accessing deleted memory, especially when calling this from inside
     // BMPImageReader!

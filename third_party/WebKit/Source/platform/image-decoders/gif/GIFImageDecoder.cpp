@@ -42,7 +42,7 @@ GIFImageDecoder::~GIFImageDecoder()
 {
 }
 
-void GIFImageDecoder::onSetData(SegmentReader* data)
+void GIFImageDecoder::onSetData(SharedBuffer* data)
 {
     if (m_reader)
         m_reader->setData(data);

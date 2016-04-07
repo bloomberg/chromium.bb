@@ -40,6 +40,7 @@
 
 // Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback class into this old C decoder,
 // so we will too.
+#include "platform/SharedBuffer.h"
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "wtf/Allocator.h"
@@ -298,7 +299,7 @@ public:
     {
     }
 
-    void setData(PassRefPtr<blink::SegmentReader> data) { m_data = data; }
+    void setData(PassRefPtr<blink::SharedBuffer> data) { m_data = data; }
     bool parse(blink::GIFImageDecoder::GIFParseQuery);
     bool decode(size_t frameIndex);
 
@@ -355,7 +356,7 @@ private:
 
     Vector<OwnPtr<GIFFrameContext>> m_frames;
 
-    RefPtr<blink::SegmentReader> m_data;
+    RefPtr<blink::SharedBuffer> m_data;
     bool m_parseCompleted;
 };
 

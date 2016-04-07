@@ -65,7 +65,7 @@ public:
     BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool isInICO);
 
     void setBuffer(ImageFrame* buffer) { m_buffer = buffer; }
-    void setData(SegmentReader* data)
+    void setData(SharedBuffer* data)
     {
         m_data = data;
         m_fastReader.setData(data);
@@ -290,7 +290,7 @@ private:
     ImageFrame* m_buffer;
 
     // The file to decode.
-    RefPtr<SegmentReader> m_data;
+    RefPtr<SharedBuffer> m_data;
     FastSharedBufferReader m_fastReader;
 
     // An index into |m_data| representing how much we've already decoded.

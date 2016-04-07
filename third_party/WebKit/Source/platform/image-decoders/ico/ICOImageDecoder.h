@@ -46,7 +46,7 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "ico"; }
-    void onSetData(SegmentReader*) override;
+    void onSetData(SharedBuffer*) override;
     IntSize size() const override;
     IntSize frameSizeAtIndex(size_t) const override;
     bool setSize(unsigned width, unsigned height) override;
