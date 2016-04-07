@@ -46,6 +46,13 @@
         ],
       },
     }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX).pdb',
+        ],
+      },
+    }],
     ['disable_nacl==0 and (OS=="win" or (OS=="linux" and target_arch=="x64"))', {
       'variables': {
         'files': [
@@ -114,17 +121,17 @@
         ],
       },
     }],
+    ['OS=="win" and component=="static_library" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/chrome_child.dll.pdb',
+        ],
+      },
+    }],
     ['OS=="win" and kasko==1', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/kasko.dll',
-        ],
-      },
-    }],
-    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/chrome.exe.pdb',
         ],
       },
     }],
