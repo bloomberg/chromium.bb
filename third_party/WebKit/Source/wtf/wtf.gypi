@@ -92,8 +92,6 @@
             'PrintStream.cpp',
             'PrintStream.h',
             'RefCounted.h',
-            'RefCountedLeakCounter.cpp',
-            'RefCountedLeakCounter.h',
             'RefPtr.h',
             'RetainPtr.h',
             'SaturatedArithmetic.h',

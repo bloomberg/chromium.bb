@@ -48,22 +48,14 @@ class Node;
 class NodeWithIndex;
 class Text;
 
-class CORE_EXPORT Range final
-#ifndef NDEBUG
-    : public GarbageCollectedFinalized<Range>
-#else
-    : public GarbageCollected<Range>
-#endif
-    , public ScriptWrappable {
+class CORE_EXPORT Range final : public GarbageCollected<Range>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RawPtr<Range> create(Document&);
     static RawPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
     static RawPtr<Range> create(Document&, const Position&, const Position&);
     static RawPtr<Range> createAdjustedToTreeScope(const TreeScope&, const Position&);
-#if !ENABLE(OILPAN) || !defined(NDEBUG)
-    ~Range();
-#endif
+
     void dispose();
 
     Document& ownerDocument() const { ASSERT(m_ownerDocument); return *m_ownerDocument.get(); }

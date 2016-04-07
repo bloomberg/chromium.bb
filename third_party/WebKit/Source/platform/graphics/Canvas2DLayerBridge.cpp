@@ -46,22 +46,12 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/RefCountedLeakCounter.h"
 
 namespace {
 enum {
     InvalidMailboxIndex = -1,
     MaxCanvasAnimationBacklog = 2, // Make sure the the GPU is never more than two animation frames behind.
 };
-
-#ifndef NDEBUG
-WTF::RefCountedLeakCounter& canvas2DLayerBridgeInstanceCounter()
-{
-    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticCanvas2DLayerBridgeInstanceCounter, ("Canvas2DLayerBridge"));
-    return staticCanvas2DLayerBridgeInstanceCounter;
-}
-#endif
-
 } // namespace
 
 namespace blink {
@@ -132,9 +122,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     startRecording();
-#ifndef NDEBUG
-    canvas2DLayerBridgeInstanceCounter().increment();
-#endif
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
@@ -146,9 +133,6 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 
     m_layer.clear();
     ASSERT(m_mailboxes.size() == 0);
-#ifndef NDEBUG
-    canvas2DLayerBridgeInstanceCounter().decrement();
-#endif
 }
 
 void Canvas2DLayerBridge::startRecording()

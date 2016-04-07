@@ -46,7 +46,6 @@
 #include "core/layout/LayoutText.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/geometry/FloatQuad.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #ifndef NDEBUG
@@ -54,25 +53,12 @@
 #endif
 
 namespace blink {
-namespace {
-#ifndef NDEBUG
-WTF::RefCountedLeakCounter& rangeCounter()
-{
-    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticRangeCounter, ("Range"));
-    return staticRangeCounter;
-}
-#endif
-} // namespace
 
 inline Range::Range(Document& ownerDocument)
     : m_ownerDocument(&ownerDocument)
     , m_start(m_ownerDocument)
     , m_end(m_ownerDocument)
 {
-#ifndef NDEBUG
-    rangeCounter().increment();
-#endif
-
     m_ownerDocument->attachRange(this);
 }
 
@@ -86,10 +72,6 @@ inline Range::Range(Document& ownerDocument, Node* startContainer, int startOffs
     , m_start(m_ownerDocument)
     , m_end(m_ownerDocument)
 {
-#ifndef NDEBUG
-    rangeCounter().increment();
-#endif
-
     m_ownerDocument->attachRange(this);
 
     // Simply setting the containers and offsets directly would not do any of the checking
@@ -126,20 +108,6 @@ RawPtr<Range> Range::createAdjustedToTreeScope(const TreeScope& treeScope, const
     unsigned offset = shadowHostInThisScopeOrFirstNode->nodeIndex();
     return Range::create(treeScope.document(), container, offset, container, offset);
 }
-
-#if !ENABLE(OILPAN) || !defined(NDEBUG)
-Range::~Range()
-{
-#if !ENABLE(OILPAN)
-    // Always detach (even if we've already detached) to fix https://bugs.webkit.org/show_bug.cgi?id=26044
-    m_ownerDocument->detachRange(this);
-#endif
-
-#ifndef NDEBUG
-    rangeCounter().decrement();
-#endif
-}
-#endif
 
 void Range::dispose()
 {

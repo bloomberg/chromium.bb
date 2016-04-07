@@ -45,23 +45,12 @@
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/CheckedNumeric.h"
 #include <algorithm>
-#ifndef NDEBUG
-#include "wtf/RefCountedLeakCounter.h"
-#endif
 
 namespace blink {
 
 namespace {
 
 const float s_resourceAdjustedRatio = 0.5;
-
-#ifndef NDEBUG
-WTF::RefCountedLeakCounter& drawingBufferCounter()
-{
-    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticDrawingBufferCounter, ("DrawingBuffer"));
-    return staticDrawingBufferCounter;
-}
-#endif
 
 class ScopedTextureUnit0BindingRestorer {
     STACK_ALLOCATED();
@@ -173,9 +162,6 @@ DrawingBuffer::DrawingBuffer(
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation", TRACE_EVENT_SCOPE_GLOBAL);
-#ifndef NDEBUG
-    drawingBufferCounter().increment();
-#endif
 }
 
 DrawingBuffer::~DrawingBuffer()
@@ -184,9 +170,6 @@ DrawingBuffer::~DrawingBuffer()
     ASSERT(m_textureMailboxes.isEmpty());
     m_layer.clear();
     m_contextProvider.clear();
-#ifndef NDEBUG
-    drawingBufferCounter().decrement();
-#endif
 }
 
 void DrawingBuffer::markContentsChanged()

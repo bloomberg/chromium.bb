@@ -90,7 +90,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "wtf/Partitions.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
@@ -236,14 +235,6 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
     return nullptr;
 }
 
-#ifndef NDEBUG
-static WTF::RefCountedLeakCounter& layoutObjectCounter()
-{
-    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticLayoutObjectCounter, ("LayoutObject"));
-    return staticLayoutObjectCounter;
-}
-#endif
-
 LayoutObject::LayoutObject(Node* node)
     : m_style(nullptr)
     , m_node(node)
@@ -259,19 +250,12 @@ LayoutObject::LayoutObject(Node* node)
     // TODO(wangxianzhu): Move this into initialization list when we enable the feature by default.
     if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         m_previousPositionFromPaintInvalidationBacking = uninitializedPaintOffset();
-
-#ifndef NDEBUG
-    layoutObjectCounter().increment();
-#endif
     InstanceCounters::incrementCounter(InstanceCounters::LayoutObjectCounter);
 }
 
 LayoutObject::~LayoutObject()
 {
     ASSERT(!m_hasAXObject);
-#ifndef NDEBUG
-    layoutObjectCounter().decrement();
-#endif
     InstanceCounters::decrementCounter(InstanceCounters::LayoutObjectCounter);
 }
 

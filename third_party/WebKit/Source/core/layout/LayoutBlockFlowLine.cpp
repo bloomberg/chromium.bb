@@ -41,7 +41,6 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "platform/fonts/Character.h"
 #include "platform/text/BidiResolver.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CharacterNames.h"

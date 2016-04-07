@@ -44,7 +44,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCountedLeakCounter.h"
 
 namespace blink {
 
@@ -60,23 +59,12 @@ int64_t generateFrameID()
     return ++next;
 }
 
-#ifndef NDEBUG
-WTF::RefCountedLeakCounter& frameCounter()
-{
-    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticFrameCounter, ("Frame"));
-    return staticFrameCounter;
-}
-#endif
-
 } // namespace
 
 Frame::~Frame()
 {
     InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
     ASSERT(!m_owner);
-#ifndef NDEBUG
-    frameCounter().decrement();
-#endif
 }
 
 DEFINE_TRACE(Frame)
@@ -303,10 +291,6 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
 
     ASSERT(page());
-
-#ifndef NDEBUG
-    frameCounter().increment();
-#endif
 
     if (m_owner)
         m_owner->setContentFrame(*this);
