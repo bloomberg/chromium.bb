@@ -36,10 +36,8 @@ class OfflinePageTabHelper :
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  void RedirectFromOfflineToOnline(const GURL& online_url);
-  void RedirectFromOnlineToOffline(const GURL& offline_url);
+  void Redirect(const GURL& from_url, const GURL& to_url);
 
-  GURL last_redirect_from_url_;
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelper);

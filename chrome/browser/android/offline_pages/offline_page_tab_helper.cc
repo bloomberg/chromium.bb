@@ -11,6 +11,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -32,9 +33,6 @@ OfflinePageTabHelper::~OfflinePageTabHelper() {}
 
 void OfflinePageTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  GURL last_redirect_from_url_copy = last_redirect_from_url_;
-  last_redirect_from_url_ = GURL();
-
   // Skips non-main frame.
   if (!navigation_handle->IsInMainFrame())
     return;
@@ -46,10 +44,11 @@ void OfflinePageTabHelper::DidStartNavigation(
 
   // Ignore navigations that are forward or back transitions in the nav stack
   // which are not at the head of the stack.
-  if (web_contents()->GetController().GetEntryCount() > 0 &&
-      web_contents()->GetController().GetCurrentEntryIndex() != -1 &&
-      (web_contents()->GetController().GetCurrentEntryIndex() <
-       web_contents()->GetController().GetEntryCount() - 1)) {
+  const content::NavigationController& controller =
+      web_contents()->GetController();
+  if (controller.GetEntryCount() > 0 &&
+      controller.GetCurrentEntryIndex() != -1 &&
+      controller.GetCurrentEntryIndex() < controller.GetEntryCount() - 1) {
     return;
   }
 
@@ -60,22 +59,21 @@ void OfflinePageTabHelper::DidStartNavigation(
     return;
 
   // Avoids looping between online and offline redirections.
-  if (last_redirect_from_url_copy == online_url)
+  content::NavigationEntry* entry = controller.GetPendingEntry();
+  if (entry && !entry->GetRedirectChain().empty() &&
+      entry->GetRedirectChain().back() == online_url) {
     return;
-  last_redirect_from_url_ = navigation_handle->GetURL();
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&OfflinePageTabHelper::RedirectFromOfflineToOnline,
+      base::Bind(&OfflinePageTabHelper::Redirect,
                  weak_ptr_factory_.GetWeakPtr(),
-                 online_url));
+                 navigation_handle->GetURL(), online_url));
 }
 
 void OfflinePageTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  GURL last_redirect_from_url_copy = last_redirect_from_url_;
-  last_redirect_from_url_ = GURL();
-
   // Skips non-main frame.
   if (!navigation_handle->IsInMainFrame())
     return;
@@ -101,30 +99,23 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (!offline_url.is_valid())
     return;
 
-  // Avoids looping between online and offline redirections.
-  if (last_redirect_from_url_copy == offline_url)
-    return;
-  last_redirect_from_url_ = navigation_handle->GetURL();
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&OfflinePageTabHelper::RedirectFromOnlineToOffline,
+      base::Bind(&OfflinePageTabHelper::Redirect,
                  weak_ptr_factory_.GetWeakPtr(),
-                 offline_url));
+                 navigation_handle->GetURL(), offline_url));
 }
 
-void OfflinePageTabHelper::RedirectFromOfflineToOnline(const GURL& online_url) {
-  UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOnlineCount", 1);
-  content::NavigationController::LoadURLParams load_params(online_url);
-  load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  web_contents()->GetController().LoadURLWithParams(load_params);
-}
+void OfflinePageTabHelper::Redirect(
+    const GURL& from_url, const GURL& to_url) {
+  if (to_url.SchemeIsFile())
+    UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOfflineCount", 1);
+  else
+    UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOnlineCount", 1);
 
-void OfflinePageTabHelper::RedirectFromOnlineToOffline(
-    const GURL& offline_url) {
-  UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOfflineCount", 1);
-  content::NavigationController::LoadURLParams load_params(offline_url);
+  content::NavigationController::LoadURLParams load_params(to_url);
   load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  load_params.redirect_chain.push_back(from_url);
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
