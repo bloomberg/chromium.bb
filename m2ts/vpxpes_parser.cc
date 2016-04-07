@@ -47,7 +47,7 @@ bool VpxPesParser::Open(const std::string& pes_file) {
     pes_file_data_.push_back(static_cast<std::uint8_t>(byte));
 
   if (!feof(file.get()) || ferror(file.get()) ||
-      pes_file_size_ != static_cast<std::int64_t>(pes_file_data_.size())) {
+      pes_file_size_ != pes_file_data_.size()) {
     return false;
   }
 
@@ -95,7 +95,7 @@ bool VpxPesParser::ParsePesHeader(PesHeader* header) {
   if (!VerifyPacketStartCode())
     return false;
 
-  int pos = read_pos_;
+  std::size_t pos = read_pos_;
   for (auto& a : header->start_code) {
     a = pes_file_data_[pos++];
   }
@@ -121,7 +121,7 @@ bool VpxPesParser::ParsePesOptionalHeader(PesOptionalHeader* header) {
   if (!header || parse_state_ != kParsePesOptionalHeader)
     return false;
 
-  int offset = read_pos_;
+  size_t offset = read_pos_;
   if (offset >= pes_file_size_)
     return false;
 
@@ -142,7 +142,7 @@ bool VpxPesParser::ParsePesOptionalHeader(PesOptionalHeader* header) {
   if (header->remaining_size != kWebm2PesOptHeaderRemainingSize)
     return false;
 
-  int bytes_left = header->remaining_size;
+  size_t bytes_left = header->remaining_size;
 
   if (header->has_pts) {
     // Read PTS markers. Format:
@@ -169,7 +169,7 @@ bool VpxPesParser::ParsePesOptionalHeader(PesOptionalHeader* header) {
   }
 
   // Validate stuffing byte(s).
-  for (int i = 0; i < bytes_left; ++i) {
+  for (size_t i = 0; i < bytes_left; ++i) {
     if (pes_file_data_[offset + i] != 0xff)
       return false;
   }
@@ -210,7 +210,7 @@ bool VpxPesParser::ParseBcmvHeader(BcmvHeader* header) {
 }
 
 int VpxPesParser::BytesAvailable() const {
-  return pes_file_data_.size() - read_pos_;
+  return static_cast<int>(pes_file_data_.size() - read_pos_);
 }
 
 bool VpxPesParser::ParseNextPacket(PesHeader* header, VpxFrame* frame) {

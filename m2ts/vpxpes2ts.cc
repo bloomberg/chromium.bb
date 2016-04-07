@@ -145,7 +145,7 @@ bool VpxPes2Ts::ReceivePacket(const PacketDataBuffer& packet_data) {
   const int kTsHeaderSize = 4;
   const int kTsPayloadSize = 184;
   const int kTsPacketSize = kTsHeaderSize + kTsPayloadSize;
-  int bytes_to_packetize = packet_data.size();
+  int bytes_to_packetize = static_cast<int>(packet_data.size());
   std::uint8_t continuity_counter = 0;
   std::size_t read_pos = 0;
 

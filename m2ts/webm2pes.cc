@@ -483,7 +483,7 @@ bool Webm2Pes::WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
     }
     write_pts = false;
 
-    BCMVHeader bcmv_header(packet_payload_range.length);
+    BCMVHeader bcmv_header(static_cast<uint32_t>(packet_payload_range.length));
     if (bcmv_header.Write(&packet_data_) != true) {
       std::fprintf(stderr, "Webm2Pes: BCMV write failed.\n");
       return false;

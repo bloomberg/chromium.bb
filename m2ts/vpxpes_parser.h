@@ -137,7 +137,7 @@ class VpxPesParser {
   // header.
   bool ParseBcmvHeader(BcmvHeader* header);
 
-  std::int64_t pes_file_size_ = 0;
+  std::size_t pes_file_size_ = 0;
   PesFileData pes_file_data_;
   std::size_t read_pos_ = 0;
   ParseState parse_state_ = kParsePesHeader;
