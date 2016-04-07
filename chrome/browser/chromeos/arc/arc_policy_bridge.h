@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_POLICY_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_POLICY_BRIDGE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
@@ -41,6 +43,7 @@ class ArcPolicyBridge : public ArcService,
 
  private:
   void InitializePolicyService();
+  std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map);
 
   mojo::Binding<PolicyHost> binding_;
   policy::PolicyService* policy_service_ = nullptr;

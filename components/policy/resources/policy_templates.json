@@ -5674,15 +5674,11 @@
       If enabled or not configured (default), the user will be prompted for
       video capture access except for URLs configured in the
       VideoCaptureAllowedUrls list which will be granted access without prompting.
-      ARC-apps will be able to access the camera if they have been given
-      permission.
 
       When this policy is disabled, the user will never be prompted and video
       capture only be available to URLs configured in VideoCaptureAllowedUrls.
-      ARC-apps will not be able to access the camera.
 
-      Outside of ARC-apps, this policy affects all types of video inputs and
-      not only the built-in camera.''',
+      This policy affects all types of video inputs and not only the built-in camera.''',
     },
     {
       'name': 'VideoCaptureAllowedUrls',
