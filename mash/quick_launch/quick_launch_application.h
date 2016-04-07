@@ -29,6 +29,7 @@ class QuickLaunchApplication : public mojo::ShellClient {
   void Initialize(mojo::Connector* connector,
                   const mojo::Identity& identity,
                   uint32_t id) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;

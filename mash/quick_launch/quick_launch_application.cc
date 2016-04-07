@@ -158,5 +158,9 @@ void QuickLaunchApplication::Initialize(mojo::Connector* connector,
   window->Show();
 }
 
+bool QuickLaunchApplication::AcceptConnection(mojo::Connection* connection) {
+  return true;
+}
+
 }  // namespace quick_launch
 }  // namespace mash
