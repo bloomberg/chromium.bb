@@ -17,7 +17,7 @@ class NavigationManagerTest : public PlatformTest {
   void SetUp() override {
     manager_.reset(new NavigationManagerImpl(NULL, &browser_state_));
   }
-  scoped_ptr<NavigationManagerImpl> manager_;
+  std::unique_ptr<NavigationManagerImpl> manager_;
   TestBrowserState browser_state_;
 };
 

@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_NET_CERT_VERIFIER_BLOCK_ADAPTER_H_
 #define IOS_WEB_NET_CERT_VERIFIER_BLOCK_ADAPTER_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "net/cert/cert_verifier.h"

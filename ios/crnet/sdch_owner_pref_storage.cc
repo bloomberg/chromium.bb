@@ -72,7 +72,8 @@ bool SdchOwnerPrefStorage::GetMutableValue(base::DictionaryValue** result) {
   return result_value->GetAsDictionary(result);
 }
 
-void SdchOwnerPrefStorage::SetValue(scoped_ptr<base::DictionaryValue> value) {
+void SdchOwnerPrefStorage::SetValue(
+    std::unique_ptr<base::DictionaryValue> value) {
   storage_->SetValue(storage_key_, std::move(value),
                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }

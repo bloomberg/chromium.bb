@@ -4,10 +4,11 @@
 
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 
+#include <memory>
+
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/crw_network_activity_indicator_manager.h"
@@ -86,10 +87,10 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
 
   // URLFetcher with which PassKit data is downloaded. It is initialized
   // whenever |downloadPassKitFileWithURL| is called.
-  scoped_ptr<URLFetcher> _fetcher;
+  std::unique_ptr<URLFetcher> _fetcher;
 
   // Delegate to bridge between URLFetcher callback and CRWPassKitDownlaoder.
-  scoped_ptr<PassKitFetcherDelegate> _fetcherDelegate;
+  std::unique_ptr<PassKitFetcherDelegate> _fetcherDelegate;
 
   // Context getter which is passed to the URLFetcher, as required by
   // URLFetcher API.

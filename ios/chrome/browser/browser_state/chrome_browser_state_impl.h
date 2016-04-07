@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_IMPL_
 #define IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_IMPL_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl_io_data.h"
 
@@ -59,7 +60,7 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
 
   // Sets the OffTheRecordChromeBrowserState.
   void SetOffTheRecordChromeBrowserState(
-      scoped_ptr<ios::ChromeBrowserState> otr_state);
+      std::unique_ptr<ios::ChromeBrowserState> otr_state);
 
   base::FilePath state_path_;
 
@@ -67,7 +68,7 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // ChromeBrowserState instance. NULL if |GetOffTheRecordChromeBrowserState()|
   // has never been called or has not been called since
   // |DestroyOffTheRecordChromeBrowserState()|.
-  scoped_ptr<ios::ChromeBrowserState> otr_state_;
+  std::unique_ptr<ios::ChromeBrowserState> otr_state_;
   base::FilePath otr_state_path_;
 
   // !!! BIG HONKING WARNING !!!
@@ -79,12 +80,13 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // Keep |prefs_| on top for destruction order because |io_data_| and others
   // store pointers to |prefs_| and shall be destructed first.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> otr_prefs_;
-  scoped_ptr<ChromeBrowserStateImplIOData::Handle> io_data_;
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> otr_prefs_;
+  std::unique_ptr<ChromeBrowserStateImplIOData::Handle> io_data_;
 
-  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
-  scoped_ptr<ssl_config::SSLConfigServiceManager> ssl_config_service_manager_;
+  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  std::unique_ptr<ssl_config::SSLConfigServiceManager>
+      ssl_config_service_manager_;
 
   // STOP!!!! DO NOT ADD ANY MORE ITEMS HERE!!!!
   //

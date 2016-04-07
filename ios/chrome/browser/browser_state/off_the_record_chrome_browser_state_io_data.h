@@ -5,12 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_BROWSER_STATE_OFF_THE_RECORD_CHROME_BROWSER_STATE_IO_DATA_H_
 #define IOS_CHROME_BROWSER_BROWSER_STATE_OFF_THE_RECORD_CHROME_BROWSER_STATE_IO_DATA_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"
 #include "ios/chrome/browser/net/net_types.h"
 
@@ -70,7 +71,8 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
     // Collect references to context getters in reverse order, i.e. last item
     // will be main request getter. This list is passed to |io_data_|
     // for invalidation on IO thread.
-    scoped_ptr<IOSChromeURLRequestContextGetterVector> GetAllContextGetters();
+    std::unique_ptr<IOSChromeURLRequestContextGetterVector>
+    GetAllContextGetters();
 
     // The getters will be invalidated on the IO thread before
     // ProfileIOData instance is deleted.
@@ -92,7 +94,7 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
   ~OffTheRecordChromeBrowserStateIOData() override;
 
   void InitializeInternal(
-      scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
+      std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       ProtocolHandlerMap* protocol_handlers) const override;
   AppRequestContext* InitializeAppRequestContext(
@@ -100,21 +102,21 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
   AppRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context) const override;
 
-  mutable scoped_ptr<IOSChromeNetworkDelegate> network_delegate_;
+  mutable std::unique_ptr<IOSChromeNetworkDelegate> network_delegate_;
 
-  mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
-  mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+  mutable std::unique_ptr<net::HttpNetworkSession> http_network_session_;
+  mutable std::unique_ptr<net::HttpTransactionFactory> main_http_factory_;
 
-  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
+  mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
 
-  mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
 
   // Server bound certificates and cookies are persisted to the disk on iOS.
   base::FilePath cookie_path_;
   base::FilePath channel_id_path_;
 
-  mutable scoped_ptr<net::SdchManager> sdch_manager_;
-  mutable scoped_ptr<net::SdchOwner> sdch_policy_;
+  mutable std::unique_ptr<net::SdchManager> sdch_manager_;
+  mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordChromeBrowserStateIOData);
 };

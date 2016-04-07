@@ -62,8 +62,8 @@ int InfoBarManagerImpl::GetActiveEntryID() {
   return visible_item ? visible_item->GetUniqueID() : 0;
 }
 
-scoped_ptr<infobars::InfoBar> InfoBarManagerImpl::CreateConfirmInfoBar(
-    scoped_ptr<ConfirmInfoBarDelegate> delegate) {
+std::unique_ptr<infobars::InfoBar> InfoBarManagerImpl::CreateConfirmInfoBar(
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
   return ::CreateConfirmInfoBar(std::move(delegate));
 }
 

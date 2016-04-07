@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/http_server.h"
-
 #import <Foundation/Foundation.h>
+
+#include <memory>
 #include <string>
 
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/response_providers/string_response_provider.h"
 #import "ios/web/test/web_int_test.h"
 #import "net/base/mac/url_conversions.h"
@@ -25,7 +25,7 @@ typedef web::WebIntTest HttpServerTest;
 // requests and response from |TestResponseProvider|.
 TEST_F(HttpServerTest, StartAndInterfaceWithResponseProvider) {
   const std::string kHelloWorld = "Hello World";
-  scoped_ptr<web::StringResponseProvider> provider(
+  std::unique_ptr<web::StringResponseProvider> provider(
       new web::StringResponseProvider(kHelloWorld));
 
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();

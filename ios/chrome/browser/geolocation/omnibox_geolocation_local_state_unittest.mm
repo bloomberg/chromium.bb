@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
+
+#include <memory>
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/geolocation/location_manager.h"
-#include "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
 #include "testing/gtest/include/gtest/gtest.h"

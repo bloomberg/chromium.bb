@@ -42,11 +42,12 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {}
 
-scoped_ptr<KeyedService> PersonalDataManagerFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+PersonalDataManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<autofill::PersonalDataManager> service(
+  std::unique_ptr<autofill::PersonalDataManager> service(
       new autofill::PersonalDataManager(
           GetApplicationContext()->GetApplicationLocale()));
   service->Init(

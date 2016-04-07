@@ -45,11 +45,12 @@ void AccountFetcherServiceFactory::RegisterBrowserStatePrefs(
   AccountFetcherService::RegisterPrefs(registry);
 }
 
-scoped_ptr<KeyedService> AccountFetcherServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+AccountFetcherServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<AccountFetcherService> service(new AccountFetcherService());
+  std::unique_ptr<AccountFetcherService> service(new AccountFetcherService());
   service->Initialize(
       SigninClientFactory::GetForBrowserState(browser_state),
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),

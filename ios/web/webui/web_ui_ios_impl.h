@@ -6,10 +6,10 @@
 #define IOS_WEB_WEBUI_WEB_UI_IOS_IMPL_H_
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ios/public/provider/web/web_ui_ios.h"
@@ -70,7 +70,7 @@ class WebUIIOSImpl : public web::WebUIIOS,
   // Non-owning pointer to the WebStateImpl this WebUIIOS is associated with.
   WebStateImpl* web_state_;
 
-  scoped_ptr<WebUIIOSController> controller_;
+  std::unique_ptr<WebUIIOSController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIIOSImpl);
 };

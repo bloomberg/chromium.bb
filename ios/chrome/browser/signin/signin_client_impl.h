@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_SIGNIN_CLIENT_IMPL_H_
 #define IOS_CHROME_BROWSER_SIGNIN_SIGNIN_CLIENT_IMPL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -69,7 +70,7 @@ class SigninClientImpl
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
   std::string GetProductVersion() override;
-  scoped_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
       const GURL& url,
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;
@@ -83,7 +84,7 @@ class SigninClientImpl
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetTokenInfoResponse(
-      scoped_ptr<base::DictionaryValue> token_info) override;
+      std::unique_ptr<base::DictionaryValue> token_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -104,8 +105,8 @@ class SigninClientImpl
   SigninErrorController* signin_error_controller_;
   std::list<base::Closure> delayed_callbacks_;
 
-  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  scoped_ptr<OAuth2TokenService::Request> oauth_request_;
+  std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
+  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninClientImpl);
 };

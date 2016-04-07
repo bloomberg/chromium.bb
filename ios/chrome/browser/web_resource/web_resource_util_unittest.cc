@@ -33,7 +33,7 @@ class WebResourceUtilTest : public testing::Test {
   }
 
   // Called on success.
-  void OnParseSuccess(scoped_ptr<base::Value> value) {
+  void OnParseSuccess(std::unique_ptr<base::Value> value) {
     success_called_ = true;
     value_ = std::move(value);
   }
@@ -56,7 +56,7 @@ class WebResourceUtilTest : public testing::Test {
 
   base::MessageLoop loop_;
   std::string error_;
-  scoped_ptr<base::Value> value_;
+  std::unique_ptr<base::Value> value_;
   bool error_called_;
   bool success_called_;
 };

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
@@ -36,7 +37,7 @@ namespace web {
 
 #pragma mark -
 
-WebTest::WebTest() : web_client_(make_scoped_ptr(new TestWebClient)) {}
+WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {}
 WebTest::~WebTest() {}
 
 void WebTest::SetUp() {
@@ -219,7 +220,8 @@ NSString* WebTestWithWebController::RunJavaScript(NSString* script) {
 }
 
 CRWWebController* WebTestWithWebController::CreateWebController() {
-  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
+  std::unique_ptr<WebStateImpl> web_state_impl(
+      new WebStateImpl(GetBrowserState()));
   return [[CRWWKWebViewWebController alloc]
       initWithWebState:std::move(web_state_impl)];
 }

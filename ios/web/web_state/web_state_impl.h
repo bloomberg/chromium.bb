@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "ios/web/navigation/navigation_manager_delegate.h"
@@ -295,7 +295,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // |web::WebUIIOS| object for the current page if it is a WebUI page that
   // uses the web-based WebUI framework, or nullptr otherwise.
-  scoped_ptr<web::WebUIIOS> web_ui_;
+  std::unique_ptr<web::WebUIIOS> web_ui_;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true> observers_;

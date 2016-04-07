@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
@@ -120,7 +120,7 @@ class NavigationManagerImpl : public NavigationManager {
   // the caller.
   // TODO(crbug.com/546197): remove once NavigationItem creation occurs in this
   // class.
-  scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+  std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
   GetTransientURLRewriters();
 
   // Called to reset the transient url rewriter list.
@@ -145,7 +145,7 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationManagerFacadeDelegate* facade_delegate_;
 
   // List of transient url rewriters added by |AddTransientURLRewriter()|.
-  scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+  std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
       transient_url_rewriters_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationManagerImpl);

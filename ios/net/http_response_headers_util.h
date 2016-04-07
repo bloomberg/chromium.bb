@@ -5,7 +5,6 @@
 #ifndef IOS_NET_HTTP_RESPONSE_HEADERS_UTIL_H_
 #define IOS_NET_HTTP_RESPONSE_HEADERS_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "net/http/http_response_headers.h"
 
 @class NSHTTPURLResponse;

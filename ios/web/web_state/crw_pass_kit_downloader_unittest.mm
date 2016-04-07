@@ -6,8 +6,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "ios/web/test/web_test.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -63,7 +64,7 @@ class CRWPassKitDownloaderTest : public WebTest {
 
   // Test fetcher factory from which we access and control the URLFetcher
   // used in CRWPassKitDownloader.
-  scoped_ptr<net::TestURLFetcherFactory> fetcher_factory_;
+  std::unique_ptr<net::TestURLFetcherFactory> fetcher_factory_;
 
   // The CRWPassKitDownloader that is being tested.
   base::scoped_nsobject<CRWPassKitDownloader> downloader_;

@@ -12,14 +12,15 @@
 
 namespace web {
 
-CRWWebController* CreateWebController(scoped_ptr<WebStateImpl> web_state) {
+CRWWebController* CreateWebController(std::unique_ptr<WebStateImpl> web_state) {
   return
       [[CRWWKWebViewWebController alloc] initWithWebState:std::move(web_state)];
 }
 
 CRWWebController* CreateWebController(BrowserState* browser_state) {
   DCHECK(browser_state);
-  scoped_ptr<web::WebStateImpl> web_state(new web::WebStateImpl(browser_state));
+  std::unique_ptr<web::WebStateImpl> web_state(
+      new web::WebStateImpl(browser_state));
   web_state->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, -1);
   return CreateWebController(std::move(web_state));
 }

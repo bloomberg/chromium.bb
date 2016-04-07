@@ -11,8 +11,8 @@
 
 namespace autofill {
 
-scoped_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
-    scoped_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
+std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
+    std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
   // TODO(jdonnelly): Implement iOS save card infobar. http://crbug.com/535784
   return ::CreateConfirmInfoBar(std::move(delegate));
 }

@@ -112,7 +112,7 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   }
 
   // Ensures that |fetcher| will be deleted in the event of early return.
-  scoped_ptr<const net::URLFetcher> fetcher_deleter(fetcher);
+  std::unique_ptr<const net::URLFetcher> fetcher_deleter(fetcher);
 
   // Retrieves the callback and ensures that it will be deleted in the event
   // of early return.

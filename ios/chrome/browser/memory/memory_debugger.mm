@@ -42,7 +42,7 @@ const CGFloat kPadding = 10;
   base::scoped_nsobject<UITextField> _continuousMemoryWarningField;
 
   // A place to store the artifical memory bloat.
-  scoped_ptr<uint8_t> _bloat;
+  std::unique_ptr<uint8_t> _bloat;
 
   // Distance the view was pushed up to accomodate the keyboard.
   CGFloat _keyboardOffset;

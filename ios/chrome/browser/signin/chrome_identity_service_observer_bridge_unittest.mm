@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "testing/gtest_mac.h"
@@ -24,7 +25,7 @@
 @end
 
 @implementation TestChromeIdentityServiceObserver {
-  scoped_ptr<ios::ChromeIdentityService::Observer> observer_bridge_;
+  std::unique_ptr<ios::ChromeIdentityService::Observer> observer_bridge_;
 }
 
 @synthesize onIdentityListChangedCalled = _onIdentityListChangedCalled;

@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_FAVICON_FAVICON_LOADER_H_
 #define IOS_CHROME_BROWSER_FAVICON_FAVICON_LOADER_H_
 
+#include <memory>
 #include <vector>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "components/favicon_base/favicon_types.h"
@@ -53,7 +53,7 @@ class FaviconLoader : public KeyedService {
   // Called when the favicon load request completes. Saves image into the
   // cache. Desktop code assumes this image is in PNG format.
   void OnFaviconAvailable(
-      scoped_ptr<RequestData> request_data,
+      std::unique_ptr<RequestData> request_data,
       const std::vector<favicon_base::FaviconRawBitmapResult>&
           favicon_bitmap_results);
 

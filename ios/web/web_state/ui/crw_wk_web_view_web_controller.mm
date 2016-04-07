@@ -190,7 +190,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Key is leaf-cert/host pair. This storage is used to carry calculated
   // cert status from |didReceiveAuthenticationChallenge:| to
   // |didFailProvisionalNavigation:| delegate method.
-  scoped_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
+  std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
 
   // YES if the user has interacted with the content area since the last URL
   // change.
@@ -352,7 +352,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 #pragma mark CRWWebController public methods
 
-- (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState {
+- (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState {
   DCHECK(webState);
   web::BrowserState* browserState = webState->GetBrowserState();
   self = [super initWithWebState:std::move(webState)];

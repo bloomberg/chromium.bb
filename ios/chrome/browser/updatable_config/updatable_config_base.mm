@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/updatable_resource_provider.h"
 #include "ios/web/public/web_thread.h"
@@ -97,14 +98,14 @@ class ConfigFetcher : public net::URLFetcherDelegate {
  private:
   UpdatableConfigBase* owner_;
   id<UpdatableResourceDescriptorBridge> descriptor_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 };
 
 }  // namespace
 
 @implementation UpdatableConfigBase {
   base::scoped_nsprotocol<id<UpdatableResourceBridge>> _updatableResource;
-  scoped_ptr<ConfigFetcher> _configFetcher;
+  std::unique_ptr<ConfigFetcher> _configFetcher;
   scoped_refptr<net::URLRequestContextGetter> _requestContextGetter;
 }
 

@@ -9,6 +9,8 @@
 
 #import <WebKit/WebKit.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
@@ -80,7 +82,7 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
 // Designated initializer.
-- (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState;
+- (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState;
 
 // Creates a web view if it's not yet created.
 - (void)ensureWebViewCreated;

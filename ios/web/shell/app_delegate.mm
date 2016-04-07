@@ -4,8 +4,9 @@
 
 #import "ios/web/shell/app_delegate.h"
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/public/app/web_main.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -15,8 +16,8 @@
 #import "ios/web/shell/view_controller.h"
 
 @interface AppDelegate () {
-  scoped_ptr<web::ShellMainDelegate> _delegate;
-  scoped_ptr<web::WebMain> _webMain;
+  std::unique_ptr<web::ShellMainDelegate> _delegate;
+  std::unique_ptr<web::WebMain> _webMain;
 }
 @end
 

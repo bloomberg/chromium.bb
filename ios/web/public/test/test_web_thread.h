@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_H_
 #define IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/public/web_thread.h"
 
 namespace base {
@@ -44,7 +45,7 @@ class TestWebThread {
   bool IsRunning();
 
  private:
-  scoped_ptr<TestWebThreadImpl> impl_;
+  std::unique_ptr<TestWebThreadImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebThread);
 };

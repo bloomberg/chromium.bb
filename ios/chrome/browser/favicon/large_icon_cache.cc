@@ -18,7 +18,7 @@ struct LargeIconCacheEntry {
   LargeIconCacheEntry() {}
   ~LargeIconCacheEntry() {}
 
-  scoped_ptr<favicon_base::LargeIconResult> result;
+  std::unique_ptr<favicon_base::LargeIconResult> result;
 };
 
 LargeIconCache::LargeIconCache() : cache_(kMaxCacheSize) {}
@@ -28,12 +28,12 @@ LargeIconCache::~LargeIconCache() {}
 void LargeIconCache::SetCachedResult(
     const GURL& url,
     const favicon_base::LargeIconResult& result) {
-  scoped_ptr<LargeIconCacheEntry> entry(new LargeIconCacheEntry);
+  std::unique_ptr<LargeIconCacheEntry> entry(new LargeIconCacheEntry);
   entry->result = CloneLargeIconResult(result);
   cache_.Put(url, std::move(entry));
 }
 
-scoped_ptr<favicon_base::LargeIconResult> LargeIconCache::GetCachedResult(
+std::unique_ptr<favicon_base::LargeIconResult> LargeIconCache::GetCachedResult(
     const GURL& url) {
   auto iter = cache_.Get(url);
   if (iter != cache_.end()) {
@@ -41,12 +41,13 @@ scoped_ptr<favicon_base::LargeIconResult> LargeIconCache::GetCachedResult(
     return CloneLargeIconResult(*iter->second->result.get());
   }
 
-  return scoped_ptr<favicon_base::LargeIconResult>();
+  return std::unique_ptr<favicon_base::LargeIconResult>();
 }
 
-scoped_ptr<favicon_base::LargeIconResult> LargeIconCache::CloneLargeIconResult(
+std::unique_ptr<favicon_base::LargeIconResult>
+LargeIconCache::CloneLargeIconResult(
     const favicon_base::LargeIconResult& large_icon_result) {
-  scoped_ptr<favicon_base::LargeIconResult> clone;
+  std::unique_ptr<favicon_base::LargeIconResult> clone;
   if (large_icon_result.bitmap.is_valid()) {
     clone.reset(new favicon_base::LargeIconResult(large_icon_result.bitmap));
   } else {

@@ -9,7 +9,8 @@
 
 namespace web {
 
-ScopedTestingWebClient::ScopedTestingWebClient(scoped_ptr<WebClient> web_client)
+ScopedTestingWebClient::ScopedTestingWebClient(
+    std::unique_ptr<WebClient> web_client)
     : web_client_(std::move(web_client)), original_web_client_(GetWebClient()) {
   SetWebClient(web_client_.get());
 }

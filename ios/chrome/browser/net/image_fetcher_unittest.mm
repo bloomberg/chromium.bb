@@ -103,7 +103,7 @@ class ImageFetcherTest : public PlatformTest {
   base::mac::ScopedBlock<image_fetcher::ImageFetchedCallback> callback_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<base::SequencedWorkerPool> pool_;
-  scoped_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
   UIImage* result_;
   bool called_;
 };

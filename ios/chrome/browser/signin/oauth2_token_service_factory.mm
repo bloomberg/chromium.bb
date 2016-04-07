@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -45,7 +46,8 @@ void OAuth2TokenServiceFactory::RegisterBrowserStatePrefs(
   registry->RegisterListPref(prefs::kTokenServiceExcludedSecondaryAccounts);
 }
 
-scoped_ptr<KeyedService> OAuth2TokenServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+OAuth2TokenServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
@@ -58,5 +60,5 @@ scoped_ptr<KeyedService> OAuth2TokenServiceFactory::BuildServiceInstanceFor(
               chrome_browser_state),
           ios::SigninErrorControllerFactory::GetForBrowserState(
               chrome_browser_state));
-  return make_scoped_ptr(new ProfileOAuth2TokenService(delegate));
+  return base::WrapUnique(new ProfileOAuth2TokenService(delegate));
 }

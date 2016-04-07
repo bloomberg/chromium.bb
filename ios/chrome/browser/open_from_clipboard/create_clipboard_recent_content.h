@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_OPEN_FROM_CLIPBOARD_CREATE_CLIPBOARD_RECENT_CONTENT_H_
 #define IOS_CHROME_BROWSER_OPEN_FROM_CLIPBOARD_CREATE_CLIPBOARD_RECENT_CONTENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class ClipboardRecentContent;
 
@@ -14,6 +14,6 @@ class ClipboardRecentContent;
 //
 // This helper function allow the construction of ClipboardRecentContentIOS
 // from a pure C++ (ClipboardRecentContentIOS is an Objective-C++).
-scoped_ptr<ClipboardRecentContent> CreateClipboardRecentContentIOS();
+std::unique_ptr<ClipboardRecentContent> CreateClipboardRecentContentIOS();
 
 #endif  // IOS_CHROME_BROWSER_OPEN_FROM_CLIPBOARD_CREATE_CLIPBOARD_RECENT_CONTENT_H_

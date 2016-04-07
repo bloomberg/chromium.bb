@@ -121,7 +121,7 @@ bool IsTextField(const autofill::FormFieldData& field) {
 
 @implementation PasswordGenerationAgent {
   // Bridge to observe the web state from Objective-C.
-  scoped_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   // The origin URLs of forms on the current page that contain account creation
   // forms as reported by autofill.
@@ -132,13 +132,13 @@ bool IsTextField(const autofill::FormFieldData& field) {
   std::vector<GURL> _allowedGenerationFormOrigins;
 
   // Stores the account creation form we detected on the page.
-  scoped_ptr<autofill::PasswordForm> _possibleAccountCreationForm;
+  std::unique_ptr<autofill::PasswordForm> _possibleAccountCreationForm;
 
   // Password fields found in |_possibleAccountCreationForm|.
   std::vector<autofill::FormFieldData> _passwordFields;
 
   // The password field that triggers the password generation UI.
-  scoped_ptr<autofill::FormFieldData> _passwordGenerationField;
+  std::unique_ptr<autofill::FormFieldData> _passwordGenerationField;
 
   // Wrapper for suggestion JavaScript. Used for form navigation.
   base::scoped_nsobject<JsSuggestionManager> _JSSuggestionManager;

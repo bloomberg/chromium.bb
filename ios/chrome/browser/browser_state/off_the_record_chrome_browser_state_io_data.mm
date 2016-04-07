@@ -128,9 +128,10 @@ void OffTheRecordChromeBrowserStateIOData::Handle::LazyInitialize() const {
       nullptr, CFNotificationSuspensionBehaviorCoalesce);
 }
 
-scoped_ptr<ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
+std::unique_ptr<
+    ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
 OffTheRecordChromeBrowserStateIOData::Handle::GetAllContextGetters() {
-  scoped_ptr<IOSChromeURLRequestContextGetterVector> context_getters(
+  std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters(
       new IOSChromeURLRequestContextGetterVector());
   if (main_request_context_getter_.get())
     context_getters->push_back(main_request_context_getter_);
@@ -145,7 +146,7 @@ OffTheRecordChromeBrowserStateIOData::OffTheRecordChromeBrowserStateIOData()
 OffTheRecordChromeBrowserStateIOData::~OffTheRecordChromeBrowserStateIOData() {}
 
 void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
-    scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
+    std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
     ProfileParams* profile_params,
     ProtocolHandlerMap* protocol_handlers) const {
   net::URLRequestContext* main_context = main_request_context();
@@ -174,7 +175,7 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
       io_thread_globals->url_request_backoff_manager.get());
 
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
-  set_http_server_properties(scoped_ptr<net::HttpServerProperties>(
+  set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(
       new net::HttpServerPropertiesImpl()));
   main_context->set_http_server_properties(http_server_properties());
 
@@ -207,7 +208,7 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
 
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
-  scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
+  std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
 
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);

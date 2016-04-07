@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -35,7 +36,7 @@ void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
                     const base::FilePath& pref_filename,
                     base::SequencedTaskRunner* pref_io_task_runner) {
   factory->set_user_prefs(make_scoped_refptr(new JsonPrefStore(
-      pref_filename, pref_io_task_runner, scoped_ptr<PrefFilter>())));
+      pref_filename, pref_io_task_runner, std::unique_ptr<PrefFilter>())));
 
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   factory->SetPrefModelAssociatorClient(
@@ -44,7 +45,7 @@ void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
 
 }  // namespace
 
-scoped_ptr<PrefService> CreateLocalState(
+std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<PrefRegistry>& pref_registry) {
@@ -53,7 +54,7 @@ scoped_ptr<PrefService> CreateLocalState(
   return factory.Create(pref_registry.get());
 }
 
-scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
+std::unique_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry) {
@@ -65,13 +66,13 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
   syncable_prefs::PrefServiceSyncableFactory factory;
   PrepareFactory(&factory, browser_state_path.Append(kPreferencesFilename),
                  pref_io_task_runner);
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
   return pref_service;
 }
 
-scoped_ptr<syncable_prefs::PrefServiceSyncable>
+std::unique_ptr<syncable_prefs::PrefServiceSyncable>
 CreateIncognitoBrowserStatePrefs(
     syncable_prefs::PrefServiceSyncable* pref_service) {
   // List of keys that cannot be changed in the user prefs file by the incognito
@@ -79,7 +80,7 @@ CreateIncognitoBrowserStatePrefs(
   // history or behaviour of the user should have this property.
   std::vector<const char*> overlay_pref_names;
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
-  return make_scoped_ptr(pref_service->CreateIncognitoPrefService(
+  return base::WrapUnique(pref_service->CreateIncognitoPrefService(
       nullptr,  // incognito_extension_pref_store
       overlay_pref_names));
 }

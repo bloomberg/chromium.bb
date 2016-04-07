@@ -133,7 +133,7 @@ void SigninClientImpl::RemoveContentSettingsObserver(
       ->RemoveObserver(observer);
 }
 
-scoped_ptr<SigninClient::CookieChangedSubscription>
+std::unique_ptr<SigninClient::CookieChangedSubscription>
 SigninClientImpl::AddCookieChangedCallback(
     const GURL& url,
     const std::string& name,
@@ -141,7 +141,7 @@ SigninClientImpl::AddCookieChangedCallback(
   scoped_refptr<net::URLRequestContextGetter> context_getter =
       browser_state_->GetRequestContext();
   DCHECK(context_getter.get());
-  scoped_ptr<SigninCookieChangedSubscription> subscription(
+  std::unique_ptr<SigninCookieChangedSubscription> subscription(
       new SigninCookieChangedSubscription(context_getter, url, name, callback));
   return std::move(subscription);
 }
@@ -176,7 +176,7 @@ void SigninClientImpl::OnErrorChanged() {
 }
 
 void SigninClientImpl::OnGetTokenInfoResponse(
-    scoped_ptr<base::DictionaryValue> token_info) {
+    std::unique_ptr<base::DictionaryValue> token_info) {
   oauth_request_.reset();
 }
 

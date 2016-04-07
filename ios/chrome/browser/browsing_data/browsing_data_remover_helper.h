@@ -6,10 +6,10 @@
 #define IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 
 namespace ios {
@@ -56,14 +56,14 @@ class BrowsingDataRemoverHelper
   // IOSChromeBrowsingDataRemover
   // must not be running.
   void DoRemove(ios::ChromeBrowserState* browser_state,
-                scoped_ptr<BrowsingDataRemovalInfo> removal_info);
+                std::unique_ptr<BrowsingDataRemovalInfo> removal_info);
 
   // A map that contains the all the ChromeBrowserStates that have a removal
   // operation pending along with their associated BrowsingDataRemovalInfo.
-  std::map<ios::ChromeBrowserState*, scoped_ptr<BrowsingDataRemovalInfo>>
+  std::map<ios::ChromeBrowserState*, std::unique_ptr<BrowsingDataRemovalInfo>>
       pending_removals_;
   // The BrowsingDataRemovalInfo of the currently enqueued removal operation.
-  scoped_ptr<BrowsingDataRemovalInfo> current_removal_info_;
+  std::unique_ptr<BrowsingDataRemovalInfo> current_removal_info_;
   // The actual object that perfoms the removal of browsing data.
   IOSChromeBrowsingDataRemover* current_remover_;
 };

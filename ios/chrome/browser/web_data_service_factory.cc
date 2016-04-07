@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -93,10 +94,10 @@ WebDataServiceFactory::WebDataServiceFactory()
 WebDataServiceFactory::~WebDataServiceFactory() {
 }
 
-scoped_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   const base::FilePath& browser_state_path = context->GetStatePath();
-  return make_scoped_ptr(new WebDataServiceWrapper(
+  return base::WrapUnique(new WebDataServiceWrapper(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),

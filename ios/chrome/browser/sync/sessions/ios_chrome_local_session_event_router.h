@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/callback_list.h"
@@ -72,11 +73,11 @@ class IOSChromeLocalSessionEventRouter
   sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
 
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                     const GURL&)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                          const GURL&)>::Subscription>
       favicon_changed_subscription_;
 
-  scoped_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
       tab_parented_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeLocalSessionEventRouter);

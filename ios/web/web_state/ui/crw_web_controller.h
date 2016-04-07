@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/memory/scoped_ptr.h"
 #import "ios/web/net/crw_request_tracker_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/crw_web_user_interface_delegate.h"

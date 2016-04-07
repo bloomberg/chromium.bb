@@ -39,7 +39,8 @@ class CRWSessionEntryTest : public PlatformTest {
     GURL url("http://init.test");
     ui::PageTransition transition =
         ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    scoped_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
+    std::unique_ptr<web::NavigationItemImpl> item(
+        new web::NavigationItemImpl());
     item->SetURL(url);
     item->SetTransitionType(transition);
     item->SetTimestamp(base::Time::Now());

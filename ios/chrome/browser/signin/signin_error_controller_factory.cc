@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -33,9 +34,10 @@ SigninErrorControllerFactory::SigninErrorControllerFactory()
 SigninErrorControllerFactory::~SigninErrorControllerFactory() {
 }
 
-scoped_ptr<KeyedService> SigninErrorControllerFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+SigninErrorControllerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  return make_scoped_ptr(new SigninErrorController);
+  return base::WrapUnique(new SigninErrorController);
 }
 
 }  // namespace ios

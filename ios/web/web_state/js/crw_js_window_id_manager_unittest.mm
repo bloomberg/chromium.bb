@@ -5,6 +5,7 @@
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #import "ios/web/public/test/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -16,7 +17,7 @@ namespace {
 
 class JSWindowIDManagerTest : public PlatformTest {
  public:
-  JSWindowIDManagerTest() : web_client_(make_scoped_ptr(new web::WebClient)) {}
+  JSWindowIDManagerTest() : web_client_(base::WrapUnique(new web::WebClient)) {}
 
  protected:
   void SetUp() override {

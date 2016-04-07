@@ -4,9 +4,10 @@
 
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -77,9 +78,10 @@ class MobileSessionShutdownMetricsProviderTest
  protected:
   TestingPrefServiceSimple local_state_;
   metrics::TestMetricsServiceClient metrics_client_;
-  scoped_ptr<metrics::MetricsStateManager> metrics_state_;
-  scoped_ptr<metrics::MetricsService> metrics_service_;
-  scoped_ptr<MobileSessionShutdownMetricsProviderForTesting> metrics_provider_;
+  std::unique_ptr<metrics::MetricsStateManager> metrics_state_;
+  std::unique_ptr<metrics::MetricsService> metrics_service_;
+  std::unique_ptr<MobileSessionShutdownMetricsProviderForTesting>
+      metrics_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProviderTest);

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
 #define IOS_CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace web {
 class BrowserState;
@@ -17,7 +17,7 @@ namespace ios {
 
 // Helper function to be used with KeyedService::SetTestingFactory().
 // The returned instance is initialized.
-scoped_ptr<KeyedService> BuildFakeSigninManager(
+std::unique_ptr<KeyedService> BuildFakeSigninManager(
     web::BrowserState* browser_state);
 
 }  // namespace ios

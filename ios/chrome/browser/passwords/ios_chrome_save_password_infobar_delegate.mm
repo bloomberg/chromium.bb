@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/infobar.h"
@@ -30,9 +31,9 @@ using password_manager::PasswordFormManager;
 void IOSChromeSavePasswordInfoBarDelegate::Create(
     bool is_smart_lock_branding_enabled,
     infobars::InfoBarManager* infobar_manager,
-    scoped_ptr<PasswordFormManager> form_to_save) {
+    std::unique_ptr<PasswordFormManager> form_to_save) {
   DCHECK(infobar_manager);
-  auto delegate = make_scoped_ptr(new IOSChromeSavePasswordInfoBarDelegate(
+  auto delegate = base::WrapUnique(new IOSChromeSavePasswordInfoBarDelegate(
       is_smart_lock_branding_enabled, std::move(form_to_save)));
   infobar_manager->AddInfoBar(
       infobar_manager->CreateConfirmInfoBar(std::move(delegate)));
@@ -44,7 +45,7 @@ IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
 
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     bool is_smart_lock_branding_enabled,
-    scoped_ptr<PasswordFormManager> form_to_save)
+    std::unique_ptr<PasswordFormManager> form_to_save)
     : form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smart_lock_branding_enabled_(is_smart_lock_branding_enabled) {}

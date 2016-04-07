@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -67,12 +68,12 @@ TranslateAcceptLanguagesFactory::TranslateAcceptLanguagesFactory()
 TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {
 }
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new TranslateAcceptLanguagesService(browser_state->GetPrefs()));
 }
 

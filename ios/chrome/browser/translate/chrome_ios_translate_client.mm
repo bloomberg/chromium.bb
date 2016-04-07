@@ -46,9 +46,9 @@ ChromeIOSTranslateClient::~ChromeIOSTranslateClient() {
 }
 
 // static
-scoped_ptr<translate::TranslatePrefs>
+std::unique_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
-  return scoped_ptr<translate::TranslatePrefs>(
+  return std::unique_ptr<translate::TranslatePrefs>(
       new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages, nullptr));
 }
 
@@ -58,11 +58,11 @@ translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {
 
 // TranslateClient implementation:
 
-scoped_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
-    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   translate::TranslateStep step = delegate->translate_step();
 
-  scoped_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
+  std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   base::scoped_nsobject<InfoBarController> controller;
   switch (step) {
     case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
@@ -119,7 +119,7 @@ PrefService* ChromeIOSTranslateClient::GetPrefs() {
   return chrome_browser_state->GetOriginalChromeBrowserState()->GetPrefs();
 }
 
-scoped_ptr<translate::TranslatePrefs>
+std::unique_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::GetTranslatePrefs() {
   DCHECK(web_state());
   ios::ChromeBrowserState* chrome_browser_state =

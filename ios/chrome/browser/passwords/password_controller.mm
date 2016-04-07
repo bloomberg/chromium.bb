@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -193,14 +194,14 @@ NSString* SerializePasswordFormFillData(
   // Input elements in the form. The list does not necessarily contain
   // all elements from the form, but all elements listed here are required
   // to identify the right form to fill.
-  auto fieldList = make_scoped_ptr(new base::ListValue());
+  auto fieldList = base::WrapUnique(new base::ListValue());
 
-  auto usernameField = make_scoped_ptr(new base::DictionaryValue());
+  auto usernameField = base::WrapUnique(new base::DictionaryValue());
   usernameField->SetString("name", formData.username_field.name);
   usernameField->SetString("value", formData.username_field.value);
   fieldList->Append(usernameField.release());
 
-  auto passwordField = make_scoped_ptr(new base::DictionaryValue());
+  auto passwordField = base::WrapUnique(new base::DictionaryValue());
   passwordField->SetString("name", formData.password_field.name);
   passwordField->SetString("value", formData.password_field.value);
   fieldList->Append(passwordField.release());
@@ -226,19 +227,19 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }  // namespace
 
 @implementation PasswordController {
-  scoped_ptr<PasswordManager> passwordManager_;
-  scoped_ptr<PasswordGenerationManager> passwordGenerationManager_;
-  scoped_ptr<PasswordManagerClient> passwordManagerClient_;
-  scoped_ptr<PasswordManagerDriver> passwordManagerDriver_;
+  std::unique_ptr<PasswordManager> passwordManager_;
+  std::unique_ptr<PasswordGenerationManager> passwordGenerationManager_;
+  std::unique_ptr<PasswordManagerClient> passwordManagerClient_;
+  std::unique_ptr<PasswordManagerDriver> passwordManagerDriver_;
   base::scoped_nsobject<PasswordGenerationAgent> passwordGenerationAgent_;
 
   JsPasswordManager* passwordJsManager_;  // weak
 
   // The pending form data.
-  scoped_ptr<autofill::PasswordFormFillData> formData_;
+  std::unique_ptr<autofill::PasswordFormFillData> formData_;
 
   // Bridge to observe WebState from Objective-C.
-  scoped_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
+  std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
@@ -251,7 +252,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (instancetype)initWithWebState:(web::WebState*)webState
              passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
-                          client:(scoped_ptr<PasswordManagerClient>)
+                          client:(std::unique_ptr<PasswordManagerClient>)
                                      passwordManagerClient {
   DCHECK(webState);
   self = [super init];
@@ -325,7 +326,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       // Initialize |matches| to satisfy the expectation from
       // InitPasswordFormFillData() that the preferred match (3rd parameter)
       // should be one of the |matches|.
-      auto scoped_form = make_scoped_ptr(new autofill::PasswordForm(form));
+      auto scoped_form = base::WrapUnique(new autofill::PasswordForm(form));
       matches.insert(
           std::make_pair(form.username_value, std::move(scoped_form)));
       autofill::InitPasswordFormFillData(form, matches, &form, false, false,
@@ -428,7 +429,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   int errorCode = 0;
   std::string errorMessage;
-  scoped_ptr<base::Value> jsonData(base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> jsonData(base::JSONReader::ReadAndReturnError(
       std::string([jsonString UTF8String]), false, &errorCode, &errorMessage));
   if (errorCode || !jsonData || !jsonData->IsType(base::Value::TYPE_LIST)) {
     VLOG(1) << "JSON parse error " << errorMessage
@@ -492,8 +493,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   int errorCode = 0;
   std::string errorMessage;
-  scoped_ptr<const base::Value> jsonData(base::JSONReader::ReadAndReturnError(
-      std::string([jsonString UTF8String]), false, &errorCode, &errorMessage));
+  std::unique_ptr<const base::Value> jsonData(
+      base::JSONReader::ReadAndReturnError(std::string([jsonString UTF8String]),
+                                           false, &errorCode, &errorMessage));
 
   // If the the JSON string contains null, there is no identifiable password
   // form on the page.
@@ -740,7 +742,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   return YES;
 }
 
-- (void)showSavePasswordInfoBar:(scoped_ptr<PasswordFormManager>)formToSave {
+- (void)showSavePasswordInfoBar:
+    (std::unique_ptr<PasswordFormManager>)formToSave {
   if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
     return;
 

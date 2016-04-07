@@ -8,6 +8,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -36,7 +37,7 @@ class CreationUtilsWebClient : public TestWebClient {
 class WebViewCreationUtilsTest : public WebTest {
  public:
   WebViewCreationUtilsTest()
-      : web_client_(make_scoped_ptr(new CreationUtilsWebClient)) {}
+      : web_client_(base::WrapUnique(new CreationUtilsWebClient)) {}
 
  protected:
   CreationUtilsWebClient* creation_utils_web_client() {

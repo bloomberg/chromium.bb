@@ -43,10 +43,10 @@ WebControllerProviderFactory::WebControllerProviderFactory() {
 WebControllerProviderFactory::~WebControllerProviderFactory() {
 }
 
-scoped_ptr<WebControllerProvider>
+std::unique_ptr<WebControllerProvider>
 WebControllerProviderFactory::CreateWebControllerProvider(
     web::BrowserState* browser_state) {
-  return scoped_ptr<WebControllerProvider>(
+  return std::unique_ptr<WebControllerProvider>(
       new WebControllerProvider(browser_state));
 }
 

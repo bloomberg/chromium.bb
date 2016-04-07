@@ -188,7 +188,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     scoped_items.release(&items);
 
     for (size_t i = 0; i < items.size(); ++i) {
-      scoped_ptr<web::NavigationItem> item(items[i]);
+      std::unique_ptr<web::NavigationItem> item(items[i]);
       base::scoped_nsobject<CRWSessionEntry> entry(
           [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
       [_entries addObject:entry];
@@ -873,7 +873,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   GURL loaded_url(url);
   BOOL urlWasRewritten = NO;
   if (_navigationManager) {
-    scoped_ptr<std::vector<web::BrowserURLRewriter::URLRewriter>>
+    std::unique_ptr<std::vector<web::BrowserURLRewriter::URLRewriter>>
         transientRewriters = _navigationManager->GetTransientURLRewriters();
     if (transientRewriters) {
       urlWasRewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
@@ -884,7 +884,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
         &loaded_url, _browserState);
   }
-  scoped_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
+  std::unique_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
   item->SetURL(loaded_url);
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);

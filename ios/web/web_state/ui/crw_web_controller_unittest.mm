@@ -151,7 +151,7 @@ using web::NavigationManagerImpl;
 
 @implementation MockInteractionLoader {
   // Backs up the property with the same name.
-  scoped_ptr<web::BlockedPopupInfo> _blockedPopupInfo;
+  std::unique_ptr<web::BlockedPopupInfo> _blockedPopupInfo;
 }
 @synthesize popupURL = _popupURL;
 @synthesize sourceURL = _sourceURL;

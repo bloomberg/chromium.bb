@@ -17,6 +17,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -160,12 +161,13 @@ class SystemURLRequestContext : public net::URLRequestContext {
   }
 };
 
-scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
+std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
+    net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOSChromeIOThread::CreateGlobalHostResolver");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  scoped_ptr<net::HostResolver> global_host_resolver =
+  std::unique_ptr<net::HostResolver> global_host_resolver =
       net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
                                               net_log);
 
@@ -175,7 +177,7 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   if (!command_line.HasSwitch(switches::kIOSHostResolverRules))
     return global_host_resolver;
 
-  scoped_ptr<net::MappedHostResolver> remapped_resolver(
+  std::unique_ptr<net::MappedHostResolver> remapped_resolver(
       new net::MappedHostResolver(std::move(global_host_resolver)));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kIOSHostResolverRules));
@@ -406,7 +408,7 @@ void IOSChromeIOThread::Init() {
   // Setup the HistogramWatcher to run on the IO thread.
   net::NetworkChangeNotifier::InitHistogramWatcher();
 
-  scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate(
+  std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate(
       new IOSChromeNetworkDelegate());
 
   globals_->system_network_delegate = std::move(chrome_network_delegate);
@@ -416,7 +418,7 @@ void IOSChromeIOThread::Init() {
   variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
                                  &network_quality_estimator_params);
 
-  scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider;
+  std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
       std::move(external_estimate_provider), network_quality_estimator_params));
@@ -1021,7 +1023,7 @@ net::URLRequestContext* IOSChromeIOThread::ConstructSystemRequestContext(
   // Data URLs are always loaded through the system request context on iOS
   // (due to UIWebView limitations).
   bool set_protocol = system_job_factory->SetProtocolHandler(
-      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
+      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler()));
   DCHECK(set_protocol);
   globals->system_url_request_job_factory.reset(system_job_factory);
   context->set_job_factory(globals->system_url_request_job_factory.get());

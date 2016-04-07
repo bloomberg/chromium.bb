@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -44,11 +45,11 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
 }
 
 // Creates a CookieMonster configured by |config|.
-scoped_ptr<net::CookieMonster> CreateCookieMonster(
+std::unique_ptr<net::CookieMonster> CreateCookieMonster(
     const CookieStoreConfig& config) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return make_scoped_ptr(new net::CookieMonster(nullptr, nullptr));
+    return base::WrapUnique(new net::CookieMonster(nullptr, nullptr));
   }
 
   const bool restore_old_session_cookies =
@@ -56,7 +57,7 @@ scoped_ptr<net::CookieMonster> CreateCookieMonster(
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store =
       CreatePersistentCookieStore(config.path, restore_old_session_cookies,
                                   config.crypto_delegate);
-  scoped_ptr<net::CookieMonster> cookie_monster(
+  std::unique_ptr<net::CookieMonster> cookie_monster(
       new net::CookieMonster(persistent_store.get(), nullptr));
   if (restore_old_session_cookies)
     cookie_monster->SetPersistSessionCookies(true);
@@ -78,7 +79,7 @@ CookieStoreConfig::CookieStoreConfig(const base::FilePath& path,
 
 CookieStoreConfig::~CookieStoreConfig() {}
 
-scoped_ptr<net::CookieStore> CreateCookieStore(
+std::unique_ptr<net::CookieStore> CreateCookieStore(
     const CookieStoreConfig& config) {
   if (config.cookie_store_type == CookieStoreConfig::COOKIE_MONSTER)
     return CreateCookieMonster(config);
@@ -91,7 +92,7 @@ scoped_ptr<net::CookieStore> CreateCookieStore(
         config.path, true /* restore_old_session_cookies */,
         config.crypto_delegate);
   }
-  return make_scoped_ptr(new net::CookieStoreIOS(persistent_store.get()));
+  return base::WrapUnique(new net::CookieStoreIOS(persistent_store.get()));
 }
 
 bool ShouldClearSessionCookies() {

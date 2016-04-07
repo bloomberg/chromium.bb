@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
@@ -35,12 +36,12 @@ StartupTaskRunnerServiceFactory::StartupTaskRunnerServiceFactory()
 StartupTaskRunnerServiceFactory::~StartupTaskRunnerServiceFactory() {
 }
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new bookmarks::StartupTaskRunnerService(
+  return base::WrapUnique(new bookmarks::StartupTaskRunnerService(
       browser_state->GetIOTaskRunner()));
 }
 

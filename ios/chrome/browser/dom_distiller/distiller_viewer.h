@@ -5,10 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_DOM_DISTILLER_DISTILLER_VIEWER_H_
 #define IOS_CHROME_BROWSER_DOM_DISTILLER_DISTILLER_VIEWER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/task_tracker.h"
 

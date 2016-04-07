@@ -11,10 +11,11 @@
 
 TestChromeBrowserStateWithIsolatedContext::
     TestChromeBrowserStateWithIsolatedContext()
-    : TestChromeBrowserState(base::FilePath(),
-                             scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-                             TestingFactories(),
-                             RefcountedTestingFactories()),
+    : TestChromeBrowserState(
+          base::FilePath(),
+          std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+          TestingFactories(),
+          RefcountedTestingFactories()),
       main_context_called_(false),
       request_context_(new net::TestURLRequestContextGetter(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::IO))) {}

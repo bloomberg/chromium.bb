@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -73,7 +74,7 @@ IOSChromePasswordStoreFactory::~IOSChromePasswordStoreFactory() {}
 scoped_refptr<RefcountedKeyedService>
 IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  scoped_ptr<password_manager::LoginDatabase> login_db(
+  std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabase(context->GetStatePath()));
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(

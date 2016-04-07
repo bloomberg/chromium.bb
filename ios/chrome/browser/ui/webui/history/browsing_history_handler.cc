@@ -110,7 +110,7 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
   DCHECK(sync_service->GetDeviceInfoTracker());
   DCHECK(sync_service->GetDeviceInfoTracker()->IsSyncing());
 
-  scoped_ptr<sync_driver::DeviceInfo> device_info =
+  std::unique_ptr<sync_driver::DeviceInfo> device_info =
       sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
   if (device_info.get()) {
     *name = device_info->client_name();
@@ -182,11 +182,12 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
   result->SetString("title", title_to_set);
 }
 
-scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
+std::unique_ptr<base::DictionaryValue>
+BrowsingHistoryHandler::HistoryEntry::ToValue(
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
     const ProfileSyncService* sync_service) const {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetUrlAndTitle(result.get());
 
   base::string16 domain = url_formatter::IDNToUnicode(url.host());
@@ -203,7 +204,7 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   result->SetDouble("time", time.ToJsTime());
 
   // Pass the timestamps in a list.
-  scoped_ptr<base::ListValue> timestamps(new base::ListValue);
+  std::unique_ptr<base::ListValue> timestamps(new base::ListValue);
   for (int64_t timestamp : all_timestamps) {
     timestamps->AppendDouble(
         base::Time::FromInternalValue(timestamp).ToJsTime());
@@ -589,7 +590,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   // Convert the result vector into a ListValue.
   base::ListValue results_value;
   for (const BrowsingHistoryHandler::HistoryEntry& entry : query_results_) {
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         entry.ToValue(bookmark_model, nullptr, sync_service));
     results_value.Append(value.release());
   }

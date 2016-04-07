@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/services/gcm/ios_chrome_gcm_profile_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -41,7 +42,7 @@ IOSChromeGCMProfileServiceFactory::IOSChromeGCMProfileServiceFactory()
 
 IOSChromeGCMProfileServiceFactory::~IOSChromeGCMProfileServiceFactory() {}
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   DCHECK(!context->IsOffTheRecord());
@@ -53,14 +54,14 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new gcm::GCMProfileService(
+  return base::WrapUnique(new gcm::GCMProfileService(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(), ::GetChannel(),
-      make_scoped_ptr(new ProfileIdentityProvider(
+      base::WrapUnique(new ProfileIdentityProvider(
           ios::SigninManagerFactory::GetForBrowserState(browser_state),
           OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
           base::Closure())),
-      make_scoped_ptr(new gcm::GCMClientFactory),
+      base::WrapUnique(new gcm::GCMClientFactory),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
       blocking_task_runner));

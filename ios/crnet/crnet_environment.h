@@ -5,6 +5,8 @@
 #ifndef IOS_CRNET_CRNET_ENVIRONMENT_H_
 #define IOS_CRNET_CRNET_ENVIRONMENT_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -138,24 +140,25 @@ class CrNetEnvironment {
   std::string sdch_pref_store_filename_;
 
   static CrNetEnvironment* chrome_net_;
-  scoped_ptr<base::Thread> network_io_thread_;
-  scoped_ptr<base::Thread> network_cache_thread_;
-  scoped_ptr<base::Thread> file_thread_;
-  scoped_ptr<base::Thread> file_user_blocking_thread_;
-  scoped_ptr<net::SdchManager> sdch_manager_;
-  scoped_ptr<net::SdchOwner> sdch_owner_;
+  std::unique_ptr<base::Thread> network_io_thread_;
+  std::unique_ptr<base::Thread> network_cache_thread_;
+  std::unique_ptr<base::Thread> file_thread_;
+  std::unique_ptr<base::Thread> file_user_blocking_thread_;
+  std::unique_ptr<net::SdchManager> sdch_manager_;
+  std::unique_ptr<net::SdchOwner> sdch_owner_;
   scoped_refptr<base::SequencedTaskRunner> pref_store_worker_pool_;
   scoped_refptr<JsonPrefStore> net_pref_store_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::HttpServerProperties> http_server_properties_;
-  scoped_ptr<net::CookieStore> cookie_store_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::HttpServerProperties> http_server_properties_;
+  std::unique_ptr<net::CookieStore> cookie_store_;
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
-  scoped_ptr<net::URLRequestContext> main_context_;
-  scoped_ptr<CrNetHttpProtocolHandlerDelegate> http_protocol_handler_delegate_;
+  std::unique_ptr<net::URLRequestContext> main_context_;
+  std::unique_ptr<CrNetHttpProtocolHandlerDelegate>
+      http_protocol_handler_delegate_;
   std::string user_agent_product_name_;
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CrNetEnvironment);
 };

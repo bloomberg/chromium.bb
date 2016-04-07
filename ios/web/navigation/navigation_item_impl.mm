@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/text_elider.h"
@@ -28,8 +28,8 @@ static int GetUniqueIDInConstructor() {
 namespace web {
 
 // static
-scoped_ptr<NavigationItem> NavigationItem::Create() {
-  return scoped_ptr<NavigationItem>(new NavigationItemImpl());
+std::unique_ptr<NavigationItem> NavigationItem::Create() {
+  return std::unique_ptr<NavigationItem>(new NavigationItemImpl());
 }
 
 NavigationItemImpl::NavigationItemImpl()
@@ -71,7 +71,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
 }
 
 void NavigationItemImpl::SetFacadeDelegate(
-    scoped_ptr<NavigationItemFacadeDelegate> facade_delegate) {
+    std::unique_ptr<NavigationItemFacadeDelegate> facade_delegate) {
   facade_delegate_ = std::move(facade_delegate);
 }
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
@@ -30,7 +31,7 @@ AutofillClientIOS::AutofillClientIOS(
     infobars::InfoBarManager* infobar_manager,
     id<AutofillClientIOSBridge> bridge,
     password_manager::PasswordGenerationManager* password_generation_manager,
-    scoped_ptr<IdentityProvider> identity_provider)
+    std::unique_ptr<IdentityProvider> identity_provider)
     : browser_state_(browser_state),
       infobar_manager_(infobar_manager),
       bridge_(bridge),
@@ -95,16 +96,17 @@ void AutofillClientIOS::ConfirmSaveCreditCardLocally(
   // InfoBarService is a WebContentsUserData, it must also be alive at this
   // time.
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
-          false, card, scoped_ptr<base::DictionaryValue>(nullptr), callback))));
+      base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
+          false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
+          callback))));
 }
 
 void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    scoped_ptr<base::DictionaryValue> legal_message,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
+      base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
           true, card, std::move(legal_message), callback))));
 }
 

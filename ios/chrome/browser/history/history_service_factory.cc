@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
@@ -67,13 +68,13 @@ HistoryServiceFactory::HistoryServiceFactory()
 HistoryServiceFactory::~HistoryServiceFactory() {
 }
 
-scoped_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<history::HistoryService> history_service(
+  std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          make_scoped_ptr(new HistoryClientImpl(
+          base::WrapUnique(new HistoryClientImpl(
               ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
           nullptr));
   if (!history_service->Init(history::HistoryDatabaseParamsForPath(

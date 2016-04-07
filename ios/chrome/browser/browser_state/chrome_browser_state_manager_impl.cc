@@ -141,7 +141,7 @@ ios::ChromeBrowserState* ChromeBrowserStateManagerImpl::GetBrowserState(
     return iter->second.get();
   }
 
-  scoped_ptr<ChromeBrowserStateImpl> browser_state_impl(
+  std::unique_ptr<ChromeBrowserStateImpl> browser_state_impl(
       new ChromeBrowserStateImpl(path));
   DCHECK(!browser_state_impl->IsOffTheRecord());
 

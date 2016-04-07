@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -46,21 +47,21 @@
 #include "net/url_request/url_request_test_util.h"
 
 namespace {
-scoped_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
+std::unique_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new history::HistoryService(
-      make_scoped_ptr(new HistoryClientImpl(
+  return base::WrapUnique(new history::HistoryService(
+      base::WrapUnique(new HistoryClientImpl(
           ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
       nullptr));
 }
 
-scoped_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
+std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<bookmarks::BookmarkModel> bookmark_model(
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(
-          make_scoped_ptr(new BookmarkClientImpl(browser_state))));
+          base::WrapUnique(new BookmarkClientImpl(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(),
       browser_state->GetStatePath(), browser_state->GetIOTaskRunner(),
@@ -73,9 +74,9 @@ void NotReachedErrorCallback(WebDataServiceWrapper::ErrorType error_type,
   NOTREACHED();
 }
 
-scoped_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
+std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
   const base::FilePath& browser_state_path = context->GetStatePath();
-  return make_scoped_ptr(new WebDataServiceWrapper(
+  return base::WrapUnique(new WebDataServiceWrapper(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
@@ -125,7 +126,7 @@ TestChromeBrowserState::TestChromeBrowserState(
 
 TestChromeBrowserState::TestChromeBrowserState(
     const base::FilePath& path,
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
     const TestingFactories& testing_factories,
     const RefcountedTestingFactories& refcounted_testing_factories)
     : state_path_(path),
@@ -410,14 +411,15 @@ void TestChromeBrowserState::Builder::SetPath(const base::FilePath& path) {
 }
 
 void TestChromeBrowserState::Builder::SetPrefService(
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
   DCHECK(!build_called_);
   pref_service_ = std::move(prefs);
 }
 
-scoped_ptr<TestChromeBrowserState> TestChromeBrowserState::Builder::Build() {
+std::unique_ptr<TestChromeBrowserState>
+TestChromeBrowserState::Builder::Build() {
   DCHECK(!build_called_);
-  return make_scoped_ptr(new TestChromeBrowserState(
+  return base::WrapUnique(new TestChromeBrowserState(
       state_path_, std::move(pref_service_), testing_factories_,
       refcounted_testing_factories_));
 }

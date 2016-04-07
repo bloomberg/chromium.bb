@@ -121,7 +121,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
 
   base::scoped_nsobject<CRWSSLStatusUpdaterTestDataSource> data_source_;
   base::scoped_nsprotocol<id> delegate_;
-  scoped_ptr<web::NavigationManagerImpl> nav_manager_;
+  std::unique_ptr<web::NavigationManagerImpl> nav_manager_;
   base::scoped_nsobject<CRWSSLStatusUpdater> ssl_status_updater_;
   base::scoped_nsobject<NSArray> cert_chain_;
 };

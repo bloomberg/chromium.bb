@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_TEST_IOS_CHROME_SCOPED_TESTING_CHROME_BROWSER_PROVIDER_H_
 #define IOS_CHROME_TEST_IOS_CHROME_SCOPED_TESTING_CHROME_BROWSER_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ios {
 class ChromeBrowserProvider;
@@ -17,11 +18,11 @@ class ChromeBrowserProvider;
 class IOSChromeScopedTestingChromeBrowserProvider {
  public:
   explicit IOSChromeScopedTestingChromeBrowserProvider(
-      scoped_ptr<ios::ChromeBrowserProvider> chrome_browser_provider);
+      std::unique_ptr<ios::ChromeBrowserProvider> chrome_browser_provider);
   ~IOSChromeScopedTestingChromeBrowserProvider();
 
  private:
-  scoped_ptr<ios::ChromeBrowserProvider> chrome_browser_provider_;
+  std::unique_ptr<ios::ChromeBrowserProvider> chrome_browser_provider_;
   ios::ChromeBrowserProvider* original_chrome_browser_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeScopedTestingChromeBrowserProvider);

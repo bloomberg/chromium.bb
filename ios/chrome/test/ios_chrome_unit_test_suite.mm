@@ -51,10 +51,10 @@ class IOSChromeUnitTestSuiteInitializer
   }
 
  private:
-  scoped_ptr<web::WebClient> web_client_;
-  scoped_ptr<ios::TestChromeProviderInitializer>
+  std::unique_ptr<web::WebClient> web_client_;
+  std::unique_ptr<ios::TestChromeProviderInitializer>
       test_ios_chrome_provider_initializer_;
-  scoped_ptr<ApplicationContext> application_context_;
+  std::unique_ptr<ApplicationContext> application_context_;
   DISALLOW_COPY_AND_ASSIGN(IOSChromeUnitTestSuiteInitializer);
 };
 

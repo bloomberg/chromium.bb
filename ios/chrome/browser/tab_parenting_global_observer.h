@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_TAB_PARENTING_GLOBAL_OBSERVER_H_
 #define IOS_CHROME_BROWSER_TAB_PARENTING_GLOBAL_OBSERVER_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 template <typename T>
@@ -29,7 +30,7 @@ class TabParentingGlobalObserver {
   static TabParentingGlobalObserver* GetInstance();
 
   // Registers |cb| to be invoked when a tab is parented.
-  scoped_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
   RegisterCallback(const OnTabParentedCallback& cb);
 
   // Called to notify all registered callbacks that |web_state| was parented.

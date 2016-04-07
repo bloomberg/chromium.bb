@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/sync/fake_sync_service_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -60,9 +61,9 @@ FakeSyncServiceFactory::FakeSyncServiceFactory()
 
 FakeSyncServiceFactory::~FakeSyncServiceFactory() {}
 
-scoped_ptr<KeyedService> FakeSyncServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> FakeSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  return make_scoped_ptr(new KeyedFakeSyncService);
+  return base::WrapUnique(new KeyedFakeSyncService);
 }
 
 }  // namespace ios

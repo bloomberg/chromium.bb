@@ -7,8 +7,9 @@
 
 #import <WebKit/WebKit.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/interstitials/web_interstitial_impl.h"
 
 namespace web {
@@ -20,10 +21,11 @@ class HtmlWebInterstitialImpl;
 // interstitials created via HTML.
 class HtmlWebInterstitialImpl : public WebInterstitialImpl {
  public:
-  HtmlWebInterstitialImpl(WebStateImpl* web_state,
-                          bool new_navigation,
-                          const GURL& url,
-                          scoped_ptr<HtmlWebInterstitialDelegate> delegate);
+  HtmlWebInterstitialImpl(
+      WebStateImpl* web_state,
+      bool new_navigation,
+      const GURL& url,
+      std::unique_ptr<HtmlWebInterstitialDelegate> delegate);
   ~HtmlWebInterstitialImpl() override;
 
   // Called by |web_view_controller_delegate_| when |web_view_controller_|
@@ -42,7 +44,7 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
 
  private:
   // The HTML interstitial delegate.
-  scoped_ptr<HtmlWebInterstitialDelegate> delegate_;
+  std::unique_ptr<HtmlWebInterstitialDelegate> delegate_;
   // The |web_view_|'s delegate.  Used to forward JavaScript commands
   // resulting from user interaction with the interstitial content.
   base::scoped_nsprotocol<id<WKNavigationDelegate>> web_view_delegate_;

@@ -4,10 +4,11 @@
 
 #import "ios/chrome/browser/passwords/password_controller.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -37,9 +38,9 @@ class MockPasswordManagerClient
                     bool update_password));
   MOCK_CONST_METHOD0(GetLogManager, password_manager::LogManager*(void));
 
-  // Workaround for scoped_ptr<> lacking a copy constructor.
+  // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
-      scoped_ptr<password_manager::PasswordFormManager> manager,
+      std::unique_ptr<password_manager::PasswordFormManager> manager,
       password_manager::CredentialSourceType type,
       bool update_password) override {
     PromptUserToSaveOrUpdatePasswordPtr(manager.get(), type, update_password);
@@ -61,15 +62,15 @@ TEST(PasswordControllerTest, SaveOnNonHTMLLandingPage) {
   // Create the PasswordController with a MockPasswordManagerClient.
   TestChromeBrowserState::Builder builder;
   auto pref_service =
-      make_scoped_ptr(new syncable_prefs::TestingPrefServiceSyncable);
+      base::WrapUnique(new syncable_prefs::TestingPrefServiceSyncable);
   pref_service->registry()->RegisterBooleanPref(
       password_manager::prefs::kPasswordManagerSavingEnabled, true);
   builder.SetPrefService(std::move(pref_service));
-  scoped_ptr<TestChromeBrowserState> browser_state(builder.Build());
+  std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());
   MockWebState web_state;
   ON_CALL(web_state, GetBrowserState())
       .WillByDefault(testing::Return(browser_state.get()));
-  auto client = make_scoped_ptr(new MockPasswordManagerClient);
+  auto client = base::WrapUnique(new MockPasswordManagerClient);
   MockPasswordManagerClient* weak_client = client.get();
   base::scoped_nsobject<PasswordController> passwordController =
       [[PasswordController alloc] initWithWebState:&web_state

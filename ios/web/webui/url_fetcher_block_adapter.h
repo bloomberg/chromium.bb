@@ -7,8 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/mac/scoped_block.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -52,7 +53,7 @@ class URLFetcherBlockAdapter : public net::URLFetcherDelegate {
   base::mac::ScopedBlock<web::URLFetcherBlockAdapterCompletion>
       completion_handler_;
   // URLFetcher for retrieving data from net stack.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 };
 
 }  // namespace web

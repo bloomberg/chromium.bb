@@ -57,8 +57,8 @@ class OffTheRecordChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // Weak pointer owned by |original_chrome_browser_state_|.
   syncable_prefs::PrefServiceSyncable* prefs_;
 
-  scoped_ptr<OffTheRecordChromeBrowserStateIOData::Handle> io_data_;
-  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  std::unique_ptr<OffTheRecordChromeBrowserStateIOData::Handle> io_data_;
+  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordChromeBrowserStateImpl);
 };

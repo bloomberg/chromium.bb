@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_TEST_TESTING_APPLICATION_CONTEXT_H_
 #define IOS_CHROME_TEST_TESTING_APPLICATION_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
@@ -55,7 +56,7 @@ class TestingApplicationContext : public ApplicationContext {
   std::string application_locale_;
   PrefService* local_state_;
   ios::ChromeBrowserStateManager* chrome_browser_state_manager_;
-  scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
+  std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   bool was_last_shutdown_clean_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingApplicationContext);

@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_CONTROLLER_FACTORY_H_
 #define IOS_WEB_PUBLIC_WEB_CONTROLLER_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 @class CRWWebController;
 
@@ -16,7 +16,7 @@ class WebStateImpl;
 
 // Returns a new instance of CRWWebViewController.
 // Note: Callers are responsible for releasing the returned web controller.
-CRWWebController* CreateWebController(scoped_ptr<WebStateImpl> web_state);
+CRWWebController* CreateWebController(std::unique_ptr<WebStateImpl> web_state);
 
 // Returns a new instance of CRWWebViewController.
 // Temporary factory method for use in components that require a web controller.

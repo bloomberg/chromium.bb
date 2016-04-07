@@ -50,9 +50,10 @@ class LargeIconCacheTest : public testing::Test {
   ~LargeIconCacheTest() override {}
 
  protected:
-  scoped_ptr<LargeIconCache> large_icon_cache_;
+  std::unique_ptr<LargeIconCache> large_icon_cache_;
   favicon_base::FaviconRawBitmapResult expected_bitmap_;
-  scoped_ptr<favicon_base::FallbackIconStyle> expected_fallback_icon_style_;
+  std::unique_ptr<favicon_base::FallbackIconStyle>
+      expected_fallback_icon_style_;
 
   bool is_callback_invoked_;
 
@@ -61,13 +62,13 @@ class LargeIconCacheTest : public testing::Test {
 };
 
 TEST_F(LargeIconCacheTest, EmptyCache) {
-  scoped_ptr<LargeIconCache> large_icon_cache(new LargeIconCache);
+  std::unique_ptr<LargeIconCache> large_icon_cache(new LargeIconCache);
   EXPECT_EQ(nullptr, large_icon_cache->GetCachedResult(GURL(kDummyUrl)));
 }
 
 TEST_F(LargeIconCacheTest, RetreiveItem) {
-  scoped_ptr<favicon_base::LargeIconResult> expected_result1;
-  scoped_ptr<favicon_base::LargeIconResult> expected_result2;
+  std::unique_ptr<favicon_base::LargeIconResult> expected_result1;
+  std::unique_ptr<favicon_base::LargeIconResult> expected_result2;
   expected_result1.reset(new favicon_base::LargeIconResult(expected_bitmap_));
   expected_result2.reset(new favicon_base::LargeIconResult(
       new favicon_base::FallbackIconStyle(*expected_fallback_icon_style_)));
@@ -75,12 +76,12 @@ TEST_F(LargeIconCacheTest, RetreiveItem) {
   large_icon_cache_->SetCachedResult(GURL(kDummyUrl), *expected_result1);
   large_icon_cache_->SetCachedResult(GURL(kDummyUrl2), *expected_result2);
 
-  scoped_ptr<favicon_base::LargeIconResult> result1 =
+  std::unique_ptr<favicon_base::LargeIconResult> result1 =
       large_icon_cache_->GetCachedResult(GURL(kDummyUrl));
   EXPECT_EQ(true, result1->bitmap.is_valid());
   EXPECT_EQ(expected_result1->bitmap.pixel_size, result1->bitmap.pixel_size);
 
-  scoped_ptr<favicon_base::LargeIconResult> result2 =
+  std::unique_ptr<favicon_base::LargeIconResult> result2 =
       large_icon_cache_->GetCachedResult(GURL(kDummyUrl2));
   EXPECT_EQ(false, result2->bitmap.is_valid());
   EXPECT_EQ(expected_result2->fallback_icon_style->background_color,
@@ -88,7 +89,7 @@ TEST_F(LargeIconCacheTest, RetreiveItem) {
 
   // Test overwriting kDummyUrl.
   large_icon_cache_->SetCachedResult(GURL(kDummyUrl), *expected_result2);
-  scoped_ptr<favicon_base::LargeIconResult> result3 =
+  std::unique_ptr<favicon_base::LargeIconResult> result3 =
       large_icon_cache_->GetCachedResult(GURL(kDummyUrl2));
   EXPECT_EQ(false, result3->bitmap.is_valid());
   EXPECT_EQ(expected_result2->fallback_icon_style->background_color,

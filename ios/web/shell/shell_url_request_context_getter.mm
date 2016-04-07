@@ -4,12 +4,13 @@
 
 #include "ios/web/shell/shell_url_request_context_getter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base_paths.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -77,13 +78,13 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
                 web::WebThread::GetBlockingPool()->GetSequenceToken()),
             true, nullptr);
-    scoped_ptr<net::CookieStoreIOS> cookie_store(
+    std::unique_ptr<net::CookieStoreIOS> cookie_store(
         new net::CookieStoreIOS(persistent_store.get()));
     net::CookieStoreIOS::SwitchSynchronizedStore(nullptr, cookie_store.get());
     storage_->set_cookie_store(std::move(cookie_store));
 
     std::string user_agent = web::GetWebClient()->GetUserAgent(false);
-    storage_->set_http_user_agent_settings(make_scoped_ptr(
+    storage_->set_http_user_agent_settings(base::WrapUnique(
         new net::StaticHttpUserAgentSettings("en-us,en", user_agent)));
     storage_->set_proxy_service(
         net::ProxyService::CreateUsingSystemProxyResolver(
@@ -93,17 +94,18 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
 
     storage_->set_transport_security_state(
-        make_scoped_ptr(new net::TransportSecurityState()));
+        base::WrapUnique(new net::TransportSecurityState()));
     transport_security_persister_.reset(new net::TransportSecurityPersister(
         url_request_context_->transport_security_state(), base_path_,
         file_task_runner_, false));
-    storage_->set_channel_id_service(make_scoped_ptr(
+    storage_->set_channel_id_service(base::WrapUnique(
         new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr),
                                   base::WorkerPool::GetTaskRunner(true))));
-    storage_->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(
-        new net::HttpServerPropertiesImpl()));
+    storage_->set_http_server_properties(
+        std::unique_ptr<net::HttpServerProperties>(
+            new net::HttpServerPropertiesImpl()));
 
-    scoped_ptr<net::HostResolver> host_resolver(
+    std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(
             url_request_context_->net_log()));
     storage_->set_http_auth_handler_factory(
@@ -130,21 +132,21 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->host_resolver();
 
     base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
-    scoped_ptr<net::HttpCache::DefaultBackend> main_backend(
+    std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
         new net::HttpCache::DefaultBackend(net::DISK_CACHE,
                                            net::CACHE_BACKEND_DEFAULT,
                                            cache_path, 0, cache_task_runner_));
 
     storage_->set_http_network_session(
-        make_scoped_ptr(new net::HttpNetworkSession(network_session_params)));
-    storage_->set_http_transaction_factory(make_scoped_ptr(new net::HttpCache(
+        base::WrapUnique(new net::HttpNetworkSession(network_session_params)));
+    storage_->set_http_transaction_factory(base::WrapUnique(new net::HttpCache(
         storage_->http_network_session(), std::move(main_backend),
         true /* set_up_quic_server_info */)));
 
-    scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
+    std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
     bool set_protocol = job_factory->SetProtocolHandler(
-        "data", make_scoped_ptr(new net::DataProtocolHandler));
+        "data", base::WrapUnique(new net::DataProtocolHandler));
     DCHECK(set_protocol);
 
     storage_->set_job_factory(std::move(job_factory));

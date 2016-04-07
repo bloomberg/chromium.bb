@@ -4,13 +4,14 @@
 
 #import "ios/chrome/browser/installation_notifier.h"
 
-#include <stdint.h>
 #import <UIKit/UIKit.h>
+#include <stdint.h>
+
+#include <memory>
 
 #include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/backoff_entry.h"
@@ -62,7 +63,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 @end
 
 @implementation InstallationNotifier {
-  scoped_ptr<net::BackoffEntry> _backoffEntry;
+  std::unique_ptr<net::BackoffEntry> _backoffEntry;
   base::scoped_nsprotocol<id<DispatcherProtocol>> _dispatcher;
   // Dictionary mapping URL schemes to mutable sets of observers.
   base::scoped_nsobject<NSMutableDictionary> _installedAppObservers;

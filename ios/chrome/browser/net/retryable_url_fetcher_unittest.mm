@@ -53,7 +53,7 @@ class RetryableURLFetcherTest : public PlatformTest {
   }
 
   net::TestURLFetcherFactory factory_;
-  scoped_ptr<web::TestWebThread> io_thread_;
+  std::unique_ptr<web::TestWebThread> io_thread_;
   base::MessageLoop message_loop_;
   base::scoped_nsobject<TestRetryableURLFetcherDelegate> test_delegate_;
 };

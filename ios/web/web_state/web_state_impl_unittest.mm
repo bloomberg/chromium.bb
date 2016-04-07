@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ios/web/web_state/web_state_impl.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
@@ -14,7 +17,6 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
-#include "ios/web/web_state/web_state_impl.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -230,7 +232,7 @@ class WebStateTest : public PlatformTest {
   }
 
   web::TestBrowserState browser_state_;
-  scoped_ptr<WebStateImpl> web_state_;
+  std::unique_ptr<WebStateImpl> web_state_;
 };
 
 TEST_F(WebStateTest, ResponseHeaders) {
@@ -293,7 +295,7 @@ TEST_F(WebStateTest, ResponseHeaderClearing) {
 }
 
 TEST_F(WebStateTest, ObserverTest) {
-  scoped_ptr<TestWebStateObserver> observer(
+  std::unique_ptr<TestWebStateObserver> observer(
       new TestWebStateObserver(web_state_.get()));
   EXPECT_EQ(web_state_.get(), observer->web_state());
 
@@ -345,7 +347,7 @@ TEST_F(WebStateTest, ObserverTest) {
 
 // Verifies that GlobalWebStateObservers are called when expected.
 TEST_F(WebStateTest, GlobalObserverTest) {
-  scoped_ptr<TestGlobalWebStateObserver> observer(
+  std::unique_ptr<TestGlobalWebStateObserver> observer(
       new TestGlobalWebStateObserver());
 
   // Test that NavigationItemsPruned() is called.

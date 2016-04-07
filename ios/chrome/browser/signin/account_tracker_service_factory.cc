@@ -40,11 +40,12 @@ void AccountTrackerServiceFactory::RegisterBrowserStatePrefs(
   AccountTrackerService::RegisterPrefs(registry);
 }
 
-scoped_ptr<KeyedService> AccountTrackerServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+AccountTrackerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<AccountTrackerService> service(new AccountTrackerService());
+  std::unique_ptr<AccountTrackerService> service(new AccountTrackerService());
   service->Initialize(
       SigninClientFactory::GetForBrowserState(chrome_browser_state));
   return std::move(service);

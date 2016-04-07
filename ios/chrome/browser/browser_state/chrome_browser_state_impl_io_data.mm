@@ -4,13 +4,14 @@
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl_io_data.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
@@ -103,7 +104,7 @@ class SdchOwnerPrefStorage : public net::SdchOwner::PrefStorage,
     return result_value->GetAsDictionary(result);
   }
 
-  void SetValue(scoped_ptr<base::DictionaryValue> value) override {
+  void SetValue(std::unique_ptr<base::DictionaryValue> value) override {
     storage_->SetValue(storage_key_, std::move(value),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
@@ -260,15 +261,16 @@ void ChromeBrowserStateImplIOData::Handle::LazyInitialize() const {
   PrefService* pref_service = browser_state_->GetPrefs();
   io_data_->http_server_properties_manager_ =
       HttpServerPropertiesManagerFactory::CreateManager(pref_service);
-  io_data_->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(
-      io_data_->http_server_properties_manager_));
+  io_data_->set_http_server_properties(
+      base::WrapUnique(io_data_->http_server_properties_manager_));
   io_data_->InitializeOnUIThread(browser_state_);
 }
 
-scoped_ptr<ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
+std::unique_ptr<
+    ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
 ChromeBrowserStateImplIOData::Handle::GetAllContextGetters() {
   IOSChromeURLRequestContextGetterMap::iterator iter;
-  scoped_ptr<IOSChromeURLRequestContextGetterVector> context_getters(
+  std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters(
       new IOSChromeURLRequestContextGetterVector());
 
   iter = app_request_context_getter_map_.begin();
@@ -294,7 +296,7 @@ ChromeBrowserStateImplIOData::ChromeBrowserStateImplIOData()
 ChromeBrowserStateImplIOData::~ChromeBrowserStateImplIOData() {}
 
 void ChromeBrowserStateImplIOData::InitializeInternal(
-    scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
+    std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
     ProfileParams* profile_params,
     ProtocolHandlerMap* protocol_handlers) const {
   // Set up a persistent store for use by the network stack on the IO thread.
@@ -304,7 +306,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       network_json_store_filepath,
       JsonPrefStore::GetTaskRunnerForFile(network_json_store_filepath,
                                           web::WebThread::GetBlockingPool()),
-      scoped_ptr<PrefFilter>());
+      std::unique_ptr<PrefFilter>());
   network_json_store_->ReadPrefsAsync(nullptr);
 
   net::URLRequestContext* main_context = main_request_context();
@@ -373,7 +375,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   main_context->set_channel_id_service(channel_id_service);
   main_cookie_store_->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
-  scoped_ptr<net::HttpCache::BackendFactory> main_backend(
+  std::unique_ptr<net::HttpCache::BackendFactory> main_backend(
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE,
           lazy_params_->cache_path, lazy_params_->cache_max_size,
@@ -383,7 +385,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
                                              std::move(main_backend));
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
-  scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
+  std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
 
@@ -402,7 +404,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
   sdch_policy_->EnablePersistentStorage(
-      make_scoped_ptr(new SdchOwnerPrefStorage(network_json_store_.get())));
+      base::WrapUnique(new SdchOwnerPrefStorage(network_json_store_.get())));
 
   lazy_params_.reset();
 }
@@ -415,30 +417,31 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
   context->CopyFrom(main_context);
 
   // Use a separate HTTP disk cache for isolated apps.
-  scoped_ptr<net::HttpCache::BackendFactory> app_backend =
+  std::unique_ptr<net::HttpCache::BackendFactory> app_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
-  scoped_ptr<net::HttpCache> app_http_cache =
+  std::unique_ptr<net::HttpCache> app_http_cache =
       CreateHttpFactory(http_network_session_.get(), std::move(app_backend));
 
   cookie_util::CookieStoreConfig ios_cookie_config(
       base::FilePath(),
       cookie_util::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
       cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr);
-  scoped_ptr<net::CookieStore> cookie_store =
+  std::unique_ptr<net::CookieStore> cookie_store =
       cookie_util::CreateCookieStore(ios_cookie_config);
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
   context->SetCookieStore(std::move(cookie_store));
   context->SetHttpTransactionFactory(std::move(app_http_cache));
 
-  scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
+  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   // TODO(crbug.com/592012): Delete request_interceptor and its handling if
   // it's not needed in the future.
   URLRequestInterceptorScopedVector request_interceptors;
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory(SetUpJobFactoryDefaults(
-      std::move(job_factory), std::move(request_interceptors),
-      main_context->network_delegate()));
+  std::unique_ptr<net::URLRequestJobFactory> top_job_factory(
+      SetUpJobFactoryDefaults(std::move(job_factory),
+                              std::move(request_interceptors),
+                              main_context->network_delegate()));
   context->SetJobFactory(std::move(top_job_factory));
 
   return context;

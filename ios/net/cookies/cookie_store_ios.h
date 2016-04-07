@@ -6,6 +6,7 @@
 #define IOS_NET_COOKIES_COOKIE_STORE_IOS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/cancelable_callback.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -88,7 +88,7 @@ class CookieStoreIOS : public net::CookieStore,
   // as its default backend and is initially synchronized with it.
   // Apple does not persist the cookies' creation dates in NSHTTPCookieStorage,
   // so callers should not expect these values to be populated.
-  static scoped_ptr<CookieStoreIOS> CreateCookieStore(
+  static std::unique_ptr<CookieStoreIOS> CreateCookieStore(
       NSHTTPCookieStorage* cookie_storage);
 
   // As there is only one system store, only one CookieStoreIOS at a time may
@@ -157,7 +157,7 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteSessionCookiesAsync(const DeleteCallback& callback) override;
   void FlushStore(const base::Closure& callback) override;
 
-  scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
+  std::unique_ptr<CookieChangedSubscription> AddCallbackForCookie(
       const GURL& url,
       const std::string& name,
       const CookieChangedCallback& callback) override;
@@ -204,9 +204,9 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteCookiesWithFilter(const CookieFilterFunction& filter,
                                const DeleteCallback& callback);
 
-  scoped_ptr<net::CookieMonster> cookie_monster_;
+  std::unique_ptr<net::CookieMonster> cookie_monster_;
   base::scoped_nsobject<NSHTTPCookieStorage> system_store_;
-  scoped_ptr<CookieCreationTimeManager> creation_time_manager_;
+  std::unique_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
   base::TimeDelta flush_delay_;
   base::CancelableClosure flush_closure_;
@@ -321,7 +321,7 @@ class CookieStoreIOS : public net::CookieStore,
 
   // Cached values of system cookies. Only cookies which have an observer added
   // with AddCallbackForCookie are kept in this cache.
-  scoped_ptr<CookieCache> cookie_cache_;
+  std::unique_ptr<CookieCache> cookie_cache_;
 
   // Callbacks for cookie changes installed by AddCallbackForCookie.
   typedef std::map<std::pair<GURL, std::string>, CookieChangedCallbackList*>

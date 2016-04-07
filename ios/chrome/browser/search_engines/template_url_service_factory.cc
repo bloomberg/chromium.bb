@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -37,15 +38,16 @@ base::Closure GetDefaultSearchProviderChangedCallback() {
 #endif
 }
 
-scoped_ptr<KeyedService> BuildTemplateURLService(web::BrowserState* context) {
+std::unique_ptr<KeyedService> BuildTemplateURLService(
+    web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new TemplateURLService(
+  return base::WrapUnique(new TemplateURLService(
       browser_state->GetPrefs(),
-      make_scoped_ptr(new ios::UIThreadSearchTermsData(browser_state)),
+      base::WrapUnique(new ios::UIThreadSearchTermsData(browser_state)),
       ios::WebDataServiceFactory::GetKeywordWebDataForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-      make_scoped_ptr(new ios::TemplateURLServiceClientImpl(
+      base::WrapUnique(new ios::TemplateURLServiceClientImpl(
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state, ServiceAccessType::EXPLICIT_ACCESS))),
       ios::GoogleURLTrackerFactory::GetForBrowserState(browser_state),
@@ -90,7 +92,8 @@ void TemplateURLServiceFactory::RegisterBrowserStatePrefs(
   TemplateURLService::RegisterProfilePrefs(registry);
 }
 
-scoped_ptr<KeyedService> TemplateURLServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+TemplateURLServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   return BuildTemplateURLService(context);
 }

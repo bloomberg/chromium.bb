@@ -4,10 +4,11 @@
 
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
@@ -57,29 +58,30 @@ IOSChromeProfileInvalidationProviderFactory::
 IOSChromeProfileInvalidationProviderFactory::
     ~IOSChromeProfileInvalidationProviderFactory() {}
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
-  scoped_ptr<IdentityProvider> identity_provider(new ProfileIdentityProvider(
-      ios::SigninManagerFactory::GetForBrowserState(browser_state),
-      OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-      // LoginUIServiceFactory is not built on iOS.
-      base::Closure()));
+  std::unique_ptr<IdentityProvider> identity_provider(
+      new ProfileIdentityProvider(
+          ios::SigninManagerFactory::GetForBrowserState(browser_state),
+          OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+          // LoginUIServiceFactory is not built on iOS.
+          base::Closure()));
 
-  scoped_ptr<TiclInvalidationService> service(new TiclInvalidationService(
+  std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(false), std::move(identity_provider),
-      make_scoped_ptr(new invalidation::TiclProfileSettingsProvider(
+      base::WrapUnique(new invalidation::TiclProfileSettingsProvider(
           browser_state->GetPrefs())),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
       browser_state->GetRequestContext()));
   service->Init(
-      make_scoped_ptr(new InvalidatorStorage(browser_state->GetPrefs())));
+      base::WrapUnique(new InvalidatorStorage(browser_state->GetPrefs())));
 
-  return make_scoped_ptr(new ProfileInvalidationProvider(std::move(service)));
+  return base::WrapUnique(new ProfileInvalidationProvider(std::move(service)));
 }
 
 void IOSChromeProfileInvalidationProviderFactory::RegisterBrowserStatePrefs(

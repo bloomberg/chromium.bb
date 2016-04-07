@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_FAVICON_LARGE_ICON_CACHE_H_
 #define IOS_CHROME_BROWSER_FAVICON_LARGE_ICON_CACHE_H_
 
+#include <memory>
+
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
@@ -26,7 +27,7 @@ class ChromeBrowserState;
 // Example usage:
 //   LargeIconCache* large_icon_cache =
 //       IOSChromeLargeIconServiceFactory::GetForBrowserState(browser_state);
-//   scoped_ptr<favicon_base::LargeIconResult> icon =
+//   std::unique_ptr<favicon_base::LargeIconResult> icon =
 //       large_icon_cache->GetCachedResult(...);
 //
 class LargeIconCache : public KeyedService {
@@ -40,14 +41,15 @@ class LargeIconCache : public KeyedService {
   void SetCachedResult(const GURL& url, const favicon_base::LargeIconResult&);
 
   // Returns a cached LargeIconResult.
-  scoped_ptr<favicon_base::LargeIconResult> GetCachedResult(const GURL& url);
+  std::unique_ptr<favicon_base::LargeIconResult> GetCachedResult(
+      const GURL& url);
 
  private:
   // Clones a LargeIconResult.
-  scoped_ptr<favicon_base::LargeIconResult> CloneLargeIconResult(
+  std::unique_ptr<favicon_base::LargeIconResult> CloneLargeIconResult(
       const favicon_base::LargeIconResult& large_icon_result);
 
-  base::MRUCache<GURL, scoped_ptr<LargeIconCacheEntry>> cache_;
+  base::MRUCache<GURL, std::unique_ptr<LargeIconCacheEntry>> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconCache);
 };

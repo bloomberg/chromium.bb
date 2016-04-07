@@ -41,11 +41,12 @@ ShareExtensionServiceFactory::ShareExtensionServiceFactory()
 
 ShareExtensionServiceFactory::~ShareExtensionServiceFactory() {}
 
-scoped_ptr<KeyedService> ShareExtensionServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+ShareExtensionServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<ShareExtensionService> share_extension_service(
+  std::unique_ptr<ShareExtensionService> share_extension_service(
       new ShareExtensionService(
           ios::BookmarkModelFactory::GetForBrowserState(chrome_browser_state),
           ReadingListModelFactory::GetForBrowserState(chrome_browser_state)));

@@ -17,6 +17,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,7 +72,8 @@ namespace {
 // For safe shutdown, must be called before the ChromeBrowserStateIOData is
 // destroyed.
 void NotifyContextGettersOfShutdownOnIO(
-    scoped_ptr<ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
+    std::unique_ptr<
+        ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
         getters) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector::iterator
@@ -86,7 +88,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
     ios::ChromeBrowserState* browser_state) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   PrefService* pref_service = browser_state->GetPrefs();
-  scoped_ptr<ProfileParams> params(new ProfileParams);
+  std::unique_ptr<ProfileParams> params(new ProfileParams);
   params->path = browser_state->GetOriginalChromeBrowserState()->GetStatePath();
 
   params->io_thread = GetApplicationContext()->GetIOSChromeIOThread();
@@ -133,19 +135,19 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
 ChromeBrowserStateIOData::AppRequestContext::AppRequestContext() {}
 
 void ChromeBrowserStateIOData::AppRequestContext::SetCookieStore(
-    scoped_ptr<net::CookieStore> cookie_store) {
+    std::unique_ptr<net::CookieStore> cookie_store) {
   cookie_store_ = std::move(cookie_store);
   set_cookie_store(cookie_store_.get());
 }
 
 void ChromeBrowserStateIOData::AppRequestContext::SetHttpTransactionFactory(
-    scoped_ptr<net::HttpTransactionFactory> http_factory) {
+    std::unique_ptr<net::HttpTransactionFactory> http_factory) {
   http_factory_ = std::move(http_factory);
   set_http_transaction_factory(http_factory_.get());
 }
 
 void ChromeBrowserStateIOData::AppRequestContext::SetJobFactory(
-    scoped_ptr<net::URLRequestJobFactory> job_factory) {
+    std::unique_ptr<net::URLRequestJobFactory> job_factory) {
   job_factory_ = std::move(job_factory);
   set_job_factory(job_factory_.get());
 }
@@ -241,7 +243,7 @@ void ChromeBrowserStateIOData::InstallProtocolHandlers(
   for (ProtocolHandlerMap::iterator it = protocol_handlers->begin();
        it != protocol_handlers->end(); ++it) {
     bool set_protocol = job_factory->SetProtocolHandler(
-        it->first, make_scoped_ptr(it->second.release()));
+        it->first, base::WrapUnique(it->second.release()));
     DCHECK(set_protocol);
   }
   protocol_handlers->clear();
@@ -269,7 +271,7 @@ net::URLRequestContext* ChromeBrowserStateIOData::GetIsolatedAppRequestContext(
 }
 
 void ChromeBrowserStateIOData::SetCookieStoreForPartitionPath(
-    scoped_ptr<net::CookieStore> cookie_store,
+    std::unique_ptr<net::CookieStore> cookie_store,
     const base::FilePath& partition_path) {
   DCHECK(ContainsKey(app_request_context_map_, partition_path));
   app_request_context_map_[partition_path]->SetCookieStore(
@@ -314,7 +316,7 @@ ChromeBrowserStateIOData::http_server_properties() const {
 }
 
 void ChromeBrowserStateIOData::set_http_server_properties(
-    scoped_ptr<net::HttpServerProperties> http_server_properties) const {
+    std::unique_ptr<net::HttpServerProperties> http_server_properties) const {
   http_server_properties_ = std::move(http_server_properties);
 }
 
@@ -338,7 +340,7 @@ void ChromeBrowserStateIOData::Init(
   // Create the common request contexts.
   main_request_context_.reset(new net::URLRequestContext());
 
-  scoped_ptr<IOSChromeNetworkDelegate> network_delegate(
+  std::unique_ptr<IOSChromeNetworkDelegate> network_delegate(
       new IOSChromeNetworkDelegate());
 
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
@@ -384,43 +386,43 @@ void ChromeBrowserStateIOData::ApplyProfileParamsToContext(
   context->set_ssl_config_service(profile_params_->ssl_config_service.get());
 }
 
-scoped_ptr<net::URLRequestJobFactory>
+std::unique_ptr<net::URLRequestJobFactory>
 ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
-    scoped_ptr<net::URLRequestJobFactoryImpl> job_factory,
+    std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
     URLRequestInterceptorScopedVector request_interceptors,
     net::NetworkDelegate* network_delegate) const {
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ChromeBrowserStateIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
-      make_scoped_ptr(new net::FileProtocolHandler(
+      base::WrapUnique(new net::FileProtocolHandler(
           web::WebThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
   DCHECK(set_protocol);
 
   set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
+      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler()));
   DCHECK(set_protocol);
 
   job_factory->SetProtocolHandler(
       url::kAboutScheme,
-      make_scoped_ptr(new about_handler::AboutProtocolHandler()));
+      base::WrapUnique(new about_handler::AboutProtocolHandler()));
 
   // Set up interceptors in the reverse order.
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory =
+  std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
       std::move(job_factory);
   for (URLRequestInterceptorScopedVector::reverse_iterator i =
            request_interceptors.rbegin();
        i != request_interceptors.rend(); ++i) {
     top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        std::move(top_job_factory), make_scoped_ptr(*i)));
+        std::move(top_job_factory), base::WrapUnique(*i)));
   }
   request_interceptors.weak_clear();
   return top_job_factory;
 }
 
 void ChromeBrowserStateIOData::ShutdownOnUIThread(
-    scoped_ptr<IOSChromeURLRequestContextGetterVector> context_getters) {
+    std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   google_services_user_account_id_.Destroy();
@@ -450,7 +452,7 @@ void ChromeBrowserStateIOData::set_channel_id_service(
   channel_id_service_.reset(channel_id_service);
 }
 
-scoped_ptr<net::HttpNetworkSession>
+std::unique_ptr<net::HttpNetworkSession>
 ChromeBrowserStateIOData::CreateHttpNetworkSession(
     const ProfileParams& profile_params) const {
   net::HttpNetworkSession::Params params;
@@ -466,20 +468,20 @@ ChromeBrowserStateIOData::CreateHttpNetworkSession(
         io_thread->globals()->network_quality_estimator.get();
   }
 
-  return scoped_ptr<net::HttpNetworkSession>(
+  return std::unique_ptr<net::HttpNetworkSession>(
       new net::HttpNetworkSession(params));
 }
 
-scoped_ptr<net::HttpCache> ChromeBrowserStateIOData::CreateMainHttpFactory(
+std::unique_ptr<net::HttpCache> ChromeBrowserStateIOData::CreateMainHttpFactory(
     net::HttpNetworkSession* session,
-    scoped_ptr<net::HttpCache::BackendFactory> main_backend) const {
-  return scoped_ptr<net::HttpCache>(
+    std::unique_ptr<net::HttpCache::BackendFactory> main_backend) const {
+  return std::unique_ptr<net::HttpCache>(
       new net::HttpCache(session, std::move(main_backend), true));
 }
 
-scoped_ptr<net::HttpCache> ChromeBrowserStateIOData::CreateHttpFactory(
+std::unique_ptr<net::HttpCache> ChromeBrowserStateIOData::CreateHttpFactory(
     net::HttpNetworkSession* shared_session,
-    scoped_ptr<net::HttpCache::BackendFactory> backend) const {
-  return scoped_ptr<net::HttpCache>(
+    std::unique_ptr<net::HttpCache::BackendFactory> backend) const {
+  return std::unique_ptr<net::HttpCache>(
       new net::HttpCache(shared_session, std::move(backend), true));
 }

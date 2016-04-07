@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_BROWSER_STATE_TEST_CHROME_BROWSER_STATE_ISOLATED_CONTEXT_H_
 #define IOS_CHROME_BROWSER_BROWSER_STATE_TEST_CHROME_BROWSER_STATE_ISOLATED_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/public/provider/chrome/browser/ui/default_ios_web_view_factory.h"
@@ -19,7 +21,7 @@ class TestChromeBrowserStateWithIsolatedContext
   bool MainContextCalled() const;
   IOSWebViewFactoryExternalService SharingService();
 
-  static scoped_ptr<TestChromeBrowserStateWithIsolatedContext> Build();
+  static std::unique_ptr<TestChromeBrowserStateWithIsolatedContext> Build();
 
   // ChromeBrowserState:
   net::URLRequestContextGetter* GetRequestContext() override;

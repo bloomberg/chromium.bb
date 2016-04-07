@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -93,7 +94,7 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(
   reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
   IOSChromeMetricsHelper* ios_chrome_metrics_helper =
       new IOSChromeMetricsHelper(web_state, request_url, reporting_info);
-  controller_->set_metrics_helper(make_scoped_ptr(ios_chrome_metrics_helper));
+  controller_->set_metrics_helper(base::WrapUnique(ios_chrome_metrics_helper));
 
   ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
                                      options_mask, time_triggered,

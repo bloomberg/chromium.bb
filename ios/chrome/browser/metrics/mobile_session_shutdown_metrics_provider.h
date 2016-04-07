@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_METRICS_MOBILE_SESSION_SHUTDOWN_METRICS_PROVIDER_H_
 #define IOS_CHROME_BROWSER_METRICS_MOBILE_SESSION_SHUTDOWN_METRICS_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace metrics {

@@ -7,12 +7,13 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/favicon_base/favicon_callback.h"
 
 class AutocompleteProvider;
@@ -114,7 +115,7 @@ class ChromeBrowserProvider {
   virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
 
   // Returns the SyncedWindowDelegatesGetter implementation.
-  virtual scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>
+  virtual std::unique_ptr<browser_sync::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
 };
 

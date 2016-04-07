@@ -10,7 +10,7 @@ TabParentingGlobalObserver* TabParentingGlobalObserver::GetInstance() {
   return base::Singleton<TabParentingGlobalObserver>::get();
 }
 
-scoped_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
+std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
 TabParentingGlobalObserver::RegisterCallback(const OnTabParentedCallback& cb) {
   return on_tab_parented_callback_list_.Add(cb);
 }

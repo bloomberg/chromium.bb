@@ -5,10 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_
 #define IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -36,7 +36,7 @@ class ChromeIOSTranslateClient
   ~ChromeIOSTranslateClient() override;
 
   // Helper method to return a new TranslatePrefs instance.
-  static scoped_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
+  static std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
       PrefService* prefs);
 
   // Gets the associated TranslateManager.
@@ -45,11 +45,12 @@ class ChromeIOSTranslateClient
   // TranslateClient implementation.
   translate::TranslateDriver* GetTranslateDriver() override;
   PrefService* GetPrefs() override;
-  scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
+  std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
-  scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const override;
+  std::unique_ptr<infobars::InfoBar> CreateInfoBar(
+      std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
+      const override;
   void ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
                        const std::string& target_language,
@@ -65,7 +66,7 @@ class ChromeIOSTranslateClient
   // web::WebStateObserver implementation.
   void WebStateDestroyed() override;
 
-  scoped_ptr<translate::TranslateManager> translate_manager_;
+  std::unique_ptr<translate::TranslateManager> translate_manager_;
   translate::IOSTranslateDriver translate_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);

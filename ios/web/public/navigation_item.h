@@ -5,7 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
 #define IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
@@ -27,7 +28,7 @@ struct SSLStatus;
 class NavigationItem : public base::SupportsUserData {
  public:
   // Creates a new NavigationItem.
-  static scoped_ptr<NavigationItem> Create();
+  static std::unique_ptr<NavigationItem> Create();
 
   // Page-related stuff --------------------------------------------------------
 

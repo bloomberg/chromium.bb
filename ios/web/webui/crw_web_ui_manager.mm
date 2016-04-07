@@ -52,7 +52,7 @@ const char kScriptCommandPrefix[] = "webui";
   // Set of live WebUI fetchers for retrieving data.
   ScopedVector<web::URLFetcherBlockAdapter> _fetchers;
   // Bridge to observe the web state from Objective-C.
-  scoped_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
   // Weak WebStateImpl this CRWWebUIManager is associated with.
   web::WebStateImpl* _webState;
 }
@@ -215,10 +215,10 @@ const char kScriptCommandPrefix[] = "webui";
 
 #pragma mark - Testing-Only Methods
 
-- (scoped_ptr<web::URLFetcherBlockAdapter>)
-        fetcherForURL:(const GURL&)URL
-    completionHandler:(web::URLFetcherBlockAdapterCompletion)handler {
-  return scoped_ptr<web::URLFetcherBlockAdapter>(
+- (std::unique_ptr<web::URLFetcherBlockAdapter>)
+    fetcherForURL:(const GURL&)URL
+completionHandler:(web::URLFetcherBlockAdapterCompletion)handler {
+  return std::unique_ptr<web::URLFetcherBlockAdapter>(
       new web::URLFetcherBlockAdapter(
           URL, _webState->GetBrowserState()->GetRequestContext(), handler));
 }

@@ -4,8 +4,9 @@
 
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
@@ -77,7 +78,7 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
   // BrowserState, required for WKWebView creation.
   web::TestBrowserState browser_state_;
   MockGaiaConsumer consumer_;
-  scoped_ptr<GaiaAuthFetcherIOS> gaia_auth_fetcher_;
+  std::unique_ptr<GaiaAuthFetcherIOS> gaia_auth_fetcher_;
 };
 
 // Tests that the cancel mechanism works properly by cancelling an OAuthLogin
@@ -134,7 +135,7 @@ TEST_F(GaiaAuthFetcherIOSTest, StartGetCheckConnectionInfo) {
   EXPECT_CALL(consumer_, OnGetCheckConnectionInfoSuccess(data)).Times(1);
 
   // Set up the fake URL Fetcher.
-  scoped_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory(
+  std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory(
       new net::FakeURLFetcherFactory(new net::URLFetcherImplFactory()));
   fake_url_fetcher_factory->SetFakeResponse(
       GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(

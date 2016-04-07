@@ -306,7 +306,7 @@ void NavigationManagerImpl::Reload(bool check_for_reposts) {
   delegate_->GetWebState()->OpenURL(params);
 }
 
-scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
 NavigationManagerImpl::GetTransientURLRewriters() {
   return std::move(transient_url_rewriters_);
 }

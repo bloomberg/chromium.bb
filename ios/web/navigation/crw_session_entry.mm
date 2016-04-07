@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/nscoder_util.h"
@@ -48,7 +49,7 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 
   // The NavigationItemImpl corresponding to this CRWSessionEntry.
   // TODO(stuartmorgan): Move ownership to NavigationManagerImpl.
-  scoped_ptr<web::NavigationItemImpl> _navigationItem;
+  std::unique_ptr<web::NavigationItemImpl> _navigationItem;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_CRWSessionEntry;
 }
@@ -70,7 +71,8 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 
 @synthesize originalUrl = _originalUrl;
 
-- (instancetype)initWithNavigationItem:(scoped_ptr<web::NavigationItem>)item {
+- (instancetype)initWithNavigationItem:
+    (std::unique_ptr<web::NavigationItem>)item {
   self = [super init];
   if (self) {
     _propertyReleaser_CRWSessionEntry.Init(self, [CRWSessionEntry class]);

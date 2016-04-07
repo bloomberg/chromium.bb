@@ -5,12 +5,12 @@
 #ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_H_
 #define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_H_
 
+#include <memory>
 #include <vector>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "ios/web/public/test/response_providers/response_provider.h"
@@ -36,7 +36,7 @@ class RefCountedResponseProviderWrapper :
  private:
   friend class base::RefCounted<RefCountedResponseProviderWrapper>;
   // The ResponseProvider that backs this object.
-  scoped_ptr<ResponseProvider> response_provider_;
+  std::unique_ptr<ResponseProvider> response_provider_;
   virtual ~RefCountedResponseProviderWrapper();
 };
 

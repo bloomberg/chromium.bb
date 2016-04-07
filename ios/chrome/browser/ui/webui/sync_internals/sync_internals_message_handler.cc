@@ -120,7 +120,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
     const base::ListValue* args) {
   DCHECK(args->empty());
   base::DictionaryValue event_details;
-  scoped_ptr<base::ListValue> type_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> type_list(new base::ListValue());
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
@@ -150,7 +150,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
-    scoped_ptr<base::ListValue> nodes) {
+    std::unique_ptr<base::ListValue> nodes) {
   base::FundamentalValue id(request_id);
   web_ui()->CallJavascriptFunction(
       sync_driver::sync_ui_util::kGetAllNodesCallback, id, *nodes);
@@ -162,7 +162,7 @@ void SyncInternalsMessageHandler::OnStateChanged() {
 
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
-  scoped_ptr<base::DictionaryValue> value(
+  std::unique_ptr<base::DictionaryValue> value(
       syncer::ProtocolEvent::ToValue(event));
   web_ui()->CallJavascriptFunction(
       sync_driver::sync_ui_util::kDispatchEvent,
@@ -193,8 +193,8 @@ void SyncInternalsMessageHandler::OnStatusCountersUpdated(
 void SyncInternalsMessageHandler::EmitCounterUpdate(
     syncer::ModelType type,
     const std::string& counter_type,
-    scoped_ptr<base::DictionaryValue> value) {
-  scoped_ptr<base::DictionaryValue> details(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> value) {
+  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue());
   details->SetString(sync_driver::sync_ui_util::kModelType,
                      ModelTypeToString(type));
   details->SetString(sync_driver::sync_ui_util::kCounterType, counter_type);
@@ -219,7 +219,7 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
   SigninManager* signin_manager =
       ios::SigninManagerFactory::GetForBrowserState(browser_state);
   sync_driver::SyncService* sync_service = GetSyncService();
-  scoped_ptr<base::DictionaryValue> value =
+  std::unique_ptr<base::DictionaryValue> value =
       sync_driver::sync_ui_util::ConstructAboutInformation(
           sync_service, signin_manager, GetChannel());
   web_ui()->CallJavascriptFunction(

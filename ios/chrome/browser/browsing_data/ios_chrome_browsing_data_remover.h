@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
 #define IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/gtest_prod_util.h"
@@ -109,7 +110,7 @@ class IOSChromeBrowsingDataRemover {
   };
 
   using Callback = base::Callback<void(const NotificationDetails&)>;
-  using CallbackSubscription = scoped_ptr<
+  using CallbackSubscription = std::unique_ptr<
       base::CallbackList<void(const NotificationDetails&)>::Subscription>;
 
   // Creates a IOSChromeBrowsingDataRemover bound to a specific period of time
@@ -263,7 +264,7 @@ class IOSChromeBrowsingDataRemover {
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;
 
-  scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeBrowsingDataRemover);
 };

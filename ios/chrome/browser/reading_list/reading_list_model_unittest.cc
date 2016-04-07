@@ -91,7 +91,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
   int observer_add_read_;
   int observer_did_apply_;
 
-  scoped_ptr<ReadingListModelMemory> model_;
+  std::unique_ptr<ReadingListModelMemory> model_;
 };
 
 TEST_F(ReadingListModelTest, EmptyLoaded) {

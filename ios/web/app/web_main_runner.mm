@@ -112,8 +112,8 @@ class WebMainRunnerImpl : public WebMainRunner {
   // Used if the embedder doesn't set one.
   WebClient empty_web_client_;
 
-  scoped_ptr<base::AtExitManager> exit_manager_;
-  scoped_ptr<WebMainLoop> main_loop_;
+  std::unique_ptr<base::AtExitManager> exit_manager_;
+  std::unique_ptr<WebMainLoop> main_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMainRunnerImpl);
 };

@@ -4,10 +4,11 @@
 
 #import "ios/chrome/browser/crash_report/crash_report_multi_parameter.h"
 
+#include <memory>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
@@ -21,7 +22,7 @@ const int kMaximumBreakpadValueSize = 255;
 
 @implementation CrashReportMultiParameter {
   base::scoped_nsobject<NSString> crashReportKey_;
-  scoped_ptr<base::DictionaryValue> dictionary_;
+  std::unique_ptr<base::DictionaryValue> dictionary_;
 }
 
 - (instancetype)init {

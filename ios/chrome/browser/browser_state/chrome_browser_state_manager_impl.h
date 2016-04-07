@@ -6,10 +6,10 @@
 #define IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_MANAGER_IMPL_H_
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
@@ -29,7 +29,7 @@ class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
 
  private:
   using ChromeBrowserStateImplPathMap =
-      std::map<base::FilePath, scoped_ptr<ChromeBrowserStateImpl>>;
+      std::map<base::FilePath, std::unique_ptr<ChromeBrowserStateImpl>>;
 
   // Get the path of the last used browser state, or if that's undefined, the
   // default browser state.
@@ -46,7 +46,7 @@ class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
 
   // Holds the ChromeBrowserStateImpl instances that this instance has created.
   ChromeBrowserStateImplPathMap browser_states_;
-  scoped_ptr<BrowserStateInfoCache> browser_state_info_cache_;
+  std::unique_ptr<BrowserStateInfoCache> browser_state_info_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserStateManagerImpl);
 };

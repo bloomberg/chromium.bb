@@ -39,11 +39,11 @@ ReadingListModelFactory::ReadingListModelFactory()
 
 ReadingListModelFactory::~ReadingListModelFactory() {}
 
-scoped_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   std::unique_ptr<ReadingListModelStorage> storage(
       new ReadingListModelStorageDefaults());
-  scoped_ptr<ReadingListModelMemory> reading_list_model(
+  std::unique_ptr<ReadingListModelMemory> reading_list_model(
       new ReadingListModelMemory(std::move(storage)));
   return std::move(reading_list_model);
 }

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_ntp_snippets_service_factory.h"
 
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -30,7 +31,7 @@ void ParseJson(
     const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
     const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
-  scoped_ptr<base::Value> value = json_reader.ReadToValue(json);
+  std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(success_callback, base::Passed(&value)));
@@ -66,7 +67,7 @@ IOSChromeNTPSnippetsServiceFactory::IOSChromeNTPSnippetsServiceFactory()
 
 IOSChromeNTPSnippetsServiceFactory::~IOSChromeNTPSnippetsServiceFactory() {}
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
   ios::ChromeBrowserState* chrome_browser_state =
@@ -84,10 +85,10 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
           ->GetSequencedTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  return make_scoped_ptr(new ntp_snippets::NTPSnippetsService(
+  return base::WrapUnique(new ntp_snippets::NTPSnippetsService(
       chrome_browser_state->GetPrefs(), suggestions_service, task_runner,
       GetApplicationContext()->GetApplicationLocale(), scheduler,
-      make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
+      base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, request_context,
           GetChannel() == version_info::Channel::STABLE)),
       base::Bind(&ParseJson)));

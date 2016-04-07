@@ -32,7 +32,7 @@ DistillerViewer::DistillerViewer(ios::ChromeBrowserState* browser_state,
       dom_distiller::DomDistillerServiceFactory::GetForBrowserState(
           browser_state);
 
-  scoped_ptr<ViewerHandle> viewer_handle = distillerService->ViewUrl(
+  std::unique_ptr<ViewerHandle> viewer_handle = distillerService->ViewUrl(
       this, distillerService->CreateDefaultDistillerPage(gfx::Size()), url);
 
   TakeViewerHandle(std::move(viewer_handle));

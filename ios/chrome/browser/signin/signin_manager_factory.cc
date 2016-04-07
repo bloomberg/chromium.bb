@@ -79,11 +79,11 @@ void SigninManagerFactory::NotifyObserversOfSigninManagerCreationForTesting(
                     SigninManagerCreated(manager));
 }
 
-scoped_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<SigninManager> service(new SigninManager(
+  std::unique_ptr<SigninManager> service(new SigninManager(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(

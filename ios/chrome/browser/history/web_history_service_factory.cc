@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
@@ -62,11 +63,11 @@ WebHistoryServiceFactory::WebHistoryServiceFactory()
 WebHistoryServiceFactory::~WebHistoryServiceFactory() {
 }
 
-scoped_ptr<KeyedService> WebHistoryServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> WebHistoryServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new history::WebHistoryService(
+  return base::WrapUnique(new history::WebHistoryService(
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       ios::SigninManagerFactory::GetForBrowserState(browser_state),
       browser_state->GetRequestContext()));

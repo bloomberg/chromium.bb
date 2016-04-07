@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -14,8 +15,8 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -199,7 +200,7 @@ class HttpProtocolHandlerCore
   // Stream delegate to read the HTTPBodyStream.
   base::scoped_nsobject<CRWHTTPStreamDelegate> stream_delegate_;
   // Vector of readers used to accumulate a POST data stream.
-  std::vector<scoped_ptr<UploadElementReader>> post_data_readers_;
+  std::vector<std::unique_ptr<UploadElementReader>> post_data_readers_;
 
   // This cannot be a scoped pointer because it must be deleted on the IO
   // thread.
@@ -243,7 +244,7 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
       if (!post_data_readers_.empty()) {
         // NOTE: This call will result in |post_data_readers_| being cleared,
         // which is the desired behavior.
-        net_request_->set_upload(make_scoped_ptr(
+        net_request_->set_upload(base::WrapUnique(
             new ElementsUploadDataStream(std::move(post_data_readers_), 0)));
         DCHECK(post_data_readers_.empty());
       }
@@ -259,7 +260,7 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
       if (length) {
         std::vector<char> owned_data(buffer_->data(), buffer_->data() + length);
         post_data_readers_.push_back(
-            make_scoped_ptr(new UploadOwnedBytesElementReader(&owned_data)));
+            base::WrapUnique(new UploadOwnedBytesElementReader(&owned_data)));
       }
       break;
     }
@@ -721,7 +722,7 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
   if (body_length > 0) {
     const char* source_bytes = reinterpret_cast<const char*>([body bytes]);
     std::vector<char> owned_data(source_bytes, source_bytes + body_length);
-    scoped_ptr<UploadElementReader> reader(
+    std::unique_ptr<UploadElementReader> reader(
         new UploadOwnedBytesElementReader(&owned_data));
     net_request_->set_upload(
         ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));

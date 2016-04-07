@@ -30,7 +30,7 @@ void PostCallback(const scoped_refptr<base::TaskRunner>& task_runner,
 }
 
 // Clears the disk_cache::Backend on the IO thread and deletes |backend|.
-void DoomHttpCache(scoped_ptr<disk_cache::Backend*> backend,
+void DoomHttpCache(std::unique_ptr<disk_cache::Backend*> backend,
                    const scoped_refptr<base::TaskRunner>& client_task_runner,
                    const net::CompletionCallback& callback,
                    int error) {
@@ -66,7 +66,8 @@ void ClearHttpCacheOnIOThread(
   if (sdch_manager)
     sdch_manager->ClearData();
 
-  scoped_ptr<disk_cache::Backend*> backend(new disk_cache::Backend*(nullptr));
+  std::unique_ptr<disk_cache::Backend*> backend(
+      new disk_cache::Backend*(nullptr));
   disk_cache::Backend** backend_ptr = backend.get();
   net::CompletionCallback doom_callback =
       base::Bind(&DoomHttpCache, base::Passed(std::move(backend)),

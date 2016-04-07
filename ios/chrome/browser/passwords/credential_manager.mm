@@ -194,7 +194,7 @@ void CredentialManager::SignedIn(int request_id,
 
   // Store the signed-in credential so that the user can save it, if desired.
   // Prompting the user and saving are handled by the PasswordFormManager.
-  scoped_ptr<autofill::PasswordForm> form(
+  std::unique_ptr<autofill::PasswordForm> form(
       password_manager::CreatePasswordFormFromCredentialInfo(
           CredentialInfoFromWebCredential(credential), page_url));
   form->skip_zero_click = !IsZeroClickAllowed();

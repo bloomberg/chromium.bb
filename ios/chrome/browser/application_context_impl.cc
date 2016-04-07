@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -220,7 +221,7 @@ ApplicationContextImpl::GetMetricsServicesManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_services_manager_) {
     metrics_services_manager_.reset(
-        new metrics_services_manager::MetricsServicesManager(make_scoped_ptr(
+        new metrics_services_manager::MetricsServicesManager(base::WrapUnique(
             new IOSChromeMetricsServicesManagerClient(GetLocalState()))));
   }
   return metrics_services_manager_.get();
@@ -251,8 +252,8 @@ ApplicationContextImpl::GetNetworkTimeTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!network_time_tracker_) {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
-        make_scoped_ptr(new base::DefaultClock),
-        make_scoped_ptr(new base::DefaultTickClock), GetLocalState()));
+        base::WrapUnique(new base::DefaultClock),
+        base::WrapUnique(new base::DefaultTickClock), GetLocalState()));
   }
   return network_time_tracker_.get();
 }
@@ -347,7 +348,7 @@ void ApplicationContextImpl::CreateGCMDriver() {
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
-      make_scoped_ptr(new gcm::GCMClientFactory), GetLocalState(), store_path,
+      base::WrapUnique(new gcm::GCMClientFactory), GetLocalState(), store_path,
       GetSystemURLRequestContext(), ::GetChannel(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),

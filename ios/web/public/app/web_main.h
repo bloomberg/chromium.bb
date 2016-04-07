@@ -5,7 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_APP_WEB_MAIN_H_
 #define IOS_WEB_PUBLIC_APP_WEB_MAIN_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ios/web/public/app/web_main_delegate.h"
 
 namespace web {
@@ -40,7 +41,7 @@ class WebMain {
   ~WebMain();
 
  private:
-  scoped_ptr<WebMainRunner> web_main_runner_;
+  std::unique_ptr<WebMainRunner> web_main_runner_;
 };
 
 }  // namespace web

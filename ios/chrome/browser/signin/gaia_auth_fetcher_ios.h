@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_H_
 #define IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
 class GaiaAuthFetcherIOSBridge;
@@ -57,7 +58,7 @@ class GaiaAuthFetcherIOS : public GaiaAuthFetcher {
                      const net::URLRequestStatus& status,
                      int response_code);
 
-  scoped_ptr<GaiaAuthFetcherIOSBridge> bridge_;
+  std::unique_ptr<GaiaAuthFetcherIOSBridge> bridge_;
   web::BrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcherIOS);

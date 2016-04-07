@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_H_
 #define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/public/test/response_providers/file_based_response_provider_impl.h"
 #include "ios/web/public/test/response_providers/response_provider.h"
 
@@ -29,7 +30,7 @@ class FileBasedResponseProvider : public ResponseProvider {
       const Request& request) override;
 
  private:
-  scoped_ptr<FileBasedResponseProviderImpl> response_provider_impl_;
+  std::unique_ptr<FileBasedResponseProviderImpl> response_provider_impl_;
 };
 }
 

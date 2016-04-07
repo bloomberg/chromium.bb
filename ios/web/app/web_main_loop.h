@@ -5,9 +5,10 @@
 #ifndef IOS_WEB_APP_WEB_MAIN_LOOP_H_
 #define IOS_WEB_APP_WEB_MAIN_LOOP_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class CommandLine;
@@ -68,28 +69,28 @@ class WebMainLoop {
   bool created_threads_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
-  scoped_ptr<base::MessageLoop> main_message_loop_;
-  scoped_ptr<base::SystemMonitor> system_monitor_;
-  scoped_ptr<base::PowerMonitor> power_monitor_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<base::MessageLoop> main_message_loop_;
+  std::unique_ptr<base::SystemMonitor> system_monitor_;
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   // Destroy parts_ before main_message_loop_ (required) and before other
   // classes constructed in web (but after main_thread_).
-  scoped_ptr<WebMainParts> parts_;
+  std::unique_ptr<WebMainParts> parts_;
 
   // Members initialized in |InitializeMainThread()| ---------------------------
   // This must get destroyed before other threads that are created in parts_.
-  scoped_ptr<WebThreadImpl> main_thread_;
+  std::unique_ptr<WebThreadImpl> main_thread_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
-  scoped_ptr<WebThreadImpl> db_thread_;
-  scoped_ptr<WebThreadImpl> file_user_blocking_thread_;
-  scoped_ptr<WebThreadImpl> file_thread_;
-  scoped_ptr<WebThreadImpl> cache_thread_;
-  scoped_ptr<WebThreadImpl> io_thread_;
+  std::unique_ptr<WebThreadImpl> db_thread_;
+  std::unique_ptr<WebThreadImpl> file_user_blocking_thread_;
+  std::unique_ptr<WebThreadImpl> file_thread_;
+  std::unique_ptr<WebThreadImpl> cache_thread_;
+  std::unique_ptr<WebThreadImpl> io_thread_;
 
   // Members initialized in |WebThreadsStarted()| --------------------------
-  scoped_ptr<CookieNotificationBridge> cookie_notification_bridge_;
+  std::unique_ptr<CookieNotificationBridge> cookie_notification_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMainLoop);
 };

@@ -5,8 +5,9 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_TEST_CHROME_PROVIDER_INITIALIZER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_TEST_CHROME_PROVIDER_INITIALIZER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ios {
 
@@ -21,7 +22,7 @@ class TestChromeProviderInitializer {
   virtual ~TestChromeProviderInitializer();
 
  private:
-  scoped_ptr<TestChromeBrowserProvider> chrome_browser_provider_;
+  std::unique_ptr<TestChromeBrowserProvider> chrome_browser_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeProviderInitializer);
 };

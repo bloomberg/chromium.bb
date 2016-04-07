@@ -4,7 +4,6 @@
 
 #include "ios/web/active_state_manager_impl.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/test/test_browser_state.h"

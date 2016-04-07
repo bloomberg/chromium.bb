@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CLIENT_IOS_H_
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CLIENT_IOS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/ios/browser/autofill_client_ios_bridge.h"
@@ -46,7 +46,7 @@ class AutofillClientIOS : public AutofillClient {
       infobars::InfoBarManager* infobar_manager,
       id<AutofillClientIOSBridge> bridge,
       password_manager::PasswordGenerationManager* password_generation_manager,
-      scoped_ptr<IdentityProvider> identity_provider);
+      std::unique_ptr<IdentityProvider> identity_provider);
   ~AutofillClientIOS() override;
 
   // AutofillClient implementation.
@@ -64,7 +64,7 @@ class AutofillClientIOS : public AutofillClient {
                                     const base::Closure& callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
-      scoped_ptr<base::DictionaryValue> legal_message,
+      std::unique_ptr<base::DictionaryValue> legal_message,
       const base::Closure& callback) override;
   void LoadRiskData(
       const base::Callback<void(const std::string&)>& callback) override;
@@ -98,7 +98,7 @@ class AutofillClientIOS : public AutofillClient {
   infobars::InfoBarManager* infobar_manager_;
   id<AutofillClientIOSBridge> bridge_;  // Weak
   password_manager::PasswordGenerationManager* password_generation_manager_;
-  scoped_ptr<IdentityProvider> identity_provider_;
+  std::unique_ptr<IdentityProvider> identity_provider_;
   CardUnmaskPromptControllerImpl unmask_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillClientIOS);

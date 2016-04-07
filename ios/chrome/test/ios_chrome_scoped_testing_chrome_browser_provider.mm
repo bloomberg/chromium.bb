@@ -9,7 +9,7 @@
 
 IOSChromeScopedTestingChromeBrowserProvider::
     IOSChromeScopedTestingChromeBrowserProvider(
-        scoped_ptr<ios::ChromeBrowserProvider> chrome_browser_provider)
+        std::unique_ptr<ios::ChromeBrowserProvider> chrome_browser_provider)
     : chrome_browser_provider_(std::move(chrome_browser_provider)),
       original_chrome_browser_provider_(ios::GetChromeBrowserProvider()) {
   ios::SetChromeBrowserProvider(chrome_browser_provider_.get());

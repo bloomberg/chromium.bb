@@ -5,11 +5,12 @@
 #ifndef IOS_WEB_SHELL_SHELL_URL_REQUEST_CONTEXT_GETTER_H_
 #define IOS_WEB_SHELL_SHELL_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -47,12 +48,13 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::NetworkDelegate> network_delegate_;
-  scoped_ptr<net::URLRequestContextStorage> storage_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<net::TransportSecurityPersister> transport_security_persister_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::NetworkDelegate> network_delegate_;
+  std::unique_ptr<net::URLRequestContextStorage> storage_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<net::TransportSecurityPersister>
+      transport_security_persister_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellURLRequestContextGetter);
 };

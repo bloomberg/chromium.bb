@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #include "ios/web/navigation/crw_session_entry.h"

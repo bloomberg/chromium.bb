@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -40,11 +41,11 @@ SyncSetupServiceFactory::SyncSetupServiceFactory()
 SyncSetupServiceFactory::~SyncSetupServiceFactory() {
 }
 
-scoped_ptr<KeyedService> SyncSetupServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> SyncSetupServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new SyncSetupService(
+  return base::WrapUnique(new SyncSetupService(
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state),
       browser_state->GetPrefs()));
 }

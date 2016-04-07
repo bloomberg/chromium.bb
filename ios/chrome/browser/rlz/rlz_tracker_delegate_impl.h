@@ -5,10 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_RLZ_RLZ_TRACKER_DELEGATE_IMPL_H_
 #define IOS_CHROME_BROWSER_RLZ_RLZ_TRACKER_DELEGATE_IMPL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 
 struct OmniboxLog;
@@ -48,7 +49,7 @@ class RLZTrackerDelegateImpl : public rlz::RLZTrackerDelegate {
   void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
   base::Closure on_omnibox_search_callback_;
-  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       on_omnibox_url_opened_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(RLZTrackerDelegateImpl);

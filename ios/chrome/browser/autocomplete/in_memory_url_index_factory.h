@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_FACTORY_H_
 #define IOS_CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace base {
@@ -40,7 +41,7 @@ class InMemoryURLIndexFactory : public BrowserStateKeyedServiceFactory {
   ~InMemoryURLIndexFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;

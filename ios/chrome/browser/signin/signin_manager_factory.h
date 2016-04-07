@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FACTORY_H_
 #define IOS_CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -62,7 +63,7 @@ class SigninManagerFactory : public BrowserStateKeyedServiceFactory {
   mutable base::ObserverList<SigninManagerFactoryObserver, true> observer_list_;
 
   // BrowserStateKeyedServiceFactory:
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   void BrowserStateShutdown(web::BrowserState* context) override;
 };

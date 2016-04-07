@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_PREFS_IOS_CHROME_PREF_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_PREFS_IOS_CHROME_PREF_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 class PrefRegistry;
 class PrefService;
@@ -34,19 +35,19 @@ class PrefRegistrySyncable;
 // to the user preference file. This is the usual way to create a new
 // PrefService. |pref_registry| keeps the list of registered prefs and their
 // default values.
-scoped_ptr<PrefService> CreateLocalState(
+std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<PrefRegistry>& pref_registry);
 
-scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
+std::unique_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry);
 
 // Creates an incognito copy of |pref_service| that shares most prefs but uses
 // a fresh non-persistent overlay for the user pref store.
-scoped_ptr<syncable_prefs::PrefServiceSyncable>
+std::unique_ptr<syncable_prefs::PrefServiceSyncable>
 CreateIncognitoBrowserStatePrefs(
     syncable_prefs::PrefServiceSyncable* main_pref_store);
 

@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_INTERSTITIALS_WEB_INTERSTITIAL_H_
 #define IOS_WEB_PUBLIC_INTERSTITIALS_WEB_INTERSTITIAL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class GURL;
 
@@ -36,12 +36,12 @@ class WebInterstitial {
       WebState* web_state,
       bool new_navigation,
       const GURL& url,
-      scoped_ptr<HtmlWebInterstitialDelegate> delegate);
+      std::unique_ptr<HtmlWebInterstitialDelegate> delegate);
   static WebInterstitial* CreateNativeInterstitial(
       WebState* web_state,
       bool new_navigation,
       const GURL& url,
-      scoped_ptr<NativeWebInterstitialDelegate> delegate);
+      std::unique_ptr<NativeWebInterstitialDelegate> delegate);
 
   // Retrieves the WebInterstitial if any associated with the specified
   // |web_state|.

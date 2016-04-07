@@ -327,7 +327,7 @@ void CookieStoreIOS::SetCookiePolicy(CookiePolicy setting) {
 }
 
 // static
-scoped_ptr<CookieStoreIOS> CookieStoreIOS::CreateCookieStore(
+std::unique_ptr<CookieStoreIOS> CookieStoreIOS::CreateCookieStore(
     NSHTTPCookieStorage* cookie_storage) {
   DCHECK(cookie_storage);
   // TODO(huey): Update this when CrNet supports multiple cookie jars.
@@ -335,7 +335,7 @@ scoped_ptr<CookieStoreIOS> CookieStoreIOS::CreateCookieStore(
 
   // Create a cookie store with no persistent store backing. Then, populate
   // it from the system's cookie jar.
-  scoped_ptr<CookieStoreIOS> cookie_store(
+  std::unique_ptr<CookieStoreIOS> cookie_store(
       new CookieStoreIOS(nullptr, cookie_storage));
   cookie_store->synchronization_state_ = SYNCHRONIZED;
   cookie_store->FlushStore(base::Closure());
@@ -482,11 +482,10 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
 
       // First create a CanonicalCookie, to normalize the arguments,
       // particularly domain and path, and perform validation.
-      scoped_ptr<net::CanonicalCookie> canonical_cookie =
+      std::unique_ptr<net::CanonicalCookie> canonical_cookie =
           net::CanonicalCookie::Create(
               url, name, value, domain, path, creation_time, expiration_time,
-              secure, http_only, same_site, enforce_strict_secure,
-              priority);
+              secure, http_only, same_site, enforce_strict_secure, priority);
 
       if (canonical_cookie) {
         NSHTTPCookie* cookie =
@@ -981,7 +980,7 @@ void CookieStoreIOS::OnSystemCookiesChanged() {
       FROM_HERE, flush_closure_.callback(), flush_delay_);
 }
 
-scoped_ptr<net::CookieStore::CookieChangedSubscription>
+std::unique_ptr<net::CookieStore::CookieChangedSubscription>
 CookieStoreIOS::AddCallbackForCookie(const GURL& gurl,
                                      const std::string& name,
                                      const CookieChangedCallback& callback) {

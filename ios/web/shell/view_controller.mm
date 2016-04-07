@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
@@ -33,7 +33,7 @@ using web::NavigationManager;
 @interface ViewController ()<CRWWebStateObserver> {
   web::BrowserState* _browserState;
   base::scoped_nsobject<CRWWebController> _webController;
-  scoped_ptr<web::WebStateObserverBridge> _webStateObserver;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
@@ -110,7 +110,8 @@ using web::NavigationManager;
   // Set up the network stack before creating the WebState.
   [self setUpNetworkStack];
 
-  scoped_ptr<web::WebStateImpl> webState(new web::WebStateImpl(_browserState));
+  std::unique_ptr<web::WebStateImpl> webState(
+      new web::WebStateImpl(_browserState));
   webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
   _webController.reset(web::CreateWebController(std::move(webState)));
   [_webController setDelegate:self];

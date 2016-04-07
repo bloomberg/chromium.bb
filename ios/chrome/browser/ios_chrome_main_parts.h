@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_IOS_CHROME_MAIN_PARTS_H_
 #define IOS_CHROME_BROWSER_IOS_CHROME_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "ios/web/public/app/web_main_parts.h"
 
@@ -46,17 +47,17 @@ class IOSChromeMainParts : public web::WebMainParts {
 
   const base::CommandLine& parsed_command_line_;
 
-  scoped_ptr<ApplicationContextImpl> application_context_;
+  std::unique_ptr<ApplicationContextImpl> application_context_;
   scoped_refptr<metrics::TrackingSynchronizer> tracking_synchronizer_;
 
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetUpMetricsAndFieldTrials is called.
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   PrefService* local_state_;
 
   // Initialized in SetupMetricsAndFieldTrials.
-  scoped_ptr<ios::FieldTrialSynchronizer> field_trial_synchronizer_;
+  std::unique_ptr<ios::FieldTrialSynchronizer> field_trial_synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeMainParts);
 };

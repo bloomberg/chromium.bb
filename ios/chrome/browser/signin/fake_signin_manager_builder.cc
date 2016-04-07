@@ -16,11 +16,11 @@
 
 namespace ios {
 
-scoped_ptr<KeyedService> BuildFakeSigninManager(
+std::unique_ptr<KeyedService> BuildFakeSigninManager(
     web::BrowserState* browser_state) {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
-  scoped_ptr<SigninManager> manager(new FakeSigninManager(
+  std::unique_ptr<SigninManager> manager(new FakeSigninManager(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(

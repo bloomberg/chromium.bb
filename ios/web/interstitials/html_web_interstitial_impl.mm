@@ -77,7 +77,7 @@ WebInterstitial* WebInterstitial::CreateHtmlInterstitial(
     WebState* web_state,
     bool new_navigation,
     const GURL& url,
-    scoped_ptr<HtmlWebInterstitialDelegate> delegate) {
+    std::unique_ptr<HtmlWebInterstitialDelegate> delegate) {
   WebStateImpl* web_state_impl = static_cast<WebStateImpl*>(web_state);
   return new HtmlWebInterstitialImpl(web_state_impl, new_navigation, url,
                                      std::move(delegate));
@@ -87,7 +87,7 @@ HtmlWebInterstitialImpl::HtmlWebInterstitialImpl(
     WebStateImpl* web_state,
     bool new_navigation,
     const GURL& url,
-    scoped_ptr<HtmlWebInterstitialDelegate> delegate)
+    std::unique_ptr<HtmlWebInterstitialDelegate> delegate)
     : WebInterstitialImpl(web_state, new_navigation, url),
       delegate_(std::move(delegate)) {
   DCHECK(delegate_);

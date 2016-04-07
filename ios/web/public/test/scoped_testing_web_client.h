@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_PUBLIC_TEST_SCOPED_TESTING_WEB_CLIENT_H_
 #define IOS_WEB_PUBLIC_TEST_SCOPED_TESTING_WEB_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace web {
 
@@ -15,13 +16,13 @@ class WebClient;
 // Helper class to register a WebClient during unit testing.
 class ScopedTestingWebClient {
  public:
-  explicit ScopedTestingWebClient(scoped_ptr<WebClient> web_client);
+  explicit ScopedTestingWebClient(std::unique_ptr<WebClient> web_client);
   ~ScopedTestingWebClient();
 
   WebClient* Get();
 
  private:
-  scoped_ptr<WebClient> web_client_;
+  std::unique_ptr<WebClient> web_client_;
   WebClient* original_web_client_;
 };
 

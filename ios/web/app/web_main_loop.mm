@@ -82,7 +82,7 @@ void WebMainLoop::MainMessageLoopStart() {
   system_monitor_.reset(new base::SystemMonitor);
 #endif
   // TODO(rohitrao): Do we need PowerMonitor on iOS, or can we get rid of it?
-  scoped_ptr<base::PowerMonitorSource> power_monitor_source(
+  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
   power_monitor_.reset(new base::PowerMonitor(std::move(power_monitor_source)));
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
@@ -130,7 +130,7 @@ int WebMainLoop::CreateThreads() {
   // Must be size_t so we can increment it.
   for (size_t thread_id = WebThread::UI + 1; thread_id < WebThread::ID_COUNT;
        ++thread_id) {
-    scoped_ptr<WebThreadImpl>* thread_to_start = nullptr;
+    std::unique_ptr<WebThreadImpl>* thread_to_start = nullptr;
     base::Thread::Options options;
 
     switch (thread_id) {

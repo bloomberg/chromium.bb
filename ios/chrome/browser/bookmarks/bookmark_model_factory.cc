@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -57,13 +58,13 @@ void BookmarkModelFactory::RegisterBrowserStatePrefs(
   bookmarks::RegisterProfilePrefs(registry);
 }
 
-scoped_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<bookmarks::BookmarkModel> bookmark_model(
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(
-          make_scoped_ptr(new BookmarkClientImpl(browser_state))));
+          base::WrapUnique(new BookmarkClientImpl(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(),
       browser_state->GetStatePath(),

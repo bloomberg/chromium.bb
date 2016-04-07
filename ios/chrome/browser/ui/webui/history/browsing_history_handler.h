@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -68,7 +68,7 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
     void SetUrlAndTitle(base::DictionaryValue* result) const;
 
     // Converts the entry to a DictionaryValue to be owned by the caller.
-    scoped_ptr<base::DictionaryValue> ToValue(
+    std::unique_ptr<base::DictionaryValue> ToValue(
         bookmarks::BookmarkModel* bookmark_model,
         SupervisedUserService* supervised_user_service,
         const ProfileSyncService* sync_service) const;
@@ -186,7 +186,7 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
 
   // The currently-executing request for synced history results.
   // Deleting the request will cancel it.
-  scoped_ptr<history::WebHistoryService::Request> web_history_request_;
+  std::unique_ptr<history::WebHistoryService::Request> web_history_request_;
 
   // True if there is a pending delete requests to the history service.
   bool has_pending_delete_request_;

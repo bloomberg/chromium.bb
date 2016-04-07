@@ -97,7 +97,7 @@ AutocompleteProviderClientImpl::GetShortcutsBackendIfExists() {
       browser_state_);
 }
 
-scoped_ptr<KeywordExtensionsDelegate>
+std::unique_ptr<KeywordExtensionsDelegate>
 AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
     KeywordProvider* keyword_provider) {
   return nullptr;

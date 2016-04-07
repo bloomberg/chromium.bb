@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #import "base/ios/weak_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/web_client.h"
@@ -22,7 +23,7 @@ namespace {
 class WKWebViewConfigurationProviderTest : public PlatformTest {
  public:
   WKWebViewConfigurationProviderTest()
-      : web_client_(make_scoped_ptr(new web::WebClient)) {}
+      : web_client_(base::WrapUnique(new web::WebClient)) {}
 
  protected:
   // Returns WKWebViewConfigurationProvider associated with |browser_state_|.

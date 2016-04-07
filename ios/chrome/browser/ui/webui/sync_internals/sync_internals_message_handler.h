@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_SYNC_INTERNALS_SYNC_INTERNALS_MESSAGE_HANDLER_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_SYNC_INTERNALS_SYNC_INTERNALS_MESSAGE_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -52,7 +53,8 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
                      const syncer::JsEventDetails& details) override;
 
   // Callback used in GetAllNodes.
-  void OnReceivedAllNodes(int request_id, scoped_ptr<base::ListValue> nodes);
+  void OnReceivedAllNodes(int request_id,
+                          std::unique_ptr<base::ListValue> nodes);
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
@@ -75,7 +77,7 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // counter type.
   void EmitCounterUpdate(syncer::ModelType type,
                          const std::string& counter_type,
-                         scoped_ptr<base::DictionaryValue> value);
+                         std::unique_ptr<base::DictionaryValue> value);
 
  private:
   // Fetches updated aboutInfo and sends it to the page in the form of an

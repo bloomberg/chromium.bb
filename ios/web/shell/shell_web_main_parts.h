@@ -5,9 +5,10 @@
 #ifndef IOS_WEB_SHELL_SHELL_WEB_MAIN_PARTS_H_
 #define IOS_WEB_SHELL_SHELL_WEB_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "ios/web/public/app/web_main_parts.h"
 
-#include "base/memory/scoped_ptr.h"
 
 namespace web {
 class ShellBrowserState;
@@ -24,7 +25,7 @@ class ShellWebMainParts : public WebMainParts {
   void PreMainMessageLoopRun() override;
 
  private:
-  scoped_ptr<ShellBrowserState> browser_state_;
+  std::unique_ptr<ShellBrowserState> browser_state_;
 };
 
 }  // namespace web

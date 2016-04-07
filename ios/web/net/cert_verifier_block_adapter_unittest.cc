@@ -87,7 +87,8 @@ TEST_F(CertVerifierBlockAdapterTest, DefaultParamsAndSync) {
 // net::CertVerifier and ok_cert.pem cert.
 TEST_F(CertVerifierBlockAdapterTest, DefaultParamsAndAsync) {
   // Call |Verify|.
-  scoped_ptr<net::CertVerifier> verifier(net::CertVerifier::CreateDefault());
+  std::unique_ptr<net::CertVerifier> verifier(
+      net::CertVerifier::CreateDefault());
   CertVerifierBlockAdapter test_adapter(verifier.get(), &net_log_);
   CertVerifierBlockAdapter::Params params(cert_.get(), kHostName);
   net::CertVerifyResult actual_result;
@@ -151,8 +152,9 @@ TEST_F(CertVerifierBlockAdapterTest, DefaultParamsAndSyncError) {
 // Tests that the completion handler passed to |Verify()| is called, even if the
 // adapter is destroyed.
 TEST_F(CertVerifierBlockAdapterTest, CompletionHandlerIsAlwaysCalled) {
-  scoped_ptr<net::CertVerifier> verifier(net::CertVerifier::CreateDefault());
-  scoped_ptr<CertVerifierBlockAdapter> test_adapter(
+  std::unique_ptr<net::CertVerifier> verifier(
+      net::CertVerifier::CreateDefault());
+  std::unique_ptr<CertVerifierBlockAdapter> test_adapter(
       new CertVerifierBlockAdapter(verifier.get(), &net_log_));
 
   // Call |Verify| and destroy the adapter.

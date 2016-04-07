@@ -5,6 +5,8 @@
 #ifndef IOS_CRNET_SDCH_OWNER_PREF_STORAGE_H_
 #define IOS_CRNET_SDCH_OWNER_PREF_STORAGE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/prefs/pref_store.h"
 #include "net/sdch/sdch_owner.h"
@@ -24,7 +26,7 @@ class SdchOwnerPrefStorage
   ReadError GetReadError() const override;
   bool GetValue(const base::DictionaryValue** result) const override;
   bool GetMutableValue(base::DictionaryValue** result) override;
-  void SetValue(scoped_ptr<base::DictionaryValue> value) override;
+  void SetValue(std::unique_ptr<base::DictionaryValue> value) override;
   void ReportValueChanged() override;
   bool IsInitializationComplete() override;
   void StartObservingInit(net::SdchOwner* observer) override;

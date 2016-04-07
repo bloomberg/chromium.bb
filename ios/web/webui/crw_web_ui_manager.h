@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web/webui/url_fetcher_block_adapter.h"
 
@@ -31,9 +33,9 @@ class WebStateImpl;
 
 // Returns URLFetcherBlockAdapter for fetching resource for URL. Can be
 // overwritten by test classes to mock resource retrieval.
-- (scoped_ptr<web::URLFetcherBlockAdapter>)
-        fetcherForURL:(const GURL&)URL
-    completionHandler:(web::URLFetcherBlockAdapterCompletion)handler;
+- (std::unique_ptr<web::URLFetcherBlockAdapter>)
+    fetcherForURL:(const GURL&)URL
+completionHandler:(web::URLFetcherBlockAdapterCompletion)handler;
 
 @end
 

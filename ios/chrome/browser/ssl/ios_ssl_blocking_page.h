@@ -71,8 +71,8 @@ class IOSSSLBlockingPage : public IOSSecurityInterstitialPage {
   // expired.
   const bool expired_but_previously_allowed_;
 
-  scoped_ptr<IOSChromeControllerClient> controller_;
-  scoped_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
+  std::unique_ptr<IOSChromeControllerClient> controller_;
+  std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSSSLBlockingPage);
 };

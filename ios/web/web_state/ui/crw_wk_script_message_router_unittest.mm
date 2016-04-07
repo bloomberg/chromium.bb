@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
@@ -28,7 +29,7 @@ id GetScriptMessageMock(WKWebView* web_view, NSString* name) {
 class CRWWKScriptMessageRouterTest : public web::WebTest {
  public:
   CRWWKScriptMessageRouterTest()
-      : web_client_(make_scoped_ptr(new web::WebClient)) {}
+      : web_client_(base::WrapUnique(new web::WebClient)) {}
 
  protected:
   void SetUp() override {

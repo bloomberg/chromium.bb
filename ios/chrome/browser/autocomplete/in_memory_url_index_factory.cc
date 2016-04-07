@@ -22,7 +22,8 @@ namespace ios {
 
 namespace {
 
-scoped_ptr<KeyedService> BuildInMemoryURLIndex(web::BrowserState* context) {
+std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
+    web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
@@ -30,7 +31,7 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(web::BrowserState* context) {
   schemes_to_whilelist.insert(kChromeUIScheme);
 
   // Do not force creation of the HistoryService if saving history is disabled.
-  scoped_ptr<InMemoryURLIndex> in_memory_url_index(new InMemoryURLIndex(
+  std::unique_ptr<InMemoryURLIndex> in_memory_url_index(new InMemoryURLIndex(
       ios::BookmarkModelFactory::GetForBrowserState(browser_state),
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS),
@@ -72,7 +73,7 @@ InMemoryURLIndexFactory::GetDefaultFactory() {
   return &BuildInMemoryURLIndex;
 }
 
-scoped_ptr<KeyedService> InMemoryURLIndexFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> InMemoryURLIndexFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   return BuildInMemoryURLIndex(context);
 }

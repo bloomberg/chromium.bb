@@ -124,7 +124,7 @@ typedef scoped_refptr<BlockHolder<web::PolicyDecisionHandler>>
 @interface CRWCertVerificationController () {
   // Cert verification object which wraps |net::CertVerifier|. Must be created,
   // used and destroyed on IO Thread.
-  scoped_ptr<web::CertVerifierBlockAdapter> _certVerifier;
+  std::unique_ptr<web::CertVerifierBlockAdapter> _certVerifier;
 
   // URLRequestContextGetter for obtaining net layer objects.
   net::URLRequestContextGetter* _contextGetter;

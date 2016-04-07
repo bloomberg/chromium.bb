@@ -6,9 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -51,12 +53,12 @@ class WebHTTPProtocolHandlerDelegateTest : public testing::Test {
       : context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         delegate_(new WebHTTPProtocolHandlerDelegate(context_getter_.get())),
-        web_client_(make_scoped_ptr(new AppSpecificURLTestWebClient)) {}
+        web_client_(base::WrapUnique(new AppSpecificURLTestWebClient)) {}
 
  protected:
   base::MessageLoop message_loop_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  scoped_ptr<WebHTTPProtocolHandlerDelegate> delegate_;
+  std::unique_ptr<WebHTTPProtocolHandlerDelegate> delegate_;
   web::ScopedTestingWebClient web_client_;
 };
 

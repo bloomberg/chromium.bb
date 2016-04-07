@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -34,13 +35,13 @@ IOSChromeLargeIconServiceFactory::IOSChromeLargeIconServiceFactory()
 
 IOSChromeLargeIconServiceFactory::~IOSChromeLargeIconServiceFactory() {}
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 IOSChromeLargeIconServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
-  return make_scoped_ptr(new favicon::LargeIconService(
+  return base::WrapUnique(new favicon::LargeIconService(
       ios::FaviconServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       web::WebThread::GetBlockingPool()));

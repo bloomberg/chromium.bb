@@ -151,7 +151,7 @@ class InstallationNotifierTest : public PlatformTest {
   base::scoped_nsobject<MockNotificationReceiver> notificationReceiver1_;
   base::scoped_nsobject<MockNotificationReceiver> notificationReceiver2_;
   base::scoped_nsobject<MockUIApplication> sharedApplication_;
-  scoped_ptr<base::HistogramTester> histogramTester_;
+  std::unique_ptr<base::HistogramTester> histogramTester_;
 };
 
 TEST_F(InstallationNotifierTest, RegisterWithAppAlreadyInstalled) {

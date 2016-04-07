@@ -4,13 +4,13 @@
 
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 
+#include <memory>
 #include <string>
 
 #import "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
@@ -173,7 +173,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
   // Parse JSONs.
   std::string json([result UTF8String]);
-  scoped_ptr<base::Value> root(base::JSONReader::Read(json, false));
+  std::unique_ptr<base::Value> root(base::JSONReader::Read(json, false));
   if (!root.get())
     return YES;
   if (!root->IsType(base::Value::TYPE_LIST))
@@ -221,7 +221,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (FindInPageEntry)findInPageEntryForJson:(NSString*)jsonStr {
   std::string json([jsonStr UTF8String]);
-  scoped_ptr<base::Value> root(base::JSONReader::Read(json, false));
+  std::unique_ptr<base::Value> root(base::JSONReader::Read(json, false));
   if (!root.get())
     return kFindInPageEntryZero;
 

@@ -79,7 +79,8 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
     // Collect references to context getters in reverse order, i.e. last item
     // will be main request getter. This list is passed to |io_data_|
     // for invalidation on IO thread.
-    scoped_ptr<IOSChromeURLRequestContextGetterVector> GetAllContextGetters();
+    std::unique_ptr<IOSChromeURLRequestContextGetterVector>
+    GetAllContextGetters();
 
     // The getters will be invalidated on the IO thread before
     // ChromeBrowserStateIOData instance is deleted.
@@ -113,7 +114,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
   ~ChromeBrowserStateImplIOData() override;
 
   void InitializeInternal(
-      scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
+      std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       ProtocolHandlerMap* protocol_handlers) const override;
   AppRequestContext* InitializeAppRequestContext(
@@ -128,26 +129,26 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
   void ClearNetworkingHistorySinceOnIOThread(base::Time time,
                                              const base::Closure& completion);
 
-  mutable scoped_ptr<IOSChromeNetworkDelegate> network_delegate_;
+  mutable std::unique_ptr<IOSChromeNetworkDelegate> network_delegate_;
 
   // Lazy initialization params.
-  mutable scoped_ptr<LazyParams> lazy_params_;
+  mutable std::unique_ptr<LazyParams> lazy_params_;
 
   mutable scoped_refptr<JsonPrefStore> network_json_store_;
 
-  mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
-  mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+  mutable std::unique_ptr<net::HttpNetworkSession> http_network_session_;
+  mutable std::unique_ptr<net::HttpTransactionFactory> main_http_factory_;
 
   // Same as |ChromeBrowserState::http_server_properties_|, owned there to
   // maintain destruction ordering.
   mutable net::HttpServerPropertiesManager* http_server_properties_manager_;
 
-  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
+  mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
 
-  mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
 
-  mutable scoped_ptr<net::SdchManager> sdch_manager_;
-  mutable scoped_ptr<net::SdchOwner> sdch_policy_;
+  mutable std::unique_ptr<net::SdchManager> sdch_manager_;
+  mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

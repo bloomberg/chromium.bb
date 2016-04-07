@@ -35,7 +35,7 @@ struct VerificationContext
   // verification request is not cancelled. CertVerifierBlockAdapter::Verify
   // guarantees its completion handler to be called, which will not happen if
   // verification request is cancelled.
-  scoped_ptr<net::CertVerifier::Request> request;
+  std::unique_ptr<net::CertVerifier::Request> request;
   // The result of certificate verification.
   net::CertVerifyResult result;
   // Certificate being verified.
@@ -84,7 +84,7 @@ void CertVerifierBlockAdapter::Verify(
   net::CompletionCallback callback = base::BindBlock(^(int error) {
     completion_handler(context->result, error);
   });
-  scoped_ptr<net::CertVerifier::Request> request;
+  std::unique_ptr<net::CertVerifier::Request> request;
   int error = cert_verifier_->Verify(params.cert.get(), params.hostname,
                                      params.ocsp_response, params.flags,
                                      params.crl_set.get(), &(context->result),

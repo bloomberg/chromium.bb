@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_APPLICATION_CONTEXT_IMPL_H_
 #define IOS_CHROME_BROWSER_APPLICATION_CONTEXT_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
@@ -77,16 +77,16 @@ class ApplicationContextImpl : public ApplicationContext {
   void CreateGCMDriver();
 
   base::ThreadChecker thread_checker_;
-  scoped_ptr<PrefService> local_state_;
-  scoped_ptr<net_log::ChromeNetLog> net_log_;
-  scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
-  scoped_ptr<IOSChromeIOThread> ios_chrome_io_thread_;
-  scoped_ptr<metrics_services_manager::MetricsServicesManager>
+  std::unique_ptr<PrefService> local_state_;
+  std::unique_ptr<net_log::ChromeNetLog> net_log_;
+  std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
+  std::unique_ptr<IOSChromeIOThread> ios_chrome_io_thread_;
+  std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
-  scoped_ptr<gcm::GCMDriver> gcm_driver_;
-  scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
+  std::unique_ptr<gcm::GCMDriver> gcm_driver_;
+  std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
-  scoped_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
+  std::unique_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.

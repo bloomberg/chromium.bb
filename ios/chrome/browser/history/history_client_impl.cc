@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "ios/chrome/browser/history/history_backend_client_impl.h"
@@ -62,9 +63,9 @@ bool HistoryClientImpl::CanAddURL(const GURL& url) {
 void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status) {
 }
 
-scoped_ptr<history::HistoryBackendClient>
+std::unique_ptr<history::HistoryBackendClient>
 HistoryClientImpl::CreateBackendClient() {
-  return make_scoped_ptr(new HistoryBackendClientImpl(bookmark_model_));
+  return base::WrapUnique(new HistoryBackendClientImpl(bookmark_model_));
 }
 
 void HistoryClientImpl::BookmarkModelChanged() {

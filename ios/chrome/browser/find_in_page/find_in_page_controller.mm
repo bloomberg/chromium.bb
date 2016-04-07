@@ -5,13 +5,14 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 
 #import <UIKit/UIKit.h>
+
 #import <cmath>
+#include <memory>
 
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"
@@ -81,7 +82,7 @@ const NSTimeInterval kRecurringPumpDelay = .01;
   BOOL _findStringStarted;
 
   // Bridge to observe the web state from Objective-C.
-  scoped_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 }
 
 @synthesize delegate = _delegate;

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #import <WebKit/WebKit.h>
 
+#include <memory>
+#include <string>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/ios/wait_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/http_server.h"
@@ -133,7 +134,7 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
 
  private:
   // The ResponseProvider used to load a simple web page.
-  scoped_ptr<web::ResponseProvider> provider_;
+  std::unique_ptr<web::ResponseProvider> provider_;
   // The OTR browser state used in tests.
   web::TestBrowserState otr_browser_state_;
 };

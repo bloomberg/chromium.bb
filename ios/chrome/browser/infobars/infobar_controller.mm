@@ -4,8 +4,9 @@
 
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
 
 @interface InfoBarController () {

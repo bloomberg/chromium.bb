@@ -7,8 +7,9 @@
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>
 
+#include <memory>
+
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
@@ -28,7 +29,7 @@ NSString* const kTestHost = @"www.example.com";
 // Returns an autoreleased certificate chain for testing. Chain will contain a
 // single self-signed cert with |subject| as a subject.
 NSArray* MakeTestCertChain(const std::string& subject) {
-  scoped_ptr<crypto::RSAPrivateKey> private_key;
+  std::unique_ptr<crypto::RSAPrivateKey> private_key;
   std::string der_cert;
   net::x509_util::CreateKeyAndSelfSignedCert(
       "CN=" + subject, 1, base::Time::Now(),

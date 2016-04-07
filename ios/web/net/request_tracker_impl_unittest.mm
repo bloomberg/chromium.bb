@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -236,7 +237,7 @@ class RequestTrackerTest : public PlatformTest {
   net::TestJobInterceptor* AddInterceptorToRequest(size_t i) {
     // |interceptor| will be deleted from |job_factory_|'s destructor.
     net::TestJobInterceptor* protocol_handler = new net::TestJobInterceptor();
-    job_factory_.SetProtocolHandler("http", make_scoped_ptr(protocol_handler));
+    job_factory_.SetProtocolHandler("http", base::WrapUnique(protocol_handler));
     contexts_[i]->set_job_factory(&job_factory_);
     return protocol_handler;
   }
@@ -440,7 +441,7 @@ TEST_F(RequestTrackerTest, CaptureHeaders) {
   // TODO(mmenke):  This is really bizarre. Do something more reasonable.
   const_cast<net::HttpResponseInfo&>(request->response_info()).headers =
       new net::HttpResponseHeaders(headers);
-  scoped_ptr<net::URLRequestTestJob> job(new net::URLRequestTestJob(
+  std::unique_ptr<net::URLRequestTestJob> job(new net::URLRequestTestJob(
       request, request->context()->network_delegate(), headers, "", false));
   AddInterceptorToRequest(0)->set_main_intercept_job(std::move(job));
   request->Start();

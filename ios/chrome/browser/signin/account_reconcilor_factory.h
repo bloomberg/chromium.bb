@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_FACTORY_H_
 #define IOS_CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace base {
@@ -40,7 +41,7 @@ class AccountReconcilorFactory : public BrowserStateKeyedServiceFactory {
   ~AccountReconcilorFactory() override;
 
   // BrowserStateKeyedServiceFactory:
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorFactory);

@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/public/web_client.h"
 
 namespace web {

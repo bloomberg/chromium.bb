@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
 #define IOS_CHROME_BROWSER_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/suggestions/image_fetcher.h"
 
 class GURL;
@@ -44,7 +45,7 @@ class ImageFetcherImpl : public suggestions::ImageFetcher {
       base::Callback<void(const GURL&, const SkBitmap*)> callback) override;
 
  private:
-  scoped_ptr<image_fetcher::ImageFetcher> imageFetcher_;
+  std::unique_ptr<image_fetcher::ImageFetcher> imageFetcher_;
 
   ImageFetcherDelegate* delegate_;
 

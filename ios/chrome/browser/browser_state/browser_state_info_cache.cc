@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -48,7 +48,7 @@ void BrowserStateInfoCache::AddBrowserState(
   DictionaryPrefUpdate update(prefs_, prefs::kBrowserStateInfoCache);
   base::DictionaryValue* cache = update.Get();
 
-  scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   info->SetString(kGAIAIdKey, gaia_id);
   info->SetString(kUserNameKey, user_name);
   cache->SetWithoutPathExpansion(key, info.release());
@@ -147,7 +147,7 @@ void BrowserStateInfoCache::SetAuthInfoOfBrowserStateAtIndex(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> info(
+  std::unique_ptr<base::DictionaryValue> info(
       GetInfoForBrowserStateAtIndex(index)->DeepCopy());
 
   info->SetString(kGAIAIdKey, gaia_id);
@@ -162,7 +162,7 @@ void BrowserStateInfoCache::SetBrowserStateIsAuthErrorAtIndex(size_t index,
   if (value == BrowserStateIsAuthErrorAtIndex(index))
     return;
 
-  scoped_ptr<base::DictionaryValue> info(
+  std::unique_ptr<base::DictionaryValue> info(
       GetInfoForBrowserStateAtIndex(index)->DeepCopy());
   info->SetBoolean(kIsAuthErrorKey, value);
   // This takes ownership of |info|.

@@ -53,7 +53,7 @@ UIImage* FaviconLoader::ImageForURL(const GURL& url,
   if (favicon_service_) {
     int size = gfx::kFaviconSize * [UIScreen mainScreen].scale;
 
-    scoped_ptr<RequestData> request_data(new RequestData(key, block));
+    std::unique_ptr<RequestData> request_data(new RequestData(key, block));
     favicon_base::FaviconResultsCallback callback =
         base::Bind(&FaviconLoader::OnFaviconAvailable, base::Unretained(this),
                    base::Passed(&request_data));
@@ -72,7 +72,7 @@ void FaviconLoader::PurgeCache() {
 }
 
 void FaviconLoader::OnFaviconAvailable(
-    scoped_ptr<RequestData> request_data,
+    std::unique_ptr<RequestData> request_data,
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
   DCHECK(request_data);

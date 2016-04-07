@@ -41,9 +41,10 @@ namespace {
 
 // Load the packed resource data pack for |locale| from |packed_data_pack_dir|.
 // If loading fails, null is returned.
-scoped_ptr<ui::DataPack> LoadResourceDataPack(NSString* packed_data_pack_dir,
-                                              NSString* locale_name) {
-  scoped_ptr<ui::DataPack> resource_data_pack;
+std::unique_ptr<ui::DataPack> LoadResourceDataPack(
+    NSString* packed_data_pack_dir,
+    NSString* locale_name) {
+  std::unique_ptr<ui::DataPack> resource_data_pack;
   NSString* resource_path =
       [NSString stringWithFormat:@"%@/%@.lproj/locale.pak",
                                  packed_data_pack_dir, locale_name];
@@ -336,7 +337,7 @@ int main(int argc, char* const argv[]) {
   }
 
   for (NSString* locale in locales) {
-    scoped_ptr<ui::DataPack> data_pack =
+    std::unique_ptr<ui::DataPack> data_pack =
         LoadResourceDataPack(data_pack_dir, locale);
     if (!data_pack) {
       fprintf(stderr, "ERROR: Failed to load branded pak for language: %s\n",

@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_IOS_CHROME_PROFILE_SYNC_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_SYNC_IOS_CHROME_PROFILE_SYNC_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -40,7 +42,7 @@ class IOSChromeProfileSyncServiceFactory
   ~IOSChromeProfileSyncServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 };
 

@@ -42,7 +42,7 @@ void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
     DCHECK(current_remover_);
     auto pending_removals_iter = pending_removals_.find(browser_state);
     if (pending_removals_iter == pending_removals_.end()) {
-      scoped_ptr<BrowsingDataRemovalInfo> removal_info(
+      std::unique_ptr<BrowsingDataRemovalInfo> removal_info(
           new BrowsingDataRemovalInfo(remove_mask, callback));
       pending_removals_[browser_state] = std::move(removal_info);
     } else {
@@ -50,7 +50,7 @@ void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
       pending_removals_iter->second->callbacks.push_back(callback);
     }
   } else {
-    scoped_ptr<BrowsingDataRemovalInfo> removal_info(
+    std::unique_ptr<BrowsingDataRemovalInfo> removal_info(
         new BrowsingDataRemovalInfo(remove_mask, callback));
     DoRemove(browser_state, std::move(removal_info));
   }
@@ -74,7 +74,7 @@ void BrowsingDataRemoverHelper::OnIOSChromeBrowsingDataRemoverDone() {
 
   ios::ChromeBrowserState* next_browser_state =
       pending_removals_.begin()->first;
-  scoped_ptr<BrowsingDataRemovalInfo> removal_info =
+  std::unique_ptr<BrowsingDataRemovalInfo> removal_info =
       std::move(pending_removals_[next_browser_state]);
   pending_removals_.erase(next_browser_state);
   DoRemove(next_browser_state, std::move(removal_info));
@@ -82,7 +82,7 @@ void BrowsingDataRemoverHelper::OnIOSChromeBrowsingDataRemoverDone() {
 
 void BrowsingDataRemoverHelper::DoRemove(
     ios::ChromeBrowserState* browser_state,
-    scoped_ptr<BrowsingDataRemovalInfo> removal_info) {
+    std::unique_ptr<BrowsingDataRemovalInfo> removal_info) {
   DCHECK(!current_remover_ && !IOSChromeBrowsingDataRemover::is_removing());
 
   current_removal_info_ = std::move(removal_info);

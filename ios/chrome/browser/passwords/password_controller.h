@@ -6,6 +6,8 @@
 
 #import <Foundation/NSObject.h>
 
+#include <memory>
+
 #import "ios/chrome/browser/autofill/form_suggestion_provider.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_driver.h"
@@ -54,7 +56,7 @@ class PasswordManagerDriver;
 - (instancetype)
    initWithWebState:(web::WebState*)webState
 passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
-             client:(scoped_ptr<password_manager::PasswordManagerClient>)
+             client:(std::unique_ptr<password_manager::PasswordManagerClient>)
                         passwordManagerClient NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace {
 
@@ -56,7 +57,7 @@ class NSObjectMRUCache
 }  // namespace
 
 @implementation LRUCache {
-  scoped_ptr<NSObjectMRUCache> _cache;
+  std::unique_ptr<NSObjectMRUCache> _cache;
 }
 
 @synthesize maxCacheSize = _maxCacheSize;

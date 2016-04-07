@@ -5,7 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_MEMORY_H_
 #define IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_MEMORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/keyed_service/core/keyed_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 #include "ios/chrome/browser/reading_list/reading_list_model.h"

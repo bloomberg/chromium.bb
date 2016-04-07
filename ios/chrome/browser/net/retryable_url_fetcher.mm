@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/net/retryable_url_fetcher.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -30,9 +31,9 @@ class URLRequestDelegate : public net::URLFetcherDelegate {
 
 @implementation RetryableURLFetcher {
   scoped_refptr<net::URLRequestContextGetter> requestContextGetter_;
-  scoped_ptr<URLRequestDelegate> fetcherDelegate_;
-  scoped_ptr<net::URLFetcher> fetcher_;
-  scoped_ptr<net::BackoffEntry> backoffEntry_;
+  std::unique_ptr<URLRequestDelegate> fetcherDelegate_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::BackoffEntry> backoffEntry_;
   int retryCount_;
   id<RetryableURLFetcherDelegate> delegate_;  // Weak.
 }

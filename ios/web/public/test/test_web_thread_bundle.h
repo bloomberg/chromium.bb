@@ -30,8 +30,9 @@
 // IO_MAINLOOP will use a MessageLoopForIO for the main MessageLoop.
 // Most of the time, this avoids needing to use a REAL_IO_THREAD.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class MessageLoop;
@@ -64,13 +65,13 @@ class TestWebThreadBundle {
  private:
   void Init(int options);
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<TestWebThread> ui_thread_;
-  scoped_ptr<TestWebThread> db_thread_;
-  scoped_ptr<TestWebThread> file_thread_;
-  scoped_ptr<TestWebThread> file_user_blocking_thread_;
-  scoped_ptr<TestWebThread> cache_thread_;
-  scoped_ptr<TestWebThread> io_thread_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<TestWebThread> ui_thread_;
+  std::unique_ptr<TestWebThread> db_thread_;
+  std::unique_ptr<TestWebThread> file_thread_;
+  std::unique_ptr<TestWebThread> file_user_blocking_thread_;
+  std::unique_ptr<TestWebThread> cache_thread_;
+  std::unique_ptr<TestWebThread> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebThreadBundle);
 };

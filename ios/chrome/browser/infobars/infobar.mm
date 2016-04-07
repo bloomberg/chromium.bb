@@ -16,7 +16,7 @@
 using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 
-InfoBarIOS::InfoBarIOS(scoped_ptr<InfoBarDelegate> delegate)
+InfoBarIOS::InfoBarIOS(std::unique_ptr<InfoBarDelegate> delegate)
     : InfoBar(std::move(delegate)) {}
 
 InfoBarIOS::~InfoBarIOS() {

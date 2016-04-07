@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_FAVICON_IOS_CHROME_FAVICON_LOADER_FACTORY_H_
 #define IOS_CHROME_BROWSER_FAVICON_IOS_CHROME_FAVICON_LOADER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class FaviconLoader;
@@ -37,7 +38,7 @@ class IOSChromeFaviconLoaderFactory : public BrowserStateKeyedServiceFactory {
   ~IOSChromeFaviconLoaderFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;

@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SESSIONS_IOS_CHROME_TAB_RESTORE_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_SESSIONS_IOS_CHROME_TAB_RESTORE_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -43,7 +45,7 @@ class IOSChromeTabRestoreServiceFactory
   ~IOSChromeTabRestoreServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory:
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
 

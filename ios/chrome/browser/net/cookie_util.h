@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_NET_COOKIE_UTIL_H_
 #define IOS_CHROME_BROWSER_NET_COOKIE_UTIL_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "net/cookies/canonical_cookie.h"
@@ -74,7 +76,8 @@ struct CookieStoreConfig {
 
 // Creates a cookie store wich is internally either a CookieMonster or a
 // CookieStoreIOS.
-scoped_ptr<net::CookieStore> CreateCookieStore(const CookieStoreConfig& config);
+std::unique_ptr<net::CookieStore> CreateCookieStore(
+    const CookieStoreConfig& config);
 
 // Returns true if the cookies should be cleared.
 // Current implementation returns true if the device has rebooted since the

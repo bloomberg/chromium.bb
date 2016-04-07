@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_UTILS_H_
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_UTILS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class ConfirmInfoBarDelegate;
 
@@ -15,7 +15,7 @@ class InfoBar;
 
 // Returns a confirm infobar that owns |delegate|.
 // Visible for testing.
-scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
-    scoped_ptr<ConfirmInfoBarDelegate> delegate);
+std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate);
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_UTILS_H_

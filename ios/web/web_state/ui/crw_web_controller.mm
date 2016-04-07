@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/ios/block_types.h"
@@ -22,7 +23,6 @@
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
@@ -45,8 +45,8 @@
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/favicon_url.h"
-#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/referrer_util.h"
 #include "ios/web/public/ssl_status.h"
@@ -71,10 +71,10 @@
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
-#import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/js/crw_js_early_script_manager.h"
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
+#import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_provider.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
@@ -247,11 +247,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // because retreiving DOM element relies on async API so element info can not
   // be built on demand. May contain the following keys: "href", "src", "title",
   // "referrerPolicy". All values are strings. Used for showing context menus.
-  scoped_ptr<base::DictionaryValue> _DOMElementForLastTouch;
+  std::unique_ptr<base::DictionaryValue> _DOMElementForLastTouch;
   // Whether a click is in progress.
   BOOL _clickInProgress;
   // Data on the recorded last user interaction.
-  scoped_ptr<web::UserInteractionEvent> _lastUserInteraction;
+  std::unique_ptr<web::UserInteractionEvent> _lastUserInteraction;
   // YES if there has been user interaction with views owned by this controller.
   BOOL _userInteractedWithWebController;
   // The time of the last page transfer start, measured in seconds since Jan 1
@@ -275,10 +275,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // window.history.didPushState or window.history.didReplaceState.
   BOOL _changingHistoryState;
 
-  scoped_ptr<web::NewWindowInfo> _externalRequest;
+  std::unique_ptr<web::NewWindowInfo> _externalRequest;
 
   // The WebStateImpl instance associated with this CRWWebController.
-  scoped_ptr<WebStateImpl> _webStateImpl;
+  std::unique_ptr<WebStateImpl> _webStateImpl;
 
   // A set of URLs opened in external applications; stored so that errors
   // from the web view can be identified as resulting from these events.
@@ -350,7 +350,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // way to run the evaluation or the evaluation returns a nil value) or an
 // NSError if there is an error. The |handler| can be nil.
 - (void)evaluateJavaScript:(NSString*)script
-         JSONResultHandler:(void (^)(scoped_ptr<base::Value>, NSError*))handler;
+         JSONResultHandler:
+             (void (^)(std::unique_ptr<base::Value>, NSError*))handler;
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 // Generates the JavaScript string used to update the UIWebView's URL so that it
@@ -397,12 +398,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // for element format description.
 - (void)fetchDOMElementAtPoint:(CGPoint)point
              completionHandler:
-                 (void (^)(scoped_ptr<base::DictionaryValue>))handler;
+                 (void (^)(std::unique_ptr<base::DictionaryValue>))handler;
 // Extracts context menu information from the given DOM element.
 // result keys are defined in crw_context_menu_provider.h.
 - (NSDictionary*)contextMenuInfoForElement:(base::DictionaryValue*)element;
 // Sets the value of |_DOMElementForLastTouch|.
-- (void)setDOMElementForLastTouch:(scoped_ptr<base::DictionaryValue>)element;
+- (void)setDOMElementForLastTouch:
+    (std::unique_ptr<base::DictionaryValue>)element;
 // Called when the window has determined there was a long-press and context menu
 // must be shown.
 - (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer;
@@ -576,7 +578,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return [super allocWithZone:zone];
 }
 
-- (instancetype)initWithWebState:(scoped_ptr<WebStateImpl>)webState {
+- (instancetype)initWithWebState:(std::unique_ptr<WebStateImpl>)webState {
   self = [super init];
   if (self) {
     _webStateImpl = std::move(webState);
@@ -880,16 +882,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                     completionHandler:(void (^)(BOOL))completionHandler {
   CGPoint webViewPoint = [gestureRecognizer locationInView:self.webView];
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self fetchDOMElementAtPoint:webViewPoint
-             completionHandler:^(scoped_ptr<base::DictionaryValue> element) {
-               std::string link;
-               BOOL hasLink =
-                   element && element->GetString("href", &link) && link.size();
-               completionHandler(hasLink);
-             }];
+  [self
+      fetchDOMElementAtPoint:webViewPoint
+           completionHandler:^(std::unique_ptr<base::DictionaryValue> element) {
+             std::string link;
+             BOOL hasLink =
+                 element && element->GetString("href", &link) && link.size();
+             completionHandler(hasLink);
+           }];
 }
 
-- (void)setDOMElementForLastTouch:(scoped_ptr<base::DictionaryValue>)element {
+- (void)setDOMElementForLastTouch:
+    (std::unique_ptr<base::DictionaryValue>)element {
   _DOMElementForLastTouch = std::move(element);
 }
 
@@ -1854,12 +1858,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)evaluateJavaScript:(NSString*)script
          JSONResultHandler:
-             (void (^)(scoped_ptr<base::Value>, NSError*))handler {
+             (void (^)(std::unique_ptr<base::Value>, NSError*))handler {
   [self evaluateJavaScript:script
        stringResultHandler:^(NSString* stringResult, NSError* error) {
          DCHECK(stringResult || error);
          if (handler) {
-           scoped_ptr<base::Value> result(
+           std::unique_ptr<base::Value> result(
                base::JSONReader::Read(base::SysNSStringToUTF8(stringResult)));
            handler(std::move(result), error);
          }
@@ -2133,9 +2137,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   CHECK(scriptMessage.frameInfo.mainFrame);
   int errorCode = 0;
   std::string errorMessage;
-  scoped_ptr<base::Value> inputJSONData(base::JSONReader::ReadAndReturnError(
-      base::SysNSStringToUTF8(scriptMessage.body), false, &errorCode,
-      &errorMessage));
+  std::unique_ptr<base::Value> inputJSONData(
+      base::JSONReader::ReadAndReturnError(
+          base::SysNSStringToUTF8(scriptMessage.body), false, &errorCode,
+          &errorMessage));
   if (errorCode) {
     DLOG(WARNING) << "JSON parse error: %s" << errorMessage.c_str();
     return NO;
@@ -3042,10 +3047,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // fetched - system context menu will be shown.
   [self setDOMElementForLastTouch:nullptr];
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self fetchDOMElementAtPoint:[touch locationInView:self.webView]
-             completionHandler:^(scoped_ptr<base::DictionaryValue> element) {
-               [weakSelf setDOMElementForLastTouch:std::move(element)];
-             }];
+  [self
+      fetchDOMElementAtPoint:[touch locationInView:self.webView]
+           completionHandler:^(std::unique_ptr<base::DictionaryValue> element) {
+             [weakSelf setDOMElementForLastTouch:std::move(element)];
+           }];
   return YES;
 }
 
@@ -3604,7 +3610,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)fetchDOMElementAtPoint:(CGPoint)point
              completionHandler:
-                 (void (^)(scoped_ptr<base::DictionaryValue>))handler {
+                 (void (^)(std::unique_ptr<base::DictionaryValue>))handler {
   DCHECK(handler);
   // Convert point into web page's coordinate system (which may be scaled and/or
   // scrolled).
@@ -3618,20 +3624,21 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     NSString* const kGetElementScript =
         [NSString stringWithFormat:@"__gCrWeb.getElementFromPoint(%g, %g);",
                                    localPoint.x, localPoint.y];
-    [weakSelf evaluateJavaScript:kGetElementScript
-               JSONResultHandler:^(scoped_ptr<base::Value> element, NSError*) {
-                 // Release raw element and call handler with DictionaryValue.
-                 scoped_ptr<base::DictionaryValue> elementAsDict;
-                 if (element) {
-                   base::DictionaryValue* elementAsDictPtr = nullptr;
-                   element.release()->GetAsDictionary(&elementAsDictPtr);
-                   // |rawElement| and |elementPtr| now point to the same
-                   // memory. |elementPtr| ownership will be transferred to
-                   // |element| scoped_ptr.
-                   elementAsDict.reset(elementAsDictPtr);
-                 }
-                 handler(std::move(elementAsDict));
-               }];
+    [weakSelf
+        evaluateJavaScript:kGetElementScript
+         JSONResultHandler:^(std::unique_ptr<base::Value> element, NSError*) {
+           // Release raw element and call handler with DictionaryValue.
+           std::unique_ptr<base::DictionaryValue> elementAsDict;
+           if (element) {
+             base::DictionaryValue* elementAsDictPtr = nullptr;
+             element.release()->GetAsDictionary(&elementAsDictPtr);
+             // |rawElement| and |elementPtr| now point to the same
+             // memory. |elementPtr| ownership will be transferred to
+             // |element| scoped_ptr.
+             elementAsDict.reset(elementAsDictPtr);
+           }
+           handler(std::move(elementAsDict));
+         }];
   }];
 }
 

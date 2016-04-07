@@ -5,6 +5,7 @@
 #include "ios/chrome/test/testing_application_context.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/network_time/network_time_tracker.h"
@@ -125,8 +126,8 @@ TestingApplicationContext::GetNetworkTimeTracker() {
   if (!network_time_tracker_) {
     DCHECK(local_state_);
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
-        make_scoped_ptr(new base::DefaultClock),
-        make_scoped_ptr(new base::DefaultTickClock), local_state_));
+        base::WrapUnique(new base::DefaultClock),
+        base::WrapUnique(new base::DefaultTickClock), local_state_));
   }
   return network_time_tracker_.get();
 }

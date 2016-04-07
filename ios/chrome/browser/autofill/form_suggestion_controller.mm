@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 
+#include <memory>
+
 #include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field_trial_ios.h"
@@ -59,7 +60,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
       accessoryViewUpdateBlock_;
 
   // Autofill suggestion state.
-  scoped_ptr<AutofillSuggestionState> _suggestionState;
+  std::unique_ptr<AutofillSuggestionState> _suggestionState;
 
   // Providers for suggestions, sorted according to the order in which
   // they should be asked for suggestions, with highest priority in front.
@@ -85,7 +86,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 @implementation FormSuggestionController {
   // Bridge to observe the web state from Objective-C.
-  scoped_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   // Manager for FormSuggestion JavaScripts.
   base::scoped_nsobject<JsSuggestionManager> _jsSuggestionManager;

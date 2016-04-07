@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_SHELL_SHELL_MAIN_DELEGATE_H_
 #define IOS_WEB_SHELL_SHELL_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ios/web/public/app/web_main_delegate.h"
 
 namespace web {
@@ -20,7 +21,7 @@ class ShellMainDelegate : public WebMainDelegate {
   void BasicStartupComplete() override;
 
  private:
-  scoped_ptr<ShellWebClient> web_client_;
+  std::unique_ptr<ShellWebClient> web_client_;
 };
 
 }  // namespace web

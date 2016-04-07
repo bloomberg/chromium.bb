@@ -5,12 +5,10 @@
 #ifndef IOS_WEB_SHELL_SHELL_BROWSER_STATE_H_
 #define IOS_WEB_SHELL_SHELL_BROWSER_STATE_H_
 
-#include "ios/web/public/browser_state.h"
-
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "ios/web/public/browser_state.h"
 
 namespace web {
 

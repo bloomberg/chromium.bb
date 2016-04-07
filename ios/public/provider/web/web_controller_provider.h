@@ -5,7 +5,8 @@
 #ifndef IOS_PUBLIC_PROVIDER_WEB_WEB_CONTROLLER_PROVIDER_H_
 #define IOS_PUBLIC_PROVIDER_WEB_WEB_CONTROLLER_PROVIDER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ios/web/public/block_types.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
@@ -60,7 +61,7 @@ class WebControllerProviderFactory {
 
   // Vends WebControllerProviders created using |browser_state|, passing
   // ownership to callers.
-  virtual scoped_ptr<WebControllerProvider> CreateWebControllerProvider(
+  virtual std::unique_ptr<WebControllerProvider> CreateWebControllerProvider(
       web::BrowserState* browser_state);
 };
 

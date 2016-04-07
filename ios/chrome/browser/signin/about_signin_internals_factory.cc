@@ -45,11 +45,12 @@ AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
   return base::Singleton<AboutSigninInternalsFactory>::get();
 }
 
-scoped_ptr<KeyedService> AboutSigninInternalsFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+AboutSigninInternalsFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_ptr<AboutSigninInternals> service(new AboutSigninInternals(
+  std::unique_ptr<AboutSigninInternals> service(new AboutSigninInternals(
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
       AccountTrackerServiceFactory::GetForBrowserState(chrome_browser_state),
       SigninManagerFactory::GetForBrowserState(chrome_browser_state),

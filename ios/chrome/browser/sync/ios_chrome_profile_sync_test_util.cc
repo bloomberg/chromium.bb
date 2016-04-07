@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -18,18 +19,18 @@
 #include "ios/web/public/web_thread.h"
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
-    scoped_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<sync_driver::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state) {
   ProfileSyncService::InitParams init_params;
 
-  init_params.signin_wrapper = make_scoped_ptr(new SigninManagerWrapper(
+  init_params.signin_wrapper = base::WrapUnique(new SigninManagerWrapper(
       ios::SigninManagerFactory::GetForBrowserState(browser_state)));
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       sync_client ? std::move(sync_client)
-                  : make_scoped_ptr(new IOSChromeSyncClient(browser_state));
+                  : base::WrapUnique(new IOSChromeSyncClient(browser_state));
   init_params.network_time_update_callback =
       base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
   init_params.base_directory = browser_state->GetStatePath();
@@ -45,9 +46,9 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   return init_params;
 }
 
-scoped_ptr<KeyedService> BuildMockProfileSyncService(
+std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     web::BrowserState* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
           nullptr, ios::ChromeBrowserState::FromBrowserState(context))));
 }

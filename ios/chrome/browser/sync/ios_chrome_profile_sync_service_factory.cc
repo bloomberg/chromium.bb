@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -108,7 +109,7 @@ IOSChromeProfileSyncServiceFactory::IOSChromeProfileSyncServiceFactory()
 
 IOSChromeProfileSyncServiceFactory::~IOSChromeProfileSyncServiceFactory() {}
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
@@ -128,12 +129,12 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   ProfileSyncService::InitParams init_params;
   init_params.signin_wrapper =
-      make_scoped_ptr(new SigninManagerWrapper(signin));
+      base::WrapUnique(new SigninManagerWrapper(signin));
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
-      make_scoped_ptr(new IOSChromeSyncClient(browser_state));
+      base::WrapUnique(new IOSChromeSyncClient(browser_state));
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
@@ -145,7 +146,7 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE);
   init_params.blocking_pool = web::WebThread::GetBlockingPool();
 
-  auto pss = make_scoped_ptr(new ProfileSyncService(std::move(init_params)));
+  auto pss = base::WrapUnique(new ProfileSyncService(std::move(init_params)));
 
   // Will also initialize the sync client.
   pss->Initialize();

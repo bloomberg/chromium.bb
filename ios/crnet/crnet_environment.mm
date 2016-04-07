@@ -20,6 +20,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
@@ -352,13 +353,11 @@ void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
   if (!sdch_pref_store_filename_.empty()) {
     base::FilePath path(sdch_pref_store_filename_);
     pref_store_worker_pool_ = file_user_blocking_thread_->task_runner();
-    net_pref_store_ = new JsonPrefStore(
-        path,
-        pref_store_worker_pool_.get(),
-        scoped_ptr<PrefFilter>());
+    net_pref_store_ = new JsonPrefStore(path, pref_store_worker_pool_.get(),
+                                        std::unique_ptr<PrefFilter>());
     net_pref_store_->ReadPrefsAsync(nullptr);
     sdch_owner_->EnablePersistentStorage(
-        scoped_ptr<net::SdchOwner::PrefStorage>(
+        std::unique_ptr<net::SdchOwner::PrefStorage>(
             new SdchOwnerPrefStorage(net_pref_store_.get())));
   }
   context->set_sdch_manager(sdch_manager_.get());
@@ -425,7 +424,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   base::FilePath cache_path =
       base::mac::NSStringToFilePath([dirs objectAtIndex:0]);
   cache_path = cache_path.Append(FILE_PATH_LITERAL("crnet"));
-  scoped_ptr<net::HttpCache::DefaultBackend> main_backend(
+  std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
       new net::HttpCache::DefaultBackend(net::DISK_CACHE,
                                          net::CACHE_BACKEND_DEFAULT, cache_path,
                                          0,  // Default cache size.
@@ -473,9 +472,9 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   net::URLRequestJobFactoryImpl* job_factory =
       new net::URLRequestJobFactoryImpl;
   job_factory->SetProtocolHandler(
-      "data", make_scoped_ptr(new net::DataProtocolHandler));
+      "data", base::WrapUnique(new net::DataProtocolHandler));
   job_factory->SetProtocolHandler(
-      "file", make_scoped_ptr(
+      "file", base::WrapUnique(
                   new net::FileProtocolHandler(file_thread_->task_runner())));
   main_context_->set_job_factory(job_factory);
 

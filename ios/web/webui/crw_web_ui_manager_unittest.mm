@@ -4,11 +4,13 @@
 
 #import "ios/web/webui/crw_web_ui_manager.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -93,16 +95,16 @@ public:
 // Subclass of CRWWebUIManager for testing.
 @interface CRWTestWebUIManager : CRWWebUIManager
 // Use mock URLFetcherBlockAdapter.
-- (scoped_ptr<web::URLFetcherBlockAdapter>)
-        fetcherForURL:(const GURL&)URL
-    completionHandler:(web::URLFetcherBlockAdapterCompletion)handler;
+- (std::unique_ptr<web::URLFetcherBlockAdapter>)
+    fetcherForURL:(const GURL&)URL
+completionHandler:(web::URLFetcherBlockAdapterCompletion)handler;
 @end
 
 @implementation CRWTestWebUIManager
-- (scoped_ptr<web::URLFetcherBlockAdapter>)
-        fetcherForURL:(const GURL&)URL
-    completionHandler:(web::URLFetcherBlockAdapterCompletion)handler {
-  return scoped_ptr<web::URLFetcherBlockAdapter>(
+- (std::unique_ptr<web::URLFetcherBlockAdapter>)
+    fetcherForURL:(const GURL&)URL
+completionHandler:(web::URLFetcherBlockAdapterCompletion)handler {
+  return std::unique_ptr<web::URLFetcherBlockAdapter>(
       new web::MockURLFetcherBlockAdapter(URL, nil, handler));
 }
 @end
@@ -113,7 +115,7 @@ namespace web {
 class CRWWebUIManagerTest : public PlatformTest {
  public:
   CRWWebUIManagerTest()
-      : web_client_(make_scoped_ptr(new web::AppSpecificTestWebClient)) {}
+      : web_client_(base::WrapUnique(new web::AppSpecificTestWebClient)) {}
 
  protected:
   void SetUp() override {
@@ -125,10 +127,10 @@ class CRWWebUIManagerTest : public PlatformTest {
   }
 
   // TestBrowserState for creation of WebStateImpl.
-  scoped_ptr<TestBrowserState> test_browser_state_;
+  std::unique_ptr<TestBrowserState> test_browser_state_;
   // MockWebStateImpl for detection of LoadHtml and EvaluateJavaScriptAync
   // calls.
-  scoped_ptr<MockWebStateImpl> web_state_impl_;
+  std::unique_ptr<MockWebStateImpl> web_state_impl_;
   // WebUIManager for testing.
   base::scoped_nsobject<CRWTestWebUIManager> web_ui_manager_;
   // The WebClient used in tests.
@@ -153,7 +155,7 @@ TEST_F(CRWWebUIManagerTest, HandleFaviconRequest) {
   // Create mock JavaScript message to request favicon.
   base::ListValue* arguments(new base::ListValue());
   arguments->AppendString(favicon_url_string);
-  scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
   message->SetString("message", "webui.requestFavicon");
   message->Set("arguments", arguments);
 

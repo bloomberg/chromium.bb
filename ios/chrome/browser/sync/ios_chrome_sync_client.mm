@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -110,18 +111,18 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return window_delegates_getter_.get();
   }
 
-  scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
-      override {
+  std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  GetLocalSessionEventRouter() override {
     syncer::SyncableService::StartSyncFlare flare(
         ios::sync_start_util::GetFlareForSyncableService(
             browser_state_->GetStatePath()));
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new IOSChromeLocalSessionEventRouter(browser_state_, this, flare));
   }
 
  private:
   ios::ChromeBrowserState* const browser_state_;
-  const scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>
+  const std::unique_ptr<browser_sync::SyncedWindowDelegatesGetter>
       window_delegates_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
@@ -381,7 +382,7 @@ IOSChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 void IOSChromeSyncClient::SetSyncApiComponentFactoryForTesting(
-    scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
+    std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
   component_factory_ = std::move(component_factory);
 }
 

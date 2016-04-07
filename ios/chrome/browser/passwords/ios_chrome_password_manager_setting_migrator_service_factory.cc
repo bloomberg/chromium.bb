@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
@@ -35,12 +36,12 @@ IOSChromePasswordManagerSettingMigratorServiceFactory::
 IOSChromePasswordManagerSettingMigratorServiceFactory::
     ~IOSChromePasswordManagerSettingMigratorServiceFactory() {}
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 IOSChromePasswordManagerSettingMigratorServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new password_manager::PasswordManagerSettingMigratorService(
           browser_state->GetSyncablePrefs()));
 }
