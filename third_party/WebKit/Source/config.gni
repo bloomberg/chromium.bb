@@ -28,6 +28,9 @@ declare_args() {
   # If true, enables blink logging macros (WTF_LOG and friends) unconditionally.
   # When false, blink logging macros are enabled only if assertions are enabled.
   blink_logging_always_on = false
+
+  # If true, defaults image interpolation to low quality.
+  use_low_quality_image_interpolation = is_android
 }
 
 # Whether Android build uses OpenMAX DL FFT. Currently supported only on
@@ -66,9 +69,11 @@ if (!is_android || use_aura) {
   feature_defines_list += [ "ENABLE_INPUT_MULTIPLE_FIELDS_UI=1" ]
 }
 
-if (is_android) {
+if (use_low_quality_image_interpolation) {
   feature_defines_list += [ "WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION=1" ]
-} else {
+}
+
+if (!is_android) {
   feature_defines_list += [
     "WTF_USE_ICCJPEG=1",
     "WTF_USE_QCMSLIB=1",

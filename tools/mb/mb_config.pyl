@@ -1636,7 +1636,8 @@
     # build.
     'blimp': {
       'gn_args': ('use_aura=true use_ozone=true use_alsa=false '
-                  'use_pulseaudio=false use_cups=false use_glib=false'),
+                  'use_pulseaudio=false use_cups=false use_glib=false '
+                  'use_low_quality_image_interpolation=true'),
       'gyp_defines': ('use_aura=1 use_ozone=1 use_alsa=0 '
                       'use_pulseaudio=0 use_cups=0 use_glib=0'),
     },

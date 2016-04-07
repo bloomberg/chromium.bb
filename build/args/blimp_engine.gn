@@ -10,6 +10,7 @@
 use_aura = true
 use_ozone = true
 metrics_use_blimp = true
+use_low_quality_image_interpolation = true
 
 # Not available within docker container.
 use_alsa = false
