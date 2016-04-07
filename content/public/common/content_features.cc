@@ -77,12 +77,6 @@ const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate2",
 const base::Feature kTokenBinding{"token-binding",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Control whether the priority of a renderer is set when the process is
-// launched. This is in response to a bug seen on Windows. See
-// https://crbug.com/560446
-const base::Feature kUpdateRendererPriorityOnStartup{
-    "UpdateRendererPriorityOnStartup", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // An experimental User Agent Intervention on WebFonts loading.
 const base::Feature kWebFontsIntervention{"WebFontsIntervention",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

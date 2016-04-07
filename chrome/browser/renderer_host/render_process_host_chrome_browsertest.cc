@@ -336,10 +336,23 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   EXPECT_NE(process3.Pid(), process2.Pid());
   EXPECT_TRUE(process1.IsProcessBackgrounded());
   EXPECT_FALSE(process2.IsProcessBackgrounded());
-  EXPECT_TRUE(process3.IsProcessBackgrounded());
+  // TODO(gab): The new background tab should be backgrounded but it currently
+  // intentionally isn't per a workaround to https://crbug.com/560446 in
+  // RenderProcessHostImpl::OnProcessLaunched().
+  EXPECT_FALSE(process3.IsProcessBackgrounded());
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
+  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
+  EXPECT_FALSE(process1.IsProcessBackgrounded());
+  EXPECT_TRUE(process2.IsProcessBackgrounded());
+  // TODO(gab): Same as above.
+  EXPECT_FALSE(process3.IsProcessBackgrounded());
+
+  // TODO(gab): Remove this when https://crbug.com/560446 is fixed, but for now
+  // confirm that the correct state is at least achieved when tab #3 is
+  // explicitly foregrounded and re-backgrounded.
+  EXPECT_EQ(process3.Pid(), ShowSingletonTab(page3).Pid());
   EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded());
   EXPECT_TRUE(process2.IsProcessBackgrounded());

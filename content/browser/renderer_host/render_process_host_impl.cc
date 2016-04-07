@@ -2554,15 +2554,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     is_process_backgrounded_ =
         child_process_launcher_->GetProcess().IsProcessBackgrounded();
 
-#if defined(OS_WIN)
-    // Experiment with not setting the initial priority of a renderer, as this
-    // might be a visible tab but since no widgets are currently present, it
-    // will get backgrounded. See https://crbug.com/560446.
-    if (base::FeatureList::IsEnabled(
-            features::kUpdateRendererPriorityOnStartup)) {
-      UpdateProcessPriority();
-    }
-#else
+    // Disable updating process priority on startup for now as it incorrectly
+    // results in backgrounding foreground navigations until their first commit
+    // is made. A better long term solution would be to be aware of the tab's
+    // visibility at this point. https://crbug.com/560446.
+    // Except on Android for now because of https://crbug.com/601184 :-(.
+#if defined(OS_ANDROID)
     UpdateProcessPriority();
 #endif
   }
