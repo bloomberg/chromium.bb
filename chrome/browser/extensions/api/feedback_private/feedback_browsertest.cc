@@ -81,7 +81,13 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
+// http://crbug.com/601433
+#if defined(OS_CHROMEOS)
+#define MAYBE_ShowFeedback DISABLED_ShowFeedback
+#else
+#define MAYBE_ShowFeedback ShowFeedback
+#endif
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
