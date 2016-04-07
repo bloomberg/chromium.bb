@@ -47,12 +47,10 @@ extern const char kIOSTestingFixedHttpsPort[];
 // TODO(crbug.com/567136): those switches are duplicated between desktop
 // and iOS. Once the corresponding code has been componentized or is no longer
 // used by iOS, remove the duplicate definition.
-extern const char kDisableBackgroundNetworking[];
 extern const char kHistoryEnableGroupByDomain[];
 extern const char kMarkNonSecureAs[];
 extern const char kMarkNonSecureAsNeutral[];
 extern const char kMarkNonSecureAsNonSecure[];
-extern const char kSbDisableAutoUpdate[];
 
 }  // namespace switches
 

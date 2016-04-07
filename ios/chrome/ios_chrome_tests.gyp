@@ -90,13 +90,6 @@
           'includes': [ '../../build/copy_test_data_ios.gypi' ]
         },
       ],
-      'conditions': [
-        ['safe_browsing!=0', {
-          'sources': [
-            'browser/safe_browsing/util_unittest.cc',
-          ],
-        }],
-      ],
       'includes': ['ios_chrome_resources_bundle.gypi'],
     },
     {

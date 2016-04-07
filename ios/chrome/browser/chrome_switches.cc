@@ -117,11 +117,6 @@ const char kIOSIgnoreCertificateErrors[] = "ignore-certificate-errors";
 const char kIOSTestingFixedHttpPort[] = "testing-fixed-http-port";
 const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
 
-// Disable several subsystems which run network requests in the background.
-// This is for use when doing network performance testing to avoid noise in the
-// measurements.
-const char kDisableBackgroundNetworking[] = "disable-background-networking";
-
 // Enables grouping websites by domain and filtering them by period.
 const char kHistoryEnableGroupByDomain[] = "enable-grouped-history";
 
@@ -129,10 +124,5 @@ const char kHistoryEnableGroupByDomain[] = "enable-grouped-history";
 const char kMarkNonSecureAs[] = "mark-non-secure-as";
 const char kMarkNonSecureAsNeutral[] = "neutral";
 const char kMarkNonSecureAsNonSecure[] = "non-secure";
-
-// If present, safebrowsing only performs update when
-// SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
-// This is used for testing only.
-const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 
 }  // namespace switches

@@ -60,5 +60,5 @@ PrefService* IOSChromeControllerClient::GetPrefService() {
 }
 
 const std::string IOSChromeControllerClient::GetExtendedReportingPrefName() {
-  return prefs::kSafeBrowsingExtendedReportingEnabled;
+  return std::string();
 }

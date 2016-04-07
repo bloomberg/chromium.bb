@@ -157,9 +157,3 @@ CRLSetFetcher* TestingApplicationContext::GetCRLSetFetcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
-
-safe_browsing::SafeBrowsingService*
-TestingApplicationContext::GetSafeBrowsingService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}

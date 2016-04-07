@@ -65,7 +65,6 @@ class ApplicationContextImpl : public ApplicationContext {
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   CRLSetFetcher* GetCRLSetFetcher() override;
-  safe_browsing::SafeBrowsingService* GetSafeBrowsingService() override;
 
  private:
   // Sets the locale used by the application.
@@ -87,7 +86,6 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
   scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
-  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
   scoped_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::string application_locale_;
 

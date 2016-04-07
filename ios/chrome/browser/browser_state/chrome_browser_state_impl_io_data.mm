@@ -262,10 +262,6 @@ void ChromeBrowserStateImplIOData::Handle::LazyInitialize() const {
       HttpServerPropertiesManagerFactory::CreateManager(pref_service);
   io_data_->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(
       io_data_->http_server_properties_manager_));
-  io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-                                          pref_service);
-  io_data_->safe_browsing_enabled()->MoveToThread(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
   io_data_->InitializeOnUIThread(browser_state_);
 }
 

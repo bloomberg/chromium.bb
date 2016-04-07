@@ -106,10 +106,6 @@ class ChromeBrowserStateIOData {
     return &google_services_user_account_id_;
   }
 
-  BooleanPrefMember* safe_browsing_enabled() const {
-    return &safe_browsing_enabled_;
-  }
-
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
@@ -273,7 +269,6 @@ class ChromeBrowserStateIOData {
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember enable_do_not_track_;
-  mutable BooleanPrefMember safe_browsing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;
 

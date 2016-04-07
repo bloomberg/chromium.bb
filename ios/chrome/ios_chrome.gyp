@@ -682,28 +682,6 @@
             'ios_chrome_browser_rlz',
           ],
         }],
-        ['safe_browsing!=0', {
-          'sources': [
-            'browser/safe_browsing/hit_report.cc',
-            'browser/safe_browsing/hit_report.h',
-            'browser/safe_browsing/ping_manager.cc',
-            'browser/safe_browsing/ping_manager.h',
-            'browser/safe_browsing/protocol_manager_helper.cc',
-            'browser/safe_browsing/protocol_manager_helper.h',
-            'browser/safe_browsing/safe_browsing_blocking_page.h',
-            'browser/safe_browsing/safe_browsing_blocking_page.mm',
-            'browser/safe_browsing/safe_browsing_service.cc',
-            'browser/safe_browsing/safe_browsing_service.h',
-            'browser/safe_browsing/ui_manager.h',
-            'browser/safe_browsing/ui_manager.mm',
-            'browser/safe_browsing/util.cc',
-            'browser/safe_browsing/util.h',
-          ],
-          'dependencies': [
-            '../../crypto/crypto.gyp:crypto',
-            'ios_chrome_safe_browsing_proto',
-          ],
-        }]
       ],
       # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
       # when minimum iOS version support is increased to iOS 9 and up.
@@ -874,21 +852,6 @@
             '../../components/components.gyp:search_engines',
             '../../rlz/rlz.gyp:rlz_lib',
           ],
-        },
-      ],
-    }],
-    ['safe_browsing!=0', {
-      'targets': [
-        {
-          # GN version: //ios/chrome/browser/safe_browsing:proto
-          'target_name': 'ios_chrome_safe_browsing_proto',
-          'type': 'static_library',
-          'sources': [ 'browser/safe_browsing/metadata.proto' ],
-          'variables': {
-            'proto_in_dir': 'browser/safe_browsing',
-            'proto_out_dir': 'ios/chrome/browser/safe_browsing',
-          },
-          'includes': [ '../../build/protoc.gypi' ],
         },
       ],
     }],

@@ -236,23 +236,6 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_COOKIES) {
     web::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
-    // Clear the safebrowsing cookies only if time period is for "all time".  It
-    // doesn't make sense to apply the time period of deleting in the last X
-    // hours/days to the safebrowsing cookies since they aren't the result of
-    // any user action.
-    if (delete_begin_ == base::Time()) {
-      scoped_refptr<net::URLRequestContextGetter> safe_browsing_context =
-          make_scoped_refptr(ios::GetChromeBrowserProvider()
-                                 ->GetSafeBrowsingURLRequestContext());
-      if (safe_browsing_context) {
-        ++waiting_for_clear_cookies_count_;
-        WebThread::PostTask(
-            WebThread::IO, FROM_HERE,
-            base::Bind(&IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread,
-                       base::Unretained(this), safe_browsing_context, GURL()));
-      }
-    }
-
     ++waiting_for_clear_cookies_count_;
     WebThread::PostTask(
         WebThread::IO, FROM_HERE,

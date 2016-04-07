@@ -427,7 +427,6 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   enable_metrics_.Destroy();
-  safe_browsing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
   if (chrome_http_user_agent_settings_)

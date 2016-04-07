@@ -19,12 +19,6 @@ declare_args() {
   google_test_sync_url = ""
 }
 
-proto_library("metadata_proto") {
-  sources = [
-    "safe_browsing/metadata.proto",
-  ]
-}
-
 source_set("browser") {
   sources = [
     "app_startup_parameters.h",
@@ -323,20 +317,6 @@ source_set("browser") {
     "reading_list/reading_list_model_storage.h",
     "reading_list/reading_list_model_storage_defaults.h",
     "reading_list/reading_list_model_storage_defaults.mm",
-    "safe_browsing/hit_report.cc",
-    "safe_browsing/hit_report.h",
-    "safe_browsing/ping_manager.cc",
-    "safe_browsing/ping_manager.h",
-    "safe_browsing/protocol_manager_helper.cc",
-    "safe_browsing/protocol_manager_helper.h",
-    "safe_browsing/safe_browsing_blocking_page.h",
-    "safe_browsing/safe_browsing_blocking_page.mm",
-    "safe_browsing/safe_browsing_service.cc",
-    "safe_browsing/safe_browsing_service.h",
-    "safe_browsing/ui_manager.h",
-    "safe_browsing/ui_manager.mm",
-    "safe_browsing/util.cc",
-    "safe_browsing/util.h",
     "search/search_util.h",
     "search/search_util.mm",
     "search_engines/search_engines_util.cc",
@@ -553,7 +533,6 @@ source_set("browser") {
   deps = [
     ":about_flags",
     ":injected_js",
-    ":metadata_proto",
     "//base",
     "//breakpad:client",
     "//components/about_handler",
@@ -742,7 +721,6 @@ source_set("test_support") {
     "geolocation/test_location_manager.mm",
     "net/mock_image_fetcher.h",
     "net/mock_image_fetcher.mm",
-    "safe_browsing/util_unittest.cc",
     "signin/fake_oauth2_token_service_builder.h",
     "signin/fake_oauth2_token_service_builder.mm",
     "signin/fake_signin_manager_builder.cc",

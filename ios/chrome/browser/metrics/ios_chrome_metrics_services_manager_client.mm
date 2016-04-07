@@ -36,9 +36,7 @@ IOSChromeMetricsServicesManagerClient::IOSChromeMetricsServicesManagerClient(
 }
 
 IOSChromeMetricsServicesManagerClient::
-    ~IOSChromeMetricsServicesManagerClient() {
-  ios::GetChromeBrowserProvider()->OnMetricsServicesManagerClientDestroyed();
-}
+    ~IOSChromeMetricsServicesManagerClient() = default;
 
 scoped_ptr<rappor::RapporService>
 IOSChromeMetricsServicesManagerClient::CreateRapporService() {

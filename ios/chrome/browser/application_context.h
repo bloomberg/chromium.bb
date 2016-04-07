@@ -131,9 +131,6 @@ class ApplicationContext {
   // Gets the CRLSetFetcher.
   virtual CRLSetFetcher* GetCRLSetFetcher() = 0;
 
-  // Gets the SafeBrowsingService.
-  virtual safe_browsing::SafeBrowsingService* GetSafeBrowsingService() = 0;
-
  protected:
   // Sets the global ApplicationContext instance.
   static void SetApplicationContext(ApplicationContext* context);

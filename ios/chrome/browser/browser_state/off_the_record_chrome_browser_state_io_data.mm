@@ -118,10 +118,6 @@ void OffTheRecordChromeBrowserStateIOData::Handle::LazyInitialize() const {
   // Set initialized_ to true at the beginning in case any of the objects
   // below try to get the ResourceContext pointer.
   initialized_ = true;
-  io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-                                          browser_state_->GetPrefs());
-  io_data_->safe_browsing_enabled()->MoveToThread(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
   io_data_->InitializeOnUIThread(browser_state_);
 
   // Once initialized, listen to memory warnings.

@@ -104,16 +104,9 @@ bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
   return false;
 }
 
-void ChromeBrowserProvider::OnMetricsServicesManagerClientDestroyed() {}
-
 scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>
 ChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
     ios::ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-ChromeBrowserProvider::GetSafeBrowsingURLRequestContext() {
   return nullptr;
 }
 
