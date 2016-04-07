@@ -156,7 +156,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnEmbedImpl(mojom::WindowTree* window_tree,
                    ConnectionSpecificId connection_id,
                    mojom::WindowDataPtr root_data,
-                   Id focused_window_id);
+                   Id focused_window_id,
+                   bool drawn);
 
   // Overridden from WindowTreeConnection:
   void SetDeleteOnNoRoots(bool value) override;
@@ -175,12 +176,14 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnEmbed(ConnectionSpecificId connection_id,
                mojom::WindowDataPtr root,
                mojom::WindowTreePtr tree,
-               Id focused_window_id) override;
+               Id focused_window_id,
+               bool drawn) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
   void OnLostCapture(Id window_id) override;
   void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr data) override;
+                         mojom::WindowDataPtr data,
+                         bool drawn) override;
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override;
@@ -206,7 +209,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                          mojom::OrderDirection direction) override;
   void OnWindowDeleted(Id window_id) override;
   void OnWindowVisibilityChanged(Id window_id, bool visible) override;
-  void OnWindowDrawnStateChanged(Id window_id, bool drawn) override;
+  void OnWindowParentDrawnStateChanged(Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(Id window_id,
                                      const mojo::String& name,
                                      mojo::Array<uint8_t> new_data) override;

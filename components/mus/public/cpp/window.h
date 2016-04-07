@@ -253,7 +253,7 @@ class Window {
       const std::vector<gfx::Rect>& additional_client_areas);
   void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
                                const mojom::ViewportMetrics& new_metrics);
-  void LocalSetDrawn(bool drawn);
+  void LocalSetParentDrawn(bool drawn);
   void LocalSetVisible(bool visible);
   void LocalSetPredefinedCursor(mojom::Cursor cursor_id);
   void LocalSetSharedProperty(const std::string& name,
@@ -316,10 +316,9 @@ class Window {
 
   SharedProperties properties_;
 
-  // Drawn state is derived from the visible state and the parent's visible
-  // state. This field is only used if the window has no parent (eg it's a
-  // root).
-  bool drawn_;
+  // Drawn state of our parent. This is only meaningful for root Windows, in
+  // which the parent Window isn't exposed to the client.
+  bool parent_drawn_;
 
   // Value struct to keep the name and deallocator for this property.
   // Key cannot be used for this purpose because it can be char* or

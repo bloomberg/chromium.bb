@@ -526,15 +526,18 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   const ClientWindowId embed_window_id2 = BuildClientWindowId(wm_tree(), 2);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id2, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id2, true));
   EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id2));
 
   // Ack the change, which should resume the binding.
+  child_binding->client()->tracker()->changes()->clear();
   static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->OnWmCreatedTopLevelWindow(wm_change_id, embed_window_id2.id);
   EXPECT_FALSE(child_binding->is_paused());
   EXPECT_EQ("TopLevelCreated id=17 window_id=" +
                 WindowIdToString(
-                    WindowIdFromTransportId(embed_window_id2_in_child.id)),
+                    WindowIdFromTransportId(embed_window_id2_in_child.id)) +
+                " drawn=true",
             SingleChangeToDescription(
                 *child_binding->client()->tracker()->changes()));
   child_binding->client()->tracker()->changes()->clear();
@@ -543,21 +546,20 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   // client sees the right id.
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id2);
   ASSERT_TRUE(embed_window);
-  EXPECT_FALSE(embed_window->visible());
-  ASSERT_TRUE(wm_tree()->SetWindowVisibility(
-      ClientWindowIdForWindow(wm_tree(), embed_window), true));
   EXPECT_TRUE(embed_window->visible());
+  ASSERT_TRUE(wm_tree()->SetWindowVisibility(
+      ClientWindowIdForWindow(wm_tree(), embed_window), false));
+  EXPECT_FALSE(embed_window->visible());
   EXPECT_EQ("VisibilityChanged window=" +
                 WindowIdToString(
                     WindowIdFromTransportId(embed_window_id2_in_child.id)) +
-                " visible=true",
+                " visible=false",
             SingleChangeToDescription(
                 *child_binding->client()->tracker()->changes()));
 
   // Set the visibility from the child using the client assigned id.
-  ASSERT_TRUE(
-      child_tree->SetWindowVisibility(embed_window_id2_in_child, false));
-  EXPECT_FALSE(embed_window->visible());
+  ASSERT_TRUE(child_tree->SetWindowVisibility(embed_window_id2_in_child, true));
+  EXPECT_TRUE(embed_window->visible());
 }
 
 // Tests that setting capture only works while an input event is being

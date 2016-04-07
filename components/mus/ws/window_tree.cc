@@ -94,9 +94,10 @@ void WindowTree::Init(scoped_ptr<WindowTreeBinding> binding,
 
   std::vector<const ServerWindow*> to_send;
   CHECK_EQ(1u, roots_.size());
-  GetUnknownWindowsFrom(*roots_.begin(), &to_send);
+  const ServerWindow* root = *roots_.begin();
+  GetUnknownWindowsFrom(root, &to_send);
 
-  Display* display = GetDisplay(*roots_.begin());
+  Display* display = GetDisplay(root);
   const ServerWindow* focused_window =
       display ? display->GetFocusedWindow() : nullptr;
   if (focused_window)
@@ -105,8 +106,9 @@ void WindowTree::Init(scoped_ptr<WindowTreeBinding> binding,
   if (focused_window)
     IsWindowKnown(focused_window, &focused_window_id);
 
+  const bool drawn = root->parent() && root->parent()->IsDrawn();
   client()->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
-                    focused_window_id.id);
+                    focused_window_id.id, drawn);
 }
 
 void WindowTree::ConfigureWindowManager() {
@@ -340,7 +342,9 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
   window_id_to_client_id_map_[window->id()] =
       waiting_for_top_level_window_info->client_window_id;
   roots_.insert(window);
-  client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window));
+  const bool drawn = window->parent() && window->parent()->IsDrawn();
+  client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window),
+                              drawn);
 }
 
 void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
@@ -817,7 +821,6 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
   window_data->properties =
       mojo::Map<String, Array<uint8_t>>::From(window->properties());
   window_data->visible = window->visible();
-  window_data->drawn = window->IsDrawn();
   window_data->viewport_metrics =
       window_server_->GetViewportMetricsForWindow(window);
   return window_data;
@@ -850,8 +853,8 @@ void WindowTree::NotifyDrawnStateChanged(const ServerWindow* window,
 
   for (auto* root : roots_) {
     if (window->Contains(root) && (new_drawn_value != root->IsDrawn())) {
-      client()->OnWindowDrawnStateChanged(ClientWindowIdForWindow(root).id,
-                                          new_drawn_value);
+      client()->OnWindowParentDrawnStateChanged(
+          ClientWindowIdForWindow(root).id, new_drawn_value);
     }
   }
 }

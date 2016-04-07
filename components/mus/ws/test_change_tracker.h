@@ -58,7 +58,6 @@ struct TestWindow {
   Id parent_id;
   Id window_id;
   bool visible;
-  bool drawn;
   std::map<std::string, std::vector<uint8_t>> properties;
 };
 
@@ -94,6 +93,7 @@ std::vector<std::string> ChangesToDescription1(
 // Convenience for returning the description of the first item in |changes|.
 // Returns an empty string if |changes| has something other than one entry.
 std::string SingleChangeToDescription(const std::vector<Change>& changes);
+std::string SingleChangeToDescription2(const std::vector<Change>& changes);
 
 // Convenience for returning the description of the first item in |windows|.
 // Returns an empty string if |windows| has something other than one entry.
@@ -130,7 +130,9 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // WindowTreeClient function.
-  void OnEmbed(ConnectionSpecificId connection_id, mojom::WindowDataPtr root);
+  void OnEmbed(ConnectionSpecificId connection_id,
+               mojom::WindowDataPtr root,
+               bool drawn);
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed(Id window_id);
   void OnLostCapture(Id window_id);
@@ -150,7 +152,7 @@ class TestChangeTracker {
                          mojom::OrderDirection direction);
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
-  void OnWindowDrawnStateChanged(Id window_id, bool drawn);
+  void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id, mojom::EventPtr event);
   void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
@@ -158,7 +160,9 @@ class TestChangeTracker {
   void OnWindowFocused(Id window_id);
   void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);
   void OnChangeCompleted(uint32_t change_id, bool success);
-  void OnTopLevelCreated(uint32_t change_id, mojom::WindowDataPtr window_data);
+  void OnTopLevelCreated(uint32_t change_id,
+                         mojom::WindowDataPtr window_data,
+                         bool drawn);
 
  private:
   void AddChange(const Change& change);

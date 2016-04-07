@@ -70,12 +70,12 @@ class WindowTreeClientImplPrivate {
     root_data->bounds = mojo::Rect::From(gfx::Rect());
     root_data->properties.SetToEmpty();
     root_data->visible = true;
-    root_data->drawn = true;
     root_data->viewport_metrics = mojom::ViewportMetrics::New();
     root_data->viewport_metrics->size_in_pixels =
         mojo::Size::From(gfx::Size(1000, 1000));
     root_data->viewport_metrics->device_pixel_ratio = 1;
-    tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0);
+    tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0,
+                                   true);
   }
 
  private:
@@ -517,6 +517,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindow) {
   ASSERT_TRUE(root1);
   Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(root2);
+  EXPECT_TRUE(WindowPrivate(root2).parent_drawn());
   ASSERT_NE(root2, root1);
   EXPECT_NE(root2->id(), root1->id());
   EXPECT_EQ(2u, setup.window_tree_connection()->GetRoots().size());
@@ -531,7 +532,10 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindow) {
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = root2->id();
   data->viewport_metrics = mojom::ViewportMetrics::New();
-  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data));
+  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
+                                                false);
+
+  EXPECT_FALSE(WindowPrivate(root2).parent_drawn());
 
   // Should not be able to add a top level as a child of another window.
   root1->AddChild(root2);
@@ -565,8 +569,8 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsPropertiesFromData) {
   data->viewport_metrics->size_in_pixels = mojo::Size::From(gfx::Size(1, 2));
   data->bounds = mojo::Rect::From(gfx::Rect(1, 2, 3, 4));
   data->visible = true;
-  data->drawn = true;
-  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data));
+  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
+                                                true);
 
   // Make sure all the properties took.
   EXPECT_TRUE(root2->IsDrawn());
@@ -624,15 +628,14 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
   data->viewport_metrics->size_in_pixels = mojo::Size::From(gfx::Size(1, 2));
   data->bounds = mojo::Rect::From(gfx::Rect(1, 2, 3, 4));
   data->visible = true;
-  data->drawn = true;
   data->properties["xx"] = mojo::Array<uint8_t>::From(std::string("server_xx"));
   data->properties["yy"] = mojo::Array<uint8_t>::From(std::string("server_yy"));
   setup.window_tree_client()->OnTopLevelCreated(new_window_in_flight_change_id,
-                                                std::move(data));
+                                                std::move(data), true);
 
   // The only value that should take effect is the property for 'yy' as it was
   // not in flight.
-  EXPECT_TRUE(WindowPrivate(root2).drawn());
+  EXPECT_TRUE(WindowPrivate(root2).parent_drawn());
   EXPECT_FALSE(root2->visible());
   EXPECT_EQ(gfx::Size(1, 2),
             root2->viewport_metrics().size_in_pixels.To<gfx::Size>());
@@ -702,7 +705,8 @@ TEST_F(WindowTreeClientImplTest, TopLevelWindowDestroyedBeforeCreateComplete) {
   root2->Destroy();
   EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
 
-  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data));
+  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
+                                                true);
   EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
 }
 

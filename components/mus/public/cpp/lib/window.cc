@@ -234,7 +234,7 @@ void Window::SetPredefinedCursor(mus::mojom::Cursor cursor_id) {
 bool Window::IsDrawn() const {
   if (!visible_)
     return false;
-  return parent_ ? parent_->IsDrawn() : drawn_;
+  return parent_ ? parent_->IsDrawn() : parent_drawn_;
 }
 
 scoped_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
@@ -505,7 +505,7 @@ Window::Window(WindowTreeConnection* connection, Id id)
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
       cursor_id_(mojom::Cursor::CURSOR_NULL),
-      drawn_(false) {}
+      parent_drawn_(false) {}
 
 WindowTreeClientImpl* Window::tree_client() {
   return static_cast<WindowTreeClientImpl*>(connection_);
@@ -637,18 +637,18 @@ void Window::LocalSetViewportMetrics(
       OnWindowViewportMetricsChanged(this, old_metrics, new_metrics));
 }
 
-void Window::LocalSetDrawn(bool value) {
-  if (drawn_ == value)
+void Window::LocalSetParentDrawn(bool value) {
+  if (parent_drawn_ == value)
     return;
 
-  // As IsDrawn() is derived from |visible_| and |drawn_|, only send drawn
-  // notification is the value of IsDrawn() is really changing.
+  // As IsDrawn() is derived from |visible_| and |parent_drawn_|, only send
+  // drawn notification is the value of IsDrawn() is really changing.
   if (IsDrawn() == value) {
-    drawn_ = value;
+    parent_drawn_ = value;
     return;
   }
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDrawnChanging(this));
-  drawn_ = value;
+  parent_drawn_ = value;
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDrawnChanged(this));
 }
 

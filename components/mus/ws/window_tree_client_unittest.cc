@@ -271,13 +271,14 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnEmbed(ConnectionSpecificId connection_id,
                WindowDataPtr root,
                mojom::WindowTreePtr tree,
-               Id focused_window_id) override {
+               Id focused_window_id,
+               bool drawn) override {
     // TODO(sky): add coverage of |focused_window_id|.
     ASSERT_TRUE(root);
     root_window_id_ = root->window_id;
     tree_ = std::move(tree);
     connection_id_ = connection_id;
-    tracker()->OnEmbed(connection_id, std::move(root));
+    tracker()->OnEmbed(connection_id, std::move(root), drawn);
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
@@ -289,8 +290,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     tracker()->OnLostCapture(window_id);
   }
   void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr data) override {
-    tracker()->OnTopLevelCreated(change_id, std::move(data));
+                         mojom::WindowDataPtr data,
+                         bool drawn) override {
+    tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
   }
   void OnWindowBoundsChanged(Id window_id,
                              RectPtr old_bounds,
@@ -339,8 +341,8 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnWindowVisibilityChanged(uint32_t window, bool visible) override {
     tracker()->OnWindowVisibilityChanged(window, visible);
   }
-  void OnWindowDrawnStateChanged(uint32_t window, bool drawn) override {
-    tracker()->OnWindowDrawnStateChanged(window, drawn);
+  void OnWindowParentDrawnStateChanged(uint32_t window, bool drawn) override {
+    tracker()->OnWindowParentDrawnStateChanged(window, drawn);
   }
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
@@ -1411,12 +1413,12 @@ TEST_F(WindowTreeClientTest, SetWindowVisibility) {
     std::vector<TestWindow> windows;
     GetWindowTree(wt1(), root_window_id(), &windows);
     ASSERT_EQ(2u, windows.size());
-    EXPECT_EQ(WindowParentToString(root_window_id(), kNullParentId) +
-                  " visible=true drawn=true",
-              windows[0].ToString2());
-    EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
-                  " visible=false drawn=false",
-              windows[1].ToString2());
+    EXPECT_EQ(
+        WindowParentToString(root_window_id(), kNullParentId) + " visible=true",
+        windows[0].ToString2());
+    EXPECT_EQ(
+        WindowParentToString(window_1_1, root_window_id()) + " visible=false",
+        windows[1].ToString2());
   }
 
   // Show all the windows.
@@ -1426,12 +1428,12 @@ TEST_F(WindowTreeClientTest, SetWindowVisibility) {
     std::vector<TestWindow> windows;
     GetWindowTree(wt1(), root_window_id(), &windows);
     ASSERT_EQ(2u, windows.size());
-    EXPECT_EQ(WindowParentToString(root_window_id(), kNullParentId) +
-                  " visible=true drawn=true",
-              windows[0].ToString2());
-    EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
-                  " visible=true drawn=true",
-              windows[1].ToString2());
+    EXPECT_EQ(
+        WindowParentToString(root_window_id(), kNullParentId) + " visible=true",
+        windows[0].ToString2());
+    EXPECT_EQ(
+        WindowParentToString(window_1_1, root_window_id()) + " visible=true",
+        windows[1].ToString2());
   }
 
   // Hide 1.
@@ -1440,9 +1442,9 @@ TEST_F(WindowTreeClientTest, SetWindowVisibility) {
     std::vector<TestWindow> windows;
     GetWindowTree(wt1(), window_1_1, &windows);
     ASSERT_EQ(1u, windows.size());
-    EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
-                  " visible=false drawn=false",
-              windows[0].ToString2());
+    EXPECT_EQ(
+        WindowParentToString(window_1_1, root_window_id()) + " visible=false",
+        windows[0].ToString2());
   }
 
   // Attach 2 to 1.
@@ -1451,11 +1453,10 @@ TEST_F(WindowTreeClientTest, SetWindowVisibility) {
     std::vector<TestWindow> windows;
     GetWindowTree(wt1(), window_1_1, &windows);
     ASSERT_EQ(2u, windows.size());
-    EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
-                  " visible=false drawn=false",
-              windows[0].ToString2());
-    EXPECT_EQ(WindowParentToString(window_1_2, window_1_1) +
-                  " visible=true drawn=false",
+    EXPECT_EQ(
+        WindowParentToString(window_1_1, root_window_id()) + " visible=false",
+        windows[0].ToString2());
+    EXPECT_EQ(WindowParentToString(window_1_2, window_1_1) + " visible=true",
               windows[1].ToString2());
   }
 
@@ -1465,11 +1466,10 @@ TEST_F(WindowTreeClientTest, SetWindowVisibility) {
     std::vector<TestWindow> windows;
     GetWindowTree(wt1(), window_1_1, &windows);
     ASSERT_EQ(2u, windows.size());
-    EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
-                  " visible=true drawn=true",
-              windows[0].ToString2());
-    EXPECT_EQ(WindowParentToString(window_1_2, window_1_1) +
-                  " visible=true drawn=true",
+    EXPECT_EQ(
+        WindowParentToString(window_1_1, root_window_id()) + " visible=true",
+        windows[0].ToString2());
+    EXPECT_EQ(WindowParentToString(window_1_2, window_1_1) + " visible=true",
               windows[1].ToString2());
   }
 }
@@ -1578,6 +1578,67 @@ TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications) {
     wt_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_2) + " drawn=true",
+        SingleChangeToDescription(*changes2()));
+  }
+}
+
+// Assertions for SetWindowVisibility sending notifications.
+TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications2) {
+  // Create 1,1 and 1,2. 1,2 is made a child of 1,1 and 1,1 a child of the root.
+  Id window_1_1 = wt_client1()->NewWindow(1);
+  ASSERT_TRUE(window_1_1);
+  ASSERT_TRUE(wt_client1()->SetWindowVisibility(window_1_1, true));
+  Id window_1_2 = wt_client1()->NewWindow(2);
+  ASSERT_TRUE(window_1_2);
+  ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_1));
+  ASSERT_TRUE(wt_client1()->AddWindow(window_1_1, window_1_2));
+
+  // Establish the second connection at 1,2.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnectionWithRoot(window_1_2));
+  EXPECT_EQ("OnEmbed drawn=true", SingleChangeToDescription2(*changes2()));
+  changes2()->clear();
+
+  // Show 1,2 from connection 1. Connection 2 should see this.
+  ASSERT_TRUE(wt_client1()->SetWindowVisibility(window_1_2, true));
+  {
+    wt_client2_->WaitForChangeCount(1);
+    EXPECT_EQ(
+        "VisibilityChanged window=" + IdToString(window_1_2) + " visible=true",
+        SingleChangeToDescription(*changes2()));
+  }
+}
+
+// Assertions for SetWindowVisibility sending notifications.
+TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications3) {
+  // Create 1,1 and 1,2. 1,2 is made a child of 1,1 and 1,1 a child of the root.
+  Id window_1_1 = wt_client1()->NewWindow(1);
+  ASSERT_TRUE(window_1_1);
+  Id window_1_2 = wt_client1()->NewWindow(2);
+  ASSERT_TRUE(window_1_2);
+  ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_1));
+  ASSERT_TRUE(wt_client1()->AddWindow(window_1_1, window_1_2));
+
+  // Establish the second connection at 1,2.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnectionWithRoot(window_1_2));
+  EXPECT_EQ("OnEmbed drawn=false", SingleChangeToDescription2(*changes2()));
+  changes2()->clear();
+
+  // Show 1,1, drawn should be true for 1,2 (as that is all the child sees).
+  ASSERT_TRUE(wt_client1()->SetWindowVisibility(window_1_1, true));
+  {
+    wt_client2_->WaitForChangeCount(1);
+    EXPECT_EQ(
+        "DrawnStateChanged window=" + IdToString(window_1_2) + " drawn=true",
+        SingleChangeToDescription(*changes2()));
+  }
+  changes2()->clear();
+
+  // Show 1,2, visible should be true.
+  ASSERT_TRUE(wt_client1()->SetWindowVisibility(window_1_2, true));
+  {
+    wt_client2_->WaitForChangeCount(1);
+    EXPECT_EQ(
+        "VisibilityChanged window=" + IdToString(window_1_2) + " visible=true",
         SingleChangeToDescription(*changes2()));
   }
 }

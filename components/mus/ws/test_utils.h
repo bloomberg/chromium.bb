@@ -247,12 +247,14 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnEmbed(uint16_t connection_id,
                mojom::WindowDataPtr root,
                mus::mojom::WindowTreePtr tree,
-               Id focused_window_id) override;
+               Id focused_window_id,
+               bool drawn) override;
   void OnEmbeddedAppDisconnected(uint32_t window) override;
   void OnUnembed(Id window_id) override;
   void OnLostCapture(Id window_id) override;
   void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr data) override;
+                         mojom::WindowDataPtr data,
+                         bool drawn) override;
   void OnWindowBoundsChanged(uint32_t window,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override;
@@ -278,7 +280,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                          mojom::OrderDirection direction) override;
   void OnWindowDeleted(uint32_t window) override;
   void OnWindowVisibilityChanged(uint32_t window, bool visible) override;
-  void OnWindowDrawnStateChanged(uint32_t window, bool drawn) override;
+  void OnWindowParentDrawnStateChanged(uint32_t window, bool drawn) override;
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const mojo::String& name,
                                      mojo::Array<uint8_t> new_data) override;

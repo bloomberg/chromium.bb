@@ -116,7 +116,7 @@ TEST_F(WindowTest, DrawnAndVisible) {
   EXPECT_TRUE(w1.visible());
   EXPECT_FALSE(w1.IsDrawn());
 
-  WindowPrivate(&w1).set_drawn(true);
+  WindowPrivate(&w1).set_parent_drawn(true);
 
   TestWindow w11;
   w11.SetVisible(true);

@@ -43,7 +43,6 @@ Window* AddWindowToConnection(WindowTreeClientImpl* client,
   private_window.set_connection(client);
   private_window.set_id(window_data->window_id);
   private_window.set_visible(window_data->visible);
-  private_window.set_drawn(window_data->drawn);
   private_window.LocalSetViewportMetrics(mojom::ViewportMetrics(),
                                          *window_data->viewport_metrics);
   private_window.set_properties(
@@ -484,7 +483,8 @@ Window* WindowTreeClientImpl::NewWindowImpl(
 void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        ConnectionSpecificId connection_id,
                                        mojom::WindowDataPtr root_data,
-                                       Id focused_window_id) {
+                                       Id focused_window_id,
+                                       bool drawn) {
   // WARNING: this is only called if WindowTreeClientImpl was created as the
   // result of an embedding.
   tree_ = window_tree;
@@ -495,6 +495,8 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
   roots_.insert(root);
 
   focused_window_ = GetWindowById(focused_window_id);
+
+  WindowPrivate(root).LocalSetParentDrawn(drawn);
 
   delegate_->OnEmbed(root);
 
@@ -538,7 +540,12 @@ Window* WindowTreeClientImpl::NewWindow(
 
 Window* WindowTreeClientImpl::NewTopLevelWindow(
     const Window::SharedProperties* properties) {
-  return NewWindowImpl(NewWindowType::TOP_LEVEL, properties);
+  Window* window = NewWindowImpl(NewWindowType::TOP_LEVEL, properties);
+  // Assume newly created top level windows are drawn by default, otherwise
+  // requests to focus will fail. We will get the real value in
+  // OnTopLevelCreated().
+  window->LocalSetParentDrawn(true);
+  return window;
 }
 
 ConnectionSpecificId WindowTreeClientImpl::GetConnectionId() {
@@ -560,7 +567,8 @@ void WindowTreeClientImpl::RemoveObserver(
 void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                    mojom::WindowDataPtr root_data,
                                    mojom::WindowTreePtr tree,
-                                   Id focused_window_id) {
+                                   Id focused_window_id,
+                                   bool drawn) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
   tree_ptr_.set_connection_error_handler([this]() { delete this; });
@@ -571,7 +579,7 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   }
 
   OnEmbedImpl(tree_ptr_.get(), connection_id, std::move(root_data),
-              focused_window_id);
+              focused_window_id, drawn);
 }
 
 void WindowTreeClientImpl::OnEmbeddedAppDisconnected(Id window_id) {
@@ -604,7 +612,8 @@ void WindowTreeClientImpl::OnLostCapture(Id window_id) {
 }
 
 void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
-                                             mojom::WindowDataPtr data) {
+                                             mojom::WindowDataPtr data,
+                                             bool drawn) {
   // The server ack'd the top level window we created and supplied the state
   // of the window at the time the server created it. For properties we do not
   // have changes in flight for we can update them immediately. For properties
@@ -624,7 +633,7 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
 
   // Drawn state and ViewportMetrics always come from the server (they can't
   // be modified locally).
-  window_private.set_drawn(data->drawn);
+  window_private.LocalSetParentDrawn(drawn);
   window_private.LocalSetViewportMetrics(mojom::ViewportMetrics(),
                                          *data->viewport_metrics);
 
@@ -800,10 +809,11 @@ void WindowTreeClientImpl::OnWindowVisibilityChanged(Id window_id,
   WindowPrivate(window).LocalSetVisible(visible);
 }
 
-void WindowTreeClientImpl::OnWindowDrawnStateChanged(Id window_id, bool drawn) {
+void WindowTreeClientImpl::OnWindowParentDrawnStateChanged(Id window_id,
+                                                           bool drawn) {
   Window* window = GetWindowById(window_id);
   if (window)
-    WindowPrivate(window).LocalSetDrawn(drawn);
+    WindowPrivate(window).LocalSetParentDrawn(drawn);
 }
 
 void WindowTreeClientImpl::OnWindowSharedPropertyChanged(

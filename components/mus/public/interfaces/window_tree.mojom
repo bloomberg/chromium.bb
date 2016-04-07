@@ -26,11 +26,8 @@ struct WindowData {
   mojo.Rect bounds;
   map<string, array<uint8>> properties;
   // True if this window is visible. The window may not be drawn on screen (see
-  // drawn for specifics).
+  // OnWindowParentDrawnStateChanged() for details).
   bool visible;
-  // True if this window is drawn on screen. A window is drawn if attached to
-  // the root and all ancestors (including this window) are visible.
-  bool drawn;
   ViewportMetrics viewport_metrics;
 };
 
@@ -255,11 +252,13 @@ interface WindowTreeClient {
   // Invoked when the client application has been embedded at |root|.
   // See Embed() on WindowTree for more details. |tree| will be a handle back to
   // the window manager service, unless the connection is to the root connection
-  // in which case it will be null.
+  // in which case it will be null. |parent_drawn| is true if roots parent is
+  // drawn, see OnParentDrawnStateChanged() for details.
   OnEmbed(uint16 connection_id,
           WindowData root,
           WindowTree? tree,
-          uint32 focused_window);
+          uint32 focused_window,
+          bool parent_drawn);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called
@@ -275,7 +274,9 @@ interface WindowTreeClient {
   OnLostCapture(uint32 window);
 
   // Called in response to NewTopLevelWindow() successfully completing.
-  OnTopLevelCreated(uint32 change_id, WindowData data);
+  // |parent_drawn| is true if the parent of the window is drawn, see
+  // OnDrawnStateChanged() for details.
+  OnTopLevelCreated(uint32 change_id, WindowData data, bool parent_drawn);
 
   // Invoked when a window's bounds have changed.
   OnWindowBoundsChanged(uint32 window,
@@ -324,17 +325,17 @@ interface WindowTreeClient {
   // Invoked when the visibility of the specified window changes.
   OnWindowVisibilityChanged(uint32 window, bool visible);
 
-  // Invoked when a change to the visibility of |window| or one if it's
-  // ancestors is done such that the drawn state changes. This is only invoked
-  // for the top most window of a particular connection. For example, if you
-  // have the hierarchy: A -> B1 -> B2 (B2 is a child of B1 and B1 a child of
-  // A), B1/B2 are from connection 2 and A from connection 1 with all windows
-  // visible and drawn and the visiblity of A changes to false, then connection
-  // 2 is told the drawn state of B1 has changed (to false), but is not told
-  // anything about B2 as it's drawn state can be calculated from that of B1.
+  // Invoked when the drawn state of |window|'s parent changes. The drawn state
+  // is determined by the visibility of a Window and the Windows ancestors. A
+  // Window is drawn if all ancestors are visible, not drawn if any ancestor is
+  // hidden.
   //
-  // NOTE: This is not invoked if OnWindowVisibilityChanged() is invoked.
-  OnWindowDrawnStateChanged(uint32 window, bool drawn);
+  // The initial drawn state is communicated by way of OnTopLevelCreated() or
+  // OnEmbed().
+  //
+  // This function is only called for root Windows as the drawn state of all
+  // other windows can be determined from their parent.
+  OnWindowParentDrawnStateChanged(uint32 window, bool drawn);
 
   // Invoked when a window property is changed. If this change is a removal,
   // |new_data| is null.

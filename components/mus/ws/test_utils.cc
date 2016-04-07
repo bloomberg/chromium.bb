@@ -161,9 +161,10 @@ void TestWindowTreeClient::Bind(
 void TestWindowTreeClient::OnEmbed(uint16_t connection_id,
                                    mojom::WindowDataPtr root,
                                    mus::mojom::WindowTreePtr tree,
-                                   Id focused_window_id) {
+                                   Id focused_window_id,
+                                   bool drawn) {
   // TODO(sky): add test coverage of |focused_window_id|.
-  tracker_.OnEmbed(connection_id, std::move(root));
+  tracker_.OnEmbed(connection_id, std::move(root), drawn);
 }
 
 void TestWindowTreeClient::OnEmbeddedAppDisconnected(uint32_t window) {
@@ -177,8 +178,9 @@ void TestWindowTreeClient::OnUnembed(Id window_id) {
 void TestWindowTreeClient::OnLostCapture(Id window_id) {}
 
 void TestWindowTreeClient::OnTopLevelCreated(uint32_t change_id,
-                                             mojom::WindowDataPtr data) {
-  tracker_.OnTopLevelCreated(change_id, std::move(data));
+                                             mojom::WindowDataPtr data,
+                                             bool drawn) {
+  tracker_.OnTopLevelCreated(change_id, std::move(data), drawn);
 }
 
 void TestWindowTreeClient::OnWindowBoundsChanged(uint32_t window,
@@ -233,9 +235,9 @@ void TestWindowTreeClient::OnWindowVisibilityChanged(uint32_t window,
   tracker_.OnWindowVisibilityChanged(window, visible);
 }
 
-void TestWindowTreeClient::OnWindowDrawnStateChanged(uint32_t window,
-                                                     bool drawn) {
-  tracker_.OnWindowDrawnStateChanged(window, drawn);
+void TestWindowTreeClient::OnWindowParentDrawnStateChanged(uint32_t window,
+                                                           bool drawn) {
+  tracker_.OnWindowParentDrawnStateChanged(window, drawn);
 }
 
 void TestWindowTreeClient::OnWindowSharedPropertyChanged(
