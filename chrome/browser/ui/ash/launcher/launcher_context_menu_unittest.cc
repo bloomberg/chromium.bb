@@ -20,6 +20,10 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window_event_dispatcher.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
+#endif  // defined(OS_CHROMEOS)
+
 class LauncherContextMenuTest : public ash::test::AshTestBase {
  protected:
   static bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
@@ -52,6 +56,15 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
     return LauncherContextMenu::Create(controller_.get(), item, shelf);
   }
+
+#if defined(OS_CHROMEOS)
+  LauncherContextMenu* CreateLauncherContextMenuForArcApp() {
+    ash::ShelfItem item;
+    item.id = 1;  // dummy id
+    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
+    return new ArcLauncherContextMenu(controller_.get(), &item, shelf);
+  }
+#endif
 
   Profile* profile() { return profile_.get(); }
 
@@ -129,3 +142,26 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
 #endif
 }
+
+// Verifies contextmenu items for Arc app
+#if defined(OS_CHROMEOS)
+TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
+  scoped_ptr<LauncherContextMenu> menu(CreateLauncherContextMenuForArcApp());
+  EXPECT_TRUE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_OPEN_NEW));
+  EXPECT_TRUE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_AUTO_HIDE));
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
+                                  LauncherContextMenu::MENU_ALIGNMENT_MENU));
+  EXPECT_TRUE(
+      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_ALIGNMENT_MENU));
+  // By default, screen is not locked and ChangeWallPaper item is added in
+  // menu. ChangeWallPaper item is not enabled in default mode.
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
+                                  LauncherContextMenu::MENU_CHANGE_WALLPAPER));
+  EXPECT_FALSE(
+      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
+}
+#endif

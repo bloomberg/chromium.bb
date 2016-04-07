@@ -24,6 +24,11 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Returns true if the user can modify the |shelf|'s auto-hide behavior.
@@ -44,6 +49,15 @@ LauncherContextMenu* LauncherContextMenu::Create(
   // Create DesktopShellLauncherContextMenu if no item is selected.
   if (!item || item->id == 0)
     return new DesktopShellLauncherContextMenu(controller, item, shelf);
+
+// Create ArcLauncherContextMenu if the item is an Arc app.
+#if defined(OS_CHROMEOS)
+  const std::string& app_id = controller->GetAppIDForShelfID(item->id);
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(controller->profile());
+  DCHECK(arc_prefs);
+  if (arc_prefs->IsRegistered(app_id))
+    return new ArcLauncherContextMenu(controller, item, shelf);
+#endif  // defined(OS_CHROMEOS)
 
   // Create ExtensionLauncherContextMenu for the item.
   return new ExtensionLauncherContextMenu(controller, item, shelf);
