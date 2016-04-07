@@ -7,10 +7,15 @@
 #include "core/editing/state_machines/StateMachineUtil.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "platform/text/Character.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
 #include <ostream> // NOLINT
 
 namespace blink {
+
+namespace {
+const UChar32 kInvalidCodePoint = WTF::Unicode::kMaxCodepoint + 1;
+} // namespace
 
 #define FOR_EACH_BACKWARD_GRAPHEME_BOUNDARY_STATE(V)                           \
     /* Initial state */                                                        \
@@ -49,7 +54,8 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 BackwardGraphemeBoundaryStateMachine::BackwardGraphemeBoundaryStateMachine()
-    : m_internalState(InternalState::Start)
+    : m_nextCodePoint(kInvalidCodePoint),
+    m_internalState(InternalState::Start)
 {
 }
 
@@ -59,7 +65,7 @@ BackwardGraphemeBoundaryStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
     switch (m_internalState) {
     case InternalState::Start:
         DCHECK_EQ(m_trailSurrogate, 0);
-        DCHECK_EQ(m_nextCodePoint, 0);
+        DCHECK_EQ(m_nextCodePoint, kInvalidCodePoint);
         DCHECK_EQ(m_boundaryOffset, 0);
         DCHECK_EQ(m_precedingRISCount, 0);
         if (U16_IS_TRAIL(codeUnit)) {
@@ -76,7 +82,7 @@ BackwardGraphemeBoundaryStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
         return moveToNextState(InternalState::Search);
     case InternalState::StartWaitLeadSurrogate:
         DCHECK_NE(m_trailSurrogate, 0);
-        DCHECK_EQ(m_nextCodePoint, 0);
+        DCHECK_EQ(m_nextCodePoint, kInvalidCodePoint);
         DCHECK_EQ(m_boundaryOffset, 0);
         DCHECK_EQ(m_precedingRISCount, 0);
         if (!U16_IS_LEAD(codeUnit)) {
@@ -90,7 +96,7 @@ BackwardGraphemeBoundaryStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
         return moveToNextState(InternalState::Search);
     case InternalState::Search:
         DCHECK_EQ(m_trailSurrogate, 0);
-        DCHECK_NE(m_nextCodePoint, 0);
+        DCHECK_NE(m_nextCodePoint, kInvalidCodePoint);
         DCHECK_LT(m_boundaryOffset, 0);
         DCHECK_EQ(m_precedingRISCount, 0);
         if (U16_IS_TRAIL(codeUnit)) {
@@ -107,7 +113,7 @@ BackwardGraphemeBoundaryStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
         return staySameState();
     case InternalState::SearchWaitLeadSurrogate:
         DCHECK_NE(m_trailSurrogate, 0);
-        DCHECK_NE(m_nextCodePoint, 0);
+        DCHECK_NE(m_nextCodePoint, kInvalidCodePoint);
         DCHECK_LT(m_boundaryOffset, 0);
         DCHECK_EQ(m_precedingRISCount, 0);
         if (!U16_IS_LEAD(codeUnit))
@@ -235,7 +241,7 @@ TextSegmentationMachineState BackwardGraphemeBoundaryStateMachine::finish()
 void BackwardGraphemeBoundaryStateMachine::reset()
 {
     m_trailSurrogate = 0;
-    m_nextCodePoint = 0;
+    m_nextCodePoint = kInvalidCodePoint;
     m_boundaryOffset = 0;
     m_precedingRISCount = 0;
     m_internalState = InternalState::Start;

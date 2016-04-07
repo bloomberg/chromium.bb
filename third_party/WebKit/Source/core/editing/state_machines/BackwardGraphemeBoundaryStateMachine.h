@@ -56,7 +56,7 @@ private:
     UChar m_trailSurrogate = 0;
 
     // The code point immediately after the m_BoundaryOffset.
-    UChar32 m_nextCodePoint = 0;
+    UChar32 m_nextCodePoint;
 
     // The relative offset from the begging of this state machine.
     int m_boundaryOffset = 0;

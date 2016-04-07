@@ -66,6 +66,18 @@ TEST(ForwardGraphemeBoundaryStatemachineTest, PrecedingText)
         { kRisU, kRisS }, { 'a', 'a' }));
     EXPECT_EQ(1, machine.finalizeAndGetBoundaryOffset());
 
+    // U+0000 + | + 'a' + 'a'
+    EXPECT_EQ("SRF", processSequenceForward(&machine, { 0 }, { 'a', 'a' }));
+    EXPECT_EQ(1, machine.finalizeAndGetBoundaryOffset());
+    // U+0000 + [U] + | + 'a' + 'a'
+    EXPECT_EQ("RRSRF", processSequenceForward(&machine,
+        { 0, kRisU }, { 'a', 'a' }));
+    EXPECT_EQ(1, machine.finalizeAndGetBoundaryOffset());
+    // U+0000 + [U] + [S] + | + 'a' + 'a'
+    EXPECT_EQ("RRRRSRF", processSequenceForward(&machine,
+        { 0, kRisU, kRisS }, { 'a', 'a' }));
+    EXPECT_EQ(1, machine.finalizeAndGetBoundaryOffset());
+
     // 'a' + | + 'a' + 'a'
     EXPECT_EQ("SRF", processSequenceForward(&machine, { 'a' }, { 'a', 'a' }));
     EXPECT_EQ(1, machine.finalizeAndGetBoundaryOffset());
@@ -169,6 +181,10 @@ TEST(ForwardGraphemeBoundaryStatemachineTest, BreakImmediately_BMP)
 {
     const std::vector<UChar32> kEmpty;
     ForwardGraphemeBoundaryStateMachine machine;
+
+    // SOT + | + U+0000 + U+0000
+    EXPECT_EQ("SRF", processSequenceForward(&machine, kEmpty, { 0, 0 }));
+    EXPECT_EQ(1, machine.finalizeAndGetBoundaryOffset());
 
     // SOT + | + 'a' + 'a'
     EXPECT_EQ("SRF", processSequenceForward(&machine, kEmpty, { 'a', 'a' }));

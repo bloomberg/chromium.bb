@@ -71,6 +71,10 @@ TEST(BackwardGraphemeBoundaryStatemachineTest, BreakImmediately_BMP)
 {
     BackwardGraphemeBoundaryStateMachine machine;
 
+    // U+0000 + U+0000
+    EXPECT_EQ("RF", processSequenceBackward(&machine, { 0, 0 }));
+    EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());
+
     // 'a' + 'a'
     EXPECT_EQ("RF", processSequenceBackward(&machine, { 'a', 'a' }));
     EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());

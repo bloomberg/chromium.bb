@@ -59,7 +59,7 @@ private:
     UChar m_pendingCodeUnit = 0;
 
     // The code point immediately before the m_BoundaryOffset.
-    UChar32 m_prevCodePoint = 0;
+    UChar32 m_prevCodePoint;
 
     // The relative offset from the begging of this state machine.
     int m_boundaryOffset = 0;
