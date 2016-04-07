@@ -154,6 +154,8 @@
       'host/it2me_desktop_environment.h',
       'host/linux/audio_pipe_reader.cc',
       'host/linux/audio_pipe_reader.h',
+      'host/linux/certificate_watcher.cc',
+      'host/linux/certificate_watcher.h',
       'host/linux/unicode_to_keysym.cc',
       'host/linux/unicode_to_keysym.h',
       'host/linux/x11_util.cc',

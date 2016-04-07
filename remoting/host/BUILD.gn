@@ -271,6 +271,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "it2me/it2me_confirmation_dialog_proxy_unittest.cc",
       "it2me/it2me_native_messaging_host_unittest.cc",
       "linux/audio_pipe_reader_unittest.cc",
+      "linux/certificate_watcher_unittest.cc",
       "linux/unicode_to_keysym_unittest.cc",
       "linux/x_server_clipboard_unittest.cc",
       "local_input_monitor_unittest.cc",

@@ -115,6 +115,7 @@
 #undef Status  // Xlib.h #defines this, which breaks protobuf headers.
 #include <base/linux_util.h>
 #include "remoting/host/audio_capturer_linux.h"
+#include "remoting/host/linux/certificate_watcher.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
@@ -383,6 +384,11 @@ class HostProcess : public ConfigWatcher::Delegate,
                const int& line_number);
 
   std::unique_ptr<ChromotingHostContext> context_;
+
+#if defined(OS_LINUX)
+  // Watch for certificate changes and kill the host when changes occur
+  scoped_ptr<CertificateWatcher> cert_watcher_;
+#endif
 
   // XMPP server/remoting bot configuration (initialized from the command line).
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
@@ -785,6 +791,16 @@ void HostProcess::CreateAuthenticatorFactory() {
     // these URLs are both valid.
     DCHECK(third_party_auth_config_.token_url.is_valid());
     DCHECK(third_party_auth_config_.token_validation_url.is_valid());
+
+#if defined(OS_LINUX)
+    if (!cert_watcher_) {
+      cert_watcher_.reset(new CertificateWatcher(
+          base::Bind(&HostProcess::ShutdownHost, this, kSuccessExitCode),
+          context_->file_task_runner()));
+      cert_watcher_->Start();
+    }
+    cert_watcher_->SetMonitor(host_->AsWeakPtr());
+#endif
 
     scoped_refptr<protocol::TokenValidatorFactory> token_validator_factory =
         new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
