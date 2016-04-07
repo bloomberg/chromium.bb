@@ -158,7 +158,6 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
   return true;
 }
 
-// Retrieves the
 void GetAccountNameAndIcon(const Profile& profile,
                            std::string* name,
                            std::string* icon_url) {
