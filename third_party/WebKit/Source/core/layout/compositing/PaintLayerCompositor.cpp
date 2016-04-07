@@ -39,7 +39,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositingInputsUpdater.h"
 #include "core/layout/compositing/CompositingLayerAssigner.h"
@@ -213,8 +213,8 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal()
         // It's possible for trusted Pepper plugins to force hit testing in situations where
         // the frame tree is in an inconsistent state, such as in the middle of frame detach.
         // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
-        if (localFrame->document()->isActive() && localFrame->contentLayoutObject())
-            localFrame->contentLayoutObject()->compositor()->updateIfNeededRecursiveInternal();
+        if (localFrame->document()->isActive() && !localFrame->contentLayoutItem().isNull())
+            localFrame->contentLayoutItem().compositor()->updateIfNeededRecursiveInternal();
     }
 
     TRACE_EVENT0("blink", "PaintLayerCompositor::updateIfNeededRecursive");
@@ -253,9 +253,9 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal()
         if (!child->isLocalFrame())
             continue;
         LocalFrame* localFrame = toLocalFrame(child);
-        if (localFrame->shouldThrottleRendering() || !localFrame->contentLayoutObject())
+        if (localFrame->shouldThrottleRendering() || localFrame->contentLayoutItem().isNull())
             continue;
-        localFrame->contentLayoutObject()->compositor()->assertNoUnresolvedDirtyBits();
+        localFrame->contentLayoutItem().compositor()->assertNoUnresolvedDirtyBits();
     }
 #endif
 }
