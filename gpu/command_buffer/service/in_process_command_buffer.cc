@@ -210,7 +210,6 @@ InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
     : command_buffer_id_(
           CommandBufferId::FromUnsafeValue(g_next_command_buffer_id.GetNext())),
-      context_lost_(false),
       delayed_work_pending_(false),
       image_factory_(nullptr),
       last_put_offset_(-1),
@@ -233,12 +232,17 @@ bool InProcessCommandBuffer::MakeCurrent() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();
 
-  if (!context_lost_ && decoder_->MakeCurrent())
-    return true;
-  DLOG(ERROR) << "Context lost because MakeCurrent failed.";
-  command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
-  command_buffer_->SetParseError(gpu::error::kLostContext);
-  return false;
+  if (error::IsError(command_buffer_->GetLastState().error)) {
+    DLOG(ERROR) << "MakeCurrent failed because context lost.";
+    return false;
+  }
+  if (!decoder_->MakeCurrent()) {
+    DLOG(ERROR) << "Context lost because MakeCurrent failed.";
+    command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+    command_buffer_->SetParseError(gpu::error::kLostContext);
+    return false;
+  }
+  return true;
 }
 
 void InProcessCommandBuffer::PumpCommands() {
@@ -497,8 +501,6 @@ void InProcessCommandBuffer::OnContextLost() {
     context_lost_callback_.Run();
     context_lost_callback_.Reset();
   }
-
-  context_lost_ = true;
 }
 
 CommandBuffer::State InProcessCommandBuffer::GetStateFast() {
@@ -535,14 +537,13 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset,
       base::AutoLock lock(state_after_last_flush_lock_);
       state_after_last_flush_ = command_buffer_->GetLastState();
     }
-    DCHECK((!error::IsError(state_after_last_flush_.error) && !context_lost_) ||
-           (error::IsError(state_after_last_flush_.error) && context_lost_));
 
     // Currently the in process command buffer does not support being
     // descheduled, if it does we would need to back off on calling the finish
     // processing number function until the message is rescheduled and finished
     // processing. This DCHECK is to enforce this.
-    DCHECK(context_lost_ || put_offset == state_after_last_flush_.get_offset);
+    DCHECK(error::IsError(state_after_last_flush_.error) ||
+           put_offset == state_after_last_flush_.get_offset);
   }
 
   // If we've processed all pending commands but still have pending queries,
@@ -917,6 +918,8 @@ void InProcessCommandBuffer::SignalQueryOnGpuThread(
 }
 
 void InProcessCommandBuffer::SetLock(base::Lock*) {
+  // No support for using on multiple threads.
+  NOTREACHED();
 }
 
 bool InProcessCommandBuffer::IsGpuChannelLost() {

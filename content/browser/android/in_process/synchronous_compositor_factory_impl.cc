@@ -53,8 +53,8 @@ ContextHolder CreateContextHolder(
   bool is_offscreen = true;
   scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
       service, nullptr /* surface */, is_offscreen, gfx::kNullAcceleratedWidget,
-      gfx::Size(1, 1), nullptr /* share_context */, false /* share_resources */,
-      attributes, gfx::PreferDiscreteGpu, mem_limits,
+      gfx::Size(1, 1), nullptr /* share_context */, attributes,
+      gfx::PreferDiscreteGpu, mem_limits,
       BrowserGpuMemoryBufferManager::current(), nullptr));
 
   gpu::GLInProcessContext* context_ptr = context.get();

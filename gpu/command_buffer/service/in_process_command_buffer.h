@@ -83,7 +83,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   explicit InProcessCommandBuffer(const scoped_refptr<Service>& service);
   ~InProcessCommandBuffer() override;
 
-  // If |surface| is not NULL, use it directly; in this case, the command
+  // If |surface| is not null, use it directly; in this case, the command
   // buffer gpu thread must be the same as the client thread. Otherwise create
   // a new GLSurface.
   bool Initialize(scoped_refptr<gfx::GLSurface> surface,

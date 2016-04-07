@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
@@ -62,8 +61,6 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
   cc::ContextProvider::Capabilities capabilities_;
 
   LostContextCallback lost_context_callback_;
-
-  base::Lock context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderThreadContextProvider);
 };

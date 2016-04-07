@@ -52,9 +52,9 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   attributes.bind_generates_resource = false;
   context_.reset(gpu::GLInProcessContext::Create(
       service, surface, surface->IsOffscreen(), gfx::kNullAcceleratedWidget,
-      surface->GetSize(), nullptr /* share_context */,
-      false /* share_resources */, attributes, gfx::PreferDiscreteGpu,
-      gpu::GLInProcessContextSharedMemoryLimits(), nullptr, nullptr));
+      surface->GetSize(), nullptr /* share_context */, attributes,
+      gfx::PreferDiscreteGpu, gpu::GLInProcessContextSharedMemoryLimits(),
+      nullptr, nullptr));
 
   context_->SetContextLostCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
@@ -116,11 +116,14 @@ void AwRenderThreadContextProvider::InvalidateGrContext(uint32_t state) {
 }
 
 void AwRenderThreadContextProvider::SetupLock() {
-  context_->SetLock(&context_lock_);
+  // This context provider is not used on multiple threads.
+  NOTREACHED();
 }
 
 base::Lock* AwRenderThreadContextProvider::GetLock() {
-  return &context_lock_;
+  // This context provider is not used on multiple threads.
+  NOTREACHED();
+  return nullptr;
 }
 
 void AwRenderThreadContextProvider::DeleteCachedResources() {

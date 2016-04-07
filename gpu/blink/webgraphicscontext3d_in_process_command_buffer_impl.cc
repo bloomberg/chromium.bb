@@ -34,12 +34,11 @@ namespace gpu_blink {
 // static
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-    const gpu::gles2::ContextCreationAttribHelper& attributes,
-    bool share_resources) {
+    const gpu::gles2::ContextCreationAttribHelper& attributes) {
   bool is_offscreen = true;
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      scoped_ptr<::gpu::GLInProcessContext>(), attributes, share_resources,
-      is_offscreen, gfx::kNullAcceleratedWidget));
+      scoped_ptr<::gpu::GLInProcessContext>(), attributes, is_offscreen,
+      gfx::kNullAcceleratedWidget));
 }
 
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
@@ -47,21 +46,18 @@ WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
     scoped_ptr<::gpu::GLInProcessContext> context,
     const gpu::gles2::ContextCreationAttribHelper& attributes) {
   bool is_offscreen = true;                      // Not used.
-  bool share_resources = false;                  // Not used.
   gfx::AcceleratedWidget window = gfx::kNullAcceleratedWidget;  // Not used.
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      std::move(context), attributes, share_resources, is_offscreen, window));
+      std::move(context), attributes, is_offscreen, window));
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl(
         scoped_ptr<::gpu::GLInProcessContext> context,
         const gpu::gles2::ContextCreationAttribHelper& attributes,
-        bool share_resources,
         bool is_offscreen,
         gfx::AcceleratedWidget window)
     : attributes_(attributes),
-      share_resources_(share_resources),
       is_offscreen_(is_offscreen),
       window_(window),
       context_(std::move(context)) {}
@@ -92,16 +88,11 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
         NULL,                                          /* service */
         NULL,                                          /* surface */
         is_offscreen_, window_, gfx::Size(1, 1), NULL, /* share_context */
-        share_resources_, attributes_, gpu_preference,
+        attributes_, gpu_preference,
         ::gpu::GLInProcessContextSharedMemoryLimits(), nullptr, nullptr));
   }
 
-  if (context_) {
-    base::Closure context_lost_callback = base::Bind(
-        &WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost,
-        base::Unretained(this));
-    context_->SetContextLostCallback(context_lost_callback);
-  } else {
+  if (!context_) {
     initialize_failed_ = true;
     return false;
   }
@@ -132,12 +123,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::SetLock(base::Lock* lock) {
 ::gpu::ContextSupport*
 WebGraphicsContext3DInProcessCommandBufferImpl::GetContextSupport() {
   return real_gl_;
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
-  if (context_lost_callback_) {
-    context_lost_callback_->onContextLost();
-  }
 }
 
 }  // namespace gpu_blink

@@ -24,11 +24,13 @@ namespace cc {
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
-    TestImageFactory* image_factory);
+    TestImageFactory* image_factory,
+    gpu::GLInProcessContext* shared_context);
 
 class TestInProcessContextProvider : public ContextProvider {
  public:
-  TestInProcessContextProvider();
+  explicit TestInProcessContextProvider(
+      TestInProcessContextProvider* shared_context);
 
   bool BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;

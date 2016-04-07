@@ -40,8 +40,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
   CreateOffscreenContext(
-      const gpu::gles2::ContextCreationAttribHelper& attributes,
-      bool share_resources);
+      const gpu::gles2::ContextCreationAttribHelper& attributes);
 
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> WrapContext(
       scoped_ptr<::gpu::GLInProcessContext> context,
@@ -64,7 +63,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   WebGraphicsContext3DInProcessCommandBufferImpl(
       scoped_ptr<::gpu::GLInProcessContext> context,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
-      bool share_resources,
       bool is_offscreen,
       gfx::AcceleratedWidget window);
 
@@ -77,7 +75,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   void ClearContext();
 
   ::gpu::gles2::ContextCreationAttribHelper attributes_;
-  bool share_resources_;
 
   bool is_offscreen_;
   // Only used when not offscreen.

@@ -102,23 +102,6 @@ InProcessContextFactory::~InProcessContextFactory() {
 
 void InProcessContextFactory::CreateOutputSurface(
     base::WeakPtr<Compositor> compositor) {
-  gpu::gles2::ContextCreationAttribHelper attribs;
-  attribs.alpha_size = 8;
-  attribs.blue_size = 8;
-  attribs.green_size = 8;
-  attribs.red_size = 8;
-  attribs.depth_size = 0;
-  attribs.stencil_size = 0;
-  attribs.samples = 0;
-  attribs.sample_buffers = 0;
-  attribs.fail_if_major_perf_caveat = false;
-  attribs.bind_generates_resource = false;
-
-  scoped_refptr<InProcessContextProvider> context_provider =
-      InProcessContextProvider::Create(attribs, &gpu_memory_buffer_manager_,
-                                       &image_factory_,
-                                       compositor->widget(), "UICompositor");
-
   // Try to reuse existing shared worker context provider.
   bool shared_worker_context_provider_lost = false;
   if (shared_worker_context_provider_) {
@@ -131,13 +114,30 @@ void InProcessContextFactory::CreateOutputSurface(
   }
   if (!shared_worker_context_provider_ || shared_worker_context_provider_lost) {
     shared_worker_context_provider_ = InProcessContextProvider::CreateOffscreen(
-        &gpu_memory_buffer_manager_, &image_factory_);
+        &gpu_memory_buffer_manager_, &image_factory_, nullptr);
     if (shared_worker_context_provider_ &&
         !shared_worker_context_provider_->BindToCurrentThread())
       shared_worker_context_provider_ = nullptr;
     if (shared_worker_context_provider_)
       shared_worker_context_provider_->SetupLock();
   }
+
+  gpu::gles2::ContextCreationAttribHelper attribs;
+  attribs.alpha_size = 8;
+  attribs.blue_size = 8;
+  attribs.green_size = 8;
+  attribs.red_size = 8;
+  attribs.depth_size = 0;
+  attribs.stencil_size = 0;
+  attribs.samples = 0;
+  attribs.sample_buffers = 0;
+  attribs.fail_if_major_perf_caveat = false;
+  attribs.bind_generates_resource = false;
+  scoped_refptr<InProcessContextProvider> context_provider =
+      InProcessContextProvider::Create(
+          attribs, shared_worker_context_provider_.get(),
+          &gpu_memory_buffer_manager_, &image_factory_, compositor->widget(),
+          "UICompositor");
 
   scoped_ptr<cc::OutputSurface> real_output_surface;
 
@@ -190,7 +190,7 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
     return shared_main_thread_contexts_;
 
   shared_main_thread_contexts_ = InProcessContextProvider::CreateOffscreen(
-      &gpu_memory_buffer_manager_, &image_factory_);
+      &gpu_memory_buffer_manager_, &image_factory_, nullptr);
   if (shared_main_thread_contexts_.get() &&
       !shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = NULL;

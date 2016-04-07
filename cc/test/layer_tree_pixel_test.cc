@@ -54,9 +54,12 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
     }
     case PIXEL_TEST_GL: {
       bool flipped_output_surface = false;
+      scoped_refptr<TestInProcessContextProvider> compositor(
+          new TestInProcessContextProvider(nullptr));
+      scoped_refptr<TestInProcessContextProvider> worker(
+          new TestInProcessContextProvider(compositor.get()));
       output_surface = make_scoped_ptr(new PixelTestOutputSurface(
-          new TestInProcessContextProvider, new TestInProcessContextProvider,
-          flipped_output_surface));
+          std::move(compositor), std::move(worker), flipped_output_surface));
       break;
     }
   }

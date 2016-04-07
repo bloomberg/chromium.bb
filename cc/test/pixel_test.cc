@@ -124,9 +124,12 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
                                 bool flipped_output_surface) {
   enable_pixel_output_.reset(new gfx::DisableNullDrawGLBindings);
 
+  scoped_refptr<TestInProcessContextProvider> compositor(
+      new TestInProcessContextProvider(nullptr));
+  scoped_refptr<TestInProcessContextProvider> worker(
+      new TestInProcessContextProvider(compositor.get()));
   output_surface_.reset(new PixelTestOutputSurface(
-      new TestInProcessContextProvider, new TestInProcessContextProvider,
-      flipped_output_surface));
+      std::move(compositor), std::move(worker), flipped_output_surface));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);

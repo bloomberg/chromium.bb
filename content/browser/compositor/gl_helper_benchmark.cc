@@ -67,7 +67,6 @@ class GLHelperTest : public testing::Test {
         gfx::kNullAcceleratedWidget, /* window */
         gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        true,                        /* use_global_share_group */
         attributes, gfx::PreferDiscreteGpu,
         ::gpu::GLInProcessContextSharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */

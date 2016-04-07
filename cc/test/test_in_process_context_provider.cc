@@ -26,9 +26,9 @@ namespace cc {
 // static
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
-    TestImageFactory* image_factory) {
+    TestImageFactory* image_factory,
+    gpu::GLInProcessContext* shared_context) {
   const bool is_offscreen = true;
-  const bool share_resources = true;
   gpu::gles2::ContextCreationAttribHelper attribs;
   attribs.alpha_size = 8;
   attribs.blue_size = 8;
@@ -44,31 +44,25 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
 
   scoped_ptr<gpu::GLInProcessContext> context =
       make_scoped_ptr(gpu::GLInProcessContext::Create(
-          NULL,
-          NULL,
-          is_offscreen,
-          gfx::kNullAcceleratedWidget,
-          gfx::Size(1, 1),
-          NULL,
-          share_resources,
-          attribs,
-          gpu_preference,
+          nullptr, nullptr, is_offscreen, gfx::kNullAcceleratedWidget,
+          gfx::Size(1, 1), shared_context, attribs, gpu_preference,
           gpu::GLInProcessContextSharedMemoryLimits(),
-          gpu_memory_buffer_manager,
-          image_factory));
+          gpu_memory_buffer_manager, image_factory));
 
   DCHECK(context);
   return context;
 }
 
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
-  return CreateTestInProcessContext(nullptr, nullptr);
+  return CreateTestInProcessContext(nullptr, nullptr, nullptr);
 }
 
-TestInProcessContextProvider::TestInProcessContextProvider()
-    : context_(CreateTestInProcessContext(&gpu_memory_buffer_manager_,
-                                          &image_factory_)) {
-}
+TestInProcessContextProvider::TestInProcessContextProvider(
+    TestInProcessContextProvider* shared_context)
+    : context_(CreateTestInProcessContext(
+          &gpu_memory_buffer_manager_,
+          &image_factory_,
+          (shared_context ? shared_context->context_.get() : nullptr))) {}
 
 TestInProcessContextProvider::~TestInProcessContextProvider() {
   if (gr_context_)
