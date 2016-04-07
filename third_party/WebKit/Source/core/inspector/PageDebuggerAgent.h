@@ -47,7 +47,7 @@ class CORE_EXPORT PageDebuggerAgent final
     : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
 public:
-    static RawPtr<PageDebuggerAgent> create(InspectedFrames*, V8RuntimeAgent*);
+    static RawPtr<PageDebuggerAgent> create(V8DebuggerAgent*, InspectedFrames*);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -58,7 +58,7 @@ public:
     void didStartProvisionalLoad(LocalFrame*);
 
 private:
-    PageDebuggerAgent(InspectedFrames*, V8RuntimeAgent*);
+    PageDebuggerAgent(V8DebuggerAgent*, InspectedFrames*);
 
     // V8DebuggerAgent::Client implemntation.
     bool canExecuteScripts() const;

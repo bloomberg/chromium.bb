@@ -46,13 +46,13 @@ using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 
-RawPtr<PageDebuggerAgent> PageDebuggerAgent::create(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
+RawPtr<PageDebuggerAgent> PageDebuggerAgent::create(V8DebuggerAgent* agent, InspectedFrames* inspectedFrames)
 {
-    return new PageDebuggerAgent(inspectedFrames, runtimeAgent);
+    return new PageDebuggerAgent(agent, inspectedFrames);
 }
 
-PageDebuggerAgent::PageDebuggerAgent(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
-    : InspectorDebuggerAgent(runtimeAgent)
+PageDebuggerAgent::PageDebuggerAgent(V8DebuggerAgent* agent, InspectedFrames* inspectedFrames)
+    : InspectorDebuggerAgent(agent)
     , m_inspectedFrames(inspectedFrames)
 {
 }

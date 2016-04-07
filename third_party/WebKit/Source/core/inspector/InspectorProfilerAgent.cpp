@@ -41,15 +41,15 @@ namespace ProfilerAgentState {
 static const char profilerEnabled[] = "profilerEnabled";
 }
 
-RawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8Debugger* debugger, Client* client)
+RawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8ProfilerAgent* agent, Client* client)
 {
-    return new InspectorProfilerAgent(debugger, client);
+    return new InspectorProfilerAgent(agent, client);
 }
 
-InspectorProfilerAgent::InspectorProfilerAgent(V8Debugger* debugger, Client* client)
+InspectorProfilerAgent::InspectorProfilerAgent(V8ProfilerAgent* agent, Client* client)
     : InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>("Profiler")
     , m_client(client)
-    , m_v8ProfilerAgent(V8ProfilerAgent::create(debugger))
+    , m_v8ProfilerAgent(agent)
 {
 }
 
@@ -83,11 +83,6 @@ void InspectorProfilerAgent::restore()
     m_v8ProfilerAgent->restore();
     ErrorString errorString;
     enable(&errorString);
-}
-
-void InspectorProfilerAgent::discardAgent()
-{
-    m_v8ProfilerAgent.clear();
 }
 
 // Protocol implementation.

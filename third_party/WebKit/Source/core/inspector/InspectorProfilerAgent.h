@@ -41,7 +41,6 @@ namespace blink {
 
 class ExecutionContext;
 class InspectorFrontend;
-class V8Debugger;
 class V8ProfilerAgent;
 
 class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Backend::Profiler {
@@ -54,7 +53,7 @@ public:
         virtual void profilingStopped() { }
     };
 
-    static RawPtr<InspectorProfilerAgent> create(V8Debugger*, Client*);
+    static RawPtr<InspectorProfilerAgent> create(V8ProfilerAgent*, Client*);
     ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -63,7 +62,6 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
-    void discardAgent() override;
 
     void consoleProfile(ExecutionContext*, const String16& title);
     void consoleProfileEnd(const String16& title);
@@ -80,10 +78,10 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(V8Debugger*, Client*);
+    InspectorProfilerAgent(V8ProfilerAgent*, Client*);
 
     Client* m_client;
-    OwnPtr<V8ProfilerAgent> m_v8ProfilerAgent;
+    V8ProfilerAgent* m_v8ProfilerAgent;
 };
 
 } // namespace blink

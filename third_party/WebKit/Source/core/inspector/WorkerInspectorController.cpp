@@ -45,6 +45,8 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -53,30 +55,34 @@ namespace blink {
 RawPtr<WorkerInspectorController> WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
 {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(workerGlobalScope->thread()->isolate());
-    return debugger ? new WorkerInspectorController(workerGlobalScope, debugger->debugger(), debugger->contextGroupId()) : nullptr;
+    if (!debugger)
+        return nullptr;
+    OwnPtr<V8InspectorSession> session = debugger->debugger()->connect(debugger->contextGroupId());
+    return new WorkerInspectorController(workerGlobalScope, session.release());
 }
 
-WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, V8Debugger* debugger, int contextGroupId)
+WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, PassOwnPtr<V8InspectorSession> session)
     : m_workerGlobalScope(workerGlobalScope)
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_agents(m_instrumentingAgents.get())
+    , m_v8Session(session)
 {
-    RawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this, contextGroupId);
+    RawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), workerGlobalScope, this);
     m_workerRuntimeAgent = workerRuntimeAgent.get();
     m_agents.append(workerRuntimeAgent.release());
 
-    RawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(workerGlobalScope, m_workerRuntimeAgent->v8Agent());
+    RawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(m_v8Session->debuggerAgent(), workerGlobalScope);
     m_workerDebuggerAgent = workerDebuggerAgent.get();
     m_agents.append(workerDebuggerAgent.release());
 
-    m_agents.append(InspectorProfilerAgent::create(debugger, 0));
-    m_agents.append(InspectorHeapProfilerAgent::create(workerGlobalScope->thread()->isolate(), m_workerRuntimeAgent->v8Agent()));
+    m_agents.append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), nullptr));
+    m_agents.append(InspectorHeapProfilerAgent::create(workerGlobalScope->thread()->isolate(), m_v8Session->heapProfilerAgent()));
 
-    RawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_workerRuntimeAgent->v8Agent(), m_workerDebuggerAgent->v8Agent(), workerGlobalScope);
+    RawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_v8Session->debuggerAgent(), workerGlobalScope);
     WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();
     m_agents.append(workerConsoleAgent.release());
 
-    m_workerRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr));
+    m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr));
 }
 
 WorkerInspectorController::~WorkerInspectorController()
@@ -117,6 +123,7 @@ void WorkerInspectorController::dispose()
     disconnectFrontend();
     m_instrumentingAgents->reset();
     m_agents.discardAgents();
+    m_v8Session.clear();
 }
 
 void WorkerInspectorController::resumeStartup()

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
+#include "platform/v8_inspector/V8InspectorSessionImpl.h"
 
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InjectedScriptHost.h"
@@ -10,35 +10,59 @@
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
+#include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
 namespace blink {
 
-PassOwnPtr<V8InspectorConnectionImpl> V8InspectorConnectionImpl::create(V8DebuggerImpl* debugger, int contextGroupId)
+PassOwnPtr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId)
 {
-    return adoptPtr(new V8InspectorConnectionImpl(debugger, contextGroupId));
+    return adoptPtr(new V8InspectorSessionImpl(debugger, contextGroupId));
 }
 
-V8InspectorConnectionImpl::V8InspectorConnectionImpl(V8DebuggerImpl* debugger, int contextGroupId)
+V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int contextGroupId)
     : m_contextGroupId(contextGroupId)
     , m_debugger(debugger)
     , m_injectedScriptHost(InjectedScriptHost::create(debugger, this))
     , m_customObjectFormatterEnabled(false)
-    , m_debuggerAgent(nullptr)
+    , m_runtimeAgent(adoptPtr(new V8RuntimeAgentImpl(this)))
+    , m_debuggerAgent(adoptPtr(new V8DebuggerAgentImpl(this)))
+    , m_heapProfilerAgent(adoptPtr(new V8HeapProfilerAgentImpl(this)))
+    , m_profilerAgent(adoptPtr(new V8ProfilerAgentImpl(this)))
     , m_inspectCallback(nullptr)
     , m_clearConsoleCallback(nullptr)
 {
 }
 
-V8InspectorConnectionImpl::~V8InspectorConnectionImpl()
+V8InspectorSessionImpl::~V8InspectorSessionImpl()
 {
     resetInjectedScripts();
-    ASSERT(!m_debuggerAgent);
 }
 
-void V8InspectorConnectionImpl::resetInjectedScripts()
+V8DebuggerAgent* V8InspectorSessionImpl::debuggerAgent()
+{
+    return m_debuggerAgent.get();
+}
+
+V8HeapProfilerAgent* V8InspectorSessionImpl::heapProfilerAgent()
+{
+    return m_heapProfilerAgent.get();
+}
+
+V8ProfilerAgent* V8InspectorSessionImpl::profilerAgent()
+{
+    return m_profilerAgent.get();
+}
+
+V8RuntimeAgent* V8InspectorSessionImpl::runtimeAgent()
+{
+    return m_runtimeAgent.get();
+}
+
+void V8InspectorSessionImpl::resetInjectedScripts()
 {
     m_injectedScriptHost->clearInspectedObjects();
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
@@ -55,7 +79,7 @@ void V8InspectorConnectionImpl::resetInjectedScripts()
     }
 }
 
-InjectedScript* V8InspectorConnectionImpl::findInjectedScript(ErrorString* errorString, int contextId)
+InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorString, int contextId)
 {
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
     if (!contexts || !contexts->contains(contextId)) {
@@ -76,17 +100,17 @@ InjectedScript* V8InspectorConnectionImpl::findInjectedScript(ErrorString* error
     return context->getInjectedScript();
 }
 
-InjectedScript* V8InspectorConnectionImpl::findInjectedScript(ErrorString* errorString, RemoteObjectIdBase* objectId)
+InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorString, RemoteObjectIdBase* objectId)
 {
     return objectId ? findInjectedScript(errorString, objectId->contextId()) : nullptr;
 }
 
-void V8InspectorConnectionImpl::addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable> inspectable)
+void V8InspectorSessionImpl::addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable> inspectable)
 {
     m_injectedScriptHost->addInspectedObject(inspectable);
 }
 
-void V8InspectorConnectionImpl::releaseObjectGroup(const String16& objectGroup)
+void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
 {
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
     if (!contexts)
@@ -105,7 +129,7 @@ void V8InspectorConnectionImpl::releaseObjectGroup(const String16& objectGroup)
     }
 }
 
-void V8InspectorConnectionImpl::setCustomObjectFormatterEnabled(bool enabled)
+void V8InspectorSessionImpl::setCustomObjectFormatterEnabled(bool enabled)
 {
     m_customObjectFormatterEnabled = enabled;
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
@@ -118,7 +142,7 @@ void V8InspectorConnectionImpl::setCustomObjectFormatterEnabled(bool enabled)
     }
 }
 
-void V8InspectorConnectionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
+void V8InspectorSessionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
 {
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
     if (!contexts)

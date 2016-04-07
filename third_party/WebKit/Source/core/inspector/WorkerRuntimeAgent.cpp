@@ -35,8 +35,8 @@
 
 namespace blink {
 
-WorkerRuntimeAgent::WorkerRuntimeAgent(V8Debugger* debugger, WorkerGlobalScope* workerGlobalScope, InspectorRuntimeAgent::Client* client, int contextGroupId)
-    : InspectorRuntimeAgent(debugger, client, contextGroupId)
+WorkerRuntimeAgent::WorkerRuntimeAgent(V8RuntimeAgent* agent, WorkerGlobalScope* workerGlobalScope, InspectorRuntimeAgent::Client* client)
+    : InspectorRuntimeAgent(agent, client)
     , m_workerGlobalScope(workerGlobalScope)
 {
 }

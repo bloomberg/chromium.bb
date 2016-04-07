@@ -31,7 +31,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 
 namespace blink {
 
@@ -41,9 +41,9 @@ namespace DebuggerAgentState {
 static const char debuggerEnabled[] = "debuggerEnabled";
 }
 
-InspectorDebuggerAgent::InspectorDebuggerAgent(V8RuntimeAgent* runtimeAgent)
+InspectorDebuggerAgent::InspectorDebuggerAgent(V8DebuggerAgent* agent)
     : InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>("Debugger")
-    , m_v8DebuggerAgent(V8DebuggerAgent::create(runtimeAgent))
+    , m_v8DebuggerAgent(agent)
 {
 }
 
@@ -332,11 +332,6 @@ void InspectorDebuggerAgent::restore()
     m_v8DebuggerAgent->restore();
     ErrorString errorString;
     enable(&errorString);
-}
-
-void InspectorDebuggerAgent::discardAgent()
-{
-    m_v8DebuggerAgent.clear();
 }
 
 } // namespace blink

@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class V8InspectorConnectionImpl;
+class V8InspectorSessionImpl;
 class V8EventListenerInfo;
 class V8DebuggerImpl;
 
@@ -53,7 +53,7 @@ class DictionaryValue;
 
 class InjectedScriptHost {
 public:
-    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*, V8InspectorConnectionImpl*);
+    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*, V8InspectorSessionImpl*);
     ~InjectedScriptHost();
 
     void disconnect();
@@ -77,10 +77,10 @@ public:
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
 
 private:
-    InjectedScriptHost(V8DebuggerImpl*, V8InspectorConnectionImpl*);
+    InjectedScriptHost(V8DebuggerImpl*, V8InspectorSessionImpl*);
 
     V8DebuggerImpl* m_debugger;
-    V8InspectorConnectionImpl* m_connection;
+    V8InspectorSessionImpl* m_session;
     OwnPtr<V8RuntimeAgent::InspectCallback> m_inspectCallback;
     OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
     protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;

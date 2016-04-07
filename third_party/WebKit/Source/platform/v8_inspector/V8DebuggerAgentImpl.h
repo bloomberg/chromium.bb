@@ -16,7 +16,7 @@ namespace blink {
 
 class JavaScriptCallFrame;
 class PromiseTracker;
-class V8InspectorConnectionImpl;
+class V8InspectorSessionImpl;
 class V8StackTraceImpl;
 
 namespace protocol {
@@ -42,7 +42,7 @@ public:
         MonitorCommandBreakpointSource
     };
 
-    V8DebuggerAgentImpl(V8InspectorConnectionImpl*, V8DebuggerImpl*);
+    explicit V8DebuggerAgentImpl(V8InspectorSessionImpl*);
     ~V8DebuggerAgentImpl() override;
 
     void setInspectorState(protocol::DictionaryValue*) override;
@@ -209,7 +209,7 @@ private:
     };
 
     V8DebuggerImpl* m_debugger;
-    V8InspectorConnectionImpl* m_connection;
+    V8InspectorSessionImpl* m_session;
     bool m_enabled;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Debugger* m_frontend;

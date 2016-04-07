@@ -33,7 +33,6 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -42,7 +41,7 @@ namespace blink {
 class InjectedScript;
 class InjectedScriptManager;
 class ScriptState;
-class V8Debugger;
+class V8RuntimeAgent;
 
 namespace protocol {
 class ListValue;
@@ -69,7 +68,6 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
-    void discardAgent() override;
 
     // Part of the protocol.
     void evaluate(ErrorString*, const String16& expression, const Maybe<String16>& objectGroup, const Maybe<bool>& includeCommandLineAPI, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<int>& contextId, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, const Maybe<bool>& userGesture, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>*) override;
@@ -84,13 +82,11 @@ public:
     void compileScript(ErrorString*, const String16& expression, const String16& sourceURL, bool persistScript, int executionContextId, Maybe<String16>* scriptId, Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void runScript(ErrorString*, const String16& scriptId, int executionContextId, const Maybe<String16>& objectGroup, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& includeCommandLineAPI, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
-    V8RuntimeAgent* v8Agent() { return m_v8RuntimeAgent.get(); }
-
 protected:
-    InspectorRuntimeAgent(V8Debugger*, Client*, int contextGroupId);
+    InspectorRuntimeAgent(V8RuntimeAgent*, Client*);
 
     bool m_enabled;
-    OwnPtr<V8RuntimeAgent> m_v8RuntimeAgent;
+    V8RuntimeAgent* m_v8RuntimeAgent;
     Client* m_client;
 };
 

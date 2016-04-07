@@ -72,14 +72,14 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
     m_timer.startRepeating(0.05, BLINK_FROM_HERE);
 }
 
-RawPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::create(v8::Isolate* isolate, V8RuntimeAgent* runtimeAgent)
+RawPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::create(v8::Isolate* isolate, V8HeapProfilerAgent* agent)
 {
-    return new InspectorHeapProfilerAgent(isolate, runtimeAgent);
+    return new InspectorHeapProfilerAgent(isolate, agent);
 }
 
-InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(v8::Isolate* isolate, V8RuntimeAgent* runtimeAgent)
+InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(v8::Isolate* isolate, V8HeapProfilerAgent* agent)
     : InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>("HeapProfiler")
-    , m_v8HeapProfilerAgent(V8HeapProfilerAgent::create(isolate, runtimeAgent))
+    , m_v8HeapProfilerAgent(agent)
     , m_isolate(isolate)
 {
 }
@@ -114,11 +114,6 @@ void InspectorHeapProfilerAgent::restore()
         startUpdateStatsTimer();
 }
 
-void InspectorHeapProfilerAgent::discardAgent()
-{
-    m_v8HeapProfilerAgent.clear();
-}
-
 // Protocol implementation.
 void InspectorHeapProfilerAgent::collectGarbage(ErrorString* error)
 {
@@ -141,7 +136,7 @@ void InspectorHeapProfilerAgent::startUpdateStatsTimer()
 {
     if (m_heapStatsUpdateTask)
         return;
-    m_heapStatsUpdateTask = adoptPtr(new HeapStatsUpdateTask(m_v8HeapProfilerAgent.get()));
+    m_heapStatsUpdateTask = adoptPtr(new HeapStatsUpdateTask(m_v8HeapProfilerAgent));
     m_heapStatsUpdateTask->startTimer();
 }
 

@@ -78,6 +78,8 @@
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/Values.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
@@ -378,6 +380,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     m_resourceContentLoader->dispose();
     m_agents.discardAgents();
     m_instrumentingAgents->reset();
+    m_v8Session.clear();
 }
 
 void WebDevToolsAgentImpl::initializeDeferredAgents()
@@ -390,13 +393,14 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
 
+    m_v8Session = mainThreadDebugger->debugger()->connect(mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
+    V8RuntimeAgent* runtimeAgent = m_v8Session->runtimeAgent();
+
     RawPtr<InspectorInspectorAgent> inspectorAgent = InspectorInspectorAgent::create();
     InspectorInspectorAgent* inspectorAgentPtr = inspectorAgent.get();
     m_agents.append(inspectorAgent.release());
 
-    RawPtr<PageRuntimeAgent> pageRuntimeAgent = PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
-    V8RuntimeAgent* runtimeAgent = pageRuntimeAgent->v8Agent();
-    m_agents.append(pageRuntimeAgent.release());
+    m_agents.append(PageRuntimeAgent::create(this, runtimeAgent, m_inspectedFrames.get()));
 
     RawPtr<InspectorDOMAgent> domAgent = InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), runtimeAgent, m_overlay.get());
     m_domAgent = domAgent.get();
@@ -422,11 +426,11 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    RawPtr<InspectorDebuggerAgent> debuggerAgent = PageDebuggerAgent::create(m_inspectedFrames.get(), runtimeAgent);
+    RawPtr<InspectorDebuggerAgent> debuggerAgent = PageDebuggerAgent::create(m_v8Session->debuggerAgent(), m_inspectedFrames.get());
     InspectorDebuggerAgent* debuggerAgentPtr = debuggerAgent.get();
     m_agents.append(debuggerAgent.release());
 
-    RawPtr<PageConsoleAgent> pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, debuggerAgentPtr->v8Agent(), m_domAgent, m_inspectedFrames.get());
+    RawPtr<PageConsoleAgent> pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, m_v8Session->debuggerAgent(), m_domAgent, m_inspectedFrames.get());
     PageConsoleAgent* pageConsoleAgentPtr = pageConsoleAgent.get();
     m_agents.append(pageConsoleAgent.release());
 
@@ -442,9 +446,9 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
 
-    m_agents.append(InspectorProfilerAgent::create(MainThreadDebugger::instance()->debugger(), m_overlay.get()));
+    m_agents.append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), m_overlay.get()));
 
-    m_agents.append(InspectorHeapProfilerAgent::create(isolate, runtimeAgent));
+    m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_v8Session->heapProfilerAgent()));
 
     RawPtr<InspectorPageAgent> pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgentPtr);
     m_pageAgent = pageAgent.get();

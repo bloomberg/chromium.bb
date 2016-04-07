@@ -64,6 +64,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
+#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/ListHashSet.h"

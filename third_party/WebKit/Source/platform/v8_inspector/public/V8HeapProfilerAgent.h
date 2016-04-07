@@ -15,7 +15,6 @@ class V8RuntimeAgent;
 
 class PLATFORM_EXPORT V8HeapProfilerAgent : public protocol::Backend::HeapProfiler, public V8Debugger::Agent<protocol::Frontend::HeapProfiler> {
 public:
-    static PassOwnPtr<V8HeapProfilerAgent> create(v8::Isolate*, V8RuntimeAgent*);
     virtual ~V8HeapProfilerAgent() { }
 
     virtual void requestHeapStatsUpdate() = 0;

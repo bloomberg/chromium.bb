@@ -45,12 +45,11 @@ class Isolate;
 namespace blink {
 
 class V8HeapProfilerAgent;
-class V8RuntimeAgent;
 
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Backend::HeapProfiler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
 public:
-    static RawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8RuntimeAgent*);
+    static RawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8HeapProfilerAgent*);
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.
@@ -58,7 +57,6 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
-    void discardAgent() override;
 
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
@@ -75,13 +73,13 @@ public:
 private:
     class HeapStatsUpdateTask;
 
-    InspectorHeapProfilerAgent(v8::Isolate*, V8RuntimeAgent*);
+    InspectorHeapProfilerAgent(v8::Isolate*, V8HeapProfilerAgent*);
 
     void startUpdateStatsTimer();
     void stopUpdateStatsTimer();
     bool isInspectableHeapObject(int id);
 
-    OwnPtr<V8HeapProfilerAgent> m_v8HeapProfilerAgent;
+    V8HeapProfilerAgent* m_v8HeapProfilerAgent;
     OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
     v8::Isolate* m_isolate;
 };

@@ -38,15 +38,14 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 using blink::protocol::Runtime::ExceptionDetails;
 
 namespace blink {
 
-PageRuntimeAgent::PageRuntimeAgent(Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames, int contextGroupId)
-    : InspectorRuntimeAgent(debugger, client, contextGroupId)
+PageRuntimeAgent::PageRuntimeAgent(Client* client, V8RuntimeAgent* agent, InspectedFrames* inspectedFrames)
+    : InspectorRuntimeAgent(agent, client)
     , m_inspectedFrames(inspectedFrames)
 {
 }

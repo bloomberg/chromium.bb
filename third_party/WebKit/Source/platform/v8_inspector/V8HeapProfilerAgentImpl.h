@@ -10,14 +10,14 @@
 
 namespace blink {
 
-class V8RuntimeAgentImpl;
+class V8InspectorSessionImpl;
 
 using protocol::Maybe;
 
 class V8HeapProfilerAgentImpl : public V8HeapProfilerAgent {
     PROTOCOL_DISALLOW_COPY(V8HeapProfilerAgentImpl);
 public:
-    explicit V8HeapProfilerAgentImpl(v8::Isolate*, V8RuntimeAgent*);
+    explicit V8HeapProfilerAgentImpl(V8InspectorSessionImpl*);
     ~V8HeapProfilerAgentImpl() override;
 
     void setInspectorState(protocol::DictionaryValue* state) override { m_state = state; }
@@ -48,8 +48,8 @@ private:
     void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
 
+    V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
-    V8RuntimeAgentImpl* m_runtimeAgent;
     protocol::Frontend::HeapProfiler* m_frontend;
     protocol::DictionaryValue* m_state;
 };

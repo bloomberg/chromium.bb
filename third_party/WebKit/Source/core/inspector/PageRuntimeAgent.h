@@ -42,9 +42,9 @@ class InspectedFrames;
 
 class CORE_EXPORT PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static RawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames, int contextGroupId)
+    static RawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8RuntimeAgent* agent, InspectedFrames* inspectedFrames)
     {
-        return new PageRuntimeAgent(client, debugger, inspectedFrames, contextGroupId);
+        return new PageRuntimeAgent(client, agent, inspectedFrames);
     }
     ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -52,7 +52,7 @@ public:
     void disable(ErrorString*) override;
 
 private:
-    PageRuntimeAgent(Client*, V8Debugger*, InspectedFrames*, int contextGroupId);
+    PageRuntimeAgent(Client*, V8RuntimeAgent*, InspectedFrames*);
 
     Member<InspectedFrames> m_inspectedFrames;
 };

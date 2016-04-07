@@ -56,6 +56,7 @@ class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
+class V8InspectorSession;
 class WebDevToolsAgentClient;
 class WebFrameWidgetImpl;
 class WebInputEvent;
@@ -151,6 +152,7 @@ private:
     Member<InspectorResourceContentLoader> m_resourceContentLoader;
     Member<InspectorOverlay> m_overlay;
     Member<InspectedFrames> m_inspectedFrames;
+    OwnPtr<V8InspectorSession> m_v8Session;
 
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorPageAgent> m_pageAgent;

@@ -6,6 +6,7 @@
 
 #include "platform/v8_inspector/Atomics.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include <v8-profiler.h>
@@ -119,13 +120,8 @@ public:
     String16 m_title;
 };
 
-PassOwnPtr<V8ProfilerAgent> V8ProfilerAgent::create(V8Debugger* debugger)
-{
-    return adoptPtr(new V8ProfilerAgentImpl(debugger));
-}
-
-V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8Debugger* debugger)
-    : m_debugger(static_cast<V8DebuggerImpl*>(debugger))
+V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session)
+    : m_debugger(session->debugger())
     , m_isolate(m_debugger->isolate())
     , m_state(nullptr)
     , m_frontend(nullptr)

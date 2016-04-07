@@ -6,8 +6,7 @@
 
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
-#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
-#include "platform/v8_inspector/V8RuntimeAgentImpl.h"
+#include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include <v8-profiler.h>
@@ -45,7 +44,7 @@ private:
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
 public:
-    explicit GlobalObjectNameResolver(V8RuntimeAgentImpl* runtimeAgent) : m_offset(0), m_runtimeAgent(runtimeAgent)
+    explicit GlobalObjectNameResolver(V8InspectorSessionImpl* session) : m_offset(0), m_session(session)
     {
         m_strings.resize(10000);
     }
@@ -56,7 +55,7 @@ public:
         if (!contextId)
             return "";
         ErrorString errorString;
-        InjectedScript* injectedScript = m_runtimeAgent->connection()->findInjectedScript(&errorString, contextId);
+        InjectedScript* injectedScript = m_session->findInjectedScript(&errorString, contextId);
         if (!injectedScript)
             return "";
         String16 name = injectedScript->context()->origin();
@@ -76,7 +75,7 @@ public:
 private:
     size_t m_offset;
     protocol::Vector<char> m_strings;
-    V8RuntimeAgentImpl* m_runtimeAgent;
+    V8InspectorSessionImpl* m_session;
 };
 
 class HeapSnapshotOutputStream final : public v8::OutputStream {
@@ -149,14 +148,9 @@ private:
 
 } // namespace
 
-PassOwnPtr<V8HeapProfilerAgent> V8HeapProfilerAgent::create(v8::Isolate* isolate, V8RuntimeAgent* runtimeAgent)
-{
-    return adoptPtr(new V8HeapProfilerAgentImpl(isolate, runtimeAgent));
-}
-
-V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(v8::Isolate* isolate, V8RuntimeAgent* runtimeAgent)
-    : m_isolate(isolate)
-    , m_runtimeAgent(static_cast<V8RuntimeAgentImpl*>(runtimeAgent))
+V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session)
+    : m_session(session)
+    , m_isolate(session->debugger()->isolate())
 {
 }
 
@@ -236,7 +230,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
     if (reportProgress.fromMaybe(false))
         progress = adoptPtr(new HeapSnapshotProgress(m_frontend));
 
-    GlobalObjectNameResolver resolver(m_runtimeAgent);
+    GlobalObjectNameResolver resolver(m_session);
     const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(progress.get(), &resolver);
     if (!snapshot) {
         *errorString = "Failed to take heap snapshot";
@@ -262,7 +256,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         *error = "Object is not available";
         return;
     }
-    *result = m_runtimeAgent->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
+    *result = m_session->runtimeAgent()->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
     if (!result)
         *error = "Object is not available";
 }
@@ -275,13 +269,13 @@ void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, c
         *errorString = "Invalid heap snapshot object id";
         return;
     }
-    m_runtimeAgent->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
+    m_session->runtimeAgent()->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
 }
 
 void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const String16& objectId, String16* heapSnapshotObjectId)
 {
     v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Value> value = m_runtimeAgent->findObject(errorString, objectId);
+    v8::Local<v8::Value> value = m_session->runtimeAgent()->findObject(errorString, objectId);
     if (value.IsEmpty() || value->IsUndefined())
         return;
 
@@ -295,7 +289,7 @@ void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
         return;
     HeapStatsStream stream(m_frontend);
     v8::SnapshotObjectId lastSeenObjectId = m_isolate->GetHeapProfiler()->GetHeapStats(&stream);
-    m_frontend->lastSeenObjectId(lastSeenObjectId, m_runtimeAgent->debugger()->client()->currentTimeMS());
+    m_frontend->lastSeenObjectId(lastSeenObjectId, m_session->debugger()->client()->currentTimeMS());
 }
 
 void V8HeapProfilerAgentImpl::startTrackingHeapObjectsInternal(bool trackAllocations)

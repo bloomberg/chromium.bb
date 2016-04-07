@@ -26,7 +26,6 @@ public:
         virtual ~Inspectable() { }
     };
 
-    static PassOwnPtr<V8RuntimeAgent> create(V8Debugger*, int contextGroupId);
     virtual ~V8RuntimeAgent() { }
 
     // Embedder API.

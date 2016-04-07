@@ -44,10 +44,10 @@ namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-InspectorRuntimeAgent::InspectorRuntimeAgent(V8Debugger* debugger, Client* client, int contextGroupId)
+InspectorRuntimeAgent::InspectorRuntimeAgent(V8RuntimeAgent* agent, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>("Runtime")
     , m_enabled(false)
-    , m_v8RuntimeAgent(V8RuntimeAgent::create(debugger, contextGroupId))
+    , m_v8RuntimeAgent(agent)
     , m_client(client)
 {
 }
@@ -82,11 +82,6 @@ void InspectorRuntimeAgent::restore()
     m_v8RuntimeAgent->restore();
     ErrorString errorString;
     enable(&errorString);
-}
-
-void InspectorRuntimeAgent::discardAgent()
-{
-    m_v8RuntimeAgent.clear();
 }
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString,

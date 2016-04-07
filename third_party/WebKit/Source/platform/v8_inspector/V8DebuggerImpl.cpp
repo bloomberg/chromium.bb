@@ -36,7 +36,7 @@
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
-#include "platform/v8_inspector/V8InspectorConnectionImpl.h"
+#include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -775,6 +775,11 @@ PassOwnPtr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTra
 {
     V8DebuggerAgentImpl* agent = getDebuggerAgentForContext(m_isolate->GetCurrentContext());
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
+}
+
+PassOwnPtr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId)
+{
+    return V8InspectorSessionImpl::create(this, contextGroupId);
 }
 
 void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)

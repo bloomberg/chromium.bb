@@ -41,7 +41,7 @@ class InjectedScript;
 class InspectedContext;
 class RemoteObjectIdBase;
 class V8DebuggerImpl;
-class V8InspectorConnectionImpl;
+class V8InspectorSessionImpl;
 
 namespace protocol {
 class DictionaryValue;
@@ -52,7 +52,7 @@ using protocol::Maybe;
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
     PROTOCOL_DISALLOW_COPY(V8RuntimeAgentImpl);
 public:
-    V8RuntimeAgentImpl(V8DebuggerImpl*, int contextGroupId);
+    explicit V8RuntimeAgentImpl(V8InspectorSessionImpl*);
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
@@ -114,9 +114,6 @@ public:
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
-    V8DebuggerImpl* debugger() { return m_debugger; }
-    V8InspectorConnectionImpl* connection() { return m_connection.get(); }
-
     void reset();
     void reportExecutionContextCreated(InspectedContext*);
     void reportExecutionContextDestroyed(InspectedContext*);
@@ -130,8 +127,7 @@ public:
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
 
 private:
-    // TODO(dgozman): reverse ownership.
-    OwnPtr<V8InspectorConnectionImpl> m_connection;
+    V8InspectorSessionImpl* m_session;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;
     V8DebuggerImpl* m_debugger;

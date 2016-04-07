@@ -32,9 +32,10 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 
 namespace blink {
+
+class V8DebuggerAgent;
 
 using protocol::Array;
 
@@ -93,14 +94,13 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
-    void discardAgent() override;
 
-    V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent.get(); }
+    V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent; }
 
 protected:
-    explicit InspectorDebuggerAgent(V8RuntimeAgent*);
+    explicit InspectorDebuggerAgent(V8DebuggerAgent*);
 
-    OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
+    V8DebuggerAgent* m_v8DebuggerAgent;
 };
 
 } // namespace blink

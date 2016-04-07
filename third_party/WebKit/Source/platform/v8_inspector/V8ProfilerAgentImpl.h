@@ -17,11 +17,12 @@ class Isolate;
 namespace blink {
 
 class V8DebuggerImpl;
+class V8InspectorSessionImpl;
 
 class V8ProfilerAgentImpl : public V8ProfilerAgent {
     PROTOCOL_DISALLOW_COPY(V8ProfilerAgentImpl);
 public:
-    explicit V8ProfilerAgentImpl(V8Debugger*);
+    explicit V8ProfilerAgentImpl(V8InspectorSessionImpl*);
     ~V8ProfilerAgentImpl() override;
 
     void setInspectorState(protocol::DictionaryValue* state) override { m_state = state; }

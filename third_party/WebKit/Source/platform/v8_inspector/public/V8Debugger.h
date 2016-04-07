@@ -15,6 +15,7 @@ namespace blink {
 
 class V8ContextInfo;
 class V8DebuggerClient;
+class V8InspectorSession;
 class V8StackTrace;
 
 namespace protocol {
@@ -42,6 +43,8 @@ public:
     virtual void contextDestroyed(v8::Local<v8::Context>) = 0;
     // TODO(dgozman): remove this one.
     virtual void resetContextGroup(int contextGroupId) = 0;
+
+    virtual PassOwnPtr<V8InspectorSession> connect(int contextGroupId) = 0;
 
     static v8::Local<v8::Symbol> scopeExtensionSymbol(v8::Isolate*);
     static bool isCommandLineAPIMethod(const String16& name);
