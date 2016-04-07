@@ -1297,8 +1297,8 @@ class Changelist(object):
 
   def CMDPatchIssue(self, issue_arg, reject, nocommit, directory):
     """Fetches and applies the issue patch from codereview to local branch."""
-    if issue_arg.isdigit():
-      parsed_issue_arg = _RietveldParsedIssueNumberArgument(int(issue_arg))
+    if isinstance(issue_arg, (int, long)) or issue_arg.isdigit():
+      parsed_issue_arg = _ParsedIssueNumberArgument(int(issue_arg))
     else:
       # Assume url.
       parsed_issue_arg = self._codereview_impl.ParseIssueURL(
@@ -1603,7 +1603,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if parsed_issue_arg.hostname:
       self._rietveld_server = 'https://%s' % parsed_issue_arg.hostname
 
-    if parsed_issue_arg.patch_url:
+    if (isinstance(parsed_issue_arg, _RietveldParsedIssueNumberArgument) and
+        parsed_issue_arg.patch_url):
       assert parsed_issue_arg.patchset
       patchset = parsed_issue_arg.patchset
       patch_data = urllib2.urlopen(parsed_issue_arg.patch_url).read()
@@ -4316,6 +4317,9 @@ def CMDdiff(parser, args):
 
   # Create a new branch based on the merge-base
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
+  # Update the cached branch in cl instance, to avoid overwriting original
+  # branch properties.
+  cl.branch = cl.branchref = None
   try:
     rtn = cl.CMDPatchIssue(issue, reject=False, nocommit=False, directory=None)
     if rtn != 0:
