@@ -234,7 +234,7 @@ public:
     void didScroll() override;
 
     // cc::LayerClient implementation.
-    scoped_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
 
     PaintController& getPaintController();
 

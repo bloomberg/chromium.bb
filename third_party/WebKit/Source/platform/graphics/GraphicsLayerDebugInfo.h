@@ -31,7 +31,6 @@
 #ifndef GraphicsLayerDebugInfo_h
 #define GraphicsLayerDebugInfo_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
@@ -39,6 +38,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
+
+#include <memory>
 
 namespace base {
 namespace trace_event {
@@ -55,7 +56,7 @@ public:
     GraphicsLayerDebugInfo();
     ~GraphicsLayerDebugInfo();
 
-    scoped_ptr<base::trace_event::TracedValue> asTracedValue() const;
+    std::unique_ptr<base::trace_event::TracedValue> asTracedValue() const;
 
     CompositingReasons getCompositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }

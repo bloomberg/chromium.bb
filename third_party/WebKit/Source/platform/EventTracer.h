@@ -31,13 +31,13 @@
 #ifndef EventTracer_h
 #define EventTracer_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
+#include <memory>
 #include <stdint.h>
 
 namespace base {
@@ -109,7 +109,7 @@ private:
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        scoped_ptr<base::trace_event::ConvertableToTraceFormat>* convertables,
+        std::unique_ptr<base::trace_event::ConvertableToTraceFormat>* convertables,
         unsigned flags);
 };
 

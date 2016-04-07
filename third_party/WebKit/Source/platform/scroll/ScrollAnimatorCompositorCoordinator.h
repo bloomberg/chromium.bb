@@ -72,7 +72,7 @@ protected:
     void notifyAnimationTakeover(
         double monotonicTime,
         double animationStartTime,
-        scoped_ptr<cc::AnimationCurve>) override { };
+        std::unique_ptr<cc::AnimationCurve>) override { };
 
     // CompositorAnimationPlayerClient implementation.
     CompositorAnimationPlayer* compositorPlayer() const override;

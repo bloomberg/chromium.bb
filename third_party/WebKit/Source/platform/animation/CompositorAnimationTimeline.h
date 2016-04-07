@@ -6,10 +6,11 @@
 #define CompositorAnimationTimeline_h
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation_timeline.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
+
+#include <memory>
 
 namespace blink {
 

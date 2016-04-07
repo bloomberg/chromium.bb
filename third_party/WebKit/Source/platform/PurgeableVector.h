@@ -31,11 +31,12 @@
 #ifndef PurgeableVector_h
 #define PurgeableVector_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
+
+#include <memory>
 
 namespace base {
 class DiscardableMemory;
@@ -119,7 +120,7 @@ private:
     // Note that there can't be data both in |m_vector| and
     // |m_discardable|, i.e. only one of them is used at a given time.
     Vector<char> m_vector;
-    scoped_ptr<base::DiscardableMemory> m_discardable;
+    std::unique_ptr<base::DiscardableMemory> m_discardable;
     size_t m_discardableCapacity;
     size_t m_discardableSize;
     bool m_isPurgeable;

@@ -5,11 +5,12 @@
 #ifndef CompositorScrollOffsetAnimationCurve_h
 #define CompositorScrollOffsetAnimationCurve_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/Noncopyable.h"
+
+#include <memory>
 
 namespace cc {
 class AnimationCurve;
@@ -40,10 +41,10 @@ public:
     virtual FloatPoint targetValue() const;
     virtual void updateTarget(double time, FloatPoint newTarget);
 
-    scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 
 private:
-    scoped_ptr<cc::ScrollOffsetAnimationCurve> m_curve;
+    std::unique_ptr<cc::ScrollOffsetAnimationCurve> m_curve;
 };
 
 } // namespace blink

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-scoped_ptr<base::Value> parseTracedValue(PassOwnPtr<TracedValue> value)
+std::unique_ptr<base::Value> parseTracedValue(PassOwnPtr<TracedValue> value)
 {
     base::JSONReader reader;
     CString utf8 = value->toString().utf8();
@@ -25,7 +25,7 @@ TEST(TracedValueTest, FlatDictionary)
     value->setBoolean("bool", true);
     value->setString("string", "string");
 
-    scoped_ptr<base::Value> parsed = parseTracedValue(value.release());
+    std::unique_ptr<base::Value> parsed = parseTracedValue(value.release());
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
     int intValue;
@@ -61,7 +61,7 @@ TEST(TracedValueTest, Hierarchy)
     value->endArray();
     value->setString("s0", "foo");
 
-    scoped_ptr<base::Value> parsed = parseTracedValue(value.release());
+    std::unique_ptr<base::Value> parsed = parseTracedValue(value.release());
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
     int i0;
@@ -109,7 +109,7 @@ TEST(TracedValueTest, Escape)
     value->setString("s3\\", "value3");
     value->setString("\"s4\"", "value4");
 
-    scoped_ptr<base::Value> parsed = parseTracedValue(value.release());
+    std::unique_ptr<base::Value> parsed = parseTracedValue(value.release());
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
     std::string s0;

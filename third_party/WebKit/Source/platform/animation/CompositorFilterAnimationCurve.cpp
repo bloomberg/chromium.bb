@@ -71,7 +71,7 @@ void CompositorFilterAnimationCurve::setStepsTimingFunction(int numberOfSteps, f
     m_curve->SetTimingFunction(cc::StepsTimingFunction::Create(numberOfSteps, stepsStartOffset));
 }
 
-scoped_ptr<cc::AnimationCurve> CompositorFilterAnimationCurve::cloneToAnimationCurve() const
+std::unique_ptr<cc::AnimationCurve> CompositorFilterAnimationCurve::cloneToAnimationCurve() const
 {
     return m_curve->Clone();
 }

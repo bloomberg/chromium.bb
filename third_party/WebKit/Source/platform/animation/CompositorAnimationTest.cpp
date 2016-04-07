@@ -11,8 +11,8 @@ namespace blink {
 
 TEST(WebCompositorAnimationTest, DefaultSettings)
 {
-    scoped_ptr<CompositorAnimationCurve> curve(new CompositorFloatAnimationCurve());
-    scoped_ptr<CompositorAnimation> animation(new CompositorAnimation(
+    std::unique_ptr<CompositorAnimationCurve> curve(new CompositorFloatAnimationCurve());
+    std::unique_ptr<CompositorAnimation> animation(new CompositorAnimation(
         *curve, CompositorTargetProperty::OPACITY, 1, 0));
 
     // Ensure that the defaults are correct.
@@ -24,8 +24,8 @@ TEST(WebCompositorAnimationTest, DefaultSettings)
 
 TEST(WebCompositorAnimationTest, ModifiedSettings)
 {
-    scoped_ptr<CompositorFloatAnimationCurve> curve(new CompositorFloatAnimationCurve());
-    scoped_ptr<CompositorAnimation> animation(new CompositorAnimation(
+    std::unique_ptr<CompositorFloatAnimationCurve> curve(new CompositorFloatAnimationCurve());
+    std::unique_ptr<CompositorAnimation> animation(new CompositorAnimation(
         *curve, CompositorTargetProperty::OPACITY, 1, 0));
     animation->setIterations(2);
     animation->setStartTime(2);

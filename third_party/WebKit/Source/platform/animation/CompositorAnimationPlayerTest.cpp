@@ -4,13 +4,14 @@
 
 #include "platform/animation/CompositorAnimationPlayer.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/testing/CompositorTest.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -43,7 +44,7 @@ public:
         return m_player.get();
     }
 
-    scoped_ptr<CompositorAnimationPlayer> m_player;
+    std::unique_ptr<CompositorAnimationPlayer> m_player;
 };
 
 class CompositorAnimationPlayerTest : public CompositorTest {
@@ -53,9 +54,9 @@ class CompositorAnimationPlayerTest : public CompositorTest {
 // doesn't forward the finish notification.
 TEST_F(CompositorAnimationPlayerTest, NullDelegate)
 {
-    scoped_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
+    std::unique_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
-    scoped_ptr<CompositorAnimationPlayer> player(new CompositorAnimationPlayer);
+    std::unique_ptr<CompositorAnimationPlayer> player(new CompositorAnimationPlayer);
     cc::AnimationPlayer* ccPlayer = player->animationPlayer();
 
     player->setAnimationDelegate(delegate.get());
@@ -73,9 +74,9 @@ TEST_F(CompositorAnimationPlayerTest, NullDelegate)
 
 TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
 {
-    scoped_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
+    std::unique_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
-    scoped_ptr<CompositorAnimationPlayer> player(new CompositorAnimationPlayer);
+    std::unique_ptr<CompositorAnimationPlayer> player(new CompositorAnimationPlayer);
     scoped_refptr<cc::AnimationPlayer> ccPlayer = player->animationPlayer();
 
     player->setAnimationDelegate(delegate.get());
@@ -91,8 +92,8 @@ TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
 
 TEST_F(CompositorAnimationPlayerTest, CompositorPlayerDeletionDetachesFromCCTimeline)
 {
-    scoped_ptr<CompositorAnimationTimeline> timeline(new CompositorAnimationTimeline);
-    scoped_ptr<CompositorAnimationPlayerTestClient> client(new CompositorAnimationPlayerTestClient);
+    std::unique_ptr<CompositorAnimationTimeline> timeline(new CompositorAnimationTimeline);
+    std::unique_ptr<CompositorAnimationPlayerTestClient> client(new CompositorAnimationPlayerTestClient);
 
     scoped_refptr<cc::AnimationTimeline> ccTimeline = timeline->animationTimeline();
     scoped_refptr<cc::AnimationPlayer> ccPlayer = client->m_player->animationPlayer();

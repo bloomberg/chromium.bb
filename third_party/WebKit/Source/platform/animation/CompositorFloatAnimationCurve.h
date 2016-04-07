@@ -5,11 +5,12 @@
 #ifndef CompositorFloatAnimationCurve_h
 #define CompositorFloatAnimationCurve_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "wtf/Noncopyable.h"
+
+#include <memory>
 
 namespace cc {
 class AnimationCurve;
@@ -48,10 +49,10 @@ public:
     // CompositorAnimationCurve implementation.
     AnimationCurveType type() const override;
 
-    scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 
 private:
-    scoped_ptr<cc::KeyframedFloatAnimationCurve> m_curve;
+    std::unique_ptr<cc::KeyframedFloatAnimationCurve> m_curve;
 };
 
 } // namespace blink

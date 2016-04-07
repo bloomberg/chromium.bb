@@ -65,15 +65,15 @@ private:
     TestSharedBitmapManager m_sharedBitmapManager;
     TestTaskGraphRunner m_taskGraphRunner;
     FakeImplTaskRunnerProvider m_taskRunnerProvider;
-    scoped_ptr<OutputSurface> m_outputSurface;
-    scoped_ptr<FakeLayerTreeHostImpl> m_hostImpl;
+    std::unique_ptr<OutputSurface> m_outputSurface;
+    std::unique_ptr<FakeLayerTreeHostImpl> m_hostImpl;
 };
 
 TEST_F(CompositorMutableStateTest, NoMutableState)
 {
     // In this test, there are no layers with either an element id or mutable
     // properties. We should not be able to get any mutable state.
-    scoped_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
+    std::unique_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
     SetLayerPropertiesForTesting(root.get());
 
     hostImpl().SetViewportSize(root->bounds());
@@ -90,7 +90,7 @@ TEST_F(CompositorMutableStateTest, MutableStateNoMutableProperties)
 {
     // In this test, there is a layer with an element id, but no mutable
     // properties. This should behave just as if we'd had no element id.
-    scoped_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
+    std::unique_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
     SetLayerPropertiesForTesting(root.get());
     root->SetElementId(42);
 
@@ -109,9 +109,9 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     // In this test, there is a layer with an element id and mutable properties.
     // In this case, we should get a valid mutable state for this element id that
     // has a real effect on the corresponding layer.
-    scoped_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
+    std::unique_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
 
-    scoped_ptr<LayerImpl> scopedLayer =
+    std::unique_ptr<LayerImpl> scopedLayer =
         LayerImpl::Create(hostImpl().active_tree(), 11);
     LayerImpl* layer = scopedLayer.get();
     layer->SetScrollClipLayer(root->id());

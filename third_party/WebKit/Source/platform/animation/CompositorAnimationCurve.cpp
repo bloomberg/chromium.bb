@@ -8,7 +8,7 @@
 
 namespace blink {
 
-scoped_ptr<cc::TimingFunction> CompositorAnimationCurve::createTimingFunction(TimingFunctionType type)
+std::unique_ptr<cc::TimingFunction> CompositorAnimationCurve::createTimingFunction(TimingFunctionType type)
 {
     switch (type) {
     case blink::CompositorAnimationCurve::TimingFunctionTypeEase:

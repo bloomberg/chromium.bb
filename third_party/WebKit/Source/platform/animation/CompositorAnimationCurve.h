@@ -5,8 +5,9 @@
 #ifndef CompositorAnimationCurve_h
 #define CompositorAnimationCurve_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
+
+#include <memory>
 
 namespace cc {
 class TimingFunction;
@@ -36,7 +37,7 @@ public:
     virtual AnimationCurveType type() const = 0;
 
 protected:
-    static scoped_ptr<cc::TimingFunction> createTimingFunction(TimingFunctionType);
+    static std::unique_ptr<cc::TimingFunction> createTimingFunction(TimingFunctionType);
 };
 
 } // namespace blink

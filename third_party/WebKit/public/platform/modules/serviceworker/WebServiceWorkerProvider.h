@@ -56,7 +56,7 @@ public:
     using WebServiceWorkerGetRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, const WebServiceWorkerError&>;
 
     // Each element's ownership is transferred.
-    // TODO(yhirano): Consider using vector<scoped_ptr<>>.
+    // TODO(yhirano): Consider using vector<std::unique_ptr<>>.
     using WebServiceWorkerGetRegistrationsCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>>, const WebServiceWorkerError&>;
     using WebServiceWorkerGetRegistrationForReadyCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, void>;
 

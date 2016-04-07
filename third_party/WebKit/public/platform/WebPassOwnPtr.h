@@ -7,11 +7,10 @@
 
 #include "public/platform/WebCommon.h"
 #include <cstddef>
+#include <memory>
 
 #if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
-#else
-#include <base/memory/scoped_ptr.h>
 #endif
 
 namespace blink {
@@ -19,7 +18,7 @@ namespace blink {
 // WebPassOwnPtr<T> is used to pass a T pointer with ownership from chromium
 // side to blink side. T's definition must be shared among all users
 // (especially between chromium and blink).
-// TODO(yhirano): Migrate to scoped_ptr or std::unique_ptr once the repository
+// TODO(yhirano): Migrate to std::unique_ptr once the repository
 // merge is done or C++11 std library is allowed.
 template <typename T>
 class WebPassOwnPtr final {
@@ -53,11 +52,11 @@ public:
         return adoptPtr(ptr);
     }
 #else
-    operator scoped_ptr<T>()
+    operator std::unique_ptr<T>()
     {
         T* ptr = m_ptr;
         m_ptr = nullptr;
-        return scoped_ptr<T>(ptr);
+        return std::unique_ptr<T>(ptr);
     }
 #endif // INSIDE_BLINK
 

@@ -25,7 +25,6 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include "SkSurface.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -50,6 +49,8 @@
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/RefPtr.h"
+
+#include <memory>
 
 using testing::AnyNumber;
 using testing::AtLeast;

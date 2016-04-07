@@ -78,7 +78,7 @@ float CompositorFloatAnimationCurve::getValue(double time) const
     return m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
 }
 
-scoped_ptr<cc::AnimationCurve> CompositorFloatAnimationCurve::cloneToAnimationCurve() const
+std::unique_ptr<cc::AnimationCurve> CompositorFloatAnimationCurve::cloneToAnimationCurve() const
 {
     return m_curve->Clone();
 }

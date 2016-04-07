@@ -74,7 +74,7 @@ protected:
     void notifyAnimationTakeover(
         double monotonicTime,
         double animationStartTime,
-        scoped_ptr<cc::AnimationCurve>) override;
+        std::unique_ptr<cc::AnimationCurve>) override;
 
     OwnPtr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
     double m_startTime;

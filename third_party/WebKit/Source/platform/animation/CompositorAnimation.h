@@ -5,10 +5,11 @@
 #ifndef CompositorAnimation_h
 #define CompositorAnimation_h
 
-#include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "wtf/Noncopyable.h"
+
+#include <memory>
 
 namespace cc {
 class Animation;
@@ -69,13 +70,13 @@ public:
     virtual double iterationStart() const;
     virtual void setIterationStart(double);
 
-    scoped_ptr<cc::Animation> passAnimation();
+    std::unique_ptr<cc::Animation> passAnimation();
 
 protected:
     CompositorAnimation();
 
 private:
-    scoped_ptr<cc::Animation> m_animation;
+    std::unique_ptr<cc::Animation> m_animation;
 };
 
 } // namespace blink

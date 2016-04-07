@@ -217,7 +217,7 @@ def _CheckForForbiddenNamespace(input_api, output_api):
     """Checks that Blink uses Chromium namespaces only in permitted code."""
     # This list is not exhaustive, but covers likely ones.
     chromium_namespaces = ["base", "cc", "content", "gfx", "net", "ui"]
-    chromium_classes = ["scoped_ptr", "scoped_refptr"]
+    chromium_classes = ["scoped_refptr"]
 
     def source_file_filter(path):
         return input_api.FilterSourceFile(path,

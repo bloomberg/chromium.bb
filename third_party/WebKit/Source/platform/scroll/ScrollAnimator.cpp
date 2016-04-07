@@ -371,7 +371,7 @@ void ScrollAnimator::notifyCompositorAnimationFinished(int groupId)
 void ScrollAnimator::notifyAnimationTakeover(
     double monotonicTime,
     double animationStartTime,
-    scoped_ptr<cc::AnimationCurve> curve)
+    std::unique_ptr<cc::AnimationCurve> curve)
 {
     // If there is already an animation running and the compositor asks to take
     // over an animation, do nothing to avoid judder.

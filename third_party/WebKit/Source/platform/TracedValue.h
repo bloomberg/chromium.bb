@@ -51,7 +51,7 @@ private:
 
     // This will be moved (and become null) when TracedValue is passed to
     // EventTracer::addTraceEvent().
-    scoped_ptr<base::trace_event::TracedValue> m_tracedValue;
+    std::unique_ptr<base::trace_event::TracedValue> m_tracedValue;
 
     friend class EventTracer;
 };

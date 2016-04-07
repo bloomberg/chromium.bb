@@ -81,7 +81,7 @@ void CompositorScrollOffsetAnimationCurve::updateTarget(double time, FloatPoint 
     m_curve->UpdateTarget(time, gfx::ScrollOffset(newTarget.x(), newTarget.y()));
 }
 
-scoped_ptr<cc::AnimationCurve> CompositorScrollOffsetAnimationCurve::cloneToAnimationCurve() const
+std::unique_ptr<cc::AnimationCurve> CompositorScrollOffsetAnimationCurve::cloneToAnimationCurve() const
 {
     return m_curve->Clone();
 }

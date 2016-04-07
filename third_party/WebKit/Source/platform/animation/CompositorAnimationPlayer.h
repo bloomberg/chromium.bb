@@ -6,13 +6,14 @@
 #define CompositorAnimationPlayer_h
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_player.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -49,7 +50,7 @@ private:
     void NotifyAnimationStarted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
     void NotifyAnimationFinished(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
     void NotifyAnimationAborted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
-    void NotifyAnimationTakeover(base::TimeTicks monotonicTime, cc::TargetProperty::Type, double animationStartTime, scoped_ptr<cc::AnimationCurve>) override;
+    void NotifyAnimationTakeover(base::TimeTicks monotonicTime, cc::TargetProperty::Type, double animationStartTime, std::unique_ptr<cc::AnimationCurve>) override;
 
     scoped_refptr<cc::AnimationPlayer> m_animationPlayer;
     CompositorAnimationDelegate* m_delegate;

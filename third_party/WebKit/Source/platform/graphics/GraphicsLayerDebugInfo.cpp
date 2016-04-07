@@ -32,9 +32,9 @@ GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
 
 GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() { }
 
-scoped_ptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTracedValue() const
+std::unique_ptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTracedValue() const
 {
-    scoped_ptr<base::trace_event::TracedValue> tracedValue(
+    std::unique_ptr<base::trace_event::TracedValue> tracedValue(
         new base::trace_event::TracedValue());
     appendAnnotatedInvalidateRects(tracedValue.get());
     appendCompositingReasons(tracedValue.get());

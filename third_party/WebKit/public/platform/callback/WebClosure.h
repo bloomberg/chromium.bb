@@ -9,9 +9,10 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "public/platform/WebCommon.h"
 
+#include <memory>
 #include <utility>
 
 #if BLINK_IMPLEMENTATION
@@ -31,7 +32,7 @@ public:
 
     explicit WebClosure(PassOwnPtr<SameThreadClosure> c)
     {
-        m_closure = base::Bind(&RunAndDelete, base::Passed(make_scoped_ptr(c.leakPtr())));
+        m_closure = base::Bind(&RunAndDelete, base::Passed(base::WrapUnique(c.leakPtr())));
     }
 #endif
 
@@ -62,7 +63,7 @@ public:
 
 private:
 #if BLINK_IMPLEMENTATION
-    static void RunAndDelete(scoped_ptr<SameThreadClosure> c) { (*c)(); }
+    static void RunAndDelete(std::unique_ptr<SameThreadClosure> c) { (*c)(); }
 #endif
 
 #if DCHECK_IS_ON()

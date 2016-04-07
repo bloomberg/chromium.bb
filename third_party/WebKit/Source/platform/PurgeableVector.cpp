@@ -235,7 +235,7 @@ bool PurgeableVector::reservePurgeableCapacity(size_t capacity, PurgeableAllocat
     if (allocationStrategy == UseExponentialGrowth)
         capacity = adjustPurgeableCapacity(capacity);
 
-    scoped_ptr<base::DiscardableMemory> discardable =
+    std::unique_ptr<base::DiscardableMemory> discardable =
         base::DiscardableMemoryAllocator::GetInstance()->AllocateLockedDiscardableMemory(capacity);
     ASSERT(discardable);
 

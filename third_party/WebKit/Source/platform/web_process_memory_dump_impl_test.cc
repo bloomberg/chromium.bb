@@ -20,16 +20,16 @@ namespace blink {
 // behaves correctly, performs the right transfers of memory ownerships and
 // doesn't leak objects.
 TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
-  scoped_ptr<base::trace_event::TracedValue> traced_value(
+  std::unique_ptr<base::trace_event::TracedValue> traced_value(
           new base::trace_event::TracedValue());
 
-  scoped_ptr<WebProcessMemoryDumpImpl> wpmd1(new WebProcessMemoryDumpImpl());
+  std::unique_ptr<WebProcessMemoryDumpImpl> wpmd1(new WebProcessMemoryDumpImpl());
   auto wmad1 = wpmd1->createMemoryAllocatorDump("1/1");
   auto wmad2 = wpmd1->createMemoryAllocatorDump("1/2");
   ASSERT_EQ(wmad1, wpmd1->getMemoryAllocatorDump("1/1"));
   ASSERT_EQ(wmad2, wpmd1->getMemoryAllocatorDump("1/2"));
 
-  scoped_ptr<WebProcessMemoryDumpImpl> wpmd2(new WebProcessMemoryDumpImpl());
+  std::unique_ptr<WebProcessMemoryDumpImpl> wpmd2(new WebProcessMemoryDumpImpl());
   wpmd2->createMemoryAllocatorDump("2/1");
   wpmd2->createMemoryAllocatorDump("2/2");
 

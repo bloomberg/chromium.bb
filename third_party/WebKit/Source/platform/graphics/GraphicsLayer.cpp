@@ -1196,9 +1196,9 @@ void GraphicsLayer::didScroll()
     }
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::TakeDebugInfo(cc::Layer* layer)
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::TakeDebugInfo(cc::Layer* layer)
 {
-    scoped_ptr<base::trace_event::TracedValue> tracedValue(m_debugInfo.asTracedValue());
+    std::unique_ptr<base::trace_event::TracedValue> tracedValue(m_debugInfo.asTracedValue());
     tracedValue->SetString("layer_name", WTF::StringUTF8Adaptor(debugName(layer)).asStringPiece());
     return std::move(tracedValue);
 }

@@ -7,13 +7,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace base {
@@ -90,7 +90,7 @@ class PLATFORM_EXPORT WebProcessMemoryDumpImpl final
       base::trace_event::MemoryAllocatorDump* memory_allocator_dump);
 
   // Only for the case of ProcessMemoryDump being owned (i.e. the default ctor).
-  scoped_ptr<base::trace_event::ProcessMemoryDump> owned_process_memory_dump_;
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> owned_process_memory_dump_;
 
   // The underlying ProcessMemoryDump instance to which the
   // createMemoryAllocatorDump() calls will be proxied to.
@@ -108,7 +108,7 @@ class PLATFORM_EXPORT WebProcessMemoryDumpImpl final
           OwnPtr<WebMemoryAllocatorDumpImpl>> memory_allocator_dumps_;
 
   // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
-  std::vector<scoped_ptr<skia::SkiaTraceMemoryDumpImpl>> sk_trace_dump_list_;
+  std::vector<std::unique_ptr<skia::SkiaTraceMemoryDumpImpl>> sk_trace_dump_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDumpImpl);
 };

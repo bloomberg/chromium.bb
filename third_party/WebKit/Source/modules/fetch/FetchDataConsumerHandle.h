@@ -62,8 +62,8 @@ public:
     };
 
     // TODO(yhirano): obtainReader() is currently non-virtual override, and
-    // will be changed into virtual override when we can use scoped_ptr /
-    // unique_ptr in both Blink and Chromium.
+    // will be changed into virtual override when we can use unique_ptr in
+    // Blink.
     PassOwnPtr<Reader> obtainReader(Client* client) { return adoptPtr(obtainReaderInternal(client)); }
 
 private:

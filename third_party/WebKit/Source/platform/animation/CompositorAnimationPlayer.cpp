@@ -105,7 +105,7 @@ void CompositorAnimationPlayer::NotifyAnimationTakeover(
     base::TimeTicks monotonicTime,
     cc::TargetProperty::Type,
     double animationStartTime,
-    scoped_ptr<cc::AnimationCurve> curve)
+    std::unique_ptr<cc::AnimationCurve> curve)
 {
     if (m_delegate) {
         m_delegate->notifyAnimationTakeover(

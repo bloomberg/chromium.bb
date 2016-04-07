@@ -5,9 +5,10 @@
 #ifndef CompositorAnimationDelegate_h
 #define CompositorAnimationDelegate_h
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation_curve.h"
 #include "platform/PlatformExport.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -25,7 +26,7 @@ public:
     virtual void notifyAnimationTakeover(
         double monotonicTime,
         double animationStartTime,
-        scoped_ptr<cc::AnimationCurve> curve) { }
+        std::unique_ptr<cc::AnimationCurve> curve) { }
 };
 
 } // namespace blink

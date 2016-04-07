@@ -5,12 +5,13 @@
 #ifndef WebLayerTreeViewImplForTesting_h
 #define WebLayerTreeViewImplForTesting_h
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "wtf/PassOwnPtr.h"
+
+#include <memory>
 
 namespace cc {
 class LayerTreeHost;
@@ -88,8 +89,8 @@ public:
     void DidCompleteSwapBuffers() override {}
     void DidCompletePageScaleAnimation() override {}
     void RecordFrameTimingEvents(
-        scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> compositeEvents,
-        scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> mainFrameEvents)
+        std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet> compositeEvents,
+        std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet> mainFrameEvents)
         override {}
 
     // cc::LayerTreeHostSingleThreadClient implementation.
@@ -98,7 +99,7 @@ public:
 
 private:
     cc::TestTaskGraphRunner m_taskGraphRunner;
-    scoped_ptr<cc::LayerTreeHost> m_layerTreeHost;
+    std::unique_ptr<cc::LayerTreeHost> m_layerTreeHost;
 };
 
 } // namespace blink
