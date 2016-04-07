@@ -33,37 +33,6 @@ class IPAddress;
 // Default to 1 second timeout (before exponential backoff).
 const int64_t kDnsDefaultTimeoutMs = 1000;
 
-// Classifies nameserver address lists for histograms.
-class NET_EXPORT_PRIVATE NameServerClassifier {
- public:
-  // This is used in a histogram (AsyncDNS.NameServersType); add new entries
-  // right before MAX_VALUE.
-  enum NameServersType {
-    NAME_SERVERS_TYPE_NONE,
-    NAME_SERVERS_TYPE_GOOGLE_PUBLIC_DNS,
-    NAME_SERVERS_TYPE_PRIVATE,
-    NAME_SERVERS_TYPE_PUBLIC,
-    NAME_SERVERS_TYPE_MIXED,
-    NAME_SERVERS_TYPE_MAX_VALUE
-  };
-
-  NameServerClassifier();
-  ~NameServerClassifier();
-
-  NameServersType GetNameServersType(
-      const std::vector<IPEndPoint>& nameservers) const;
-
- private:
-  struct NameServerTypeRule;
-
-  void AddRule(const char* pattern_string, NameServersType type);
-  NameServersType GetNameServerType(const IPAddress& address) const;
-  static NameServersType MergeNameServersTypes(NameServersType a,
-                                               NameServersType b);
-
-  ScopedVector<NameServerTypeRule> rules_;
-};
-
 // DnsConfig stores configuration of the system resolver.
 struct NET_EXPORT_PRIVATE DnsConfig {
   DnsConfig();
@@ -206,8 +175,6 @@ class NET_EXPORT_PRIVATE DnsConfigService
 
   // Started in Invalidate*, cleared in On*Read.
   base::OneShotTimer timer_;
-
-  NameServerClassifier classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsConfigService);
 };

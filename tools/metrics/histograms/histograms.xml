@@ -1770,6 +1770,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="AsyncDNS.NameServersType" enum="AsyncDNSNameServersType">
+  <obsolete>
+    Deprecated as of 4/2016.
+  </obsolete>
   <owner>ttuttle@chromium.org</owner>
   <summary>
     Type of nameservers in the DNS config, recorded each time the config is read
