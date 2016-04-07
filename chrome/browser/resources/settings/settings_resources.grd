@@ -443,9 +443,6 @@
                  flattenhtml="true"
                  allowexternalscript="true" />
       <if expr="not chromeos">
-        <structure name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_CSS"
-                   file="people_page/manage_profile.css"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_HTML"
                    file="people_page/manage_profile.html"
                    type="chrome_html"

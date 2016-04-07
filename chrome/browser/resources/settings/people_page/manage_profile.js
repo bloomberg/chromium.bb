@@ -66,37 +66,14 @@ Polymer({
   },
 
   /**
-   * Handler for when the user clicks a new profile icon.
-   * @private
+   * Handler for when the an image is activated.
    * @param {!Event} event
-   */
-  onIconTap_: function(event) {
-    var element = Polymer.dom(event).rootTarget;
-
-    var iconUrl;
-    if (element.nodeName == 'IMG')
-      iconUrl = element.src;
-    else if (element.dataset && element.dataset.iconUrl)
-      iconUrl = element.dataset.iconUrl;
-
-    if (!iconUrl)
-      return;
-
-    this.browserProxy_.setProfileIconAndName(iconUrl, this.profileName);
-
-    // Button toggle state is controlled by the selected icon URL. Prevent
-    // tap events from changing the toggle state.
-    event.preventDefault();
-  },
-
-  /**
-   * Computed binding determining which profile icon button is toggled on.
    * @private
-   * @param {string} iconUrl
-   * @param {string} profileIconUrl
-   * @return {boolean}
    */
-  isActiveIcon_: function(iconUrl, profileIconUrl) {
-    return iconUrl == profileIconUrl;
+  onIconActivate_: function(event) {
+    /** @type {{iconUrl: string}} */
+    var buttonData = event.detail.item.dataset;
+    this.browserProxy_.setProfileIconAndName(buttonData.iconUrl,
+                                             this.profileName);
   },
 });
