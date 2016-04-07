@@ -75,7 +75,7 @@ const char* kMp2tsAc3Eac3Probably = kNot;
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
 const char* kHi10pProbably = kPropProbably;
 #else
-const char* kHi10pProbably = kMaybe;
+const char* kHi10pProbably = kPropMaybe;
 #endif
 
 namespace content {
@@ -891,16 +891,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   TestMPEGUnacceptableCombinations("audio/x-m4a");
 }
 
-// When modifying this test, also change CodecSupportTest_Avc3Variants.
-#if defined(OS_ANDROID)
-// Failing on Android, https://crbug.com/601418.
-#define MAYBE_CodecSupportTest_Avc1Variants \
-    DISABLED_CodecSupportTest_Avc1Variants
-#else
-#define MAYBE_CodecSupportTest_Avc1Variants CodecSupportTest_Avc1Variants
-#endif
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest,
-    MAYBE_CodecSupportTest_Avc1Variants) {
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc1Variants) {
   // avc1 without extensions results in "maybe" for compatibility.
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1\"'"));
 
@@ -1004,16 +995,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest,
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.58201E\"'"));
 }
 
-// When modifying this test, also change CodecSupportTest_Avc1Variants.
-#if defined(OS_ANDROID)
-// Failing on Android, https://crbug.com/601418.
-#define MAYBE_CodecSupportTest_Avc3Variants \
-    DISABLED_CodecSupportTest_Avc3Variants
-#else
-#define MAYBE_CodecSupportTest_Avc3Variants CodecSupportTest_Avc3Variants
-#endif
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest,
-    MAYBE_CodecSupportTest_Avc3Variants) {
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc3Variants) {
   // avc3 without extensions results in "maybe" for compatibility.
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3\"'"));
 
