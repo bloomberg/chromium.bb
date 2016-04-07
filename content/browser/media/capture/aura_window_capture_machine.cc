@@ -124,8 +124,13 @@ void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
 }
 
 void AuraWindowCaptureMachine::MaybeCaptureForRefresh() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Capture(false);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&AuraWindowCaptureMachine::Capture,
+                 // Use of Unretained() is safe here since this task must run
+                 // before InternalStop().
+                 base::Unretained(this),
+                 false));
 }
 
 void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
