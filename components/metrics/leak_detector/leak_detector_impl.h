@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -26,9 +27,11 @@ class CallStackTable;
 // Not thread-safe.
 class LeakDetectorImpl {
  public:
-  // Vector type that's safe to use within the memory leak detector. Uses
+  // STL types that are safe to use within the memory leak detector. They use
   // CustomAllocator to avoid recursive malloc hook invocation when analyzing
   // allocs and frees.
+  template <typename T>
+  using InternalList = std::list<T, STLAllocator<T, CustomAllocator>>;
   template <typename T>
   using InternalVector = std::vector<T, STLAllocator<T, CustomAllocator>>;
 
@@ -41,6 +44,11 @@ class LeakDetectorImpl {
     size_t alloc_size_bytes() const { return alloc_size_bytes_; }
 
     const InternalVector<uintptr_t>& call_stack() const { return call_stack_; }
+
+    const InternalVector<InternalVector<uint32_t>>& size_breakdown_history()
+        const {
+      return size_breakdown_history_;
+    }
 
     // Used to compare the contents of two leak reports.
     bool operator<(const LeakReport& other) const;
@@ -57,7 +65,9 @@ class LeakDetectorImpl {
     // will contain offsets in the executable binary.
     InternalVector<uintptr_t> call_stack_;
 
-    // TODO(sque): Add leak detector parameters.
+    // A snapshot of LeakDetectorImpl::size_breakdown_history_ when this report
+    // was generated. See comment description of that variable.
+    InternalVector<InternalVector<uint32_t>> size_breakdown_history_;
   };
 
   LeakDetectorImpl(uintptr_t mapping_addr,
@@ -89,6 +99,9 @@ class LeakDetectorImpl {
 
     // A stack table, if this size is being profiled for stack as well.
     CallStackTable* stack_table;
+
+    // Returns net number of allocs.
+    uint32_t GetNetAllocs() const { return num_allocs - num_frees; }
   };
 
   // Info for a single allocation.
@@ -142,6 +155,13 @@ class LeakDetectorImpl {
 
   // Allocation stats for each size.
   InternalVector<AllocSizeEntry> size_entries_;
+
+  // Tracks the net number of allocations per size over time. Each list item is
+  // a vector containing the allocation counts for each size. The vector element
+  // with index i corresponds to sizes |i * 4| to |i * 4 + 3|. The oldest size
+  // breakdowns is at the head of the list, and new size breakdowns should be
+  // added to the tail of the list.
+  InternalList<InternalVector<uint32_t>> size_breakdown_history_;
 
   // Address mapping info of the current binary.
   uintptr_t mapping_addr_;

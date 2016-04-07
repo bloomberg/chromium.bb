@@ -22,6 +22,8 @@ namespace metrics {
 namespace leak_detector {
 
 using InternalLeakReport = LeakDetectorImpl::LeakReport;
+template <typename T>
+using InternalVector = LeakDetectorImpl::InternalVector<T>;
 
 namespace {
 
@@ -78,7 +80,25 @@ const TestCallStack kStack5 = {kRawStack5, arraysize(kRawStack5)};
 // The interval between consecutive analyses (LeakDetectorImpl::TestForLeaks),
 // in number of bytes allocated. e.g. if |kAllocedSizeAnalysisInterval| = 1024
 // then call TestForLeaks() every 1024 bytes of allocation that occur.
-static const size_t kAllocedSizeAnalysisInterval = 8192;
+const size_t kAllocedSizeAnalysisInterval = 8192;
+
+// Suspicion thresholds used by LeakDetectorImpl for size and call stacks.
+const uint32_t kSizeSuspicionThreshold = 4;
+const uint32_t kCallStackSuspicionThreshold = 4;
+
+// Returns the offset within [kMappingAddr, kMappingAddr + kMappingSize) if
+// |addr| falls in that range. Otherwise, returns |addr|.
+uintptr_t GetOffsetInMapping(uintptr_t addr) {
+  if (addr >= kMappingAddr && addr < kMappingAddr + kMappingSize)
+    return addr - kMappingAddr;
+  return addr;
+}
+
+// Copied from leak_detector_impl.cc. Converts a size to a size class index.
+// Any size in the range [index * 4, index * 4 + 3] falls into that size class.
+uint32_t SizeToIndex(size_t size) {
+  return size / sizeof(uint32_t);
+}
 
 }  // namespace
 
@@ -99,8 +119,6 @@ class LeakDetectorImplTest : public ::testing::Test {
   void SetUp() override {
     CustomAllocator::Initialize();
 
-    const int kSizeSuspicionThreshold = 4;
-    const int kCallStackSuspicionThreshold = 4;
     detector_.reset(new LeakDetectorImpl(kMappingAddr, kMappingSize,
                                          kSizeSuspicionThreshold,
                                          kCallStackSuspicionThreshold));
@@ -140,10 +158,21 @@ class LeakDetectorImplTest : public ::testing::Test {
     ++total_num_allocs_;
     total_alloced_size_ += size;
     if (total_alloced_size_ >= next_analysis_total_alloced_size_) {
-      LeakDetectorImpl::InternalVector<InternalLeakReport> reports;
+      InternalVector<InternalLeakReport> reports;
       detector_->TestForLeaks(&reports);
-      for (const InternalLeakReport& report : reports)
-        stored_reports_.insert(report);
+      for (const InternalLeakReport& report : reports) {
+        auto iter = stored_reports_.find(report);
+        if (iter == stored_reports_.end()) {
+          stored_reports_.insert(report);
+        } else {
+          // InternalLeakReports are uniquely identified by |alloc_size_bytes_|
+          // and |call_stack_|. See InternalLeakReport::operator<().
+          // If a report with the same size and call stack already exists,
+          // overwrite it with the new report, which has a newer history.
+          stored_reports_.erase(iter);
+          stored_reports_.insert(report);
+        }
+      }
 
       // Determine when the next leak analysis should occur.
       while (total_alloced_size_ >= next_analysis_total_alloced_size_)
@@ -165,6 +194,10 @@ class LeakDetectorImplTest : public ::testing::Test {
 
     delete[] reinterpret_cast<char*>(ptr);
   }
+
+  // TEST CASE: Simple program that leaks memory regularly. Pass in
+  // enable_leaks=true to trigger some memory leaks.
+  void SimpleLeakyFunction(bool enable_leaks);
 
   // TEST CASE: Julia set fractal computation. Pass in enable_leaks=true to
   // trigger some memory leaks.
@@ -195,6 +228,48 @@ class LeakDetectorImplTest : public ::testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(LeakDetectorImplTest);
 };
+
+void LeakDetectorImplTest::SimpleLeakyFunction(bool enable_leaks) {
+  std::vector<uint32_t*> ptrs(7);
+
+  const int kNumOuterIterations = 20;
+  for (int j = 0; j < kNumOuterIterations; ++j) {
+    // The inner loop allocates 256 bytes. Run it 32 times so that 8192 bytes
+    // (|kAllocedSizeAnalysisInterval|) are allocated for each iteration of the
+    // outer loop.
+    const int kNumInnerIterations = 32;
+    static_assert(kNumInnerIterations * 256 == kAllocedSizeAnalysisInterval,
+                  "Inner loop iterations do not allocate the correct number of "
+                  "bytes.");
+    for (int i = 0; i < kNumInnerIterations; ++i) {
+      size_t alloc_size_at_beginning = total_alloced_size_;
+
+      ptrs[0] = new(Alloc(16, kStack0)) uint32_t;
+      ptrs[1] = new(Alloc(32, kStack1)) uint32_t;
+      ptrs[2] = new(Alloc(48, kStack2)) uint32_t;
+      // Allocate two 32-byte blocks and record them as from the same call site.
+      ptrs[3] = new(Alloc(32, kStack3)) uint32_t;
+      ptrs[4] = new(Alloc(32, kStack3)) uint32_t;
+      // Allocate two 48-byte blocks and record them as from the same call site.
+      ptrs[5] = new(Alloc(48, kStack4)) uint32_t;
+      ptrs[6] = new(Alloc(48, kStack4)) uint32_t;
+
+      // Now free these pointers.
+      Free(ptrs[0]);
+      if (!enable_leaks)  // Leak with size=32, call_stack=kStack1.
+        Free(ptrs[1]);
+      if (!enable_leaks)  // Leak with size=48, call_stack=kStack2.
+        Free(ptrs[2]);
+      Free(ptrs[3]);
+      Free(ptrs[4]);
+      Free(ptrs[5]);
+      Free(ptrs[6]);
+
+      // Make sure that the above code actually allocates 256 bytes.
+      EXPECT_EQ(alloc_size_at_beginning + 256, total_alloced_size_);
+    }
+  }
+}
 
 void LeakDetectorImplTest::JuliaSet(bool enable_leaks) {
   // The center region of the complex plane that is the basis for our Julia set
@@ -254,6 +329,10 @@ void LeakDetectorImplTest::JuliaSet(bool enable_leaks) {
   // Create a new grid for the result of the transformation.
   std::vector<Complex*> next_grid(width * height, nullptr);
 
+  // Number of times to run the Julia set iteration. This is not the same as the
+  // number of analyses performed by LeakDetectorImpl, which is determined by
+  // the total number of bytes allocated divided by
+  // |kAllocedSizeAnalysisInterval|.
   const int kNumIterations = 20;
   for (int n = 0; n < kNumIterations; ++n) {
     for (int i = 0; i < kNumPoints; ++i) {
@@ -405,6 +484,78 @@ TEST_F(LeakDetectorImplTest, CheckTestFramework) {
   EXPECT_EQ(0U, alloced_ptrs_.size());
 }
 
+TEST_F(LeakDetectorImplTest, SimpleLeakyFunctionNoLeak) {
+  SimpleLeakyFunction(false /* enable_leaks */);
+
+  // SimpleLeakyFunction() should have run cleanly without leaking.
+  EXPECT_EQ(total_num_allocs_, total_num_frees_);
+  EXPECT_EQ(0U, alloced_ptrs_.size());
+  ASSERT_EQ(0U, stored_reports_.size());
+}
+
+TEST_F(LeakDetectorImplTest, SimpleLeakyFunctionWithLeak) {
+  SimpleLeakyFunction(true /* enable_leaks */);
+
+  // SimpleLeakyFunction() should generated some leak reports.
+  EXPECT_GT(total_num_allocs_, total_num_frees_);
+  EXPECT_GT(alloced_ptrs_.size(), 0U);
+  ASSERT_EQ(2U, stored_reports_.size());
+
+  // The reports should be stored in order of size.
+
+  // |report1| comes from the call site marked with kStack1, with size=32.
+  const InternalLeakReport& report1 = *stored_reports_.begin();
+  EXPECT_EQ(32U, report1.alloc_size_bytes());
+  ASSERT_EQ(kStack1.depth, report1.call_stack().size());
+  for (size_t i = 0; i < kStack1.depth; ++i) {
+    EXPECT_EQ(GetOffsetInMapping(kStack1.stack[i]),
+              report1.call_stack()[i]) << i;
+  }
+
+  // |report2| comes from the call site marked with kStack2, with size=48.
+  const InternalLeakReport& report2 = *(++stored_reports_.begin());
+  EXPECT_EQ(48U, report2.alloc_size_bytes());
+  ASSERT_EQ(kStack2.depth, report2.call_stack().size());
+  for (size_t i = 0; i < kStack2.depth; ++i) {
+    EXPECT_EQ(GetOffsetInMapping(kStack2.stack[i]),
+              report2.call_stack()[i]) << i;
+  }
+
+  // Check historical data recorded in the reports.
+  // - Each inner loop iteration allocates a net of 1x 32 bytes and 1x 48 bytes.
+  // - Each outer loop iteration allocates a net of 32x 32 bytes and 32x 48
+  //   bytes.
+  // - However, the leak analysis happens after the allocs but before the frees
+  //   that come right after. So it should count the two extra allocs made at
+  //   call sites |kStack3| and |kStack4|. The formula is |(i + 1) * 32 + 2|,
+  //   where |i| is the iteration index.
+  // There should have been one leak analysis per outer loop iteration, for a
+  // total of 20 history records (|kNumOuterIterations|) per report.
+
+  const auto& report1_size_history = report1.size_breakdown_history();
+  EXPECT_EQ(20U, report1_size_history.size());
+
+  size_t index = 0;
+  for (const InternalVector<uint32_t>& entry : report1_size_history) {
+    ASSERT_GT(entry.size(), SizeToIndex(48));
+
+    // Check the two leaky sizes, 32 and 48.
+    EXPECT_EQ((index + 1) * 32 + 2, entry[SizeToIndex(32)]);
+    EXPECT_EQ((index + 1) * 32 + 2, entry[SizeToIndex(48)]);
+
+    // Not related to the leaks, but there should be a dangling 16-byte
+    // allocation during each leak analysis, because it hasn't yet been freed.
+    EXPECT_EQ(1U, entry[SizeToIndex(16)]);
+    ++index;
+  }
+
+  // |report2| should have the same size history as |report1|.
+  const auto& report2_size_history = report2.size_breakdown_history();
+  EXPECT_TRUE(std::equal(report1_size_history.begin(),
+                         report1_size_history.end(),
+                         report2_size_history.begin()));
+}
+
 TEST_F(LeakDetectorImplTest, JuliaSetNoLeak) {
   JuliaSet(false /* enable_leaks */);
 
@@ -430,35 +581,48 @@ TEST_F(LeakDetectorImplTest, JuliaSetWithLeak) {
   // |kStack3|.
   const InternalLeakReport& report1 = *stored_reports_.begin();
   EXPECT_EQ(sizeof(Complex) + 40, report1.alloc_size_bytes());
-  EXPECT_EQ(kStack3.depth, report1.call_stack().size());
-  for (size_t i = 0; i < kStack3.depth && i < report1.call_stack().size();
-       ++i) {
-    // The call stack's addresses may not fall within the mapping address.
-    // Those that don't will not be converted to mapping offsets.
-    if (kStack3.stack[i] >= kMappingAddr &&
-        kStack3.stack[i] <= kMappingAddr + kMappingSize) {
-      EXPECT_EQ(kStack3.stack[i] - kMappingAddr, report1.call_stack()[i]);
-    } else {
-      EXPECT_EQ(kStack3.stack[i], report1.call_stack()[i]);
-    }
+  ASSERT_EQ(kStack3.depth, report1.call_stack().size());
+  for (size_t i = 0; i < kStack3.depth; ++i) {
+    EXPECT_EQ(GetOffsetInMapping(kStack3.stack[i]),
+              report1.call_stack()[i]) << i;
   }
 
   // |report2| comes from the call site in JuliaSet() corresponding to
   // |kStack4|.
   const InternalLeakReport& report2 = *(++stored_reports_.begin());
   EXPECT_EQ(sizeof(Complex) + 52, report2.alloc_size_bytes());
-  EXPECT_EQ(kStack4.depth, report2.call_stack().size());
-  for (size_t i = 0; i < kStack4.depth && i < report2.call_stack().size();
-       ++i) {
-    // The call stack's addresses may not fall within the mapping address.
-    // Those that don't will not be converted to mapping offsets.
-    if (kStack4.stack[i] >= kMappingAddr &&
-        kStack4.stack[i] <= kMappingAddr + kMappingSize) {
-      EXPECT_EQ(kStack4.stack[i] - kMappingAddr, report2.call_stack()[i]);
-    } else {
-      EXPECT_EQ(kStack4.stack[i], report2.call_stack()[i]);
-    }
+  ASSERT_EQ(kStack4.depth, report2.call_stack().size());
+  for (size_t i = 0; i < kStack4.depth; ++i) {
+    EXPECT_EQ(GetOffsetInMapping(kStack4.stack[i]),
+              report2.call_stack()[i]) << i;
   }
+
+  // Check |report1|'s historical data.
+  const auto& report1_size_history = report1.size_breakdown_history();
+  // Computing the exact number of leak analyses is not trivial, but we know it
+  // must be at least |kSizeSuspicionThreshold + kCallStackSuspicionThreshold|
+  // in order to have generated a report.
+  EXPECT_GT(report1_size_history.size(),
+            kSizeSuspicionThreshold + kCallStackSuspicionThreshold);
+
+  // Make sure that the final allocation counts for the leaky sizes are larger
+  // than that of the non-leaky size by at least an order of magnitude.
+  const InternalVector<uint32_t>& final_entry = *report1_size_history.rbegin();
+  uint32_t size_0_index = SizeToIndex(sizeof(Complex) + 24);
+  uint32_t size_1_index = SizeToIndex(sizeof(Complex) + 40);
+  uint32_t size_2_index = SizeToIndex(sizeof(Complex) + 52);
+  ASSERT_LT(size_0_index, final_entry.size());
+  ASSERT_LT(size_1_index, final_entry.size());
+  ASSERT_LT(size_2_index, final_entry.size());
+
+  EXPECT_GT(final_entry[size_1_index], final_entry[size_0_index] * 10);
+  EXPECT_GT(final_entry[size_2_index], final_entry[size_0_index] * 10);
+
+  // |report2| should have the same size history as |report1|.
+  const auto& report2_size_history = report2.size_breakdown_history();
+  EXPECT_TRUE(std::equal(report1_size_history.begin(),
+                         report1_size_history.end(),
+                         report2_size_history.begin()));
 }
 
 }  // namespace leak_detector

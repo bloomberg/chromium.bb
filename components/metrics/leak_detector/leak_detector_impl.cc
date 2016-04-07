@@ -33,6 +33,14 @@ const int kAddressMapNumBuckets = 100003;
 // are rare if not nonexistent.
 const int kNumSizeEntries = 2048;
 
+// Record only the first |kNumSizeEntriesInHistory| size classes in
+// |LeakDetectorImpl::size_breakdown_history_|.
+const int kNumSizeEntriesInHistory = 32;
+
+// |LeakDetectorImpl::size_breakdown_history_| can have up to this many entries.
+// Any older entries must be discarded to make way for new ones.
+const int kMaxNumHistoryEntries = 32;
+
 using ValueType = LeakDetectorValueType;
 
 // Functions to convert an allocation size to/from the array index used for
@@ -153,9 +161,21 @@ void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
   for (size_t i = 0; i < size_entries_.size(); ++i) {
     const AllocSizeEntry& entry = size_entries_[i];
     ValueType size_value(IndexToSize(i));
-    size_ranked_set.Add(size_value, entry.num_allocs - entry.num_frees);
+    size_ranked_set.Add(size_value, entry.GetNetAllocs());
   }
   size_leak_analyzer_.AddSample(std::move(size_ranked_set));
+
+  // Record a snapshot of the current size table.
+  InternalVector<uint32_t> current_size_table_record;
+  current_size_table_record.reserve(kNumSizeEntriesInHistory);
+  for (const AllocSizeEntry& entry : size_entries_) {
+    if (current_size_table_record.size() == kNumSizeEntriesInHistory)
+      break;
+    current_size_table_record.push_back(entry.GetNetAllocs());
+  }
+  size_breakdown_history_.emplace_back(std::move(current_size_table_record));
+  if (size_breakdown_history_.size() > kMaxNumHistoryEntries)
+    size_breakdown_history_.pop_front();
 
   // Get suspected leaks by size.
   for (const ValueType& size_value : size_leak_analyzer_.suspected_leaks()) {
@@ -196,6 +216,10 @@ void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
       for (size_t j = 0; j < call_stack->depth; ++j) {
         report->call_stack_[j] = GetOffset(call_stack->stack[j]);
       }
+      // Copy over the historical size data.
+      report->size_breakdown_history_.reserve(size_breakdown_history_.size());
+      report->size_breakdown_history_.assign(size_breakdown_history_.begin(),
+                                             size_breakdown_history_.end());
     }
   }
 }
