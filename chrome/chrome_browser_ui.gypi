@@ -2591,7 +2591,6 @@
       'browser/ui/views/frame/glass_browser_frame_view.h',
       'browser/ui/views/frame/native_browser_frame_factory_aurawin.cc',
       'browser/ui/views/network_profile_bubble_view.cc',
-      'browser/ui/views/network_profile_bubble_view.h',
       'browser/ui/views/uninstall_view.cc',
       'browser/ui/views/uninstall_view.h',
       'browser/ui/webui/conflicts_ui.cc',

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/network_profile_bubble_view.h"
-
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -17,40 +16,42 @@
 #include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/controls/link_listener.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
 namespace {
 
 // Bubble layout constants.
-const int kInset = 2;
 const int kNotificationBubbleWidth = 250;
 
-}  // namespace
+class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
+                                 public views::LinkListener {
+ public:
+  NetworkProfileBubbleView(views::View* anchor,
+                           content::PageNavigator* navigator,
+                           Profile* profile);
+ private:
+  ~NetworkProfileBubbleView() override;
 
-// static
-void NetworkProfileBubble::ShowNotification(Browser* browser) {
-  views::View* anchor = NULL;
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (browser_view && browser_view->GetToolbarView())
-    anchor = browser_view->GetToolbarView()->app_menu_button();
-  NetworkProfileBubbleView* bubble =
-      new NetworkProfileBubbleView(anchor, browser, browser->profile());
-  views::BubbleDelegateView::CreateBubble(bubble)->Show();
-  NetworkProfileBubble::SetNotificationShown(true);
+  // views::BubbleDialogDelegateView:
+  void Init() override;
+  views::View* CreateExtraView() override;
+  int GetDialogButtons() const override;
+  bool Accept() override;
 
-  // Mark the time of the last bubble and reduce the number of warnings left
-  // before the next silence period starts.
-  PrefService* prefs = browser->profile()->GetPrefs();
-  prefs->SetInt64(prefs::kNetworkProfileLastWarningTime,
-                  base::Time::Now().ToTimeT());
-  int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
-  if (left_warnings > 0)
-    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, --left_warnings);
-}
+  // views::LinkListener:
+  void LinkClicked(views::Link* source, int event_flags) override;
+
+  // Used for loading pages.
+  content::PageNavigator* navigator_;
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkProfileBubbleView);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkProfileBubbleView, public:
@@ -59,7 +60,7 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
     views::View* anchor,
     content::PageNavigator* navigator,
     Profile* profile)
-    : BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
+    : BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile) {
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -74,51 +75,31 @@ NetworkProfileBubbleView::~NetworkProfileBubbleView() {
 }
 
 void NetworkProfileBubbleView::Init() {
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  layout->SetInsets(0, kInset, kInset, kInset);
-  SetLayoutManager(layout);
-
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, 0);
-
-  views::Label* title = new views::Label(
+  SetLayoutManager(new views::FillLayout());
+  views::Label* label = new views::Label(
       l10n_util::GetStringFUTF16(IDS_PROFILE_ON_NETWORK_WARNING,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  title->SetMultiLine(true);
-  title->SizeToFit(kNotificationBubbleWidth);
-  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(title);
+  label->SetMultiLine(true);
+  label->SizeToFit(kNotificationBubbleWidth);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(label);
+}
 
-  views::ColumnSet* bottom_columns = layout->AddColumnSet(1);
-  bottom_columns->AddColumn(views::GridLayout::CENTER,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  bottom_columns->AddPaddingColumn(1, 0);
-  bottom_columns->AddColumn(views::GridLayout::CENTER,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  layout->StartRowWithPadding(0, 1, 0,
-                              views::kRelatedControlSmallVerticalSpacing);
-
+views::View* NetworkProfileBubbleView::CreateExtraView() {
   views::Link* learn_more =
       new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_listener(this);
-  layout->AddView(learn_more);
-
-  views::LabelButton* ok_button = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_OK));
-  ok_button->SetStyle(views::Button::STYLE_BUTTON);
-  ok_button->SetIsDefault(true);
-  layout->AddView(ok_button);
+  return learn_more;
 }
 
-void NetworkProfileBubbleView::ButtonPressed(views::Button* sender,
-                                             const ui::Event& event) {
+int NetworkProfileBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK;
+}
+
+bool NetworkProfileBubbleView::Accept() {
   NetworkProfileBubble::RecordUmaEvent(
       NetworkProfileBubble::METRIC_ACKNOWLEDGED);
-
-  GetWidget()->Close();
+  return true;
 }
 
 void NetworkProfileBubbleView::LinkClicked(views::Link* source,
@@ -141,4 +122,28 @@ void NetworkProfileBubbleView::LinkClicked(views::Link* source,
   int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
   prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, ++left_warnings);
   GetWidget()->Close();
+}
+
+}  // namespace
+
+// static
+void NetworkProfileBubble::ShowNotification(Browser* browser) {
+  views::View* anchor = NULL;
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (browser_view && browser_view->GetToolbarView())
+    anchor = browser_view->GetToolbarView()->app_menu_button();
+  NetworkProfileBubbleView* bubble =
+      new NetworkProfileBubbleView(anchor, browser, browser->profile());
+  views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();
+
+  NetworkProfileBubble::SetNotificationShown(true);
+
+  // Mark the time of the last bubble and reduce the number of warnings left
+  // before the next silence period starts.
+  PrefService* prefs = browser->profile()->GetPrefs();
+  prefs->SetInt64(prefs::kNetworkProfileLastWarningTime,
+                  base::Time::Now().ToTimeT());
+  int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
+  if (left_warnings > 0)
+    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, --left_warnings);
 }
