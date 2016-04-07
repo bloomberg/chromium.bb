@@ -259,20 +259,26 @@ TEST_F(DisplayTest, FocusFailsForInactiveUser) {
   Display* display = *display_manager->displays().begin();
   WindowManagerState* wms_for_id2 =
       display->GetWindowManagerStateForUser(kTestId2);
+  wms_for_id2->tree()->AddActivationParent(
+      ClientWindowIdForFirstRoot(wms_for_id2->tree()));
   ASSERT_TRUE(wms_for_id2);
   EXPECT_FALSE(wms_for_id2->IsActive());
+  ClientWindowId child2_id;
+  NewWindowInTree(wms_for_id2->tree(), &child2_id);
 
   // Focus should fail for windows in inactive window managers.
-  EXPECT_FALSE(wms_for_id2->tree()->SetFocus(
-      ClientWindowIdForFirstRoot(wms_for_id2->tree())));
+  EXPECT_FALSE(wms_for_id2->tree()->SetFocus(child2_id));
 
   // Focus should succeed for the active window manager.
   WindowManagerState* wms_for_id1 =
       display->GetWindowManagerStateForUser(kTestId1);
   ASSERT_TRUE(wms_for_id1);
+  wms_for_id1->tree()->AddActivationParent(
+      ClientWindowIdForFirstRoot(wms_for_id1->tree()));
+  ClientWindowId child1_id;
+  NewWindowInTree(wms_for_id1->tree(), &child1_id);
   EXPECT_TRUE(wms_for_id1->IsActive());
-  EXPECT_TRUE(wms_for_id1->tree()->SetFocus(
-      ClientWindowIdForFirstRoot(wms_for_id1->tree())));
+  EXPECT_TRUE(wms_for_id1->tree()->SetFocus(child1_id));
 }
 
 // Verifies clients are notified of focus changes in different displays.

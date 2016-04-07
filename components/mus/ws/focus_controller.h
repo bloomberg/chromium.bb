@@ -35,8 +35,9 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   ~FocusController() override;
 
   // Sets the focused window. Does nothing if |window| is currently focused.
-  // This does not notify the delegate.
-  void SetFocusedWindow(ServerWindow* window);
+  // This does not notify the delegate. See ServerWindow::SetFocusedWindow()
+  // for details on return value.
+  bool SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
   // Moves activation to the next activatable window.
@@ -63,7 +64,7 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   ServerWindow* GetActivatableAncestorOf(ServerWindow* window) const;
 
   // Implementation of SetFocusedWindow().
-  void SetFocusedWindowImpl(FocusControllerChangeSource change_source,
+  bool SetFocusedWindowImpl(FocusControllerChangeSource change_source,
                             ServerWindow* window);
 
   // ServerWindowDrawnTrackerObserver:

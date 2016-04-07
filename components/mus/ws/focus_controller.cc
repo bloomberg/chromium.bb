@@ -71,11 +71,11 @@ FocusController::FocusController(FocusControllerDelegate* delegate,
 FocusController::~FocusController() {
 }
 
-void FocusController::SetFocusedWindow(ServerWindow* window) {
+bool FocusController::SetFocusedWindow(ServerWindow* window) {
   if (GetFocusedWindow() == window)
-    return;
+    return true;
 
-  SetFocusedWindowImpl(FocusControllerChangeSource::EXPLICIT, window);
+  return SetFocusedWindowImpl(FocusControllerChangeSource::EXPLICIT, window);
 }
 
 ServerWindow* FocusController::GetFocusedWindow() {
@@ -207,11 +207,12 @@ ServerWindow* FocusController::GetActivatableAncestorOf(
   return nullptr;
 }
 
-void FocusController::SetFocusedWindowImpl(
+bool FocusController::SetFocusedWindowImpl(
     FocusControllerChangeSource change_source,
     ServerWindow* window) {
   if (window && !CanBeFocused(window))
-    return;
+    return false;
+
   ServerWindow* old_focused = GetFocusedWindow();
 
   DCHECK(!window || window->IsDrawn());
@@ -238,6 +239,7 @@ void FocusController::SetFocusedWindowImpl(
     drawn_tracker_.reset(new ServerWindowDrawnTracker(track_window, this));
   else
     drawn_tracker_.reset();
+  return true;
 }
 
 void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,

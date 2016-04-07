@@ -115,7 +115,9 @@ class Display : public PlatformDisplayDelegate,
 
   // TODO(sky): this should only be called by WindowServer, move to interface
   // used by WindowServer.
-  void SetFocusedWindow(ServerWindow* window);
+  // See description of WindowServer::SetFocusedWindow() for details on return
+  // value.
+  bool SetFocusedWindow(ServerWindow* window);
   // NOTE: this returns the focused window only if the focused window is in this
   // display. If this returns null focus may be in another display.
   ServerWindow* GetFocusedWindow();

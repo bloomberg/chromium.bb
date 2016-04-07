@@ -134,7 +134,10 @@ class WindowServer : public ServerWindowDelegate,
     return &window_manager_factory_registry_;
   }
 
-  void SetFocusedWindow(ServerWindow* window);
+  // Sets focus to |window|. Returns true if |window| already has focus, or
+  // focus was successfully changed. Returns |false| if |window| is not a valid
+  // window to receive focus.
+  bool SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
   // Returns a change id for the window manager that is associated with

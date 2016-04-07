@@ -147,6 +147,7 @@ class WindowTree : public mojom::WindowTree,
   void OnWindowManagerCreatedTopLevelWindow(uint32_t wm_change_id,
                                             uint32_t client_change_id,
                                             const ServerWindow* window);
+  void AddActivationParent(const ClientWindowId& window_id);
 
   // Calls through to the client.
   void OnChangeCompleted(uint32_t change_id, bool success);

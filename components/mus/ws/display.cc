@@ -158,12 +158,12 @@ const WindowManagerState* Display::GetActiveWindowManagerState() const {
       window_server_->user_id_tracker()->active_id());
 }
 
-void Display::SetFocusedWindow(ServerWindow* new_focused_window) {
+bool Display::SetFocusedWindow(ServerWindow* new_focused_window) {
   ServerWindow* old_focused_window = focus_controller_->GetFocusedWindow();
   if (old_focused_window == new_focused_window)
-    return;
+    return true;
   DCHECK(!new_focused_window || root_window()->Contains(new_focused_window));
-  focus_controller_->SetFocusedWindow(new_focused_window);
+  return focus_controller_->SetFocusedWindow(new_focused_window);
 }
 
 ServerWindow* Display::GetFocusedWindow() {

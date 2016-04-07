@@ -283,8 +283,7 @@ bool WindowTree::SetFocus(const ClientWindowId& window_id) {
     return false;
 
   Operation op(this, window_server_, OperationType::SET_FOCUS);
-  window_server_->SetFocusedWindow(window);
-  return true;
+  return window_server_->SetFocusedWindow(window);
 }
 
 bool WindowTree::Embed(const ClientWindowId& window_id,
@@ -345,6 +344,15 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
   const bool drawn = window->parent() && window->parent()->IsDrawn();
   client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window),
                               drawn);
+}
+
+void WindowTree::AddActivationParent(const ClientWindowId& window_id) {
+  Display* host = GetDisplayForWindowManager();
+  if (!host)
+    return;
+  ServerWindow* window = GetWindowByClientId(window_id);
+  if (window)
+    host->AddActivationParent(window);
 }
 
 void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
@@ -1282,13 +1290,7 @@ void WindowTree::RemoveAccelerator(uint32_t id) {
 }
 
 void WindowTree::AddActivationParent(Id transport_window_id) {
-  Display* host = GetDisplayForWindowManager();
-  if (!host)
-    return;
-  ServerWindow* window =
-      GetWindowByClientId(ClientWindowId(transport_window_id));
-  if (window)
-    host->AddActivationParent(window);
+  AddActivationParent(ClientWindowId(transport_window_id));
 }
 
 void WindowTree::RemoveActivationParent(Id transport_window_id) {

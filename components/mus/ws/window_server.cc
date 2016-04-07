@@ -237,7 +237,7 @@ void WindowServer::OnFirstWindowManagerFactorySet() {
   delegate_->CreateDefaultDisplays();
 }
 
-void WindowServer::SetFocusedWindow(ServerWindow* window) {
+bool WindowServer::SetFocusedWindow(ServerWindow* window) {
   // TODO(sky): this should fail if there is modal dialog active and |window|
   // is outside that.
   ServerWindow* currently_focused = GetFocusedWindow();
@@ -245,21 +245,21 @@ void WindowServer::SetFocusedWindow(ServerWindow* window) {
       currently_focused
           ? display_manager_->GetDisplayContaining(currently_focused)
           : nullptr;
-  if (!window) {
-    if (focused_display)
-      focused_display->SetFocusedWindow(nullptr);
-    return;
-  }
+  if (!window)
+    return focused_display ? focused_display->SetFocusedWindow(nullptr) : true;
+
   Display* display = display_manager_->GetDisplayContaining(window);
   DCHECK(display);  // It's assumed callers do validation before calling this.
-  display->SetFocusedWindow(window);
+  const bool result = display->SetFocusedWindow(window);
   // If the focus actually changed, and focus was in another display, then we
   // need to notify the previously focused display so that it cleans up state
   // and notifies appropriately.
-  if (window && display->GetFocusedWindow() && display != focused_display &&
+  if (result && display->GetFocusedWindow() && display != focused_display &&
       focused_display) {
-    focused_display->SetFocusedWindow(nullptr);
+    const bool cleared_focus = focused_display->SetFocusedWindow(nullptr);
+    DCHECK(cleared_focus);
   }
+  return result;
 }
 
 ServerWindow* WindowServer::GetFocusedWindow() {
