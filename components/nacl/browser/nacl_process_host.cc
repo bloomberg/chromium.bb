@@ -965,11 +965,10 @@ void NaClProcessHost::StartNaClFileResolved(
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
     params.nexe_file_path_metadata = file_path;
-    params.nexe_file = IPC::TakeFileHandleForProcess(
-        std::move(checked_nexe_file), process_->GetData().handle);
+    params.nexe_file =
+        IPC::TakePlatformFileForTransit(std::move(checked_nexe_file));
   } else {
-    params.nexe_file = IPC::TakeFileHandleForProcess(
-        std::move(nexe_file_), process_->GetData().handle);
+    params.nexe_file = IPC::TakePlatformFileForTransit(std::move(nexe_file_));
   }
 
 #if defined(OS_LINUX)
@@ -1232,8 +1231,7 @@ void NaClProcessHost::FileResolved(
   IPC::PlatformFileForTransit out_handle;
   if (file.IsValid()) {
     out_file_path = file_path;
-    out_handle = IPC::TakeFileHandleForProcess(std::move(file),
-                                               process_->GetData().handle);
+    out_handle = IPC::TakePlatformFileForTransit(std::move(file));
   } else {
     out_handle = IPC::InvalidPlatformFileForTransit();
   }

@@ -282,8 +282,7 @@ void GetContexts(
 #if defined(ENABLE_WEBRTC)
 
 // Creates a file used for handing over to the renderer.
-IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path,
-                                                 base::ProcessHandle process) {
+IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::File dump_file(file_path,
                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
@@ -292,7 +291,7 @@ IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path,
             << dump_file.error_details();
     return IPC::InvalidPlatformFileForTransit();
   }
-  return IPC::TakeFileHandleForProcess(std::move(dump_file), process);
+  return IPC::TakePlatformFileForTransit(std::move(dump_file));
 }
 
 // Allow us to only run the trial in the first renderer.
@@ -2714,8 +2713,7 @@ void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateFileForProcess, file.AddExtension(IntToStringType(id)),
-                 GetHandle()),
+      base::Bind(&CreateFileForProcess, file.AddExtension(IntToStringType(id))),
       base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
                  weak_factory_.GetWeakPtr(), id));
 }
@@ -2725,8 +2723,7 @@ void RenderProcessHostImpl::EnableEventLogForId(const base::FilePath& file,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateFileForProcess, file.AddExtension(IntToStringType(id)),
-                 GetHandle()),
+      base::Bind(&CreateFileForProcess, file.AddExtension(IntToStringType(id))),
       base::Bind(&RenderProcessHostImpl::SendEventLogFileToRenderer,
                  weak_factory_.GetWeakPtr(), id));
 }

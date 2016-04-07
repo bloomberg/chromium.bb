@@ -137,17 +137,9 @@ void SandboxedZipAnalyzer::StartProcessOnIOThread() {
 
 void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::ProcessHandle utility_process =
-      content::RenderProcessHost::run_renderer_in_process() ?
-          base::GetCurrentProcessHandle() :
-          utility_process_host_->GetData().handle;
-
-  if (utility_process == base::kNullProcessHandle) {
-    DLOG(ERROR) << "Child process handle is null";
-  }
   utility_process_host_->Send(
       new ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection(
-          IPC::TakeFileHandleForProcess(std::move(zip_file_), utility_process),
+          IPC::TakePlatformFileForTransit(std::move(zip_file_)),
           IPC::GetPlatformFileForTransit(temp_file_.GetPlatformFile(),
                                          false /* !close_source_handle */)));
 }

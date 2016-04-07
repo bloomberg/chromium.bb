@@ -86,27 +86,20 @@ void SafePicasaAlbumTableReader::OnProcessStarted() {
     DLOG(ERROR) << "Child process handle is null";
   }
   AlbumTableFilesForTransit files_for_transit;
-  files_for_transit.indicator_file = IPC::TakeFileHandleForProcess(
-      std::move(album_table_files_.indicator_file),
-      utility_process_host_->GetData().handle);
-  files_for_transit.category_file =
-      IPC::TakeFileHandleForProcess(std::move(album_table_files_.category_file),
-                                    utility_process_host_->GetData().handle);
+  files_for_transit.indicator_file = IPC::TakePlatformFileForTransit(
+      std::move(album_table_files_.indicator_file));
+  files_for_transit.category_file = IPC::TakePlatformFileForTransit(
+      std::move(album_table_files_.category_file));
   files_for_transit.date_file =
-      IPC::TakeFileHandleForProcess(std::move(album_table_files_.date_file),
-                                    utility_process_host_->GetData().handle);
-  files_for_transit.filename_file =
-      IPC::TakeFileHandleForProcess(std::move(album_table_files_.filename_file),
-                                    utility_process_host_->GetData().handle);
+      IPC::TakePlatformFileForTransit(std::move(album_table_files_.date_file));
+  files_for_transit.filename_file = IPC::TakePlatformFileForTransit(
+      std::move(album_table_files_.filename_file));
   files_for_transit.name_file =
-      IPC::TakeFileHandleForProcess(std::move(album_table_files_.name_file),
-                                    utility_process_host_->GetData().handle);
+      IPC::TakePlatformFileForTransit(std::move(album_table_files_.name_file));
   files_for_transit.token_file =
-      IPC::TakeFileHandleForProcess(std::move(album_table_files_.token_file),
-                                    utility_process_host_->GetData().handle);
+      IPC::TakePlatformFileForTransit(std::move(album_table_files_.token_file));
   files_for_transit.uid_file =
-      IPC::TakeFileHandleForProcess(std::move(album_table_files_.uid_file),
-                                    utility_process_host_->GetData().handle);
+      IPC::TakePlatformFileForTransit(std::move(album_table_files_.uid_file));
   utility_process_host_->Send(new ChromeUtilityMsg_ParsePicasaPMPDatabase(
       files_for_transit));
   parser_state_ = STARTED_PARSING_STATE;

@@ -136,7 +136,7 @@ int32_t PepperFlashFileMessageFilter::OnOpenFile(
   }
 
   IPC::PlatformFileForTransit transit_file =
-      IPC::TakeFileHandleForProcess(std::move(file), plugin_process_.Handle());
+      IPC::TakePlatformFileForTransit(std::move(file));
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
@@ -258,7 +258,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
     return ppapi::FileErrorToPepperError(file.error_details());
 
   IPC::PlatformFileForTransit transit_file =
-      IPC::TakeFileHandleForProcess(std::move(file), plugin_process_.Handle());
+      IPC::TakePlatformFileForTransit(std::move(file));
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(

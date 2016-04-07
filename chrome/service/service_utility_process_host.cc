@@ -95,7 +95,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
     if (!temp_dir_.CreateUniqueTempDir())
       return false;
     return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
-        IPC::TakeFileHandleForProcess(std::move(pdf_file), host_->handle()),
+        IPC::TakePlatformFileForTransit(std::move(pdf_file)),
         conversion_settings));
   }
 

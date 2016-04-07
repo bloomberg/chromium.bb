@@ -61,8 +61,8 @@ void DoRegisterOpenedNaClExecutableFile(
   uint64_t file_token_hi = 0;
   nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
 
-  IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
-      std::move(file), nacl_host_message_filter->PeerHandle());
+  IPC::PlatformFileForTransit file_desc =
+      IPC::TakePlatformFileForTransit(std::move(file));
 
   write_reply_message(reply_msg, file_desc, file_token_lo, file_token_hi);
   nacl_host_message_filter->Send(reply_msg);
@@ -110,8 +110,8 @@ void DoOpenPnaclFile(
                    static_cast<WriteFileInfoReply>(
                        NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams)));
   } else {
-    IPC::PlatformFileForTransit target_desc = IPC::TakeFileHandleForProcess(
-        std::move(file_to_open), nacl_host_message_filter->PeerHandle());
+    IPC::PlatformFileForTransit target_desc =
+        IPC::TakePlatformFileForTransit(std::move(file_to_open));
     uint64_t dummy_file_token = 0;
     NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams(
         reply_msg, target_desc, dummy_file_token, dummy_file_token);
@@ -158,8 +158,8 @@ void DoOpenNaClExecutableOnThreadPool(
                      static_cast<WriteFileInfoReply>(
                          NaClHostMsg_OpenNaClExecutable::WriteReplyParams)));
     } else {
-      IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
-          std::move(file), nacl_host_message_filter->PeerHandle());
+      IPC::PlatformFileForTransit file_desc =
+          IPC::TakePlatformFileForTransit(std::move(file));
       uint64_t dummy_file_token = 0;
       NaClHostMsg_OpenNaClExecutable::WriteReplyParams(
           reply_msg, file_desc, dummy_file_token, dummy_file_token);
