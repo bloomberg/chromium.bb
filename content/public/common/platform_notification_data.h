@@ -18,7 +18,7 @@
 
 namespace content {
 
-enum CONTENT_EXPORT PlatformNotificationActionType {
+enum PlatformNotificationActionType {
   PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON = 0,
   PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT,
 };
