@@ -49,6 +49,11 @@ enum ScrollOffsetClamping {
     ScrollOffsetClamped
 };
 
+enum ApplyOverflowClipFlag {
+    ApplyOverflowClip,
+    ApplyNonScrollOverflowClip
+};
+
 struct LayoutBoxRareData {
     WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); USING_FAST_MALLOC(LayoutBoxRareData);
 public:
@@ -835,12 +840,12 @@ public:
     virtual bool needsPreferredWidthsRecalculation() const;
 
     IntSize scrolledContentOffset() const;
-    void mapScrollingContentsRectToBoxSpace(LayoutRect&) const;
 
-    // Returns true if the rect actually intersects the clipping region.
+    // Maps a rect in scrolling contents space to box space and apply overflow clip if needed.
+    // Returns true if no clipping applied or the rect actually intersects the clipping region.
     // If edgeInclusive is true, then this method may return true even
     // if the resulting rect has zero area.
-    bool applyOverflowClip(LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const;
+    bool mapScrollingContentsRectToBoxSpace(LayoutRect&, ApplyOverflowClipFlag, VisualRectFlags = DefaultVisualRectFlags) const;
 
     virtual bool hasRelativeLogicalWidth() const;
     virtual bool hasRelativeLogicalHeight() const;

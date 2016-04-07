@@ -1624,12 +1624,8 @@ bool LayoutObject::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
         return true;
 
     if (LayoutObject* parent = this->parent()) {
-        if (parent->hasOverflowClip()) {
-            LayoutBox* parentBox = toLayoutBox(parent);
-            parentBox->mapScrollingContentsRectToBoxSpace(rect);
-            if (parent != ancestor && !parentBox->applyOverflowClip(rect, visualRectFlags))
-                return false;
-        }
+        if (parent->isBox() && !toLayoutBox(parent)->mapScrollingContentsRectToBoxSpace(rect, parent == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
+            return false;
 
         return parent->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
     }

@@ -222,11 +222,11 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode)
     checkPaintInvalidationStateRectMapping(rect, containerOverflowRect, *container, layoutView(), layoutView());
 }
 
-TEST_F(VisualRectMappingTest, ContainerOverflowClip)
+TEST_F(VisualRectMappingTest, ContainerOverflowScroll)
 {
     setBodyInnerHTML(
         "<div id='container' style='position: absolute; top: 111px; left: 222px;"
-        "    border: 10px solid red; overflow: hidden; width: 50px; height: 80px;'>"
+        "    border: 10px solid red; overflow: scroll; width: 50px; height: 80px;'>"
         "    <div id='target' style='box-shadow: 40px 20px black; width: 100px; height: 90px'></div>"
         "</div>");
 
@@ -250,7 +250,7 @@ TEST_F(VisualRectMappingTest, ContainerOverflowClip)
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
     // 2 = target_x(0) + container_border_left(10) - scroll_left(8)
     // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
-    // Rect is not clipped by container's overflow clip.
+    // Rect is not clipped by container's overflow clip because of overflow:scroll.
     EXPECT_EQ(LayoutRect(2, 3, 140, 110), rect);
 
     rect = targetOverflowRect;
@@ -276,12 +276,12 @@ TEST_F(VisualRectMappingTest, ContainerOverflowClip)
     checkPaintInvalidationStateRectMapping(rect, containerOverflowRect, *container, layoutView(), layoutView());
 }
 
-TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowClip)
+TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll)
 {
     setBodyInnerHTML(
         "<div id='container' style='writing-mode: vertical-rl; position: absolute; top: 111px; left: 222px;"
         "    border: solid red; border-width: 10px 20px 30px 40px;"
-        "    overflow: hidden; width: 50px; height: 80px'>"
+        "    overflow: scroll; width: 50px; height: 80px'>"
         "    <div id='target' style='box-shadow: 40px 20px black; width: 100px; height: 90px'></div>"
         "    <div style='width: 100px; height: 100px'></div>"
         "</div>");
@@ -311,7 +311,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowClip)
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
     // -2 = target_physical_x(100) + container_border_left(40) - scroll_left(142)
     // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
-    // Rect is not clipped by container's overflow clip.
+    // Rect is clipped by container's overflow clip because of overflow:scroll.
     EXPECT_EQ(LayoutRect(-2, 3, 140, 110), rect);
 
     rect = targetOverflowRect;
@@ -339,6 +339,74 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowClip)
     // border-widths because of layout error.
     EXPECT_EQ(LayoutRect(282, 111, 110, 120), rect);
     checkPaintInvalidationStateRectMapping(rect, containerOverflowRect, *container, layoutView(), layoutView());
+}
+
+TEST_F(VisualRectMappingTest, ContainerOverflowHidden)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='position: absolute; top: 111px; left: 222px;"
+        "    border: 10px solid red; overflow: hidden; width: 50px; height: 80px;'>"
+        "    <div id='target' style='box-shadow: 40px 20px black; width: 100px; height: 90px'></div>"
+        "</div>");
+
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
+    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
+    EXPECT_EQ(LayoutUnit(0), container->scrollLeft());
+    container->setScrollTop(LayoutUnit(27));
+    container->setScrollLeft(LayoutUnit(28));
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
+    LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
+    // 140 = width(100) + box_shadow_offset_x(40)
+    // 110 = height(90) + box_shadow_offset_y(20)
+    EXPECT_EQ(LayoutRect(0, 0, 140, 110), targetOverflowRect);
+    LayoutRect rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
+    EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
+
+    rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    // Rect is clipped by container's overflow clip.
+    EXPECT_EQ(LayoutRect(10, 10, 50, 80), rect);
+}
+
+TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='writing-mode: vertical-rl; position: absolute; top: 111px; left: 222px;"
+        "    border: solid red; border-width: 10px 20px 30px 40px;"
+        "    overflow: hidden; width: 50px; height: 80px'>"
+        "    <div id='target' style='box-shadow: 40px 20px black; width: 100px; height: 90px'></div>"
+        "    <div style='width: 100px; height: 100px'></div>"
+        "</div>");
+
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
+    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
+    // The initial scroll offset is to the left-most because of flipped blocks writing mode.
+    // 150 = total_layout_overflow(100 + 100) - width(50)
+    EXPECT_EQ(LayoutUnit(150), container->scrollLeft());
+    container->setScrollTop(LayoutUnit(7));
+    container->setScrollLeft(LayoutUnit(82)); // Scroll to the right by 8 pixels.
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
+    LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
+    // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the origin)
+    // 140 = width(100) + box_shadow_offset_x(40)
+    // 110 = height(90) + box_shadow_offset_y(20)
+    EXPECT_EQ(LayoutRect(-40, 0, 140, 110), targetOverflowRect);
+
+    LayoutRect rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
+    // This rect is in physical coordinates of target.
+    EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
+
+    rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    // 58 = target_physical_x(100) + container_border_left(40) - scroll_left(58)
+    // The other sides of the rect are clipped by container's overflow clip.
+    EXPECT_EQ(LayoutRect(58, 10, 32, 80), rect);
 }
 
 TEST_F(VisualRectMappingTest, DifferentPaintInvalidaitionContainerForAbsolutePosition)

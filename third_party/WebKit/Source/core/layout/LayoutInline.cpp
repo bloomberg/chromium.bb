@@ -1101,12 +1101,9 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     rect.setLocation(topLeft);
-    if (container->hasOverflowClip()) {
-        LayoutBox* containerBox = toLayoutBox(container);
-        containerBox->mapScrollingContentsRectToBoxSpace(rect);
-        if (container != ancestor && !containerBox->applyOverflowClip(rect, visualRectFlags))
-            return false;
-    }
+
+    if (container->isBox() && !toLayoutBox(container)->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
+        return false;
 
     if (ancestorSkipped) {
         // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.

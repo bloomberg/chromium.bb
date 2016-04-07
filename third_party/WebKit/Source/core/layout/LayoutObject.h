@@ -1150,7 +1150,7 @@ public:
     // output as if |ancestor| was the root of the page: the rect is modified by any intervening clips, transforms
     // and scrolls between |this| and |ancestor|, but not any above |ancestor|.
     // The output is in the physical, painted coordinate pixel space of |ancestor|.
-    // Overflow clipping is *not* applied for |ancestor| itself.
+    // Overflow clipping is *not* applied for |ancestor| itself if |ancestor| scrolls overflow.
     // The output rect is suitable for purposes such as paint invalidation.
     //
     // If visualRectFlags has the EdgeInclusive bit set, clipping operations will use

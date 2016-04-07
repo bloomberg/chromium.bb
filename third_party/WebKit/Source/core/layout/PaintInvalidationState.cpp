@@ -321,8 +321,8 @@ void PaintInvalidationState::updateForNormalChildren()
 
     // Do not clip scroll layer contents because the compositor expects the whole layer
     // to be always invalidated in-time.
-    if (box.usesCompositedScrolling())
-        ASSERT(!m_clipped); // The box should establish paint invalidation container, so no m_clipped inherited.
+    if (box == m_paintInvalidationContainer && box.scrollsOverflow())
+        ASSERT(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
     else
         addClipRectRelativeToPaintOffset(box.overflowClipRect(LayoutPoint()));
 
@@ -385,10 +385,7 @@ LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
         if (m_clipped)
             rect.intersect(m_clipRect);
 #if ASSERT_SAME_RESULT_SLOW_AND_FAST_PATH
-        // TODO(crbug.com/597902): Slow path misses clipping of paintInvalidationContainer.
         LayoutRect slowPathRect = SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(m_currentObject, *m_paintInvalidationContainer);
-        if (m_clipped)
-            slowPathRect.intersect(m_clipRect);
         assertRectsEqual(m_currentObject, m_paintInvalidationContainer, rect, slowPathRect);
 #endif
     } else {
@@ -404,11 +401,10 @@ LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
 
 static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, LayoutRect& rect)
 {
-    if (object.isLayoutView()) {
+    if (object.isLayoutView())
         toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
-    } else {
+    else
         object.mapToVisualRectInAncestorSpace(&ancestor, rect);
-    }
 }
 
 void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(LayoutRect& rect) const
@@ -424,9 +420,6 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(LayoutRect
         if (m_clipped)
             rect.intersect(m_clipRect);
 #if ASSERT_SAME_RESULT_SLOW_AND_FAST_PATH
-        // TODO(crbug.com/597902): Slow path misses clipping of paintInvalidationContainer.
-        if (m_clipped)
-            slowPathRect.intersect(m_clipRect);
         assertRectsEqual(m_currentObject, *m_paintInvalidationContainer, rect, slowPathRect);
 #endif
     } else {

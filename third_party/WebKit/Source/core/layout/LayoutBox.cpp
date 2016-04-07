@@ -958,21 +958,18 @@ IntSize LayoutBox::scrolledContentOffset() const
     return flooredIntSize(getScrollableArea()->scrollOffset());
 }
 
-void LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect) const
+bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverflowClipFlag applyOverflowClip, VisualRectFlags visualRectFlags) const
 {
-    ASSERT(hasLayer());
-    ASSERT(hasOverflowClip());
+    if (!hasOverflowClip())
+        return true;
 
     LayoutSize offset = LayoutSize(-scrolledContentOffset());
     if (UNLIKELY(hasFlippedBlocksWritingMode()))
         offset.setWidth(-offset.width());
     rect.move(offset);
-}
 
-bool LayoutBox::applyOverflowClip(LayoutRect& rect, VisualRectFlags visualRectFlags) const
-{
-    ASSERT(hasLayer());
-    ASSERT(hasOverflowClip());
+    if (applyOverflowClip == ApplyNonScrollOverflowClip && scrollsOverflow())
+        return true;
 
     flipForWritingMode(rect);
 
@@ -1986,12 +1983,9 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     rect.setLocation(topLeft);
-    if (container->hasOverflowClip()) {
-        LayoutBox* containerBox = toLayoutBox(container);
-        containerBox->mapScrollingContentsRectToBoxSpace(rect);
-        if (container != ancestor && !containerBox->applyOverflowClip(rect, visualRectFlags))
-            return false;
-    }
+
+    if (container->isBox() && !toLayoutBox(container)->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
+        return false;
 
     if (ancestorSkipped) {
         // If the ancestor is below o, then we need to map the rect into ancestor's coordinates.
