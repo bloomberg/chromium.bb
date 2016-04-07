@@ -1484,6 +1484,21 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   gfx::Screen::GetScreen()->RemoveObserver(&display_observer);
 }
 
+TEST_F(DisplayManagerTest, RotateInSoftwareMirroring) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  UpdateDisplay("600x400,500x300");
+  display_manager->SetMirrorMode(true);
+
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_180,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
+  display_manager->SetMirrorMode(false);
+}
+
 TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
   if (!SupportsMultipleDisplays())
     return;

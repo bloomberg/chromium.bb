@@ -1221,8 +1221,10 @@ gfx::Display* DisplayManager::FindDisplayForId(int64_t id) {
 
 void DisplayManager::AddMirrorDisplayInfoIfAny(
     std::vector<DisplayInfo>* display_info_list) {
-  if (software_mirroring_enabled() && IsInMirrorMode())
+  if (software_mirroring_enabled() && IsInMirrorMode()) {
     display_info_list->push_back(GetDisplayInfo(mirroring_display_id_));
+    software_mirroring_display_list_.clear();
+  }
 }
 
 void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
