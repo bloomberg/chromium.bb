@@ -215,7 +215,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   PasswordFormManager* manager = new PasswordFormManager(
       this, client_, driver->AsWeakPtr(), form, ssl_valid);
   pending_login_managers_.push_back(manager);
-  manager->set_has_generated_password(true);
+  manager->FetchDataFromPasswordStore();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {

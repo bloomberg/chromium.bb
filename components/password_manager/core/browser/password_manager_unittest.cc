@@ -1266,6 +1266,28 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
   EXPECT_EQ(form.new_password_value, form_to_save.password_value);
 }
 
+TEST_F(PasswordManagerTest,
+       PasswordGenerationNoCorrespondingPasswordFormManager) {
+  // Verifies that if there is no corresponding password form manager for the
+  // given form, new password form manager should fetch data from the password
+  // store. Also verifies that |SetGenerationElementAndReasonForForm| doesn't
+  // change |has_generated_password_| of new password form manager.
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  PasswordForm form(MakeFormWithOnlyNewPasswordField());
+  std::vector<PasswordForm> observed;
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  PasswordStoreConsumer* consumer = nullptr;
+  EXPECT_CALL(*store_, GetLogins(form, _)).WillOnce(SaveArg<1>(&consumer));
+  manager()->SetGenerationElementAndReasonForForm(&driver_, form,
+                                                  base::string16(), false);
+  PasswordFormManager* form_manager =
+      static_cast<PasswordFormManager*>(consumer);
+  EXPECT_FALSE(form_manager->has_generated_password());
+}
+
 TEST_F(PasswordManagerTest, ForceSavingPasswords) {
   // Add the enable-password-force-saving feature.
   base::FeatureList::ClearInstanceForTesting();
