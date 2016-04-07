@@ -43,10 +43,6 @@ const base::FilePath::CharType kPepperFlashBaseDirectory[] =
 #if defined(OS_MACOSX)
 const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
     FILE_PATH_LITERAL("Internet Plug-Ins/PepperFlashPlayer");
-const base::FilePath::CharType kFlashSystemBaseDirectory[] =
-    FILE_PATH_LITERAL("Internet Plug-Ins");
-const base::FilePath::CharType kFlashSystemPluginName[] =
-    FILE_PATH_LITERAL("Flash Player.plugin");
 #endif
 
 const base::FilePath::CharType kInternalNaClPluginFileName[] =
@@ -90,18 +86,14 @@ bool GetInternalPluginsDirectory(base::FilePath* result) {
 }
 
 #if defined(OS_WIN)
-// Gets the Flash path if installed on the system. |is_npapi| determines whether
-// to return the NPAPI of the PPAPI version of the system plugin.
-bool GetSystemFlashFilename(base::FilePath* out_path, bool is_npapi) {
-  const wchar_t kNpapiFlashRegistryRoot[] =
-      L"SOFTWARE\\Macromedia\\FlashPlayerPlugin";
+// Gets the Pepper Flash path if installed on the system.
+bool GetSystemFlashFilename(base::FilePath* out_path) {
   const wchar_t kPepperFlashRegistryRoot[] =
       L"SOFTWARE\\Macromedia\\FlashPlayerPepper";
   const wchar_t kFlashPlayerPathValueName[] = L"PlayerPath";
 
-  base::win::RegKey path_key(
-      HKEY_LOCAL_MACHINE,
-      is_npapi ? kNpapiFlashRegistryRoot : kPepperFlashRegistryRoot, KEY_READ);
+  base::win::RegKey path_key(HKEY_LOCAL_MACHINE, kPepperFlashRegistryRoot,
+                             KEY_READ);
   base::string16 path_str;
   if (FAILED(path_key.ReadValue(kFlashPlayerPathValueName, &path_str)))
     return false;
@@ -276,7 +268,7 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN:
 #if defined(OS_WIN)
-      if (!GetSystemFlashFilename(&cur, false))
+      if (!GetSystemFlashFilename(&cur))
         return false;
 #elif defined(OS_MACOSX)
       if (!GetLocalLibraryDirectory(&cur))
@@ -286,20 +278,6 @@ bool PathProvider(int key, base::FilePath* result) {
 #else
       // Chrome on iOS does not supports PPAPI binaries, return false.
       // TODO(wfh): If Adobe release PPAPI binaries for Linux, add support here.
-      return false;
-#endif
-      break;
-    case chrome::FILE_FLASH_SYSTEM_PLUGIN:
-#if defined(OS_WIN)
-      if (!GetSystemFlashFilename(&cur, true))
-        return false;
-#elif defined(OS_MACOSX)
-      if (!GetLocalLibraryDirectory(&cur))
-        return false;
-      cur = cur.Append(kFlashSystemBaseDirectory);
-      cur = cur.Append(kFlashSystemPluginName);
-#else
-      // Chrome on other platforms does not supports system NPAPI binaries.
       return false;
 #endif
       break;
