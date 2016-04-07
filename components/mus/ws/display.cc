@@ -21,6 +21,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace mus {
 namespace ws {
@@ -30,7 +31,7 @@ Display::Display(WindowServer* window_server,
     : id_(window_server->display_manager()->GetAndAdvanceNextDisplayId()),
       window_server_(window_server),
       platform_display_(PlatformDisplay::Create(platform_display_init_params)),
-      last_cursor_(0) {
+      last_cursor_(ui::kCursorNone) {
   platform_display_->Init(this);
 
   window_server_->window_manager_factory_registry()->AddObserver(this);
