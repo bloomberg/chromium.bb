@@ -18,7 +18,7 @@ class HTMLLinkElement;
 class MODULES_EXPORT ServiceWorkerLinkResource final : public LinkResource {
 public:
 
-    static RawPtr<ServiceWorkerLinkResource> create(HTMLLinkElement* owner);
+    static ServiceWorkerLinkResource* create(HTMLLinkElement* owner);
 
     ~ServiceWorkerLinkResource() override;
 

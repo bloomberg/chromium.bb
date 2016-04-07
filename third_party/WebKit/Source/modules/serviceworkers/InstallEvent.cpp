@@ -11,17 +11,17 @@
 
 namespace blink {
 
-RawPtr<InstallEvent> InstallEvent::create()
+InstallEvent* InstallEvent::create()
 {
     return new InstallEvent();
 }
 
-RawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
+InstallEvent* InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
 {
     return new InstallEvent(type, eventInit);
 }
 
-RawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
+InstallEvent* InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
 {
     return new InstallEvent(type, eventInit, observer);
 }

@@ -64,20 +64,20 @@
 
 namespace blink {
 
-RawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
+ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     // Note: startupData is finalized on return. After the relevant parts has been
     // passed along to the created 'context'.
-    RawPtr<ServiceWorkerGlobalScope> context = new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
+    ServiceWorkerGlobalScope* context = new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
 
     context->setV8CacheOptions(startupData->m_v8CacheOptions);
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
     context->setAddressSpace(startupData->m_addressSpace);
 
-    return context.release();
+    return context;
 }
 
-ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, RawPtr<WorkerClients> workerClients)
+ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOriginPrivilegeData, workerClients)
     , m_didEvaluateScript(false)
     , m_hadErrorInTopLevelEventHandler(false)
@@ -152,11 +152,11 @@ bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& even
 {
     if (m_didEvaluateScript) {
         if (eventType == EventTypeNames::install) {
-            RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'install' event must be added on the initial evaluation of worker script.");
-            addMessageToWorkerConsole(consoleMessage.release());
+            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'install' event must be added on the initial evaluation of worker script.");
+            addMessageToWorkerConsole(consoleMessage);
         } else if (eventType == EventTypeNames::activate) {
-            RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'activate' event must be added on the initial evaluation of worker script.");
-            addMessageToWorkerConsole(consoleMessage.release());
+            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'activate' event must be added on the initial evaluation of worker script.");
+            addMessageToWorkerConsole(consoleMessage);
         }
     }
     return WorkerGlobalScope::addEventListenerInternal(eventType, listener, options);
@@ -177,7 +177,7 @@ DispatchEventResult ServiceWorkerGlobalScope::dispatchEventInternal(Event* event
     return dispatchResult;
 }
 
-void ServiceWorkerGlobalScope::dispatchExtendableEvent(RawPtr<Event> event, WaitUntilObserver* observer)
+void ServiceWorkerGlobalScope::dispatchExtendableEvent(Event* event, WaitUntilObserver* observer)
 {
     ASSERT(m_eventNestingLevel == 0);
     m_hadErrorInTopLevelEventHandler = false;
@@ -214,10 +214,10 @@ CachedMetadataHandler* ServiceWorkerGlobalScope::createWorkerScriptCachedMetadat
 void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
 {
     WorkerGlobalScope::logExceptionToConsole(errorMessage, scriptId, sourceURL, lineNumber, columnNumber, callStack);
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
     consoleMessage->setScriptId(scriptId);
     consoleMessage->setCallStack(callStack);
-    addMessageToWorkerConsole(consoleMessage.release());
+    addMessageToWorkerConsole(consoleMessage);
 }
 
 void ServiceWorkerGlobalScope::scriptLoaded(size_t scriptSize, size_t cachedMetadataSize)

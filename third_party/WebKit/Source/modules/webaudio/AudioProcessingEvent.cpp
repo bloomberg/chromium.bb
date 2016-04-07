@@ -26,12 +26,12 @@
 
 namespace blink {
 
-RawPtr<AudioProcessingEvent> AudioProcessingEvent::create()
+AudioProcessingEvent* AudioProcessingEvent::create()
 {
     return new AudioProcessingEvent;
 }
 
-RawPtr<AudioProcessingEvent> AudioProcessingEvent::create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime)
+AudioProcessingEvent* AudioProcessingEvent::create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime)
 {
     return new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime);
 }

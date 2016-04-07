@@ -54,17 +54,17 @@ static String ErrorCodeToString(SpeechRecognitionError::ErrorCode code)
     return String();
 }
 
-RawPtr<SpeechRecognitionError> SpeechRecognitionError::create(ErrorCode code, const String& message)
+SpeechRecognitionError* SpeechRecognitionError::create(ErrorCode code, const String& message)
 {
     return new SpeechRecognitionError(ErrorCodeToString(code), message);
 }
 
-RawPtr<SpeechRecognitionError> SpeechRecognitionError::create()
+SpeechRecognitionError* SpeechRecognitionError::create()
 {
     return new SpeechRecognitionError(emptyString(), emptyString());
 }
 
-RawPtr<SpeechRecognitionError> SpeechRecognitionError::create(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
+SpeechRecognitionError* SpeechRecognitionError::create(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
 {
     return new SpeechRecognitionError(eventName, initializer);
 }

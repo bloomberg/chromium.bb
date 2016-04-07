@@ -35,15 +35,15 @@ class WebGLContextEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static RawPtr<WebGLContextEvent> create()
+    static WebGLContextEvent* create()
     {
         return new WebGLContextEvent;
     }
-    static RawPtr<WebGLContextEvent> create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
+    static WebGLContextEvent* create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
     {
         return new WebGLContextEvent(type, canBubble, cancelable, statusMessage);
     }
-    static RawPtr<WebGLContextEvent> create(const AtomicString& type, const WebGLContextEventInit& initializer)
+    static WebGLContextEvent* create(const AtomicString& type, const WebGLContextEventInit& initializer)
     {
         return new WebGLContextEvent(type, initializer);
     }

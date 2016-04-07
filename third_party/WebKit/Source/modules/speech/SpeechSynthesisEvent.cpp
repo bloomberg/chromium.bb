@@ -27,12 +27,12 @@
 
 namespace blink {
 
-RawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
+SpeechSynthesisEvent* SpeechSynthesisEvent::create()
 {
     return new SpeechSynthesisEvent;
 }
 
-RawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned charIndex, float elapsedTime, const String& name)
+SpeechSynthesisEvent* SpeechSynthesisEvent::create(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned charIndex, float elapsedTime, const String& name)
 {
     return new SpeechSynthesisEvent(type, utterance, charIndex, elapsedTime, name);
 }

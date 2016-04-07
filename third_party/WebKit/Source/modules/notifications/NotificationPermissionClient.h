@@ -30,7 +30,7 @@ public:
     static NotificationPermissionClient* from(ExecutionContext*);
 };
 
-MODULES_EXPORT void provideNotificationPermissionClientTo(LocalFrame&, RawPtr<NotificationPermissionClient>);
+MODULES_EXPORT void provideNotificationPermissionClientTo(LocalFrame&, NotificationPermissionClient*);
 
 } // namespace blink
 

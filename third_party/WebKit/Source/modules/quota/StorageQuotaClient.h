@@ -60,7 +60,7 @@ public:
     static StorageQuotaClient* from(ExecutionContext*);
 };
 
-MODULES_EXPORT void provideStorageQuotaClientTo(Page&, RawPtr<StorageQuotaClient>);
+MODULES_EXPORT void provideStorageQuotaClientTo(Page&, StorageQuotaClient*);
 
 } // namespace blink
 

@@ -59,7 +59,7 @@ public:
     void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, RawPtr<ImageBitmap>, ExceptionState&);
+        GLenum format, GLenum type, ImageBitmap*, ExceptionState&);
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLsizei width, GLsizei height,
         GLenum format, GLenum type, DOMArrayBufferView*);
@@ -72,7 +72,7 @@ public:
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, RawPtr<ImageBitmap>, ExceptionState&);
+        GLenum format, GLenum type, ImageBitmap*, ExceptionState&);
 
     void texStorage2D(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
     void texStorage3D(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei);
@@ -84,7 +84,7 @@ public:
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
-    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, RawPtr<ImageBitmap>, ExceptionState&);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageBitmap*, ExceptionState&);
     void copyTexSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei);
     void compressedTexImage3D(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, DOMArrayBufferView*);
     void compressedTexSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, DOMArrayBufferView*);

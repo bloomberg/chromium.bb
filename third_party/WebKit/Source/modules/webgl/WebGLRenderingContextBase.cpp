@@ -133,12 +133,6 @@ void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
     if (!candidate)
         return;
 
-    // This context could belong to a dead page and the last JavaScript reference has already
-    // been lost. Garbage collection might be triggered in the middle of this function, for
-    // example, printWarningToConsole() causes an upcall to JavaScript.
-    // Must make sure that the context is not deleted until the call stack unwinds.
-    RawPtr<WebGLRenderingContextBase> protect(candidate);
-
     candidate->printWarningToConsole(reason);
     InspectorInstrumentation::didFireWebGLWarning(candidate->canvas());
 
@@ -4240,11 +4234,11 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
-    GLenum format, GLenum type, RawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+    GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
 {
     if (isContextLost())
         return;
-    if (!validateImageBitmap("texImage2D", bitmap.get(), exceptionState))
+    if (!validateImageBitmap("texImage2D", bitmap, exceptionState))
         return;
     if (!validateTexture2DBinding("texImage2D", target))
         return;
@@ -4506,11 +4500,11 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLenum format, GLenum type, RawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+    GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
 {
     if (isContextLost())
         return;
-    if (!validateImageBitmap("texSubImage2D", bitmap.get(), exceptionState))
+    if (!validateImageBitmap("texSubImage2D", bitmap, exceptionState))
         return;
     if (!validateTexture2DBinding("texSubImage2D", target))
         return;
@@ -5955,7 +5949,7 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
 
 void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingContextBase>*)
 {
-    RawPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
+    WebGLContextEvent* event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
     if (m_restoreAllowed && !m_isHidden) {

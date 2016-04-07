@@ -13,7 +13,7 @@
 
 namespace blink {
 
-RawPtr<ServiceWorkerContainerClient> ServiceWorkerContainerClient::create(PassOwnPtr<WebServiceWorkerProvider> provider)
+ServiceWorkerContainerClient* ServiceWorkerContainerClient::create(PassOwnPtr<WebServiceWorkerProvider> provider)
 {
     return new ServiceWorkerContainerClient(provider);
 }

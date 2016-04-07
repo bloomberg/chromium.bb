@@ -16,12 +16,12 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static RawPtr<ExtendableMessageEvent> create();
-    static RawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
-    static RawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
-    static RawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
-    static RawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver*);
-    static RawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver*);
+    static ExtendableMessageEvent* create();
+    static ExtendableMessageEvent* create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
+    static ExtendableMessageEvent* create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
+    static ExtendableMessageEvent* create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
+    static ExtendableMessageEvent* create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver*);
+    static ExtendableMessageEvent* create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver*);
 
     SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
     void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }

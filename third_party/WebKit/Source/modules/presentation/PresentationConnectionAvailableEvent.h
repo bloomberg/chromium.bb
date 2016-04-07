@@ -21,15 +21,15 @@ class PresentationConnectionAvailableEvent final : public Event {
 public:
     ~PresentationConnectionAvailableEvent() override;
 
-    static RawPtr<PresentationConnectionAvailableEvent> create()
+    static PresentationConnectionAvailableEvent* create()
     {
         return new PresentationConnectionAvailableEvent;
     }
-    static RawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, PresentationConnection* connection)
+    static PresentationConnectionAvailableEvent* create(const AtomicString& eventType, PresentationConnection* connection)
     {
         return new PresentationConnectionAvailableEvent(eventType, connection);
     }
-    static RawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, const PresentationConnectionAvailableEventInit& initializer)
+    static PresentationConnectionAvailableEvent* create(const AtomicString& eventType, const PresentationConnectionAvailableEventInit& initializer)
     {
         return new PresentationConnectionAvailableEvent(eventType, initializer);
     }

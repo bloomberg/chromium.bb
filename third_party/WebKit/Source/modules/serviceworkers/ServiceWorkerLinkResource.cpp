@@ -40,7 +40,7 @@ private:
 
 }
 
-RawPtr<ServiceWorkerLinkResource> ServiceWorkerLinkResource::create(HTMLLinkElement* owner)
+ServiceWorkerLinkResource* ServiceWorkerLinkResource::create(HTMLLinkElement* owner)
 {
     return new ServiceWorkerLinkResource(owner);
 }

@@ -35,17 +35,17 @@
 
 namespace blink {
 
-RawPtr<ExtendableEvent> ExtendableEvent::create()
+ExtendableEvent* ExtendableEvent::create()
 {
     return new ExtendableEvent();
 }
 
-RawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
+ExtendableEvent* ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
 {
     return new ExtendableEvent(type, eventInit);
 }
 
-RawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
+ExtendableEvent* ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
 {
     return new ExtendableEvent(type, eventInit, observer);
 }

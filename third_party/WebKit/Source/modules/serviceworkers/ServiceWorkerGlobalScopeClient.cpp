@@ -47,7 +47,7 @@ ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::from(ExecutionCo
     return static_cast<ServiceWorkerGlobalScopeClient*>(Supplement<WorkerClients>::from(clients, supplementName()));
 }
 
-void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, RawPtr<ServiceWorkerGlobalScopeClient> client)
+void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, ServiceWorkerGlobalScopeClient* client)
 {
     clients->provideSupplement(ServiceWorkerGlobalScopeClient::supplementName(), client);
 }

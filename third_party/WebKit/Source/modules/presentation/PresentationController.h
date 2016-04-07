@@ -35,7 +35,7 @@ class MODULES_EXPORT PresentationController final
 public:
     ~PresentationController() override;
 
-    static RawPtr<PresentationController> create(LocalFrame&, WebPresentationClient*);
+    static PresentationController* create(LocalFrame&, WebPresentationClient*);
 
     static const char* supplementName();
     static PresentationController* from(LocalFrame&);

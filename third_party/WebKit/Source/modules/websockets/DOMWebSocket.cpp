@@ -71,7 +71,7 @@ DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
 
 DOMWebSocket::EventQueue::~EventQueue() { stop(); }
 
-void DOMWebSocket::EventQueue::dispatch(RawPtr<Event> event)
+void DOMWebSocket::EventQueue::dispatch(Event* event)
 {
     switch (m_state) {
     case Active:

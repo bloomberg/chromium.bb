@@ -20,15 +20,15 @@ class PushEventInit;
 class MODULES_EXPORT PushEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<PushEvent> create()
+    static PushEvent* create()
     {
         return new PushEvent;
     }
-    static RawPtr<PushEvent> create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
+    static PushEvent* create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
     {
         return new PushEvent(type, data, observer);
     }
-    static RawPtr<PushEvent> create(const AtomicString& type, const PushEventInit& initializer)
+    static PushEvent* create(const AtomicString& type, const PushEventInit& initializer)
     {
         return new PushEvent(type, initializer);
     }

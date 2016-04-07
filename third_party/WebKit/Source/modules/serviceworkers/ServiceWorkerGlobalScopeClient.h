@@ -94,7 +94,7 @@ protected:
     ServiceWorkerGlobalScopeClient() { }
 };
 
-MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, RawPtr<ServiceWorkerGlobalScopeClient>);
+MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, ServiceWorkerGlobalScopeClient*);
 
 } // namespace blink
 

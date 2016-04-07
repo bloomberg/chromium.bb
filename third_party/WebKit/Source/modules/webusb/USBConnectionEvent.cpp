@@ -9,12 +9,12 @@
 
 namespace blink {
 
-RawPtr<USBConnectionEvent> USBConnectionEvent::create(const AtomicString& type, const USBConnectionEventInit& initializer)
+USBConnectionEvent* USBConnectionEvent::create(const AtomicString& type, const USBConnectionEventInit& initializer)
 {
     return new USBConnectionEvent(type, initializer);
 }
 
-RawPtr<USBConnectionEvent> USBConnectionEvent::create(const AtomicString& type, USBDevice* device)
+USBConnectionEvent* USBConnectionEvent::create(const AtomicString& type, USBDevice* device)
 {
     return new USBConnectionEvent(type, device);
 }

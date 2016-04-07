@@ -18,7 +18,7 @@ class CachedMetadata;
 
 class ServiceWorkerScriptCachedMetadataHandler : public CachedMetadataHandler {
 public:
-    static RawPtr<ServiceWorkerScriptCachedMetadataHandler> create(WorkerGlobalScope* workerGlobalScope, const KURL& scriptURL, const Vector<char>* metaData)
+    static ServiceWorkerScriptCachedMetadataHandler* create(WorkerGlobalScope* workerGlobalScope, const KURL& scriptURL, const Vector<char>* metaData)
     {
         return new ServiceWorkerScriptCachedMetadataHandler(workerGlobalScope, scriptURL, metaData);
     }

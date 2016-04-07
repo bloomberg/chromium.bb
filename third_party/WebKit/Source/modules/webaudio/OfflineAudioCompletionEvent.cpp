@@ -26,12 +26,12 @@
 
 namespace blink {
 
-RawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create()
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create()
 {
     return new OfflineAudioCompletionEvent;
 }
 
-RawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create(AudioBuffer* renderedBuffer)
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(AudioBuffer* renderedBuffer)
 {
     return new OfflineAudioCompletionEvent(renderedBuffer);
 }

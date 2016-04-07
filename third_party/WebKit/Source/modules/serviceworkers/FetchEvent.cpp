@@ -10,17 +10,17 @@
 
 namespace blink {
 
-RawPtr<FetchEvent> FetchEvent::create()
+FetchEvent* FetchEvent::create()
 {
     return new FetchEvent();
 }
 
-RawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer)
+FetchEvent* FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer)
 {
     return new FetchEvent(type, initializer, nullptr);
 }
 
-RawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
+FetchEvent* FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
 {
     return new FetchEvent(type, initializer, observer);
 }

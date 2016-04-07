@@ -48,7 +48,7 @@ StorageQuotaClient* StorageQuotaClient::from(ExecutionContext* context)
     return static_cast<StorageQuotaClient*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
 }
 
-void provideStorageQuotaClientTo(Page& page, RawPtr<StorageQuotaClient> client)
+void provideStorageQuotaClientTo(Page& page, StorageQuotaClient* client)
 {
     page.provideSupplement(StorageQuotaClient::supplementName(), client);
 }

@@ -20,17 +20,17 @@ class PresentationConnectionCloseEvent final : public Event {
 public:
     ~PresentationConnectionCloseEvent() override = default;
 
-    static RawPtr<PresentationConnectionCloseEvent> create()
+    static PresentationConnectionCloseEvent* create()
     {
         return new PresentationConnectionCloseEvent;
     }
 
-    static RawPtr<PresentationConnectionCloseEvent> create(const AtomicString& eventType, const String& reason, const String& message)
+    static PresentationConnectionCloseEvent* create(const AtomicString& eventType, const String& reason, const String& message)
     {
         return new PresentationConnectionCloseEvent(eventType, reason, message);
     }
 
-    static RawPtr<PresentationConnectionCloseEvent> create(const AtomicString& eventType, const PresentationConnectionCloseEventInit& initializer)
+    static PresentationConnectionCloseEvent* create(const AtomicString& eventType, const PresentationConnectionCloseEventInit& initializer)
     {
         return new PresentationConnectionCloseEvent(eventType, initializer);
     }

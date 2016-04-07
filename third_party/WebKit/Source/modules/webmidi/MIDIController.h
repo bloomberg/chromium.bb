@@ -48,7 +48,7 @@ public:
     void requestPermission(MIDIAccessInitializer*, const MIDIOptions&);
     void cancelPermissionRequest(MIDIAccessInitializer*);
 
-    static RawPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
+    static MIDIController* create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();
     static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
 

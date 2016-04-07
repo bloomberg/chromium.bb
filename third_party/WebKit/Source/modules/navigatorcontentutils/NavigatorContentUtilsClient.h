@@ -53,7 +53,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, RawPtr<NavigatorContentUtilsClient>);
+MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, NavigatorContentUtilsClient*);
 
 } // namespace blink
 

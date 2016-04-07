@@ -81,7 +81,7 @@ WebGL2RenderingContext::~WebGL2RenderingContext()
 
 void WebGL2RenderingContext::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setWebGL2RenderingContext(RawPtr<WebGL2RenderingContext>(this));
+    result.setWebGL2RenderingContext(this);
 }
 
 void WebGL2RenderingContext::registerContextExtensions()

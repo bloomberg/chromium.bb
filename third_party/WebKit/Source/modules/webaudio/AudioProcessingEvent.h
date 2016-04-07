@@ -37,8 +37,8 @@ class AudioBuffer;
 class AudioProcessingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<AudioProcessingEvent> create();
-    static RawPtr<AudioProcessingEvent> create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
+    static AudioProcessingEvent* create();
+    static AudioProcessingEvent* create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
 
     ~AudioProcessingEvent() override;
 

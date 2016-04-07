@@ -34,8 +34,8 @@ namespace blink {
 class SpeechSynthesisEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SpeechSynthesisEvent> create();
-    static RawPtr<SpeechSynthesisEvent> create(const AtomicString& type, SpeechSynthesisUtterance*, unsigned charIndex, float elapsedTime, const String& name);
+    static SpeechSynthesisEvent* create();
+    static SpeechSynthesisEvent* create(const AtomicString& type, SpeechSynthesisUtterance*, unsigned charIndex, float elapsedTime, const String& name);
 
     SpeechSynthesisUtterance* utterance() const { return m_utterance; }
     unsigned charIndex() const { return m_charIndex; }

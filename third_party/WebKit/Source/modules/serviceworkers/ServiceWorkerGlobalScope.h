@@ -56,7 +56,7 @@ typedef RequestOrUSVString RequestInfo;
 class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
+    static ServiceWorkerGlobalScope* create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
 
     ~ServiceWorkerGlobalScope() override;
     bool isServiceWorkerGlobalScope() const override { return true; }
@@ -79,7 +79,7 @@ public:
     // EventTarget
     const AtomicString& interfaceName() const override;
 
-    void dispatchExtendableEvent(RawPtr<Event>, WaitUntilObserver*);
+    void dispatchExtendableEvent(Event*, WaitUntilObserver*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
@@ -95,7 +95,7 @@ protected:
     bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
 
 private:
-    ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, RawPtr<WorkerClients>);
+    ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     void importScripts(const Vector<String>& urls, ExceptionState&) override;
     CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) override;
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override;

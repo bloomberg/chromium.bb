@@ -14,7 +14,7 @@ PushController::PushController(WebPushClient* client)
 {
 }
 
-RawPtr<PushController> PushController::create(WebPushClient* client)
+PushController* PushController::create(WebPushClient* client)
 {
     return new PushController(client);
 }

@@ -154,7 +154,7 @@ private:
         // Dispatches the event if this queue is active.
         // Queues the event if this queue is suspended.
         // Does nothing otherwise.
-        void dispatch(RawPtr<Event> /* event */);
+        void dispatch(Event* /* event */);
 
         bool isEmpty() const;
 

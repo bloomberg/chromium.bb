@@ -292,7 +292,7 @@ public:
     void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, RawPtr<ImageBitmap>, ExceptionState&);
+        GLenum format, GLenum type, ImageBitmap*, ExceptionState&);
 
     void texParameterf(GLenum target, GLenum pname, GLfloat param);
     void texParameteri(GLenum target, GLenum pname, GLint param);
@@ -309,7 +309,7 @@ public:
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, RawPtr<ImageBitmap>, ExceptionState&);
+        GLenum format, GLenum type, ImageBitmap*, ExceptionState&);
 
     void uniform1f(const WebGLUniformLocation*, GLfloat x);
     void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);

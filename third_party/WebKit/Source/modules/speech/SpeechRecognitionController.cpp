@@ -42,7 +42,7 @@ SpeechRecognitionController::~SpeechRecognitionController()
     // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.
 }
 
-RawPtr<SpeechRecognitionController> SpeechRecognitionController::create(PassOwnPtr<SpeechRecognitionClient> client)
+SpeechRecognitionController* SpeechRecognitionController::create(PassOwnPtr<SpeechRecognitionClient> client)
 {
     return new SpeechRecognitionController(client);
 }

@@ -24,7 +24,7 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 public:
-    static RawPtr<ServiceWorkerContainerClient> create(PassOwnPtr<WebServiceWorkerProvider>);
+    static ServiceWorkerContainerClient* create(PassOwnPtr<WebServiceWorkerProvider>);
     virtual ~ServiceWorkerContainerClient();
 
     WebServiceWorkerProvider* provider() { return m_provider.get(); }

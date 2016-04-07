@@ -35,7 +35,7 @@ public:
 
     // API Methods
     OffscreenCanvasRenderingContext2D* getContext(const String&, const CanvasContextCreationAttributes&);
-    RawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&);
+    ImageBitmap* transferToImageBitmap(ExceptionState&);
 
     IntSize size() const { return m_size; }
     OffscreenCanvasRenderingContext2D* renderingContext() const;

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-RawPtr<StorageEvent> StorageEvent::create()
+StorageEvent* StorageEvent::create()
 {
     return new StorageEvent;
 }
@@ -44,12 +44,12 @@ StorageEvent::~StorageEvent()
 {
 }
 
-RawPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
+StorageEvent* StorageEvent::create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
 {
     return new StorageEvent(type, key, oldValue, newValue, url, storageArea);
 }
 
-RawPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const StorageEventInit& initializer)
+StorageEvent* StorageEvent::create(const AtomicString& type, const StorageEventInit& initializer)
 {
     return new StorageEvent(type, initializer);
 }

@@ -49,7 +49,7 @@ class DictionaryValue;
 
 class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>, public protocol::Backend::DOMStorage {
 public:
-    static RawPtr<InspectorDOMStorageAgent> create(Page* page)
+    static InspectorDOMStorageAgent* create(Page* page)
     {
         return new InspectorDOMStorageAgent(page);
     }

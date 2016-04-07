@@ -67,7 +67,7 @@ public:
     bool hasAlpha() const override { return m_hasAlpha; }
     bool isContextLost() const override;
 
-    RawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) final;
+    ImageBitmap* transferToImageBitmap(ExceptionState&) final;
 
 protected:
     OffscreenCanvasRenderingContext2D(OffscreenCanvas*, const CanvasContextCreationAttributes& attrs);

@@ -38,9 +38,9 @@ class StorageEventInit;
 class StorageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<StorageEvent> create();
-    static RawPtr<StorageEvent> create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
-    static RawPtr<StorageEvent> create(const AtomicString&, const StorageEventInit&);
+    static StorageEvent* create();
+    static StorageEvent* create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
+    static StorageEvent* create(const AtomicString&, const StorageEventInit&);
     ~StorageEvent() override;
 
     const String& key() const { return m_key; }

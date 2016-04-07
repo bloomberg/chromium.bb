@@ -39,12 +39,12 @@ class Document;
 class SpeechRecognitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SpeechRecognitionEvent> create();
-    static RawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
+    static SpeechRecognitionEvent* create();
+    static SpeechRecognitionEvent* create(const AtomicString&, const SpeechRecognitionEventInit&);
     ~SpeechRecognitionEvent() override;
 
-    static RawPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results);
-    static RawPtr<SpeechRecognitionEvent> createNoMatch(SpeechRecognitionResult*);
+    static SpeechRecognitionEvent* createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results);
+    static SpeechRecognitionEvent* createNoMatch(SpeechRecognitionResult*);
 
     unsigned long resultIndex() const { return m_resultIndex; }
     SpeechRecognitionResultList* results() const { return m_results; }

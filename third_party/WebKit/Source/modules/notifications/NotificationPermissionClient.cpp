@@ -27,7 +27,7 @@ NotificationPermissionClient* NotificationPermissionClient::from(ExecutionContex
     return static_cast<NotificationPermissionClient*>(Supplement<LocalFrame>::from(document->frame(), supplementName()));
 }
 
-void provideNotificationPermissionClientTo(LocalFrame& frame, RawPtr<NotificationPermissionClient> client)
+void provideNotificationPermissionClientTo(LocalFrame& frame, NotificationPermissionClient* client)
 {
     frame.provideSupplement(NotificationPermissionClient::supplementName(), client);
 }

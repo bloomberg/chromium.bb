@@ -47,7 +47,7 @@ public:
     void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
     void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
 
-    static RawPtr<SpeechRecognitionController> create(PassOwnPtr<SpeechRecognitionClient>);
+    static SpeechRecognitionController* create(PassOwnPtr<SpeechRecognitionClient>);
     static const char* supplementName();
     static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(Supplement<Page>::from(page, supplementName())); }
 

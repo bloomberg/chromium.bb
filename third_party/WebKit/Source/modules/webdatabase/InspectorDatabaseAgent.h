@@ -48,7 +48,7 @@ class Page;
 class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Backend::Database {
     WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 public:
-    static RawPtr<InspectorDatabaseAgent> create(Page* page)
+    static InspectorDatabaseAgent* create(Page* page)
     {
         return new InspectorDatabaseAgent(page);
     }

@@ -17,7 +17,7 @@ class KURL;
 // Provides a mock object for the navigatorcontentutils client.
 class NavigatorContentUtilsClientMock final : public NavigatorContentUtilsClient {
 public:
-    static RawPtr<NavigatorContentUtilsClientMock> create()
+    static NavigatorContentUtilsClientMock* create()
     {
         return new NavigatorContentUtilsClientMock;
     }

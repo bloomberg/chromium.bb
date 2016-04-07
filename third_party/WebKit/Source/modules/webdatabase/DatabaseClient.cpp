@@ -73,7 +73,7 @@ void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent)
     m_inspectorAgent = agent;
 }
 
-void provideDatabaseClientTo(Page& page, RawPtr<DatabaseClient> client)
+void provideDatabaseClientTo(Page& page, DatabaseClient* client)
 {
     page.provideSupplement(DatabaseClient::supplementName(), client);
 }

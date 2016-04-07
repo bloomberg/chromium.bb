@@ -46,17 +46,17 @@ namespace blink {
 class CloseEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CloseEvent> create()
+    static CloseEvent* create()
     {
         return new CloseEvent();
     }
 
-    static RawPtr<CloseEvent> create(bool wasClean, unsigned short code, const String& reason)
+    static CloseEvent* create(bool wasClean, unsigned short code, const String& reason)
     {
         return new CloseEvent(wasClean, code, reason);
     }
 
-    static RawPtr<CloseEvent> create(const AtomicString& type, const CloseEventInit& initializer)
+    static CloseEvent* create(const AtomicString& type, const CloseEventInit& initializer)
     {
         return new CloseEvent(type, initializer);
     }

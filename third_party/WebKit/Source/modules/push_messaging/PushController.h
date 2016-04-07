@@ -20,7 +20,7 @@ class PushController final : public GarbageCollected<PushController>, public Sup
     USING_GARBAGE_COLLECTED_MIXIN(PushController);
     WTF_MAKE_NONCOPYABLE(PushController);
 public:
-    static RawPtr<PushController> create(WebPushClient*);
+    static PushController* create(WebPushClient*);
     static const char* supplementName();
     static PushController* from(LocalFrame* frame) { return static_cast<PushController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
     static WebPushClient& clientFrom(LocalFrame*);

@@ -26,9 +26,9 @@ class RespondWithObserver;
 class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<FetchEvent> create();
-    static RawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&);
-    static RawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
+    static FetchEvent* create();
+    static FetchEvent* create(const AtomicString& type, const FetchEventInit&);
+    static FetchEvent* create(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
     Request* request() const;
     String clientId() const;

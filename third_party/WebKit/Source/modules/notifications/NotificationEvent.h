@@ -18,15 +18,15 @@ class NotificationEventInit;
 class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<NotificationEvent> create()
+    static NotificationEvent* create()
     {
         return new NotificationEvent;
     }
-    static RawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer)
+    static NotificationEvent* create(const AtomicString& type, const NotificationEventInit& initializer)
     {
         return new NotificationEvent(type, initializer);
     }
-    static RawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer, WaitUntilObserver* observer)
+    static NotificationEvent* create(const AtomicString& type, const NotificationEventInit& initializer, WaitUntilObserver* observer)
     {
         return new NotificationEvent(type, initializer, observer);
     }

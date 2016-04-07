@@ -18,9 +18,9 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static RawPtr<InstallEvent> create();
-    static RawPtr<InstallEvent> create(const AtomicString& type, const ExtendableEventInit&);
-    static RawPtr<InstallEvent> create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
+    static InstallEvent* create();
+    static InstallEvent* create(const AtomicString& type, const ExtendableEventInit&);
+    static InstallEvent* create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
     ~InstallEvent() override;
 

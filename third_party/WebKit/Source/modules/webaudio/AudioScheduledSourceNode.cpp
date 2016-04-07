@@ -259,7 +259,7 @@ EventListener* AudioScheduledSourceNode::onended()
     return getAttributeEventListener(EventTypeNames::ended);
 }
 
-void AudioScheduledSourceNode::setOnended(RawPtr<EventListener> listener)
+void AudioScheduledSourceNode::setOnended(EventListener* listener)
 {
     setAttributeEventListener(EventTypeNames::ended, listener);
 }

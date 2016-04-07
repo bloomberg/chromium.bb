@@ -43,9 +43,9 @@ class WaitUntilObserver;
 class MODULES_EXPORT ExtendableEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<ExtendableEvent> create();
-    static RawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&);
-    static RawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
+    static ExtendableEvent* create();
+    static ExtendableEvent* create(const AtomicString& type, const ExtendableEventInit&);
+    static ExtendableEvent* create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
     ~ExtendableEvent() override;
 

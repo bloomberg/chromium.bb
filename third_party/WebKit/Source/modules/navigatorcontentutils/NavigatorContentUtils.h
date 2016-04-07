@@ -52,7 +52,7 @@ public:
     static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
-    static RawPtr<NavigatorContentUtils> create(RawPtr<NavigatorContentUtilsClient>);
+    static NavigatorContentUtils* create(NavigatorContentUtilsClient*);
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -60,10 +60,10 @@ public:
         Supplement<LocalFrame>::trace(visitor);
     }
 
-    void setClientForTest(RawPtr<NavigatorContentUtilsClient> client) { m_client = client; }
+    void setClientForTest(NavigatorContentUtilsClient* client) { m_client = client; }
 
 private:
-    explicit NavigatorContentUtils(RawPtr<NavigatorContentUtilsClient> client)
+    explicit NavigatorContentUtils(NavigatorContentUtilsClient* client)
         : m_client(client)
     {
     }

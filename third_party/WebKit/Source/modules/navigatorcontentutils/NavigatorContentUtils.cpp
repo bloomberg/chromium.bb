@@ -145,7 +145,7 @@ NavigatorContentUtils::~NavigatorContentUtils()
 {
 }
 
-RawPtr<NavigatorContentUtils> NavigatorContentUtils::create(RawPtr<NavigatorContentUtilsClient> client)
+NavigatorContentUtils* NavigatorContentUtils::create(NavigatorContentUtilsClient* client)
 {
     return new NavigatorContentUtils(client);
 }
@@ -229,7 +229,7 @@ const char* NavigatorContentUtils::supplementName()
     return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(LocalFrame& frame, RawPtr<NavigatorContentUtilsClient> client)
+void provideNavigatorContentUtilsTo(LocalFrame& frame, NavigatorContentUtilsClient* client)
 {
     NavigatorContentUtils::provideTo(frame, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }

@@ -66,7 +66,7 @@ private:
     Member<InspectorDatabaseAgent> m_inspectorAgent;
 };
 
-MODULES_EXPORT void provideDatabaseClientTo(Page&, RawPtr<DatabaseClient>);
+MODULES_EXPORT void provideDatabaseClientTo(Page&, DatabaseClient*);
 
 } // namespace blink
 

@@ -25,7 +25,7 @@ PresentationController::~PresentationController()
 }
 
 // static
-RawPtr<PresentationController> PresentationController::create(LocalFrame& frame, WebPresentationClient* client)
+PresentationController* PresentationController::create(LocalFrame& frame, WebPresentationClient* client)
 {
     return new PresentationController(frame, client);
 }

@@ -16,17 +16,17 @@ namespace blink {
 class MODULES_EXPORT ServiceWorkerMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<ServiceWorkerMessageEvent> create()
+    static ServiceWorkerMessageEvent* create()
     {
         return new ServiceWorkerMessageEvent;
     }
 
-    static RawPtr<ServiceWorkerMessageEvent> create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
+    static ServiceWorkerMessageEvent* create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
     {
         return new ServiceWorkerMessageEvent(type, initializer);
     }
 
-    static RawPtr<ServiceWorkerMessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
+    static ServiceWorkerMessageEvent* create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
     {
         return new ServiceWorkerMessageEvent(data, origin, String(), source, ports);
     }

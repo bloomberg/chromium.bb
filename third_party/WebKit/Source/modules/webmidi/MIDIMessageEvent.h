@@ -41,17 +41,17 @@ class MIDIMessageEventInit;
 class MIDIMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<MIDIMessageEvent> create()
+    static MIDIMessageEvent* create()
     {
         return new MIDIMessageEvent();
     }
 
-    static RawPtr<MIDIMessageEvent> create(double receivedTime, PassRefPtr<DOMUint8Array> data)
+    static MIDIMessageEvent* create(double receivedTime, PassRefPtr<DOMUint8Array> data)
     {
         return new MIDIMessageEvent(receivedTime, data);
     }
 
-    static RawPtr<MIDIMessageEvent> create(const AtomicString& type, const MIDIMessageEventInit& initializer)
+    static MIDIMessageEvent* create(const AtomicString& type, const MIDIMessageEventInit& initializer)
     {
         return new MIDIMessageEvent(type, initializer);
     }

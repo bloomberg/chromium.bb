@@ -37,8 +37,8 @@ class AudioBuffer;
 class OfflineAudioCompletionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<OfflineAudioCompletionEvent> create();
-    static RawPtr<OfflineAudioCompletionEvent> create(AudioBuffer* renderedBuffer);
+    static OfflineAudioCompletionEvent* create();
+    static OfflineAudioCompletionEvent* create(AudioBuffer* renderedBuffer);
 
     ~OfflineAudioCompletionEvent() override;
 

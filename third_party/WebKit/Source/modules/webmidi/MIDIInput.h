@@ -46,7 +46,7 @@ public:
     ~MIDIInput() override { }
 
     EventListener* onmidimessage();
-    void setOnmidimessage(RawPtr<EventListener>);
+    void setOnmidimessage(EventListener*);
 
     // EventTarget
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIInput; }

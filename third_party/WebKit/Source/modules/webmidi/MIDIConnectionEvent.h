@@ -41,17 +41,17 @@ class MIDIConnectionEventInit;
 class MIDIConnectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<MIDIConnectionEvent> create()
+    static MIDIConnectionEvent* create()
     {
         return new MIDIConnectionEvent();
     }
 
-    static RawPtr<MIDIConnectionEvent> create(MIDIPort* port)
+    static MIDIConnectionEvent* create(MIDIPort* port)
     {
         return new MIDIConnectionEvent(port);
     }
 
-    static RawPtr<MIDIConnectionEvent> create(const AtomicString& type, const MIDIConnectionEventInit& initializer)
+    static MIDIConnectionEvent* create(const AtomicString& type, const MIDIConnectionEventInit& initializer)
     {
         return new MIDIConnectionEvent(type, initializer);
     }

@@ -50,7 +50,7 @@ MIDIController::~MIDIController()
 {
 }
 
-RawPtr<MIDIController> MIDIController::create(PassOwnPtr<MIDIClient> client)
+MIDIController* MIDIController::create(PassOwnPtr<MIDIClient> client)
 {
     return new MIDIController(client);
 }

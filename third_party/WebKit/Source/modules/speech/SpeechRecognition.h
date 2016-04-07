@@ -83,7 +83,7 @@ public:
     void didEndAudio();
     void didReceiveResults(const HeapVector<Member<SpeechRecognitionResult>>& newFinalResults, const HeapVector<Member<SpeechRecognitionResult>>& currentInterimResults);
     void didReceiveNoMatch(SpeechRecognitionResult*);
-    void didReceiveError(RawPtr<SpeechRecognitionError>);
+    void didReceiveError(SpeechRecognitionError*);
     void didStart();
     void didEnd();
 

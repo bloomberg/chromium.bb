@@ -906,7 +906,7 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint in
     WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, video, exceptionState);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, RawPtr<ImageBitmap> imageBitMap, ExceptionState& exceptionState)
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, ImageBitmap* imageBitMap, ExceptionState& exceptionState)
 {
     WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, imageBitMap, exceptionState);
 }
@@ -942,7 +942,7 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLenum format, GLenum type, RawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+    GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
 {
     WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, format, type, bitmap, exceptionState);
 }
@@ -1169,11 +1169,11 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, RawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
 {
     if (isContextLost())
         return;
-    if (!validateImageBitmap("texSubImage3D", bitmap.get(), exceptionState))
+    if (!validateImageBitmap("texSubImage3D", bitmap, exceptionState))
         return;
     if (!validateTexture3DBinding("texSubImage3D", target))
         return;

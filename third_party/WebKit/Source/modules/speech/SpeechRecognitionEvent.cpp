@@ -27,22 +27,22 @@
 
 namespace blink {
 
-RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
+SpeechRecognitionEvent* SpeechRecognitionEvent::create()
 {
     return new SpeechRecognitionEvent;
 }
 
-RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
+SpeechRecognitionEvent* SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
 {
     return new SpeechRecognitionEvent(eventName, initializer);
 }
 
-RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results)
+SpeechRecognitionEvent* SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results)
 {
     return new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results));
 }
 
-RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(SpeechRecognitionResult* result)
+SpeechRecognitionEvent* SpeechRecognitionEvent::createNoMatch(SpeechRecognitionResult* result)
 {
     if (result) {
         HeapVector<Member<SpeechRecognitionResult>> results;

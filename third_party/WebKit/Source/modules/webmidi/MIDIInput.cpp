@@ -56,7 +56,7 @@ EventListener* MIDIInput::onmidimessage()
     return getAttributeEventListener(EventTypeNames::midimessage);
 }
 
-void MIDIInput::setOnmidimessage(RawPtr<EventListener> listener)
+void MIDIInput::setOnmidimessage(EventListener* listener)
 {
     // Implicit open. It does nothing if the port is already opened.
     // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort

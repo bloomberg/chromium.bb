@@ -74,7 +74,7 @@ ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const
     return m_imageBuffer.get();
 }
 
-RawPtr<ImageBitmap> OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionState& exceptionState)
+ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionState& exceptionState)
 {
     if (!imageBuffer())
         return nullptr;
