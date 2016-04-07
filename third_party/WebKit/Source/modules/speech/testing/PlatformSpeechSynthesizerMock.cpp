@@ -121,11 +121,17 @@ void PlatformSpeechSynthesizerMock::cancel()
 
 void PlatformSpeechSynthesizerMock::pause()
 {
+    if (!m_currentUtterance)
+        return;
+
     client()->didPauseSpeaking(m_currentUtterance);
 }
 
 void PlatformSpeechSynthesizerMock::resume()
 {
+    if (!m_currentUtterance)
+        return;
+
     client()->didResumeSpeaking(m_currentUtterance);
 }
 
