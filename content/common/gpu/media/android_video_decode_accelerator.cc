@@ -352,11 +352,15 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
-  if (codec_config_->codec_ == media::kCodecVP8 ||
-      codec_config_->codec_ == media::kCodecVP9) {
-    DCHECK(is_encrypted_ ||
-           !media::VideoCodecBridge::IsKnownUnaccelerated(
-               codec_config_->codec_, media::MEDIA_CODEC_DECODER));
+  if ((codec_config_->codec_ == media::kCodecVP8 ||
+       codec_config_->codec_ == media::kCodecVP9) &&
+      !is_encrypted_ &&
+      media::VideoCodecBridge::IsKnownUnaccelerated(
+          codec_config_->codec_, media::MEDIA_CODEC_DECODER)) {
+    DVLOG(1) << "Initialization failed: "
+             << (codec_config_->codec_ == media::kCodecVP8 ? "vp8" : "vp9")
+             << " is not hardware accelerated";
+    return false;
   }
 
   auto gles_decoder = get_gles2_decoder_cb_.Run();
