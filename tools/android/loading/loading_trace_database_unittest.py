@@ -32,6 +32,14 @@ class LoadingTraceDatabaseUnittest(unittest.TestCase):
     self.assertEqual(
         self._JSON_DATABASE, self.database.ToJsonDict())
 
+  def testAddTrace(self):
+    dummy_url = "http://dummy.com"
+    new_trace_file = "traces/new_trace.json"
+    self.assertEqual(self.database.GetTraceFilesForURL(dummy_url), [])
+    self.database.AddTrace(new_trace_file, {"url" : dummy_url})
+    self.assertEqual(self.database.GetTraceFilesForURL(dummy_url),
+                     [new_trace_file])
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -22,6 +22,7 @@ sys.path.insert(0,
 import controller
 import loading_trace
 import options
+from loading_trace_database import LoadingTraceDatabase
 
 
 class ServerApp(object):
@@ -114,7 +115,8 @@ class ServerApp(object):
       log_filename: Name of the file where standard output and errors are logged
 
     Returns:
-      True if the trace was generated successfully.
+      A dictionary of metadata about the trace, including a 'succeeded' field
+      indicating whether the trace was successfully generated.
     """
     try:
       os.remove(filename)  # Remove any existing trace for this URL.
@@ -127,7 +129,7 @@ class ServerApp(object):
     old_stdout = sys.stdout
     old_stderr = sys.stderr
 
-    succeeded = True
+    trace_metadata = { 'succeeded' : False, 'url' : url }
     try:
       with open(log_filename, 'w') as sys.stdout:
         sys.stderr = sys.stdout
@@ -146,8 +148,9 @@ class ServerApp(object):
           connection.ClearCache()
           trace = loading_trace.LoadingTrace.RecordUrlNavigation(
               url, connection, chrome_ctl.ChromeMetadata())
+          trace_metadata['succeeded'] = True
+          trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
     except Exception as e:
-      succeeded = False
       sys.stderr.write(e)
 
     sys.stdout = old_stdout
@@ -156,7 +159,7 @@ class ServerApp(object):
     with open(filename, 'w') as f:
       json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
 
-    return succeeded
+    return trace_metadata
 
   def _GetCurrentTaskCount(self):
     """Returns the number of remaining tasks. Thread safe."""
@@ -183,6 +186,8 @@ class ServerApp(object):
     failures_dir = self._base_path_in_bucket + 'failures/'
     traces_dir = self._base_path_in_bucket + 'traces/'
 
+    trace_database = LoadingTraceDatabase({})
+
     # TODO(blundell): Fix this up.
     logs_dir = self._base_path_in_bucket + 'analyze_logs/'
     log_filename = 'analyze.log'
@@ -194,10 +199,15 @@ class ServerApp(object):
       for repeat in range(repeat_count):
         print 'Generating trace for URL: %s' % url
         remote_filename = local_filename + '/' + str(repeat)
-        if self._GenerateTrace(
-            url, emulate_device, emulate_network, local_filename, log_filename):
+        trace_metadata = self._GenerateTrace(
+            url, emulate_device, emulate_network, local_filename, log_filename)
+        if trace_metadata['succeeded']:
           print 'Uploading: %s' % remote_filename
-          self._UploadFile(local_filename, traces_dir + remote_filename)
+          remote_trace_location = traces_dir + remote_filename
+          self._UploadFile(local_filename, remote_trace_location)
+          full_cloud_storage_path = ('gs://' + self._bucket_name + '/' +
+              remote_trace_location)
+          trace_database.AddTrace(full_cloud_storage_path, trace_metadata)
         else:
           print 'Trace generation failed for URL: %s' % url
           self._tasks_lock.acquire()
@@ -211,6 +221,9 @@ class ServerApp(object):
       self._tasks_lock.acquire()
       url = self._tasks.pop()
       self._tasks_lock.release()
+
+    self._UploadString(json.dumps(trace_database.ToJsonDict(), indent=2),
+                       traces_dir + 'trace_database.json')
 
     if len(self._failed_tasks) > 0:
       print 'Uploading failing URLs'
