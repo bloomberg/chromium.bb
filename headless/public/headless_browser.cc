@@ -22,6 +22,8 @@ Options::Options(int argc, const char** argv)
       user_agent(content::BuildUserAgentFromProduct(kProductName)),
       message_pump(nullptr) {}
 
+Options::Options(const Options& other) = default;
+
 Options::~Options() {}
 
 Builder::Builder(int argc, const char** argv) : options_(argc, argv) {}

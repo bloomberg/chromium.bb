@@ -59,6 +59,7 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
 // Embedding API overrides for the headless browser.
 struct HeadlessBrowser::Options {
+  Options(const Options& other);
   ~Options();
 
   class Builder;
