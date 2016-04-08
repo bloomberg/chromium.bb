@@ -341,6 +341,7 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/imagediff/image_diff.gyp:image_diff',
             '../ui/app_list/app_list.gyp:app_list_unittests',
+            '../ui/app_list/shower/app_list_shower.gyp:app_list_shower_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
           ],
         }],
