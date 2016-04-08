@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
@@ -92,6 +93,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void NotifyTimezoneChange(const std::string& zone_id) override;
   ServiceRegistry* GetServiceRegistry() override;
+  scoped_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+      override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool SubscribeUniformEnabled() const override;
   void OnAddSubscription(unsigned int target) override;

@@ -2055,6 +2055,8 @@
       'browser/metrics/metrics_reporting_state.h',
       'browser/metrics/perf/perf_provider_chromeos.cc',
       'browser/metrics/perf/perf_provider_chromeos.h',
+      'browser/metrics/subprocess_metrics_provider.cc',
+      'browser/metrics/subprocess_metrics_provider.h',
       'browser/metrics/thread_watcher.cc',
       'browser/metrics/thread_watcher.h',
       'browser/metrics/thread_watcher_android.cc',

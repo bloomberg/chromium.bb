@@ -480,15 +480,16 @@ void GlobalHistogramAllocator::CreateWithSharedMemory(
     size_t size,
     uint64_t id,
     StringPiece name) {
-  if (!memory->memory() && !memory->Map(size))
+  if ((!memory->memory() && !memory->Map(size)) ||
+      !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*memory)) {
     NOTREACHED();
-
-  if (memory->memory()) {
-    DCHECK_LE(memory->mapped_size(), size);
-    Set(WrapUnique(new GlobalHistogramAllocator(
-        WrapUnique(new SharedPersistentMemoryAllocator(
-            std::move(memory), 0, StringPiece(), /*readonly=*/false)))));
+    return;
   }
+
+  DCHECK_LE(memory->mapped_size(), size);
+  Set(WrapUnique(new GlobalHistogramAllocator(
+      WrapUnique(new SharedPersistentMemoryAllocator(
+          std::move(memory), 0, StringPiece(), /*readonly=*/false)))));
 }
 
 // static
@@ -497,7 +498,8 @@ void GlobalHistogramAllocator::CreateWithSharedMemoryHandle(
     size_t size) {
   std::unique_ptr<SharedMemory> shm(
       new SharedMemory(handle, /*readonly=*/false));
-  if (!shm->Map(size)) {
+  if (!shm->Map(size) ||
+      !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*shm)) {
     NOTREACHED();
     return;
   }
