@@ -232,4 +232,3 @@ IN_PROC_BROWSER_TEST_F(
     MANUAL_RunsOneWayCall60SecsAndLogsInternalMetricsDefault) {
   RunsOneWayCall60SecsAndLogsInternalMetrics("");
 }
-

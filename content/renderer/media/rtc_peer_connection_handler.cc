@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
@@ -978,6 +979,15 @@ bool RTCPeerConnectionHandler::initialize(
 
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
+
+  if (base::FeatureList::IsEnabled(features::kWebRtcEcdsaDefault)) {
+    if (config.certificates.empty()) {
+      rtc::scoped_refptr<rtc::RTCCertificate> certificate =
+          PeerConnectionDependencyFactory::GenerateDefaultCertificate();
+      config.certificates.push_back(certificate);
+    }
+  }
+
   config.disable_prerenderer_smoothing =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRTCSmoothnessAlgorithm);
@@ -1011,6 +1021,14 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
+
+  if (base::FeatureList::IsEnabled(features::kWebRtcEcdsaDefault)) {
+    if (config.certificates.empty()) {
+      rtc::scoped_refptr<rtc::RTCCertificate> certificate =
+          PeerConnectionDependencyFactory::GenerateDefaultCertificate();
+      config.certificates.push_back(certificate);
+    }
+  }
 
   peer_connection_observer_ = new Observer(weak_factory_.GetWeakPtr());
   CopyConstraintsIntoRtcConfiguration(options, &config);

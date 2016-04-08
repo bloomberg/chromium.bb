@@ -81,6 +81,11 @@ const base::Feature kTokenBinding{"token-binding",
 const base::Feature kWebFontsIntervention{"WebFontsIntervention",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
+// specified in JS).
+const base::Feature kWebRtcEcdsaDefault {"WebRTC-EnableWebRtcEcdsa",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};

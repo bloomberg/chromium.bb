@@ -68,6 +68,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/webrtc/api/dtlsidentitystore.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/base/ssladapter.h"
 #include "third_party/webrtc/media/base/mediachannel.h"
@@ -500,6 +501,26 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       ->CreatePeerConnection(config, std::move(port_allocator),
                              std::move(identity_store), observer)
       .get();
+}
+
+// static
+void PeerConnectionDependencyFactory::SetDefaultCertificate(
+    webrtc::PeerConnectionInterface::RTCConfiguration* config) {
+  if (config->certificates.empty()) {
+    rtc::scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
+        webrtc::kIdentityName, rtc::KeyParams::ECDSA(rtc::EC_NIST_P256)));
+    rtc::scoped_refptr<rtc::RTCCertificate> certificate =
+        rtc::RTCCertificate::Create(std::move(identity));
+    config->certificates.push_back(certificate);
+  }
+}
+
+// static
+rtc::scoped_refptr<rtc::RTCCertificate>
+PeerConnectionDependencyFactory::GenerateDefaultCertificate() {
+  rtc::scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
+      webrtc::kIdentityName, rtc::KeyParams::ECDSA(rtc::EC_NIST_P256)));
+  return rtc::RTCCertificate::Create(std::move(identity));
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
