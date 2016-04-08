@@ -63,6 +63,10 @@ class ServerApp(object):
     options.OPTIONS.ParseArgs([])
     options.OPTIONS.local_binary = config['chrome_path']
 
+  def _IsProcessingTasks(self):
+    """Returns True if the application is currently processing tasks."""
+    return self._thread is not None and self._thread.is_alive()
+
   def _GetStorageClient(self):
     return storage.Client(project = self._project_name,
                           credentials = self._credentials)
@@ -240,7 +244,7 @@ class ServerApp(object):
       A string to be sent back to the client, describing the success status of
       the request.
     """
-    if self._thread is not None and self._thread.is_alive():
+    if self._IsProcessingTasks():
       return 'Error: Already running\n'
 
     load_parameters = json.loads(http_body)
@@ -281,12 +285,15 @@ class ServerApp(object):
     elif path == '/test':
       data = 'hello\n'
     elif path == '/status':
-      task_count = self._GetCurrentTaskCount()
-      if task_count == 0:
+      if not self._IsProcessingTasks():
         data = 'Idle\n'
       else:
-        data = 'Remaining tasks: %s / %s\n' % (
-            task_count, self._initial_task_count)
+        task_count = self._GetCurrentTaskCount()
+        if task_count == 0:
+          data = '%s tasks complete. Finalizing.\n' % self._initial_task_count
+        else:
+          data = 'Remaining tasks: %s / %s\n' % (
+              task_count, self._initial_task_count)
         elapsed = time.time() - self._start_time
         data += 'Elapsed time: %s seconds\n' % str(elapsed)
         self._tasks_lock.acquire()
