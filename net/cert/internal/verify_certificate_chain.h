@@ -37,6 +37,7 @@ struct NET_EXPORT TrustAnchor {
 // names to trusted public keys.
 struct NET_EXPORT TrustStore {
   TrustStore();
+  TrustStore(const TrustStore& other);
   ~TrustStore();
 
   std::vector<TrustAnchor> anchors;

@@ -501,6 +501,7 @@ WARN_UNUSED_RESULT bool WrapUp(const FullyParsedCert& cert) {
 TrustAnchor::~TrustAnchor() {}
 
 TrustStore::TrustStore() {}
+TrustStore::TrustStore(const TrustStore& other) = default;
 TrustStore::~TrustStore() {}
 
 // This implementation is structured to mimic the description of certificate
