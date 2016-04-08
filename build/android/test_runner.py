@@ -36,7 +36,6 @@ from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.linker import setup as linker_setup
-from pylib.host_driven import setup as host_driven_setup
 from pylib.instrumentation import setup as instrumentation_setup
 from pylib.instrumentation import test_options as instrumentation_test_options
 from pylib.junit import setup as junit_setup
@@ -394,10 +393,10 @@ def AddInstrumentationTestOptions(parser):
   java_or_python_group.add_argument(
       '-p', '--python-only', action='store_false',
       dest='run_java_tests', default=True,
-      help='Run only the host-driven tests.')
+      help='DEPRECATED')
 
   group.add_argument('--host-driven-root',
-                     help='Root of the host-driven tests.')
+                     help='DEPRECATED')
   group.add_argument('-w', '--wait_debugger', dest='wait_for_debugger',
                      action='store_true',
                      help='Wait for debugger.')
@@ -764,13 +763,8 @@ def _RunInstrumentationTests(args, devices):
     java_runner_factory = None
     java_tests = None
 
-  if args.run_python_tests:
-    py_runner_factory, py_tests = host_driven_setup.InstrumentationSetup(
-        args.host_driven_root, args.official_build,
-        instrumentation_options)
-  else:
-    py_runner_factory = None
-    py_tests = None
+  py_runner_factory = None
+  py_tests = None
 
   results = []
   repetitions = (xrange(args.repeat + 1) if args.repeat >= 0

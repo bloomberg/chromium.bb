@@ -86,12 +86,6 @@ pylib/constants/__init__.py
 pylib/constants/host_paths.py
 pylib/gtest/__init__.py
 pylib/gtest/gtest_test_instance.py
-pylib/host_driven/__init__.py
-pylib/host_driven/setup.py
-pylib/host_driven/test_case.py
-pylib/host_driven/test_info_collection.py
-pylib/host_driven/test_runner.py
-pylib/host_driven/tests_annotations.py
 pylib/instrumentation/__init__.py
 pylib/instrumentation/instrumentation_parser.py
 pylib/instrumentation/instrumentation_test_instance.py
