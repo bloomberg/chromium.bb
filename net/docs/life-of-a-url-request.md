@@ -293,24 +293,6 @@ Either way, the ClientSocketHandle returns the socket is then returned to the
 socket pool, either for reuse or so the socket pool knows it has another free
 socket slot.
 
-### Object Relationships and Ownership
-
-A sample of the object relationships involved in the above process is
-diagramed here: 
-
-![Object Relationship Diagram for URLRequest lifetime](url_request.svg)
-
-There are a couple of points in the above diagram that do not come
-clear visually:
-
-* The method that generates the filter chain that is hung off the
-  URLRequestJob is declared on URLRequestJob, but the only current
-  implementation of it is on URLRequestHttpJob, so the generation is
-  shown as happening from that class.
-* HttpTransactions of different types are layered; i.e. a
-  HttpCache::Transaction contains a pointer to an HttpTransaction, but
-  that pointed-to HttpTransaction generally is an
-  HttpNetworkTransaction. 
 
 # Additional Topics
 
@@ -435,33 +417,6 @@ Since sockets in the higher layer pool are also in a group in the lower layer
 pool, they must have their own distinct group name. This is needed so that, for
 instance, SSL and HTTP connections won't be grouped together in the
 TcpClientSocketPool, which the SSLClientSocketPool sits on top of.
-
-### Socket Pool Class Relationships
-
-The relationships between the important classes in the socket pools is
-shown diagrammatically for the lowest layer socket pool
-(TransportSocketPool) below. 
-
-![Object Relationship Diagram for Socket Pools](pools.svg)
-
-The ClientSocketPoolBase is a template class templatized on the class
-containing the parameters for the appropriate type of socket (in this
-case TransportSocketParams).  It contains a pointer to the
-ClientSocketPoolBaseHelper, which contains all the type-independent
-machinery of the socket pool.  
-
-When socket pools are initialized, they in turn initialize their
-templatized ClientSocketPoolBase member with an object with which it
-should create connect jobs.  That object must derive from
-ClientSocketPoolBase::ConnectJobFactory templatized by the same type
-as the ClientSocketPoolBase.  (In the case of the diagram above, that
-object is a TransportConnectJobFactory, which derives from
-ClientSocketPoolBase::ConnectJobFactory&lt;TransportSocketParams&gt;.)
-Internally, that object is wrapped in a type-unsafe wrapper
-(ClientSocketPoolBase::ConnectJobFactoryAdaptor) so that it can be
-passed to the initialization of the ClientSocketPoolBaseHelper.  This
-allows the helper to create connect jobs while preserving a type-safe
-API to the initialization of the socket pool.
 
 ### SSL
 

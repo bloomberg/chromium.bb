@@ -696,6 +696,7 @@
         ['OS=="linux" or OS=="win"', {
           'dependencies': [
             # TODO(GYP): Figure out which of these run on android/mac/win/ios/etc.
+            '../net/net.gyp:net_docs',
             '../remoting/remoting.gyp:ar_sample_test_driver',
 
             # TODO(GYP): in progress - see tfarina.
@@ -723,6 +724,7 @@
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
             '../gpu/gpu.gyp:angle_end2end_tests',
             '../gpu/gpu.gyp:angle_perftests',
+            '../net/net.gyp:net_docs',
             '../ppapi/ppapi_internal.gyp:ppapi_perftests',
             '../remoting/remoting.gyp:ar_sample_test_driver',
             '../remoting/remoting.gyp:remoting_breakpad_tester',
