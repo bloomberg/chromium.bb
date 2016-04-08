@@ -53,7 +53,7 @@ SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
   DCHECK(delegate_);
   DCHECK(task_tracker_);
 
-  static const size_t kDefaultStackSize = 0;
+  const size_t kDefaultStackSize = 0;
   PlatformThread::CreateWithPriority(kDefaultStackSize, this, &thread_handle_,
                                      thread_priority);
 }

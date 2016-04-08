@@ -22,11 +22,11 @@ class TaskTracker;
 
 // A thread that runs Tasks from Sequences returned by a delegate.
 //
-// A SchedulerWorkerThread is woken up when its WakeUp() method is called. After
-// a wake-up, a SchedulerWorkerThread runs Tasks from Sequences returned by the
-// GetWork() method of its delegate as long as it doesn't return nullptr. It
-// also periodically checks with its TaskTracker whether shutdown has completed
-// and exits when it has.
+// A SchedulerWorkerThread starts out sleeping. It is woken up by a call to
+// WakeUp(). After a wake-up, a SchedulerWorkerThread runs Tasks from Sequences
+// returned by the GetWork() method of its delegate as long as it doesn't return
+// nullptr. It also periodically checks with its TaskTracker whether shutdown
+// has completed and exits when it has.
 //
 // This class is thread-safe.
 class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
@@ -67,9 +67,9 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   // has returned.
   ~SchedulerWorkerThread() override;
 
-  // Wakes up this SchedulerWorkerThread. After this is called, this
-  // SchedulerWorkerThread will run Tasks from Sequences returned by the
-  // GetWork() method of its delegate until it returns nullptr.
+  // Wakes up this SchedulerWorkerThread if it wasn't already awake. After this
+  // is called, this SchedulerWorkerThread will run Tasks from Sequences
+  // returned by the GetWork() method of its delegate until it returns nullptr.
   void WakeUp();
 
   // Joins this SchedulerWorkerThread. If a Task is already running, it will be
