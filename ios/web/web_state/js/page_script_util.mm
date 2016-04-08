@@ -46,9 +46,4 @@ NSString* GetEarlyPageScript() {
                                     embedder_page_script];
 }
 
-NSString* GetEarlyPageScript(WebViewType web_view_type) {
-  DCHECK_EQ(web_view_type, web::WK_WEB_VIEW_TYPE);
-  return GetEarlyPageScript();
-}
-
 }  // namespace web

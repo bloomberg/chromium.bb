@@ -19,12 +19,6 @@ NSString* GetPageScript(NSString* script_file_name);
 // the web view as early as possible.
 NSString* GetEarlyPageScript();
 
-// Returns an autoreleased string containing the JavaScript to be injected into
-// the web view as early as possible. The type of a target web view must match
-// |web_view_type|.
-// Deprecated, use web::GetEarlyPageScript() instead.
-NSString* GetEarlyPageScript(WebViewType web_view_type);
-
 }  // namespace web
 
 #endif  // IOS_WEB_WEB_STATE_JS_PAGE_SCRIPT_UTIL_H_

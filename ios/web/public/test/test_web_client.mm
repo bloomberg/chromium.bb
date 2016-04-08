@@ -16,12 +16,6 @@ NSString* TestWebClient::GetEarlyPageScript() const {
   return early_page_script_ ? early_page_script_.get() : @"";
 }
 
-NSString* TestWebClient::GetEarlyPageScript(
-    web::WebViewType web_view_type) const {
-  DCHECK_EQ(web_view_type, web::WK_WEB_VIEW_TYPE);
-  return GetEarlyPageScript();
-}
-
 bool TestWebClient::WebViewsNeedActiveStateManager() const {
   return true;
 }
