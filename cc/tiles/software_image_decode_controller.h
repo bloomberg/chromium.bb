@@ -10,12 +10,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/mru_cache.h"
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/decoded_draw_image.h"
 #include "cc/playback/draw_image.h"
@@ -93,7 +95,9 @@ struct ImageDecodeControllerKeyHash {
   }
 };
 
-class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
+class CC_EXPORT SoftwareImageDecodeController
+    : public ImageDecodeController,
+      public base::trace_event::MemoryDumpProvider {
  public:
   using ImageKey = ImageDecodeControllerKey;
   using ImageKeyHash = ImageDecodeControllerKeyHash;
@@ -118,6 +122,10 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
 
   void RemovePendingTask(const ImageKey& key);
 
+  // MemoryDumpProvider overrides.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   // DecodedImage is a convenience storage for discardable memory. It can also
   // construct an image out of SkImageInfo and stored discardable memory.
@@ -125,7 +133,8 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
    public:
     DecodedImage(const SkImageInfo& info,
                  scoped_ptr<base::DiscardableMemory> memory,
-                 const SkSize& src_rect_offset);
+                 const SkSize& src_rect_offset,
+                 uint64_t tracing_id);
     ~DecodedImage();
 
     SkImage* image() const {
@@ -139,17 +148,23 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
     bool Lock();
     void Unlock();
 
+    const base::DiscardableMemory* memory() const { return memory_.get(); }
+
+    // An ID which uniquely identifies this DecodedImage within the image decode
+    // controller. Used in memory tracing.
+    uint64_t tracing_id() const { return tracing_id_; }
+
    private:
     bool locked_;
     SkImageInfo image_info_;
     scoped_ptr<base::DiscardableMemory> memory_;
     skia::RefPtr<SkImage> image_;
     SkSize src_rect_offset_;
+    uint64_t tracing_id_;
   };
 
   // MemoryBudget is a convenience class for memory bookkeeping and ensuring
   // that we don't go over the limit when pre-decoding.
-  // TODO(vmpstr): Add memory infra to keep track of memory usage of this class.
   class MemoryBudget {
    public:
     explicit MemoryBudget(size_t limit_bytes);
@@ -165,6 +180,9 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
     size_t limit_bytes_;
     base::CheckedNumeric<size_t> current_usage_bytes_;
   };
+
+  using ImageMRUCache =
+      base::HashingMRUCache<ImageKey, scoped_ptr<DecodedImage>, ImageKeyHash>;
 
   // Looks for the key in the cache and returns true if it was found and was
   // successfully locked (or if it was already locked). Note that if this
@@ -199,15 +217,17 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   // more of them.
   bool CanHandleImage(const ImageKey& key);
 
+  // Helper function which dumps all images in a specific ImageMRUCache.
+  void DumpImageMemoryForCache(const ImageMRUCache& cache,
+                               const char* cache_name,
+                               base::trace_event::ProcessMemoryDump* pmd) const;
+
   std::unordered_map<ImageKey, scoped_refptr<ImageDecodeTask>, ImageKeyHash>
       pending_image_tasks_;
 
   // The members below this comment can only be accessed if the lock is held to
   // ensure that they are safe to access on multiple threads.
   base::Lock lock_;
-
-  using ImageMRUCache =
-      base::HashingMRUCache<ImageKey, scoped_ptr<DecodedImage>, ImageKeyHash>;
 
   // Decoded images and ref counts (predecode path).
   ImageMRUCache decoded_images_;
@@ -226,6 +246,9 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   std::unordered_set<uint32_t> prerolled_images_;
 
   ResourceFormat format_;
+
+  // Used to uniquely identify DecodedImages for memory traces.
+  base::AtomicSequenceNumber next_tracing_id_;
 };
 
 }  // namespace cc

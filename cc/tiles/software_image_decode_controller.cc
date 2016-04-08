@@ -8,8 +8,12 @@
 
 #include <functional>
 
+#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/raster/tile_task_runner.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -144,7 +148,15 @@ SoftwareImageDecodeController::SoftwareImageDecodeController(
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       at_raster_decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       locked_images_budget_(kLockedMemoryLimitBytes),
-      format_(format) {}
+      format_(format) {
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "cc::SoftwareImageDecodeController",
+        base::ThreadTaskRunnerHandle::Get());
+  }
+}
 
 SoftwareImageDecodeController::SoftwareImageDecodeController()
     : SoftwareImageDecodeController(RGBA_8888) {}
@@ -152,6 +164,10 @@ SoftwareImageDecodeController::SoftwareImageDecodeController()
 SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
   DCHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());
+
+  // It is safe to unregister, even if we didn't register in the constructor.
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool SoftwareImageDecodeController::GetTaskForImageAndRef(
@@ -406,8 +422,9 @@ SoftwareImageDecodeController::DecodeImageInternal(
       }
     }
 
-    return make_scoped_ptr(new DecodedImage(
-        decoded_info, std::move(decoded_pixels), SkSize::Make(0, 0)));
+    return make_scoped_ptr(
+        new DecodedImage(decoded_info, std::move(decoded_pixels),
+                         SkSize::Make(0, 0), next_tracing_id_.GetNext()));
   }
 
   // If we get here, that means we couldn't use the original sized decode for
@@ -482,7 +499,8 @@ SoftwareImageDecodeController::DecodeImageInternal(
 
   return make_scoped_ptr(
       new DecodedImage(scaled_info, std::move(scaled_pixels),
-                       SkSize::Make(-key.src_rect().x(), -key.src_rect().y())));
+                       SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
+                       next_tracing_id_.GetNext()));
 }
 
 DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
@@ -696,6 +714,42 @@ void SoftwareImageDecodeController::RemovePendingTask(const ImageKey& key) {
   pending_image_tasks_.erase(key);
 }
 
+bool SoftwareImageDecodeController::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  base::AutoLock lock(lock_);
+
+  // Dump each of our caches.
+  DumpImageMemoryForCache(decoded_images_, "cached", pmd);
+  DumpImageMemoryForCache(at_raster_decoded_images_, "at_raster", pmd);
+
+  // Memory dump can't fail, always return true.
+  return true;
+}
+
+void SoftwareImageDecodeController::DumpImageMemoryForCache(
+    const ImageMRUCache& cache,
+    const char* cache_name,
+    base::trace_event::ProcessMemoryDump* pmd) const {
+  lock_.AssertAcquired();
+
+  for (const auto& image_pair : cache) {
+    std::string dump_name = base::StringPrintf(
+        "cc/image_memory/controller_%p/%s/image_%" PRIu64 "_id_%d", this,
+        cache_name, image_pair.second->tracing_id(),
+        image_pair.first.image_id());
+    base::trace_event::MemoryAllocatorDump* dump =
+        image_pair.second->memory()->CreateMemoryAllocatorDump(
+            dump_name.c_str(), pmd);
+    DCHECK(dump);
+    if (image_pair.second->is_locked()) {
+      dump->AddScalar("locked_size",
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      image_pair.first.locked_bytes());
+    }
+  }
+}
+
 void SoftwareImageDecodeController::SanityCheckState(int line,
                                                      bool lock_acquired) {
 #if DCHECK_IS_ON()
@@ -840,11 +894,13 @@ std::string ImageDecodeControllerKey::ToString() const {
 SoftwareImageDecodeController::DecodedImage::DecodedImage(
     const SkImageInfo& info,
     scoped_ptr<base::DiscardableMemory> memory,
-    const SkSize& src_rect_offset)
+    const SkSize& src_rect_offset,
+    uint64_t tracing_id)
     : locked_(true),
       image_info_(info),
       memory_(std::move(memory)),
-      src_rect_offset_(src_rect_offset) {
+      src_rect_offset_(src_rect_offset),
+      tracing_id_(tracing_id) {
   image_ = skia::AdoptRef(SkImage::NewFromRaster(
       image_info_, memory_->data(), image_info_.minRowBytes(),
       [](const void* pixels, void* context) {}, nullptr));
