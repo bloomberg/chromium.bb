@@ -46417,6 +46417,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchResultsSeenSelectionWasUrl"
+    enum="ContextualSearchSeenByGesture">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether search results were seen (Contextual Search panel was opened) when
+    the selection was part of a URL, broken down by original triggering gesture.
+    Includes both users that have enabled Contextual Search and users that are
+    undecided (have neither enabled or disabled the feature). Implemented for
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchSelectionValid"
     enum="ContextualSearchSelectionValid">
   <owner>donnd@chromium.org</owner>

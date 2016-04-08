@@ -770,6 +770,20 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs whether search results were seen when the selection was part of a URL.
+     * Unlike ContextualSearchResultsSeen, this histogram is logged for both decided and undecided
+     * users.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     */
+    public static void logResultsSeenSelectionIsUrl(boolean wasPanelSeen, boolean wasTap) {
+        int result = wasPanelSeen ? (wasTap ? RESULTS_SEEN_FROM_TAP : RESULTS_SEEN_FROM_LONG_PRESS)
+                : (wasTap ? RESULTS_NOT_SEEN_FROM_TAP : RESULTS_NOT_SEEN_FROM_LONG_PRESS);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearchResultsSeenSelectionWasUrl", result, RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
      * Logs whether search results were seen, whether the search provider icon sprite was animated
      * when the panel first appeared, and the triggering gesture.
      * @param wasIconSpriteAnimated Whether the search provider icon sprite was animated when the

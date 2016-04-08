@@ -604,6 +604,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             final String encoding, final String surroundingText, int startOffset, int endOffset) {
         GSAContextDisplaySelection selection =
                 new GSAContextDisplaySelection(encoding, surroundingText, startOffset, endOffset);
+        mSearchPanel.setWasSelectionPartOfUrl(
+                ContextualSearchSelectionController.isSelectionPartOfUrl(
+                        surroundingText, startOffset, endOffset));
         notifyShowContextualSearch(selection);
     }
 

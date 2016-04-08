@@ -14,6 +14,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -42,6 +43,14 @@ public class ContextualSearchSelectionController {
 
     private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
     private static final String SINGLE_DIGIT_PATTERN = "^\\d$";
+    // A URL is:
+    //   0-1:  schema://
+    //   1+:   any word char, _ or -
+    //   1+:   . followed by 1+ of any word char, _ or -
+    //   0-1:  0+ of any word char or .,@?^=%&:/~#- followed by any word char or @?^-%&/~+#-
+    // TODO(twellington): expand accepted schemas? Require a schema?
+    private static final Pattern URL_PATTERN = Pattern.compile("((http|https|file)://)?"
+            + "([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
     private static final int MAX_SELECTION_LENGTH = 100;
@@ -465,6 +474,30 @@ public class ContextualSearchSelectionController {
     @VisibleForTesting
     public boolean doesContainAWord(String selection) {
         return mContainsWordPattern.matcher(selection).find();
+    }
+
+    /**
+     * @param selectionContext The String including the surrounding text and the selection.
+     * @param startOffset The offset to the start of the selection (inclusive).
+     * @param endOffset The offset to the end of the selection (non-inclusive).
+     * @return Whether the selection is part of URL. A valid URL is:
+     *         0-1:  schema://
+     *         1+:   any word char, _ or -
+     *         1+:   . followed by 1+ of any word char, _ or -
+     *         0-1:  0+ of any word char or .,@?^=%&:/~#- followed by any word char or @?^-%&/~+#-
+     */
+    public static boolean isSelectionPartOfUrl(String selectionContext, int startOffset,
+            int endOffset) {
+        Matcher matcher = URL_PATTERN.matcher(selectionContext);
+
+        // Starts are inclusive and ends are non-inclusive for both GSAContext & matcher.
+        while (matcher.find()) {
+            if (startOffset >= matcher.start() && endOffset <= matcher.end()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

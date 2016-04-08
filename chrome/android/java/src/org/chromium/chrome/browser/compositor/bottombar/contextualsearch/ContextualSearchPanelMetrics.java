@@ -28,6 +28,7 @@ public class ContextualSearchPanelMetrics {
     private boolean mIsSearchPanelFullyPreloaded;
     private boolean mWasIconSpriteAnimated;
     private boolean mWasPanelOpenedBeyondPeek;
+    private boolean mWasSelectionPartOfUrl;
     // Time when the panel peeks into view (not reset by a chained search).
     // Used to log total time the panel is showing (not closed).
     private long mFirstPeekTimeNs;
@@ -82,6 +83,11 @@ public class ContextualSearchPanelMetrics {
                 ContextualSearchUma.logPromoSeen(mWasSearchContentViewSeen, mWasActivatedByTap);
             } else {
                 ContextualSearchUma.logResultsSeen(mWasSearchContentViewSeen, mWasActivatedByTap);
+            }
+
+            if (mWasSelectionPartOfUrl) {
+                ContextualSearchUma.logResultsSeenSelectionIsUrl(mWasSearchContentViewSeen,
+                        mWasActivatedByTap);
             }
 
             ContextualSearchUma.logIconSpriteAnimated(mWasIconSpriteAnimated,
@@ -157,6 +163,7 @@ public class ContextualSearchPanelMetrics {
             mHasExitedExpanded = false;
             mHasExitedMaximized = false;
             mIsSerpNavigation = false;
+            mWasSelectionPartOfUrl = false;
         }
 
         // TODO(manzagop): When the user opts in, we should replay his actions for the current
@@ -191,6 +198,13 @@ public class ContextualSearchPanelMetrics {
      */
     public void setWasIconSpriteAnimated(boolean wasIconSpriteAnimated) {
         mWasIconSpriteAnimated = wasIconSpriteAnimated;
+    }
+
+    /**
+     * @param wasPartOfUrl Whether the selected text was part of a URL.
+     */
+    public void setWasSelectionPartOfUrl(boolean wasPartOfUrl) {
+        mWasSelectionPartOfUrl = wasPartOfUrl;
     }
 
     /**
