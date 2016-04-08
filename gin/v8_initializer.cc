@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -21,6 +22,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "crypto/sha2.h"
+#include "gin/public/gin_features.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)
@@ -419,6 +421,11 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
   if (IsolateHolder::kStableAndExperimentalV8Extras == v8_extras_mode) {
     static const char flag[] = "--experimental_extras";
     v8::V8::SetFlagsFromString(flag, sizeof(flag) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8Ignition)) {
+    std::string flag("--ignition");
+    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
   }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)

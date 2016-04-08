@@ -60,6 +60,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/features.h"
+#include "gin/public/gin_features.h"
 #include "grit/components_strings.h"
 #include "media/base/media_switches.h"
 #include "media/midi/midi_switches.h"
@@ -607,8 +608,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-nacl-debug",  // FLAGS:RECORD_UMA
      IDS_FLAGS_NACL_DEBUG_NAME, IDS_FLAGS_NACL_DEBUG_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)},
-    {"force-pnacl-subzero",
-     IDS_FLAGS_PNACL_SUBZERO_NAME,
+    {"force-pnacl-subzero", IDS_FLAGS_PNACL_SUBZERO_NAME,
      IDS_FLAGS_PNACL_SUBZERO_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kForcePNaClSubzero)},
     {"nacl-debug-mask",  // FLAGS:RECORD_UMA
@@ -683,6 +683,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webassembly", IDS_FLAGS_ENABLE_WASM_NAME,
      IDS_FLAGS_ENABLE_WASM_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWasm)},
+    {"enable-ignition", IDS_FLAGS_V8_IGNITION_NAME,
+     IDS_FLAGS_V8_IGNITION_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kV8Ignition)},
     {"disable-software-rasterizer", IDS_FLAGS_SOFTWARE_RASTERIZER_NAME,
      IDS_FLAGS_SOFTWARE_RASTERIZER_DESCRIPTION,
 #if defined(ENABLE_SWIFTSHADER)
@@ -1663,8 +1666,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-md-history", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMaterialDesignHistoryFeature)},
-    {"safe-search-url-reporting",
-     IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_NAME,
+    {"safe-search-url-reporting", IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_NAME,
      IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kSafeSearchUrlReporting)},
 #if defined(OS_WIN)

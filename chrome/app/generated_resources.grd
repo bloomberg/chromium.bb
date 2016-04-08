@@ -5674,6 +5674,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
         Enable web pages to use experimental JavaScript features.
       </message>
+      <message name="IDS_FLAGS_V8_IGNITION_NAME" desc="Title for the flag to enable the Ignition interpreter.">
+        Experimental JavaScript Interpreter
+      </message>
+      <message name="IDS_FLAGS_V8_IGNITION_DESCRIPTION" desc="Description for the flag to enable the JavaScript interpreter.">
+        Enable V8 to use the experimental Ignition interpreter for JavaScript execution.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WASM_NAME" desc="Title for the flag to enable WebAssembly.">
         Experimental WebAssembly
       </message>
