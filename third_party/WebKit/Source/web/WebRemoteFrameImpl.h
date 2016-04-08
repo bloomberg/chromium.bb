@@ -70,7 +70,7 @@ public:
     void reload(WebFrameLoadType) override;
     void reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType) override;
     void loadRequest(const WebURLRequest&) override;
-    void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) override;
+    void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebCachePolicy) override;
     void loadHTMLString(
         const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
         bool replace) override;

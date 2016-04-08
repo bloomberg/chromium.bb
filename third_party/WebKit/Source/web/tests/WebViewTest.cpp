@@ -1277,16 +1277,13 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
 
     // Go back, then forward, then back again.
     mainFrameLocal->loader().load(
-        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
-            item1.get(), UseProtocolCachePolicy)),
+        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(item1.get(), WebCachePolicy::UseProtocolCachePolicy)),
         FrameLoadTypeBackForward, item1.get(), HistorySameDocumentLoad);
     mainFrameLocal->loader().load(
-        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
-            item2.get(), UseProtocolCachePolicy)),
+        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(item2.get(), WebCachePolicy::UseProtocolCachePolicy)),
         FrameLoadTypeBackForward, item2.get(), HistorySameDocumentLoad);
     mainFrameLocal->loader().load(
-        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
-            item1.get(), UseProtocolCachePolicy)),
+        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(item1.get(), WebCachePolicy::UseProtocolCachePolicy)),
         FrameLoadTypeBackForward, item1.get(), HistorySameDocumentLoad);
 
     // Click a different anchor
@@ -1295,12 +1292,10 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
 
     // Go back, then forward. The scroll position should be properly set on the forward navigation.
     mainFrameLocal->loader().load(
-        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
-            item1.get(), UseProtocolCachePolicy)),
+        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(item1.get(), WebCachePolicy::UseProtocolCachePolicy)),
         FrameLoadTypeBackForward, item1.get(), HistorySameDocumentLoad);
     mainFrameLocal->loader().load(
-        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
-            item3.get(), UseProtocolCachePolicy)),
+        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(item3.get(), WebCachePolicy::UseProtocolCachePolicy)),
         FrameLoadTypeBackForward, item3.get(), HistorySameDocumentLoad);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);

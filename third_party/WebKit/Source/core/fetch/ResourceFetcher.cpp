@@ -47,6 +47,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/CString.h"
@@ -526,7 +527,7 @@ void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource
 
 void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resource::Type type)
 {
-    if (request.getCachePolicy() == UseProtocolCachePolicy)
+    if (request.getCachePolicy() == WebCachePolicy::UseProtocolCachePolicy)
         request.setCachePolicy(context().resourceRequestCachePolicy(request, type));
     if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
         determineRequestContext(request, type);
@@ -695,7 +696,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (m_allowStaleResources)
         return Use;
 
-    if (request.getCachePolicy() == ResourceRequestCachePolicy::BypassingCache)
+    if (request.getCachePolicy() == WebCachePolicy::BypassingCache)
         return Reload;
 
     if (!fetchRequest.options().canReuseRequest(existingResource->options()))

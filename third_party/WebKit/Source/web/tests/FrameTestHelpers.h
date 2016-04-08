@@ -54,6 +54,7 @@ class WebFrameWidget;
 class WebLocalFrame;
 class WebRemoteFrame;
 class WebRemoteFrameImpl;
+enum class WebCachePolicy;
 
 namespace FrameTestHelpers {
 
@@ -66,7 +67,7 @@ void loadFrame(WebFrame*, const std::string& url);
 // Same as above, but for WebFrame::loadHTMLString().
 void loadHTMLString(WebFrame*, const std::string& html, const WebURL& baseURL);
 // Same as above, but for WebFrame::loadHistoryItem().
-void loadHistoryItem(WebFrame*, const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy);
+void loadHistoryItem(WebFrame*, const WebHistoryItem&, WebHistoryLoadType, WebCachePolicy);
 // Same as above, but for WebFrame::reload().
 void reloadFrame(WebFrame*);
 void reloadFrameIgnoringCache(WebFrame*);

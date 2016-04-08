@@ -57,7 +57,7 @@ class ProgressTracker;
 class ResourceError;
 class SerializedScriptValue;
 class SubstituteData;
-
+enum class WebCachePolicy;
 struct FrameLoadRequest;
 
 CORE_EXPORT bool isBackForwardLoadType(FrameLoadType);
@@ -66,7 +66,7 @@ class CORE_EXPORT FrameLoader final {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
     DISALLOW_NEW();
 public:
-    static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*, ResourceRequestCachePolicy);
+    static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*, WebCachePolicy);
 
     FrameLoader(LocalFrame*);
     ~FrameLoader();

@@ -48,6 +48,7 @@
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -279,7 +280,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
         ResourceRequest resourceRequest(url);
         if (updateBehavior == UpdateForcedReload) {
-            resourceRequest.setCachePolicy(ResourceRequestCachePolicy::BypassingCache);
+            resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
             resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
             // ImageLoader defers the load of images when in an ImageDocument.
             // Don't defer this load on a forced reload.

@@ -89,6 +89,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebThread.h"
@@ -5122,7 +5123,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     errorHistoryItem.initialize();
     errorHistoryItem.setURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
     Platform::current()->getURLLoaderMockFactory()->registerErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
-    FrameTestHelpers::loadHistoryItem(frame, errorHistoryItem, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    FrameTestHelpers::loadHistoryItem(frame, errorHistoryItem, WebHistoryDifferentDocumentLoad, WebCachePolicy::UseProtocolCachePolicy);
     WebString text = WebFrameContentDumper::dumpWebViewAsText(webViewHelper.webView(), std::numeric_limits<size_t>::max());
     EXPECT_EQ("This should appear", text.utf8());
     EXPECT_TRUE(webFrameClient.commitCalled());
@@ -5873,11 +5874,11 @@ TEST_P(ParameterizedWebFrameTest, BackToReload)
     FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
     EXPECT_NE(firstItem.get(), mainFrameLoader.currentItem());
 
-    FrameTestHelpers::loadHistoryItem(frame, WebHistoryItem(firstItem.get()), WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    FrameTestHelpers::loadHistoryItem(frame, WebHistoryItem(firstItem.get()), WebHistoryDifferentDocumentLoad, WebCachePolicy::UseProtocolCachePolicy);
     EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
 
     FrameTestHelpers::reloadFrame(frame);
-    EXPECT_EQ(WebURLRequest::ValidatingCacheData, frame->dataSource()->request().getCachePolicy());
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, frame->dataSource()->request().getCachePolicy());
 }
 
 TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload)
@@ -5899,7 +5900,7 @@ TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload)
     item.initialize();
     WebURL historyURL(toKURL(m_baseURL + "white-1x1.png"));
     item.setURLString(historyURL.string());
-    mainFrame->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    mainFrame->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebCachePolicy::UseProtocolCachePolicy);
 
     FrameTestHelpers::reloadFrame(childFrame);
     EXPECT_EQ(item.urlString(), mainFrame->document().url().string());
@@ -5920,7 +5921,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadPost)
     EXPECT_EQ(WebString::fromUTF8("POST"), frame->dataSource()->request().httpMethod());
 
     FrameTestHelpers::reloadFrame(frame);
-    EXPECT_EQ(WebURLRequest::ValidatingCacheData, frame->dataSource()->request().getCachePolicy());
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, frame->dataSource()->request().getCachePolicy());
     EXPECT_EQ(WebNavigationTypeFormResubmitted, frame->dataSource()->navigationType());
 }
 
@@ -5939,9 +5940,9 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload)
     EXPECT_NE(firstItem.get(), mainFrameLoader.currentItem());
 
     // Cache policy overrides should take.
-    FrameTestHelpers::loadHistoryItem(frame, WebHistoryItem(firstItem), WebHistoryDifferentDocumentLoad, WebURLRequest::ValidatingCacheData);
+    FrameTestHelpers::loadHistoryItem(frame, WebHistoryItem(firstItem), WebHistoryDifferentDocumentLoad, WebCachePolicy::ValidatingCacheData);
     EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
-    EXPECT_EQ(WebURLRequest::ValidatingCacheData, frame->dataSource()->request().getCachePolicy());
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, frame->dataSource()->request().getCachePolicy());
 }
 
 
@@ -5949,7 +5950,7 @@ class TestCachePolicyWebFrameClient : public FrameTestHelpers::TestWebFrameClien
 public:
     explicit TestCachePolicyWebFrameClient(TestCachePolicyWebFrameClient* parentClient)
         : m_parentClient(parentClient)
-        , m_policy(WebURLRequest::UseProtocolCachePolicy)
+        , m_policy(WebCachePolicy::UseProtocolCachePolicy)
         , m_childClient(0)
         , m_willSendRequestCallCount(0)
         , m_childFrameCreationCount(0)
@@ -5957,7 +5958,7 @@ public:
     }
 
     void setChildWebFrameClient(TestCachePolicyWebFrameClient* client) { m_childClient = client; }
-    WebURLRequest::CachePolicy getCachePolicy() const { return m_policy; }
+    WebCachePolicy getCachePolicy() const { return m_policy; }
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
@@ -5997,7 +5998,7 @@ public:
 private:
     TestCachePolicyWebFrameClient* m_parentClient;
 
-    WebURLRequest::CachePolicy m_policy;
+    WebCachePolicy m_policy;
     TestCachePolicyWebFrameClient* m_childClient;
     int m_willSendRequestCallCount;
     int m_childFrameCreationCount;
@@ -6019,7 +6020,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe)
     ASSERT_EQ(childFrame->client(), &childClient);
     EXPECT_EQ(mainClient.childFrameCreationCount(), 1);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 1);
-    EXPECT_EQ(childClient.getCachePolicy(), WebURLRequest::UseProtocolCachePolicy);
+    EXPECT_EQ(childClient.getCachePolicy(), WebCachePolicy::UseProtocolCachePolicy);
 
     FrameTestHelpers::reloadFrame(mainFrame);
 
@@ -6029,7 +6030,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe)
 
     EXPECT_EQ(mainClient.childFrameCreationCount(), 2);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 2);
-    EXPECT_EQ(childClient.getCachePolicy(), WebURLRequest::ValidatingCacheData);
+    EXPECT_EQ(childClient.getCachePolicy(), WebCachePolicy::ValidatingCacheData);
 }
 
 class TestSameDocumentWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -6077,7 +6078,7 @@ public:
     {
         if (request.getRequestContext() == WebURLRequest::RequestContextImage) {
             m_numOfImageRequests++;
-            EXPECT_EQ(WebURLRequest::UseProtocolCachePolicy, request.getCachePolicy());
+            EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy, request.getCachePolicy());
         }
     }
 
@@ -6199,10 +6200,7 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType)
     Persistent<HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
     runPendingTasks();
 
-    toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(
-        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
-            item.get(), UseProtocolCachePolicy)),
-        FrameLoadTypeBackForward, item.get(), HistorySameDocumentLoad);
+    toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(item.get(), WebCachePolicy::UseProtocolCachePolicy)), FrameLoadTypeBackForward, item.get(), HistorySameDocumentLoad);
     EXPECT_EQ(WebBackForwardCommit, client.lastCommitType());
 }
 
@@ -6870,7 +6868,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
     FrameTestHelpers::reloadFrameIgnoringCache(frame);
-    EXPECT_EQ(WebURLRequest::BypassingCache, frame->dataSource()->request().getCachePolicy());
+    EXPECT_EQ(WebCachePolicy::BypassingCache, frame->dataSource()->request().getCachePolicy());
 }
 
 static void nodeImageTestValidation(const IntSize& referenceBitmapSize, DragImage* dragImage)

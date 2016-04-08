@@ -49,6 +49,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
 
@@ -145,7 +146,7 @@ public:
         FrameLoadRequest request(originDocument(), url(), "_self");
         request.setReplacesCurrentItem(replacesCurrentItem());
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
-            request.resourceRequest().setCachePolicy(ValidatingCacheData);
+            request.resourceRequest().setCachePolicy(WebCachePolicy::ValidatingCacheData);
         request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
         frame->loader().load(request);
     }

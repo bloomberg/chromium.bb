@@ -20,6 +20,7 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
@@ -845,7 +846,7 @@ TEST_P(ParameterizedVisualViewportTest, TestRestoredFromHistoryItem)
     item.setVisualViewportScrollOffset(WebFloatPoint(100, 120));
     item.setPageScaleFactor(2);
 
-    FrameTestHelpers::loadHistoryItem(webViewImpl()->mainFrame(), item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    FrameTestHelpers::loadHistoryItem(webViewImpl()->mainFrame(), item, WebHistoryDifferentDocumentLoad, WebCachePolicy::UseProtocolCachePolicy);
 
     VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
     EXPECT_EQ(2, visualViewport.scale());
@@ -872,7 +873,7 @@ TEST_F(VisualViewportTest, TestRestoredFromLegacyHistoryItem)
     item.setScrollOffset(WebPoint(120, 180));
     item.setPageScaleFactor(2);
 
-    FrameTestHelpers::loadHistoryItem(webViewImpl()->mainFrame(), item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    FrameTestHelpers::loadHistoryItem(webViewImpl()->mainFrame(), item, WebHistoryDifferentDocumentLoad, WebCachePolicy::UseProtocolCachePolicy);
 
     VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
     EXPECT_EQ(2, visualViewport.scale());

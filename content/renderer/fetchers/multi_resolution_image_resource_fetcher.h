@@ -19,6 +19,7 @@ class SkBitmap;
 namespace blink {
 class WebFrame;
 class WebURLResponse;
+enum class WebCachePolicy;
 }
 
 namespace content {
@@ -37,7 +38,7 @@ class MultiResolutionImageResourceFetcher {
       blink::WebFrame* frame,
       int id,
       blink::WebURLRequest::RequestContext request_context,
-      blink::WebURLRequest::CachePolicy cache_policy,
+      blink::WebCachePolicy cache_policy,
       const Callback& callback);
 
   virtual ~MultiResolutionImageResourceFetcher();

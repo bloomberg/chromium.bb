@@ -18,6 +18,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Page.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -102,11 +103,10 @@ void InspectorResourceContentLoader::start()
         ResourceRequest resourceRequest;
         HistoryItem* item = document->frame() ? document->frame()->loader().currentItem() : nullptr;
         if (item) {
-            resourceRequest =
-                FrameLoader::resourceRequestFromHistoryItem(item, ReturnCacheDataDontLoad);
+            resourceRequest = FrameLoader::resourceRequestFromHistoryItem(item, WebCachePolicy::ReturnCacheDataDontLoad);
         } else {
             resourceRequest = document->url();
-            resourceRequest.setCachePolicy(ReturnCacheDataDontLoad);
+            resourceRequest.setCachePolicy(WebCachePolicy::ReturnCacheDataDontLoad);
         }
         resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
 

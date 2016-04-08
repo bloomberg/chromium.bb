@@ -29,7 +29,7 @@
  */
 
 #include "core/fetch/FetchContext.h"
-
+#include "public/platform/WebCachePolicy.h"
 
 namespace blink {
 
@@ -56,9 +56,9 @@ CachePolicy FetchContext::getCachePolicy() const
     return CachePolicyVerify;
 }
 
-ResourceRequestCachePolicy FetchContext::resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const
+WebCachePolicy FetchContext::resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const
 {
-    return UseProtocolCachePolicy;
+    return WebCachePolicy::UseProtocolCachePolicy;
 }
 
 void FetchContext::dispatchWillSendRequest(unsigned long, ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&)

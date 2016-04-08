@@ -10,9 +10,6 @@
 
 namespace blink {
 
-enum class WebAppBannerPromptReply;
-enum class WebSandboxFlags;
-enum class WebTreeScopeType;
 class WebAutofillClient;
 class WebContentSettingsClient;
 class WebDevToolsAgent;
@@ -22,6 +19,10 @@ class WebNode;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
 class WebTestInterfaceFactory;
+enum class WebAppBannerPromptReply;
+enum class WebCachePolicy;
+enum class WebSandboxFlags;
+enum class WebTreeScopeType;
 struct WebPrintPresetOptions;
 
 // Interface for interacting with in process frames. This contains methods that
@@ -87,8 +88,7 @@ public:
     // Navigation ----------------------------------------------------------
 
     // Returns a WebURLRequest corresponding to the load of the WebHistoryItem.
-    virtual WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy)
-        const = 0;
+    virtual WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebCachePolicy) const = 0;
 
     // Returns a WebURLRequest corresponding to the reload of the current
     // HistoryItem.

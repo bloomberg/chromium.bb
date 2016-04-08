@@ -315,7 +315,7 @@ void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
       "POST"));
 
   blink::WebURLRequest request(page_url);
-  request.setCachePolicy(blink::WebURLRequest::ReturnCacheDataDontLoad);
+  request.setCachePolicy(blink::WebCachePolicy::ReturnCacheDataDontLoad);
 
   web_frame->loadRequest(request);
 }

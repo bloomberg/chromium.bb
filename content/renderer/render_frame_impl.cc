@@ -148,6 +148,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -242,6 +243,7 @@
 #include "content/renderer/vr/vr_dispatcher.h"
 #endif
 
+using blink::WebCachePolicy;
 using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
 using blink::WebCString;
@@ -507,7 +509,7 @@ WebURLRequest CreateURLRequestForNavigation(
     bool is_view_source_mode_enabled) {
   WebURLRequest request(common_params.url);
   if (is_view_source_mode_enabled)
-    request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
+    request.setCachePolicy(WebCachePolicy::ReturnCacheDataElseLoad);
 
   if (common_params.referrer.url.is_valid()) {
     WebString web_referrer = WebSecurityPolicy::generateReferrerHeader(
@@ -2934,17 +2936,17 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   if (content_initiated) {
     const WebURLRequest& request = datasource->request();
     switch (request.getCachePolicy()) {
-      case WebURLRequest::UseProtocolCachePolicy:  // normal load.
+      case WebCachePolicy::UseProtocolCachePolicy:  // normal load.
         document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
         break;
-      case WebURLRequest::ValidatingCacheData:  // reload.
-      case WebURLRequest::BypassingCache:       // end-to-end reload.
+      case WebCachePolicy::ValidatingCacheData:  // reload.
+      case WebCachePolicy::BypassingCache:       // end-to-end reload.
         document_state->set_load_type(DocumentState::LINK_LOAD_RELOAD);
         break;
-      case WebURLRequest::ReturnCacheDataElseLoad:  // allow stale data.
+      case WebCachePolicy::ReturnCacheDataElseLoad:  // allow stale data.
         document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_STALE_OK);
         break;
-      case WebURLRequest::ReturnCacheDataDontLoad:  // Don't re-post.
+      case WebCachePolicy::ReturnCacheDataDontLoad:  // Don't re-post.
         document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_ONLY);
         break;
       default:
@@ -4633,10 +4635,8 @@ void RenderFrameImpl::OnFailedNavigation(
     int error_code) {
   DCHECK(IsBrowserSideNavigationEnabled());
   bool is_reload = IsReload(common_params.navigation_type);
-  WebURLRequest::CachePolicy cache_policy =
-      WebURLRequest::UseProtocolCachePolicy;
   RenderFrameImpl::PrepareRenderViewForNavigation(
-      common_params.url, request_params, &is_reload, &cache_policy);
+      common_params.url, request_params);
 
   GetContentClient()->SetActiveURL(common_params.url);
 
@@ -5223,10 +5223,9 @@ void RenderFrameImpl::NavigateInternal(
   base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
   bool is_reload = IsReload(common_params.navigation_type);
   bool is_history_navigation = request_params.page_state.IsValid();
-  WebURLRequest::CachePolicy cache_policy =
-      WebURLRequest::UseProtocolCachePolicy;
+  WebCachePolicy cache_policy = WebCachePolicy::UseProtocolCachePolicy;
   RenderFrameImpl::PrepareRenderViewForNavigation(
-      common_params.url, request_params, &is_reload, &cache_policy);
+      common_params.url, request_params);
 
   GetContentClient()->SetActiveURL(common_params.url);
 
@@ -5245,7 +5244,7 @@ void RenderFrameImpl::NavigateInternal(
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
     is_reload = false;
-    cache_policy = WebURLRequest::ValidatingCacheData;
+    cache_policy = WebCachePolicy::ValidatingCacheData;
   }
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put
@@ -5566,9 +5565,7 @@ RenderFrameImpl::CreateRendererFactory() {
 
 void RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
-    const RequestNavigationParams& request_params,
-    bool* is_reload,
-    WebURLRequest::CachePolicy* cache_policy) {
+    const RequestNavigationParams& request_params) {
   DCHECK(render_view_->webview());
 
   MaybeHandleDebugURL(url);
@@ -5799,7 +5796,7 @@ void RenderFrameImpl::PopulateDocumentStateFromPending(
     // UseProtocolCachePolicy to mean both "normal load" and "determine cache
     // policy based on load type, etc".
     internal_data->set_cache_policy_override(
-        WebURLRequest::UseProtocolCachePolicy);
+        WebCachePolicy::UseProtocolCachePolicy);
   }
 
   if (IsReload(pending_navigation_params_->common_params.navigation_type))

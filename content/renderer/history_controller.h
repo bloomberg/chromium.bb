@@ -42,13 +42,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/history_entry.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 namespace blink {
 class WebFrame;
 class WebLocalFrame;
+enum class WebCachePolicy;
 }
 
 namespace content {
@@ -122,7 +122,7 @@ class CONTENT_EXPORT HistoryController {
   bool GoToEntry(blink::WebLocalFrame* main_frame,
                  scoped_ptr<HistoryEntry> entry,
                  scoped_ptr<NavigationParams> navigation_params,
-                 blink::WebURLRequest::CachePolicy cache_policy);
+                 blink::WebCachePolicy cache_policy);
 
   void UpdateForCommit(RenderFrameImpl* frame,
                        const blink::WebHistoryItem& item,

@@ -14,12 +14,14 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
+using blink::WebCachePolicy;
 using blink::WebHTTPBody;
 using blink::WebString;
 using blink::WebURLRequest;
@@ -186,19 +188,19 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
   int load_flags = net::LOAD_NORMAL;
   GURL url = request.url();
   switch (request.getCachePolicy()) {
-    case WebURLRequest::ValidatingCacheData:
+    case WebCachePolicy::ValidatingCacheData:
       load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
-    case WebURLRequest::BypassingCache:
+    case WebCachePolicy::BypassingCache:
       load_flags |= net::LOAD_BYPASS_CACHE;
       break;
-    case WebURLRequest::ReturnCacheDataElseLoad:
+    case WebCachePolicy::ReturnCacheDataElseLoad:
       load_flags |= net::LOAD_PREFERRING_CACHE;
       break;
-    case WebURLRequest::ReturnCacheDataDontLoad:
+    case WebCachePolicy::ReturnCacheDataDontLoad:
       load_flags |= net::LOAD_ONLY_FROM_CACHE;
       break;
-    case WebURLRequest::UseProtocolCachePolicy:
+    case WebCachePolicy::UseProtocolCachePolicy:
       break;
     default:
       NOTREACHED();

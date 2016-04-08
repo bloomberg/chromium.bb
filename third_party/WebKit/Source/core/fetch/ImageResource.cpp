@@ -36,6 +36,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/BitmapImage.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
@@ -506,7 +507,7 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
 {
     if (!m_response.httpHeaderField("chrome-proxy").contains("q=low"))
         return;
-    m_resourceRequest.setCachePolicy(ResourceRequestCachePolicy::BypassingCache);
+    m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
     error(Resource::LoadError);
     load(fetcher);

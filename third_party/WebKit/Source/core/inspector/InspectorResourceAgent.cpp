@@ -71,6 +71,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
@@ -527,7 +528,7 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
     request.setReportRawHeaders(true);
 
     if (m_state->booleanProperty(ResourceAgentState::cacheDisabled, false)) {
-        request.setCachePolicy(BypassingCache);
+        request.setCachePolicy(WebCachePolicy::BypassingCache);
         request.setShouldResetAppCache(true);
     }
 

@@ -91,6 +91,7 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -159,9 +160,11 @@ using autofill::PasswordGenerationAgent;
 using base::ASCIIToUTF16;
 using base::UserMetricsAction;
 using blink::WebCache;
+using blink::WebCachePolicy;
 using blink::WebConsoleMessage;
 using blink::WebDataSource;
 using blink::WebDocument;
+using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebPlugin;
 using blink::WebPluginParams;
@@ -551,7 +554,7 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(
     content::RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
+    WebLocalFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
   std::string orig_mime_type = params.mimeType.utf8();
@@ -624,7 +627,7 @@ void ChromeContentRendererClient::DeferMediaLoad(
 #if defined(ENABLE_PLUGINS)
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
     content::RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
+    WebLocalFrame* frame,
     const WebPluginParams& original_params,
     const ChromeViewHostMsg_GetPluginInfo_Output& output) {
   const WebPluginInfo& info = output.plugin;
@@ -1021,8 +1024,8 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
 
 void ChromeContentRendererClient::GetNavigationErrorStrings(
     content::RenderFrame* render_frame,
-    const blink::WebURLRequest& failed_request,
-    const blink::WebURLError& error,
+    const WebURLRequest& failed_request,
+    const WebURLError& error,
     std::string* error_html,
     base::string16* error_description) {
   const GURL failed_url = error.unreachableURL;
@@ -1030,7 +1033,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   bool is_post = base::EqualsASCII(
       base::StringPiece16(failed_request.httpMethod()), "POST");
   bool is_ignoring_cache =
-      failed_request.getCachePolicy() == blink::WebURLRequest::BypassingCache;
+      failed_request.getCachePolicy() == WebCachePolicy::BypassingCache;
   if (error_html) {
     NetErrorHelper::Get(render_frame)
         ->GetErrorHTML(error, is_post, is_ignoring_cache, error_html);
@@ -1067,7 +1070,7 @@ bool ChromeContentRendererClient::AllowPopup() {
 #endif
 }
 
-bool ChromeContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
+bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
                                              const GURL& url,
                                              const std::string& http_method,
                                              bool is_initial_navigation,
@@ -1115,7 +1118,7 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
 }
 
 bool ChromeContentRendererClient::WillSendRequest(
-    blink::WebFrame* frame,
+    WebFrame* frame,
     ui::PageTransition transition_type,
     const GURL& url,
     const GURL& first_party_for_cookies,
@@ -1269,7 +1272,7 @@ bool ChromeContentRendererClient::ShouldGatherSiteIsolationStats() const {
 blink::WebWorkerContentSettingsClientProxy*
 ChromeContentRendererClient::CreateWorkerContentSettingsClientProxy(
     content::RenderFrame* render_frame,
-    blink::WebFrame* frame) {
+    WebFrame* frame) {
   return new WorkerContentSettingsClientProxy(render_frame, frame);
 }
 
@@ -1352,7 +1355,7 @@ ChromeContentRendererClient::CreateAppBannerClient(
 }
 
 void ChromeContentRendererClient::AddImageContextMenuProperties(
-    const blink::WebURLResponse& response,
+    const WebURLResponse& response,
     std::map<std::string, std::string>* properties) {
   DCHECK(properties);
   WebString header_key(ASCIIToUTF16(

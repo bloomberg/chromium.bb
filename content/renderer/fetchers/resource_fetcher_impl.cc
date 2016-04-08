@@ -76,8 +76,7 @@ void ResourceFetcherImpl::SetSkipServiceWorker(bool skip_service_worker) {
   request_.setSkipServiceWorker(skip_service_worker);
 }
 
-void ResourceFetcherImpl::SetCachePolicy(
-    blink::WebURLRequest::CachePolicy policy) {
+void ResourceFetcherImpl::SetCachePolicy(blink::WebCachePolicy policy) {
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 

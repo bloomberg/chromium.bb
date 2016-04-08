@@ -36,6 +36,7 @@
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebPrivateOwnPtr.h"
@@ -353,7 +354,8 @@ public:
     virtual void loadHistoryItem(
         const WebHistoryItem&,
         WebHistoryLoadType,
-        WebURLRequest::CachePolicy = WebURLRequest::UseProtocolCachePolicy) = 0;
+        WebCachePolicy = WebCachePolicy::UseProtocolCachePolicy)
+        = 0;
 
     // This method is short-hand for calling LoadData, where mime_type is
     // "text/html" and text_encoding is "UTF-8".

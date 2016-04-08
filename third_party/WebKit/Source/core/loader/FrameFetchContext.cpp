@@ -67,6 +67,7 @@
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebFrameScheduler.h"
 
 #include <algorithm>
@@ -156,49 +157,48 @@ CachePolicy FrameFetchContext::getCachePolicy() const
     if (loadType == FrameLoadTypeReload)
         return CachePolicyRevalidate;
 
-    if (m_documentLoader && m_documentLoader->request().getCachePolicy() == ReturnCacheDataElseLoad)
+    if (m_documentLoader && m_documentLoader->request().getCachePolicy() == WebCachePolicy::ReturnCacheDataElseLoad)
         return CachePolicyHistoryBuffer;
     return CachePolicyVerify;
-
 }
 
-static ResourceRequestCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
-    const CachePolicy policy) {
+static WebCachePolicy memoryCachePolicyToResourceRequestCachePolicy(const CachePolicy policy)
+{
     if (policy == CachePolicyVerify)
-        return UseProtocolCachePolicy;
+        return WebCachePolicy::UseProtocolCachePolicy;
     if (policy == CachePolicyRevalidate)
-        return ValidatingCacheData;
+        return WebCachePolicy::ValidatingCacheData;
     if (policy == CachePolicyReload)
-        return BypassingCache;
+        return WebCachePolicy::BypassingCache;
     if (policy == CachePolicyHistoryBuffer)
-        return ReturnCacheDataElseLoad;
-    return UseProtocolCachePolicy;
+        return WebCachePolicy::ReturnCacheDataElseLoad;
+    return WebCachePolicy::UseProtocolCachePolicy;
 }
 
-ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type) const
+WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type) const
 {
     ASSERT(frame());
     if (type == Resource::MainResource) {
         FrameLoadType frameLoadType = frame()->loader().loadType();
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
-            return ReturnCacheDataDontLoad;
+            return WebCachePolicy::ReturnCacheDataDontLoad;
         if (!frame()->host()->overrideEncoding().isEmpty())
-            return ReturnCacheDataElseLoad;
+            return WebCachePolicy::ReturnCacheDataElseLoad;
         if (frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
-            return ValidatingCacheData;
+            return WebCachePolicy::ValidatingCacheData;
 
         for (Frame* f = frame(); f; f = f->tree().parent()) {
             if (!f->isLocalFrame())
                 continue;
             frameLoadType = toLocalFrame(f)->loader().loadType();
             if (frameLoadType == FrameLoadTypeBackForward)
-                return ReturnCacheDataElseLoad;
+                return WebCachePolicy::ReturnCacheDataElseLoad;
             if (frameLoadType == FrameLoadTypeReloadBypassingCache)
-                return BypassingCache;
+                return WebCachePolicy::BypassingCache;
             if (frameLoadType == FrameLoadTypeReload)
-                return ValidatingCacheData;
+                return WebCachePolicy::ValidatingCacheData;
         }
-        return UseProtocolCachePolicy;
+        return WebCachePolicy::UseProtocolCachePolicy;
     }
 
     // For users on slow connections, we want to avoid blocking the parser in
@@ -213,24 +213,24 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
         const bool isInDocumentWrite = m_document && m_document->isInDocumentWrite();
         const bool disallowFetchForDocWriteScripts = frame()->settings() && frame()->settings()->disallowFetchForDocWrittenScriptsInMainFrame();
         if (isInDocumentWrite && disallowFetchForDocWriteScripts)
-            return ReturnCacheDataDontLoad;
+            return WebCachePolicy::ReturnCacheDataDontLoad;
     }
 
     if (request.isConditional())
-        return ValidatingCacheData;
+        return WebCachePolicy::ValidatingCacheData;
 
     if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
         // This policy should not be inherited by subresources.
-        ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().getCachePolicy();
+        WebCachePolicy mainResourceCachePolicy = m_documentLoader->request().getCachePolicy();
         if (m_documentLoader->request().httpMethod() == "POST") {
-            if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
-                return ReturnCacheDataElseLoad;
-            return UseProtocolCachePolicy;
+            if (mainResourceCachePolicy == WebCachePolicy::ReturnCacheDataDontLoad)
+                return WebCachePolicy::ReturnCacheDataElseLoad;
+            return WebCachePolicy::UseProtocolCachePolicy;
         }
         return memoryCachePolicyToResourceRequestCachePolicy(getCachePolicy());
     }
-    return UseProtocolCachePolicy;
+    return WebCachePolicy::UseProtocolCachePolicy;
 }
 
 // FIXME(http://crbug.com/274173):

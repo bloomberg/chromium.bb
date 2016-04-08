@@ -45,19 +45,10 @@ class WebSecurityOrigin;
 class WebString;
 class WebURL;
 class WebURLRequestPrivate;
+enum class WebCachePolicy;
 
 class WebURLRequest {
 public:
-    // Should be same with ResourceRequestCachePolicy.
-    // TODO(crbug.com/599364): Merge this with ResourceRequestCachePolicy.
-    enum CachePolicy {
-        UseProtocolCachePolicy, // normal load
-        ValidatingCacheData, // reload
-        BypassingCache, // end-to-end reload
-        ReturnCacheDataElseLoad, // back/forward or encoding change - allow stale data
-        ReturnCacheDataDontLoad, // results of a post - allow stale data and only use cache
-    };
-
     enum Priority {
         PriorityUnresolved = -1,
         PriorityVeryLow,
@@ -194,8 +185,8 @@ public:
     BLINK_PLATFORM_EXPORT bool allowStoredCredentials() const;
     BLINK_PLATFORM_EXPORT void setAllowStoredCredentials(bool);
 
-    BLINK_PLATFORM_EXPORT CachePolicy getCachePolicy() const;
-    BLINK_PLATFORM_EXPORT void setCachePolicy(CachePolicy);
+    BLINK_PLATFORM_EXPORT WebCachePolicy getCachePolicy() const;
+    BLINK_PLATFORM_EXPORT void setCachePolicy(WebCachePolicy);
 
     BLINK_PLATFORM_EXPORT WebString httpMethod() const;
     BLINK_PLATFORM_EXPORT void setHTTPMethod(const WebString&);

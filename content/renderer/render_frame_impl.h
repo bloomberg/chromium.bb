@@ -84,6 +84,7 @@ class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
 class WebWakeLockClient;
+enum class WebCachePolicy;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -891,9 +892,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Does preparation for the navigation to |url|.
   void PrepareRenderViewForNavigation(
       const GURL& url,
-      const RequestNavigationParams& request_params,
-      bool* is_reload,
-      blink::WebURLRequest::CachePolicy* cache_policy);
+      const RequestNavigationParams& request_params);
 
   // PlzNavigate
   // Sends a FrameHostMsg_BeginNavigation to the browser based on the contents

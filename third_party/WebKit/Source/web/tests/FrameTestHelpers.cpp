@@ -127,7 +127,7 @@ void loadHTMLString(WebFrame* frame, const std::string& html, const WebURL& base
     pumpPendingRequestsForFrameToLoad(frame);
 }
 
-void loadHistoryItem(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
+void loadHistoryItem(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoadType loadType, WebCachePolicy cachePolicy)
 {
     frame->loadHistoryItem(item, loadType, cachePolicy);
     pumpPendingRequestsForFrameToLoad(frame);

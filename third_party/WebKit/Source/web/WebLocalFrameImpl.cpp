@@ -891,8 +891,7 @@ void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)
     load(request, WebFrameLoadType::Standard, WebHistoryItem(), WebHistoryDifferentDocumentLoad, false);
 }
 
-void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType,
-    WebURLRequest::CachePolicy cachePolicy)
+void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType, WebCachePolicy cachePolicy)
 {
     // TODO(clamy): Remove this function once RenderFrame calls load for all
     // requests.
@@ -1597,7 +1596,7 @@ RawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& r
     FrameLoadType loadType = FrameLoadTypeStandard;
     if (childItem) {
         newRequest = FrameLoadRequest(request.originDocument(),
-            FrameLoader::resourceRequestFromHistoryItem(childItem.get(), UseProtocolCachePolicy));
+            FrameLoader::resourceRequestFromHistoryItem(childItem.get(), WebCachePolicy::UseProtocolCachePolicy));
         loadType = FrameLoadTypeInitialHistoryLoad;
     }
     webframeChild->frame()->loader().load(newRequest, loadType, childItem.get());
@@ -1896,12 +1895,11 @@ void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& dest
         toHTMLAnchorElement(anchor)->sendPings(destinationURL);
 }
 
-WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item,
-    WebURLRequest::CachePolicy cachePolicy) const
+WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item, WebCachePolicy cachePolicy) const
 {
     RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
     ResourceRequest request = FrameLoader::resourceRequestFromHistoryItem(
-        historyItem.get(), static_cast<ResourceRequestCachePolicy>(cachePolicy));
+        historyItem.get(), cachePolicy);
     return WrappedResourceRequest(request);
 }
 

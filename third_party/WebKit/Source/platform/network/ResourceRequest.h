@@ -42,15 +42,7 @@
 
 namespace blink {
 
-// Should be same with WebURLRequest::CachePolicy.
-// TODO(crbug.com/599364): Merge this with WebURLRequest::CachePolicy
-enum ResourceRequestCachePolicy {
-    UseProtocolCachePolicy, // normal load
-    ValidatingCacheData, // reload
-    BypassingCache, // end-to-end reload
-    ReturnCacheDataElseLoad, // back/forward or encoding change - allow stale data
-    ReturnCacheDataDontLoad, // results of a post - allow stale data and only use cache
-};
+enum class WebCachePolicy;
 
 enum ResourceRequestBlockedReason {
     ResourceRequestBlockedReasonCSP,
@@ -105,8 +97,8 @@ public:
 
     void removeCredentials();
 
-    ResourceRequestCachePolicy getCachePolicy() const;
-    void setCachePolicy(ResourceRequestCachePolicy cachePolicy);
+    WebCachePolicy getCachePolicy() const;
+    void setCachePolicy(WebCachePolicy);
 
     double timeoutInterval() const; // May return 0 when using platform default.
     void setTimeoutInterval(double timeoutInterval);
@@ -257,7 +249,7 @@ private:
     const CacheControlHeader& cacheControlHeader() const;
 
     KURL m_url;
-    ResourceRequestCachePolicy m_cachePolicy;
+    WebCachePolicy m_cachePolicy;
     double m_timeoutInterval; // 0 is a magic value for platform default on platforms that have one.
     KURL m_firstPartyForCookies;
     RefPtr<SecurityOrigin> m_requestorOrigin;
@@ -305,7 +297,7 @@ public:
     CrossThreadResourceRequestData() { }
     KURL m_url;
 
-    ResourceRequestCachePolicy m_cachePolicy;
+    WebCachePolicy m_cachePolicy;
     double m_timeoutInterval;
     KURL m_firstPartyForCookies;
     RefPtr<SecurityOrigin> m_requestorOrigin;

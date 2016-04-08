@@ -21,8 +21,7 @@ InternalDocumentStateData::InternalDocumentStateData()
       is_overriding_user_agent_(false),
       must_reset_scroll_and_scale_state_(false),
       cache_policy_override_set_(false),
-      cache_policy_override_(blink::WebURLRequest::UseProtocolCachePolicy) {
-}
+      cache_policy_override_(blink::WebCachePolicy::UseProtocolCachePolicy) {}
 
 // static
 InternalDocumentStateData* InternalDocumentStateData::FromDataSource(

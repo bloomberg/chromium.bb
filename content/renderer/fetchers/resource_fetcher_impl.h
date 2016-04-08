@@ -23,6 +23,7 @@ class GURL;
 namespace blink {
 class WebFrame;
 class WebURLLoader;
+enum class WebCachePolicy;
 }
 
 namespace content {
@@ -35,7 +36,7 @@ class ResourceFetcherImpl : public ResourceFetcher,
   void SetBody(const std::string& body) override;
   void SetHeader(const std::string& header, const std::string& value) override;
   void SetSkipServiceWorker(bool skip_service_worker) override;
-  void SetCachePolicy(blink::WebURLRequest::CachePolicy policy) override;
+  void SetCachePolicy(blink::WebCachePolicy policy) override;
   void SetLoaderOptions(const blink::WebURLLoaderOptions& options) override;
   void Start(blink::WebFrame* frame,
              blink::WebURLRequest::RequestContext request_context,

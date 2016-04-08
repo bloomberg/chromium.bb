@@ -32,6 +32,7 @@
 
 #include "platform/exported/WebURLRequestPrivate.h"
 #include "platform/network/ResourceRequest.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -147,16 +148,14 @@ void WebURLRequest::setAllowStoredCredentials(bool allowStoredCredentials)
     m_private->m_resourceRequest->setAllowStoredCredentials(allowStoredCredentials);
 }
 
-WebURLRequest::CachePolicy WebURLRequest::getCachePolicy() const
+WebCachePolicy WebURLRequest::getCachePolicy() const
 {
-    return static_cast<WebURLRequest::CachePolicy>(
-        m_private->m_resourceRequest->getCachePolicy());
+    return m_private->m_resourceRequest->getCachePolicy();
 }
 
-void WebURLRequest::setCachePolicy(CachePolicy cachePolicy)
+void WebURLRequest::setCachePolicy(WebCachePolicy cachePolicy)
 {
-    m_private->m_resourceRequest->setCachePolicy(
-        static_cast<ResourceRequestCachePolicy>(cachePolicy));
+    m_private->m_resourceRequest->setCachePolicy(cachePolicy);
 }
 
 WebString WebURLRequest::httpMethod() const

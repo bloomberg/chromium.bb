@@ -44,6 +44,7 @@
 #include "third_party/WebKit/public/web/WebFrameLoadType.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
+using blink::WebCachePolicy;
 using blink::WebFrame;
 using blink::WebHistoryCommitType;
 using blink::WebHistoryItem;
@@ -64,7 +65,7 @@ bool HistoryController::GoToEntry(
     blink::WebLocalFrame* main_frame,
     scoped_ptr<HistoryEntry> target_entry,
     scoped_ptr<NavigationParams> navigation_params,
-    WebURLRequest::CachePolicy cache_policy) {
+    WebCachePolicy cache_policy) {
   DCHECK(!main_frame->parent());
   HistoryFrameLoadVector same_document_loads;
   HistoryFrameLoadVector different_document_loads;

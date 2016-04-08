@@ -280,7 +280,7 @@ void WebRemoteFrameImpl::loadRequest(const WebURLRequest&)
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy)
+void WebRemoteFrameImpl::loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebCachePolicy)
 {
     ASSERT_NOT_REACHED();
 }

@@ -31,6 +31,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -149,12 +150,12 @@ void ResourceRequest::removeCredentials()
     m_url.setPass(String());
 }
 
-ResourceRequestCachePolicy ResourceRequest::getCachePolicy() const
+WebCachePolicy ResourceRequest::getCachePolicy() const
 {
     return m_cachePolicy;
 }
 
-void ResourceRequest::setCachePolicy(ResourceRequestCachePolicy cachePolicy)
+void ResourceRequest::setCachePolicy(WebCachePolicy cachePolicy)
 {
     m_cachePolicy = cachePolicy;
 }
@@ -397,7 +398,7 @@ bool ResourceRequest::hasCacheValidatorFields() const
 void ResourceRequest::initialize(const KURL& url)
 {
     m_url = url;
-    m_cachePolicy = UseProtocolCachePolicy;
+    m_cachePolicy = WebCachePolicy::UseProtocolCachePolicy;
     m_timeoutInterval = s_defaultTimeoutInterval;
     m_httpMethod = HTTPNames::GET;
     m_allowStoredCredentials = true;

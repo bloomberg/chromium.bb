@@ -26,7 +26,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     WebFrame* frame,
     int id,
     WebURLRequest::RequestContext request_context,
-    blink::WebURLRequest::CachePolicy cache_policy,
+    blink::WebCachePolicy cache_policy,
     const Callback& callback)
     : callback_(callback),
       id_(id),

@@ -92,6 +92,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
@@ -115,8 +116,7 @@ static bool needsHistoryItemRestore(FrameLoadType type)
 }
 
 // static
-ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item,
-    ResourceRequestCachePolicy cachePolicy)
+ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item, WebCachePolicy cachePolicy)
 {
     RefPtr<EncodedFormData> formData = item->formData();
     ResourceRequest request(item->url());
@@ -136,7 +136,7 @@ ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadTyp
     const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
 {
     ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadBypassingCache);
-    ResourceRequestCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadBypassingCache ? BypassingCache : ValidatingCacheData;
+    WebCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadBypassingCache ? WebCachePolicy::BypassingCache : WebCachePolicy::ValidatingCacheData;
     if (!m_currentItem)
         return ResourceRequest();
     ResourceRequest request = resourceRequestFromHistoryItem(m_currentItem.get(), cachePolicy);
@@ -765,9 +765,9 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeStandard;
     if (m_provisionalDocumentLoader && request.substituteData().failingURL() == m_provisionalDocumentLoader->url() && m_loadType == FrameLoadTypeBackForward)
         return FrameLoadTypeBackForward;
-    if (request.resourceRequest().getCachePolicy() == ValidatingCacheData)
+    if (request.resourceRequest().getCachePolicy() == WebCachePolicy::ValidatingCacheData)
         return FrameLoadTypeReload;
-    if (request.resourceRequest().getCachePolicy() == BypassingCache)
+    if (request.resourceRequest().getCachePolicy() == WebCachePolicy::BypassingCache)
         return FrameLoadTypeReloadBypassingCache;
     // From the HTML5 spec for location.assign():
     //  "If the browsing context's session history contains only one Document,
