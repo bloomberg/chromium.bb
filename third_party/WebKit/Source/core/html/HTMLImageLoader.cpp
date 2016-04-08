@@ -73,11 +73,11 @@ void HTMLImageLoader::noImageResourceToLoad()
         loadFallbackContentForElement(element());
 }
 
-void HTMLImageLoader::notifyFinished(Resource*)
+void HTMLImageLoader::imageNotifyFinished(ImageResource*)
 {
     ImageResource* cachedImage = image();
     RawPtr<Element> element = this->element();
-    ImageLoader::notifyFinished(cachedImage);
+    ImageLoader::imageNotifyFinished(cachedImage);
 
     bool loadError = cachedImage->errorOccurred();
     if (isHTMLImageElement(*element)) {

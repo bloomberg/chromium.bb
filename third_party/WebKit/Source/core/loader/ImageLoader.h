@@ -44,7 +44,7 @@ class LayoutImageResource;
 template<typename T> class EventSender;
 using ImageEventSender = EventSender<ImageLoader>;
 
-class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>, public ResourceClient, public ImageResourceObserver {
+class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>, public ImageResourceObserver {
     USING_PRE_FINALIZER(ImageLoader, dispose);
 public:
     explicit ImageLoader(Element*);
@@ -103,7 +103,7 @@ public:
 
     bool getImageAnimationPolicy(ImageAnimationPolicy&) final;
 protected:
-    void notifyFinished(Resource*) override;
+    void imageNotifyFinished(ImageResource*) override;
 
 private:
     class Task;

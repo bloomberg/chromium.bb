@@ -168,7 +168,6 @@ void ImageLoader::dispose()
         this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
 
     if (m_image) {
-        m_image->removeClient(this);
         m_image->removeObserver(this);
         m_image = nullptr;
     }
@@ -205,11 +204,9 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
         }
         m_imageComplete = true;
         if (newImage) {
-            newImage->addClient(this);
             newImage->addObserver(this);
         }
         if (oldImage) {
-            oldImage->removeClient(this);
             oldImage->removeObserver(this);
         }
     }
@@ -347,14 +344,12 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         m_imageComplete = !newImage;
 
         updateLayoutObject();
-        // If newImage exists and is cached, addClient() will result in the load event
+        // If newImage exists and is cached, addObserver() will result in the load event
         // being queued to fire. Ensure this happens after beforeload is dispatched.
         if (newImage) {
-            newImage->addClient(this);
             newImage->addObserver(this);
         }
         if (oldImage) {
-            oldImage->removeClient(this);
             oldImage->removeObserver(this);
         }
     }
@@ -395,7 +390,6 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, Re
     if (imageSourceURL.isEmpty()) {
         ImageResource* image = m_image.get();
         if (image) {
-            image->removeClient(this);
             image->removeObserver(this);
         }
         m_image = nullptr;
@@ -440,9 +434,9 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url) const
     return (m_loadingImageDocument || isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element) || url.protocolIsData());
 }
 
-void ImageLoader::notifyFinished(Resource* resource)
+void ImageLoader::imageNotifyFinished(ImageResource* resource)
 {
-    WTF_LOG(Timers, "ImageLoader::notifyFinished %p; m_hasPendingLoadEvent=%d",
+    WTF_LOG(Timers, "ImageLoader::imageNotifyFinished %p; m_hasPendingLoadEvent=%d",
         this, m_hasPendingLoadEvent);
 
     ASSERT(m_failedLoadURL.isEmpty());
