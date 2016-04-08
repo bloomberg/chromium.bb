@@ -48,6 +48,8 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.List;
+
 /**
  * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
  */
@@ -598,9 +600,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private static String parsePublisherNameFromUrl(String url) {
         // TODO(ianwen): Make it generic to parse url from URI path. http://crbug.com/599298
         // The url should look like: https://www.google.com/amp/s/www.nyt.com/ampthml/blogs.html
+        // or https://www.google.com/amp/www.nyt.com/ampthml/blogs.html.
         Uri uri = Uri.parse(url);
-        String path = uri.getPathSegments().get(2);
-        return path;
+        List<String> segments = uri.getPathSegments();
+        if (segments.size() >= 3) {
+            if (segments.get(1).length() > 1) return segments.get(1);
+            return segments.get(2);
+        }
+        return url;
     }
 
     // Toolbar and LocationBar calls that are not relevant here.
