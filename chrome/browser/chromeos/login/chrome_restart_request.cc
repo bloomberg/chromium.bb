@@ -156,6 +156,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kV,
     ::switches::kVModule,
     ::switches::kEnableWebGLDraftExtensions,
+    ::switches::kDisableWebGLImageChromium,
     ::switches::kEnableWebGLImageChromium,
     ::switches::kEnableWebVR,
 #if defined(ENABLE_WEBRTC)

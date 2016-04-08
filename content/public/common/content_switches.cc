@@ -285,6 +285,9 @@ const char kDisableThreadedScrolling[]      = "disable-threaded-scrolling";
 // Disable V8 idle tasks.
 const char kDisableV8IdleTasks[]            = "disable-v8-idle-tasks";
 
+// Disables WebGL rendering into a scanout buffer for overlay support.
+const char kDisableWebGLImageChromium[]     = "disable-webgl-image-chromium";
+
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.59",
+  "version": "8.60",
   "entries": [
     {
       "id": 1,
@@ -1806,11 +1806,10 @@ LONG_STRING_CONST(
     {
       "id": 152,
       "cr_bugs": [581777],
-      "description": "copyTexImage2D fails when reading from IOSurface on NVIDIA GPUs.",
+      "description": "copyTexImage2D fails when reading from IOSurface on multiple GPU types.",
       "os": {
         "type": "macosx"
       },
-      "vendor_id": "0x10de",
       "features": [
         "use_intermediary_for_copy_texture_image"
       ]

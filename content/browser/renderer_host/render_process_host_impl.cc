@@ -1427,6 +1427,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableTouchAdjustment,
     switches::kDisableTouchDragDrop,
     switches::kDisableV8IdleTasks,
+    switches::kDisableWebGLImageChromium,
     switches::kDisableWheelGestures,
     switches::kDomAutomationController,
     switches::kEnableBlinkFeatures,

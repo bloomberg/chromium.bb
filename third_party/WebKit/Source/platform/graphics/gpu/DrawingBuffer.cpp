@@ -343,7 +343,7 @@ DrawingBuffer::TextureParameters DrawingBuffer::chromiumImageTextureParameters()
     // on OSX.
     TextureParameters parameters;
     parameters.target = GC3D_TEXTURE_RECTANGLE_ARB;
-    parameters.internalColorFormat = GL_BGRA_EXT;
+    parameters.internalColorFormat = GL_RGBA;
     parameters.internalRenderbufferFormat = GL_RGBA8_OES;
     parameters.colorFormat = GL_RGBA;
     return parameters;

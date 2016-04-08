@@ -121,8 +121,16 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableCanvas2dImageChromium(
       enable_canvas_2d_image_chromium);
 
-  if (command_line.HasSwitch(switches::kEnableWebGLImageChromium))
-    WebRuntimeFeatures::enableWebGLImageChromium(true);
+#if defined(OS_MACOSX)
+  bool enable_web_gl_image_chromium = command_line.HasSwitch(
+      switches::kEnableGpuMemoryBufferCompositorResources) &&
+      !command_line.HasSwitch(switches::kDisableWebGLImageChromium) &&
+      !command_line.HasSwitch(switches::kDisableGpu);
+#else
+  bool enable_web_gl_image_chromium =
+      command_line.HasSwitch(switches::kEnableWebGLImageChromium);
+#endif
+  WebRuntimeFeatures::enableWebGLImageChromium(enable_web_gl_image_chromium);
 
   if (command_line.HasSwitch(switches::kForceOverlayFullscreenVideo))
     WebRuntimeFeatures::forceOverlayFullscreenVideo(true);
