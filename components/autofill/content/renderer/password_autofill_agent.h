@@ -47,20 +47,21 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Fills the username and password fields of this form with the given values.
   // Returns true if the fields were filled, false otherwise.
-  bool FillSuggestion(const blink::WebNode& node,
+  bool FillSuggestion(const blink::WebFormControlElement& node,
                       const blink::WebString& username,
                       const blink::WebString& password);
 
   // Previews the username and password fields of this form with the given
   // values. Returns true if the fields were previewed, false otherwise.
-  bool PreviewSuggestion(const blink::WebNode& node,
+  bool PreviewSuggestion(const blink::WebFormControlElement& node,
                          const blink::WebString& username,
                          const blink::WebString& password);
 
   // Clears the preview for the username and password fields, restoring both to
   // their previous filled state. Return false if no login information was
   // found for the form.
-  bool DidClearAutofillSelection(const blink::WebNode& node);
+  bool DidClearAutofillSelection(
+      const blink::WebFormControlElement& control_element);
 
   // Shows an Autofill popup with username suggestions for |element|. If
   // |show_all| is |true|, will show all possible suggestions for that element,
@@ -101,10 +102,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     PasswordFormFillData fill_data;
     // The user manually edited the password more recently than the username was
     // changed.
-    bool password_was_edited_last;
-    // The user edited the username field after page loading.
-    bool username_was_edited;
-    PasswordInfo();
+    bool password_was_edited_last = false;
+    // The user accepted a suggestion from a dropdown on a password field.
+    bool password_field_suggestion_was_accepted = false;
+    // The key under which PasswordAutofillManager can find info for filling.
+    int key = -1;
   };
   typedef std::map<blink::WebInputElement, PasswordInfo>
       WebInputToPasswordInfoMap;
@@ -170,30 +172,25 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // username exists, it should be passed as |user_input|. If there is no
   // username, pass the password field in |user_input|. In the latter case, no
   // username value will be shown in the pop-up.
-  bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
+  bool ShowSuggestionPopup(const PasswordInfo& password_info,
                            const blink::WebInputElement& user_input,
                            bool show_all,
                            bool show_on_password_field);
 
-  // Finds the PasswordInfo that corresponds to the passed in element. The
-  // passed in element can be either a username element or a password element.
-  // If a PasswordInfo was found, returns |true| and also assigns the
-  // corresponding username WebInputElement and PasswordInfo into
-  // username_element and pasword_info, respectively. Note, that
-  // |username_element->isNull()| can be true for forms without a username
-  // field.
-  bool FindPasswordInfoForElement(
-      const blink::WebInputElement& element,
-      const blink::WebInputElement** username_element,
-      PasswordInfo** password_info);
+  // Finds the PasswordInfo, username and password fields that corresponds to
+  // the passed in |element|. |element| can refer either to a username element
+  // or a password element. If a PasswordInfo was found, returns |true| and also
+  // assigns the corresponding username, password elements and PasswordInfo into
+  // |username_element|, |password_element| and |pasword_info|, respectively.
+  // Note, that |username_element->isNull()| can be true if |element| is a
+  // password.
+  bool FindPasswordInfoForElement(const blink::WebInputElement& element,
+                                  blink::WebInputElement* username_element,
+                                  blink::WebInputElement* password_element,
+                                  PasswordInfo** password_info);
 
   // Invoked when the frame is closing.
   void FrameClosing();
-
-  // Finds login information for a |node| that was previously filled.
-  bool FindLoginInfo(const blink::WebNode& node,
-                     blink::WebInputElement* found_input,
-                     PasswordInfo** found_password);
 
   // Clears the preview for the username and password fields, restoring both to
   // their previous filled state.
@@ -214,8 +211,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
-  // And the keys under which PasswordAutofillManager can find the same info.
-  WebElementToPasswordInfoKeyMap web_element_to_password_info_key_;
   // A (sort-of) reverse map to |login_to_password_info_|.
   PasswordToLoginMap password_to_username_;
 
