@@ -1042,7 +1042,13 @@ void VideoCaptureManager::ResumeDevices() {
 
   for (auto& entry : devices_) {
     // Do not resume Content Video Capture devices, e.g. Tab or Screen capture.
-    if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
+    // Do not try to restart already running devices. A device will be running
+    // if the Application state changes from
+    // APPLICATION_STATE_HAS_RUNNING_ACTIVITIES
+    // ->APPLICATION_STATE_HAS_PAUSED_ACTIVITIES
+    // ->APPLICATION_STATE_HAS_RUNNING_ACTIVITIES
+    if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE ||
+        entry->video_capture_device())
       continue;
 
     // Session ID is only valid for Screen capture. So we can fake it to resume
