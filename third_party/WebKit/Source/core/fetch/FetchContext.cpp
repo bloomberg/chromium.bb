@@ -56,7 +56,7 @@ CachePolicy FetchContext::getCachePolicy() const
     return CachePolicyVerify;
 }
 
-WebCachePolicy FetchContext::resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const
+WebCachePolicy FetchContext::resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption defer) const
 {
     return WebCachePolicy::UseProtocolCachePolicy;
 }

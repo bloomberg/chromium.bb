@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+    var sameOrigin = 'http://127.0.0.1:8000'
+    var crossOrigin = 'http://localhost:8000' 
+    var filePath = '/loading/resources/js-loaded.js'
+    var jsLoaded = false;
+    var loadSuccess = false;
+
+    src = crossOrigin + filePath;
+    document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true"></scr' + 'ipt>');
+</script>
+
+<script>
+    test(function () {
+        assert_true(jsLoaded);
+        assert_true(loadSuccess);
+    }, "Blocking of scripts doesn't come into effect since feature is disabled");
+    
+</script>
+<script>
+    if (window.internals) {
+        internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(true);
+        internals.setNetworkStateNotifierTestOnly(true);
+        internals.setNetworkConnectionInfo('cellular2g', 1.0);
+        internals.evictAllResources();
+
+        // Reset the state of the singleton network state notifier.
+        window.addEventListener('beforeunload', function() {
+            internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(false);
+            internals.setNetworkStateNotifierTestOnly(false);
+        }, false);
+    }
+
+    src = sameOrigin + filePath;
+    jsLoaded = false;
+    loadSuccess = false;
+    document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true"></scr' + 'ipt>');
+</script>
+
+<script>
+    test(function () {
+        assert_true(jsLoaded);
+        assert_true(loadSuccess);
+    }, "Same domain doc.written scripts are not blocked");
+</script>
+
+<script>
+    var jsLoaded = false;
+    var loadSuccess = false;
+
+    src = crossOrigin + filePath;
+    document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true"></scr' + 'ipt>');
+</script>
+
+<script>
+    test(function () {
+        assert_true(jsLoaded);
+        assert_true(loadSuccess);
+    }, "cross-origin script not blocked since it is cached");
+    
+</script>
+<script>
+    jsLoaded = false;
+    loadSuccess = false;
+    var loadFailed = false;
+
+    filePath = '/loading/resources/js-loaded.js?1';
+    src = crossOrigin + filePath;
+    document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true" onError="loadFailed=true"></scr' + 'ipt>');
+</script>
+
+<script>
+    test(function () {
+        assert_false(jsLoaded);
+        assert_false(loadSuccess);
+        assert_true(loadFailed);
+    }, "cross origin doc.written scripts are blocked");
+</script>

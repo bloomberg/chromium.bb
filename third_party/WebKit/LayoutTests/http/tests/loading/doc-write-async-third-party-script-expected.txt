@@ -1,0 +1,9 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+main frame - didFinishDocumentLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+This is a testharness.js-based test.
+PASS Cross origin but asynchronous doc.written scripts are not blocked 
+Harness: the test ran to completion.
+

@@ -396,47 +396,47 @@ TEST_F(FrameFetchContextTest, MainResource)
 {
     // Default case
     ResourceRequest request("http://www.example.com");
-    EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 
     // Post
     ResourceRequest postRequest("http://www.example.com");
     postRequest.setHTTPMethod("POST");
-    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
     // Re-post
     document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
-    EXPECT_EQ(WebCachePolicy::ReturnCacheDataDontLoad, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ReturnCacheDataDontLoad, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
     // Enconding overriden
     document->frame()->loader().setLoadType(FrameLoadTypeStandard);
     document->frame()->host()->setOverrideEncoding("foo");
-    EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
     document->frame()->host()->setOverrideEncoding(AtomicString());
 
     // FrameLoadTypeSame
     document->frame()->loader().setLoadType(FrameLoadTypeSame);
-    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 
     // Conditional request
     document->frame()->loader().setLoadType(FrameLoadTypeStandard);
     ResourceRequest conditional("http://www.example.com");
     conditional.setHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
-    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource, FetchRequest::NoDefer));
 
     // Set up a child frame
     FrameFetchContext* childFetchContext = createChildFrame();
 
     // Child frame as part of back/forward
     document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
-    EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 
     // Child frame as part of reload
     document->frame()->loader().setLoadType(FrameLoadTypeReload);
-    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::ValidatingCacheData, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 
     // Child frame as part of reload bypassing cache
     document->frame()->loader().setLoadType(FrameLoadTypeReloadBypassingCache);
-    EXPECT_EQ(WebCachePolicy::BypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(WebCachePolicy::BypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 }
 
 TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)

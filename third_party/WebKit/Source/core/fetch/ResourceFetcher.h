@@ -165,7 +165,7 @@ private:
 
     void moveCachedNonBlockingResourceToBlocking(Resource*, const FetchRequest&);
 
-    void initializeResourceRequest(ResourceRequest&, Resource::Type);
+    void initializeResourceRequest(ResourceRequest&, Resource::Type, FetchRequest::DeferOption);
 
     bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
     bool shouldDeferImageLoad(const KURL&) const;

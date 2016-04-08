@@ -70,7 +70,7 @@ public:
     void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType) override;
     void setFirstPartyForCookies(ResourceRequest&) override;
     CachePolicy getCachePolicy() const override;
-    WebCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const override;
+    WebCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption) const override;
     void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
     void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
     void dispatchDidLoadResourceFromMemoryCache(const Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext) override;

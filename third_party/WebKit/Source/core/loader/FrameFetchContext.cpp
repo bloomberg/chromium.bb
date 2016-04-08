@@ -57,6 +57,7 @@
 #include "core/loader/PingLoader.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -175,7 +176,7 @@ static WebCachePolicy memoryCachePolicyToResourceRequestCachePolicy(const CacheP
     return WebCachePolicy::UseProtocolCachePolicy;
 }
 
-WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type) const
+WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type, FetchRequest::DeferOption defer) const
 {
     ASSERT(frame());
     if (type == Resource::MainResource) {
@@ -204,16 +205,27 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceReque
     // For users on slow connections, we want to avoid blocking the parser in
     // the main frame on script loads inserted via document.write, since it can
     // add significant delays before page content is displayed on the screen.
-    // For now, as a prototype, we block fetches for main frame scripts
-    // inserted via document.write as long as the
-    // disallowFetchForDocWrittenScriptsInMainFrame setting is enabled. In the
-    // future, we'll extend this logic to only block if estimated network RTT
-    // is above some threshold.
     if (type == Resource::Script && isMainFrame()) {
         const bool isInDocumentWrite = m_document && m_document->isInDocumentWrite();
         const bool disallowFetchForDocWriteScripts = frame()->settings() && frame()->settings()->disallowFetchForDocWrittenScriptsInMainFrame();
-        if (isInDocumentWrite && disallowFetchForDocWriteScripts)
-            return WebCachePolicy::ReturnCacheDataDontLoad;
+
+        if (isInDocumentWrite && disallowFetchForDocWriteScripts) {
+            // only synchronously loaded scripts should be blocked
+            const bool isSync = defer == FetchRequest::NoDefer;
+
+            // Not blocking same origin scripts as they may be used to render main page content
+            // whereas cross-origin scripts inserted via document.write are likely
+            // for third party content.
+            const bool isThirdParty = request.url().host() != m_document->getSecurityOrigin()->domain();
+
+            // Only blocking in slow connections where the performance penalty is worst case.
+            // For now we restrict slow connections to 2G, in future this might be expanded using the
+            // network quality estimator.
+            const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+
+            if (isSync && isThirdParty && isSlowConnection)
+                return WebCachePolicy::ReturnCacheDataDontLoad;
+        }
     }
 
     if (request.isConditional())

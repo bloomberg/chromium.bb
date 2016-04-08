@@ -446,7 +446,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
 
     updateMemoryCacheStats(resource, policy, request, factory, isStaticData);
 
-    initializeResourceRequest(request.mutableResourceRequest(), factory.type());
+    initializeResourceRequest(request.mutableResourceRequest(), factory.type(), request.defer());
     switch (policy) {
     case Reload:
         memoryCache()->remove(resource);
@@ -525,10 +525,10 @@ void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource
     determineRequestContext(request, type, context().isMainFrame());
 }
 
-void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resource::Type type)
+void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resource::Type type, FetchRequest::DeferOption defer)
 {
     if (request.getCachePolicy() == WebCachePolicy::UseProtocolCachePolicy)
-        request.setCachePolicy(context().resourceRequestCachePolicy(request, type));
+        request.setCachePolicy(context().resourceRequestCachePolicy(request, type, defer));
     if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
         determineRequestContext(request, type);
     if (type == Resource::LinkPrefetch)
@@ -548,7 +548,7 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
 
     ResourceRequest revalidatingRequest(resource->resourceRequest());
     revalidatingRequest.clearHTTPReferrer();
-    initializeResourceRequest(revalidatingRequest, resource->getType());
+    initializeResourceRequest(revalidatingRequest, resource->getType(), request.defer());
 
     const AtomicString& lastModified = resource->response().httpHeaderField(HTTPNames::Last_Modified);
     const AtomicString& eTag = resource->response().httpHeaderField(HTTPNames::ETag);
