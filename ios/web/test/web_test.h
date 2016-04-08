@@ -35,7 +35,7 @@ class WebTest : public PlatformTest {
   TestWebClient* GetWebClient();
 
   // Returns the BrowserState that is used for testing.
-  BrowserState* GetBrowserState() { return &browser_state_; }
+  virtual BrowserState* GetBrowserState();
 
  private:
   // The WebClient used in tests.

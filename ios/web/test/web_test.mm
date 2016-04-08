@@ -54,6 +54,10 @@ TestWebClient* WebTest::GetWebClient() {
   return static_cast<TestWebClient*>(web_client_.Get());
 }
 
+BrowserState* WebTest::GetBrowserState() {
+  return &browser_state_;
+}
+
 #pragma mark -
 
 WebTestWithWebController::WebTestWithWebController() {}
