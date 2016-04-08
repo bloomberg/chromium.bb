@@ -116,7 +116,7 @@ void BlockRequest(blink::WebURLRequest& request) {
 }
 
 bool IsLocalHost(const std::string& host) {
-  return host == "127.0.0.1" || host == "localhost";
+  return host == "127.0.0.1" || host == "localhost" || host == "[::1]";
 }
 
 bool IsTestHost(const std::string& host) {

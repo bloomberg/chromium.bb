@@ -2,7 +2,7 @@ Tests that resources panel shows form data parameters.
 
   
 
-http://127.0.0.1:8000/inspector/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=
+http://[::1]:8000/inspector/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=
 {
     cache : {
     }
@@ -39,7 +39,7 @@ http://127.0.0.1:8000/inspector/resources/post-target.cgi?queryParam1=queryValue
                 value : ""
             }
         ]
-        url : "http://127.0.0.1:8000/inspector/resources/post-target.cgi?queryParam1=queryValue1&queryParam2="
+        url : "http://[::1]:8000/inspector/resources/post-target.cgi?queryParam1=queryValue1&queryParam2="
     }
     response : {
         _transferSize : <number>
@@ -47,7 +47,7 @@ http://127.0.0.1:8000/inspector/resources/post-target.cgi?queryParam1=queryValue
         content : {
             compression : <number>
             mimeType : "application/xml"
-            size : 15
+            size : 14
         }
         cookies : [
         ]
@@ -58,7 +58,7 @@ http://127.0.0.1:8000/inspector/resources/post-target.cgi?queryParam1=queryValue
         status : 200
         statusText : "OK"
     }
-    serverIPAddress : "127.0.0.1"
+    serverIPAddress : "[::1]"
     startedDateTime : <plausible>
     time : <number>
     timings : <object>
