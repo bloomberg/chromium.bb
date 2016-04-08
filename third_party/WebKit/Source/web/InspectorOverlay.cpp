@@ -42,7 +42,7 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/LayoutEditor.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
@@ -71,7 +71,7 @@ Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, b
         hitType |= HitTestRequest::IgnorePointerEventsNone;
     HitTestRequest request(hitType);
     HitTestResult result(request, frame->view()->rootFrameToContents(pointInRootFrame));
-    frame->contentLayoutObject()->hitTest(result);
+    frame->contentLayoutItem().hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->getNodeType() == Node::TEXT_NODE)
         node = node->parentNode();
@@ -688,7 +688,7 @@ bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event)
         return false;
 
     LocalFrame* frame = m_webViewImpl->mainFrameImpl()->frame();
-    if (!frame->view() || !frame->contentLayoutObject())
+    if (!frame->view() || frame->contentLayoutItem().isNull())
         return false;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
 
