@@ -152,7 +152,8 @@ class ChromeControllerBase(object):
   @contextlib.contextmanager
   def OpenWprHost(self, wpr_archive_path, record=False,
                   network_condition_name=None,
-                  disable_script_injection=False):
+                  disable_script_injection=False,
+                  out_log_path=None):
     """Opens a Web Page Replay host context.
 
     Args:
@@ -162,6 +163,7 @@ class ChromeControllerBase(object):
           emulation.NETWORK_CONDITIONS.
       disable_script_injection: Disable JavaScript file injections that is
         fighting against resources name entropy.
+      out_log_path: Path of the WPR host's log.
     """
     raise NotImplementedError
 
@@ -261,13 +263,15 @@ class RemoteChromeController(ChromeControllerBase):
   @contextlib.contextmanager
   def OpenWprHost(self, wpr_archive_path, record=False,
                   network_condition_name=None,
-                  disable_script_injection=False):
+                  disable_script_injection=False,
+                  out_log_path=None):
     """Starts a WPR host, overrides Chrome flags until contextmanager exit."""
     assert not self._chrome_wpr_specific_args, 'WPR is already running.'
     with device_setup.RemoteWprHost(self._device, wpr_archive_path,
         record=record,
         network_condition_name=network_condition_name,
-        disable_script_injection=disable_script_injection) as additional_flags:
+        disable_script_injection=disable_script_injection,
+        out_log_path=out_log_path) as additional_flags:
       self._chrome_wpr_specific_args = additional_flags
       yield
     self._chrome_wpr_specific_args = []
@@ -368,14 +372,15 @@ class LocalChromeController(ChromeControllerBase):
   @contextlib.contextmanager
   def OpenWprHost(self, wpr_archive_path, record=False,
                   network_condition_name=None,
-                  disable_script_injection=False):
+                  disable_script_injection=False,
+                  out_log_path=None):
     """Override for WPR context."""
     assert not self._chrome_wpr_specific_args, 'WPR is already running.'
     with device_setup.LocalWprHost(wpr_archive_path,
         record=record,
         network_condition_name=network_condition_name,
-        disable_script_injection=disable_script_injection
-        ) as additional_flags:
+        disable_script_injection=disable_script_injection,
+        out_log_path=out_log_path) as additional_flags:
       self._chrome_wpr_specific_args = additional_flags
       yield
     self._chrome_wpr_specific_args = []

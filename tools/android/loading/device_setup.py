@@ -131,8 +131,16 @@ def ForwardPort(device, local, remote):
 def _WprHost(wpr_archive_path, record=False,
              network_condition_name=None,
              disable_script_injection=False,
-             wpr_ca_cert_path=None):
+             wpr_ca_cert_path=None,
+             out_log_path=None):
   assert wpr_archive_path
+
+  def PathWorkaround(path):
+    # webpagereplay.ReplayServer is doing a os.path.exist(os.path.dirname(p))
+    # that fails if p = 'my_file.txt' because os.path.dirname(p) = '' != '.'.
+    # This workaround just sends absolute path to work around this bug.
+    return os.path.abspath(path)
+
   wpr_server_args = ['--use_closest_match']
   if record:
     wpr_server_args.append('--record')
@@ -157,10 +165,17 @@ def _WprHost(wpr_archive_path, record=False,
     wpr_server_args.extend(['--inject_scripts', ''])
   if wpr_ca_cert_path:
     wpr_server_args.extend(['--should_generate_certs',
-                            '--https_root_ca_cert_path=' + wpr_ca_cert_path])
+        '--https_root_ca_cert_path=' + PathWorkaround(wpr_ca_cert_path)])
+  if out_log_path:
+    # --log_level debug to extract the served URLs requests from the log.
+    wpr_server_args.extend(['--log_level', 'debug',
+                            '--log_file', PathWorkaround(out_log_path)])
+    # Don't append to previously existing log.
+    if os.path.exists(out_log_path):
+      os.remove(out_log_path)
 
   # Set up WPR server and device forwarder.
-  wpr_server = webpagereplay.ReplayServer(wpr_archive_path,
+  wpr_server = webpagereplay.ReplayServer(PathWorkaround(wpr_archive_path),
       '127.0.0.1', 0, 0, None, wpr_server_args)
   http_port, https_port = wpr_server.StartServer()[:-1]
 
@@ -193,7 +208,8 @@ def _FormatWPRRelatedChromeArgumentFor(http_port, https_port, escape):
 @contextlib.contextmanager
 def LocalWprHost(wpr_archive_path, record=False,
                  network_condition_name=None,
-                 disable_script_injection=False):
+                 disable_script_injection=False,
+                 out_log_path=None):
   """Launches web page replay host.
 
   Args:
@@ -203,6 +219,7 @@ def LocalWprHost(wpr_archive_path, record=False,
         emulation.NETWORK_CONDITIONS.
     disable_script_injection: Disable JavaScript file injections that is
       fighting against resources name entropy.
+    out_log_path: Path of the WPR host's log.
 
   Returns:
     Additional flags list that may be used for chromium to load web page through
@@ -216,8 +233,8 @@ def LocalWprHost(wpr_archive_path, record=False,
       wpr_archive_path,
       record=record,
       network_condition_name=network_condition_name,
-      disable_script_injection=disable_script_injection
-      ) as (http_port, https_port):
+      disable_script_injection=disable_script_injection,
+      out_log_path=out_log_path) as (http_port, https_port):
     chrome_args = _FormatWPRRelatedChromeArgumentFor(http_port, https_port,
                                                      escape=False)
     # Certification authority is handled only available on Android.
@@ -228,7 +245,8 @@ def LocalWprHost(wpr_archive_path, record=False,
 @contextlib.contextmanager
 def RemoteWprHost(device, wpr_archive_path, record=False,
                   network_condition_name=None,
-                  disable_script_injection=False):
+                  disable_script_injection=False,
+                  out_log_path=None):
   """Launches web page replay host.
 
   Args:
@@ -239,6 +257,7 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
         emulation.NETWORK_CONDITIONS.
     disable_script_injection: Disable JavaScript file injections that is
       fighting against resources name entropy.
+    out_log_path: Path of the WPR host's log.
 
   Returns:
     Additional flags list that may be used for chromium to load web page through
@@ -264,8 +283,8 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
         record=record,
         network_condition_name=network_condition_name,
         disable_script_injection=disable_script_injection,
-        wpr_ca_cert_path=wpr_ca_cert_path
-        ) as (http_port, https_port):
+        wpr_ca_cert_path=wpr_ca_cert_path,
+        out_log_path=out_log_path) as (http_port, https_port):
       # Set up the forwarder.
       forwarder.Forwarder.Map([(0, http_port), (0, https_port)], device)
       device_http_port = forwarder.Forwarder.DevicePortForHostPort(http_port)
