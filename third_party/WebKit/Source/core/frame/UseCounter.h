@@ -1106,6 +1106,10 @@ public:
         SVGCalcModeLinear = 1288,
         SVGCalcModePaced = 1289,
         SVGCalcModeSpline = 1290,
+        FormSubmissionStarted = 1291,
+        FormValidationStarted = 1292,
+        FormValidationAbortedSubmission = 1293,
+        FormValidationShowedMessage = 1294,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

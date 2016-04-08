@@ -70391,6 +70391,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1288" label="SVGCalcModeLinear"/>
   <int value="1289" label="SVGCalcModePaced"/>
   <int value="1290" label="SVGCalcModeSpline"/>
+  <int value="1291" label="FormSubmissionStarted"/>
+  <int value="1292" label="FormValidationStarted"/>
+  <int value="1293" label="FormValidationAbortedSubmission"/>
+  <int value="1294" label="FormValidationShowedMessage"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

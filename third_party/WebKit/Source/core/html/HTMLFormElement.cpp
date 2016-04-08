@@ -262,6 +262,7 @@ static inline HTMLFormControlElement* submitElementFromEvent(const Event* event)
 
 bool HTMLFormElement::validateInteractively()
 {
+    UseCounter::count(document(), UseCounter::FormValidationStarted);
     const FormAssociatedElement::List& elements = associatedElements();
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->isFormControlElement())
@@ -271,6 +272,7 @@ bool HTMLFormElement::validateInteractively()
     HeapVector<Member<HTMLFormControlElement>> unhandledInvalidControls;
     if (!checkInvalidControlsAndCollectUnhandled(&unhandledInvalidControls, CheckValidityDispatchInvalidEvent))
         return true;
+    UseCounter::count(document(), UseCounter::FormValidationAbortedSubmission);
     // Because the form has invalid controls, we abort the form submission and
     // show a validation message on a focusable form control.
 
@@ -284,6 +286,7 @@ bool HTMLFormElement::validateInteractively()
         HTMLFormControlElement* unhandled = unhandledInvalidControls[i].get();
         if (unhandled->isFocusable()) {
             unhandled->showValidationMessage();
+            UseCounter::count(document(), UseCounter::FormValidationShowedMessage);
             break;
         }
     }
@@ -314,6 +317,7 @@ void HTMLFormElement::prepareForSubmission(Event* event)
     if (submitElement && submitElement->formNoValidate())
         skipValidation = true;
 
+    UseCounter::count(document(), UseCounter::FormSubmissionStarted);
     // Interactive validation must be done before dispatching the submit event.
     if (!skipValidation && !validateInteractively())
         return;
