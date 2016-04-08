@@ -11,7 +11,6 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webusb/USBConfiguration.h"
 #include "modules/webusb/USBControlTransferParameters.h"
@@ -31,9 +30,6 @@ const char kDeviceStateChangeInProgress[] = "An operation that changes the devic
 const char kInterfaceNotFound[] = "The interface number provided is not supported by the device in its current configuration.";
 const char kInterfaceStateChangeInProgress[] = "An operation that changes interface state is in progress.";
 const char kOpenRequired[] = "The device must be opened first.";
-const char kVisibiltyError[] = "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that the page is connected to a device.";
-
-
 
 String convertTransferStatus(const WebUSBTransferInfo::Status& status)
 {
@@ -65,13 +61,7 @@ public:
             return;
 
         m_device->onDeviceOpenedOrClosed(m_desiredState);
-        if (m_device->page()->isPageVisible()) {
-            m_resolver->resolve();
-        } else {
-            m_device->pageVisibilityChanged();
-            m_resolver->reject(DOMException::create(SecurityError, kVisibiltyError));
-            return;
-        }
+        m_resolver->resolve();
     }
 
     void onError(const WebUSBError& e) override
@@ -288,7 +278,6 @@ USBDevice* USBDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebUSBDev
 
 USBDevice::USBDevice(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
     : ContextLifecycleObserver(context)
-    , PageLifecycleObserver(toDocument(context)->page())
     , m_device(device)
     , m_opened(false)
     , m_deviceStateChangeInProgress(false)
@@ -595,18 +584,9 @@ void USBDevice::contextDestroyed()
     }
 }
 
-void USBDevice::pageVisibilityChanged()
-{
-    if (!page()->isPageVisible() && m_opened) {
-        m_device->close(new WebUSBDeviceCloseCallbacks());
-        m_opened = false;
-    }
-}
-
 DEFINE_TRACE(USBDevice)
 {
     ContextLifecycleObserver::trace(visitor);
-    PageLifecycleObserver::trace(visitor);
 }
 
 int USBDevice::findConfigurationIndex(uint8_t configurationValue) const
@@ -641,19 +621,8 @@ int USBDevice::findAlternateIndex(size_t interfaceIndex, uint8_t alternateSettin
     return -1;
 }
 
-bool USBDevice::ensurePageVisible(ScriptPromiseResolver* resolver) const
-{
-    if (!page()->isPageVisible()) {
-        resolver->reject(DOMException::create(SecurityError, kVisibiltyError));
-        return false;
-    }
-    return true;
-}
-
 bool USBDevice::ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver* resolver) const
 {
-    if (!ensurePageVisible(resolver))
-        return false;
     if (m_deviceStateChangeInProgress)
         resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
     else if (anyInterfaceChangeInProgress())
@@ -665,8 +634,6 @@ bool USBDevice::ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*
 
 bool USBDevice::ensureDeviceConfigured(ScriptPromiseResolver* resolver) const
 {
-    if (!ensurePageVisible(resolver))
-        return false;
     if (m_deviceStateChangeInProgress)
         resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
     else if (!m_opened)
