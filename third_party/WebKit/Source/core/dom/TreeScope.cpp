@@ -429,6 +429,14 @@ Element* TreeScope::adjustedFocusedElement() const
     if (!element)
         return nullptr;
 
+    if (rootNode().isInV1ShadowTree()) {
+        if (Node* retargeted = rootNode().retarget(*element)) {
+            DCHECK(retargeted->isElementNode());
+            return this == &retargeted->treeScope() ? toElement(retargeted) : nullptr;
+        }
+        return nullptr;
+    }
+
     RawPtr<EventPath> eventPath = new EventPath(*element);
     for (size_t i = 0; i < eventPath->size(); ++i) {
         if (eventPath->at(i).node() == rootNode()) {
