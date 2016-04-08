@@ -14,10 +14,10 @@ layer at (0,0) size 800x600
           text run at (0,2) width 499: "Please resize the browser window to see how your 100% CSS footer behaves."
       LayoutBlockFlow {P} at (10,70) size 780x102
         LayoutText {#text} at (0,2) size 775x86
-          text run at (0,2) width 738: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Cras porttitor. Ut nonummy vestibulum arcu. Nulla eros eros,"
+          text run at (0,2) width 740: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Cras porttitor. Ut nonummy vestibulum arcu. Nulla eros eros,"
           text run at (0,20) width 775: "mattis et, dictum quis, convallis vel, mauris. Ut sed mauris vel metus pretium pretium. Curabitur tristique sem id justo. Nunc"
           text run at (0,38) width 745: "sit amet felis. Duis luctus pharetra urna. Sed enim arcu, cursus a, posuere sed, sollicitudin in, justo. Pellentesque enim"
-          text run at (0,56) width 728: "lacus, egestas ut, elementum eu, molestie vel, urna. Integer quam. Phasellus tempor. Sed commodo porttitor justo."
+          text run at (0,56) width 729: "lacus, egestas ut, elementum eu, molestie vel, urna. Integer quam. Phasellus tempor. Sed commodo porttitor justo."
           text run at (0,74) width 617: "Vestibulum rhoncus lacinia pede. Aliquam lectus velit, auctor a, fermentum a, accumsan et, neque."
 layer at (0,562) size 620x38
   LayoutBlockFlow (positioned) {DIV} at (0,562) size 620x38 [bgcolor=#0066B2]
