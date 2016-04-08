@@ -56,8 +56,15 @@ class BASE_EXPORT PriorityQueue {
    public:
     ~Transaction();
 
-    // Inserts |sequence_and_sort_key| in the PriorityQueue.
+    // Inserts |sequence_and_sort_key| in the PriorityQueue. Each call to this
+    // method will result in one invocation of the wake up callback when the
+    // Transaction is destroyed.
     void Push(std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key);
+
+    // Inserts |sequence_and_sort_key| in the PriorityQueue without invoking the
+    // wake up callback.
+    void PushNoWakeUp(
+        std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key);
 
     // Returns the SequenceAndSortKey with the highest priority or a null
     // SequenceAndSortKey if the PriorityQueue is empty. The reference becomes
@@ -81,22 +88,23 @@ class BASE_EXPORT PriorityQueue {
 
     PriorityQueue* const outer_queue_;
 
-    // Number of times that Push() has been called on this Transaction.
-    size_t num_pushed_sequences_ = 0;
+    // Number of times that the wake up callback should be invoked when this
+    // Transaction is destroyed.
+    size_t num_wake_ups_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Transaction);
   };
 
-  // |sequence_inserted_callback| is a non-null callback invoked when the
-  // Transaction is done for each Push that was performed with the Transaction.
-  explicit PriorityQueue(const Closure& sequence_inserted_callback);
+  // |wake_up_callback| is a non-null callback invoked when a Transaction is
+  // done for each call to Push() on the Transaction.
+  explicit PriorityQueue(const Closure& wake_up_callback);
 
-  // |sequence_inserted_callback| is a non-null callback invoked when the
-  // Transaction is done for each Push that was performed with the Transaction.
+  // |wake_up_callback| is a non-null callback invoked when a Transaction is
+  // done for each call to Push() on the Transaction.
   // |predecessor_priority_queue| is a PriorityQueue for which a thread is
   // allowed to have an active Transaction when it creates a Transaction for
   // this PriorityQueue.
-  PriorityQueue(const Closure& sequence_inserted_callback,
+  PriorityQueue(const Closure& wake_up_callback,
                 const PriorityQueue* predecessor_priority_queue);
 
   ~PriorityQueue();
@@ -124,7 +132,7 @@ class BASE_EXPORT PriorityQueue {
 
   ContainerType container_;
 
-  const Closure sequence_inserted_callback_;
+  const Closure wake_up_callback_;
 
   // A null SequenceAndSortKey returned by Peek() when the PriorityQueue is
   // empty.

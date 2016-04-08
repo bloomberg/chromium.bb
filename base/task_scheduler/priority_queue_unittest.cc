@@ -30,7 +30,7 @@ namespace {
 class PriorityQueueCallbackMock {
  public:
   PriorityQueueCallbackMock() = default;
-  MOCK_METHOD0(SequenceInsertedInPriorityQueue, void());
+  MOCK_METHOD0(WakeUp, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PriorityQueueCallbackMock);
@@ -109,9 +109,7 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
 
   // Create a PriorityQueue and a Transaction.
   testing::StrictMock<PriorityQueueCallbackMock> mock;
-  PriorityQueue pq(
-      Bind(&PriorityQueueCallbackMock::SequenceInsertedInPriorityQueue,
-           Unretained(&mock)));
+  PriorityQueue pq(Bind(&PriorityQueueCallbackMock::WakeUp, Unretained(&mock)));
   std::unique_ptr<PriorityQueue::Transaction> transaction(
       pq.BeginTransaction());
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
@@ -175,9 +173,105 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
                                   transaction->Peek());
 
-  // Expect 4 calls to mock.SequenceInsertedInPriorityQueue() when the
-  // Transaction is destroyed.
-  EXPECT_CALL(mock, SequenceInsertedInPriorityQueue()).Times(4);
+  // Expect 4 calls to mock.WakeUp() when the Transaction is destroyed.
+  EXPECT_CALL(mock, WakeUp()).Times(4);
+  transaction.reset();
+}
+
+TEST(TaskSchedulerPriorityQueueTest, PushNoWakeUpPopPeek) {
+  // Create test sequences.
+  scoped_refptr<Sequence> sequence_a(new Sequence);
+  sequence_a->PushTask(WrapUnique(
+      new Task(FROM_HERE, Closure(),
+               TaskTraits().WithPriority(TaskPriority::USER_VISIBLE))));
+  SequenceSortKey sort_key_a = sequence_a->GetSortKey();
+
+  scoped_refptr<Sequence> sequence_b(new Sequence);
+  sequence_b->PushTask(WrapUnique(
+      new Task(FROM_HERE, Closure(),
+               TaskTraits().WithPriority(TaskPriority::USER_BLOCKING))));
+  SequenceSortKey sort_key_b = sequence_b->GetSortKey();
+
+  scoped_refptr<Sequence> sequence_c(new Sequence);
+  sequence_c->PushTask(WrapUnique(
+      new Task(FROM_HERE, Closure(),
+               TaskTraits().WithPriority(TaskPriority::USER_BLOCKING))));
+  SequenceSortKey sort_key_c = sequence_c->GetSortKey();
+
+  scoped_refptr<Sequence> sequence_d(new Sequence);
+  sequence_d->PushTask(WrapUnique(
+      new Task(FROM_HERE, Closure(),
+               TaskTraits().WithPriority(TaskPriority::BACKGROUND))));
+  SequenceSortKey sort_key_d = sequence_d->GetSortKey();
+
+  // Create a PriorityQueue and a Transaction.
+  testing::StrictMock<PriorityQueueCallbackMock> mock;
+  PriorityQueue pq(Bind(&PriorityQueueCallbackMock::WakeUp, Unretained(&mock)));
+  std::unique_ptr<PriorityQueue::Transaction> transaction(
+      pq.BeginTransaction());
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
+                                  transaction->Peek());
+
+  // Push |sequence_a| in the PriorityQueue. It becomes the sequence with the
+  // highest priority.
+  transaction->PushNoWakeUp(WrapUnique(
+      new PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a)));
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a),
+      transaction->Peek());
+
+  // Push |sequence_b| in the PriorityQueue. It becomes the sequence with the
+  // highest priority.
+  transaction->PushNoWakeUp(WrapUnique(
+      new PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b)));
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
+      transaction->Peek());
+
+  // Push |sequence_c| in the PriorityQueue. |sequence_b| is still the sequence
+  // with the highest priority.
+  transaction->PushNoWakeUp(WrapUnique(
+      new PriorityQueue::SequenceAndSortKey(sequence_c, sort_key_c)));
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
+      transaction->Peek());
+
+  // Push |sequence_d| in the PriorityQueue. |sequence_b| is still the sequence
+  // with the highest priority.
+  transaction->PushNoWakeUp(WrapUnique(
+      new PriorityQueue::SequenceAndSortKey(sequence_d, sort_key_d)));
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
+      transaction->Peek());
+
+  // Pop |sequence_b| from the PriorityQueue. |sequence_c| becomes the sequence
+  // with the highest priority.
+  transaction->Pop();
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_c, sort_key_c),
+      transaction->Peek());
+
+  // Pop |sequence_c| from the PriorityQueue. |sequence_a| becomes the sequence
+  // with the highest priority.
+  transaction->Pop();
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a),
+      transaction->Peek());
+
+  // Pop |sequence_a| from the PriorityQueue. |sequence_d| becomes the sequence
+  // with the highest priority.
+  transaction->Pop();
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
+      PriorityQueue::SequenceAndSortKey(sequence_d, sort_key_d),
+      transaction->Peek());
+
+  // Pop |sequence_d| from the PriorityQueue. It is now empty.
+  transaction->Pop();
+  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
+                                  transaction->Peek());
+
+  // Expect no call to mock.WakeUp() when the Transaction is destroyed.
+  EXPECT_CALL(mock, WakeUp()).Times(0);
   transaction.reset();
 }
 
