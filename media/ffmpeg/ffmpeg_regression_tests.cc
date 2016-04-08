@@ -157,6 +157,12 @@ FFMPEG_TEST_CASE(Cr532967,
                  "security/532967.webm",
                  PIPELINE_OK,
                  PIPELINE_OK);
+// TODO(tguilbert): update PIPELINE_ERROR_DECODE to
+// AUDIO_RENDERER_ERROR_IMPLICIT_CONFIG_CHANGE once the status is created.
+FFMPEG_TEST_CASE(Cr599625,
+                 "security/599625.mp4",
+                 PIPELINE_OK,
+                 PIPELINE_ERROR_DECODE);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
