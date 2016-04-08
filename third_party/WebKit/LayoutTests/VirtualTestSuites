@@ -247,5 +247,10 @@
     "prefix": "scalefactor200withzoom",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2", "--enable-use-zoom-for-dsf"]
+  },
+  {
+    "prefix": "documentwriteevaluator",
+    "base": "http/tests/preload/document-write",
+    "args": ["--enable-blink-features=DocumentWriteEvaluator"]
   }
 ]
