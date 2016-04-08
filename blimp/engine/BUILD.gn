@@ -61,6 +61,8 @@ source_set("app") {
     "app/blimp_network_delegate.h",
     "app/blimp_permission_manager.cc",
     "app/blimp_permission_manager.h",
+    "app/blimp_system_url_request_context_getter.cc",
+    "app/blimp_system_url_request_context_getter.h",
     "app/blimp_url_request_context_getter.cc",
     "app/blimp_url_request_context_getter.h",
     "app/engine_settings.cc",

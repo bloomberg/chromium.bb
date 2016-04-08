@@ -29,6 +29,8 @@ class ProxyService;
 namespace blimp {
 namespace engine {
 
+// The URLRequestContextGetter for Blimp "user" requests.
+// System request context is handled in a separate class.
 class BlimpURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   // The content of |protocol_handlers| is is swapped into the new instance.

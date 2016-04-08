@@ -97,6 +97,14 @@ BlimpBrowserContext::GetDownloadManagerDelegate() {
   return nullptr;
 }
 
+net::URLRequestContextGetter*
+BlimpBrowserContext::GetSystemRequestContextGetter() {
+  if (!system_context_getter_) {
+    system_context_getter_ = new BlimpSystemURLRequestContextGetter();
+  }
+  return system_context_getter_.get();
+}
+
 net::URLRequestContextGetter* BlimpBrowserContext::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }

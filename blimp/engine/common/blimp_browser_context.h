@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "blimp/engine/app/blimp_system_url_request_context_getter.h"
 #include "blimp/engine/app/blimp_url_request_context_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -60,12 +61,17 @@ class BlimpBrowserContext : public content::BrowserContext {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
 
+  // Provides a URLRequestContextGetter for system requests (e.g. metrics
+  // uploads).
+  net::URLRequestContextGetter* GetSystemRequestContextGetter();
+
  private:
   // Performs initialization of the BlimpBrowserContext while IO is still
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
   std::unique_ptr<BlimpResourceContext> resource_context_;
+  scoped_refptr<BlimpSystemURLRequestContextGetter> system_context_getter_;
   bool ignore_certificate_errors_;
   std::unique_ptr<content::PermissionManager> permission_manager_;
   bool off_the_record_;
