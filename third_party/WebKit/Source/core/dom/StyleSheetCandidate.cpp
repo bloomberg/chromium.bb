@@ -79,11 +79,7 @@ bool StyleSheetCandidate::isEnabledViaScript() const
 
 bool StyleSheetCandidate::isEnabledAndLoading() const
 {
-    if (isHTMLLink())
-        return !toHTMLLinkElement(node()).isDisabled() && toHTMLLinkElement(node()).styleSheetIsLoading();
-
-    StyleSheet* sheet = this->sheet();
-    return sheet && !sheet->disabled() && sheet->isLoading();
+    return isHTMLLink() && !toHTMLLinkElement(node()).isDisabled() && toHTMLLinkElement(node()).styleSheetIsLoading();
 }
 
 bool StyleSheetCandidate::hasPreferrableName() const

@@ -1,5 +1,0 @@
-backgroundColor: PASS
-color: PASS
-backgroundColor: PASS
-color: PASS
-
