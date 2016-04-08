@@ -6,7 +6,6 @@
 
 [
     GarbageCollected,
-    RuntimeEnabled=WebUSB,
 ] partial interface Navigator {
-    readonly attribute USB usb;
+    [OriginTrialEnabled=WebUSB] readonly attribute USB usb;
 };

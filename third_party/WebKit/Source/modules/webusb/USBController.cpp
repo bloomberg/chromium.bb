@@ -15,7 +15,6 @@ USBController::~USBController()
 
 void USBController::provideTo(LocalFrame& frame, WebUSBClient* client)
 {
-    ASSERT(RuntimeEnabledFeatures::webUSBEnabled());
     USBController* controller = new USBController(frame, client);
     Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }

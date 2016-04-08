@@ -1519,6 +1519,10 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
 
+    // Always provided so that availability of the API can be controlled by
+    // OriginTrials::webUSBEnabled().
+    USBController::provideTo(*m_frame, m_client ? m_client->usbClient() : nullptr);
+
     bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
 #if OS(CHROMEOS) || OS(ANDROID)
     enableWebBluetooth = true;
@@ -1533,8 +1537,6 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
         PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
     if (RuntimeEnabledFeatures::permissionsEnabled())
         PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
-    if (RuntimeEnabledFeatures::webUSBEnabled())
-        USBController::provideTo(*m_frame, m_client ? m_client->usbClient() : nullptr);
     if (RuntimeEnabledFeatures::webVREnabled())
         VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
     if (RuntimeEnabledFeatures::wakeLockEnabled())

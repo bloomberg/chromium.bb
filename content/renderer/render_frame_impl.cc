@@ -63,6 +63,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/isolated_world_ids.h"
@@ -4279,6 +4280,9 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
 }
 
 blink::WebUSBClient* RenderFrameImpl::usbClient() {
+  if (!base::FeatureList::IsEnabled(features::kWebUsb))
+    return nullptr;
+
   if (!usb_client_)
     usb_client_.reset(new WebUSBClientImpl(GetServiceRegistry()));
 

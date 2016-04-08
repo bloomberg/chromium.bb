@@ -8,7 +8,7 @@
     Constructor(USBDevice device, octet configurationValue),
     RaisesException=Constructor,
     GarbageCollected,
-    RuntimeEnabled=WebUSB,
+    OriginTrialEnabled=WebUSB,
 ] interface USBConfiguration {
     readonly attribute octet configurationValue;
     readonly attribute DOMString? configurationName;
