@@ -637,6 +637,7 @@ public class NewTabPageView extends FrameLayout
     void getSearchBoxBounds(Rect originalBounds, Rect transformedBounds) {
         int searchBoxX = (int) mSearchBoxView.getX();
         int searchBoxY = (int) mSearchBoxView.getY();
+
         originalBounds.set(
                 searchBoxX + mSearchBoxView.getPaddingLeft(),
                 searchBoxY + mSearchBoxView.getPaddingTop(),
@@ -646,12 +647,7 @@ public class NewTabPageView extends FrameLayout
         transformedBounds.set(originalBounds);
         View view = (View) mSearchBoxView.getParent();
         while (view != null) {
-            if (view instanceof RecyclerView) {
-                transformedBounds.offset(-((RecyclerView) view).computeHorizontalScrollOffset(),
-                        -((RecyclerView) view).computeVerticalScrollOffset());
-            } else {
-                transformedBounds.offset(-view.getScrollX(), -view.getScrollY());
-            }
+            transformedBounds.offset(-view.getScrollX(), -view.getScrollY());
             if (view == this) break;
             transformedBounds.offset((int) view.getX(), (int) view.getY());
             view = (View) view.getParent();
