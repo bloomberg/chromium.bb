@@ -575,8 +575,9 @@ void GlobalHistogramAllocator::ImportHistogramsToStatisticsRecorder() {
   // about 40%.
   Reference record_to_ignore = last_created();
 
-  // There is no lock on this because it's expected to be called only by
-  // the StatisticsRecorder which has its own lock.
+  // There is no lock on this because the iterator is lock-free while still
+  // guaranteed to only return each entry only once. The StatisticsRecorder
+  // has its own lock so the Register operation is safe.
   while (true) {
     std::unique_ptr<HistogramBase> histogram =
         import_iterator_.GetNextWithIgnore(record_to_ignore);

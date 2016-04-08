@@ -283,12 +283,6 @@ void StatisticsRecorder::GetBucketRanges(
 
 // static
 HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
-  if (lock_ == NULL)
-    return NULL;
-  base::AutoLock auto_lock(*lock_);
-  if (histograms_ == NULL)
-    return NULL;
-
   // Import histograms from known persistent storage. Histograms could have
   // been added by other processes and they must be fetched and recognized
   // locally. If the persistent memory segment is not shared between processes,
@@ -296,6 +290,12 @@ HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
   GlobalHistogramAllocator* allocator = GlobalHistogramAllocator::Get();
   if (allocator)
     allocator->ImportHistogramsToStatisticsRecorder();
+
+  if (lock_ == NULL)
+    return NULL;
+  base::AutoLock auto_lock(*lock_);
+  if (histograms_ == NULL)
+    return NULL;
 
   HistogramMap::iterator it = histograms_->find(name);
   if (histograms_->end() == it)
