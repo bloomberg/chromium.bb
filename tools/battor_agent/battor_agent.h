@@ -65,13 +65,13 @@ class BattOrAgent : public BattOrConnection::Listener,
   void OnBytesSent(bool success) override;
   void OnMessageRead(bool success,
                      BattOrMessageType type,
-                     scoped_ptr<std::vector<char>> bytes) override;
+                     std::unique_ptr<std::vector<char>> bytes) override;
 
  protected:
   // The connection that knows how to communicate with the BattOr in terms of
   // protocol primitives. This is protected so that it can be replaced with a
   // fake in testing.
-  scoped_ptr<BattOrConnection> connection_;
+  std::unique_ptr<BattOrConnection> connection_;
 
   // Timeout for when an action isn't completed within the allotted time. This
   // is virtual and protected so that timeouts can be disabled in testing. The
@@ -161,7 +161,7 @@ class BattOrAgent : public BattOrConnection::Listener,
   base::ThreadChecker thread_checker_;
 
   // The BattOr's EEPROM (which is required for calibration).
-  scoped_ptr<BattOrEEPROM> battor_eeprom_;
+  std::unique_ptr<BattOrEEPROM> battor_eeprom_;
 
   // The first frame (required for calibration).
   std::vector<RawBattOrSample> calibration_frame_;

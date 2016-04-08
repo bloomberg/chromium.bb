@@ -5,10 +5,10 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "tools/battor_agent/battor_protocol_types.h"
 
@@ -36,7 +36,7 @@ class BattOrConnection {
     virtual void OnBytesSent(bool success) = 0;
     virtual void OnMessageRead(bool success,
                                BattOrMessageType type,
-                               scoped_ptr<std::vector<char>> bytes) = 0;
+                               std::unique_ptr<std::vector<char>> bytes) = 0;
   };
 
   BattOrConnection(Listener* listener);

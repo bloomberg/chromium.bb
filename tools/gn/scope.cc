@@ -380,8 +380,8 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
   return true;
 }
 
-scoped_ptr<Scope> Scope::MakeClosure() const {
-  scoped_ptr<Scope> result;
+std::unique_ptr<Scope> Scope::MakeClosure() const {
+  std::unique_ptr<Scope> result;
   if (const_containing_) {
     // We reached the top of the mutable scope stack. The result scope just
     // references the const scope (which will never change).

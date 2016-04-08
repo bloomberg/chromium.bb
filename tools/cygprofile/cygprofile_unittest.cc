@@ -70,7 +70,7 @@ TEST(CygprofileTest, ManagerBasic) {
                  base::Unretained(&notify_event)));
 
   std::vector<LogEntry> entries;
-  scoped_ptr<ThreadLog> thread_log(
+  std::unique_ptr<ThreadLog> thread_log(
       new ThreadLog(base::Bind(&FlushEntries, base::Unretained(&entries))));
 
   thread_log->AddEntry(reinterpret_cast<void*>(0x2));

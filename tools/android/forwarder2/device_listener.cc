@@ -4,13 +4,13 @@
 
 #include "tools/android/forwarder2/device_listener.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "tools/android/forwarder2/command.h"
@@ -20,12 +20,12 @@
 namespace forwarder2 {
 
 // static
-scoped_ptr<DeviceListener> DeviceListener::Create(
-    scoped_ptr<Socket> host_socket,
+std::unique_ptr<DeviceListener> DeviceListener::Create(
+    std::unique_ptr<Socket> host_socket,
     int listener_port,
     const ErrorCallback& error_callback) {
-  scoped_ptr<Socket> listener_socket(new Socket());
-  scoped_ptr<DeviceListener> device_listener;
+  std::unique_ptr<Socket> listener_socket(new Socket());
+  std::unique_ptr<DeviceListener> device_listener;
   if (!listener_socket->BindTcp("", listener_port)) {
     LOG(ERROR) << "Device could not bind and listen to local port "
                << listener_port;
@@ -52,15 +52,15 @@ void DeviceListener::Start() {
   AcceptNextClientSoon();
 }
 
-void DeviceListener::SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket) {
+void DeviceListener::SetAdbDataSocket(std::unique_ptr<Socket> adb_data_socket) {
   thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DeviceListener::OnAdbDataSocketReceivedOnInternalThread,
                  base::Unretained(this), base::Passed(&adb_data_socket)));
 }
 
-DeviceListener::DeviceListener(scoped_ptr<Socket> listener_socket,
-                               scoped_ptr<Socket> host_socket,
+DeviceListener::DeviceListener(std::unique_ptr<Socket> listener_socket,
+                               std::unique_ptr<Socket> host_socket,
                                int port,
                                const ErrorCallback& error_callback)
     : self_deleter_helper_(this, error_callback),
@@ -116,7 +116,7 @@ void DeviceListener::AcceptClientOnInternalThread() {
 }
 
 void DeviceListener::OnAdbDataSocketReceivedOnInternalThread(
-    scoped_ptr<Socket> adb_data_socket) {
+    std::unique_ptr<Socket> adb_data_socket) {
   DCHECK(adb_data_socket);
   SendCommand(command::ADB_DATA_SOCKET_SUCCESS, listener_port_,
               host_socket_.get());

@@ -4,6 +4,8 @@
 
 #include "tools/gn/xml_element_writer.h"
 
+#include "base/memory/ptr_util.h"
+
 XmlAttributes::XmlAttributes() {}
 
 XmlAttributes::XmlAttributes(const base::StringPiece& attr_key,
@@ -53,16 +55,16 @@ void XmlElementWriter::Text(const base::StringPiece& content) {
   out_ << content;
 }
 
-scoped_ptr<XmlElementWriter> XmlElementWriter::SubElement(
+std::unique_ptr<XmlElementWriter> XmlElementWriter::SubElement(
     const std::string& tag) {
   return SubElement(tag, XmlAttributes());
 }
 
-scoped_ptr<XmlElementWriter> XmlElementWriter::SubElement(
+std::unique_ptr<XmlElementWriter> XmlElementWriter::SubElement(
     const std::string& tag,
     const XmlAttributes& attributes) {
   StartContent(true);
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new XmlElementWriter(out_, tag, attributes, indent_ + 2));
 }
 

@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 // devguid requires Windows.h be imported first.
+#include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
+
 #include <windows.h>
 #include <setupapi.h>
 #include <winioctl.h>
+
+#include <memory>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 
 namespace extensions {
 

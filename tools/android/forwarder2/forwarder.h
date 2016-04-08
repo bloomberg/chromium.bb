@@ -7,7 +7,8 @@
 
 #include <sys/select.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/threading/thread_checker.h"
 
 namespace forwarder2 {
@@ -18,7 +19,7 @@ class Socket;
 // that this class is not thread-safe.
 class Forwarder {
  public:
-  Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2);
+  Forwarder(std::unique_ptr<Socket> socket1, std::unique_ptr<Socket> socket2);
 
   ~Forwarder();
 
@@ -34,12 +35,12 @@ class Forwarder {
   class BufferedCopier;
 
   base::ThreadChecker thread_checker_;
-  const scoped_ptr<Socket> socket1_;
-  const scoped_ptr<Socket> socket2_;
+  const std::unique_ptr<Socket> socket1_;
+  const std::unique_ptr<Socket> socket2_;
   // Copies data from socket1 to socket2.
-  const scoped_ptr<BufferedCopier> buffer1_;
+  const std::unique_ptr<BufferedCopier> buffer1_;
   // Copies data from socket2 to socket1.
-  const scoped_ptr<BufferedCopier> buffer2_;
+  const std::unique_ptr<BufferedCopier> buffer2_;
 };
 
 }  // namespace forwarder2

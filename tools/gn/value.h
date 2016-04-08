@@ -6,11 +6,12 @@
 #define TOOLS_GN_VALUE_H_
 
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/err.h"
 
 class ParseNode;
@@ -39,7 +40,7 @@ class Value {
   // use-cases for creating values and immediately setting the scope on it. So
   // you can pass a null scope here if you promise to set it before any other
   // code gets it (code will generally assume the scope is not null).
-  Value(const ParseNode* origin, scoped_ptr<Scope> scope);
+  Value(const ParseNode* origin, std::unique_ptr<Scope> scope);
 
   Value(const Value& other);
   ~Value();
@@ -99,7 +100,7 @@ class Value {
     DCHECK(type_ == SCOPE);
     return scope_value_.get();
   }
-  void SetScopeValue(scoped_ptr<Scope> scope);
+  void SetScopeValue(std::unique_ptr<Scope> scope);
 
   // Converts the given value to a string. Returns true if strings should be
   // quoted or the ToString of a string should be the string itself. If the
@@ -124,7 +125,7 @@ class Value {
   bool boolean_value_;
   int64_t int_value_;
   std::vector<Value> list_value_;
-  scoped_ptr<Scope> scope_value_;
+  std::unique_ptr<Scope> scope_value_;
 
   const ParseNode* origin_;
 };

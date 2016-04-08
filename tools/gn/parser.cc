@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/operators.h"
 #include "tools/gn/token.h"
@@ -206,17 +207,18 @@ Parser::~Parser() {
 }
 
 // static
-scoped_ptr<ParseNode> Parser::Parse(const std::vector<Token>& tokens,
-                                    Err* err) {
+std::unique_ptr<ParseNode> Parser::Parse(const std::vector<Token>& tokens,
+                                         Err* err) {
   Parser p(tokens, err);
   return p.ParseFile();
 }
 
 // static
-scoped_ptr<ParseNode> Parser::ParseExpression(const std::vector<Token>& tokens,
-                                              Err* err) {
+std::unique_ptr<ParseNode> Parser::ParseExpression(
+    const std::vector<Token>& tokens,
+    Err* err) {
   Parser p(tokens, err);
-  scoped_ptr<ParseNode> expr = p.ParseExpression();
+  std::unique_ptr<ParseNode> expr = p.ParseExpression();
   if (!p.at_end() && !err->has_error()) {
     *err = Err(p.cur_token(), "Trailing garbage");
     return nullptr;
@@ -225,8 +227,8 @@ scoped_ptr<ParseNode> Parser::ParseExpression(const std::vector<Token>& tokens,
 }
 
 // static
-scoped_ptr<ParseNode> Parser::ParseValue(const std::vector<Token>& tokens,
-                                         Err* err) {
+std::unique_ptr<ParseNode> Parser::ParseValue(const std::vector<Token>& tokens,
+                                              Err* err) {
   for (const Token& token : tokens) {
     switch (token.type()) {
       case Token::INTEGER:
@@ -314,13 +316,13 @@ Token Parser::Consume() {
   return tokens_[cur_++];
 }
 
-scoped_ptr<ParseNode> Parser::ParseExpression() {
+std::unique_ptr<ParseNode> Parser::ParseExpression() {
   return ParseExpression(0);
 }
 
-scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
+std::unique_ptr<ParseNode> Parser::ParseExpression(int precedence) {
   if (at_end())
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
 
   Token token = Consume();
   PrefixFunc prefix = expressions_[token.type()].prefix;
@@ -329,10 +331,10 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
     *err_ = Err(token,
                 std::string("Unexpected token '") + token.value().as_string() +
                     std::string("'"));
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
 
-  scoped_ptr<ParseNode> left = (this->*prefix)(token);
+  std::unique_ptr<ParseNode> left = (this->*prefix)(token);
   if (has_error())
     return left;
 
@@ -344,84 +346,86 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
       *err_ = Err(token,
                   std::string("Unexpected token '") +
                       token.value().as_string() + std::string("'"));
-      return scoped_ptr<ParseNode>();
+      return std::unique_ptr<ParseNode>();
     }
     left = (this->*infix)(std::move(left), token);
     if (has_error())
-      return scoped_ptr<ParseNode>();
+      return std::unique_ptr<ParseNode>();
   }
 
   return left;
 }
 
-scoped_ptr<ParseNode> Parser::Literal(Token token) {
-  return make_scoped_ptr(new LiteralNode(token));
+std::unique_ptr<ParseNode> Parser::Literal(Token token) {
+  return base::WrapUnique(new LiteralNode(token));
 }
 
-scoped_ptr<ParseNode> Parser::Name(Token token) {
-  return IdentifierOrCall(scoped_ptr<ParseNode>(), token);
+std::unique_ptr<ParseNode> Parser::Name(Token token) {
+  return IdentifierOrCall(std::unique_ptr<ParseNode>(), token);
 }
 
-scoped_ptr<ParseNode> Parser::BlockComment(Token token) {
-  scoped_ptr<BlockCommentNode> comment(new BlockCommentNode());
+std::unique_ptr<ParseNode> Parser::BlockComment(Token token) {
+  std::unique_ptr<BlockCommentNode> comment(new BlockCommentNode());
   comment->set_comment(token);
   return std::move(comment);
 }
 
-scoped_ptr<ParseNode> Parser::Group(Token token) {
-  scoped_ptr<ParseNode> expr = ParseExpression();
+std::unique_ptr<ParseNode> Parser::Group(Token token) {
+  std::unique_ptr<ParseNode> expr = ParseExpression();
   if (has_error())
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   Consume(Token::RIGHT_PAREN, "Expected ')'");
   return expr;
 }
 
-scoped_ptr<ParseNode> Parser::Not(Token token) {
-  scoped_ptr<ParseNode> expr = ParseExpression(PRECEDENCE_PREFIX + 1);
+std::unique_ptr<ParseNode> Parser::Not(Token token) {
+  std::unique_ptr<ParseNode> expr = ParseExpression(PRECEDENCE_PREFIX + 1);
   if (has_error())
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   if (!expr) {
     if (!has_error())
       *err_ = Err(token, "Expected right-hand side for '!'.");
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
-  scoped_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
+  std::unique_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
   unary_op->set_op(token);
   unary_op->set_operand(std::move(expr));
   return std::move(unary_op);
 }
 
-scoped_ptr<ParseNode> Parser::List(Token node) {
-  scoped_ptr<ParseNode> list(ParseList(node, Token::RIGHT_BRACKET, true));
+std::unique_ptr<ParseNode> Parser::List(Token node) {
+  std::unique_ptr<ParseNode> list(ParseList(node, Token::RIGHT_BRACKET, true));
   if (!has_error() && !at_end())
     Consume(Token::RIGHT_BRACKET, "Expected ']'");
   return list;
 }
 
-scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
-                                             Token token) {
-  scoped_ptr<ParseNode> right =
+std::unique_ptr<ParseNode> Parser::BinaryOperator(
+    std::unique_ptr<ParseNode> left,
+    Token token) {
+  std::unique_ptr<ParseNode> right =
       ParseExpression(expressions_[token.type()].precedence + 1);
   if (!right) {
     if (!has_error()) {
       *err_ = Err(token, "Expected right-hand side for '" +
                              token.value().as_string() + "'");
     }
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
-  scoped_ptr<BinaryOpNode> binary_op(new BinaryOpNode);
+  std::unique_ptr<BinaryOpNode> binary_op(new BinaryOpNode);
   binary_op->set_op(token);
   binary_op->set_left(std::move(left));
   binary_op->set_right(std::move(right));
   return std::move(binary_op);
 }
 
-scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
-                                               Token token) {
-  scoped_ptr<ListNode> list(new ListNode);
+std::unique_ptr<ParseNode> Parser::IdentifierOrCall(
+    std::unique_ptr<ParseNode> left,
+    Token token) {
+  std::unique_ptr<ListNode> list(new ListNode);
   list->set_begin_token(token);
-  list->set_end(make_scoped_ptr(new EndNode(token)));
-  scoped_ptr<BlockNode> block;
+  list->set_end(base::WrapUnique(new EndNode(token)));
+  std::unique_ptr<BlockNode> block;
   bool has_arg = false;
   if (LookAhead(Token::LEFT_PAREN)) {
     Token start_token = Consume();
@@ -432,22 +436,22 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
     } else {
       list = ParseList(start_token, Token::RIGHT_PAREN, false);
       if (has_error())
-        return scoped_ptr<ParseNode>();
+        return std::unique_ptr<ParseNode>();
       Consume(Token::RIGHT_PAREN, "Expected ')' after call");
     }
     // Optionally with a scope.
     if (LookAhead(Token::LEFT_BRACE)) {
       block = ParseBlock();
       if (has_error())
-        return scoped_ptr<ParseNode>();
+        return std::unique_ptr<ParseNode>();
     }
   }
 
   if (!left && !has_arg) {
     // Not a function call, just a standalone identifier.
-    return scoped_ptr<ParseNode>(new IdentifierNode(token));
+    return std::unique_ptr<ParseNode>(new IdentifierNode(token));
   }
-  scoped_ptr<FunctionCallNode> func_call(new FunctionCallNode);
+  std::unique_ptr<FunctionCallNode> func_call(new FunctionCallNode);
   func_call->set_function(token);
   func_call->set_args(std::move(list));
   if (block)
@@ -455,27 +459,27 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
   return std::move(func_call);
 }
 
-scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
-                                         Token token) {
+std::unique_ptr<ParseNode> Parser::Assignment(std::unique_ptr<ParseNode> left,
+                                              Token token) {
   if (left->AsIdentifier() == nullptr) {
     *err_ = Err(left.get(), "Left-hand side of assignment must be identifier.");
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
-  scoped_ptr<ParseNode> value = ParseExpression(PRECEDENCE_ASSIGNMENT);
+  std::unique_ptr<ParseNode> value = ParseExpression(PRECEDENCE_ASSIGNMENT);
   if (!value) {
     if (!has_error())
       *err_ = Err(token, "Expected right-hand side for assignment.");
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
-  scoped_ptr<BinaryOpNode> assign(new BinaryOpNode);
+  std::unique_ptr<BinaryOpNode> assign(new BinaryOpNode);
   assign->set_op(token);
   assign->set_left(std::move(left));
   assign->set_right(std::move(value));
   return std::move(assign);
 }
 
-scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
-                                        Token token) {
+std::unique_ptr<ParseNode> Parser::Subscript(std::unique_ptr<ParseNode> left,
+                                             Token token) {
   // TODO: Maybe support more complex expressions like a[0][0]. This would
   // require work on the evaluator too.
   if (left->AsIdentifier() == nullptr) {
@@ -483,45 +487,45 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
         "The thing on the left hand side of the [] must be an identifier\n"
         "and not an expression. If you need this, you'll have to assign the\n"
         "value to a temporary before subscripting. Sorry.");
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
-  scoped_ptr<ParseNode> value = ParseExpression();
+  std::unique_ptr<ParseNode> value = ParseExpression();
   Consume(Token::RIGHT_BRACKET, "Expecting ']' after subscript.");
-  scoped_ptr<AccessorNode> accessor(new AccessorNode);
+  std::unique_ptr<AccessorNode> accessor(new AccessorNode);
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_index(std::move(value));
   return std::move(accessor);
 }
 
-scoped_ptr<ParseNode> Parser::DotOperator(scoped_ptr<ParseNode> left,
-                                          Token token) {
+std::unique_ptr<ParseNode> Parser::DotOperator(std::unique_ptr<ParseNode> left,
+                                               Token token) {
   if (left->AsIdentifier() == nullptr) {
     *err_ = Err(left.get(), "May only use \".\" for identifiers.",
         "The thing on the left hand side of the dot must be an identifier\n"
         "and not an expression. If you need this, you'll have to assign the\n"
         "value to a temporary first. Sorry.");
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
 
-  scoped_ptr<ParseNode> right = ParseExpression(PRECEDENCE_DOT);
+  std::unique_ptr<ParseNode> right = ParseExpression(PRECEDENCE_DOT);
   if (!right || !right->AsIdentifier()) {
     *err_ = Err(token, "Expected identifier for right-hand-side of \".\"",
         "Good: a.cookies\nBad: a.42\nLooks good but still bad: a.cookies()");
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
 
-  scoped_ptr<AccessorNode> accessor(new AccessorNode);
+  std::unique_ptr<AccessorNode> accessor(new AccessorNode);
   accessor->set_base(left->AsIdentifier()->value());
-  accessor->set_member(scoped_ptr<IdentifierNode>(
+  accessor->set_member(std::unique_ptr<IdentifierNode>(
       static_cast<IdentifierNode*>(right.release())));
   return std::move(accessor);
 }
 
 // Does not Consume the start or end token.
-scoped_ptr<ListNode> Parser::ParseList(Token start_token,
-                                       Token::Type stop_before,
-                                       bool allow_trailing_comma) {
-  scoped_ptr<ListNode> list(new ListNode);
+std::unique_ptr<ListNode> Parser::ParseList(Token start_token,
+                                            Token::Type stop_before,
+                                            bool allow_trailing_comma) {
+  std::unique_ptr<ListNode> list(new ListNode);
   list->set_begin_token(start_token);
   bool just_got_comma = false;
   bool first_time = true;
@@ -530,7 +534,7 @@ scoped_ptr<ListNode> Parser::ParseList(Token start_token,
       if (!just_got_comma) {
         // Require commas separate things in lists.
         *err_ = Err(cur_token(), "Expected comma between items.");
-        return scoped_ptr<ListNode>();
+        return std::unique_ptr<ListNode>();
       }
     }
     first_time = false;
@@ -540,11 +544,11 @@ scoped_ptr<ListNode> Parser::ParseList(Token start_token,
     // boolean expressions (the lowest of which is OR), but above assignments.
     list->append_item(ParseExpression(PRECEDENCE_OR));
     if (has_error())
-      return scoped_ptr<ListNode>();
+      return std::unique_ptr<ListNode>();
     if (at_end()) {
       *err_ =
           Err(tokens_[tokens_.size() - 1], "Unexpected end of file in list.");
-      return scoped_ptr<ListNode>();
+      return std::unique_ptr<ListNode>();
     }
     if (list->contents().back()->AsBlockComment()) {
       // If there was a comment inside the list, we don't need a comma to the
@@ -556,18 +560,18 @@ scoped_ptr<ListNode> Parser::ParseList(Token start_token,
   }
   if (just_got_comma && !allow_trailing_comma) {
     *err_ = Err(cur_token(), "Trailing comma");
-    return scoped_ptr<ListNode>();
+    return std::unique_ptr<ListNode>();
   }
-  list->set_end(make_scoped_ptr(new EndNode(cur_token())));
+  list->set_end(base::WrapUnique(new EndNode(cur_token())));
   return list;
 }
 
-scoped_ptr<ParseNode> Parser::ParseFile() {
-  scoped_ptr<BlockNode> file(new BlockNode);
+std::unique_ptr<ParseNode> Parser::ParseFile() {
+  std::unique_ptr<BlockNode> file(new BlockNode);
   for (;;) {
     if (at_end())
       break;
-    scoped_ptr<ParseNode> statement = ParseStatement();
+    std::unique_ptr<ParseNode> statement = ParseStatement();
     if (!statement)
       break;
     file->append_statement(std::move(statement));
@@ -575,7 +579,7 @@ scoped_ptr<ParseNode> Parser::ParseFile() {
   if (!at_end() && !has_error())
     *err_ = Err(cur_token(), "Unexpected here, should be newline.");
   if (has_error())
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
 
   // TODO(scottmg): If this is measurably expensive, it could be done only
   // when necessary (when reformatting, or during tests). Comments are
@@ -586,7 +590,7 @@ scoped_ptr<ParseNode> Parser::ParseFile() {
   return std::move(file);
 }
 
-scoped_ptr<ParseNode> Parser::ParseStatement() {
+std::unique_ptr<ParseNode> Parser::ParseStatement() {
   if (LookAhead(Token::IF)) {
     return ParseCondition();
   } else if (LookAhead(Token::BLOCK_COMMENT)) {
@@ -594,7 +598,7 @@ scoped_ptr<ParseNode> Parser::ParseStatement() {
   } else {
     // TODO(scottmg): Is this too strict? Just drop all the testing if we want
     // to allow "pointless" expressions and return ParseExpression() directly.
-    scoped_ptr<ParseNode> stmt = ParseExpression();
+    std::unique_ptr<ParseNode> stmt = ParseExpression();
     if (stmt) {
       if (stmt->AsFunctionCall() || IsAssignment(stmt.get()))
         return stmt;
@@ -603,34 +607,34 @@ scoped_ptr<ParseNode> Parser::ParseStatement() {
       Token token = at_end() ? tokens_[tokens_.size() - 1] : cur_token();
       *err_ = Err(token, "Expecting assignment or function call.");
     }
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   }
 }
 
-scoped_ptr<BlockNode> Parser::ParseBlock() {
+std::unique_ptr<BlockNode> Parser::ParseBlock() {
   Token begin_token =
       Consume(Token::LEFT_BRACE, "Expected '{' to start a block.");
   if (has_error())
-    return scoped_ptr<BlockNode>();
-  scoped_ptr<BlockNode> block(new BlockNode);
+    return std::unique_ptr<BlockNode>();
+  std::unique_ptr<BlockNode> block(new BlockNode);
   block->set_begin_token(begin_token);
 
   for (;;) {
     if (LookAhead(Token::RIGHT_BRACE)) {
-      block->set_end(make_scoped_ptr(new EndNode(Consume())));
+      block->set_end(base::WrapUnique(new EndNode(Consume())));
       break;
     }
 
-    scoped_ptr<ParseNode> statement = ParseStatement();
+    std::unique_ptr<ParseNode> statement = ParseStatement();
     if (!statement)
-      return scoped_ptr<BlockNode>();
+      return std::unique_ptr<BlockNode>();
     block->append_statement(std::move(statement));
   }
   return block;
 }
 
-scoped_ptr<ParseNode> Parser::ParseCondition() {
-  scoped_ptr<ConditionNode> condition(new ConditionNode);
+std::unique_ptr<ParseNode> Parser::ParseCondition() {
+  std::unique_ptr<ConditionNode> condition(new ConditionNode);
   condition->set_if_token(Consume(Token::IF, "Expected 'if'"));
   Consume(Token::LEFT_PAREN, "Expected '(' after 'if'.");
   condition->set_condition(ParseExpression());
@@ -645,11 +649,11 @@ scoped_ptr<ParseNode> Parser::ParseCondition() {
       condition->set_if_false(ParseStatement());
     } else {
       *err_ = Err(cur_token(), "Expected '{' or 'if' after 'else'.");
-      return scoped_ptr<ParseNode>();
+      return std::unique_ptr<ParseNode>();
     }
   }
   if (has_error())
-    return scoped_ptr<ParseNode>();
+    return std::unique_ptr<ParseNode>();
   return std::move(condition);
 }
 

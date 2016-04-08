@@ -431,7 +431,7 @@ TEST(Target, LinkAndDepOutputs) {
 
   Toolchain toolchain(setup.settings(), Label(SourceDir("//tc/"), "tc"));
 
-  scoped_ptr<Tool> solink_tool(new Tool());
+  std::unique_ptr<Tool> solink_tool(new Tool());
   solink_tool->set_output_prefix("lib");
   solink_tool->set_default_output_extension(".so");
 
@@ -470,7 +470,7 @@ TEST(Target, RuntimeLinkOuput) {
 
   Toolchain toolchain(setup.settings(), Label(SourceDir("//tc/"), "tc"));
 
-  scoped_ptr<Tool> solink_tool(new Tool());
+  std::unique_ptr<Tool> solink_tool(new Tool());
   solink_tool->set_output_prefix("");
   solink_tool->set_default_output_extension(".dll");
 

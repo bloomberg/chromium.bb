@@ -20,15 +20,15 @@
 #ifndef TOOLS_CYGPROFILE_CYGPROFILE_H_
 #define TOOLS_CYGPROFILE_CYGPROFILE_H_
 
-#include <vector>
-
 #include <sys/time.h>
 #include <sys/types.h>
+
+#include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
@@ -139,7 +139,7 @@ class ThreadLogsManager {
   ~ThreadLogsManager();
 
   // Can be called from any thread.
-  void AddLog(scoped_ptr<ThreadLog> new_log);
+  void AddLog(std::unique_ptr<ThreadLog> new_log);
 
  private:
   void StartInternalFlushThread_Locked();
@@ -155,7 +155,7 @@ class ThreadLogsManager {
 
   // Protects the state below.
   base::Lock lock_;
-  scoped_ptr<Thread> flush_thread_;
+  std::unique_ptr<Thread> flush_thread_;
   std::vector<ThreadLog*> logs_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadLogsManager);

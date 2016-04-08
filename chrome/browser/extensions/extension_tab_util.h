@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"

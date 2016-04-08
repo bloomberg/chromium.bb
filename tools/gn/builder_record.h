@@ -5,11 +5,11 @@
 #ifndef TOOLS_GN_BUILDER_RECORD_H_
 #define TOOLS_GN_BUILDER_RECORD_H_
 
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/item.h"
 #include "tools/gn/location.h"
 
@@ -55,7 +55,7 @@ class BuilderRecord {
 
   Item* item() { return item_.get(); }
   const Item* item() const { return item_.get(); }
-  void set_item(scoped_ptr<Item> item) { item_ = std::move(item); }
+  void set_item(std::unique_ptr<Item> item) { item_ = std::move(item); }
 
   // Indicates from where this item was originally referenced from that caused
   // it to be loaded. For targets for which we encountered the declaration
@@ -97,7 +97,7 @@ class BuilderRecord {
  private:
   ItemType type_;
   Label label_;
-  scoped_ptr<Item> item_;
+  std::unique_ptr<Item> item_;
   const ParseNode* originally_referenced_from_;
   bool should_generate_;
   bool resolved_;

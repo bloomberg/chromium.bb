@@ -31,8 +31,9 @@ ForwardersManager::~ForwardersManager() {
   deletion_notifier_.Notify();
 }
 
-void ForwardersManager::CreateAndStartNewForwarder(scoped_ptr<Socket> socket1,
-                                                   scoped_ptr<Socket> socket2) {
+void ForwardersManager::CreateAndStartNewForwarder(
+    std::unique_ptr<Socket> socket1,
+    std::unique_ptr<Socket> socket2) {
   // Note that the internal Forwarder vector is populated on the internal thread
   // which is the only thread from which it's accessed.
   thread_.task_runner()->PostTask(
@@ -47,8 +48,8 @@ void ForwardersManager::CreateAndStartNewForwarder(scoped_ptr<Socket> socket1,
 }
 
 void ForwardersManager::CreateNewForwarderOnInternalThread(
-    scoped_ptr<Socket> socket1,
-    scoped_ptr<Socket> socket2) {
+    std::unique_ptr<Socket> socket1,
+    std::unique_ptr<Socket> socket2) {
   DCHECK(thread_.task_runner()->RunsTasksOnCurrentThread());
   forwarders_.push_back(new Forwarder(std::move(socket1), std::move(socket2)));
 }

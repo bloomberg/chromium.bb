@@ -6,12 +6,13 @@
 #define TOOLS_GN_XML_ELEMENT_WRITER_H_
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 
 // Vector of XML attribute key-value pairs.
@@ -58,13 +59,14 @@ class XmlElementWriter {
 
   // Starts new XML sub-element. Caller must ensure that parent element outlives
   // its children.
-  scoped_ptr<XmlElementWriter> SubElement(const std::string& tag);
-  scoped_ptr<XmlElementWriter> SubElement(const std::string& tag,
-                                          const XmlAttributes& attributes);
+  std::unique_ptr<XmlElementWriter> SubElement(const std::string& tag);
+  std::unique_ptr<XmlElementWriter> SubElement(const std::string& tag,
+                                               const XmlAttributes& attributes);
   template <class Writer>
-  scoped_ptr<XmlElementWriter> SubElement(const std::string& tag,
-                                          const std::string& attribute_name,
-                                          const Writer& attribute_value_writer);
+  std::unique_ptr<XmlElementWriter> SubElement(
+      const std::string& tag,
+      const std::string& attribute_name,
+      const Writer& attribute_value_writer);
 
   // Finishes opening tag if it isn't finished yet and optionally starts new
   // document line. Returns the stream where XML element content can be written.
@@ -109,12 +111,12 @@ XmlElementWriter::XmlElementWriter(std::ostream& out,
 }
 
 template <class Writer>
-scoped_ptr<XmlElementWriter> XmlElementWriter::SubElement(
+std::unique_ptr<XmlElementWriter> XmlElementWriter::SubElement(
     const std::string& tag,
     const std::string& attribute_name,
     const Writer& attribute_value_writer) {
   StartContent(true);
-  return make_scoped_ptr(new XmlElementWriter(
+  return base::WrapUnique(new XmlElementWriter(
       out_, tag, attribute_name, attribute_value_writer, indent_ + 2));
 }
 

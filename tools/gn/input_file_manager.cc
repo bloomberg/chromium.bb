@@ -27,7 +27,7 @@ bool DoLoadFile(const LocationRange& origin,
                 const SourceFile& name,
                 InputFile* file,
                 std::vector<Token>* tokens,
-                scoped_ptr<ParseNode>* root,
+                std::unique_ptr<ParseNode>* root,
                 Err* err) {
   // Do all of this stuff outside the lock. We should not give out file
   // pointers until the read is complete.
@@ -226,10 +226,11 @@ const ParseNode* InputFileManager::SyncLoadFile(
   return data->parsed_root.get();
 }
 
-void InputFileManager::AddDynamicInput(const SourceFile& name,
-                                       InputFile** file,
-                                       std::vector<Token>** tokens,
-                                       scoped_ptr<ParseNode>** parse_root) {
+void InputFileManager::AddDynamicInput(
+    const SourceFile& name,
+    InputFile** file,
+    std::vector<Token>** tokens,
+    std::unique_ptr<ParseNode>** parse_root) {
   InputFileData* data = new InputFileData(name);
   {
     base::AutoLock lock(lock_);
@@ -270,7 +271,7 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
                                 InputFile* file,
                                 Err* err) {
   std::vector<Token> tokens;
-  scoped_ptr<ParseNode> root;
+  std::unique_ptr<ParseNode> root;
   bool success = DoLoadFile(origin, build_settings, name, file,
                             &tokens, &root, err);
   // Can't return early. We have to ensure that the completion event is

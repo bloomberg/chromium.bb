@@ -22,7 +22,7 @@ class UtilCCHelper(object):
   def CreateValueFromArray(self, src, optional):
     """Generates code to create a scoped_pt<Value> from the array at src.
 
-    |src| The variable to convert, either a vector or scoped_ptr<vector>.
+    |src| The variable to convert, either a vector or std::unique_ptr<vector>.
     |optional| Whether |type_| was optional. Optional types are pointers so
         must be treated differently.
     """

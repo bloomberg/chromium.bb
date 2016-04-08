@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/common/api/display_source.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 

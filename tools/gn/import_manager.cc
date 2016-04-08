@@ -4,7 +4,8 @@
 
 #include "tools/gn/import_manager.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/stl_util.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
@@ -22,7 +23,7 @@ Scope* UncachedImport(const Settings* settings,
   if (!node)
     return nullptr;
 
-  scoped_ptr<Scope> scope(new Scope(settings->base_config()));
+  std::unique_ptr<Scope> scope(new Scope(settings->base_config()));
   scope->set_source_dir(file.GetDir());
 
   // Don't allow ScopePerFileProvider to provide target-related variables.

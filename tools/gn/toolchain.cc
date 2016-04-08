@@ -91,7 +91,7 @@ const Tool* Toolchain::GetTool(ToolType type) const {
   return tools_[static_cast<size_t>(type)].get();
 }
 
-void Toolchain::SetTool(ToolType type, scoped_ptr<Tool> t) {
+void Toolchain::SetTool(ToolType type, std::unique_ptr<Tool> t) {
   DCHECK(type != TYPE_NONE);
   DCHECK(!tools_[type].get());
   t->SetComplete();

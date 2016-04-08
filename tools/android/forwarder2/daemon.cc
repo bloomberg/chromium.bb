@@ -13,15 +13,16 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -53,7 +54,7 @@ bool RunServerAcceptLoop(const std::string& welcome_message,
                          Daemon::ServerDelegate* server_delegate) {
   bool failed = false;
   for (;;) {
-    scoped_ptr<Socket> client_socket(new Socket());
+    std::unique_ptr<Socket> client_socket(new Socket());
     if (!server_socket->Accept(client_socket.get())) {
       if (server_socket->DidReceiveEvent())
         break;
@@ -97,13 +98,13 @@ void SigChildHandler(int signal_number) {
   SIGNAL_SAFE_LOG(ERROR, string_builder.buffer());
 }
 
-scoped_ptr<Socket> ConnectToUnixDomainSocket(
+std::unique_ptr<Socket> ConnectToUnixDomainSocket(
     const std::string& socket_name,
     int tries_count,
     int idle_time_msec,
     const std::string& expected_welcome_message) {
   for (int i = 0; i < tries_count; ++i) {
-    scoped_ptr<Socket> socket(new Socket());
+    std::unique_ptr<Socket> socket(new Socket());
     if (!socket->ConnectUnix(socket_name)) {
       if (idle_time_msec)
         usleep(idle_time_msec * 1000);
@@ -122,7 +123,7 @@ scoped_ptr<Socket> ConnectToUnixDomainSocket(
     }
     return socket;
   }
-  return scoped_ptr<Socket>();
+  return nullptr;
 }
 
 }  // namespace
@@ -147,7 +148,7 @@ Daemon::~Daemon() {}
 bool Daemon::SpawnIfNeeded() {
   const int kSingleTry = 1;
   const int kNoIdleTime = 0;
-  scoped_ptr<Socket> client_socket = ConnectToUnixDomainSocket(
+  std::unique_ptr<Socket> client_socket = ConnectToUnixDomainSocket(
       identifier_, kSingleTry, kNoIdleTime, identifier_);
   if (!client_socket) {
     switch (fork()) {
@@ -170,7 +171,7 @@ bool Daemon::SpawnIfNeeded() {
         CHECK_EQ(dup(null_fd), STDERR_FILENO);
         Socket command_socket;
         if (!command_socket.BindUnix(identifier_)) {
-          scoped_ptr<Socket> client_socket = ConnectToUnixDomainSocket(
+          std::unique_ptr<Socket> client_socket = ConnectToUnixDomainSocket(
               identifier_, kSingleTry, kNoIdleTime, identifier_);
           if (client_socket.get()) {
             // The daemon was spawned by a concurrent process.

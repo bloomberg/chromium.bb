@@ -5,12 +5,13 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_DEVICE_LISTENER_H_
 #define TOOLS_ANDROID_FORWARDER2_DEVICE_LISTENER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "tools/android/forwarder2/forwarders_manager.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
@@ -45,23 +46,24 @@ class DeviceListener {
   // Callback that is used for self-deletion on error to let the device
   // controller perform some additional cleanup work (e.g. removing the device
   // listener instance from its internal map before deleting it).
-  typedef base::Callback<void (scoped_ptr<DeviceListener>)> ErrorCallback;
+  typedef base::Callback<void(std::unique_ptr<DeviceListener>)> ErrorCallback;
 
-  static scoped_ptr<DeviceListener> Create(scoped_ptr<Socket> host_socket,
-                                           int port,
-                                           const ErrorCallback& error_callback);
+  static std::unique_ptr<DeviceListener> Create(
+      std::unique_ptr<Socket> host_socket,
+      int port,
+      const ErrorCallback& error_callback);
 
   ~DeviceListener();
 
   void Start();
 
-  void SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket);
+  void SetAdbDataSocket(std::unique_ptr<Socket> adb_data_socket);
 
   int listener_port() const { return listener_port_; }
 
  private:
-  DeviceListener(scoped_ptr<Socket> listener_socket,
-                 scoped_ptr<Socket> host_socket,
+  DeviceListener(std::unique_ptr<Socket> listener_socket,
+                 std::unique_ptr<Socket> host_socket,
                  int port,
                  const ErrorCallback& error_callback);
 
@@ -72,7 +74,7 @@ class DeviceListener {
   void AcceptClientOnInternalThread();
 
   void OnAdbDataSocketReceivedOnInternalThread(
-      scoped_ptr<Socket> adb_data_socket);
+      std::unique_ptr<Socket> adb_data_socket);
 
   void OnInternalThreadError();
 
@@ -87,10 +89,10 @@ class DeviceListener {
   PipeNotifier deletion_notifier_;
   // The local device listener socket for accepting connections from the local
   // port (listener_port_).
-  const scoped_ptr<Socket> listener_socket_;
+  const std::unique_ptr<Socket> listener_socket_;
   // The listener socket for sending control commands.
-  const scoped_ptr<Socket> host_socket_;
-  scoped_ptr<Socket> device_data_socket_;
+  const std::unique_ptr<Socket> host_socket_;
+  std::unique_ptr<Socket> device_data_socket_;
   const int listener_port_;
   // Task runner used for deletion set at construction time (i.e. the object is
   // deleted on the same thread it is created on).

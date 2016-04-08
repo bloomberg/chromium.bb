@@ -58,7 +58,7 @@ Builder::Builder(Loader* loader) : loader_(loader) {
 Builder::~Builder() {
 }
 
-void Builder::ItemDefined(scoped_ptr<Item> item) {
+void Builder::ItemDefined(std::unique_ptr<Item> item) {
   ScopedTrace trace(TraceItem::TRACE_DEFINE_TARGET, item->label());
   trace.SetToolchain(item->settings()->toolchain_label());
 

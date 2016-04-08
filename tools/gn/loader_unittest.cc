@@ -40,9 +40,9 @@ class MockInputFileManager {
 
  private:
   struct CannedResult {
-    scoped_ptr<InputFile> input_file;
+    std::unique_ptr<InputFile> input_file;
     std::vector<Token> tokens;
-    scoped_ptr<ParseNode> root;
+    std::unique_ptr<ParseNode> root;
   };
 
   bool AsyncLoadFile(const LocationRange& origin,
@@ -54,7 +54,7 @@ class MockInputFileManager {
     return true;
   }
 
-  typedef std::map<SourceFile, scoped_ptr<CannedResult> > CannedResponseMap;
+  typedef std::map<SourceFile, std::unique_ptr<CannedResult>> CannedResponseMap;
   CannedResponseMap canned_responses_;
 
   std::vector< std::pair<SourceFile, Callback> > pending_;
@@ -68,7 +68,7 @@ LoaderImpl::AsyncLoadFileCallback MockInputFileManager::GetCallback() {
 // Sets a given response for a given source file.
 void MockInputFileManager::AddCannedResponse(const SourceFile& source_file,
                                              const std::string& source) {
-  scoped_ptr<CannedResult> canned(new CannedResult);
+  std::unique_ptr<CannedResult> canned(new CannedResult);
   canned->input_file.reset(new InputFile(source_file));
   canned->input_file->SetContents(source);
 

@@ -33,7 +33,7 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
 
   Loader* loader() const { return loader_; }
 
-  void ItemDefined(scoped_ptr<Item> item);
+  void ItemDefined(std::unique_ptr<Item> item);
 
   // Returns NULL if there is not a thing with the corresponding label.
   const Item* GetItem(const Label& label) const;

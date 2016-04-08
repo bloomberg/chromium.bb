@@ -5,13 +5,13 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_DEVICE_CONTROLLER_H_
 #define TOOLS_ANDROID_FORWARDER2_DEVICE_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "tools/android/forwarder2/socket.h"
 
@@ -28,8 +28,9 @@ class DeviceListener;
 // DeviceListener each).
 class DeviceController {
  public:
-  static scoped_ptr<DeviceController> Create(const std::string& adb_unix_socket,
-                                             int exit_notifier_fd);
+  static std::unique_ptr<DeviceController> Create(
+      const std::string& adb_unix_socket,
+      int exit_notifier_fd);
   ~DeviceController();
 
   void Start();
@@ -38,7 +39,7 @@ class DeviceController {
   typedef base::hash_map<
       int /* port */, linked_ptr<DeviceListener> > ListenersMap;
 
-  DeviceController(scoped_ptr<Socket> host_socket, int exit_notifier_fd);
+  DeviceController(std::unique_ptr<Socket> host_socket, int exit_notifier_fd);
 
   void AcceptHostCommandSoon();
   void AcceptHostCommandInternal();
@@ -47,9 +48,9 @@ class DeviceController {
   // destroyed which is why a weak pointer is used.
   static void DeleteListenerOnError(
       const base::WeakPtr<DeviceController>& device_controller_ptr,
-      scoped_ptr<DeviceListener> device_listener);
+      std::unique_ptr<DeviceListener> device_listener);
 
-  const scoped_ptr<Socket> host_socket_;
+  const std::unique_ptr<Socket> host_socket_;
   // Used to notify the controller to exit.
   const int exit_notifier_fd_;
   // Lets ensure DeviceListener instances are deleted on the thread they were

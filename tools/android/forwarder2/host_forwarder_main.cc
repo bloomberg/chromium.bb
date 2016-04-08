@@ -102,7 +102,7 @@ class HostControllersManager {
                      const std::string& device_serial,
                      int device_port,
                      int host_port,
-                     scoped_ptr<Socket> client_socket) {
+                     std::unique_ptr<Socket> client_socket) {
     // Lazy initialize so that the CLI process doesn't get this thread created.
     InitOnce();
     thread_->task_runner()->PostTask(
@@ -135,7 +135,7 @@ class HostControllersManager {
   // controller manager was destroyed which is why a weak pointer is used.
   static void DeleteHostController(
       const base::WeakPtr<HostControllersManager>& manager_ptr,
-      scoped_ptr<HostController> host_controller) {
+      std::unique_ptr<HostController> host_controller) {
     HostController* const controller = host_controller.release();
     HostControllersManager* const manager = manager_ptr.get();
     if (!manager) {
@@ -156,7 +156,7 @@ class HostControllersManager {
                                      const std::string& device_serial,
                                      int device_port,
                                      int host_port,
-                                     scoped_ptr<Socket> client_socket) {
+                                     std::unique_ptr<Socket> client_socket) {
     const int adb_port = GetAdbPortForDevice(adb_path, device_serial);
     if (adb_port < 0) {
       SendMessage(
@@ -198,11 +198,10 @@ class HostControllersManager {
       }
     }
     // Create a new host controller.
-    scoped_ptr<HostController> host_controller(
-        HostController::Create(
-            device_port, host_port, adb_port, GetExitNotifierFD(),
-            base::Bind(&HostControllersManager::DeleteHostController,
-                       weak_ptr_factory_.GetWeakPtr())));
+    std::unique_ptr<HostController> host_controller(HostController::Create(
+        device_port, host_port, adb_port, GetExitNotifierFD(),
+        base::Bind(&HostControllersManager::DeleteHostController,
+                   weak_ptr_factory_.GetWeakPtr())));
     if (!host_controller.get()) {
       has_failed_ = true;
       SendMessage("ERROR: Connection to device failed.", client_socket.get());
@@ -222,7 +221,7 @@ class HostControllersManager {
                        linked_ptr<HostController>(host_controller.release())));
   }
 
-  void LogExistingControllers(const scoped_ptr<Socket>& client_socket) {
+  void LogExistingControllers(const std::unique_ptr<Socket>& client_socket) {
     SendMessage("ERROR: Existing controllers:", client_socket.get());
     for (const auto& controller : *controllers_) {
       SendMessage(base::StringPrintf("ERROR:   %s", controller.first.c_str()),
@@ -309,10 +308,11 @@ class HostControllersManager {
   }
 
   base::hash_map<std::string, int> device_serial_to_adb_port_map_;
-  scoped_ptr<HostControllerMap> controllers_;
+  std::unique_ptr<HostControllerMap> controllers_;
   bool has_failed_;
-  scoped_ptr<base::AtExitManager> at_exit_manager_;  // Needed by base::Thread.
-  scoped_ptr<base::Thread> thread_;
+  std::unique_ptr<base::AtExitManager>
+      at_exit_manager_;  // Needed by base::Thread.
+  std::unique_ptr<base::Thread> thread_;
   base::WeakPtrFactory<HostControllersManager> weak_ptr_factory_;
 };
 
@@ -334,7 +334,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     signal(SIGINT, KillHandler);
   }
 
-  void OnClientConnected(scoped_ptr<Socket> client_socket) override {
+  void OnClientConnected(std::unique_ptr<Socket> client_socket) override {
     char buf[kBufSize];
     const int bytes_read = client_socket->Read(buf, sizeof(buf));
     if (bytes_read <= 0) {

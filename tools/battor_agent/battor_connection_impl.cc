@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/serial/buffer.h"
 #include "device/serial/serial_io_handler.h"
@@ -119,7 +120,7 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
   data.push_back(BATTOR_CONTROL_BYTE_END);
 
   pending_write_length_ = data.size();
-  io_handler_->Write(make_scoped_ptr(new device::SendBuffer(
+  io_handler_->Write(base::WrapUnique(new device::SendBuffer(
       data, base::Bind(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr()))));
 }
 
@@ -130,7 +131,7 @@ void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
   // Check the left-over bytes from the last read to make sure that we don't
   // already have a full message.
   BattOrMessageType parsed_type;
-  scoped_ptr<vector<char>> bytes(new vector<char>());
+  std::unique_ptr<vector<char>> bytes(new vector<char>());
   bytes->reserve(max_bytes_to_read);
 
   if (ParseMessage(&parsed_type, bytes.get())) {
@@ -161,7 +162,7 @@ void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
   auto on_receive_buffer_filled =
       base::Bind(&BattOrConnectionImpl::OnBytesRead, AsWeakPtr());
 
-  io_handler_->Read(make_scoped_ptr(new device::ReceiveBuffer(
+  io_handler_->Read(base::WrapUnique(new device::ReceiveBuffer(
       pending_read_buffer_, static_cast<uint32_t>(max_bytes_to_read),
       on_receive_buffer_filled)));
 }
@@ -180,7 +181,7 @@ void BattOrConnectionImpl::OnBytesRead(int bytes_read,
                               pending_read_buffer_->data() + bytes_read);
 
   BattOrMessageType type;
-  scoped_ptr<vector<char>> bytes(new vector<char>());
+  std::unique_ptr<vector<char>> bytes(new vector<char>());
   bytes->reserve(GetMaxBytesForMessageType(pending_read_message_type_));
 
   if (!ParseMessage(&type, bytes.get())) {
@@ -199,9 +200,10 @@ void BattOrConnectionImpl::OnBytesRead(int bytes_read,
   EndReadBytes(true, type, std::move(bytes));
 }
 
-void BattOrConnectionImpl::EndReadBytes(bool success,
-                                        BattOrMessageType type,
-                                        scoped_ptr<std::vector<char>> bytes) {
+void BattOrConnectionImpl::EndReadBytes(
+    bool success,
+    BattOrMessageType type,
+    std::unique_ptr<std::vector<char>> bytes) {
   pending_read_buffer_ = nullptr;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

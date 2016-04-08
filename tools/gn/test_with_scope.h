@@ -92,7 +92,7 @@ class TestParseInput {
   InputFile input_file_;
 
   std::vector<Token> tokens_;
-  scoped_ptr<ParseNode> parsed_;
+  std::unique_ptr<ParseNode> parsed_;
 
   Err parse_err_;
 

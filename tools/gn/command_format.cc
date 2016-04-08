@@ -982,7 +982,7 @@ bool FormatStringToString(const std::string& input,
   }
 
   // Parse.
-  scoped_ptr<ParseNode> parse_node = Parser::Parse(tokens, &err);
+  std::unique_ptr<ParseNode> parse_node = Parser::Parse(tokens, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return false;

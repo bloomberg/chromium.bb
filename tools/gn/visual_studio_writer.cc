@@ -6,11 +6,11 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -352,19 +352,20 @@ bool VisualStudioWriter::WriteProjectFileContents(
           .add("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003"));
 
   {
-    scoped_ptr<XmlElementWriter> configurations = project.SubElement(
+    std::unique_ptr<XmlElementWriter> configurations = project.SubElement(
         "ItemGroup", XmlAttributes("Label", "ProjectConfigurations"));
-    scoped_ptr<XmlElementWriter> project_config = configurations->SubElement(
-        "ProjectConfiguration",
-        XmlAttributes("Include", std::string(kConfigurationName) + '|' +
-                                     solution_project.config_platform));
+    std::unique_ptr<XmlElementWriter> project_config =
+        configurations->SubElement(
+            "ProjectConfiguration",
+            XmlAttributes("Include", std::string(kConfigurationName) + '|' +
+                                         solution_project.config_platform));
     project_config->SubElement("Configuration")->Text(kConfigurationName);
     project_config->SubElement("Platform")
         ->Text(solution_project.config_platform);
   }
 
   {
-    scoped_ptr<XmlElementWriter> globals =
+    std::unique_ptr<XmlElementWriter> globals =
         project.SubElement("PropertyGroup", XmlAttributes("Label", "Globals"));
     globals->SubElement("ProjectGuid")->Text(solution_project.guid);
     globals->SubElement("Keyword")->Text("Win32Proj");
@@ -378,7 +379,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
                               "$(VCTargetsPath)\\Microsoft.Cpp.Default.props"));
 
   {
-    scoped_ptr<XmlElementWriter> configuration = project.SubElement(
+    std::unique_ptr<XmlElementWriter> configuration = project.SubElement(
         "PropertyGroup", XmlAttributes("Label", "Configuration"));
     configuration->SubElement("CharacterSet")->Text("Unicode");
     std::string configuration_type = GetConfigurationType(target, err);
@@ -388,7 +389,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
   }
 
   {
-    scoped_ptr<XmlElementWriter> locals =
+    std::unique_ptr<XmlElementWriter> locals =
         project.SubElement("PropertyGroup", XmlAttributes("Label", "Locals"));
     locals->SubElement("PlatformToolset")->Text(toolset_version_);
   }
@@ -404,7 +405,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
                      XmlAttributes("Label", "ExtensionSettings"));
 
   {
-    scoped_ptr<XmlElementWriter> property_sheets = project.SubElement(
+    std::unique_ptr<XmlElementWriter> property_sheets = project.SubElement(
         "ImportGroup", XmlAttributes("Label", "PropertySheets"));
     property_sheets->SubElement(
         "Import",
@@ -419,10 +420,11 @@ bool VisualStudioWriter::WriteProjectFileContents(
   project.SubElement("PropertyGroup", XmlAttributes("Label", "UserMacros"));
 
   {
-    scoped_ptr<XmlElementWriter> properties =
+    std::unique_ptr<XmlElementWriter> properties =
         project.SubElement("PropertyGroup");
     {
-      scoped_ptr<XmlElementWriter> out_dir = properties->SubElement("OutDir");
+      std::unique_ptr<XmlElementWriter> out_dir =
+          properties->SubElement("OutDir");
       path_output.WriteDir(out_dir->StartContent(false),
                            build_settings_->build_dir(),
                            PathOutput::DIR_NO_LAST_SLASH);
@@ -435,13 +437,13 @@ bool VisualStudioWriter::WriteProjectFileContents(
   }
 
   {
-    scoped_ptr<XmlElementWriter> item_definitions =
+    std::unique_ptr<XmlElementWriter> item_definitions =
         project.SubElement("ItemDefinitionGroup");
     {
-      scoped_ptr<XmlElementWriter> cl_compile =
+      std::unique_ptr<XmlElementWriter> cl_compile =
           item_definitions->SubElement("ClCompile");
       {
-        scoped_ptr<XmlElementWriter> include_dirs =
+        std::unique_ptr<XmlElementWriter> include_dirs =
             cl_compile->SubElement("AdditionalIncludeDirectories");
         RecursiveTargetConfigToStream<SourceDir>(
             target, &ConfigValues::include_dirs, IncludeDirWriter(path_output),
@@ -483,7 +485,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
         cl_compile->SubElement("PrecompiledHeader")->Text("NotUsing");
       }
       {
-        scoped_ptr<XmlElementWriter> preprocessor_definitions =
+        std::unique_ptr<XmlElementWriter> preprocessor_definitions =
             cl_compile->SubElement("PreprocessorDefinitions");
         RecursiveTargetConfigToStream<std::string>(
             target, &ConfigValues::defines, SemicolonSeparatedWriter(),
@@ -505,7 +507,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
   }
 
   {
-    scoped_ptr<XmlElementWriter> group = project.SubElement("ItemGroup");
+    std::unique_ptr<XmlElementWriter> group = project.SubElement("ItemGroup");
     if (!target->config_values().precompiled_source().is_null()) {
       group
           ->SubElement(
@@ -537,7 +539,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
   std::string ninja_target = GetNinjaTarget(target);
 
   {
-    scoped_ptr<XmlElementWriter> build =
+    std::unique_ptr<XmlElementWriter> build =
         project.SubElement("Target", XmlAttributes("Name", "Build"));
     build->SubElement(
         "Exec", XmlAttributes("Command",
@@ -545,7 +547,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
   }
 
   {
-    scoped_ptr<XmlElementWriter> clean =
+    std::unique_ptr<XmlElementWriter> clean =
         project.SubElement("Target", XmlAttributes("Name", "Clean"));
     clean->SubElement(
         "Exec",
@@ -567,7 +569,7 @@ void VisualStudioWriter::WriteFiltersFileContents(std::ostream& out,
   std::ostringstream files_out;
 
   {
-    scoped_ptr<XmlElementWriter> filters_group =
+    std::unique_ptr<XmlElementWriter> filters_group =
         project.SubElement("ItemGroup");
     XmlElementWriter files_group(files_out, "ItemGroup", XmlAttributes(), 2);
 
@@ -586,7 +588,7 @@ void VisualStudioWriter::WriteFiltersFileContents(std::ostream& out,
     for (const SourceFile& file : target->sources()) {
       SourceFileType type = GetSourceFileType(file);
       if (type == SOURCE_H || type == SOURCE_CPP || type == SOURCE_C) {
-        scoped_ptr<XmlElementWriter> cl_item = files_group.SubElement(
+        std::unique_ptr<XmlElementWriter> cl_item = files_group.SubElement(
             type == SOURCE_H ? "ClInclude" : "ClCompile", "Include",
             SourceFileWriter(file_path_output, file));
 

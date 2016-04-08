@@ -24,7 +24,7 @@ TEST(ParseTree, Accessor) {
   AccessorNode accessor;
   accessor.set_base(base_token);
 
-  scoped_ptr<IdentifierNode> member_identifier(
+  std::unique_ptr<IdentifierNode> member_identifier(
       new IdentifierNode(member_token));
   accessor.set_member(std::move(member_identifier));
 
@@ -37,7 +37,7 @@ TEST(ParseTree, Accessor) {
   // Define a as a Scope. It should still fail because b isn't defined.
   err = Err();
   setup.scope()->SetValue(
-      "a", Value(nullptr, scoped_ptr<Scope>(new Scope(setup.scope()))),
+      "a", Value(nullptr, std::unique_ptr<Scope>(new Scope(setup.scope()))),
       nullptr);
   result = accessor.Execute(setup.scope(), &err);
   EXPECT_TRUE(err.has_error());

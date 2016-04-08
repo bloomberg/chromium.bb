@@ -295,7 +295,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
   base::Thread ui_thread_;
 
   // The agent capable of asynchronously communicating with the BattOr.
-  scoped_ptr<BattOrAgent> agent_;
+  std::unique_ptr<BattOrAgent> agent_;
 
   std::string trace_output_file_;
 

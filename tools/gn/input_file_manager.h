@@ -82,7 +82,7 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
   void AddDynamicInput(const SourceFile& name,
                        InputFile** file,
                        std::vector<Token>** tokens,
-                       scoped_ptr<ParseNode>** parse_root);
+                       std::unique_ptr<ParseNode>** parse_root);
 
   // Does not count dynamic input.
   int GetInputFileCount() const;
@@ -111,12 +111,12 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
     // Event to signal when the load is complete (or fails). This is lazily
     // created only when a thread is synchronously waiting for this load (which
     // only happens for imports).
-    scoped_ptr<base::WaitableEvent> completion_event;
+    std::unique_ptr<base::WaitableEvent> completion_event;
 
     std::vector<Token> tokens;
 
     // Null before the file is loaded or if loading failed.
-    scoped_ptr<ParseNode> parsed_root;
+    std::unique_ptr<ParseNode> parsed_root;
     Err parse_error;
   };
 

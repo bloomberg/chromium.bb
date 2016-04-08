@@ -5,9 +5,9 @@
 #include "tools/gn/eclipse_writer.h"
 
 #include <fstream>
+#include <memory>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/filesystem_utils.h"
@@ -127,7 +127,7 @@ void EclipseWriter::WriteCDTSettings() {
   {
     const char* kIncludesSectionName =
         "org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths";
-    scoped_ptr<XmlElementWriter> section_element =
+    std::unique_ptr<XmlElementWriter> section_element =
         cdt_properties_element.SubElement(
             "section", XmlAttributes("name", kIncludesSectionName));
 
@@ -135,7 +135,7 @@ void EclipseWriter::WriteCDTSettings() {
         "language", XmlAttributes("name", "holder for library settings"));
 
     for (const std::string& language : languages_) {
-      scoped_ptr<XmlElementWriter> language_element =
+      std::unique_ptr<XmlElementWriter> language_element =
           section_element->SubElement("language",
                                       XmlAttributes("name", language));
       for (const std::string& include_dir : include_dirs_) {
@@ -150,7 +150,7 @@ void EclipseWriter::WriteCDTSettings() {
   {
     const char* kMacrosSectionName =
         "org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros";
-    scoped_ptr<XmlElementWriter> section_element =
+    std::unique_ptr<XmlElementWriter> section_element =
         cdt_properties_element.SubElement(
             "section", XmlAttributes("name", kMacrosSectionName));
 
@@ -158,11 +158,11 @@ void EclipseWriter::WriteCDTSettings() {
         "language", XmlAttributes("name", "holder for library settings"));
 
     for (const std::string& language : languages_) {
-      scoped_ptr<XmlElementWriter> language_element =
+      std::unique_ptr<XmlElementWriter> language_element =
           section_element->SubElement("language",
                                       XmlAttributes("name", language));
       for (const auto& key_val : defines_) {
-        scoped_ptr<XmlElementWriter> macro_element =
+        std::unique_ptr<XmlElementWriter> macro_element =
             language_element->SubElement("macro");
         macro_element->SubElement("name")->Text(EscapeForXML(key_val.first));
         macro_element->SubElement("value")->Text(EscapeForXML(key_val.second));

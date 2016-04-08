@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_DISPLAY_SOURCE_CUSTOM_BINDINGS_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/common/api/display_source.h"
 #include "extensions/renderer/api/display_source/display_source_session.h"
 #include "extensions/renderer/object_backed_native_handler.h"

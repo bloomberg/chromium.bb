@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -17,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace {
 
@@ -31,7 +31,7 @@ bool MD5Sum(const char* path, std::string* digest_string) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   const size_t kBufferSize = 1 << 16;
-  scoped_ptr<char[]> buf(new char[kBufferSize]);
+  std::unique_ptr<char[]> buf(new char[kBufferSize]);
   size_t len;
   while ((len = fread(buf.get(), 1, kBufferSize, file.get())) > 0)
     base::MD5Update(&ctx, base::StringPiece(buf.get(), len));

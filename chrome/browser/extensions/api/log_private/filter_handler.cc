@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 

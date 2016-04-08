@@ -25,7 +25,7 @@ const char kBattOrPathSwitch[] = "battor-path";
 }  // namespace
 
 std::string BattOrFinder::FindBattOr() {
-  scoped_ptr<device::SerialDeviceEnumerator> serial_device_enumerator =
+  std::unique_ptr<device::SerialDeviceEnumerator> serial_device_enumerator =
       device::SerialDeviceEnumerator::Create();
 
   mojo::Array<device::serial::DeviceInfoPtr> devices =

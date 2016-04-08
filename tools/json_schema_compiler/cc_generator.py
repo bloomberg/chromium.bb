@@ -411,15 +411,15 @@ class _Generator(object):
     classname = cpp_util.Classname(schema_util.StripNamespace(type_.name))
     c = Code()
     (c.Append('// static')
-      .Append('scoped_ptr<%s> %s::FromValue(%s) {' % (classname,
+      .Append('std::unique_ptr<%s> %s::FromValue(%s) {' % (classname,
         cpp_namespace, self._GenerateParams(('const base::Value& value',))))
     )
     if self._generate_error_messages:
       c.Append('DCHECK(error);')
-    (c.Append('  scoped_ptr<%s> out(new %s());' % (classname, classname))
+    (c.Append('  std::unique_ptr<%s> out(new %s());' % (classname, classname))
       .Append('  if (!Populate(%s))' % self._GenerateArgs(
           ('value', 'out.get()')))
-      .Append('    return scoped_ptr<%s>();' % classname)
+      .Append('    return nullptr;')
       .Append('  return out;')
       .Append('}')
     )
@@ -441,9 +441,9 @@ class _Generator(object):
     into a base::DictionaryValue.
     """
     c = Code()
-    (c.Sblock('scoped_ptr<base::DictionaryValue> %s::ToValue() const {' %
+    (c.Sblock('std::unique_ptr<base::DictionaryValue> %s::ToValue() const {' %
           cpp_namespace)
-        .Append('scoped_ptr<base::DictionaryValue> value('
+        .Append('std::unique_ptr<base::DictionaryValue> value('
                     'new base::DictionaryValue());')
         .Append()
     )
@@ -500,8 +500,9 @@ class _Generator(object):
     into a base::Value.
     """
     c = Code()
-    c.Sblock('scoped_ptr<base::Value> %s::ToValue() const {' % cpp_namespace)
-    c.Append('scoped_ptr<base::Value> result;')
+    c.Sblock('std::unique_ptr<base::Value> %s::ToValue() const {' %
+                 cpp_namespace)
+    c.Append('std::unique_ptr<base::Value> result;')
     for choice in type_.choices:
       choice_var = 'as_%s' % choice.unix_name
       # Enums cannot be wrapped with scoped_ptr, but the XXX_NONE enum value
@@ -679,7 +680,7 @@ class _Generator(object):
     (c.Concat(self._GenerateError(
         '"expected %%(total)d arguments, got " '
         '+ base::IntToString(%%(var)s.GetSize())'))
-      .Append('return scoped_ptr<Params>();')
+      .Append('return nullptr;')
       .Eblock('}')
       .Substitute({
         'var': var,
@@ -696,13 +697,13 @@ class _Generator(object):
     """
     c = Code()
     (c.Append('// static')
-      .Sblock('scoped_ptr<Params> Params::Create(%s) {' % self._GenerateParams(
-        ['const base::ListValue& args']))
+      .Sblock('std::unique_ptr<Params> Params::Create(%s) {' %
+                  self._GenerateParams(['const base::ListValue& args']))
     )
     if self._generate_error_messages:
       c.Append('DCHECK(error);')
     (c.Concat(self._GenerateParamsCheck(function, 'args'))
-      .Append('scoped_ptr<Params> params(new Params());')
+      .Append('std::unique_ptr<Params> params(new Params());')
     )
 
     for param in function.params:
@@ -713,7 +714,7 @@ class _Generator(object):
       # incorrect or missing, those following it are not processed. Note that
       # for optional arguments, we allow missing arguments and proceed because
       # there may be other arguments following it.
-      failure_value = 'scoped_ptr<Params>()'
+      failure_value = 'std::unique_ptr<Params>()'
       c.Append()
       value_var = param.unix_name + '_value'
       (c.Append('const base::Value* %(value_var)s = NULL;')
@@ -812,7 +813,7 @@ class _Generator(object):
           c.Append('return %(failure_value)s;')
         (c.Eblock('}')
           .Sblock('else {')
-          .Append('scoped_ptr<%(cpp_type)s> temp(new %(cpp_type)s());')
+          .Append('std::unique_ptr<%(cpp_type)s> temp(new %(cpp_type)s());')
           .Append('if (!%%(cpp_type)s::Populate(%s)) {' % self._GenerateArgs(
             ('*dictionary', 'temp.get()')))
           .Append('  return %(failure_value)s;')
@@ -876,7 +877,7 @@ class _Generator(object):
       c.Eblock('}')
     elif underlying_type.property_type == PropertyType.CHOICES:
       if is_ptr:
-        (c.Append('scoped_ptr<%(cpp_type)s> temp(new %(cpp_type)s());')
+        (c.Append('std::unique_ptr<%(cpp_type)s> temp(new %(cpp_type)s());')
           .Append('if (!%%(cpp_type)s::Populate(%s))' % self._GenerateArgs(
             ('*%(src_var)s', 'temp.get()')))
           .Append('  return %(failure_value)s;')
@@ -1085,9 +1086,9 @@ class _Generator(object):
     params = callback.params
     c.Concat(self._GeneratePropertyFunctions(function_scope, params))
 
-    (c.Sblock('scoped_ptr<base::ListValue> %(function_scope)s'
+    (c.Sblock('std::unique_ptr<base::ListValue> %(function_scope)s'
                   'Create(%(declaration_list)s) {')
-      .Append('scoped_ptr<base::ListValue> create_results('
+      .Append('std::unique_ptr<base::ListValue> create_results('
               'new base::ListValue());')
     )
     declaration_list = []

@@ -125,7 +125,7 @@ class CppTypeGenerator(object):
       # Wrap ptrs and base::Values in containers (which aren't movable) in
       # scoped_ptrs.
       if is_ptr or (is_in_container and is_base_value):
-        cpp_type = 'scoped_ptr<%s>' % cpp_util.PadForGenerics(cpp_type)
+        cpp_type = 'std::unique_ptr<%s>' % cpp_util.PadForGenerics(cpp_type)
 
     return cpp_type
 

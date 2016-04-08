@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
@@ -84,7 +84,7 @@ class Image {
     if (byte_length == 0)
       return false;
 
-    scoped_ptr<unsigned char[]> source(new unsigned char[byte_length]);
+    std::unique_ptr<unsigned char[]> source(new unsigned char[byte_length]);
     if (fread(source.get(), 1, byte_length, stdin) != byte_length)
       return false;
 

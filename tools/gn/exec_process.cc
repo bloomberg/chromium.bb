@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -157,7 +158,7 @@ bool ExecProcess(const base::CommandLine& cmdline,
   int out_fd[2], err_fd[2];
   pid_t pid;
   base::InjectiveMultimap fd_shuffle1, fd_shuffle2;
-  scoped_ptr<char*[]> argv_cstr(new char*[argv.size() + 1]);
+  std::unique_ptr<char* []> argv_cstr(new char*[argv.size() + 1]);
 
   fd_shuffle1.reserve(3);
   fd_shuffle2.reserve(3);

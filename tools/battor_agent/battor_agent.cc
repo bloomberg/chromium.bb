@@ -55,15 +55,15 @@ bool IsAckOfControlCommand(BattOrMessageType message_type,
 
 // Attempts to decode the specified vector of bytes decodes to a valid EEPROM.
 // Returns the new EEPROM, or nullptr if unsuccessful.
-scoped_ptr<BattOrEEPROM> ParseEEPROM(BattOrMessageType message_type,
-                                     const vector<char>& msg) {
+std::unique_ptr<BattOrEEPROM> ParseEEPROM(BattOrMessageType message_type,
+                                          const vector<char>& msg) {
   if (message_type != BATTOR_MESSAGE_TYPE_CONTROL_ACK)
     return nullptr;
 
   if (msg.size() != sizeof(BattOrEEPROM))
     return nullptr;
 
-  scoped_ptr<BattOrEEPROM> eeprom(new BattOrEEPROM());
+  std::unique_ptr<BattOrEEPROM> eeprom(new BattOrEEPROM());
   memcpy(eeprom.get(), msg.data(), sizeof(BattOrEEPROM));
   return eeprom;
 }
@@ -244,7 +244,7 @@ void BattOrAgent::OnBytesSent(bool success) {
 
 void BattOrAgent::OnMessageRead(bool success,
                                 BattOrMessageType type,
-                                scoped_ptr<vector<char>> bytes) {
+                                std::unique_ptr<vector<char>> bytes) {
   // Return immediately if whatever action we were trying to perform already
   // timed out.
   if (timeout_callback_.IsCancelled())

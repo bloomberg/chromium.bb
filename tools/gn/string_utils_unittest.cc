@@ -23,7 +23,8 @@ bool CheckExpansionCase(const char* input, const char* expected, bool success) {
   scope.SetValue("onestring", Value(nullptr, "one"), nullptr);
 
   // Nested scope called "onescope" with a value "one" inside it.
-  scoped_ptr<Scope> onescope(new Scope(static_cast<const Settings*>(nullptr)));
+  std::unique_ptr<Scope> onescope(
+      new Scope(static_cast<const Settings*>(nullptr)));
   onescope->SetValue("one", Value(nullptr, one), nullptr);
   scope.SetValue("onescope", Value(nullptr, std::move(onescope)), nullptr);
 

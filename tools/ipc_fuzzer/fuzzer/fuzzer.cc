@@ -785,7 +785,7 @@ struct FuzzTraits<cc::RenderPassList> {
 
     size_t count = RandElementCount();
     for (size_t i = 0; i < count; ++i) {
-      scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+      std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
       if (!FuzzParam(render_pass.get(), fuzzer))
         return false;
       p->push_back(std::move(render_pass));
@@ -928,7 +928,7 @@ struct FuzzTraits<content::SyntheticGesturePacket> {
     if (!fuzzer->ShouldGenerate())
       return true;
 
-    scoped_ptr<content::SyntheticGestureParams> gesture_params;
+    std::unique_ptr<content::SyntheticGestureParams> gesture_params;
     switch (RandInRange(
         content::SyntheticGestureParams::SYNTHETIC_GESTURE_TYPE_MAX + 1)) {
       case content::SyntheticGestureParams::GestureType::

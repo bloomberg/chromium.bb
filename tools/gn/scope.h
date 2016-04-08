@@ -6,13 +6,13 @@
 #define TOOLS_GN_SCOPE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "tools/gn/err.h"
 #include "tools/gn/pattern.h"
@@ -227,7 +227,7 @@ class Scope {
   // be included. The resulting closure will reference the const containing
   // scope as its containing scope (since we assume the const scope won't
   // change, we don't have to copy its values).
-  scoped_ptr<Scope> MakeClosure() const;
+  std::unique_ptr<Scope> MakeClosure() const;
 
   // Makes an empty scope with the given name. Returns NULL if the name is
   // already set.
@@ -239,8 +239,7 @@ class Scope {
 
   // Filter to apply when the sources variable is assigned. May return NULL.
   const PatternList* GetSourcesAssignmentFilter() const;
-  void set_sources_assignment_filter(
-      scoped_ptr<PatternList> f) {
+  void set_sources_assignment_filter(std::unique_ptr<PatternList> f) {
     sources_assignment_filter_ = std::move(f);
   }
 
@@ -342,7 +341,7 @@ class Scope {
 
   // Null indicates not set and that we should fallback to the containing
   // scope's filter.
-  scoped_ptr<PatternList> sources_assignment_filter_;
+  std::unique_ptr<PatternList> sources_assignment_filter_;
 
   // Owning pointers, must be deleted.
   typedef std::map<std::string, scoped_refptr<const Template> > TemplateMap;

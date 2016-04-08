@@ -29,7 +29,7 @@ TEST(IdlCompiler, Basics) {
   MyType1 a;
   a.x = 5;
   a.y = std::string("foo");
-  scoped_ptr<base::DictionaryValue> serialized = a.ToValue();
+  std::unique_ptr<base::DictionaryValue> serialized = a.ToValue();
   MyType1 b;
   EXPECT_TRUE(MyType1::Populate(*serialized.get(), &b));
   EXPECT_EQ(a.x, b.x);
@@ -38,7 +38,8 @@ TEST(IdlCompiler, Basics) {
   // Test Function2, which takes an integer parameter.
   base::ListValue list;
   list.Append(new base::FundamentalValue(5));
-  scoped_ptr<Function2::Params> f2_params = Function2::Params::Create(list);
+  std::unique_ptr<Function2::Params> f2_params =
+      Function2::Params::Create(list);
   EXPECT_EQ(5, f2_params->x);
 
   // Test Function3, which takes a MyType1 parameter.
@@ -51,22 +52,23 @@ TEST(IdlCompiler, Basics) {
   tmp->SetString("b", "bstring");
   tmp->SetString("c", "cstring");
   list.Append(tmp);
-  scoped_ptr<Function3::Params> f3_params = Function3::Params::Create(list);
+  std::unique_ptr<Function3::Params> f3_params =
+      Function3::Params::Create(list);
   EXPECT_EQ(17, f3_params->arg.x);
   EXPECT_EQ("hello", f3_params->arg.y);
 
   // Test functions that take a callback function as a parameter, with varying
   // callback signatures.
-  scoped_ptr<base::ListValue> f4_results = Function4::Results::Create();
+  std::unique_ptr<base::ListValue> f4_results = Function4::Results::Create();
   base::ListValue expected;
   EXPECT_TRUE(f4_results->Equals(&expected));
 
-  scoped_ptr<base::ListValue> f5_results(Function5::Results::Create(13));
+  std::unique_ptr<base::ListValue> f5_results(Function5::Results::Create(13));
   base::Value* f5_result_int = NULL;
   ASSERT_TRUE(f5_results->Get(0, &f5_result_int));
   EXPECT_TRUE(f5_result_int->IsType(base::Value::TYPE_INTEGER));
 
-  scoped_ptr<base::ListValue> f6_results(Function6::Results::Create(a));
+  std::unique_ptr<base::ListValue> f6_results(Function6::Results::Create(a));
   base::Value* f6_result_dict = NULL;
   ASSERT_TRUE(f6_results->Get(0, &f6_result_dict));
   MyType1 c;
@@ -79,7 +81,8 @@ TEST(IdlCompiler, OptionalArguments) {
   // Test a function that takes one optional argument, both without and with
   // that argument.
   base::ListValue list;
-  scoped_ptr<Function7::Params> f7_params = Function7::Params::Create(list);
+  std::unique_ptr<Function7::Params> f7_params =
+      Function7::Params::Create(list);
   EXPECT_EQ(NULL, f7_params->arg.get());
   list.Append(new base::FundamentalValue(7));
   f7_params = Function7::Params::Create(list);
@@ -89,7 +92,8 @@ TEST(IdlCompiler, OptionalArguments) {
   // argument.
   list.Clear();
   list.Append(new base::FundamentalValue(8));
-  scoped_ptr<Function8::Params> f8_params = Function8::Params::Create(list);
+  std::unique_ptr<Function8::Params> f8_params =
+      Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
   EXPECT_EQ(NULL, f8_params->arg2.get());
   list.Append(new base::StringValue("foo"));
@@ -99,7 +103,8 @@ TEST(IdlCompiler, OptionalArguments) {
 
   // Test a function with an optional argument of custom type.
   list.Clear();
-  scoped_ptr<Function9::Params> f9_params = Function9::Params::Create(list);
+  std::unique_ptr<Function9::Params> f9_params =
+      Function9::Params::Create(list);
   EXPECT_EQ(NULL, f9_params->arg.get());
   list.Clear();
   base::DictionaryValue* tmp = new base::DictionaryValue();
@@ -123,7 +128,8 @@ TEST(IdlCompiler, ArrayTypes) {
   base::ListValue list;
   list.Append(new base::FundamentalValue(33));
   list.Append(new base::ListValue);
-  scoped_ptr<Function10::Params> f10_params = Function10::Params::Create(list);
+  std::unique_ptr<Function10::Params> f10_params =
+      Function10::Params::Create(list);
   ASSERT_TRUE(f10_params != NULL);
   EXPECT_EQ(33, f10_params->x);
   EXPECT_TRUE(f10_params->y.empty());
@@ -154,7 +160,8 @@ TEST(IdlCompiler, ArrayTypes) {
   sublist2->Append(a.ToValue().release());
   sublist2->Append(b.ToValue().release());
   list.Append(sublist2);
-  scoped_ptr<Function11::Params> f11_params = Function11::Params::Create(list);
+  std::unique_ptr<Function11::Params> f11_params =
+      Function11::Params::Create(list);
   ASSERT_TRUE(f11_params != NULL);
   ASSERT_EQ(2u, f11_params->arg.size());
   EXPECT_EQ(5, f11_params->arg[0].x);
@@ -167,7 +174,7 @@ TEST(IdlCompiler, ObjectTypes) {
   // Test the FooType type.
   FooType f1;
   f1.x = 3;
-  scoped_ptr<base::DictionaryValue> serialized_foo = f1.ToValue();
+  std::unique_ptr<base::DictionaryValue> serialized_foo = f1.ToValue();
   FooType f2;
   EXPECT_TRUE(FooType::Populate(*serialized_foo.get(), &f2));
   EXPECT_EQ(f1.x, f2.x);
@@ -175,7 +182,7 @@ TEST(IdlCompiler, ObjectTypes) {
   // Test the BarType type.
   BarType b1;
   b1.x.reset(new base::FundamentalValue(7));
-  scoped_ptr<base::DictionaryValue> serialized_bar = b1.ToValue();
+  std::unique_ptr<base::DictionaryValue> serialized_bar = b1.ToValue();
   BarType b2;
   EXPECT_TRUE(BarType::Populate(*serialized_bar.get(), &b2));
   int tmp_int = 0;
@@ -183,15 +190,16 @@ TEST(IdlCompiler, ObjectTypes) {
   EXPECT_EQ(7, tmp_int);
 
   // Test the params to the ObjectFunction1 function.
-  scoped_ptr<base::DictionaryValue> icon_props(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> icon_props(
+      new base::DictionaryValue());
   icon_props->SetString("hello", "world");
   ObjectFunction1::Params::Icon icon;
   EXPECT_TRUE(ObjectFunction1::Params::Icon::Populate(*(icon_props.get()),
                                                       &icon));
   base::ListValue list;
   list.Append(icon_props.release());
-  scoped_ptr<ObjectFunction1::Params> params =
-    ObjectFunction1::Params::Create(list);
+  std::unique_ptr<ObjectFunction1::Params> params =
+      ObjectFunction1::Params::Create(list);
   ASSERT_TRUE(params.get() != NULL);
   std::string tmp;
   EXPECT_TRUE(params->icon.additional_properties.GetString("hello", &tmp));

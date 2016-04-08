@@ -775,7 +775,7 @@ unsigned FindBadConstructsConsumer::DiagnosticForIssue(RefcountIssue issue) {
 // ref-counting classes (base::RefCounted / base::RefCountedThreadSafe),
 // ensure that there are no public destructors in the class hierarchy. This
 // is to guard against accidentally stack-allocating a RefCounted class or
-// sticking it in a non-ref-counted container (like scoped_ptr<>).
+// sticking it in a non-ref-counted container (like std::unique_ptr<>).
 void FindBadConstructsConsumer::CheckRefCountedDtors(
     SourceLocation record_location,
     CXXRecordDecl* record) {

@@ -5,14 +5,15 @@
 #ifndef TOOLS_JSON_SCHEMA_COMPILER_TEST_TEST_UTIL_H_
 #define TOOLS_JSON_SCHEMA_COMPILER_TEST_TEST_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 
 namespace json_schema_compiler {
 namespace test_util {
 
-scoped_ptr<base::Value> ReadJson(const base::StringPiece& json);
+std::unique_ptr<base::Value> ReadJson(const base::StringPiece& json);
 
 template <typename T>
 std::vector<T> Vector(const T& a) {
@@ -33,21 +34,24 @@ std::vector<T> Vector(const T& a, const T& b, const T& c) {
   return arr;
 }
 
-scoped_ptr<base::ListValue> List(base::Value* a);
-scoped_ptr<base::ListValue> List(base::Value* a, base::Value* b);
-scoped_ptr<base::ListValue> List(base::Value* a,
-                                 base::Value* b,
-                                 base::Value* c);
+std::unique_ptr<base::ListValue> List(base::Value* a);
+std::unique_ptr<base::ListValue> List(base::Value* a, base::Value* b);
+std::unique_ptr<base::ListValue> List(base::Value* a,
+                                      base::Value* b,
+                                      base::Value* c);
 
-scoped_ptr<base::DictionaryValue> Dictionary(
-    const std::string& ak, base::Value* av);
-scoped_ptr<base::DictionaryValue> Dictionary(
-    const std::string& ak, base::Value* av,
-    const std::string& bk, base::Value* bv);
-scoped_ptr<base::DictionaryValue> Dictionary(
-    const std::string& ak, base::Value* av,
-    const std::string& bk, base::Value* bv,
-    const std::string& ck, base::Value* cv);
+std::unique_ptr<base::DictionaryValue> Dictionary(const std::string& ak,
+                                                  base::Value* av);
+std::unique_ptr<base::DictionaryValue> Dictionary(const std::string& ak,
+                                                  base::Value* av,
+                                                  const std::string& bk,
+                                                  base::Value* bv);
+std::unique_ptr<base::DictionaryValue> Dictionary(const std::string& ak,
+                                                  base::Value* av,
+                                                  const std::string& bk,
+                                                  base::Value* bv,
+                                                  const std::string& ck,
+                                                  base::Value* cv);
 
 }  // namespace test_util
 }  // namespace json_schema_compiler

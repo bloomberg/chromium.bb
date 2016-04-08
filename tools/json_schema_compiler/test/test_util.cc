@@ -12,55 +12,55 @@
 namespace json_schema_compiler {
 namespace test_util {
 
-scoped_ptr<base::Value> ReadJson(const base::StringPiece& json) {
+std::unique_ptr<base::Value> ReadJson(const base::StringPiece& json) {
   int error_code;
   std::string error_msg;
-  scoped_ptr<base::Value> result(base::JSONReader::ReadAndReturnError(
-      json,
-      base::JSON_ALLOW_TRAILING_COMMAS,
-      &error_code,
-      &error_msg));
+  std::unique_ptr<base::Value> result(base::JSONReader::ReadAndReturnError(
+      json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_msg));
   // CHECK not ASSERT since passing invalid |json| is a test error.
   CHECK(result) << error_msg;
   return result;
 }
 
-scoped_ptr<base::ListValue> List(base::Value* a) {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+std::unique_ptr<base::ListValue> List(base::Value* a) {
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   list->Append(a);
   return list;
 }
-scoped_ptr<base::ListValue> List(base::Value* a, base::Value* b) {
-  scoped_ptr<base::ListValue> list = List(a);
+std::unique_ptr<base::ListValue> List(base::Value* a, base::Value* b) {
+  std::unique_ptr<base::ListValue> list = List(a);
   list->Append(b);
   return list;
 }
-scoped_ptr<base::ListValue> List(base::Value* a,
-                                 base::Value* b,
-                                 base::Value* c) {
-  scoped_ptr<base::ListValue> list = List(a, b);
+std::unique_ptr<base::ListValue> List(base::Value* a,
+                                      base::Value* b,
+                                      base::Value* c) {
+  std::unique_ptr<base::ListValue> list = List(a, b);
   list->Append(c);
   return list;
 }
 
-scoped_ptr<base::DictionaryValue> Dictionary(
-    const std::string& ak, base::Value* av) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> Dictionary(const std::string& ak,
+                                                  base::Value* av) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetWithoutPathExpansion(ak, av);
   return dict;
 }
-scoped_ptr<base::DictionaryValue> Dictionary(
-    const std::string& ak, base::Value* av,
-    const std::string& bk, base::Value* bv) {
-  scoped_ptr<base::DictionaryValue> dict = Dictionary(ak, av);
+std::unique_ptr<base::DictionaryValue> Dictionary(const std::string& ak,
+                                                  base::Value* av,
+                                                  const std::string& bk,
+                                                  base::Value* bv) {
+  std::unique_ptr<base::DictionaryValue> dict = Dictionary(ak, av);
   dict->SetWithoutPathExpansion(bk, bv);
   return dict;
 }
-scoped_ptr<base::DictionaryValue> Dictionary(
-    const std::string& ak, base::Value* av,
-    const std::string& bk, base::Value* bv,
-    const std::string& ck, base::Value* cv) {
-  scoped_ptr<base::DictionaryValue> dict = Dictionary(ak, av, bk, bv);
+std::unique_ptr<base::DictionaryValue> Dictionary(const std::string& ak,
+                                                  base::Value* av,
+                                                  const std::string& bk,
+                                                  base::Value* bv,
+                                                  const std::string& ck,
+                                                  base::Value* cv) {
+  std::unique_ptr<base::DictionaryValue> dict = Dictionary(ak, av, bk, bv);
   dict->SetWithoutPathExpansion(ck, cv);
   return dict;
 }

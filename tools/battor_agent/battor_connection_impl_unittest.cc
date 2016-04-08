@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -48,7 +49,7 @@ class BattOrConnectionImplTest : public testing::Test,
   void OnBytesSent(bool success) override { send_success_ = success; }
   void OnMessageRead(bool success,
                      BattOrMessageType type,
-                     scoped_ptr<std::vector<char>> bytes) override {
+                     std::unique_ptr<std::vector<char>> bytes) override {
     is_read_complete_ = true;
     read_success_ = success;
     read_type_ = type;
@@ -77,8 +78,9 @@ class BattOrConnectionImplTest : public testing::Test,
     scoped_refptr<net::IOBuffer> buffer(
         new net::IOBuffer((size_t)bytes_to_read));
 
-    connection_->GetIoHandler()->Read(make_scoped_ptr(new device::ReceiveBuffer(
-        buffer, bytes_to_read, base::Bind(&NullReadCallback))));
+    connection_->GetIoHandler()->Read(
+        base::WrapUnique(new device::ReceiveBuffer(
+            buffer, bytes_to_read, base::Bind(&NullReadCallback))));
     task_runner_->RunUntilIdle();
 
     return buffer;
@@ -96,7 +98,7 @@ class BattOrConnectionImplTest : public testing::Test,
   // Writes the specified bytes directly to the serial connection.
   void SendBytesRaw(const char* data, uint16_t bytes_to_send) {
     std::vector<char> data_vector(data, data + bytes_to_send);
-    connection_->GetIoHandler()->Write(make_scoped_ptr(
+    connection_->GetIoHandler()->Write(base::WrapUnique(
         new device::SendBuffer(data_vector, base::Bind(&NullWriteCallback))));
     task_runner_->RunUntilIdle();
   }
@@ -109,7 +111,7 @@ class BattOrConnectionImplTest : public testing::Test,
   std::vector<char>* GetReadMessage() { return read_bytes_.get(); }
 
  private:
-  scoped_ptr<TestableBattOrConnection> connection_;
+  std::unique_ptr<TestableBattOrConnection> connection_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
@@ -122,7 +124,7 @@ class BattOrConnectionImplTest : public testing::Test,
   bool is_read_complete_;
   bool read_success_;
   BattOrMessageType read_type_;
-  scoped_ptr<std::vector<char>> read_bytes_;
+  std::unique_ptr<std::vector<char>> read_bytes_;
 };
 
 TEST_F(BattOrConnectionImplTest, InitSendsCorrectBytes) {

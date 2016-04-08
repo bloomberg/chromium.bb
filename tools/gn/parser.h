@@ -8,18 +8,18 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"
 
 class Parser;
-typedef scoped_ptr<ParseNode> (Parser::*PrefixFunc)(Token token);
-typedef scoped_ptr<ParseNode> (Parser::*InfixFunc)(scoped_ptr<ParseNode> left,
-                                                   Token token);
+typedef std::unique_ptr<ParseNode> (Parser::*PrefixFunc)(Token token);
+typedef std::unique_ptr<ParseNode> (
+    Parser::*InfixFunc)(std::unique_ptr<ParseNode> left, Token token);
 
 extern const char kGrammar_Help[];
 
@@ -35,53 +35,58 @@ struct ParserHelper {
 class Parser {
  public:
   // Will return a null pointer and set the err on error.
-  static scoped_ptr<ParseNode> Parse(const std::vector<Token>& tokens,
-                                     Err* err);
+  static std::unique_ptr<ParseNode> Parse(const std::vector<Token>& tokens,
+                                          Err* err);
 
   // Alternative to parsing that assumes the input is an expression.
-  static scoped_ptr<ParseNode> ParseExpression(const std::vector<Token>& tokens,
-                                               Err* err);
+  static std::unique_ptr<ParseNode> ParseExpression(
+      const std::vector<Token>& tokens,
+      Err* err);
 
   // Alternative to parsing that assumes the input is a literal value.
-  static scoped_ptr<ParseNode> ParseValue(const std::vector<Token>& tokens,
-                                          Err* err);
+  static std::unique_ptr<ParseNode> ParseValue(const std::vector<Token>& tokens,
+                                               Err* err);
 
  private:
   // Vector must be valid for lifetime of call.
   Parser(const std::vector<Token>& tokens, Err* err);
   ~Parser();
 
-  scoped_ptr<ParseNode> ParseExpression();
+  std::unique_ptr<ParseNode> ParseExpression();
 
   // Parses an expression with the given precedence or higher.
-  scoped_ptr<ParseNode> ParseExpression(int precedence);
+  std::unique_ptr<ParseNode> ParseExpression(int precedence);
 
   // |PrefixFunc|s used in parsing expressions.
-  scoped_ptr<ParseNode> Literal(Token token);
-  scoped_ptr<ParseNode> Name(Token token);
-  scoped_ptr<ParseNode> Group(Token token);
-  scoped_ptr<ParseNode> Not(Token token);
-  scoped_ptr<ParseNode> List(Token token);
-  scoped_ptr<ParseNode> BlockComment(Token token);
+  std::unique_ptr<ParseNode> Literal(Token token);
+  std::unique_ptr<ParseNode> Name(Token token);
+  std::unique_ptr<ParseNode> Group(Token token);
+  std::unique_ptr<ParseNode> Not(Token token);
+  std::unique_ptr<ParseNode> List(Token token);
+  std::unique_ptr<ParseNode> BlockComment(Token token);
 
   // |InfixFunc|s used in parsing expressions.
-  scoped_ptr<ParseNode> BinaryOperator(scoped_ptr<ParseNode> left, Token token);
-  scoped_ptr<ParseNode> IdentifierOrCall(scoped_ptr<ParseNode> left,
+  std::unique_ptr<ParseNode> BinaryOperator(std::unique_ptr<ParseNode> left,
+                                            Token token);
+  std::unique_ptr<ParseNode> IdentifierOrCall(std::unique_ptr<ParseNode> left,
+                                              Token token);
+  std::unique_ptr<ParseNode> Assignment(std::unique_ptr<ParseNode> left,
+                                        Token token);
+  std::unique_ptr<ParseNode> Subscript(std::unique_ptr<ParseNode> left,
+                                       Token token);
+  std::unique_ptr<ParseNode> DotOperator(std::unique_ptr<ParseNode> left,
                                          Token token);
-  scoped_ptr<ParseNode> Assignment(scoped_ptr<ParseNode> left, Token token);
-  scoped_ptr<ParseNode> Subscript(scoped_ptr<ParseNode> left, Token token);
-  scoped_ptr<ParseNode> DotOperator(scoped_ptr<ParseNode> left, Token token);
 
   // Helper to parse a comma separated list, optionally allowing trailing
   // commas (allowed in [] lists, not in function calls).
-  scoped_ptr<ListNode> ParseList(Token start_token,
-                                 Token::Type stop_before,
-                                 bool allow_trailing_comma);
+  std::unique_ptr<ListNode> ParseList(Token start_token,
+                                      Token::Type stop_before,
+                                      bool allow_trailing_comma);
 
-  scoped_ptr<ParseNode> ParseFile();
-  scoped_ptr<ParseNode> ParseStatement();
-  scoped_ptr<BlockNode> ParseBlock();
-  scoped_ptr<ParseNode> ParseCondition();
+  std::unique_ptr<ParseNode> ParseFile();
+  std::unique_ptr<ParseNode> ParseStatement();
+  std::unique_ptr<BlockNode> ParseBlock();
+  std::unique_ptr<ParseNode> ParseCondition();
 
   // Generates a pre- and post-order traversal of the tree.
   void TraverseOrder(const ParseNode* root,

@@ -56,7 +56,7 @@ Value::Value(const ParseNode* origin, const char* str_val)
       origin_(origin) {
 }
 
-Value::Value(const ParseNode* origin, scoped_ptr<Scope> scope)
+Value::Value(const ParseNode* origin, std::unique_ptr<Scope> scope)
     : type_(SCOPE),
       string_value_(),
       boolean_value_(false),
@@ -111,7 +111,7 @@ const char* Value::DescribeType(Type t) {
   }
 }
 
-void Value::SetScopeValue(scoped_ptr<Scope> scope) {
+void Value::SetScopeValue(std::unique_ptr<Scope> scope) {
   DCHECK(type_ == SCOPE);
   scope_value_ = std::move(scope);
 }

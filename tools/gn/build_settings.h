@@ -6,13 +6,13 @@
 #define TOOLS_GN_BUILD_SETTINGS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/args.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/source_dir.h"
@@ -24,7 +24,7 @@ class Item;
 // may be multiple Settings objects that refer to this, one for each toolchain.
 class BuildSettings {
  public:
-  typedef base::Callback<void(scoped_ptr<Item>)> ItemDefinedCallback;
+  typedef base::Callback<void(std::unique_ptr<Item>)> ItemDefinedCallback;
   typedef base::Callback<void(const std::string&)> PrintCallback;
 
   BuildSettings();
@@ -74,7 +74,7 @@ class BuildSettings {
   base::FilePath GetFullPathSecondary(const SourceDir& dir) const;
 
   // Called when an item is defined from a background thread.
-  void ItemDefined(scoped_ptr<Item> item) const;
+  void ItemDefined(std::unique_ptr<Item> item) const;
   void set_item_defined_callback(ItemDefinedCallback cb) {
     item_defined_callback_ = cb;
   }
@@ -91,7 +91,7 @@ class BuildSettings {
   const std::set<SourceFile>* exec_script_whitelist() const {
     return exec_script_whitelist_.get();
   }
-  void set_exec_script_whitelist(scoped_ptr<std::set<SourceFile>> list) {
+  void set_exec_script_whitelist(std::unique_ptr<std::set<SourceFile>> list) {
     exec_script_whitelist_ = std::move(list);
   }
 
@@ -120,7 +120,7 @@ class BuildSettings {
   ItemDefinedCallback item_defined_callback_;
   PrintCallback print_callback_;
 
-  scoped_ptr<std::set<SourceFile>> exec_script_whitelist_;
+  std::unique_ptr<std::set<SourceFile>> exec_script_whitelist_;
 
   bool check_for_bad_items_;
 

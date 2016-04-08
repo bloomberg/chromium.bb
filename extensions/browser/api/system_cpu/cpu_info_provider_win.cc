@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
 
 namespace extensions {

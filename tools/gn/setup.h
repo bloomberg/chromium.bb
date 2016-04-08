@@ -5,11 +5,11 @@
 #ifndef TOOLS_GN_SETUP_H_
 #define TOOLS_GN_SETUP_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/label_pattern.h"
@@ -135,7 +135,7 @@ class Setup {
   bool check_public_headers_;
 
   // See getter for info.
-  scoped_ptr<std::vector<LabelPattern>> check_patterns_;
+  std::unique_ptr<std::vector<LabelPattern>> check_patterns_;
 
   Scheduler scheduler_;
 
@@ -146,9 +146,9 @@ class Setup {
 
   // State for invoking the dotfile.
   base::FilePath dotfile_name_;
-  scoped_ptr<InputFile> dotfile_input_file_;
+  std::unique_ptr<InputFile> dotfile_input_file_;
   std::vector<Token> dotfile_tokens_;
-  scoped_ptr<ParseNode> dotfile_root_;
+  std::unique_ptr<ParseNode> dotfile_root_;
 
   // Set to true when we should populate the build arguments from the command
   // line or build argument file. See setter above.
@@ -157,9 +157,9 @@ class Setup {
   // State for invoking the command line args. We specifically want to keep
   // this around for the entire run so that Values can blame to the command
   // line when we issue errors about them.
-  scoped_ptr<InputFile> args_input_file_;
+  std::unique_ptr<InputFile> args_input_file_;
   std::vector<Token> args_tokens_;
-  scoped_ptr<ParseNode> args_root_;
+  std::unique_ptr<ParseNode> args_root_;
 
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };

@@ -5,10 +5,10 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_DAEMON_H_
 #define TOOLS_ANDROID_FORWARDER2_DAEMON_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace forwarder2 {
 
@@ -37,7 +37,7 @@ class Daemon {
     // setup signal handlers or perform global initialization.
     virtual void Init() = 0;
 
-    virtual void OnClientConnected(scoped_ptr<Socket> client_socket) = 0;
+    virtual void OnClientConnected(std::unique_ptr<Socket> client_socket) = 0;
   };
 
   // |identifier| should be a unique string identifier. It is used to

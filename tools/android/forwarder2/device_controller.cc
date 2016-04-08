@@ -4,12 +4,12 @@
 
 #include "tools/android/forwarder2/device_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "tools/android/forwarder2/command.h"
@@ -20,11 +20,11 @@
 namespace forwarder2 {
 
 // static
-scoped_ptr<DeviceController> DeviceController::Create(
+std::unique_ptr<DeviceController> DeviceController::Create(
     const std::string& adb_unix_socket,
     int exit_notifier_fd) {
-  scoped_ptr<DeviceController> device_controller;
-  scoped_ptr<Socket> host_socket(new Socket());
+  std::unique_ptr<DeviceController> device_controller;
+  std::unique_ptr<Socket> host_socket(new Socket());
   if (!host_socket->BindUnix(adb_unix_socket)) {
     PLOG(ERROR) << "Could not BindAndListen DeviceController socket on port "
                 << adb_unix_socket << ": ";
@@ -44,7 +44,7 @@ void DeviceController::Start() {
   AcceptHostCommandSoon();
 }
 
-DeviceController::DeviceController(scoped_ptr<Socket> host_socket,
+DeviceController::DeviceController(std::unique_ptr<Socket> host_socket,
                                    int exit_notifier_fd)
     : host_socket_(std::move(host_socket)),
       exit_notifier_fd_(exit_notifier_fd),
@@ -60,7 +60,7 @@ void DeviceController::AcceptHostCommandSoon() {
 }
 
 void DeviceController::AcceptHostCommandInternal() {
-  scoped_ptr<Socket> socket(new Socket);
+  std::unique_ptr<Socket> socket(new Socket);
   if (!host_socket_->Accept(socket.get())) {
     if (!host_socket_->DidReceiveEvent())
       PLOG(ERROR) << "Could not Accept DeviceController socket";
@@ -89,7 +89,7 @@ void DeviceController::AcceptHostCommandInternal() {
                      << ". Attempting to restart the listener.\n";
         DeleteRefCountedValueInMapFromIterator(listener_it, &listeners_);
       }
-      scoped_ptr<DeviceListener> new_listener(DeviceListener::Create(
+      std::unique_ptr<DeviceListener> new_listener(DeviceListener::Create(
           std::move(socket), port,
           base::Bind(&DeviceController::DeleteListenerOnError,
                      weak_ptr_factory_.GetWeakPtr())));
@@ -136,8 +136,8 @@ void DeviceController::AcceptHostCommandInternal() {
 
 // static
 void DeviceController::DeleteListenerOnError(
-      const base::WeakPtr<DeviceController>& device_controller_ptr,
-      scoped_ptr<DeviceListener> device_listener) {
+    const base::WeakPtr<DeviceController>& device_controller_ptr,
+    std::unique_ptr<DeviceListener> device_listener) {
   DeviceListener* const listener = device_listener.release();
   DeviceController* const controller = device_controller_ptr.get();
   if (!controller) {

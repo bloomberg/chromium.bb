@@ -223,7 +223,8 @@ class Forwarder::BufferedCopier {
   DISALLOW_COPY_AND_ASSIGN(BufferedCopier);
 };
 
-Forwarder::Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2)
+Forwarder::Forwarder(std::unique_ptr<Socket> socket1,
+                     std::unique_ptr<Socket> socket2)
     : socket1_(std::move(socket1)),
       socket2_(std::move(socket2)),
       buffer1_(new BufferedCopier(socket1_.get(), socket2_.get())),

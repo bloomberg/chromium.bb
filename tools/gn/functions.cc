@@ -301,7 +301,7 @@ Value RunConfig(const FunctionCallNode* function,
     g_scheduler->Log("Defining config", label.GetUserVisibleName(true));
 
   // Create the new config.
-  scoped_ptr<Config> config(new Config(scope->settings(), label));
+  std::unique_ptr<Config> config(new Config(scope->settings(), label));
   config->set_defined_from(function);
   if (!Visibility::FillItemVisibility(config.get(), scope, err))
     return Value();
@@ -535,7 +535,7 @@ Value RunGetEnv(Scope* scope,
   if (!EnsureSingleStringArg(function, args, err))
     return Value();
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   std::string result;
   if (!env->GetVar(args[0].string_value().c_str(), &result))
@@ -670,7 +670,7 @@ Value RunSetSourcesAssignmentFilter(Scope* scope,
   if (args.size() != 1) {
     *err = Err(function, "set_sources_assignment_filter takes one argument.");
   } else {
-    scoped_ptr<PatternList> f(new PatternList);
+    std::unique_ptr<PatternList> f(new PatternList);
     f->SetFromValue(args[0], err);
     if (!err->has_error())
       scope->set_sources_assignment_filter(std::move(f));

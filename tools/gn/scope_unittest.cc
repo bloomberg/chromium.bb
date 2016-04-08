@@ -217,7 +217,7 @@ TEST(Scope, MakeClosure) {
   nested2.SetValue("on_two", Value(&assignment, "on_two2"), &assignment);
 
   // Making a closure from the root scope.
-  scoped_ptr<Scope> result = setup.scope()->MakeClosure();
+  std::unique_ptr<Scope> result = setup.scope()->MakeClosure();
   EXPECT_FALSE(result->containing());  // Should have no containing scope.
   EXPECT_TRUE(result->GetValue("on_root"));  // Value should be copied.
 

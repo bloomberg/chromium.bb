@@ -18,7 +18,7 @@ Template::Template(const Scope* scope, const FunctionCallNode* def)
       definition_(def) {
 }
 
-Template::Template(scoped_ptr<Scope> scope, const FunctionCallNode* def)
+Template::Template(std::unique_ptr<Scope> scope, const FunctionCallNode* def)
     : closure_(std::move(scope)), definition_(def) {}
 
 Template::~Template() {
@@ -36,7 +36,7 @@ Value Template::Invoke(Scope* scope,
 
   // First run the invocation's block. Need to allocate the scope on the heap
   // so we can pass ownership to the template.
-  scoped_ptr<Scope> invocation_scope(new Scope(scope));
+  std::unique_ptr<Scope> invocation_scope(new Scope(scope));
   if (!FillTargetBlockScope(scope, invocation,
                             invocation->function().value().as_string(),
                             block, args, invocation_scope.get(), err))
@@ -78,7 +78,7 @@ Value Template::Invoke(Scope* scope,
   // if we instead create a value and then set the scope on it, the copy can
   // be avoided.
   const char kInvoker[] = "invoker";
-  template_scope.SetValue(kInvoker, Value(nullptr, scoped_ptr<Scope>()),
+  template_scope.SetValue(kInvoker, Value(nullptr, std::unique_ptr<Scope>()),
                           invocation);
   Value* invoker_value = template_scope.GetMutableValue(kInvoker, false);
   invoker_value->SetScopeValue(std::move(invocation_scope));

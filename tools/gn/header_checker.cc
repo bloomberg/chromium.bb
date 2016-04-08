@@ -55,7 +55,7 @@ LocationRange CreatePersistentRange(const InputFile& input_file,
                                     const LocationRange& range) {
   InputFile* clone_input_file;
   std::vector<Token>* tokens;  // Don't care about this.
-  scoped_ptr<ParseNode>* parse_root;  // Don't care about this.
+  std::unique_ptr<ParseNode>* parse_root;  // Don't care about this.
 
   g_scheduler->input_file_manager()->AddDynamicInput(
       input_file.name(), &clone_input_file, &tokens, &parse_root);

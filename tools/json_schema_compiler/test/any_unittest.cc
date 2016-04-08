@@ -10,47 +10,47 @@ using namespace test::api::any;
 TEST(JsonSchemaCompilerAnyTest, AnyTypePopulate) {
   {
     AnyType any_type;
-    scoped_ptr<base::DictionaryValue> any_type_value(
+    std::unique_ptr<base::DictionaryValue> any_type_value(
         new base::DictionaryValue());
     any_type_value->SetString("any", "value");
     EXPECT_TRUE(AnyType::Populate(*any_type_value, &any_type));
-    scoped_ptr<base::Value> any_type_to_value(any_type.ToValue());
+    std::unique_ptr<base::Value> any_type_to_value(any_type.ToValue());
     EXPECT_TRUE(any_type_value->Equals(any_type_to_value.get()));
   }
   {
     AnyType any_type;
-    scoped_ptr<base::DictionaryValue> any_type_value(
+    std::unique_ptr<base::DictionaryValue> any_type_value(
         new base::DictionaryValue());
     any_type_value->SetInteger("any", 5);
     EXPECT_TRUE(AnyType::Populate(*any_type_value, &any_type));
-    scoped_ptr<base::Value> any_type_to_value(any_type.ToValue());
+    std::unique_ptr<base::Value> any_type_to_value(any_type.ToValue());
     EXPECT_TRUE(any_type_value->Equals(any_type_to_value.get()));
   }
 }
 
 TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
   {
-    scoped_ptr<base::ListValue> params_value(new base::ListValue());
-    scoped_ptr<OptionalAny::Params> params(
+    std::unique_ptr<base::ListValue> params_value(new base::ListValue());
+    std::unique_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
     EXPECT_FALSE(params->any_name.get());
   }
   {
-    scoped_ptr<base::ListValue> params_value(new base::ListValue());
-    scoped_ptr<base::Value> param(new base::StringValue("asdf"));
+    std::unique_ptr<base::ListValue> params_value(new base::ListValue());
+    std::unique_ptr<base::Value> param(new base::StringValue("asdf"));
     params_value->Append(param->DeepCopy());
-    scoped_ptr<OptionalAny::Params> params(
+    std::unique_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     ASSERT_TRUE(params);
     ASSERT_TRUE(params->any_name);
     EXPECT_TRUE(params->any_name->Equals(param.get()));
   }
   {
-    scoped_ptr<base::ListValue> params_value(new base::ListValue());
-    scoped_ptr<base::Value> param(new base::FundamentalValue(true));
+    std::unique_ptr<base::ListValue> params_value(new base::ListValue());
+    std::unique_ptr<base::Value> param(new base::FundamentalValue(true));
     params_value->Append(param->DeepCopy());
-    scoped_ptr<OptionalAny::Params> params(
+    std::unique_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     ASSERT_TRUE(params);
     ASSERT_TRUE(params->any_name);

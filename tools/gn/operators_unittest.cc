@@ -29,9 +29,9 @@ bool IsValueStringEqualing(const Value& v, const char* s) {
 // Returns a list populated with a single literal Value corresponding to the
 // given token. The token must outlive the list (since the list will just
 // copy the reference).
-scoped_ptr<ListNode> ListWithLiteral(const Token& token) {
-  scoped_ptr<ListNode> list(new ListNode);
-  list->append_item(scoped_ptr<ParseNode>(new LiteralNode(token)));
+std::unique_ptr<ListNode> ListWithLiteral(const Token& token) {
+  std::unique_ptr<ListNode> list(new ListNode);
+  list->append_item(std::unique_ptr<ParseNode>(new LiteralNode(token)));
   return list;
 }
 
@@ -53,10 +53,11 @@ TEST(Operators, SourcesAppend) {
 
   // Append to the sources variable.
   Token identifier_token(Location(), Token::IDENTIFIER, sources);
-  node.set_left(scoped_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  node.set_left(
+      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
 
   // Set up the filter on the scope to remove everything ending with "rm"
-  scoped_ptr<PatternList> pattern_list(new PatternList);
+  std::unique_ptr<PatternList> pattern_list(new PatternList);
   pattern_list->Append(Pattern("*rm"));
   setup.scope()->set_sources_assignment_filter(std::move(pattern_list));
 
@@ -83,8 +84,8 @@ TEST(Operators, SourcesAppend) {
 
   // Append a list with the two strings from above.
   ListNode list;
-  list.append_item(scoped_ptr<ParseNode>(new LiteralNode(string_1)));
-  list.append_item(scoped_ptr<ParseNode>(new LiteralNode(string_2)));
+  list.append_item(std::unique_ptr<ParseNode>(new LiteralNode(string_1)));
+  list.append_item(std::unique_ptr<ParseNode>(new LiteralNode(string_2)));
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), &list, &err);
   EXPECT_FALSE(err.has_error());
 
@@ -116,10 +117,11 @@ TEST(Operators, ListAppend) {
 
   // Append to the foo variable.
   Token identifier_token(Location(), Token::IDENTIFIER, foo);
-  node.set_left(scoped_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  node.set_left(
+      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
 
   // Append a list with a list, the result should be a nested list.
-  scoped_ptr<ListNode> outer_list(new ListNode);
+  std::unique_ptr<ListNode> outer_list(new ListNode);
   const char twelve_str[] = "12";
   Token twelve(Location(), Token::INTEGER, twelve_str);
   outer_list->append_item(ListWithLiteral(twelve));
@@ -146,12 +148,12 @@ TEST(Operators, ListAppend) {
   // This should fail.
   const char str_str[] = "\"hi\"";
   Token str(Location(), Token::STRING, str_str);
-  node.set_right(scoped_ptr<ParseNode>(new LiteralNode(str)));
+  node.set_right(std::unique_ptr<ParseNode>(new LiteralNode(str)));
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_TRUE(err.has_error());
   err = Err();
 
-  node.set_right(scoped_ptr<ParseNode>(new LiteralNode(twelve)));
+  node.set_right(std::unique_ptr<ParseNode>(new LiteralNode(twelve)));
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_TRUE(err.has_error());
 }
@@ -169,12 +171,13 @@ TEST(Operators, ShortCircuitAnd) {
   // Set the left to false.
   const char false_str[] = "false";
   Token false_tok(Location(), Token::FALSE_TOKEN, false_str);
-  node.set_left(scoped_ptr<ParseNode>(new LiteralNode(false_tok)));
+  node.set_left(std::unique_ptr<ParseNode>(new LiteralNode(false_tok)));
 
   // Set right as foo, but don't define a value for it.
   const char foo[] = "foo";
   Token identifier_token(Location(), Token::IDENTIFIER, foo);
-  node.set_right(scoped_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  node.set_right(
+      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);
@@ -194,12 +197,13 @@ TEST(Operators, ShortCircuitOr) {
   // Set the left to false.
   const char false_str[] = "true";
   Token false_tok(Location(), Token::TRUE_TOKEN, false_str);
-  node.set_left(scoped_ptr<ParseNode>(new LiteralNode(false_tok)));
+  node.set_left(std::unique_ptr<ParseNode>(new LiteralNode(false_tok)));
 
   // Set right as foo, but don't define a value for it.
   const char foo[] = "foo";
   Token identifier_token(Location(), Token::IDENTIFIER, foo);
-  node.set_right(scoped_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  node.set_right(
+      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);

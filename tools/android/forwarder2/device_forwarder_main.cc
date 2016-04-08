@@ -67,7 +67,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     controller_thread_->Start();
   }
 
-  void OnClientConnected(scoped_ptr<Socket> client_socket) override {
+  void OnClientConnected(std::unique_ptr<Socket> client_socket) override {
     if (initialized_) {
       client_socket->WriteString("OK");
       return;
@@ -80,9 +80,10 @@ class ServerDelegate : public Daemon::ServerDelegate {
   }
 
  private:
-  void StartController(int exit_notifier_fd, scoped_ptr<Socket> client_socket) {
+  void StartController(int exit_notifier_fd,
+                       std::unique_ptr<Socket> client_socket) {
     DCHECK(!controller_.get());
-    scoped_ptr<DeviceController> controller(
+    std::unique_ptr<DeviceController> controller(
         DeviceController::Create(kUnixDomainSocketPath, exit_notifier_fd));
     if (!controller.get()) {
       client_socket->WriteString(
@@ -97,8 +98,8 @@ class ServerDelegate : public Daemon::ServerDelegate {
     client_socket->Close();
   }
 
-  scoped_ptr<DeviceController> controller_;
-  scoped_ptr<base::Thread> controller_thread_;
+  std::unique_ptr<DeviceController> controller_;
+  std::unique_ptr<base::Thread> controller_thread_;
   bool initialized_;
 };
 

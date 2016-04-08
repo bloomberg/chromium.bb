@@ -5,6 +5,7 @@
 #include "tools/gn/loader.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "tools/gn/build_settings.h"
@@ -266,7 +267,7 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
 
   // Pass all of the items that were defined off to the builder.
   for (auto& item : collected_items) {
-    settings->build_settings()->ItemDefined(make_scoped_ptr(item));
+    settings->build_settings()->ItemDefined(base::WrapUnique(item));
     item = nullptr;
   }
 

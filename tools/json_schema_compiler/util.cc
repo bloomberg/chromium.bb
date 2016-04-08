@@ -100,29 +100,29 @@ bool PopulateItem(const base::Value& from,
   return true;
 }
 
-bool PopulateItem(const base::Value& from, scoped_ptr<base::Value>* out) {
-  *out = make_scoped_ptr(from.DeepCopy());
+bool PopulateItem(const base::Value& from, std::unique_ptr<base::Value>* out) {
+  *out = from.CreateDeepCopy();
   return true;
 }
 
 bool PopulateItem(const base::Value& from,
-                  scoped_ptr<base::Value>* out,
+                  std::unique_ptr<base::Value>* out,
                   base::string16* error) {
-  *out = make_scoped_ptr(from.DeepCopy());
+  *out = from.CreateDeepCopy();
   return true;
 }
 
 bool PopulateItem(const base::Value& from,
-                  scoped_ptr<base::DictionaryValue>* out) {
+                  std::unique_ptr<base::DictionaryValue>* out) {
   const base::DictionaryValue* dict = nullptr;
   if (!from.GetAsDictionary(&dict))
     return false;
-  *out = make_scoped_ptr(dict->DeepCopy());
+  *out = dict->CreateDeepCopy();
   return true;
 }
 
 bool PopulateItem(const base::Value& from,
-                  scoped_ptr<base::DictionaryValue>* out,
+                  std::unique_ptr<base::DictionaryValue>* out,
                   base::string16* error) {
   const base::DictionaryValue* dict = nullptr;
   if (!from.GetAsDictionary(&dict)) {
@@ -133,7 +133,7 @@ bool PopulateItem(const base::Value& from,
                                     ValueTypeToString(from.GetType())));
     return false;
   }
-  *out = make_scoped_ptr(dict->DeepCopy());
+  *out = dict->CreateDeepCopy();
   return true;
 }
 
@@ -158,11 +158,12 @@ void AddItemToList(const std::vector<char>& from, base::ListValue* out) {
       base::BinaryValue::CreateWithCopiedBuffer(from.data(), from.size()));
 }
 
-void AddItemToList(const scoped_ptr<base::Value>& from, base::ListValue* out) {
+void AddItemToList(const std::unique_ptr<base::Value>& from,
+                   base::ListValue* out) {
   out->Append(from->DeepCopy());
 }
 
-void AddItemToList(const scoped_ptr<base::DictionaryValue>& from,
+void AddItemToList(const std::unique_ptr<base::DictionaryValue>& from,
                    base::ListValue* out) {
   out->Append(static_cast<base::Value*>(from->DeepCopy()));
 }

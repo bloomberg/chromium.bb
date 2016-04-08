@@ -38,7 +38,7 @@ Value ParseValueOrScope(const Settings* settings,
   // so the origin parse nodes for the values will be preserved.
   InputFile* input_file;
   std::vector<Token>* tokens;
-  scoped_ptr<ParseNode>* parse_root_ptr;
+  std::unique_ptr<ParseNode>* parse_root_ptr;
   g_scheduler->input_file_manager()->AddDynamicInput(
       SourceFile(), &input_file, &tokens, &parse_root_ptr);
 
@@ -74,7 +74,7 @@ Value ParseValueOrScope(const Settings* settings,
   if (!parse_root)
     return Value();
 
-  scoped_ptr<Scope> scope(new Scope(settings));
+  std::unique_ptr<Scope> scope(new Scope(settings));
   Value result = parse_root->Execute(scope.get(), err);
   if (err->has_error())
     return Value();

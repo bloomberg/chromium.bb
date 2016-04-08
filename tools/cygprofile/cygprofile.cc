@@ -24,6 +24,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -266,7 +267,7 @@ ThreadLogsManager::ThreadLogsManager(const base::Closure& wait_callback,
 ThreadLogsManager::~ThreadLogsManager() {
   // Note that the internal thread does some work until it sees |flush_thread_|
   // = NULL.
-  scoped_ptr<Thread> flush_thread;
+  std::unique_ptr<Thread> flush_thread;
   {
     base::AutoLock auto_lock(lock_);
     flush_thread_.swap(flush_thread);
@@ -276,7 +277,7 @@ ThreadLogsManager::~ThreadLogsManager() {
   STLDeleteContainerPointers(logs_.begin(), logs_.end());
 }
 
-void ThreadLogsManager::AddLog(scoped_ptr<ThreadLog> new_log) {
+void ThreadLogsManager::AddLog(std::unique_ptr<ThreadLog> new_log) {
   base::AutoLock auto_lock(lock_);
 
   if (logs_.empty())
@@ -361,7 +362,7 @@ void __cyg_profile_func_enter(void* this_fn, void* callee_unused) {
     g_tls_log = kMagicBeingConstructed;
     ThreadLog* new_log = new ThreadLog();
     CHECK(new_log);
-    g_logs_manager.Pointer()->AddLog(make_scoped_ptr(new_log));
+    g_logs_manager.Pointer()->AddLog(base::WrapUnique(new_log));
     g_tls_log = new_log;
   }
 

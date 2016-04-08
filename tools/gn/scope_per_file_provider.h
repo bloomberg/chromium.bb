@@ -5,8 +5,9 @@
 #ifndef TOOLS_GN_SCOPE_PER_FILE_PROVIDER_H_
 #define TOOLS_GN_SCOPE_PER_FILE_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "tools/gn/scope.h"
 
 // ProgrammaticProvider for a scope to provide it with per-file built-in
@@ -35,14 +36,14 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   bool allow_target_vars_;
 
   // All values are lazily created.
-  scoped_ptr<Value> current_toolchain_;
-  scoped_ptr<Value> default_toolchain_;
-  scoped_ptr<Value> python_path_;
-  scoped_ptr<Value> root_build_dir_;
-  scoped_ptr<Value> root_gen_dir_;
-  scoped_ptr<Value> root_out_dir_;
-  scoped_ptr<Value> target_gen_dir_;
-  scoped_ptr<Value> target_out_dir_;
+  std::unique_ptr<Value> current_toolchain_;
+  std::unique_ptr<Value> default_toolchain_;
+  std::unique_ptr<Value> python_path_;
+  std::unique_ptr<Value> root_build_dir_;
+  std::unique_ptr<Value> root_gen_dir_;
+  std::unique_ptr<Value> root_out_dir_;
+  std::unique_ptr<Value> target_gen_dir_;
+  std::unique_ptr<Value> target_out_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopePerFileProvider);
 };

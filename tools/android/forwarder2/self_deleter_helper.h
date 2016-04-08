@@ -5,13 +5,15 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_SELF_DELETER_HELPER_H_
 #define TOOLS_ANDROID_FORWARDER2_SELF_DELETER_HELPER_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
 
@@ -42,7 +44,7 @@ namespace forwarder2 {
 // Usage example:
 // class Object {
 //  public:
-//   typedef base::Callback<void (scoped_ptr<Object>)> ErrorCallback;
+//   typedef base::Callback<void (std::unique_ptr<Object>)> ErrorCallback;
 //
 //   Object(const ErrorCallback& error_callback)
 //       : self_deleter_helper_(this, error_callback) {
@@ -80,7 +82,7 @@ namespace forwarder2 {
 //   }
 //
 //  private:
-//   void DeleteObjectOnError(scoped_ptr<Object> object) {
+//   void DeleteObjectOnError(std::unique_ptr<Object> object) {
 //     DCHECK(thread_checker_.CalledOnValidThread());
 //     DCHECK_EQ(object_, object);
 //     // Do some extra work with |object| before it gets deleted...
@@ -89,13 +91,13 @@ namespace forwarder2 {
 //   }
 //
 //   base::ThreadChecker thread_checker_;
-//   scoped_ptr<Object> object_;
+//   std::unique_ptr<Object> object_;
 // };
 //
 template <typename T>
 class SelfDeleterHelper {
  public:
-  typedef base::Callback<void (scoped_ptr<T>)> DeletionCallback;
+  typedef base::Callback<void(std::unique_ptr<T>)> DeletionCallback;
 
   SelfDeleterHelper(T* self_deleting_object,
                     const DeletionCallback& deletion_callback)
@@ -119,7 +121,7 @@ class SelfDeleterHelper {
  private:
   void SelfDelete() {
     DCHECK(construction_runner_->RunsTasksOnCurrentThread());
-    deletion_callback_.Run(make_scoped_ptr(self_deleting_object_));
+    deletion_callback_.Run(base::WrapUnique(self_deleting_object_));
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> construction_runner_;

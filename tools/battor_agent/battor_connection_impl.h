@@ -65,7 +65,7 @@ class BattOrConnectionImpl
 
   void EndReadBytes(bool success,
                     BattOrMessageType type,
-                    scoped_ptr<std::vector<char>> data);
+                    std::unique_ptr<std::vector<char>> data);
 
   // Pulls off the next complete message from already_read_buffer_, returning
   // its type and contents (via out parameters) and whether a complete message

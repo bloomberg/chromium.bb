@@ -53,11 +53,11 @@ class _Generator(object):
       .Append('#include <stdint.h>')
       .Append()
       .Append('#include <map>')
+      .Append('#include <memory>')
       .Append('#include <string>')
       .Append('#include <vector>')
       .Append()
       .Append('#include "base/logging.h"')
-      .Append('#include "base/memory/scoped_ptr.h"')
       .Append('#include "base/values.h"')
       .Cblock(self._type_helper.GenerateIncludes(include_soft=include_soft))
       .Append()
@@ -241,7 +241,7 @@ class _Generator(object):
           (c.Append()
             .Comment('Creates a %s object from a base::Value, or NULL on '
                      'failure.' % classname)
-            .Append('static scoped_ptr<%s> FromValue(%s);' % (
+            .Append('static std::unique_ptr<%s> FromValue(%s);' % (
                 classname, self._GenerateParams(('const base::Value& value',))))
           )
       if type_.origin.from_client:
@@ -251,7 +251,7 @@ class _Generator(object):
         (c.Append()
           .Comment('Returns a new %s representing the serialized form of this '
                    '%s object.' % (value_type, classname))
-          .Append('scoped_ptr<%s> ToValue() const;' % value_type)
+          .Append('std::unique_ptr<%s> ToValue() const;' % value_type)
         )
       if type_.property_type == PropertyType.CHOICES:
         # Choices are modelled with optional fields for each choice. Exactly one
@@ -328,8 +328,8 @@ class _Generator(object):
 
     c = Code()
     (c.Sblock('struct Params {')
-      .Append('static scoped_ptr<Params> Create(%s);' % self._GenerateParams(
-          ('const base::ListValue& args',)))
+      .Append('static std::unique_ptr<Params> Create(%s);' %
+                  self._GenerateParams(('const base::ListValue& args',)))
       .Append('~Params();')
       .Append()
       .Cblock(self._GenerateTypes(p.type_ for p in function.params))
@@ -368,7 +368,7 @@ class _Generator(object):
         c.Comment(param.description)
       declaration_list.append(cpp_util.GetParameterDeclaration(
           param, self._type_helper.GetCppType(param.type_)))
-    c.Append('scoped_ptr<base::ListValue> Create(%s);' %
+    c.Append('std::unique_ptr<base::ListValue> Create(%s);' %
              ', '.join(declaration_list))
     return c
 

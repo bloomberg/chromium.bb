@@ -81,7 +81,7 @@ bool AppendInterpolatedExpression(Scope* scope,
   }
 
   // Parse.
-  scoped_ptr<ParseNode> node = Parser::ParseExpression(tokens, err);
+  std::unique_ptr<ParseNode> node = Parser::ParseExpression(tokens, err);
   if (err->has_error()) {
     // Rewrite error as above.
     *err = ErrInsideStringToken(token, begin_offset, end_offset - begin_offset,

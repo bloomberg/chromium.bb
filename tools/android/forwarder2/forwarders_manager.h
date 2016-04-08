@@ -5,7 +5,8 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_FORWARDERS_MANAGER_H_
 #define TOOLS_ANDROID_FORWARDER2_FORWARDERS_MANAGER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
@@ -24,12 +25,12 @@ class ForwardersManager {
   ~ForwardersManager();
 
   // Can be called on any thread.
-  void CreateAndStartNewForwarder(scoped_ptr<Socket> socket1,
-                                  scoped_ptr<Socket> socket2);
+  void CreateAndStartNewForwarder(std::unique_ptr<Socket> socket1,
+                                  std::unique_ptr<Socket> socket2);
 
  private:
-  void CreateNewForwarderOnInternalThread(scoped_ptr<Socket> socket1,
-                                          scoped_ptr<Socket> socket2);
+  void CreateNewForwarderOnInternalThread(std::unique_ptr<Socket> socket1,
+                                          std::unique_ptr<Socket> socket2);
 
   void WaitForEventsOnInternalThreadSoon();
   void WaitForEventsOnInternalThread();

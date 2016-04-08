@@ -34,7 +34,7 @@ TEST(Value, ToString) {
   // Scopes.
   TestWithScope setup;
   Scope* scope = new Scope(setup.scope());
-  Value scopeval(nullptr, scoped_ptr<Scope>(scope));
+  Value scopeval(nullptr, std::unique_ptr<Scope>(scope));
   EXPECT_EQ("{ }", scopeval.ToString(false));
 
   scope->SetValue("a", Value(nullptr, static_cast<int64_t>(42)), nullptr);

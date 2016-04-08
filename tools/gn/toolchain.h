@@ -5,8 +5,9 @@
 #ifndef TOOLS_GN_TOOLCHAIN_H_
 #define TOOLS_GN_TOOLCHAIN_H_
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label_ptr.h"
@@ -81,7 +82,7 @@ class Toolchain : public Item {
 
   // Set a tool. When all tools are configured, you should call
   // ToolchainSetupComplete().
-  void SetTool(ToolType type, scoped_ptr<Tool> t);
+  void SetTool(ToolType type, std::unique_ptr<Tool> t);
 
   // Does final setup on the toolchain once all tools are known.
   void ToolchainSetupComplete();
@@ -117,7 +118,7 @@ class Toolchain : public Item {
   int concurrent_links() const { return concurrent_links_; }
 
  private:
-  scoped_ptr<Tool> tools_[TYPE_NUMTYPES];
+  std::unique_ptr<Tool> tools_[TYPE_NUMTYPES];
 
   // How many links to run in parallel. Only the default toolchain's version of
   // this variable applies.

@@ -26,7 +26,7 @@ void DoParserPrintTest(const char* input, const char* expected) {
   ASSERT_TRUE(GetTokens(&input_file, &tokens));
 
   Err err;
-  scoped_ptr<ParseNode> result = Parser::Parse(tokens, &err);
+  std::unique_ptr<ParseNode> result = Parser::Parse(tokens, &err);
   if (!result)
     err.PrintToStdout();
   ASSERT_TRUE(result);
@@ -44,7 +44,7 @@ void DoExpressionPrintTest(const char* input, const char* expected) {
   ASSERT_TRUE(GetTokens(&input_file, &tokens));
 
   Err err;
-  scoped_ptr<ParseNode> result = Parser::ParseExpression(tokens, &err);
+  std::unique_ptr<ParseNode> result = Parser::ParseExpression(tokens, &err);
   ASSERT_TRUE(result);
 
   std::ostringstream collector;
@@ -62,7 +62,7 @@ void DoParserErrorTest(const char* input, int err_line, int err_char) {
   Err err;
   std::vector<Token> tokens = Tokenizer::Tokenize(&input_file, &err);
   if (!err.has_error()) {
-    scoped_ptr<ParseNode> result = Parser::Parse(tokens, &err);
+    std::unique_ptr<ParseNode> result = Parser::Parse(tokens, &err);
     ASSERT_FALSE(result);
     ASSERT_TRUE(err.has_error());
   }
@@ -80,7 +80,7 @@ void DoExpressionErrorTest(const char* input, int err_line, int err_char) {
   Err err;
   std::vector<Token> tokens = Tokenizer::Tokenize(&input_file, &err);
   if (!err.has_error()) {
-    scoped_ptr<ParseNode> result = Parser::ParseExpression(tokens, &err);
+    std::unique_ptr<ParseNode> result = Parser::ParseExpression(tokens, &err);
     ASSERT_FALSE(result);
     ASSERT_TRUE(err.has_error());
   }

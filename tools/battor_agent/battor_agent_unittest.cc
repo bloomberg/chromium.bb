@@ -26,8 +26,8 @@ const char kClockSyncId[] = "MY_MARKER";
 
 // Creates a byte vector copy of the specified object.
 template <typename T>
-scoped_ptr<std::vector<char>> ToCharVector(const T& object) {
-  return scoped_ptr<std::vector<char>>(new std::vector<char>(
+std::unique_ptr<std::vector<char>> ToCharVector(const T& object) {
+  return std::unique_ptr<std::vector<char>>(new std::vector<char>(
       reinterpret_cast<const char*>(&object),
       reinterpret_cast<const char*>(&object) + sizeof(T)));
 }
@@ -42,10 +42,10 @@ MATCHER_P2(
                 expected_buffer_size) == 0;
 }
 
-scoped_ptr<vector<char>> CreateFrame(const BattOrFrameHeader& frame_header,
-                                     const RawBattOrSample* samples,
-                                     const size_t& num_samples) {
-  scoped_ptr<vector<char>> bytes(new vector<char>(
+std::unique_ptr<vector<char>> CreateFrame(const BattOrFrameHeader& frame_header,
+                                          const RawBattOrSample* samples,
+                                          const size_t& num_samples) {
+  std::unique_ptr<vector<char>> bytes(new vector<char>(
       sizeof(BattOrFrameHeader) + sizeof(RawBattOrSample) * num_samples));
   memcpy(bytes->data(), &frame_header, sizeof(BattOrFrameHeader));
   memcpy(bytes->data() + sizeof(BattOrFrameHeader), samples,
@@ -80,7 +80,8 @@ class TestableBattOrAgent : public BattOrAgent {
  public:
   TestableBattOrAgent(BattOrAgent::Listener* listener)
       : BattOrAgent("/dev/test", listener, nullptr, nullptr) {
-    connection_ = scoped_ptr<BattOrConnection>(new MockBattOrConnection(this));
+    connection_ =
+        std::unique_ptr<BattOrConnection>(new MockBattOrConnection(this));
   }
 
   MockBattOrConnection* GetConnection() {
@@ -122,7 +123,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
 
   void OnMessageRead(bool success,
                      BattOrMessageType type,
-                     scoped_ptr<std::vector<char>> bytes) {
+                     std::unique_ptr<std::vector<char>> bytes) {
     agent_->OnMessageRead(success, type, std::move(bytes));
     task_runner_->RunUntilIdle();
   }
@@ -291,7 +292,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
   // Needed to support ThreadTaskRunnerHandle::Get() in code under test.
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
-  scoped_ptr<TestableBattOrAgent> agent_;
+  std::unique_ptr<TestableBattOrAgent> agent_;
   bool is_command_complete_;
   BattOrError command_error_;
   std::string trace_;
@@ -709,7 +710,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameMissingByte) {
   };
 
   // Remove the last byte from the frame to make it invalid.
-  scoped_ptr<vector<char>> cal_frame_bytes =
+  std::unique_ptr<vector<char>> cal_frame_bytes =
       CreateFrame(cal_frame_header, cal_frame, 2);
   cal_frame_bytes->pop_back();
 
@@ -733,7 +734,8 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
   RawBattOrSample frame[] = {RawBattOrSample{1, 1}};
 
   // Remove the last byte from the frame to make it invalid.
-  scoped_ptr<vector<char>> frame_bytes = CreateFrame(frame_header, frame, 2);
+  std::unique_ptr<vector<char>> frame_bytes =
+      CreateFrame(frame_header, frame, 2);
   frame_bytes->pop_back();
 
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES, std::move(frame_bytes));
