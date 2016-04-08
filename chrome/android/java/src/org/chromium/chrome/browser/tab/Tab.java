@@ -1469,6 +1469,10 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
         mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
 
+        // Reload the NativePage (if any), since the old NativePage has a reference to the old
+        // activity.
+        maybeShowNativePage(getUrl(), true);
+
         reparentingParams.finalizeTabReparenting();
     }
 
@@ -1776,11 +1780,12 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * Shows a native page for url if it's a valid chrome-native URL. Otherwise, does nothing.
      * @param url The url of the current navigation.
-     * @param isReload Whether the current navigation is a reload.
+     * @param forceReload If true, the current native page (if any) will not be reused, even if it
+     *                    matches the URL.
      * @return True, if a native page was displayed for url.
      */
-    boolean maybeShowNativePage(String url, boolean isReload) {
-        NativePage candidateForReuse = isReload ? null : getNativePage();
+    boolean maybeShowNativePage(String url, boolean forceReload) {
+        NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
                 this, getTabModelSelector(), getActivity());
         if (nativePage != null) {
