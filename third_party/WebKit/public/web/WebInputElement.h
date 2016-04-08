@@ -88,9 +88,9 @@ public:
     BLINK_EXPORT void setShouldRevealPassword(bool value);
 
 #if BLINK_IMPLEMENTATION
-    WebInputElement(const RawPtr<HTMLInputElement>&);
-    WebInputElement& operator=(const RawPtr<HTMLInputElement>&);
-    operator RawPtr<HTMLInputElement>() const;
+    WebInputElement(HTMLInputElement*);
+    WebInputElement& operator=(HTMLInputElement*);
+    operator HTMLInputElement*() const;
 #endif
 };
 

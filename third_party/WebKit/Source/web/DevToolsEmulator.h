@@ -21,7 +21,7 @@ class WebViewImpl;
 class DevToolsEmulator final : public GarbageCollectedFinalized<DevToolsEmulator> {
 public:
     ~DevToolsEmulator();
-    static RawPtr<DevToolsEmulator> create(WebViewImpl*);
+    static DevToolsEmulator* create(WebViewImpl*);
     DECLARE_TRACE();
 
     // Settings overrides.

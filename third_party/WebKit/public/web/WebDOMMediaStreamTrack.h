@@ -68,7 +68,7 @@ public:
 
 private:
 #if BLINK_IMPLEMENTATION
-    WebDOMMediaStreamTrack(RawPtr<MediaStreamTrack>);
+    WebDOMMediaStreamTrack(MediaStreamTrack*);
 #endif
 
     WebPrivatePtr<MediaStreamTrack> m_private;

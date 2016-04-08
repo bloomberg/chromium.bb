@@ -128,7 +128,7 @@ private:
 
 class InspectorOverlay::InspectorOverlayChromeClient final : public EmptyChromeClient {
 public:
-    static RawPtr<InspectorOverlayChromeClient> create(ChromeClient& client, InspectorOverlay& overlay)
+    static InspectorOverlayChromeClient* create(ChromeClient& client, InspectorOverlay& overlay)
     {
         return new InspectorOverlayChromeClient(client, overlay);
     }
@@ -414,7 +414,7 @@ void InspectorOverlay::drawNodeHighlight()
         return;
 
     String selectors = m_nodeHighlightConfig.selectorList;
-    RawPtr<StaticElementList> elements = nullptr;
+    StaticElementList* elements = nullptr;
     TrackExceptionState exceptionState;
     ContainerNode* queryBase = m_highlightNode->containingShadowRoot();
     if (!queryBase)
@@ -495,8 +495,8 @@ Page* InspectorOverlay::overlayPage()
     // through some non-composited paint function.
     overlaySettings.setAcceleratedCompositingEnabled(false);
 
-    RawPtr<LocalFrame> frame = LocalFrame::create(&dummyFrameLoaderClient, &m_overlayPage->frameHost(), 0);
-    frame->setView(FrameView::create(frame.get()));
+    LocalFrame* frame = LocalFrame::create(&dummyFrameLoaderClient, &m_overlayPage->frameHost(), 0);
+    frame->setView(FrameView::create(frame));
     frame->init();
     FrameLoader& loader = frame->loader();
     frame->view()->setCanHaveScrollbars(false);
@@ -505,8 +505,8 @@ Page* InspectorOverlay::overlayPage()
     const WebData& overlayPageHTMLResource = Platform::current()->loadResource("InspectorOverlayPage.html");
     RefPtr<SharedBuffer> data = SharedBuffer::create(overlayPageHTMLResource.data(), overlayPageHTMLResource.size());
     loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
-    v8::Isolate* isolate = toIsolate(frame.get());
-    ScriptState* scriptState = ScriptState::forMainWorld(frame.get());
+    v8::Isolate* isolate = toIsolate(frame);
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
     DCHECK(scriptState);
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = scriptState->context()->Global();

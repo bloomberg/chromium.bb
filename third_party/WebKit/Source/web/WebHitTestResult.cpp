@@ -40,8 +40,8 @@ namespace blink {
 
 class WebHitTestResultPrivate : public GarbageCollectedFinalized<WebHitTestResultPrivate> {
 public:
-    static RawPtr<WebHitTestResultPrivate> create(const HitTestResult&);
-    static RawPtr<WebHitTestResultPrivate> create(const WebHitTestResultPrivate&);
+    static WebHitTestResultPrivate* create(const HitTestResult&);
+    static WebHitTestResultPrivate* create(const WebHitTestResultPrivate&);
     DEFINE_INLINE_TRACE() { visitor->trace(m_result); }
     const HitTestResult& result() const { return m_result; }
 
@@ -62,12 +62,12 @@ inline WebHitTestResultPrivate::WebHitTestResultPrivate(const WebHitTestResultPr
 {
 }
 
-RawPtr<WebHitTestResultPrivate> WebHitTestResultPrivate::create(const HitTestResult& result)
+WebHitTestResultPrivate* WebHitTestResultPrivate::create(const HitTestResult& result)
 {
     return new WebHitTestResultPrivate(result);
 }
 
-RawPtr<WebHitTestResultPrivate> WebHitTestResultPrivate::create(const WebHitTestResultPrivate& result)
+WebHitTestResultPrivate* WebHitTestResultPrivate::create(const WebHitTestResultPrivate& result)
 {
     return new WebHitTestResultPrivate(result);
 }

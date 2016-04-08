@@ -51,8 +51,8 @@ WebDOMMessageEvent::WebDOMMessageEvent(const WebSerializedScriptValue& messageDa
         window = sourceFrame->toImplBase()->frame()->domWindow();
     MessagePortArray* ports = nullptr;
     if (!targetDocument.isNull()) {
-        RawPtr<Document> coreDocument = RawPtr<Document>(targetDocument);
-        ports = MessagePort::toMessagePortArray(coreDocument.get(), channels);
+        Document* coreDocument = targetDocument;
+        ports = MessagePort::toMessagePortArray(coreDocument, channels);
     }
     // Use an empty array for |ports| when it is null because this function
     // is used to implement postMessage().

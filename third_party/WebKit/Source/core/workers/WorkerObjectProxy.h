@@ -65,7 +65,7 @@ public:
 
     // WorkerReportingProxy overrides.
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
-    void reportConsoleMessage(RawPtr<ConsoleMessage>) override;
+    void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override;
     void didEvaluateWorkerScript(bool success) override { }

@@ -35,7 +35,7 @@
 
 namespace blink {
 
-WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(RawPtr<MediaStreamTrack> track)
+WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(MediaStreamTrack* track)
     : m_private(track)
 {
 }

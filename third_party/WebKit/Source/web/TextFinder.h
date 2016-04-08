@@ -55,7 +55,7 @@ template <typename T> class WebVector;
 class WEB_EXPORT TextFinder final : public GarbageCollectedFinalized<TextFinder> {
     WTF_MAKE_NONCOPYABLE(TextFinder);
 public:
-    static RawPtr<TextFinder> create(WebLocalFrameImpl& ownerFrame);
+    static TextFinder* create(WebLocalFrameImpl& ownerFrame);
 
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
@@ -94,7 +94,7 @@ public:
     class FindMatch {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        FindMatch(RawPtr<Range>, int ordinal);
+        FindMatch(Range*, int ordinal);
 
         DECLARE_TRACE();
 

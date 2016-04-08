@@ -65,7 +65,7 @@ class WEB_EXPORT WebPluginContainerImpl final : public PluginView, WTF_NON_EXPOR
     USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
     USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);
 public:
-    static RawPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
+    static WebPluginContainerImpl* create(HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
         return new WebPluginContainerImpl(element, webPlugin);
     }

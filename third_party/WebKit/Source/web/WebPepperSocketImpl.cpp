@@ -53,8 +53,8 @@ WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document, WebPepperS
     , m_bufferedAmount(0)
     , m_bufferedAmountAfterClose(0)
 {
-    RawPtr<Document> coreDocument = RawPtr<Document>(document);
-    m_private = DocumentWebSocketChannel::create(coreDocument.get(), m_channelProxy.get());
+    Document* coreDocument = document;
+    m_private = DocumentWebSocketChannel::create(coreDocument, m_channelProxy.get());
 }
 
 WebPepperSocketImpl::~WebPepperSocketImpl()

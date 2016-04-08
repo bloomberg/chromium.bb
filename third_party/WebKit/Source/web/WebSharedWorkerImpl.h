@@ -77,7 +77,7 @@ public:
     // WorkerReportingProxy methods:
     void reportException(
         const WTF::String&, int, int, const WTF::String&, int) override;
-    void reportConsoleMessage(RawPtr<ConsoleMessage>) override;
+    void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const WTF::String&) override;
     void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override { }

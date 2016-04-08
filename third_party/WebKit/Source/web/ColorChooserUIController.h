@@ -41,7 +41,7 @@ class WebColorChooser;
 class ColorChooserUIController : public GarbageCollectedFinalized<ColorChooserUIController>, public WebColorChooserClient, public ColorChooser {
     USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
 public:
-    static RawPtr<ColorChooserUIController> create(LocalFrame* frame, ColorChooserClient* client)
+    static ColorChooserUIController* create(LocalFrame* frame, ColorChooserClient* client)
     {
         return new ColorChooserUIController(frame, client);
     }

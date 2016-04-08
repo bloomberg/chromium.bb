@@ -48,12 +48,12 @@ void WebElementCollection::assign(const WebElementCollection& other)
     m_private = other.m_private;
 }
 
-WebElementCollection::WebElementCollection(const RawPtr<HTMLCollection>& col)
+WebElementCollection::WebElementCollection(HTMLCollection*col)
     : m_private(col)
 {
 }
 
-WebElementCollection& WebElementCollection::operator=(const RawPtr<HTMLCollection>& col)
+WebElementCollection& WebElementCollection::operator=(HTMLCollection*col)
 {
     m_private = col;
     return *this;

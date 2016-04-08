@@ -142,9 +142,9 @@ public:
     BLINK_EXPORT WebDistillabilityFeatures distillabilityFeatures();
 
 #if BLINK_IMPLEMENTATION
-    BLINK_EXPORT WebDocument(const RawPtr<Document>&);
-    BLINK_EXPORT WebDocument& operator=(const RawPtr<Document>&);
-    BLINK_EXPORT operator RawPtr<Document>() const;
+    BLINK_EXPORT WebDocument(Document*);
+    BLINK_EXPORT WebDocument& operator=(Document*);
+    BLINK_EXPORT operator Document*() const;
 #endif
 };
 

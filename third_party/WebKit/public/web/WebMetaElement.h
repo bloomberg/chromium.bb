@@ -26,9 +26,9 @@ public:
     BLINK_EXPORT WebString computeEncoding() const;
 
 #if BLINK_IMPLEMENTATION
-    WebMetaElement(const RawPtr<HTMLMetaElement>&);
-    WebMetaElement& operator=(const RawPtr<HTMLMetaElement>&);
-    operator RawPtr<HTMLMetaElement>() const;
+    WebMetaElement(HTMLMetaElement*);
+    WebMetaElement& operator=(HTMLMetaElement*);
+    operator HTMLMetaElement*() const;
 #endif
 };
 

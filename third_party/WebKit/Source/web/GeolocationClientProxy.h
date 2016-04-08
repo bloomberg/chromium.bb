@@ -37,7 +37,7 @@ class WebGeolocationClient;
 
 class GeolocationClientProxy final : public GeolocationClient {
 public:
-    static RawPtr<GeolocationClientProxy> create(WebGeolocationClient* client)
+    static GeolocationClientProxy* create(WebGeolocationClient* client)
     {
         return new GeolocationClientProxy(client);
     }

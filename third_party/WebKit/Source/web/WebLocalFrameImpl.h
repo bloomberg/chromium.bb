@@ -262,7 +262,7 @@ public:
     static WebLocalFrameImpl* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
     ~WebLocalFrameImpl() override;
 
-    RawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);
+    LocalFrame* createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);
 
     void didChangeContentsSize(const IntSize&);
 
@@ -359,7 +359,7 @@ private:
     WebRemoteFrame* toWebRemoteFrame() override;
 
     // Sets the local core frame and registers destruction observers.
-    void setCoreFrame(RawPtr<LocalFrame>);
+    void setCoreFrame(LocalFrame*);
 
     void loadJavaScriptURL(const KURL&);
 

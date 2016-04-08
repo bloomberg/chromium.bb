@@ -47,7 +47,7 @@ ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
 {
 }
 
-RawPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebViewImpl& webView)
+ValidationMessageClientImpl* ValidationMessageClientImpl::create(WebViewImpl& webView)
 {
     return new ValidationMessageClientImpl(webView);
 }

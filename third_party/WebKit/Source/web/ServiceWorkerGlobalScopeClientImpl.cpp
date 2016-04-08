@@ -38,7 +38,7 @@
 
 namespace blink {
 
-RawPtr<ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClientImpl::create(WebServiceWorkerContextClient& client)
+ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClientImpl::create(WebServiceWorkerContextClient& client)
 {
     return new ServiceWorkerGlobalScopeClientImpl(client);
 }

@@ -39,7 +39,7 @@ class PagePopup;
 class ColorChooserPopupUIController final : public ColorChooserUIController, public PagePopupClient  {
     USING_PRE_FINALIZER(ColorChooserPopupUIController, dispose);
 public:
-    static RawPtr<ColorChooserPopupUIController> create(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
+    static ColorChooserPopupUIController* create(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
     {
         return new ColorChooserPopupUIController(frame, chromeClient, client);
     }

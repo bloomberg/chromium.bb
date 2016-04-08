@@ -48,20 +48,20 @@ WebVector<WebElement> WebSelectElement::listItems() const
     return items;
 }
 
-WebSelectElement::WebSelectElement(const RawPtr<HTMLSelectElement>& element)
+WebSelectElement::WebSelectElement(HTMLSelectElement*element)
     : WebFormControlElement(element)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebSelectElement, isHTMLSelectElement(constUnwrap<Node>()));
 
-WebSelectElement& WebSelectElement::operator=(const RawPtr<HTMLSelectElement>& element)
+WebSelectElement& WebSelectElement::operator=(HTMLSelectElement*element)
 {
     m_private = element;
     return *this;
 }
 
-WebSelectElement::operator RawPtr<HTMLSelectElement>() const
+WebSelectElement::operator HTMLSelectElement*() const
 {
     return toHTMLSelectElement(m_private.get());
 }

@@ -58,7 +58,7 @@
 
 namespace blink {
 
-TextFinder::FindMatch::FindMatch(RawPtr<Range> range, int ordinal)
+TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
     : m_range(range)
     , m_ordinal(ordinal)
 {
@@ -71,7 +71,7 @@ DEFINE_TRACE(TextFinder::FindMatch)
 
 class TextFinder::DeferredScopeStringMatches : public GarbageCollectedFinalized<TextFinder::DeferredScopeStringMatches> {
 public:
-    static RawPtr<DeferredScopeStringMatches> create(TextFinder* textFinder, int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
+    static DeferredScopeStringMatches* create(TextFinder* textFinder, int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
     {
         return new DeferredScopeStringMatches(textFinder, identifier, searchText, options, reset);
     }
@@ -314,7 +314,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
             // Not found.
             break;
         }
-        RawPtr<Range> resultRange = Range::create(result.document(), toPositionInDOMTree(result.startPosition()), toPositionInDOMTree(result.endPosition()));
+        Range* resultRange = Range::create(result.document(), toPositionInDOMTree(result.startPosition()), toPositionInDOMTree(result.endPosition()));
         if (resultRange->collapsed()) {
             // resultRange will be collapsed if the matched text spans over multiple TreeScopes.
             // FIXME: Show such matches to users.
@@ -355,9 +355,9 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
                 identifier);
         }
 
-        addMarker(resultRange.get(), foundActiveMatch);
+        addMarker(resultRange, foundActiveMatch);
 
-        m_findMatchesCache.append(FindMatch(resultRange.get(), m_lastMatchCount + matchCount));
+        m_findMatchesCache.append(FindMatch(resultRange, m_lastMatchCount + matchCount));
 
         // Set the new start for the search range to be the end of the previous
         // result range. There is no need to use a VisiblePosition here,
@@ -604,14 +604,14 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_findMatchesCache.size());
 
-    RawPtr<Range> range = m_findMatchesCache[index].m_range;
+    Range* range = m_findMatchesCache[index].m_range;
     if (!range->boundaryPointsValid() || !range->startContainer()->inShadowIncludingDocument())
         return -1;
 
     // Check if the match is already selected.
     TextFinder& mainFrameTextFinder = ownerFrame().viewImpl()->mainFrameImpl()->ensureTextFinder();
     WebLocalFrameImpl* activeMatchFrame = mainFrameTextFinder.m_currentActiveMatchFrame;
-    if (&ownerFrame() != activeMatchFrame || !m_activeMatch || !areRangesEqual(m_activeMatch.get(), range.get())) {
+    if (&ownerFrame() != activeMatchFrame || !m_activeMatch || !areRangesEqual(m_activeMatch.get(), range)) {
         if (isActiveMatchFrameValid())
             activeMatchFrame->ensureTextFinder().setMatchMarkerActive(false);
 
@@ -621,7 +621,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
         mainFrameTextFinder.m_currentActiveMatchFrame = &ownerFrame();
         ownerFrame().viewImpl()->setFocusedFrame(&ownerFrame());
 
-        m_activeMatch = range.release();
+        m_activeMatch = range;
         setMarkerActive(m_activeMatch.get(), true);
 
         // Clear any user selection, to make sure Find Next continues on from the match we just activated.
@@ -651,7 +651,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
     return ordinalOfFirstMatch() + m_activeMatchIndexInCurrentFrame + 1;
 }
 
-RawPtr<TextFinder> TextFinder::create(WebLocalFrameImpl& ownerFrame)
+TextFinder* TextFinder::create(WebLocalFrameImpl& ownerFrame)
 {
     return new TextFinder(ownerFrame);
 }

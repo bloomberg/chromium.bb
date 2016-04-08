@@ -319,7 +319,7 @@ public:
     AssociatedURLLoader* m_parent;
 };
 
-AssociatedURLLoader::AssociatedURLLoader(RawPtr<WebLocalFrameImpl> frameImpl, const WebURLLoaderOptions& options)
+AssociatedURLLoader::AssociatedURLLoader(WebLocalFrameImpl* frameImpl, const WebURLLoaderOptions& options)
     : m_options(options)
     , m_observer(new Observer(this, frameImpl->frame()->document()))
 {

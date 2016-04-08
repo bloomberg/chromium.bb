@@ -16,7 +16,7 @@ class WebViewImpl;
 class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>, public protocol::Backend::Rendering {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:
-    static RawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*, InspectorOverlay*);
+    static InspectorRenderingAgent* create(WebLocalFrameImpl*, InspectorOverlay*);
 
     // protocol::Dispatcher::PageCommandHandler implementation.
     void setShowPaintRects(ErrorString*, bool show) override;

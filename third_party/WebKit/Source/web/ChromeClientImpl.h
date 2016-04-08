@@ -48,7 +48,7 @@ struct WebCursorInfo;
 // Handles window-level notifications from core on behalf of a WebView.
 class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 public:
-    static RawPtr<ChromeClientImpl> create(WebViewImpl*);
+    static ChromeClientImpl* create(WebViewImpl*);
     ~ChromeClientImpl() override;
 
     void* webView() const override;

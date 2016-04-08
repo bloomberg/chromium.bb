@@ -93,20 +93,20 @@ void WebFormElement::finishRequestAutocomplete(WebFormElement::AutocompleteResul
     unwrap<HTMLFormElement>()->finishRequestAutocomplete(static_cast<HTMLFormElement::AutocompleteResult>(result));
 }
 
-WebFormElement::WebFormElement(const RawPtr<HTMLFormElement>& e)
+WebFormElement::WebFormElement(HTMLFormElement* e)
     : WebElement(e)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebFormElement, isHTMLFormElement(constUnwrap<Node>()));
 
-WebFormElement& WebFormElement::operator=(const RawPtr<HTMLFormElement>& e)
+WebFormElement& WebFormElement::operator=(HTMLFormElement* e)
 {
     m_private = e;
     return *this;
 }
 
-WebFormElement::operator RawPtr<HTMLFormElement>() const
+WebFormElement::operator HTMLFormElement*() const
 {
     return toHTMLFormElement(m_private.get());
 }

@@ -45,7 +45,7 @@
 
 namespace blink {
 
-RawPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
+FullscreenController* FullscreenController::create(WebViewImpl* webViewImpl)
 {
     return new FullscreenController(webViewImpl);
 }
@@ -63,7 +63,7 @@ void FullscreenController::didEnterFullScreen()
     if (!m_provisionalFullScreenElement)
         return;
 
-    RawPtr<Element> element = m_provisionalFullScreenElement.release();
+    Element* element = m_provisionalFullScreenElement.release();
     Document& document = element->document();
     m_fullScreenFrame = document.frame();
 
@@ -78,7 +78,7 @@ void FullscreenController::didEnterFullScreen()
         m_haveEnteredFullscreen = true;
     }
 
-    Fullscreen::from(document).didEnterFullScreenForElement(element.get());
+    Fullscreen::from(document).didEnterFullScreenForElement(element);
     DCHECK_EQ(Fullscreen::currentFullScreenElementFrom(document), element);
 
     if (isHTMLVideoElement(element)) {

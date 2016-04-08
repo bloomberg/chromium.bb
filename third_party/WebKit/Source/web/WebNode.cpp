@@ -239,7 +239,7 @@ WebElement WebNode::querySelector(const WebString& selector, WebExceptionCode& e
     if (!m_private->isContainerNode())
         return WebElement();
     TrackExceptionState exceptionState;
-    WebElement element = toContainerNode(m_private.get())->querySelector(selector, exceptionState);
+    WebElement element = toContainerNode(m_private.get())->querySelector(selector, exceptionState).get();
     ec = exceptionState.code();
     return element;
 }
@@ -305,18 +305,18 @@ WebAXObject WebNode::accessibilityObject()
     return cache ? WebAXObject(cache->get(node)) : WebAXObject();
 }
 
-WebNode::WebNode(const RawPtr<Node>& node)
+WebNode::WebNode(Node* node)
     : m_private(node)
 {
 }
 
-WebNode& WebNode::operator=(const RawPtr<Node>& node)
+WebNode& WebNode::operator=(Node* node)
 {
     m_private = node;
     return *this;
 }
 
-WebNode::operator RawPtr<Node>() const
+WebNode::operator Node*() const
 {
     return m_private.get();
 }

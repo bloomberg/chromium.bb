@@ -67,7 +67,7 @@ namespace blink {
 
 class PagePopupChromeClient final : public EmptyChromeClient {
 public:
-    static RawPtr<PagePopupChromeClient> create(WebPagePopupImpl* popup)
+    static PagePopupChromeClient* create(WebPagePopupImpl* popup)
     {
         return new PagePopupChromeClient(popup);
     }
@@ -278,9 +278,9 @@ bool WebPagePopupImpl::initializePage()
 
     provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
     DEFINE_STATIC_LOCAL(FrameLoaderClient, emptyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
-    RawPtr<LocalFrame> frame = LocalFrame::create(&emptyFrameLoaderClient, &m_page->frameHost(), 0);
+    LocalFrame* frame = LocalFrame::create(&emptyFrameLoaderClient, &m_page->frameHost(), 0);
     frame->setPagePopupOwner(m_popupClient->ownerElement());
-    frame->setView(FrameView::create(frame.get()));
+    frame->setView(FrameView::create(frame));
     frame->init();
     frame->view()->setParentVisible(true);
     frame->view()->setSelfVisible(true);

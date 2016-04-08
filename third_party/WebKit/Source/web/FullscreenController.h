@@ -46,7 +46,7 @@ class WebViewImpl;
 
 class FullscreenController final : public GarbageCollected<FullscreenController> {
 public:
-    static RawPtr<FullscreenController> create(WebViewImpl*);
+    static FullscreenController* create(WebViewImpl*);
 
     void didEnterFullScreen();
     void didExitFullScreen();

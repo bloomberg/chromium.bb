@@ -40,7 +40,7 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
 {
 }
 
-RawPtr<RemoteFrameClientImpl> RemoteFrameClientImpl::create(WebRemoteFrameImpl* webFrame)
+RemoteFrameClientImpl* RemoteFrameClientImpl::create(WebRemoteFrameImpl* webFrame)
 {
     return new RemoteFrameClientImpl(webFrame);
 }
@@ -63,8 +63,6 @@ void RemoteFrameClientImpl::willBeDetached()
 void RemoteFrameClientImpl::detached(FrameDetachType type)
 {
     // Alert the client that the frame is being detached.
-    RawPtr<WebRemoteFrameImpl> protector(m_webFrame.get());
-
     WebRemoteFrameClient* client = m_webFrame->client();
     if (!client)
         return;

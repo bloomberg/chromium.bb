@@ -247,7 +247,7 @@ protected:
 
     void testTextInputType(WebTextInputType expectedType, const std::string& htmlFile);
     void testInputMode(const WebString& expectedInputMode, const std::string& htmlFile);
-    bool tapElement(WebInputEvent::Type, const RawPtr<Element>&);
+    bool tapElement(WebInputEvent::Type, Element*);
     bool tapElementById(WebInputEvent::Type, const WebString& id);
 
     std::string m_baseURL;
@@ -986,7 +986,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection)
     frame->frame()->inputMethodController().setCompositionFromExistingText(emptyUnderlines, 3, 3);
 
     // Scroll the input field out of the viewport.
-    RawPtr<Element> element = static_cast<RawPtr<Element>>(webView->mainFrame()->document().getElementById("btn"));
+    Element* element = static_cast<Element*>(webView->mainFrame()->document().getElementById("btn"));
     element->scrollIntoView();
     float offsetHeight = webView->mainFrame()->scrollOffset().height;
     EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
@@ -1321,8 +1321,8 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
     EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
-    RawPtr<Element> element = static_cast<RawPtr<Element>>(webViewImpl->mainFrame()->document().body());
-    webViewImpl->enterFullScreenForElement(element.get());
+    Element* element = static_cast<Element*>(webViewImpl->mainFrame()->document().body());
+    webViewImpl->enterFullScreenForElement(element);
     webViewImpl->didEnterFullScreen();
 
     // Page scale factor must be 1.0 during fullscreen for elements to be sized
@@ -1330,8 +1330,8 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
 
     // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-    RawPtr<Element> otherElement = static_cast<RawPtr<Element>>(webViewImpl->mainFrame()->document().head());
-    webViewImpl->enterFullScreenForElement(otherElement.get());
+    Element* otherElement = static_cast<Element*>(webViewImpl->mainFrame()->document().head());
+    webViewImpl->enterFullScreenForElement(otherElement);
 
     // Confirm that exiting fullscreen restores the parameters.
     webViewImpl->didExitFullScreen();
@@ -1465,7 +1465,7 @@ private:
     WebContentDetectionResult m_contentDetectionResult;
 };
 
-bool WebViewTest::tapElement(WebInputEvent::Type type, const RawPtr<Element>& element)
+bool WebViewTest::tapElement(WebInputEvent::Type type, Element* element)
 {
     if (!element || !element->layoutObject())
         return false;
@@ -1491,7 +1491,7 @@ bool WebViewTest::tapElement(WebInputEvent::Type type, const RawPtr<Element>& el
 bool WebViewTest::tapElementById(WebInputEvent::Type type, const WebString& id)
 {
     DCHECK(m_webViewHelper.webView());
-    RawPtr<Element> element = static_cast<RawPtr<Element>>(m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
+    Element* element = static_cast<Element*>(m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
     return tapElement(type, element);
 }
 
@@ -1563,7 +1563,7 @@ TEST_F(WebViewTest, ContentDetectionInIframe)
 
     WebURL intentURL = toKURL(m_baseURL);
     client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
-    RawPtr<Element> element = static_cast<RawPtr<Element>>(webView->findFrameByName(frameName)->document().getElementById(noListener));
+    Element* element = static_cast<Element*>(webView->findFrameByName(frameName)->document().getElementById(noListener));
     EXPECT_TRUE(tapElement(WebInputEvent::GestureTap, element));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
     EXPECT_FALSE(client.wasInMainFrame());

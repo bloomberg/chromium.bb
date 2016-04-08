@@ -22,7 +22,7 @@ public:
         virtual void setCPUThrottlingRate(double rate) {}
     };
 
-    static RawPtr<InspectorEmulationAgent> create(WebLocalFrameImpl*, Client*);
+    static InspectorEmulationAgent* create(WebLocalFrameImpl*, Client*);
     ~InspectorEmulationAgent() override;
 
     // protocol::Dispatcher::EmulationCommandHandler implementation.

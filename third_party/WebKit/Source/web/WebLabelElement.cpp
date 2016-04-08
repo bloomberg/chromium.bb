@@ -42,20 +42,20 @@ WebElement WebLabelElement::correspondingControl()
     return WebElement(unwrap<HTMLLabelElement>()->control());
 }
 
-WebLabelElement::WebLabelElement(const RawPtr<HTMLLabelElement>& elem)
+WebLabelElement::WebLabelElement(HTMLLabelElement* elem)
     : WebElement(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebLabelElement, isHTMLLabelElement(constUnwrap<Node>()));
 
-WebLabelElement& WebLabelElement::operator=(const RawPtr<HTMLLabelElement>& elem)
+WebLabelElement& WebLabelElement::operator=(HTMLLabelElement* elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebLabelElement::operator RawPtr<HTMLLabelElement>() const
+WebLabelElement::operator HTMLLabelElement*() const
 {
     return toHTMLLabelElement(m_private.get());
 }

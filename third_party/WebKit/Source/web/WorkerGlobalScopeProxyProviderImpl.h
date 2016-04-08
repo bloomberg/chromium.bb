@@ -44,7 +44,7 @@ class WorkerGlobalScopeProxyProviderImpl final : public GarbageCollectedFinalize
     USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
 public:
-    static RawPtr<WorkerGlobalScopeProxyProviderImpl> create()
+    static WorkerGlobalScopeProxyProviderImpl* create()
     {
         return new WorkerGlobalScopeProxyProviderImpl();
     }

@@ -105,7 +105,7 @@ const char* textTransformToString(ETextTransform transform)
 class PopupMenuCSSFontSelector : public CSSFontSelector, private CSSFontSelectorClient {
     USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
 public:
-    static RawPtr<PopupMenuCSSFontSelector> create(Document* document, CSSFontSelector* ownerFontSelector)
+    static PopupMenuCSSFontSelector* create(Document* document, CSSFontSelector* ownerFontSelector)
     {
         return new PopupMenuCSSFontSelector(document, ownerFontSelector);
     }
@@ -233,7 +233,7 @@ public:
 
 // ----------------------------------------------------------------
 
-RawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
+PopupMenuImpl* PopupMenuImpl::create(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
 {
     return new PopupMenuImpl(chromeClient, ownerElement);
 }
@@ -406,7 +406,6 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 {
     DCHECK(m_popup);
     DCHECK(m_ownerElement);
-    RawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
     DCHECK(success);
@@ -423,7 +422,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     // Other browsers dispatch click events before and after showing the popup.
     if (m_ownerElement) {
         PlatformMouseEvent event;
-        RawPtr<Element> owner = &ownerElement();
+        Element* owner = &ownerElement();
         owner->dispatchMouseEvent(event, EventTypeNames::mouseup);
         owner->dispatchMouseEvent(event, EventTypeNames::click);
     }
@@ -442,7 +441,6 @@ void PopupMenuImpl::didClosePopup()
 {
     // Clearing m_popup first to prevent from trying to close the popup again.
     m_popup = nullptr;
-    RawPtr<PopupMenuImpl> protector(this);
     if (m_ownerElement)
         m_ownerElement->popupDidHide();
 }
@@ -488,7 +486,7 @@ void PopupMenuImpl::updateFromElement()
     if (m_needsUpdate)
         return;
     m_needsUpdate = true;
-    ownerElement().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, RawPtr<PopupMenuImpl>(this)));
+    ownerElement().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, this));
 }
 
 void PopupMenuImpl::update()

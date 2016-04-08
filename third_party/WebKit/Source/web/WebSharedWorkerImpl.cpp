@@ -217,7 +217,7 @@ void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNu
     // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerImpl::reportConsoleMessage(RawPtr<ConsoleMessage>)
+void WebSharedWorkerImpl::reportConsoleMessage(ConsoleMessage*)
 {
     // Not supported in SharedWorker.
 }
@@ -323,11 +323,11 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
-    RawPtr<WorkerClients> workerClients = WorkerClients::create();
-    provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
+    WorkerClients* workerClients = WorkerClients::create();
+    provideLocalFileSystemToWorker(workerClients, LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->getSecurityOrigin());
-    provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
-    RawPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
+    provideContentSettingsClientToWorker(workerClients, adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
+    ContentSecurityPolicy* contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,
@@ -337,7 +337,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         startMode,
         contentSecurityPolicy ? contentSecurityPolicy->headers() : nullptr,
         starterOrigin,
-        workerClients.release(),
+        workerClients,
         m_mainScriptLoader->responseAddressSpace());
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);

@@ -280,7 +280,7 @@ UserGestureNotifier::~UserGestureNotifier()
 
 class EmptyEventListener final : public EventListener {
 public:
-    static RawPtr<EmptyEventListener> create()
+    static EmptyEventListener* create()
     {
         return new EmptyEventListener();
     }
@@ -1094,9 +1094,9 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         return WebInputEventResult::HandledSystem;
     }
 
-    RawPtr<Frame> focusedFrame = focusedCoreFrame();
+    Frame* focusedFrame = focusedCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrame()) {
-        WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame.get()));
+        WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame));
         webFrame->client()->forwardInputEvent(&event);
         return WebInputEventResult::HandledSystem;
     }
@@ -1104,7 +1104,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     if (!focusedFrame || !focusedFrame->isLocalFrame())
         return WebInputEventResult::NotHandled;
 
-    LocalFrame* frame = toLocalFrame(focusedFrame.get());
+    LocalFrame* frame = toLocalFrame(focusedFrame);
 
     PlatformKeyboardEventBuilder evt(event);
 
@@ -1548,7 +1548,7 @@ WebInputEventResult WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& ev
 }
 #endif
 
-void WebViewImpl::showContextMenuAtPoint(float x, float y, RawPtr<ContextMenuProvider> menuProvider)
+void WebViewImpl::showContextMenuAtPoint(float x, float y, ContextMenuProvider* menuProvider)
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;
@@ -2174,7 +2174,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
         TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);
         // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-        RawPtr<Node> node = m_mouseCaptureNode;
+        Node* node = m_mouseCaptureNode;
 
         // Not all platforms call mouseCaptureLost() directly.
         if (inputEvent.type == WebInputEvent::MouseUp)
@@ -2250,7 +2250,7 @@ void WebViewImpl::setFocus(bool enable)
     m_page->focusController().setFocused(enable);
     if (enable) {
         m_page->focusController().setActive(true);
-        RawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
+        LocalFrame* focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             Element* element = focusedFrame->document()->focusedElement();
             if (element && focusedFrame->selection().selection().isNone()) {
@@ -2282,11 +2282,11 @@ void WebViewImpl::setFocus(bool enable)
         if (!frame)
             return;
 
-        RawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
+        LocalFrame* focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
             if (focusedFrame->inputMethodController().hasComposition()) {
-                WebAutofillClient* autofillClient = WebLocalFrameImpl::fromFrame(focusedFrame.get())->autofillClient();
+                WebAutofillClient* autofillClient = WebLocalFrameImpl::fromFrame(focusedFrame)->autofillClient();
 
                 if (autofillClient)
                     autofillClient->setIgnoreTextChanges(true);
@@ -2903,17 +2903,17 @@ void WebViewImpl::setInitialFocus(bool reverse)
 
 void WebViewImpl::clearFocusedElement()
 {
-    RawPtr<Frame> frame = focusedCoreFrame();
+    Frame* frame = focusedCoreFrame();
     if (!frame || !frame->isLocalFrame())
         return;
 
-    LocalFrame* localFrame = toLocalFrame(frame.get());
+    LocalFrame* localFrame = toLocalFrame(frame);
 
-    RawPtr<Document> document = localFrame->document();
+    Document* document = localFrame->document();
     if (!document)
         return;
 
-    RawPtr<Element> oldFocusedElement = document->focusedElement();
+    Element* oldFocusedElement = document->focusedElement();
     document->clearFocusedElement();
     if (!oldFocusedElement)
         return;
@@ -3407,7 +3407,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (m_shouldAutoResize || !mainFrameImpl())
         return;
 
-    RawPtr<FrameView> view = mainFrameImpl()->frameView();
+    FrameView* view = mainFrameImpl()->frameView();
     if (!view)
         return;
 
@@ -3492,11 +3492,11 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
                                            const WebPoint& location)
 {
     HitTestResult result = hitTestResultForViewportPos(location);
-    RawPtr<Node> node = result.innerNode();
+    Node* node = result.innerNode();
     if (!isHTMLVideoElement(*node) && !isHTMLAudioElement(*node))
         return;
 
-    RawPtr<HTMLMediaElement> mediaElement = static_pointer_cast<HTMLMediaElement>(node);
+    HTMLMediaElement* mediaElement = toHTMLMediaElement(node);
     switch (action.type) {
     case WebMediaPlayerAction::Play:
         if (action.enable)
@@ -3523,7 +3523,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 {
     // FIXME: Location is probably in viewport coordinates
     HitTestResult result = hitTestResultForRootFramePos(location);
-    RawPtr<Node> node = result.innerNode();
+    Node* node = result.innerNode();
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 

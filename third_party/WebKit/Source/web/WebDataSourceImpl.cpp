@@ -37,7 +37,7 @@
 
 namespace blink {
 
-RawPtr<WebDataSourceImpl> WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+WebDataSourceImpl* WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
     return new WebDataSourceImpl(frame, request, data);
 }
@@ -143,8 +143,6 @@ WebDataSourceImpl::~WebDataSourceImpl()
 
 void WebDataSourceImpl::detachFromFrame()
 {
-    RawPtr<DocumentLoader> protect(this);
-
     DocumentLoader::detachFromFrame();
     m_extraData.clear();
 }

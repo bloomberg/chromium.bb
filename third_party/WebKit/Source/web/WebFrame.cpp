@@ -28,10 +28,7 @@ namespace blink {
 bool WebFrame::swap(WebFrame* frame)
 {
     using std::swap;
-    RawPtr<Frame> oldFrame = toImplBase()->frame();
-#if !ENABLE(OILPAN)
-    RefPtr<WebFrameImplBase> protectThis = toImplBase();
-#endif
+    Frame* oldFrame = toImplBase()->frame();
 
     // Unload the current Document in this frame: this calls unload handlers,
     // detaches child frames, etc. Since this runs script, make sure this frame
@@ -72,13 +69,6 @@ bool WebFrame::swap(WebFrame* frame)
     AtomicString name = oldFrame->tree().name();
     AtomicString uniqueName = oldFrame->tree().uniqueName();
     FrameOwner* owner = oldFrame->owner();
-#if !ENABLE(OILPAN)
-    // Persistence of a remote frame owner is complicated in the pre-Oilpan
-    // world. Please see RemoteFrameOwner::setContentFrame() for the details.
-    RefPtr<RemoteFrameOwner> remoteOwnerProtector;
-    if (owner && owner->isRemote())
-        remoteOwnerProtector = toRemoteFrameOwner(owner);
-#endif
 
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     HashMap<DOMWrapperWorld*, v8::Local<v8::Object>> globals;
@@ -276,7 +266,7 @@ WebFrame* WebFrame::findChildByName(const WebString& name) const
 
 WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
 {
-    Element* element = RawPtr<Element>(webElement).get();
+    Element* element = webElement;
 
     if (!element->isFrameOwnerElement())
         return nullptr;

@@ -66,7 +66,7 @@ class ServiceWorkerGlobalScopeProxy final
     , public WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
 public:
-    static RawPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
+    static ServiceWorkerGlobalScopeProxy* create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
     ~ServiceWorkerGlobalScopeProxy() override;
 
     // WebServiceWorkerContextProxy overrides:
@@ -86,7 +86,7 @@ public:
 
     // WorkerReportingProxy overrides:
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
-    void reportConsoleMessage(RawPtr<ConsoleMessage>) override;
+    void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override;

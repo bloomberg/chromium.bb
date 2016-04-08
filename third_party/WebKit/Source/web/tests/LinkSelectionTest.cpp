@@ -200,7 +200,7 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected)
     ASSERT_NE(nullptr, textToSelect);
 
     // Select some page text outside the link element.
-    const RawPtr<Range> rangeToSelect = Range::create(*document, textToSelect, 1, textToSelect, 20);
+    const Range* rangeToSelect = Range::create(*document, textToSelect, 1, textToSelect, 20);
     const auto& selectionRect = rangeToSelect->boundingBox();
     m_mainFrame->moveRangeSelection(selectionRect.minXMinYCorner(), selectionRect.maxXMaxYCorner());
     EXPECT_FALSE(getSelectionText().isEmpty());
@@ -213,7 +213,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
 protected:
     class MockEventListener final : public EventListener {
     public:
-        static RawPtr<MockEventListener> create()
+        static MockEventListener* create()
         {
             return new MockEventListener();
         }
@@ -265,7 +265,7 @@ protected:
             Persistent<Element> m_element;
         } const listenersCleaner(&element);
 
-        RawPtr<MockEventListener> eventHandler = MockEventListener::create();
+        MockEventListener* eventHandler = MockEventListener::create();
         element.addEventListener(
             doubleClickEvent ? EventTypeNames::dblclick : EventTypeNames::click,
             eventHandler);

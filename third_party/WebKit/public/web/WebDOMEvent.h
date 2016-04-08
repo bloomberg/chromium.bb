@@ -56,7 +56,7 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    WebDOMEvent(const RawPtr<Event>&);
+    WebDOMEvent(Event*);
     operator Event*() const;
 #endif
 
@@ -76,7 +76,7 @@ public:
 
 protected:
 #if BLINK_IMPLEMENTATION
-    void assign(const RawPtr<Event>&);
+    void assign(Event*);
 
     template<typename T> T* unwrap()
     {

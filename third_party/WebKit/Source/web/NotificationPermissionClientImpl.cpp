@@ -44,7 +44,7 @@ private:
 
 } // namespace
 
-RawPtr<NotificationPermissionClientImpl> NotificationPermissionClientImpl::create()
+NotificationPermissionClientImpl* NotificationPermissionClientImpl::create()
 {
     return new NotificationPermissionClientImpl();
 }

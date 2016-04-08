@@ -14,7 +14,7 @@ class AudioOutputDeviceClientImpl : public GarbageCollectedFinalized<AudioOutput
     USING_GARBAGE_COLLECTED_MIXIN(AudioOutputDeviceClientImpl);
     WTF_MAKE_NONCOPYABLE(AudioOutputDeviceClientImpl);
 public:
-    static RawPtr<AudioOutputDeviceClientImpl> create();
+    static AudioOutputDeviceClientImpl* create();
 
     ~AudioOutputDeviceClientImpl() override;
 

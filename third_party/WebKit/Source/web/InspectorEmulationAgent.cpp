@@ -21,7 +21,7 @@ static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char emulatedMedia[] = "emulatedMedia";
 }
 
-RawPtr<InspectorEmulationAgent> InspectorEmulationAgent::create(WebLocalFrameImpl* webLocalFrameImpl, Client* client)
+InspectorEmulationAgent* InspectorEmulationAgent::create(WebLocalFrameImpl* webLocalFrameImpl, Client* client)
 {
     return new InspectorEmulationAgent(webLocalFrameImpl, client);
 }

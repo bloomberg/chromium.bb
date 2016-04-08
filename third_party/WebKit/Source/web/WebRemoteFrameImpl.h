@@ -141,7 +141,7 @@ public:
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;
     RemoteFrame* frame() const override { return m_frame.get(); }
 
-    void setCoreFrame(RawPtr<RemoteFrame>);
+    void setCoreFrame(RemoteFrame*);
 
     WebRemoteFrameClient* client() const { return m_client; }
 

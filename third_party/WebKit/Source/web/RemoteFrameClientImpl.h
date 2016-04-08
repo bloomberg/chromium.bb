@@ -12,7 +12,7 @@ class WebRemoteFrameImpl;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
 public:
-    static RawPtr<RemoteFrameClientImpl> create(WebRemoteFrameImpl*);
+    static RemoteFrameClientImpl* create(WebRemoteFrameImpl*);
 
     DECLARE_VIRTUAL_TRACE();
 

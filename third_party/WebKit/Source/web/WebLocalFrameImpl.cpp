@@ -543,7 +543,7 @@ WebLocalFrame* WebLocalFrame::frameForContext(v8::Local<v8::Context> context)
 
 WebLocalFrame* WebLocalFrame::fromFrameOwnerElement(const WebElement& element)
 {
-    return WebLocalFrameImpl::fromFrameOwnerElement(RawPtr<Element>(element).get());
+    return WebLocalFrameImpl::fromFrameOwnerElement(element);
 }
 
 bool WebLocalFrameImpl::isWebLocalFrame() const
@@ -995,7 +995,7 @@ bool WebLocalFrameImpl::hasMarkedText() const
 
 WebRange WebLocalFrameImpl::markedRange() const
 {
-    return frame()->inputMethodController().compositionRange();
+    return frame()->inputMethodController().compositionRange().get();
 }
 
 bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect& rectInViewport) const
@@ -1116,7 +1116,7 @@ bool WebLocalFrameImpl::hasSelection() const
 
 WebRange WebLocalFrameImpl::selectionRange() const
 {
-    return createRange(frame()->selection().selection().toNormalizedEphemeralRange());
+    return createRange(frame()->selection().selection().toNormalizedEphemeralRange()).get();
 }
 
 WebString WebLocalFrameImpl::selectionAsText() const
@@ -1165,8 +1165,8 @@ void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport, const WebPoi
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
-    if (RawPtr<Range> range = static_cast<RawPtr<Range>>(webRange))
-        frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
+    if (Range* range = static_cast<Range*>(webRange))
+        frame()->selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 }
 
 void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
@@ -1417,7 +1417,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
 
 WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
-    RawPtr<WebLocalFrameImpl> webFrame = new WebLocalFrameImpl(oldWebFrame, client);
+    WebLocalFrameImpl* webFrame = new WebLocalFrameImpl(oldWebFrame, client);
     Frame* oldFrame = oldWebFrame->toImplBase()->frame();
     webFrame->setParent(oldWebFrame->parent());
     webFrame->setOpener(oldWebFrame->opener());
@@ -1425,9 +1425,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
     // When a core Frame is created with no owner, it attempts to set itself as
     // the main frame of the Page. However, this is a provisional frame, and may
     // disappear, so Page::m_mainFrame can't be updated just yet.
-    RawPtr<FrameOwner> tempOwner = DummyFrameOwner::create();
+    FrameOwner* tempOwner = DummyFrameOwner::create();
     // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to reuse it here.
-    RawPtr<LocalFrame> frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get(), client ? client->serviceRegistry() : nullptr);
+    LocalFrame* frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner, client ? client->serviceRegistry() : nullptr);
     // Set the name and unique name directly, bypassing any of the normal logic
     // to calculate unique name.
     frame->tree().setPrecalculatedName(toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(), toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
@@ -1446,11 +1446,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
     frame->init();
-#if ENABLE(OILPAN)
-    return webFrame.get();
-#else
-    return webFrame.release().leakRef();
-#endif
+    return webFrame;
 }
 
 
@@ -1504,7 +1500,7 @@ DEFINE_TRACE(WebLocalFrameImpl)
 }
 #endif
 
-void WebLocalFrameImpl::setCoreFrame(RawPtr<LocalFrame> frame)
+void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
 {
     m_frame = frame;
 
@@ -1561,7 +1557,7 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, 
         frame()->document()->getSecurityOrigin()->grantUniversalAccess();
 }
 
-RawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
+LocalFrame* WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
     const AtomicString& name, HTMLFrameOwnerElement* ownerElement)
 {
     DCHECK(m_client);
@@ -1576,7 +1572,7 @@ RawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& r
     // which can identify the element.
     AtomicString uniqueName = frame()->tree().calculateUniqueNameForNewChildFrame(
         name, ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
-    RawPtr<WebLocalFrameImpl> webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, uniqueName, static_cast<WebSandboxFlags>(ownerElement->getSandboxFlags()), ownerProperties));
+    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, uniqueName, static_cast<WebSandboxFlags>(ownerElement->getSandboxFlags()), ownerProperties));
     if (!webframeChild)
         return nullptr;
 
@@ -1588,18 +1584,18 @@ RawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& r
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
-    RawPtr<HistoryItem> childItem = nullptr;
+    HistoryItem* childItem = nullptr;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = RawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame());
+        childItem = webframeChild->client()->historyItemForNewChildFrame();
 
     FrameLoadRequest newRequest = request;
     FrameLoadType loadType = FrameLoadTypeStandard;
     if (childItem) {
         newRequest = FrameLoadRequest(request.originDocument(),
-            FrameLoader::resourceRequestFromHistoryItem(childItem.get(), WebCachePolicy::UseProtocolCachePolicy));
+            FrameLoader::resourceRequestFromHistoryItem(childItem, WebCachePolicy::UseProtocolCachePolicy));
         loadType = FrameLoadTypeInitialHistoryLoad;
     }
-    webframeChild->frame()->loader().load(newRequest, loadType, childItem.get());
+    webframeChild->frame()->loader().load(newRequest, loadType, childItem);
 
     // Note a synchronous navigation (about:blank) would have already processed
     // onload, so it is possible for the child frame to have already been
@@ -1801,7 +1797,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
     if (!frame()->document() || !frame()->page())
         return;
 
-    RawPtr<Document> ownerDocument(frame()->document());
+    Document* ownerDocument(frame()->document());
 
     // Protect privileged pages against bookmarklets and other javascript manipulations.
     if (SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(frame()->document()->url().protocol()))
@@ -1815,7 +1811,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
         return;
     String scriptResult = toCoreString(v8::Local<v8::String>::Cast(result));
     if (!frame()->navigationScheduler().locationChangePending())
-        frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
+        frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument);
 }
 
 static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
@@ -1897,9 +1893,9 @@ void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& dest
 
 WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item, WebCachePolicy cachePolicy) const
 {
-    RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
+    HistoryItem* historyItem = item;
     ResourceRequest request = FrameLoader::resourceRequestFromHistoryItem(
-        historyItem.get(), cachePolicy);
+        historyItem, cachePolicy);
     return WrappedResourceRequest(request);
 }
 
@@ -1928,9 +1924,9 @@ void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webF
     FrameLoadRequest frameRequest = FrameLoadRequest(nullptr, resourceRequest);
     if (isClientRedirect)
         frameRequest.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
-    RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
+    HistoryItem* historyItem = item;
     frame()->loader().load(
-        frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
+        frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem,
         static_cast<HistoryLoadType>(webHistoryLoadType));
 }
 
@@ -1959,9 +1955,9 @@ void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType,
     if (isClientRedirect)
         frameRequest.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
 
-    RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
+    HistoryItem* historyItem = item;
     frame()->loader().load(
-        frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
+        frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem,
         static_cast<HistoryLoadType>(webHistoryLoadType));
 }
 

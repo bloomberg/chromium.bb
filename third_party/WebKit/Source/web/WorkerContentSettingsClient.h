@@ -43,7 +43,7 @@ class WebWorkerContentSettingsClientProxy;
 class WorkerContentSettingsClient final : public GarbageCollectedFinalized<WorkerContentSettingsClient>, public Supplement<WorkerClients> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
 public:
-    static RawPtr<WorkerContentSettingsClient> create(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
+    static WorkerContentSettingsClient* create(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
     virtual ~WorkerContentSettingsClient();
 
     bool requestFileSystemAccessSync();

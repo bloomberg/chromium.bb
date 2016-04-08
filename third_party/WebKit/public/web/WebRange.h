@@ -66,8 +66,8 @@ public:
     BLINK_EXPORT static WebRange fromDocumentRange(WebLocalFrame*, int start, int length);
 
 #if BLINK_IMPLEMENTATION
-    WebRange(const RawPtr<Range>&);
-    operator RawPtr<Range>() const;
+    WebRange(Range*);
+    operator Range*() const;
 #endif
 
 private:

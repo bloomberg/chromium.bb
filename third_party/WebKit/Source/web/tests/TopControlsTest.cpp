@@ -122,9 +122,9 @@ public:
         webViewImpl()->handleInputEvent(generateEvent(WebInputEvent::GestureScrollEnd));
     }
 
-    RawPtr<Element> getElementById(const WebString& id)
+    Element* getElementById(const WebString& id)
     {
-        return static_cast<RawPtr<Element>>(
+        return static_cast<Element*>(
             webViewImpl()->mainFrame()->document().getElementById(id));
     }
 
@@ -579,9 +579,9 @@ TEST_F(TopControlsTest, MAYBE(DontAffectLayoutHeight))
     // When the top controls are showing, there's 300px for the layout height so
     // 50% should result in both the position:fixed and position: absolute divs
     // having 150px of height.
-    RawPtr<Element> absPos =
+    Element* absPos =
         getElementById(WebString::fromUTF8("abs"));
-    RawPtr<Element> fixedPos =
+    Element* fixedPos =
         getElementById(WebString::fromUTF8("fixed"));
     EXPECT_FLOAT_EQ(150.f, absPos->getBoundingClientRect()->height());
     EXPECT_FLOAT_EQ(150.f, fixedPos->getBoundingClientRect()->height());
@@ -623,9 +623,9 @@ TEST_F(TopControlsTest, MAYBE(DontAffectVHUnits))
 
     // 'vh' units should be based on the viewport when the top controls are
     // hidden.
-    RawPtr<Element> absPos =
+    Element* absPos =
         getElementById(WebString::fromUTF8("abs"));
-    RawPtr<Element> fixedPos =
+    Element* fixedPos =
         getElementById(WebString::fromUTF8("fixed"));
     EXPECT_FLOAT_EQ(200.f, absPos->getBoundingClientRect()->height());
     EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
@@ -677,9 +677,9 @@ TEST_F(TopControlsTest, MAYBE(DontAffectVHUnitsWithScale))
     // we have to account for the minimum page scale factor. Since both boxes
     // are 50vh, and layout scale = 0.5, we have a vh viewport of 400 / 0.5 = 800
     // so we expect 50vh to be 400px.
-    RawPtr<Element> absPos =
+    Element* absPos =
         getElementById(WebString::fromUTF8("abs"));
-    RawPtr<Element> fixedPos =
+    Element* fixedPos =
         getElementById(WebString::fromUTF8("fixed"));
     EXPECT_FLOAT_EQ(400.f, absPos->getBoundingClientRect()->height());
     EXPECT_FLOAT_EQ(400.f, fixedPos->getBoundingClientRect()->height());

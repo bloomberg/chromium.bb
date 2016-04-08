@@ -34,11 +34,11 @@ protected:
     void SetUp() override
     {
         m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-        RawPtr<HTMLSelectElement> element = HTMLSelectElement::create(m_dummyPageHolder->document());
+        HTMLSelectElement* element = HTMLSelectElement::create(m_dummyPageHolder->document());
         // Set the 4th an 5th items to have "display: none" property
         element->setInnerHTML("<option><option><option><option style='display:none;'><option style='display:none;'><option><option>", ASSERT_NO_EXCEPTION);
-        m_dummyPageHolder->document().body()->appendChild(element.get(), ASSERT_NO_EXCEPTION);
-        m_ownerElement = element.release();
+        m_dummyPageHolder->document().body()->appendChild(element, ASSERT_NO_EXCEPTION);
+        m_ownerElement = element;
         m_dummyPageHolder->document().updateLayoutIgnorePendingStylesheets();
     }
 

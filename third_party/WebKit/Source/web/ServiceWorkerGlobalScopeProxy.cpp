@@ -72,7 +72,7 @@
 
 namespace blink {
 
-RawPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
+ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
 {
     return new ServiceWorkerGlobalScopeProxy(embeddedWorker, document, client);
 }
@@ -97,8 +97,8 @@ void ServiceWorkerGlobalScopeProxy::setRegistration(std::unique_ptr<WebServiceWo
 void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Activate, eventID);
-    RawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, ExtendableEventInit(), observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = ExtendableEvent::create(EventTypeNames::activate, ExtendableEventInit(), observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, const WebServiceWorkerClientInfo& client)
@@ -117,8 +117,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
         source = ServiceWorkerClient::create(client);
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
-    RawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = ExtendableMessageEvent::create(value, origin, ports, source, observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, std::unique_ptr<WebServiceWorker::Handle> handle)
@@ -133,8 +133,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), adoptPtr(handle.release()));
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
-    RawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = ExtendableMessageEvent::create(value, origin, ports, source, observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
@@ -174,12 +174,12 @@ void ServiceWorkerGlobalScopeProxy::dispatchGeofencingEvent(int eventID, WebGeof
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Install, eventID);
-    RawPtr<Event> event;
+    Event* event;
     if (RuntimeEnabledFeatures::foreignFetchEnabled())
         event = InstallEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
     else
         event = ExtendableEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
@@ -196,8 +196,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, 
     eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data, true /* showing */));
     if (0 <= actionIndex && actionIndex < static_cast<int>(data.actions.size()))
         eventInit.setAction(data.actions[actionIndex].action);
-    RawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData& data)
@@ -206,15 +206,15 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationCloseEvent(int eventID, 
     NotificationEventInit eventInit;
     eventInit.setAction(WTF::String()); // initialize as null.
     eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data, false /* showing */));
-    RawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclose, eventInit, observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = NotificationEvent::create(EventTypeNames::notificationclose, eventInit, observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebString& data)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Push, eventID);
-    RawPtr<Event> event(PushEvent::create(EventTypeNames::push, PushMessageData::create(data), observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = PushEvent::create(EventTypeNames::push, PushMessageData::create(data), observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebString& tag, LastChanceOption lastChance)
@@ -224,8 +224,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebStri
         return;
     }
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Sync, eventID);
-    RawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, tag, lastChance == IsLastChance, observer));
-    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+    Event* event = SyncEvent::create(EventTypeNames::sync, tag, lastChance == IsLastChance, observer);
+    workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int)
@@ -233,7 +233,7 @@ void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, 
     client().reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(RawPtr<ConsoleMessage> consoleMessage)
+void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)
 {
     client().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url());
 }

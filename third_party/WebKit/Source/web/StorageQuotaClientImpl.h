@@ -39,7 +39,7 @@ namespace blink {
 class StorageQuotaClientImpl : public GarbageCollectedFinalized<StorageQuotaClientImpl>, public StorageQuotaClient {
     USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClientImpl);
 public:
-    static RawPtr<StorageQuotaClientImpl> create()
+    static StorageQuotaClientImpl* create()
     {
         return new StorageQuotaClientImpl();
     }

@@ -81,7 +81,7 @@ DevToolsEmulator::~DevToolsEmulator()
 {
 }
 
-RawPtr<DevToolsEmulator> DevToolsEmulator::create(WebViewImpl* webViewImpl)
+DevToolsEmulator* DevToolsEmulator::create(WebViewImpl* webViewImpl)
 {
     return new DevToolsEmulator(webViewImpl);
 }

@@ -68,8 +68,8 @@ public:
     BLINK_EXPORT WebElement firstItem() const;
 
 #if BLINK_IMPLEMENTATION
-    WebElementCollection(const RawPtr<HTMLCollection>&);
-    WebElementCollection& operator=(const RawPtr<HTMLCollection>&);
+    WebElementCollection(HTMLCollection*);
+    WebElementCollection& operator=(HTMLCollection*);
 #endif
 
 private:

@@ -129,7 +129,7 @@ FrameLoaderClientImpl::FrameLoaderClientImpl(WebLocalFrameImpl* frame)
 {
 }
 
-RawPtr<FrameLoaderClientImpl> FrameLoaderClientImpl::create(WebLocalFrameImpl* frame)
+FrameLoaderClientImpl* FrameLoaderClientImpl::create(WebLocalFrameImpl* frame)
 {
     return new FrameLoaderClientImpl(frame);
 }
@@ -382,8 +382,6 @@ void FrameLoaderClientImpl::detached(FrameDetachType type)
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
-    RawPtr<WebLocalFrameImpl> protector(m_webFrame.get());
-
     WebFrameClient* client = m_webFrame->client();
     if (!client)
         return;
@@ -808,10 +806,10 @@ Widget* FrameLoaderClientImpl::createPlugin(
         return nullptr;
 
     // The container takes ownership of the WebPlugin.
-    RawPtr<WebPluginContainerImpl> container =
+    WebPluginContainerImpl* container =
         WebPluginContainerImpl::create(element, webPlugin);
 
-    if (!webPlugin->initialize(container.get()))
+    if (!webPlugin->initialize(container))
         return nullptr;
 
     if (policy != AllowDetachedPlugin && !element->layoutObject())

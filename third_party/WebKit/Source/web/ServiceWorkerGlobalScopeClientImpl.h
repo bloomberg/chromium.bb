@@ -45,7 +45,7 @@ class WebURL;
 class ServiceWorkerGlobalScopeClientImpl final : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
 public:
-    static RawPtr<ServiceWorkerGlobalScopeClient> create(WebServiceWorkerContextClient&);
+    static ServiceWorkerGlobalScopeClient* create(WebServiceWorkerContextClient&);
     ~ServiceWorkerGlobalScopeClientImpl() override;
 
     void getClient(const WebString&, WebServiceWorkerClientCallbacks*) override;

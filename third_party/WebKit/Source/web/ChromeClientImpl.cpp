@@ -168,7 +168,7 @@ ChromeClientImpl::~ChromeClientImpl()
 {
 }
 
-RawPtr<ChromeClientImpl> ChromeClientImpl::create(WebViewImpl* webView)
+ChromeClientImpl* ChromeClientImpl::create(WebViewImpl* webView)
 {
     return new ChromeClientImpl(webView);
 }

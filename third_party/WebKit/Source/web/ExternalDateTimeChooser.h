@@ -40,7 +40,7 @@ class WebViewClient;
 
 class ExternalDateTimeChooser final : public DateTimeChooser {
 public:
-    static RawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, DateTimeChooserClient*, const DateTimeChooserParameters&);
+    static ExternalDateTimeChooser* create(ChromeClientImpl*, WebViewClient*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     ~ExternalDateTimeChooser() override;
     DECLARE_VIRTUAL_TRACE();
 

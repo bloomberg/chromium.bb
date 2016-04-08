@@ -11,7 +11,7 @@
 
 namespace blink {
 
-RawPtr<AudioOutputDeviceClientImpl> AudioOutputDeviceClientImpl::create()
+AudioOutputDeviceClientImpl* AudioOutputDeviceClientImpl::create()
 {
     return new AudioOutputDeviceClientImpl();
 }

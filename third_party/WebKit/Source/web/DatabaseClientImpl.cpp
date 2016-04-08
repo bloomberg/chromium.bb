@@ -37,7 +37,7 @@
 
 namespace blink {
 
-RawPtr<DatabaseClientImpl> DatabaseClientImpl::create()
+DatabaseClientImpl* DatabaseClientImpl::create()
 {
     return new DatabaseClientImpl();
 }

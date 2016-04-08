@@ -40,7 +40,7 @@ class WebViewImpl;
 class ValidationMessageClientImpl final : public GarbageCollectedFinalized<ValidationMessageClientImpl>, public ValidationMessageClient {
     USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 public:
-    static RawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
+    static ValidationMessageClientImpl* create(WebViewImpl&);
     ~ValidationMessageClientImpl() override;
 
     DECLARE_VIRTUAL_TRACE();

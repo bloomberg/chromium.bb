@@ -79,7 +79,7 @@ class WebDevToolsAgentImpl final
     , public protocol::FrontendChannel
     , private WebThread::TaskObserver {
 public:
-    static RawPtr<WebDevToolsAgentImpl> create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
+    static WebDevToolsAgentImpl* create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
     ~WebDevToolsAgentImpl() override;
     void dispose();
     DECLARE_VIRTUAL_TRACE();
@@ -110,7 +110,7 @@ public:
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;
 
 private:
-    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, RawPtr<InspectorOverlay>);
+    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, InspectorOverlay*);
 
     // InspectorTracingAgent::Client implementation.
     void enableTracing(const WTF::String& categoryFilter) override;

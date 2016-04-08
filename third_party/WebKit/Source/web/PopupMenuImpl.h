@@ -20,7 +20,7 @@ class HTMLSelectElement;
 
 class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
 public:
-    static RawPtr<PopupMenuImpl> create(ChromeClientImpl*, HTMLSelectElement&);
+    static PopupMenuImpl* create(ChromeClientImpl*, HTMLSelectElement&);
     ~PopupMenuImpl() override;
     DECLARE_VIRTUAL_TRACE();
 

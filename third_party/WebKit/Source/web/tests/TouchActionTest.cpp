@@ -145,7 +145,7 @@ void TouchActionTest::runTouchActionTest(std::string file)
     // scenario.
     WebView* webView = setupTest(file, client);
 
-    Persistent<Document> document = static_cast<RawPtr<Document>>(webView->mainFrame()->document());
+    Persistent<Document> document = static_cast<Document*>(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
@@ -160,7 +160,7 @@ void TouchActionTest::runShadowDOMTest(std::string file)
     TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    Persistent<Document> document = static_cast<RawPtr<Document>>(webView->mainFrame()->document());
+    Persistent<Document> document = static_cast<Document*>(webView->mainFrame()->document());
     Persistent<StaticElementList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
@@ -186,7 +186,7 @@ void TouchActionTest::runIFrameTest(std::string file)
 
     for (; curFrame; curFrame = curFrame->nextSibling()) {
         // Oilpan: see runTouchActionTest() comment why these are persistent references.
-        Persistent<Document> contentDoc = static_cast<RawPtr<Document>>(curFrame->document());
+        Persistent<Document> contentDoc = static_cast<Document*>(curFrame->document());
         runTestOnTree(contentDoc.get(), webView, client);
     }
 
@@ -204,7 +204,7 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
 
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;
-    RawPtr<Document> document = static_cast<RawPtr<Document>>(webView->mainFrame()->document());
+    Document* document = static_cast<Document*>(webView->mainFrame()->document());
     document->frame()->view()->setScrollPosition(IntPoint(0, kScrollOffset), ProgrammaticScroll);
 
     return webView;

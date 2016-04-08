@@ -108,9 +108,9 @@ public:
     BLINK_EXPORT WebFormElement form() const;
 
 #if BLINK_IMPLEMENTATION
-    WebFormControlElement(const RawPtr<HTMLFormControlElement>&);
-    WebFormControlElement& operator=(const RawPtr<HTMLFormControlElement>&);
-    operator RawPtr<HTMLFormControlElement>() const;
+    WebFormControlElement(HTMLFormControlElement*);
+    WebFormControlElement& operator=(HTMLFormControlElement*);
+    operator HTMLFormControlElement*() const;
 #endif
 };
 

@@ -13,7 +13,7 @@ namespace blink {
 class NotificationPermissionClientImpl : public GarbageCollectedFinalized<NotificationPermissionClientImpl>, public NotificationPermissionClient {
     USING_GARBAGE_COLLECTED_MIXIN(NotificationPermissionClientImpl);
 public:
-    static RawPtr<NotificationPermissionClientImpl> create();
+    static NotificationPermissionClientImpl* create();
 
     ~NotificationPermissionClientImpl() override;
 

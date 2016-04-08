@@ -9,7 +9,7 @@
 
 namespace blink {
 
-RawPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebLocalFrameImpl* webFrame)
+NavigatorContentUtilsClientImpl* NavigatorContentUtilsClientImpl::create(WebLocalFrameImpl* webFrame)
 {
     return new NavigatorContentUtilsClientImpl(webFrame);
 }

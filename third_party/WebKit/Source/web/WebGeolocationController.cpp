@@ -39,7 +39,7 @@ namespace blink {
 // shorten out this GeolocationControllerPrivate intermediary.
 class GeolocationControllerPrivate final : public GarbageCollected<GeolocationControllerPrivate> {
 public:
-    static RawPtr<GeolocationControllerPrivate> create(GeolocationController* controller)
+    static GeolocationControllerPrivate* create(GeolocationController* controller)
     {
         return new GeolocationControllerPrivate(controller);
     }

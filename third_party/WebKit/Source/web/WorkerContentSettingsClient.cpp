@@ -38,7 +38,7 @@
 
 namespace blink {
 
-RawPtr<WorkerContentSettingsClient> WorkerContentSettingsClient::create(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
+WorkerContentSettingsClient* WorkerContentSettingsClient::create(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
 {
     return new WorkerContentSettingsClient(proxy);
 }

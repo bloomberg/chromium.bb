@@ -45,7 +45,7 @@ namespace blink {
 
 class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
 public:
-    static RawPtr<WebDataSourceImpl> create(LocalFrame*, const ResourceRequest&, const SubstituteData&);
+    static WebDataSourceImpl* create(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
     static WebDataSourceImpl* fromDocumentLoader(DocumentLoader* loader)
     {

@@ -39,7 +39,7 @@ namespace blink {
 class DatabaseClientImpl final : public GarbageCollectedFinalized<DatabaseClientImpl>, public DatabaseClient {
     USING_GARBAGE_COLLECTED_MIXIN(DatabaseClientImpl);
 public:
-    static RawPtr<DatabaseClientImpl> create();
+    static DatabaseClientImpl* create();
 
     ~DatabaseClientImpl() override;
     DECLARE_VIRTUAL_TRACE();

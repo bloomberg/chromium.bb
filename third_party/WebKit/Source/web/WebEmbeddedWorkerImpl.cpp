@@ -348,10 +348,10 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
-    RawPtr<WorkerClients> workerClients = WorkerClients::create();
-    provideContentSettingsClientToWorker(workerClients.get(), m_contentSettingsClient.release());
-    provideServiceWorkerGlobalScopeClientToWorker(workerClients.get(), ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
-    provideServiceWorkerContainerClientToWorker(workerClients.get(), adoptPtr(m_workerContextClient->createServiceWorkerProvider()));
+    WorkerClients* workerClients = WorkerClients::create();
+    provideContentSettingsClientToWorker(workerClients, m_contentSettingsClient.release());
+    provideServiceWorkerGlobalScopeClientToWorker(workerClients, ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
+    provideServiceWorkerContainerClientToWorker(workerClients, adoptPtr(m_workerContextClient->createServiceWorkerProvider()));
 
     // We need to set the CSP to both the shadow page's document and the ServiceWorkerGlobalScope.
     document->initContentSecurityPolicy(m_mainScriptLoader->releaseContentSecurityPolicy());
@@ -366,7 +366,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
         startMode,
         document->contentSecurityPolicy()->headers(),
         starterOrigin,
-        workerClients.release(),
+        workerClients,
         m_mainScriptLoader->responseAddressSpace(),
         static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 

@@ -53,7 +53,7 @@ public:
     ~MockWorkerReportingProxy() override { }
 
     MOCK_METHOD5(reportException, void(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId));
-    MOCK_METHOD1(reportConsoleMessage, void(RawPtr<ConsoleMessage>));
+    MOCK_METHOD1(reportConsoleMessage, void(ConsoleMessage*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
     MOCK_METHOD0(postWorkerConsoleAgentEnabled, void());
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));

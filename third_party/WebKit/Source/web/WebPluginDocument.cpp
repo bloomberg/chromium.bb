@@ -51,20 +51,20 @@ WebPlugin* WebPluginDocument::plugin()
 }
 
 
-WebPluginDocument::WebPluginDocument(const RawPtr<PluginDocument>& elem)
+WebPluginDocument::WebPluginDocument(PluginDocument*elem)
     : WebDocument(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebPluginDocument, isDocumentNode() && constUnwrap<Document>()->isPluginDocument());
 
-WebPluginDocument& WebPluginDocument::operator=(const RawPtr<PluginDocument>& elem)
+WebPluginDocument& WebPluginDocument::operator=(PluginDocument*elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebPluginDocument::operator RawPtr<PluginDocument>() const
+WebPluginDocument::operator PluginDocument*() const
 {
     return static_cast<PluginDocument*>(m_private.get());
 }

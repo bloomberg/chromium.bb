@@ -232,8 +232,8 @@ bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString,
 
 WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const WebInputElement& selectedInputElement)
 {
-    RawPtr<HTMLFormElement> formElement = static_cast<RawPtr<HTMLFormElement>>(form);
-    HTMLInputElement* inputElement = static_cast<RawPtr<HTMLInputElement>>(selectedInputElement).get();
+    HTMLFormElement* formElement = static_cast<HTMLFormElement*>(form);
+    HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(selectedInputElement);
 
     // Only consider forms that GET data.
     // Allow HTTPS only when an input element is provided.

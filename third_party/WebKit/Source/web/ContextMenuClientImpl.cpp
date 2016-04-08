@@ -113,15 +113,15 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, String& descript
         return String();
 
     // Caret and range selections always return valid normalized ranges.
-    RawPtr<Range> selectionRange = createRange(selection.toNormalizedEphemeralRange());
-    DocumentMarkerVector markers = selectedFrame->document()->markers().markersInRange(EphemeralRange(selectionRange.get()), DocumentMarker::MisspellingMarkers());
+    Range* selectionRange = createRange(selection.toNormalizedEphemeralRange());
+    DocumentMarkerVector markers = selectedFrame->document()->markers().markersInRange(EphemeralRange(selectionRange), DocumentMarker::MisspellingMarkers());
     if (markers.size() != 1)
         return String();
     description = markers[0]->description();
     hash = markers[0]->hash();
 
     // Cloning a range fails only for invalid ranges.
-    RawPtr<Range> markerRange = selectionRange->cloneRange();
+    Range* markerRange = selectionRange->cloneRange();
     markerRange->setStart(markerRange->startContainer(), markers[0]->startOffset());
     markerRange->setEnd(markerRange->endContainer(), markers[0]->endOffset());
 
@@ -277,7 +277,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
 
     if (selectedFrame != m_webView->page()->mainFrame()) {
         data.frameURL = urlFromFrame(selectedFrame);
-        RawPtr<HistoryItem> historyItem = selectedFrame->loader().currentItem();
+        HistoryItem* historyItem = selectedFrame->loader().currentItem();
         if (historyItem)
             data.frameHistoryItem = WebHistoryItem(historyItem);
     }

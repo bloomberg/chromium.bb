@@ -45,7 +45,7 @@ class PagePopup;
 
 class DateTimeChooserImpl final : public DateTimeChooser, public PagePopupClient {
 public:
-    static RawPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
+    static DateTimeChooserImpl* create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     ~DateTimeChooserImpl() override;
 
     // DateTimeChooser functions:

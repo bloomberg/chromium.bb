@@ -75,7 +75,7 @@ public:
 
     // (Empty) WorkerReportingProxy implementation:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) {}
-    void reportConsoleMessage(RawPtr<ConsoleMessage>) override {}
+    void reportConsoleMessage(ConsoleMessage*) override {}
     void postMessageToPageInspector(const String&) override {}
     void postWorkerConsoleAgentEnabled() override {}
 

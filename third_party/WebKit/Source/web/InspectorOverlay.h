@@ -70,7 +70,7 @@ class InspectorOverlay final
     , public InspectorOverlayHost::Listener {
     USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlay);
 public:
-    static RawPtr<InspectorOverlay> create(WebViewImpl* webViewImpl)
+    static InspectorOverlay* create(WebViewImpl* webViewImpl)
     {
         return new InspectorOverlay(webViewImpl);
     }

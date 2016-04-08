@@ -15,7 +15,7 @@ class WebLocalFrameImpl;
 
 class NavigatorContentUtilsClientImpl final : public NavigatorContentUtilsClient {
 public:
-    static RawPtr<NavigatorContentUtilsClientImpl> create(WebLocalFrameImpl*);
+    static NavigatorContentUtilsClientImpl* create(WebLocalFrameImpl*);
     ~NavigatorContentUtilsClientImpl() override { }
 
     void registerProtocolHandler(const String& scheme, const KURL&, const String& title) override;

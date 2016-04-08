@@ -362,7 +362,7 @@ public:
     // Keyboard event to the Right Mouse button down event.
     WebInputEventResult sendContextMenuEvent(const WebKeyboardEvent&);
 
-    void showContextMenuAtPoint(float x, float y, RawPtr<ContextMenuProvider>);
+    void showContextMenuAtPoint(float x, float y, ContextMenuProvider*);
 
     void showContextMenuForElement(WebElement);
 

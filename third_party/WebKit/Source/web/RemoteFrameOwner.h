@@ -19,7 +19,7 @@ namespace blink {
 class RemoteFrameOwner final : public GarbageCollectedFinalized<RemoteFrameOwner>, public FrameOwner {
     USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
 public:
-    static RawPtr<RemoteFrameOwner> create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+    static RemoteFrameOwner* create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
         return new RemoteFrameOwner(flags, frameOwnerProperties);
     }

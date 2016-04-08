@@ -40,7 +40,7 @@ namespace blink {
 
 class WebTextCheckingCompletionImpl final : public WebTextCheckingCompletion {
 public:
-    explicit WebTextCheckingCompletionImpl(RawPtr<TextCheckingRequest> request)
+    explicit WebTextCheckingCompletionImpl(TextCheckingRequest* request)
         : m_request(request)
     {
     }

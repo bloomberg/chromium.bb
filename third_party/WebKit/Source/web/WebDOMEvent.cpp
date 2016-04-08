@@ -45,12 +45,12 @@ void WebDOMEvent::assign(const WebDOMEvent& other)
     m_private = other.m_private;
 }
 
-void WebDOMEvent::assign(const RawPtr<Event>& event)
+void WebDOMEvent::assign(Event* event)
 {
     m_private = event;
 }
 
-WebDOMEvent::WebDOMEvent(const RawPtr<Event>& event)
+WebDOMEvent::WebDOMEvent(Event* event)
     : m_private(event)
 {
 }

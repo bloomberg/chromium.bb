@@ -47,7 +47,7 @@ class WebLocalFrameImpl;
 class AssociatedURLLoader final : public WebURLLoader {
     WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
 public:
-    AssociatedURLLoader(RawPtr<WebLocalFrameImpl>, const WebURLLoaderOptions&);
+    AssociatedURLLoader(WebLocalFrameImpl*, const WebURLLoaderOptions&);
     ~AssociatedURLLoader();
 
     // WebURLLoader methods:

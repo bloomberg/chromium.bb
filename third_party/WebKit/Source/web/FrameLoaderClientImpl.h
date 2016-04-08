@@ -44,7 +44,7 @@ class WebLocalFrameImpl;
 
 class FrameLoaderClientImpl final : public FrameLoaderClient {
 public:
-    static RawPtr<FrameLoaderClientImpl> create(WebLocalFrameImpl*);
+    static FrameLoaderClientImpl* create(WebLocalFrameImpl*);
 
     ~FrameLoaderClientImpl() override;
 

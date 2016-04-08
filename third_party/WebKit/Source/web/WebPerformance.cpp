@@ -210,12 +210,12 @@ double WebPerformance::parseBlockedOnScriptLoadFromDocumentWriteDuration() const
     return millisecondsToSeconds(m_private->timing()->parseBlockedOnScriptLoadFromDocumentWriteDuration());
 }
 
-WebPerformance::WebPerformance(const RawPtr<Performance>& performance)
+WebPerformance::WebPerformance(Performance* performance)
     : m_private(performance)
 {
 }
 
-WebPerformance& WebPerformance::operator=(const RawPtr<Performance>& performance)
+WebPerformance& WebPerformance::operator=(Performance*performance)
 {
     m_private = performance;
     return *this;

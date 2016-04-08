@@ -176,20 +176,20 @@ WebFormElement WebFormControlElement::form() const
     return WebFormElement(constUnwrap<HTMLFormControlElement>()->form());
 }
 
-WebFormControlElement::WebFormControlElement(const RawPtr<HTMLFormControlElement>& elem)
+WebFormControlElement::WebFormControlElement(HTMLFormControlElement*elem)
     : WebElement(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebFormControlElement, isElementNode() && constUnwrap<Element>()->isFormControlElement());
 
-WebFormControlElement& WebFormControlElement::operator=(const RawPtr<HTMLFormControlElement>& elem)
+WebFormControlElement& WebFormControlElement::operator=(HTMLFormControlElement*elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebFormControlElement::operator RawPtr<HTMLFormControlElement>() const
+WebFormControlElement::operator HTMLFormControlElement*() const
 {
     return toHTMLFormControlElement(m_private.get());
 }

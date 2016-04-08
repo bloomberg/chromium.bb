@@ -187,7 +187,6 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     // derefed. This ensures it does not get deleted while we are running this
     // method.
     int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_ownerElement);
-    RawPtr<ExternalPopupMenu> guard(this);
 
     if (m_ownerElement) {
         m_ownerElement->popupDidHide();
@@ -203,10 +202,6 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
         return;
     }
 
-    // Calling methods on the HTMLSelectElement might lead to this object being
-    // derefed. This ensures it does not get deleted while we are running this
-    // method.
-    RawPtr<ExternalPopupMenu> protect(this);
     RawPtr<HTMLSelectElement> ownerElement(m_ownerElement.get());
     ownerElement->popupDidHide();
 
@@ -222,9 +217,6 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
 
 void ExternalPopupMenu::didCancel()
 {
-    // See comment in didAcceptIndex on why we need this.
-    RawPtr<ExternalPopupMenu> guard(this);
-
     if (m_ownerElement)
         m_ownerElement->popupDidHide();
     m_webExternalPopupMenu = 0;

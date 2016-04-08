@@ -211,7 +211,7 @@ void WebFrameWidgetImpl::updateMainFrameLayoutSize()
     if (!m_localRoot)
         return;
 
-    RawPtr<FrameView> view = m_localRoot->frameView();
+    FrameView* view = m_localRoot->frameView();
     if (!view)
         return;
 
@@ -335,7 +335,7 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& in
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
         TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);
         // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-        RawPtr<Node> node = m_mouseCaptureNode;
+        Node* node = m_mouseCaptureNode;
 
         // Not all platforms call mouseCaptureLost() directly.
         if (inputEvent.type == WebInputEvent::MouseUp)
@@ -427,7 +427,7 @@ void WebFrameWidgetImpl::setFocus(bool enable)
     page()->focusController().setFocused(enable);
     if (enable) {
         page()->focusController().setActive(true);
-        RawPtr<LocalFrame> focusedFrame = page()->focusController().focusedFrame();
+        LocalFrame* focusedFrame = page()->focusController().focusedFrame();
         if (focusedFrame) {
             Element* element = focusedFrame->document()->focusedElement();
             if (element && focusedFrame->selection().selection().isNone()) {
@@ -772,9 +772,9 @@ WebInputEventResult WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& e
     // event.
     m_suppressNextKeypressEvent = false;
 
-    RawPtr<Frame> focusedFrame = focusedCoreFrame();
+    Frame* focusedFrame = focusedCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrame()) {
-        WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame.get()));
+        WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame));
         webFrame->client()->forwardInputEvent(&event);
         return WebInputEventResult::HandledSystem;
     }
@@ -782,7 +782,7 @@ WebInputEventResult WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& e
     if (!focusedFrame || !focusedFrame->isLocalFrame())
         return WebInputEventResult::NotHandled;
 
-    RawPtr<LocalFrame> frame = toLocalFrame(focusedFrame.get());
+    LocalFrame* frame = toLocalFrame(focusedFrame);
 
     PlatformKeyboardEventBuilder evt(event);
 
