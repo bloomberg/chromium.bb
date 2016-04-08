@@ -6,6 +6,7 @@
 # pylint: disable=W0212,W0223,W0231,W0613
 
 import base64
+import collections
 import hashlib
 import json
 import logging
@@ -27,6 +28,7 @@ import test_utils
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from utils import file_path
+from utils import logging_utils
 from utils import threading_utils
 
 import isolateserver_mock
@@ -788,6 +790,8 @@ class IsolateServerDownloadTest(TestCase):
   def setUp(self):
     super(IsolateServerDownloadTest, self).setUp()
     self._flagged_requests = []
+    self.mock(logging_utils, 'prepare_logging', lambda *_: None)
+    self.mock(logging_utils, 'set_console_level', lambda *_: None)
 
   def tearDown(self):
     if all(self._flagged_requests):
@@ -986,6 +990,89 @@ class TestArchive(TestCase):
   def test_archive_directory_envvar(self):
     with test_utils.EnvVars({'ISOLATE_SERVER': 'https://localhost:1'}):
       self.help_test_archive(['archive'])
+
+
+class DiskCacheTest(TestCase):
+  def setUp(self):
+    super(DiskCacheTest, self).setUp()
+    self._algo = isolated_format.get_hash_algo('default-gzip')
+    self._free_disk = 1000
+    # Max: 100 bytes, 2 items
+    # Min free disk: 1000 bytes.
+    self._policies = isolateserver.CachePolicies(100, 1000, 2)
+    def get_free_space(p):
+      self.assertEqual(p, self.tempdir)
+      return self._free_disk
+    self.mock(file_path, 'get_free_space', get_free_space)
+    # TODO(maruel): Test the following.
+    #cache.touch()
+    #cache.evict()
+    #cache.read()
+    #cache.hardlink()
+
+  def get_cache(self):
+    return isolateserver.DiskCache(self.tempdir, self._policies, self._algo)
+
+  def to_hash(self, content):
+    return self._algo(content).hexdigest(), content
+
+  def test_policies_free_disk(self):
+    with self.assertRaises(isolateserver.Error):
+      self.get_cache().write(*self.to_hash('a'))
+
+  def test_policies_fit(self):
+    self._free_disk = 1100
+    self.get_cache().write(*self.to_hash('a'*100))
+
+  def test_policies_too_much(self):
+    # Cache (size and # items) is not enforced while adding items but free disk
+    # is.
+    self._free_disk = 1004
+    cache = self.get_cache()
+    for i in ('a', 'b', 'c', 'd'):
+      cache.write(*self.to_hash(i))
+    # Mapping more content than the amount of free disk required.
+    with self.assertRaises(isolateserver.Error):
+      cache.write(*self.to_hash('e'))
+
+  def test_policies_active_trimming(self):
+    # Inject two items without a state.json. They will be processed just fine.
+    h_a = self.to_hash('a')[0]
+    isolateserver.file_write(os.path.join(self.tempdir, h_a), 'a')
+    h_b = self.to_hash('b')[0]
+    isolateserver.file_write(os.path.join(self.tempdir, h_b), 'b')
+    # Insert corrupted files, they will be deleted.
+    # TODO(maruel): Verify cache.
+    #isolateserver.file_write(os.path.join(self.tempdir, 'a'*40), 'z')
+    isolateserver.file_write(os.path.join(self.tempdir, 'z'), 'z')
+
+    # Cache (size and # items) is not enforced while adding items but free disk
+    # is.
+    self._free_disk = 1004
+    cache = self.get_cache()
+    expected = sorted(((h_a, 1), (h_b, 1)))
+    self.assertEqual(expected, sorted(cache._lru._items.iteritems()))
+    self.assertEqual(set(), cache._protected)
+    self.assertEqual(1004, cache._free_disk)
+
+    h_c = cache.write(*self.to_hash('c'))
+    # h_a and h_b may be randomly ordered. Assert that h_c is last.
+    expected = sorted(((h_a, 1), (h_b, 1), (h_c, 1)))
+    self.assertEqual(expected, sorted(cache._lru._items.iteritems()))
+    # [0] is the one that gets evicted. Take the second one.
+    kept = cache._lru._items.items()[1]
+    self.assertEqual((h_c, 1), cache._lru._items.items()[-1])
+    self.assertEqual({h_c}, cache._protected)
+    self.assertEqual(1003, cache._free_disk)
+
+    self._free_disk = 1003
+    # Force a trim.
+    with cache:
+      pass
+    expected = collections.OrderedDict([(kept[0], kept[1]), (h_c, 1)])
+    self.assertEqual(expected, cache._lru._items)
+    self.assertEqual({h_c}, cache._protected)
+    self.assertEqual(1003, cache._free_disk)
 
 
 def clear_env_vars():

@@ -135,6 +135,15 @@ class LRUDict(object):
     self._dirty = True
     return value
 
+  def get_oldest(self):
+    """Returns oldest item as tuple (key, value).
+
+    Raises KeyError if dict is empty.
+    """
+    for i in self._items.iteritems():
+      return i
+    raise KeyError('dictionary is empty')
+
   def pop_oldest(self):
     """Removes oldest item from the dict and returns it as tuple (key, value).
 

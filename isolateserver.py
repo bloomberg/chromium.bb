@@ -1263,7 +1263,10 @@ class LocalCache(object):
     raise NotImplementedError()
 
   def write(self, digest, content):
-    """Reads data from |content| generator and stores it in cache."""
+    """Reads data from |content| generator and stores it in cache.
+
+    Returns digest to simplify chaining.
+    """
     raise NotImplementedError()
 
   def hardlink(self, digest, dest, file_mode):
@@ -1311,6 +1314,7 @@ class MemoryCache(LocalCache):
     with self._lock:
       self._contents[digest] = data
       self._added.append(len(data))
+    return digest
 
   def hardlink(self, digest, dest, file_mode):
     """Since data is kept in memory, there is no filenode to hardlink."""
@@ -1359,10 +1363,16 @@ class DiskCache(LocalCache):
     self.policies = policies
     self.hash_algo = hash_algo
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
+    # Items in a LRU lookup dict(digest: size).
     self._lru = lru.LRUDict()
+    # Current cached free disk space. It is updated by self._trim().
     self._free_disk = 0
+    # The items that must not be evicted during this run since they were
+    # referenced.
+    self._protected = set()
     with tools.Profiler('Setup'):
       with self._lock:
+        # self._load() calls self._trim() which initializes self._free_disk.
         self._load()
 
   def __enter__(self):
@@ -1409,10 +1419,13 @@ class DiskCache(LocalCache):
       if digest not in self._lru:
         return False
       self._lru.touch(digest)
+      self._protected.add(digest)
     return True
 
   def evict(self, digest):
     with self._lock:
+      # Do not check for 'digest in self._protected' since it could be because
+      # the object is corrupted.
       self._lru.pop(digest)
       self._delete_file(digest, UNKNOWN_FILE_SIZE)
 
@@ -1422,6 +1435,8 @@ class DiskCache(LocalCache):
 
   def write(self, digest, content):
     assert content is not None
+    with self._lock:
+      self._protected.add(digest)
     path = self._path(digest)
     # A stale broken file may remain. It is possible for the file to have write
     # access bit removed which would cause the file_write() call to fail to open
@@ -1443,6 +1458,7 @@ class DiskCache(LocalCache):
     file_path.set_read_only(path, True)
     with self._lock:
       self._add(digest, size)
+    return digest
 
   def hardlink(self, digest, dest, file_mode):
     """Hardlinks the file to |dest|.
@@ -1566,7 +1582,6 @@ class DiskCache(LocalCache):
         self._free_disk < self.policies.min_free_space):
       trimmed_due_to_space = True
       self._remove_lru_file()
-      self._free_disk = file_path.get_free_space(self.cache_dir)
     if trimmed_due_to_space:
       total_usage = sum(self._lru.itervalues())
       usage_percent = 0.
@@ -1587,6 +1602,12 @@ class DiskCache(LocalCache):
   def _remove_lru_file(self):
     """Removes the last recently used file and returns its size."""
     self._lock.assert_locked()
+    try:
+      digest, size = self._lru.get_oldest()
+    except KeyError:
+      raise Error('Nothing to remove')
+    if digest in self._protected:
+      raise Error('Not enough space to map the whole isolated tree')
     digest, size = self._lru.pop_oldest()
     self._delete_file(digest, size)
     return size
@@ -1598,6 +1619,18 @@ class DiskCache(LocalCache):
       size = fs.stat(self._path(digest)).st_size
     self._added.append(size)
     self._lru.add(digest, size)
+    self._free_disk -= size
+    # Do a quicker version of self._trim(). It only enforces free disk space,
+    # not cache size limits. It doesn't actually look at real free disk space,
+    # only uses its cache values. self._trim() will be called later to enforce
+    # real trimming but doing this quick version here makes it possible to map
+    # an isolated that is larger than the current amount of free disk space when
+    # the cache size is already large.
+    while (
+        self.policies.min_free_space and
+        self._lru and
+        self._free_disk < self.policies.min_free_space):
+      self._remove_lru_file()
 
   def _delete_file(self, digest, size=UNKNOWN_FILE_SIZE):
     """Deletes cache file from the file system."""
@@ -1607,6 +1640,7 @@ class DiskCache(LocalCache):
         size = fs.stat(self._path(digest)).st_size
       file_path.try_remove(self._path(digest))
       self._evicted.append(size)
+      self._free_disk += size
     except OSError as e:
       logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
 
