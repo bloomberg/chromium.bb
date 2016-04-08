@@ -280,6 +280,9 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                          mojom::OrderDirection direction) override;
   void OnWindowDeleted(uint32_t window) override;
   void OnWindowVisibilityChanged(uint32_t window, bool visible) override;
+  void OnWindowOpacityChanged(uint32_t window,
+                              float old_opacity,
+                              float new_opacity) override;
   void OnWindowParentDrawnStateChanged(uint32_t window, bool drawn) override;
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const mojo::String& name,

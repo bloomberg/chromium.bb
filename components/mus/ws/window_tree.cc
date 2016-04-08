@@ -269,6 +269,18 @@ bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
   return true;
 }
 
+bool WindowTree::SetWindowOpacity(const ClientWindowId& window_id,
+                                  float opacity) {
+  ServerWindow* window = GetWindowByClientId(window_id);
+  if (!window || !access_policy_->CanChangeWindowOpacity(window))
+    return false;
+  if (window->opacity() == opacity)
+    return true;
+  Operation op(this, window_server_, OperationType::SET_WINDOW_OPACITY);
+  window->SetOpacity(opacity);
+  return true;
+}
+
 bool WindowTree::SetFocus(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   ServerWindow* currently_focused = window_server_->GetFocusedWindow();
@@ -554,6 +566,20 @@ void WindowTree::ProcessWillChangeWindowVisibility(const ServerWindow* window,
   }
 
   NotifyDrawnStateChanged(window, window_target_drawn_state);
+}
+
+void WindowTree::ProcessWindowOpacityChanged(const ServerWindow* window,
+                                             float old_opacity,
+                                             float new_opacity,
+                                             bool originated_change) {
+  if (originated_change)
+    return;
+
+  ClientWindowId client_window_id;
+  if (IsWindowKnown(window, &client_window_id)) {
+    client()->OnWindowOpacityChanged(client_window_id.id, old_opacity,
+                                     new_opacity);
+  }
 }
 
 void WindowTree::ProcessCursorChanged(const ServerWindow* window,
@@ -1146,6 +1172,13 @@ void WindowTree::SetWindowProperty(uint32_t change_id,
     }
   }
   client()->OnChangeCompleted(change_id, success);
+}
+
+void WindowTree::SetWindowOpacity(uint32_t change_id,
+                                  Id window_id,
+                                  float opacity) {
+  client()->OnChangeCompleted(
+      change_id, SetWindowOpacity(ClientWindowId(window_id), opacity));
 }
 
 void WindowTree::AttachSurface(Id transport_window_id,

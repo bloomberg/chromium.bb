@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/lib/in_flight_change.h"
@@ -316,6 +317,13 @@ void WindowTreeClientImpl::SetVisible(Window* window, bool visible) {
   const uint32_t change_id = ScheduleInFlightChange(
       make_scoped_ptr(new InFlightVisibleChange(window, !visible)));
   tree_->SetWindowVisibility(change_id, window->id(), visible);
+}
+
+void WindowTreeClientImpl::SetOpacity(Window* window, float opacity) {
+  DCHECK(tree_);
+  const uint32_t change_id = ScheduleInFlightChange(
+      base::WrapUnique(new InFlightOpacityChange(window, window->opacity())));
+  tree_->SetWindowOpacity(change_id, window->id(), opacity);
 }
 
 void WindowTreeClientImpl::SetProperty(Window* window,
@@ -807,6 +815,20 @@ void WindowTreeClientImpl::OnWindowVisibilityChanged(Id window_id,
     return;
 
   WindowPrivate(window).LocalSetVisible(visible);
+}
+
+void WindowTreeClientImpl::OnWindowOpacityChanged(Id window_id,
+                                                  float old_opacity,
+                                                  float new_opacity) {
+  Window* window = GetWindowById(window_id);
+  if (!window)
+    return;
+
+  InFlightOpacityChange new_change(window, new_opacity);
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
+  WindowPrivate(window).LocalSetOpacity(new_opacity);
 }
 
 void WindowTreeClientImpl::OnWindowParentDrawnStateChanged(Id window_id,

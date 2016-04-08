@@ -298,8 +298,11 @@ void ServerWindow::SetVisible(bool value) {
 void ServerWindow::SetOpacity(float value) {
   if (value == opacity_)
     return;
+  float old_opacity = opacity_;
   opacity_ = value;
   delegate_->OnScheduleWindowPaint(this);
+  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
+                    OnWindowOpacityChanged(this, old_opacity, opacity_));
 }
 
 void ServerWindow::SetPredefinedCursor(mus::mojom::Cursor value) {

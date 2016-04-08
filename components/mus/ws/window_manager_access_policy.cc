@@ -81,6 +81,11 @@ bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
   return root && window->parent() == root;
 }
 
+bool WindowManagerAccessPolicy::CanChangeWindowOpacity(
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
+}
+
 bool WindowManagerAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
     mus::mojom::SurfaceType surface_type) const {

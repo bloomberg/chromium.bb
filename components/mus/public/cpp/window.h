@@ -88,6 +88,9 @@ class Window {
   bool visible() const { return visible_; }
   void SetVisible(bool value);
 
+  float opacity() const { return opacity_; }
+  void SetOpacity(float opacity);
+
   // Cursors
   mojom::Cursor predefined_cursor() const { return cursor_id_; }
   void SetPredefinedCursor(mus::mojom::Cursor cursor_id);
@@ -255,6 +258,7 @@ class Window {
                                const mojom::ViewportMetrics& new_metrics);
   void LocalSetParentDrawn(bool drawn);
   void LocalSetVisible(bool visible);
+  void LocalSetOpacity(float opacity);
   void LocalSetPredefinedCursor(mojom::Cursor cursor_id);
   void LocalSetSharedProperty(const std::string& name,
                               const std::vector<uint8_t>* data);
@@ -311,6 +315,7 @@ class Window {
   mojom::ViewportMetricsPtr viewport_metrics_;
 
   bool visible_;
+  float opacity_;
 
   mojom::Cursor cursor_id_;
 

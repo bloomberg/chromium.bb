@@ -770,7 +770,8 @@ bool NativeWidgetMus::IsFullscreen() const {
 }
 
 void NativeWidgetMus::SetOpacity(unsigned char opacity) {
-  // NOTIMPLEMENTED();
+  if (window_)
+    window_->SetOpacity(opacity / 255.0);
 }
 
 void NativeWidgetMus::FlashFrame(bool flash_frame) {

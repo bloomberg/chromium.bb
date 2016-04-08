@@ -77,6 +77,7 @@ class WindowPrivate {
   }
   void LocalSetParentDrawn(bool drawn) { window_->LocalSetParentDrawn(drawn); }
   void LocalSetVisible(bool visible) { window_->LocalSetVisible(visible); }
+  void LocalSetOpacity(float opacity) { window_->LocalSetOpacity(opacity); }
   void LocalSetPredefinedCursor(mojom::Cursor cursor) {
     window_->LocalSetPredefinedCursor(cursor);
   }

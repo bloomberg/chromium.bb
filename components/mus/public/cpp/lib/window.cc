@@ -222,6 +222,12 @@ void Window::SetVisible(bool value) {
   LocalSetVisible(value);
 }
 
+void Window::SetOpacity(float opacity) {
+  if (connection_)
+    tree_client()->SetOpacity(this, opacity);
+  LocalSetOpacity(opacity);
+}
+
 void Window::SetPredefinedCursor(mus::mojom::Cursor cursor_id) {
   if (cursor_id_ == cursor_id)
     return;
@@ -504,6 +510,7 @@ Window::Window(WindowTreeConnection* connection, Id id)
       input_event_handler_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
+      opacity_(1.0f),
       cursor_id_(mojom::Cursor::CURSOR_NULL),
       parent_drawn_(false) {}
 
@@ -660,6 +667,16 @@ void Window::LocalSetVisible(bool visible) {
                     OnWindowVisibilityChanging(this));
   visible_ = visible;
   NotifyWindowVisibilityChanged(this);
+}
+
+void Window::LocalSetOpacity(float opacity) {
+  if (opacity_ == opacity)
+    return;
+
+  float old_opacity = opacity_;
+  opacity_ = opacity;
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowOpacityChanged(this, old_opacity, opacity_));
 }
 
 void Window::LocalSetPredefinedCursor(mojom::Cursor cursor_id) {

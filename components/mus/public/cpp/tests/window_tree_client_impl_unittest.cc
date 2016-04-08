@@ -338,6 +338,102 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
   EXPECT_EQ(original_visible, root->visible());
 }
 
+// Verifies that local opacity is not changed if the server replied that the
+// change succeeded.
+TEST_F(WindowTreeClientImplTest, SetOpacitySucceeds) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+  const float original_opacity = root->opacity();
+  const float new_opacity = 0.5f;
+  ASSERT_NE(new_opacity, original_opacity);
+  ASSERT_NE(new_opacity, root->opacity());
+  root->SetOpacity(new_opacity);
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, true);
+  EXPECT_EQ(new_opacity, root->opacity());
+}
+
+// Verifies that opacity is reverted if the server replied that the change
+// failed.
+TEST_F(WindowTreeClientImplTest, SetOpacityFailed) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+  const float original_opacity = root->opacity();
+  const float new_opacity = 0.5f;
+  ASSERT_NE(new_opacity, root->opacity());
+  root->SetOpacity(new_opacity);
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_EQ(original_opacity, root->opacity());
+}
+
+// Simulates the server changing the opacitry while there is an opacity change
+// in flight, causing the requested change to fail.
+TEST_F(WindowTreeClientImplTest, SetOpacityFailedWithPendingChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+  const float original_opacity = root->opacity();
+  const float new_opacity = 0.5f;
+  ASSERT_NE(new_opacity, root->opacity());
+  root->SetOpacity(new_opacity);
+  EXPECT_EQ(new_opacity, root->opacity());
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+
+  // Simulate the server responding with an opacity change.
+  const float server_changed_opacity = 0.75f;
+  setup.window_tree_client()->OnWindowOpacityChanged(
+      root->id(), original_opacity, server_changed_opacity);
+
+  // This shouldn't trigger opacity changing yet.
+  EXPECT_EQ(new_opacity, root->opacity());
+
+  // Tell the client the change failed, which should trigger failing to the
+  // most recent opacity from server.
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_EQ(server_changed_opacity, root->opacity());
+
+  // Simulate server changing back to original opacity. Should take immediately.
+  setup.window_tree_client()->OnWindowOpacityChanged(
+      root->id(), server_changed_opacity, original_opacity);
+  EXPECT_EQ(original_opacity, root->opacity());
+}
+
+// Tests that when there are multiple changes in flight, that failing changes
+// update the revert state of subsequent changes.
+TEST_F(WindowTreeClientImplTest, SetOpacityFailedWithMultiplePendingChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+  const float original_opacity = root->opacity();
+  const float new_opacity = 0.5f;
+  ASSERT_NE(new_opacity, root->opacity());
+  root->SetOpacity(new_opacity);
+  uint32_t change_id1;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id1));
+
+  const float second_new_opacity = 0.75f;
+  ASSERT_NE(second_new_opacity, root->opacity());
+  root->SetOpacity(second_new_opacity);
+  uint32_t change_id2;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id2));
+
+  // Canceling the first one, while there is another in flight, should not
+  // change the local opacity.
+  setup.window_tree_client()->OnChangeCompleted(change_id1, false);
+  EXPECT_EQ(second_new_opacity, root->opacity());
+
+  // The previous cancelation should have updated the revert value of the in
+  // flight change.
+  setup.window_tree_client()->OnChangeCompleted(change_id2, false);
+  EXPECT_EQ(original_opacity, root->opacity());
+}
+
 // Verifies |is_modal| is reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientImplTest, SetModalFailed) {
   WindowTreeSetup setup;

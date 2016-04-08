@@ -23,6 +23,7 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_change_tracker.h"
+#include "components/mus/ws/test_server_window_delegate.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_server.h"
@@ -837,6 +838,44 @@ TEST_F(WindowTreeTest, MoveCaptureWindowToModalParent) {
   // by a modal window.
   ASSERT_TRUE(tree->AddWindow(w1_id, w3_id));
   EXPECT_EQ(nullptr, GetCaptureWindow(display));
+}
+
+// Tests that opacity can be set on a known window.
+TEST_F(WindowTreeTest, SetOpacity) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &tree, &window));
+
+  const float new_opacity = 0.5f;
+  EXPECT_NE(new_opacity, window->opacity());
+  ASSERT_TRUE(tree->SetWindowOpacity(ClientWindowIdForWindow(tree, window),
+                                     new_opacity));
+  EXPECT_EQ(new_opacity, window->opacity());
+
+  // Re-applying the same opacity will succeed.
+  EXPECT_TRUE(tree->SetWindowOpacity(ClientWindowIdForWindow(tree, window),
+                                     new_opacity));
+}
+
+// Tests that opacity requests for unknown windows are rejected.
+TEST_F(WindowTreeTest, SetOpacityFailsOnUnknownWindow) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &tree, &window));
+
+  TestServerWindowDelegate delegate;
+  WindowId window_id(42, 1337);
+  ServerWindow unknown_window(&delegate, window_id);
+  const float new_opacity = 0.5f;
+  ASSERT_NE(new_opacity, unknown_window.opacity());
+
+  EXPECT_FALSE(tree->SetWindowOpacity(
+      ClientWindowId(WindowIdToTransportId(window_id)), new_opacity));
+  EXPECT_NE(new_opacity, unknown_window.opacity());
 }
 
 }  // namespace test

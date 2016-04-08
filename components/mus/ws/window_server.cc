@@ -578,6 +578,17 @@ void WindowServer::OnWillChangeWindowVisibility(ServerWindow* window) {
   }
 }
 
+void WindowServer::OnWindowOpacityChanged(ServerWindow* window,
+                                          float old_opacity,
+                                          float new_opacity) {
+  DCHECK(!in_destructor_);
+
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowOpacityChanged(window, old_opacity, new_opacity,
+                                             IsOperationSource(pair.first));
+  }
+}
+
 void WindowServer::OnWindowVisibilityChanged(ServerWindow* window) {
   if (in_destructor_)
     return;

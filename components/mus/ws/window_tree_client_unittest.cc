@@ -249,6 +249,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     return WaitForChangeCompleted(change_id);
   }
 
+  bool SetWindowOpacity(Id window_id, float opacity) {
+    const uint32_t change_id = GetAndAdvanceChangeId();
+    tree()->SetWindowOpacity(change_id, window_id, opacity);
+    return WaitForChangeCompleted(change_id);
+  }
+
  private:
   // Used when running a nested MessageLoop.
   struct WaitState {
@@ -340,6 +346,11 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   void OnWindowVisibilityChanged(uint32_t window, bool visible) override {
     tracker()->OnWindowVisibilityChanged(window, visible);
+  }
+  void OnWindowOpacityChanged(uint32_t window,
+                              float old_opacity,
+                              float new_opacity) override {
+    tracker()->OnWindowOpacityChanged(window, new_opacity);
   }
   void OnWindowParentDrawnStateChanged(uint32_t window, bool drawn) override {
     tracker()->OnWindowParentDrawnStateChanged(window, drawn);
@@ -1641,6 +1652,38 @@ TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications3) {
         "VisibilityChanged window=" + IdToString(window_1_2) + " visible=true",
         SingleChangeToDescription(*changes2()));
   }
+}
+
+// Tests that when opacity is set on a window, that the calling client is not
+// notified, however children are. Also that setting the same opacity is
+// rejected and no on eis notifiyed.
+TEST_F(WindowTreeClientTest, SetOpacityNotifications) {
+  Id window_1_1 = wt_client1()->NewWindow(1);
+  ASSERT_TRUE(window_1_1);
+
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnectionWithRoot(window_1_1));
+  Id window_2_1 = wt_client2()->NewWindow(1);
+  ASSERT_TRUE(window_2_1);
+  ASSERT_TRUE(wt_client2()->AddWindow(window_1_1, window_2_1));
+  ASSERT_TRUE(wt_client1()->WaitForAllMessages());
+
+  changes1()->clear();
+  changes2()->clear();
+  // Change opacity, no notification for calling client.
+  ASSERT_TRUE(wt_client1()->SetWindowOpacity(window_1_1, 0.5f));
+  EXPECT_TRUE(changes1()->empty());
+  wt_client2()->WaitForChangeCount(1);
+  EXPECT_EQ(
+      "OpacityChanged window_id=" + IdToString(window_1_1) + " opacity=0.50",
+      SingleChangeToDescription(*changes2()));
+
+  changes2()->clear();
+  // Attempting to set the same opacity should succeed, but no notification as
+  // there was no actual change.
+  ASSERT_TRUE(wt_client1()->SetWindowOpacity(window_1_1, 0.5f));
+  EXPECT_TRUE(changes1()->empty());
+  wt_client2()->WaitForAllMessages();
+  EXPECT_TRUE(changes2()->empty());
 }
 
 TEST_F(WindowTreeClientTest, SetWindowProperty) {

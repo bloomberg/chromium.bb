@@ -126,6 +126,9 @@ interface WindowTree {
                     string name,
                     array<uint8>? value);
 
+  // Sets the opacity of the specified window to |opacity|.
+  SetWindowOpacity(uint32 change_id, uint32 window_id, float opacity);
+
   // Attaches a Surface to a particular window.
   AttachSurface(uint32 window_id,
                 SurfaceType type,
@@ -324,6 +327,9 @@ interface WindowTreeClient {
 
   // Invoked when the visibility of the specified window changes.
   OnWindowVisibilityChanged(uint32 window, bool visible);
+
+  // Invoked when the opacity of the specified window has changed.
+  OnWindowOpacityChanged(uint32 window, float old_opacity, float new_opacity);
 
   // Invoked when the drawn state of |window|'s parent changes. The drawn state
   // is determined by the visibility of a Window and the Windows ancestors. A

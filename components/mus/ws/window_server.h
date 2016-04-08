@@ -250,6 +250,9 @@ class WindowServer : public ServerWindowDelegate,
                          mojom::OrderDirection direction) override;
   void OnWillChangeWindowVisibility(ServerWindow* window) override;
   void OnWindowVisibilityChanged(ServerWindow* window) override;
+  void OnWindowOpacityChanged(ServerWindow* window,
+                              float old_opacity,
+                              float new_opacity) override;
   void OnWindowSharedPropertyChanged(
       ServerWindow* window,
       const std::string& name,

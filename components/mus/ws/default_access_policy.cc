@@ -93,6 +93,12 @@ bool DefaultAccessPolicy::CanChangeWindowVisibility(
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool DefaultAccessPolicy::CanChangeWindowOpacity(
+    const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->HasRootForAccessPolicy(window);
+}
+
 bool DefaultAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
     mojom::SurfaceType surface_type) const {

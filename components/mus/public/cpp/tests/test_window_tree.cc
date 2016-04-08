@@ -70,6 +70,13 @@ void TestWindowTree::SetWindowProperty(uint32_t change_id,
   change_id_ = change_id;
 }
 
+void TestWindowTree::SetWindowOpacity(uint32_t change_id,
+                                      uint32_t window_id,
+                                      float opacity) {
+  got_change_ = true;
+  change_id_ = change_id;
+}
+
 void TestWindowTree::AttachSurface(
     uint32_t window_id,
     mojom::SurfaceType type,

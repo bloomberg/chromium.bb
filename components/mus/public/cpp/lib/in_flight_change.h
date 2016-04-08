@@ -34,6 +34,7 @@ enum class ChangeType {
   FOCUS,
   NEW_WINDOW,
   NEW_TOP_LEVEL_WINDOW,
+  OPACITY,
   PREDEFINED_CURSOR,
   PROPERTY,
   REMOVE_CHILD,
@@ -263,6 +264,21 @@ class InFlightVisibleChange : public InFlightChange {
   bool revert_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightVisibleChange);
+};
+
+class InFlightOpacityChange : public InFlightChange {
+ public:
+  InFlightOpacityChange(Window* window, float revert_value);
+  ~InFlightOpacityChange() override;
+
+  // InFlightChange:
+  void SetRevertValueFrom(const InFlightChange& change) override;
+  void Revert() override;
+
+ private:
+  float revert_opacity_;
+
+  DISALLOW_COPY_AND_ASSIGN(InFlightOpacityChange);
 };
 
 class InFlightSetModalChange : public InFlightChange {

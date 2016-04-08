@@ -138,6 +138,7 @@ class WindowTree : public mojom::WindowTree,
   std::vector<const ServerWindow*> GetWindowTree(
       const ClientWindowId& window_id) const;
   bool SetWindowVisibility(const ClientWindowId& window_id, bool visible);
+  bool SetWindowOpacity(const ClientWindowId& window_id, float opacity);
   bool SetFocus(const ClientWindowId& window_id);
   bool Embed(const ClientWindowId& window_id,
              mojom::WindowTreeClientPtr client);
@@ -188,6 +189,10 @@ class WindowTree : public mojom::WindowTree,
   void ProcessWindowDeleted(const ServerWindow* window, bool originated_change);
   void ProcessWillChangeWindowVisibility(const ServerWindow* window,
                                          bool originated_change);
+  void ProcessWindowOpacityChanged(const ServerWindow* window,
+                                   float old_opacity,
+                                   float new_opacity,
+                                   bool originated_change);
   void ProcessCursorChanged(const ServerWindow* window,
                             int32_t cursor_id,
                             bool originated_change);
@@ -340,6 +345,9 @@ class WindowTree : public mojom::WindowTree,
                          Id transport_window_id,
                          const mojo::String& name,
                          mojo::Array<uint8_t> value) override;
+  void SetWindowOpacity(uint32_t change_id,
+                        Id window_id,
+                        float opacity) override;
   void AttachSurface(Id transport_window_id,
                      mojom::SurfaceType type,
                      mojo::InterfaceRequest<mojom::Surface> surface,

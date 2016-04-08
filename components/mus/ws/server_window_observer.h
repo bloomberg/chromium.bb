@@ -60,6 +60,9 @@ class ServerWindowObserver {
 
   virtual void OnWillChangeWindowVisibility(ServerWindow* window) {}
   virtual void OnWindowVisibilityChanged(ServerWindow* window) {}
+  virtual void OnWindowOpacityChanged(ServerWindow* window,
+                                      float old_opacity,
+                                      float new_opacity) {}
 
   virtual void OnWindowPredefinedCursorChanged(ServerWindow* window,
                                                int32_t cursor_id) {}

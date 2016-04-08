@@ -40,6 +40,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
       const ServerWindow* window) const override;
   bool CanEmbed(const ServerWindow* window) const override;
   bool CanChangeWindowVisibility(const ServerWindow* window) const override;
+  bool CanChangeWindowOpacity(const ServerWindow* window) const override;
   bool CanSetWindowSurface(const ServerWindow* window,
                            mus::mojom::SurfaceType surface_type) const override;
   bool CanSetWindowBounds(const ServerWindow* window) const override;

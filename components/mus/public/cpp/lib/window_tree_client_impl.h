@@ -87,6 +87,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetCanFocus(Id window_id, bool can_focus);
   void SetPredefinedCursor(Id window_id, mus::mojom::Cursor cursor_id);
   void SetVisible(Window* window, bool visible);
+  void SetOpacity(Window* window, float opacity);
   void SetProperty(Window* window,
                    const std::string& name,
                    mojo::Array<uint8_t> data);
@@ -209,6 +210,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                          mojom::OrderDirection direction) override;
   void OnWindowDeleted(Id window_id) override;
   void OnWindowVisibilityChanged(Id window_id, bool visible) override;
+  void OnWindowOpacityChanged(Id window_id,
+                              float old_opacity,
+                              float new_opacity) override;
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(Id window_id,
                                      const mojo::String& name,

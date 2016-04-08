@@ -762,6 +762,66 @@ TEST_F(WindowObserverTest, SetVisibleChild) {
 
 namespace {
 
+class OpacityChangeObserver : public WindowObserver {
+ public:
+  explicit OpacityChangeObserver(Window* window) : window_(window) {
+    window_->AddObserver(this);
+  }
+  ~OpacityChangeObserver() override { window_->RemoveObserver(this); }
+
+  Changes GetAndClearChanges() {
+    Changes changes;
+    changes.swap(changes_);
+    return changes;
+  }
+
+ private:
+  // WindowObserver:
+  void OnWindowOpacityChanged(Window* window,
+                              float old_opacity,
+                              float new_opacity) override {
+    changes_.push_back(base::StringPrintf(
+        "window=%s old_opacity=%.2f new_opacity=%.2f",
+        WindowIdToString(window->id()).c_str(), old_opacity, new_opacity));
+  }
+
+  Window* window_;
+  Changes changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(OpacityChangeObserver);
+};
+
+}  // namespace
+
+// Tests that WindowObserver is only notified when opacity changes.
+TEST_F(WindowObserverTest, SetOpacity) {
+  TestWindow w1;
+  EXPECT_FLOAT_EQ(1.0f, w1.opacity());
+
+  // Changing the opacity should trigger a notification.
+  OpacityChangeObserver observer(&w1);
+  w1.SetOpacity(0.5f);
+  EXPECT_FLOAT_EQ(0.5f, w1.opacity());
+  Changes changes = observer.GetAndClearChanges();
+  ASSERT_EQ(1u, changes.size());
+  EXPECT_EQ("window=0,1 old_opacity=1.00 new_opacity=0.50", changes[0]);
+
+  // Setting to the same opacity should be rejected, no notification.
+  w1.SetOpacity(0.5f);
+  EXPECT_FLOAT_EQ(0.5f, w1.opacity());
+  changes = observer.GetAndClearChanges();
+  EXPECT_TRUE(changes.empty());
+
+  // Alternate sources of opacity changes should trigger a notification.
+  WindowPrivate(&w1).LocalSetOpacity(1.0f);
+  EXPECT_FLOAT_EQ(1.0f, w1.opacity());
+  changes = observer.GetAndClearChanges();
+  ASSERT_EQ(1u, changes.size());
+  EXPECT_EQ("window=0,1 old_opacity=0.50 new_opacity=1.00", changes[0]);
+}
+
+namespace {
+
 class SharedPropertyChangeObserver : public WindowObserver {
  public:
   explicit SharedPropertyChangeObserver(Window* window) : window_(window) {

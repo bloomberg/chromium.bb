@@ -48,6 +48,7 @@ class AccessPolicy {
       const ServerWindow* window) const = 0;
   virtual bool CanEmbed(const ServerWindow* window) const = 0;
   virtual bool CanChangeWindowVisibility(const ServerWindow* window) const = 0;
+  virtual bool CanChangeWindowOpacity(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowSurface(const ServerWindow* window,
                                    mojom::SurfaceType surface_type) const = 0;
   virtual bool CanSetWindowBounds(const ServerWindow* window) const = 0;

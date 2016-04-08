@@ -235,6 +235,12 @@ void TestWindowTreeClient::OnWindowVisibilityChanged(uint32_t window,
   tracker_.OnWindowVisibilityChanged(window, visible);
 }
 
+void TestWindowTreeClient::OnWindowOpacityChanged(uint32_t window,
+                                                  float old_opacity,
+                                                  float new_opacity) {
+  tracker_.OnWindowOpacityChanged(window, new_opacity);
+}
+
 void TestWindowTreeClient::OnWindowParentDrawnStateChanged(uint32_t window,
                                                            bool drawn) {
   tracker_.OnWindowParentDrawnStateChanged(window, drawn);
