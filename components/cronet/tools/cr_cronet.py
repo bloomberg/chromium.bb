@@ -46,9 +46,8 @@ def debug(extra_options):
 
 
 def stack(out_dir):
-  return run('adb logcat -d | third_party/android_tools/ndk/ndk-stack ' + \
-             '-sym ' + out_dir + '/lib')
-
+  return run('adb logcat -d | CHROMIUM_OUTPUT_DIR=' + out_dir +
+          ' third_party/android_platform/development/scripts/stack')
 
 def main():
   parser = argparse.ArgumentParser()
