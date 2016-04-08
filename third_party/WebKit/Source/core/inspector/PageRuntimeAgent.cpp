@@ -66,8 +66,10 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
         return;
 
     m_instrumentingAgents->setPageRuntimeAgent(this);
-    if (m_inspectedFrames->root()->loader().stateMachine()->committedFirstRealDocumentLoad())
-        m_inspectedFrames->root()->script().initializeMainWorld();
+    if (m_inspectedFrames->root()->loader().stateMachine()->committedFirstRealDocumentLoad()) {
+        for (const LocalFrame* frame : *m_inspectedFrames)
+            frame->script().initializeMainWorld();
+    }
     InspectorRuntimeAgent::enable(errorString);
 }
 

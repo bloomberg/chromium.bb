@@ -416,12 +416,13 @@ class DevToolsAgentTest : public RenderViewImplTest {
     }
   }
 
-  bool HasNotifications(const std::string& notification, int count) {
+  int CountNotifications(const std::string& notification) {
+    int result = 0;
     for (const std::string& s : notifications_) {
       if (s == notification)
-        --count;
+        ++result;
     }
-    return count <= 0;
+    return result;
   }
 
  private:
@@ -2383,19 +2384,19 @@ TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
   Detach();
 }
 
-TEST_F(DevToolsAgentTest, RuntimeEnableForcesMainContext) {
-  LoadHTML("");
+TEST_F(DevToolsAgentTest, RuntimeEnableForcesContexts) {
+  LoadHTML("<body>page<iframe></iframe></body>");
   Attach();
   DispatchDevToolsMessage("{\"id\":1,\"method\":\"Runtime.enable\"}");
-  EXPECT_TRUE(HasNotifications("Runtime.executionContextCreated", 1));
+  EXPECT_EQ(2, CountNotifications("Runtime.executionContextCreated"));
 }
 
 TEST_F(DevToolsAgentTest, RuntimeEnableForcesContextsAfterNavigation) {
   Attach();
   DispatchDevToolsMessage("{\"id\":1,\"method\":\"Runtime.enable\"}");
-  EXPECT_FALSE(HasNotifications("Runtime.executionContextCreated", 1));
+  EXPECT_EQ(0, CountNotifications("Runtime.executionContextCreated"));
   LoadHTML("<body>page<iframe></iframe></body>");
-  EXPECT_TRUE(HasNotifications("Runtime.executionContextCreated", 2));
+  EXPECT_EQ(2, CountNotifications("Runtime.executionContextCreated"));
 }
 
 }  // namespace content
