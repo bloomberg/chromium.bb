@@ -38,15 +38,19 @@ _LOGGER = logging.getLogger(os.path.basename(__file__))
 
 
 def Main():
-  options = kasko.config.ParseCommandLine()
+  try:
+    options = kasko.config.ParseCommandLine()
 
-  kasko.integration_test.RunTest(
-      options,
-      'chrome://kasko/send-report',
-      10,
-      {'kasko-set-crash-key-value-impl': 'SetCrashKeyValueImpl'})
+    kasko.integration_test.RunTest(
+        options,
+        'chrome://kasko/send-report',
+        10,
+        {'kasko-set-crash-key-value-impl': 'SetCrashKeyValueImpl'})
 
-  _LOGGER.info('Test passed successfully!')
+    _LOGGER.info('Test passed successfully!')
+  except Exception as e:
+    _LOGGER.error(e)
+    return 1
 
 
 if __name__ == '__main__':

@@ -153,3 +153,16 @@ def parse_common_test_results(json_results, test_separator='/'):
 
   return results
 
+
+def run_integration_test(script_to_run, extra_args, log_file, output):
+  integration_test_res = subprocess.call(
+      [sys.executable, script_to_run] + extra_args)
+
+  with open(log_file) as f:
+    failures = json.load(f)
+  json.dump({
+      'valid': integration_test_res == 0,
+      'failures': failures,
+  }, output)
+
+  return integration_test_res

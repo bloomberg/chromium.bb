@@ -8,6 +8,7 @@
 import logging
 import os
 import optparse
+import sys
 
 from kasko.process import ImportSelenium
 from kasko.json_logging_handler import JSONLoggingHandler
@@ -54,34 +55,52 @@ def GenerateOptionParser():
   return option_parser
 
 
+def LogParserError(message, parser, log_to_json):
+  """Log a parsing error on the command-line.
+
+  This logs the error via the logger if the '--log-to-json' flag has been
+  passed to the logger.
+  """
+  if log_to_json:
+    _LOGGER.error(message)
+    sys.exit(1)
+  else:
+    parser.error(message)
+
+
 def ParseCommandLine(option_parser=None):
   if not option_parser:
     option_parser = GenerateOptionParser()
 
   options, args = option_parser.parse_args()
-  if args:
-    option_parser.error('Unexpected arguments: %s' % args)
-
-  # Validate chrome.exe exists.
-  if not os.path.isfile(options.chrome):
-    option_parser.error('chrome.exe not found')
-
-  # Use default chromedriver.exe if necessary, and validate it exists.
-  if not options.chromedriver:
-    options.chromedriver = os.path.join(os.path.dirname(options.chrome),
-                                        'chromedriver.exe')
-  if not os.path.isfile(options.chromedriver):
-    option_parser.error('chromedriver.exe not found')
-
-  # If specified, ensure the webdriver parameters is a directory.
-  if options.webdriver and not os.path.isdir(options.webdriver):
-    option_parser.error('Invalid webdriver directory.')
 
   # Configure logging.
   logging.basicConfig(level=options.log_level)
 
   if options.log_to_json:
     logging.getLogger().addHandler(JSONLoggingHandler(options.log_to_json))
+
+  if args:
+    return LogParserError('Unexpected arguments: %s' % args,
+                          option_parser, options.log_to_json)
+
+  # Validate chrome.exe exists.
+  if not os.path.isfile(options.chrome):
+    return LogParserError('chrome.exe not found',
+                          option_parser, options.log_to_json)
+
+  # Use default chromedriver.exe if necessary, and validate it exists.
+  if not options.chromedriver:
+    options.chromedriver = os.path.join(os.path.dirname(options.chrome),
+                                        'chromedriver.exe')
+  if not os.path.isfile(options.chromedriver):
+    return LogParserError('chromedriver.exe not found',
+                          option_parser, options.log_to_json)
+
+  # If specified, ensure the webdriver parameters is a directory.
+  if options.webdriver and not os.path.isdir(options.webdriver):
+    return LogParserError('Invalid webdriver directory.',
+                          option_parser, options.log_to_json)
 
   _LOGGER.debug('Using chrome path: %s', options.chrome)
   _LOGGER.debug('Using chromedriver path: %s', options.chromedriver)
