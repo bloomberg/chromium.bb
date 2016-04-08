@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
@@ -21,14 +22,30 @@
 
 namespace media {
 
+namespace {
 const char kMediaEME[] = "Media.EME.";
 const char kDot[] = ".";
 const char kTimeToCreateCdmUMAName[] = "CreateCdmTime";
 
+void ReleaseCdm(scoped_refptr<MediaKeys> cdm) {
+  // |cdm| will be freed now.
+}
+
+}  // namespace
+
 CdmSessionAdapter::CdmSessionAdapter()
     : trace_id_(0), weak_ptr_factory_(this) {}
 
-CdmSessionAdapter::~CdmSessionAdapter() {}
+CdmSessionAdapter::~CdmSessionAdapter() {
+  // Freeing |cdm_| may take a while, so post a task to do it asynchronously.
+  // Note that freeing the CDM will cause any unfullfilled promises to be
+  // rejected, and that needs to be done outside of blink gc (which most
+  // likely triggered our destruction).
+  if (cdm_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ReleaseCdm, cdm_));
+  }
+}
 
 void CdmSessionAdapter::CreateCdm(
     CdmFactory* cdm_factory,
