@@ -21,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -525,6 +526,55 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, KeepaliveOnNetworkRequest) {
   // in keepalive decrement.
   pm->OnNetworkRequestDone(frame_host, 2);
   EXPECT_EQ(baseline_keepalive, pm->GetLazyKeepaliveCount(extension.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, ExtensionProcessReuse) {
+  const size_t kNumExtensions = 3;
+  content::RenderProcessHost::SetMaxRendererProcessCount(kNumExtensions - 1);
+  ProcessManager* pm = ProcessManager::Get(profile());
+
+  std::set<int> processes;
+  std::set<const Extension*> installed_extensions;
+
+  // Create 3 extensions, which is more than the process limit.
+  for (int i = 1; i <= static_cast<int>(kNumExtensions); ++i) {
+    const Extension* extension =
+        CreateExtension(base::StringPrintf("Extension %d", i), true);
+    installed_extensions.insert(extension);
+    ExtensionHost* extension_host =
+        pm->GetBackgroundHostForExtension(extension->id());
+
+    EXPECT_EQ(extension->url(),
+              extension_host->host_contents()->GetSiteInstance()->GetSiteURL());
+
+    processes.insert(extension_host->render_process_host()->GetID());
+  }
+
+  EXPECT_EQ(kNumExtensions, installed_extensions.size());
+
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ(kNumExtensions, processes.size()) << "Extension process reuse is "
+                                                   "expected to be disabled in "
+                                                   "--site-per-process.";
+  } else {
+    EXPECT_LT(processes.size(), kNumExtensions)
+        << "Expected extension process reuse, but none happened.";
+  }
+
+  // Interact with each extension background page by setting and reading back
+  // the cookie. This would fail for one of the two extensions in a shared
+  // process, if that process is locked to a single origin. This is a regression
+  // test for http://crbug.com/600441.
+  for (const Extension* extension : installed_extensions) {
+    content::DOMMessageQueue queue;
+    ExecuteScriptInBackgroundPageNoWait(
+        extension->id(),
+        "document.cookie = 'extension_cookie';"
+        "window.domAutomationController.send(document.cookie);");
+    std::string message;
+    ASSERT_TRUE(queue.WaitForMessage(&message));
+    EXPECT_EQ(message, "\"extension_cookie\"");
+  }
 }
 
 }  // namespace extensions

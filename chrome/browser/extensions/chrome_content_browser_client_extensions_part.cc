@@ -218,6 +218,14 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
             .GetExtensionOrAppByURL(effective_site_url);
     if (extension && extension->is_hosted_app())
       return false;
+
+    // http://crbug.com/600441 workaround: Extension process reuse, implemented
+    // in ShouldTryToUseExistingProcessHost(), means that extension processes
+    // aren't always actually dedicated to a single origin, even in
+    // --isolate-extensions. TODO(nick): Fix this.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kSitePerProcess))
+      return false;
   }
   return true;
 }
