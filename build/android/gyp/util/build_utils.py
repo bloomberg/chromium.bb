@@ -267,6 +267,12 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
   zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=_HERMETIC_TIMESTAMP)
   zipinfo.external_attr = _HERMETIC_FILE_ATTR
 
+  if src_path and os.path.islink(src_path):
+    zipinfo.filename = zip_path
+    zipinfo.external_attr |= stat.S_IFLNK << 16L # mark as a symlink
+    zip_file.writestr(zipinfo, os.readlink(src_path))
+    return
+
   if src_path:
     with file(src_path) as f:
       data = f.read()
