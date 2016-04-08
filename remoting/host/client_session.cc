@@ -445,27 +445,40 @@ void ClientSession::OnScreenSizeChanged(const webrtc::DesktopSize& size,
                                         const webrtc::DesktopVector& dpi) {
   DCHECK(CalledOnValidThread());
 
-  mouse_clamping_filter_.set_input_size(size);
   mouse_clamping_filter_.set_output_size(size);
 
-  if (connection_->session()->config().protocol() ==
-      protocol::SessionConfig::Protocol::WEBRTC) {
-    protocol::VideoLayout layout;
-    protocol::VideoTrackLayout* video_track = layout.add_video_track();
-    video_track->set_position_x(0);
-    video_track->set_position_y(0);
-    video_track->set_width(size.width() * kDefaultDpi / dpi.x());
-    video_track->set_height(size.height() * kDefaultDpi / dpi.y());
-    video_track->set_x_dpi(dpi.x());
-    video_track->set_y_dpi(dpi.y());
+  switch (connection_->session()->config().protocol()) {
+    case protocol::SessionConfig::Protocol::ICE:
+      mouse_clamping_filter_.set_input_size(size);
+      break;
 
-    // VideoLayout can be sent only after the control channel is connected.
-    // TODO(sergeyu): Change client_stub() implementation to allow queuing while
-    // connection is being established.
-    if (channels_connected_) {
-      connection_->client_stub()->SetVideoLayout(layout);
-    } else {
-      pending_video_layout_message_.reset(new protocol::VideoLayout(layout));
+    case protocol::SessionConfig::Protocol::WEBRTC: {
+      // When using WebRTC protocol the client sends mouse coordinates in DIPs,
+      // while InputInjector expects them in physical pixels.
+      // TODO(sergeyu): Fix InputInjector implementations to use DIPs as well.
+      webrtc::DesktopSize size_dips(size.width() * kDefaultDpi / dpi.x(),
+                                    size.height() * kDefaultDpi / dpi.y());
+      mouse_clamping_filter_.set_input_size(size_dips);
+
+      // Generate and send VideoLayout message.
+      protocol::VideoLayout layout;
+      protocol::VideoTrackLayout* video_track = layout.add_video_track();
+      video_track->set_position_x(0);
+      video_track->set_position_y(0);
+      video_track->set_width(size_dips.width());
+      video_track->set_height(size_dips.height());
+      video_track->set_x_dpi(dpi.x());
+      video_track->set_y_dpi(dpi.y());
+
+      // VideoLayout can be sent only after the control channel is connected.
+      // TODO(sergeyu): Change client_stub() implementation to allow queuing
+      // while connection is being established.
+      if (channels_connected_) {
+        connection_->client_stub()->SetVideoLayout(layout);
+      } else {
+        pending_video_layout_message_.reset(new protocol::VideoLayout(layout));
+      }
+      break;
     }
   }
 }

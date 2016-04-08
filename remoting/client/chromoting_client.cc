@@ -165,10 +165,18 @@ void ChromotingClient::SetVideoLayout(const protocol::VideoLayout& layout) {
   const protocol::VideoTrackLayout& track_layout = layout.video_track(0);
   int x_dpi = track_layout.has_x_dpi() ? track_layout.x_dpi() : kDefaultDpi;
   int y_dpi = track_layout.has_y_dpi() ? track_layout.y_dpi() : kDefaultDpi;
-  user_interface_->SetDesktopSize(
-      webrtc::DesktopSize(track_layout.width() * x_dpi / kDefaultDpi,
-                          track_layout.height() * y_dpi / kDefaultDpi),
-      webrtc::DesktopVector(x_dpi, y_dpi));
+
+  webrtc::DesktopSize size_dips(track_layout.width(), track_layout.height());
+  webrtc::DesktopSize size_pixels(size_dips.width() * x_dpi / kDefaultDpi,
+                                  size_dips.height() * y_dpi / kDefaultDpi);
+  user_interface_->SetDesktopSize(size_pixels,
+                                  webrtc::DesktopVector(x_dpi, y_dpi));
+
+  mouse_input_scaler_.set_input_size(size_pixels);
+  mouse_input_scaler_.set_output_size(
+      connection_->config().protocol() == protocol::SessionConfig::Protocol::ICE
+          ? size_pixels
+          : size_dips);
 }
 
 void ChromotingClient::InjectClipboardEvent(
@@ -263,6 +271,8 @@ void ChromotingClient::OnChannelsConnected() {
   protocol::Capabilities capabilities;
   capabilities.set_capabilities(local_capabilities_);
   connection_->host_stub()->SetCapabilities(capabilities);
+
+  mouse_input_scaler_.set_input_stub(connection_->input_stub());
 }
 
 }  // namespace remoting

@@ -49,7 +49,8 @@ message MouseEvent {
     BUTTON_MAX = 4;
   }
 
-  // Mouse position information.
+  // Mouse position information. When using WebRTC-based protocol the
+  // coordinates are in DIPs. Otherwise they are in host's physical pixels.
   optional int32 x = 1;
   optional int32 y = 2;
 
