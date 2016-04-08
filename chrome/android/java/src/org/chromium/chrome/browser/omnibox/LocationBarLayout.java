@@ -1264,10 +1264,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             case OFFLINE:
                 Drawable bolt = ApiCompatibilityUtils.getDrawable(
                         getResources(), R.drawable.offline_bolt);
-                bolt.setColorFilter(ApiCompatibilityUtils.getColor(getResources(), mUseDarkColors
-                        ? R.color.locationbar_status_color
-                        : R.color.locationbar_status_color_light), PorterDuff.Mode.SRC_IN);
-                bolt.mutate();
+                bolt.mutate().setColorFilter(
+                        ApiCompatibilityUtils.getColor(getResources(), mUseDarkColors
+                                ? R.color.locationbar_status_color
+                                : R.color.locationbar_status_color_light), PorterDuff.Mode.SRC_IN);
                 mNavigationButton.setImageDrawable(bolt);
                 break;
             default:
