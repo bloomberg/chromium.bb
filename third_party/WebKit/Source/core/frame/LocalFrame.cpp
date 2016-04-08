@@ -851,11 +851,6 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled()
     page()->animator().scheduleVisualUpdate(this);
 }
 
-void LocalFrame::updateSecurityOrigin(SecurityOrigin* origin)
-{
-    script().updateSecurityOrigin(origin);
-}
-
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);
 
 FrameNavigationDisabler::FrameNavigationDisabler(LocalFrame& frame)

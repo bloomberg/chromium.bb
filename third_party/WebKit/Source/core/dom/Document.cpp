@@ -5149,7 +5149,7 @@ void Document::didUpdateSecurityOrigin()
 {
     if (!m_frame)
         return;
-    m_frame->updateSecurityOrigin(getSecurityOrigin());
+    m_frame->script().updateSecurityOrigin(getSecurityOrigin());
 }
 
 bool Document::isContextThread() const

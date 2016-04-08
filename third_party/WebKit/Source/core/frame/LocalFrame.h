@@ -186,8 +186,6 @@ public:
     WebFrameScheduler* frameScheduler();
     void scheduleVisualUpdateUnlessThrottled();
 
-    void updateSecurityOrigin(SecurityOrigin*);
-
     bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
 
     ServiceRegistry* serviceRegistry() { return m_serviceRegistry; }
