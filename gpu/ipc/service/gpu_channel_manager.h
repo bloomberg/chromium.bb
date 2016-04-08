@@ -107,6 +107,7 @@ class GPU_EXPORT GpuChannelManager {
   void RemoveChannel(int client_id);
 
   void LoseAllContexts();
+  void MaybeExitOnContextLost();
 
 #if defined(OS_MACOSX)
   void AddBufferPresentedCallback(int32_t routing_id,
@@ -145,6 +146,10 @@ class GPU_EXPORT GpuChannelManager {
 #if defined(OS_ANDROID)
   void DidAccessGpu();
 #endif
+
+  bool is_exiting_for_lost_context() {
+    return exiting_for_lost_context_;
+  }
 
  protected:
   virtual scoped_ptr<GpuChannel> CreateGpuChannel(
@@ -214,6 +219,9 @@ class GPU_EXPORT GpuChannelManager {
   base::TimeTicks last_gpu_access_time_;
   base::TimeTicks begin_wake_up_time_;
 #endif
+
+  // Set during intentional GPU process shutdown.
+  bool exiting_for_lost_context_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

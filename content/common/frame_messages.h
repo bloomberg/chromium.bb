@@ -1071,14 +1071,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_Are3DAPIsBlocked,
                             content::ThreeDAPIType /* requester */,
                             bool /* blocked */)
 
-// Sent by the renderer process to indicate that a context was lost by
-// client 3D content (Pepper 3D, WebGL) running on the page at the
-// given URL.
-IPC_MESSAGE_CONTROL3(FrameHostMsg_DidLose3DContext,
-                     GURL /* top_origin_url */,
-                     content::ThreeDAPIType /* context_type */,
-                     int /* arb_robustness_status_code */)
-
 #if defined(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin
 // instance is created in the DOM.

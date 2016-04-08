@@ -619,12 +619,6 @@ public:
     // content/ APIs.
     virtual bool allowWebGL(bool defaultValue) { return defaultValue; }
 
-    // Notifies the client that a WebGL context was lost on this page with the
-    // given reason (one of the GL_ARB_robustness status codes; see
-    // Extensions3D.h in WebCore/platform/graphics).
-    virtual void didLoseWebGLContext(int) { }
-
-
     // Screen Orientation --------------------------------------------------
 
     // Access the embedder API for (client-based) screen orientation client .

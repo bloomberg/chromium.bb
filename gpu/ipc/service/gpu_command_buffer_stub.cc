@@ -460,8 +460,14 @@ void GpuCommandBufferStub::Destroy() {
 
   if (initialized_) {
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    if ((surface_handle_ == kNullSurfaceHandle) && !active_url_.is_empty())
+    // If we are currently shutting down the GPU process to help with recovery
+    // (exit_on_context_lost workaround), then don't tell the browser about
+    // offscreen context destruction here since it's not client-invoked, and
+    // might bypass the 3D API blocking logic.
+    if ((surface_handle_ == gpu::kNullSurfaceHandle) && !active_url_.is_empty()
+        && !gpu_channel_manager->is_exiting_for_lost_context()) {
       gpu_channel_manager->delegate()->DidDestroyOffscreenContext(active_url_);
+    }
   }
 
   if (decoder_)
@@ -1092,14 +1098,8 @@ bool GpuCommandBufferStub::CheckContextLost() {
 
     // Work around issues with recovery by allowing a new GPU process to launch.
     if ((was_lost_by_robustness ||
-         context_group_->feature_info()->workarounds().exit_on_context_lost) &&
-        !channel_->gpu_channel_manager()->gpu_preferences().single_process &&
-        !channel_->gpu_channel_manager()->gpu_preferences().in_process_gpu) {
-      LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
-                 << " from problems.";
-      // Signal the message loop to quit to shut down other threads
-      // gracefully.
-      base::MessageLoop::current()->QuitNow();
+         context_group_->feature_info()->workarounds().exit_on_context_lost)) {
+      channel_->gpu_channel_manager()->MaybeExitOnContextLost();
     }
 
     // Lose all other contexts if the reset was triggered by the robustness

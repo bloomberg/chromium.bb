@@ -4173,12 +4173,6 @@ bool RenderFrameImpl::allowWebGL(bool default_value) {
   return !blocked;
 }
 
-void RenderFrameImpl::didLoseWebGLContext(int arb_robustness_status_code) {
-  Send(new FrameHostMsg_DidLose3DContext(
-      blink::WebStringToGURL(frame_->top()->getSecurityOrigin().toString()),
-      THREE_D_API_TYPE_WEBGL, arb_robustness_status_code));
-}
-
 blink::WebScreenOrientationClient*
     RenderFrameImpl::webScreenOrientationClient() {
   if (!screen_orientation_dispatcher_)

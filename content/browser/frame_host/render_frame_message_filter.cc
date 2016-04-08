@@ -208,7 +208,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetCookies, OnGetCookies)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CookiesEnabled, OnCookiesEnabled)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidLose3DContext, OnDidLose3DContext)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_RenderProcessGone,
                                 OnRenderProcessGone())
 #if defined(ENABLE_PLUGINS)
@@ -362,27 +361,6 @@ void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,
                                                   bool* blocked) {
   *blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
       top_origin_url, render_process_id_, render_frame_id, requester);
-}
-
-void RenderFrameMessageFilter::OnDidLose3DContext(
-    const GURL& top_origin_url,
-    ThreeDAPIType /* unused */,
-    int arb_robustness_status_code) {
-  GpuDataManagerImpl::DomainGuilt guilt;
-  switch (arb_robustness_status_code) {
-    case GL_GUILTY_CONTEXT_RESET_ARB:
-      guilt = GpuDataManagerImpl::DOMAIN_GUILT_KNOWN;
-      break;
-    case GL_UNKNOWN_CONTEXT_RESET_ARB:
-      guilt = GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN;
-      break;
-    default:
-      // Ignore lost contexts known to be innocent.
-      return;
-  }
-
-  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
-      top_origin_url, guilt);
 }
 
 void RenderFrameMessageFilter::OnRenderProcessGone() {

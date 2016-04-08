@@ -163,7 +163,6 @@ public:
     void didRequestAutocomplete(HTMLFormElement*) override;
 
     bool allowWebGL(bool enabledPerSettings) override;
-    void didLoseWebGLContext(int arbRobustnessContextLostReason) override;
 
     void dispatchWillInsertBody() override;
 

@@ -62,6 +62,7 @@ GpuChannelManager::GpuChannelManager(
       sync_point_client_waiter_(
           sync_point_manager->CreateSyncPointClientWaiter()),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+      exiting_for_lost_context_(false),
       weak_factory_(this) {
   DCHECK(task_runner);
   DCHECK(io_task_runner);
@@ -245,6 +246,17 @@ void GpuChannelManager::LoseAllContexts() {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&GpuChannelManager::DestroyAllChannels,
                                     weak_factory_.GetWeakPtr()));
+}
+
+void GpuChannelManager::MaybeExitOnContextLost() {
+  if (!gpu_preferences().single_process && !gpu_preferences().in_process_gpu) {
+    LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
+               << " from problems.";
+    // Signal the message loop to quit to shut down other threads
+    // gracefully.
+    base::MessageLoop::current()->QuitNow();
+    exiting_for_lost_context_ = true;
+  }
 }
 
 void GpuChannelManager::DestroyAllChannels() {

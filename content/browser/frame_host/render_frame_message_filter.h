@@ -89,9 +89,6 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                           const GURL& top_origin_url,
                           ThreeDAPIType requester,
                           bool* blocked);
-  void OnDidLose3DContext(const GURL& top_origin_url,
-                          ThreeDAPIType context_type,
-                          int arb_robustness_status_code);
 
   void OnRenderProcessGone();
 

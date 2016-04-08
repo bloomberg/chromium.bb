@@ -5041,13 +5041,6 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
     ASSERT(m_contextLostMode != NotLostContext);
     m_autoRecoveryMethod = autoRecoveryMethod;
 
-    if (mode == RealLostContext) {
-        // Inform the embedder that a lost context was received. In response, the embedder might
-        // decide to take action such as asking the user for permission to use WebGL again.
-        if (LocalFrame* frame = canvas()->document().frame())
-            frame->loader().client()->didLoseWebGLContext(contextGL()->GetGraphicsResetStatusKHR());
-    }
-
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
     drawingBuffer()->setTexture2DBinding(0);
     drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);

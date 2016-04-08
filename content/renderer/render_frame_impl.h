@@ -592,7 +592,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebString userAgentOverride() override;
   blink::WebString doNotTrackValue() override;
   bool allowWebGL(bool default_value) override;
-  void didLoseWebGLContext(int arb_robustness_status_code) override;
   blink::WebScreenOrientationClient* webScreenOrientationClient() override;
   bool isControlledByServiceWorker(blink::WebDataSource& data_source) override;
   int64_t serviceWorkerID(blink::WebDataSource& data_source) override;

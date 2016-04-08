@@ -973,12 +973,6 @@ bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)
     return enabledPerSettings;
 }
 
-void FrameLoaderClientImpl::didLoseWebGLContext(int arbRobustnessContextLostReason)
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didLoseWebGLContext(arbRobustnessContextLostReason);
-}
-
 void FrameLoaderClientImpl::dispatchWillInsertBody()
 {
     if (m_webFrame->client())
