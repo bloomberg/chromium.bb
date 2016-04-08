@@ -35516,6 +35516,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PhysicalWeb.State.Bluetooth" enum="BluetoothStatus">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>Whether bluetooth is on, off, or unknown.</summary>
+</histogram>
+
+<histogram name="PhysicalWeb.State.DataConnectionActive" enum="BooleanActive">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>Whether the data connection is active.</summary>
+</histogram>
+
+<histogram name="PhysicalWeb.State.LocationPermission" enum="BooleanAccepted">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>Whether location permission has been accepted.</summary>
+</histogram>
+
+<histogram name="PhysicalWeb.State.LocationServices" enum="BooleanEnabled">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>Whether location services are enabled.</summary>
+</histogram>
+
+<histogram name="PhysicalWeb.State.Preference"
+    enum="PhysicalWebPreferenceStatus">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    Whether the preference is on, off, or if the user is in an onboarding state
+    when Chrome first starts up.
+  </summary>
+</histogram>
+
 <histogram name="PhysicalWeb.TotalUrls.OnInitialDisplay" units="urls">
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
@@ -61536,6 +61575,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="Unknown or unhandler error"/>
 </enum>
 
+<enum name="BluetoothStatus" type="int">
+  <int value="0" label="Disabled"/>
+  <int value="1" label="Enabled"/>
+  <int value="2" label="Unknown"/>
+</enum>
+
 <enum name="BookmarkLaunchLocation" type="int">
   <int value="0" label="Attached bookmark bar"/>
   <int value="1" label="Detached (floating) bookmark bar"/>
@@ -61582,6 +61627,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanAccepted" type="int">
   <int value="0" label="Not Accepted"/>
   <int value="1" label="Accepted"/>
+</enum>
+
+<enum name="BooleanActive" type="int">
+  <int value="0" label="Inactive"/>
+  <int value="1" label="Active"/>
 </enum>
 
 <enum name="BooleanAttempted" type="int">
@@ -79288,6 +79338,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="REFERER_DIAGNOSTICS"/>
 </enum>
 
+<enum name="PhysicalWebPreferenceStatus" type="int">
+  <int value="0" label="OFF"/>
+  <int value="1" label="ON"/>
+  <int value="2" label="ONBOARDING"/>
+</enum>
+
 <enum name="PingResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Response started"/>
@@ -90682,6 +90738,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Permissions.Action"/>
   <affected-histogram name="Permissions.Action.InsecureOrigin"/>
   <affected-histogram name="Permissions.Action.SecureOrigin"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PhysicalWebDebugActions" separator=".">
+  <suffix name="ChromeStart" label="when Chrome first starts up"/>
+  <suffix name="LaunchFromDiagnostics"
+      label="when the user launches the ListUrlActivity from the Physical Web
+             diagnostics page"/>
+  <suffix name="LaunchFromPreferences"
+      label="when the user launches the ListUrlActivity from the Physical Web
+             preferencs screen"/>
+  <affected-histogram name="PhysicalWeb.State.Bluetooth"/>
+  <affected-histogram name="PhysicalWeb.State.DataConnectionActive"/>
+  <affected-histogram name="PhysicalWeb.State.LocationPermission"/>
+  <affected-histogram name="PhysicalWeb.State.LocationServices"/>
+  <affected-histogram name="PhysicalWeb.State.Preference"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PNaClTranslatorTypes" separator=".">
