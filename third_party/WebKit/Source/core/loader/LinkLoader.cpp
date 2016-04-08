@@ -396,6 +396,7 @@ DEFINE_TRACE(LinkLoader)
     visitor->trace(m_prerender);
     visitor->trace(m_linkPreloadResourceClient);
     ResourceOwner<Resource, ResourceClient>::trace(visitor);
+    PrerenderClient::trace(visitor);
 }
 
 } // namespace blink

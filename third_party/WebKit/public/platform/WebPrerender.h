@@ -37,10 +37,6 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if INSIDE_BLINK
-#include "wtf/PassRefPtr.h"
-#endif
-
 namespace blink {
 
 class Prerender;
@@ -68,7 +64,7 @@ public:
     }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebPrerender(PassRefPtr<Prerender>);
+    BLINK_PLATFORM_EXPORT explicit WebPrerender(Prerender*);
 
     BLINK_PLATFORM_EXPORT const Prerender* toPrerender() const;
 #endif

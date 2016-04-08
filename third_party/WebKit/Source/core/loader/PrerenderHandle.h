@@ -59,13 +59,14 @@ public:
     void documentWasDetached() override;
 
     DECLARE_VIRTUAL_TRACE();
+    EAGERLY_FINALIZE();
 
 private:
-    PrerenderHandle(Document&, PassRefPtr<Prerender>);
+    PrerenderHandle(Document&, Prerender*);
 
     void detach();
 
-    RefPtr<Prerender> m_prerender;
+    Member<Prerender> m_prerender;
 };
 
 } // namespace blink

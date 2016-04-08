@@ -56,7 +56,7 @@ private:
 
 } // namespace
 
-WebPrerender::WebPrerender(PassRefPtr<Prerender> prerender)
+WebPrerender::WebPrerender(Prerender* prerender)
     : m_private(prerender)
 {
 }

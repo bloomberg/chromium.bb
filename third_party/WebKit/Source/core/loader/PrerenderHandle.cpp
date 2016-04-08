@@ -48,17 +48,17 @@ PrerenderHandle* PrerenderHandle::create(Document& document, PrerenderClient* cl
     if (!document.frame())
         return nullptr;
 
-    RefPtr<Prerender> prerender = Prerender::create(client, url, prerenderRelTypes, SecurityPolicy::generateReferrer(document.getReferrerPolicy(), url, document.outgoingReferrer()));
+    Prerender* prerender = Prerender::create(client, url, prerenderRelTypes, SecurityPolicy::generateReferrer(document.getReferrerPolicy(), url, document.outgoingReferrer()));
 
     PrerendererClient* prerendererClient = PrerendererClient::from(document.page());
     if (prerendererClient)
-        prerendererClient->willAddPrerender(prerender.get());
+        prerendererClient->willAddPrerender(prerender);
     prerender->add();
 
-    return new PrerenderHandle(document, prerender.release());
+    return new PrerenderHandle(document, prerender);
 }
 
-PrerenderHandle::PrerenderHandle(Document& document, PassRefPtr<Prerender> prerender)
+PrerenderHandle::PrerenderHandle(Document& document, Prerender* prerender)
     : DocumentLifecycleObserver(&document)
     , m_prerender(prerender)
 {
@@ -101,12 +101,13 @@ void PrerenderHandle::documentWasDetached()
 
 void PrerenderHandle::detach()
 {
-    m_prerender->removeClient();
+    m_prerender->dispose();
     m_prerender.clear();
 }
 
 DEFINE_TRACE(PrerenderHandle)
 {
+    visitor->trace(m_prerender);
     DocumentLifecycleObserver::trace(visitor);
 }
 

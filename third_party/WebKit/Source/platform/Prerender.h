@@ -33,12 +33,11 @@
 #define Prerender_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -46,7 +45,7 @@ namespace blink {
 
 class PrerenderClient;
 
-class PLATFORM_EXPORT Prerender : public RefCounted<Prerender> {
+class PLATFORM_EXPORT Prerender final : public GarbageCollectedFinalized<Prerender> {
     WTF_MAKE_NONCOPYABLE(Prerender);
 public:
     class ExtraData : public RefCounted<ExtraData> {
@@ -54,10 +53,15 @@ public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<Prerender> create(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
-    ~Prerender();
+    static Prerender* create(PrerenderClient* client, const KURL& url, unsigned relTypes, const Referrer& referrer)
+    {
+        return new Prerender(client, url, relTypes, referrer);
+    }
 
-    void removeClient();
+    ~Prerender();
+    DECLARE_TRACE();
+
+    void dispose();
 
     void add();
     void cancel();
@@ -79,7 +83,7 @@ public:
 private:
     Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
 
-    PrerenderClient* m_client;
+    Member<PrerenderClient> m_client;
 
     const KURL m_url;
     const unsigned m_relTypes;

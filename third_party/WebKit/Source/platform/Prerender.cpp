@@ -37,11 +37,6 @@
 
 namespace blink {
 
-PassRefPtr<Prerender> Prerender::create(PrerenderClient* client, const KURL& url, unsigned relTypes, const Referrer& referrer)
-{
-    return adoptRef(new Prerender(client, url, relTypes, referrer));
-}
-
 Prerender::Prerender(PrerenderClient* client, const KURL& url, const unsigned relTypes, const Referrer& referrer)
     : m_client(client)
     , m_url(url)
@@ -54,9 +49,15 @@ Prerender::~Prerender()
 {
 }
 
-void Prerender::removeClient()
+DEFINE_TRACE(Prerender)
 {
-    m_client = 0;
+    visitor->trace(m_client);
+}
+
+void Prerender::dispose()
+{
+    m_client = nullptr;
+    m_extraData.clear();
 }
 
 void Prerender::add()
