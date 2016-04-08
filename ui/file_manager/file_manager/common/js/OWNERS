@@ -5,5 +5,6 @@ per-file importer_common*=smckay@chromium.org
 # trending).  Such changes need to be reviewed by someone familiar with the
 # analytics system.
 per-file metrics_events.js=set noparent
-per-file metrics_events.js=smckay@chromium.org
+per-file metrics_events.js=fukino@chromium.org
 per-file metrics_events.js=kenobi@chromium.org
+per-file metrics_events.js=smckay@chromium.org
