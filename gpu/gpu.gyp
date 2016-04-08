@@ -289,6 +289,9 @@
           ]
         }],
         ['use_ozone == 1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
           'sources+': [
            'ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc',
           ]

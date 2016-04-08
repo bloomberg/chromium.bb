@@ -852,6 +852,10 @@ test("content_unittests") {
   }
 
   if (use_ozone) {
+    sources +=
+        rebase_path(content_tests_gypi_values.content_unittests_ozone_sources,
+                    ".",
+                    "//content")
     deps += [ "//ui/ozone" ]
   } else {
     sources -=

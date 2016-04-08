@@ -314,10 +314,6 @@ test("gpu_unittests") {
   if (is_mac) {
     sources += [ "ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc" ]
   }
-  if (use_ozone) {
-    sources +=
-        [ "ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc" ]
-  }
 
   configs += [
     "//build/config:precompiled_headers",
@@ -346,6 +342,12 @@ test("gpu_unittests") {
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+    sources +=
+        [ "ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc" ]
+  }
 }
 
 test("gpu_perftests") {
