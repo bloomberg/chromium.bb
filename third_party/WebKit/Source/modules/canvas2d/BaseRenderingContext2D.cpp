@@ -1034,12 +1034,6 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
             buffer->setHasExpensiveOp();
     }
 
-    if (imageSource->isCanvasElement() && static_cast<HTMLCanvasElement*>(imageSource)->is3D()) {
-        // WebGL to 2D canvas: must flush graphics context to prevent a race
-        // FIXME: crbug.com/516331 Fix the underlying synchronization issue so this flush can be eliminated.
-        imageBuffer()->flushGpu(FlushReasonDrawImageOfWebGL);
-    }
-
     if (originClean() && wouldTaintOrigin(imageSource))
         setOriginTainted();
 }
