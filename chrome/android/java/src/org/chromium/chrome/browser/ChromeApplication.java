@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -118,7 +117,6 @@ public class ChromeApplication extends ContentApplication {
             "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
     private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
     private static final String PREF_LOCALE = "locale";
-    private static final float FLOAT_EPSILON = 0.001f;
     private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
     private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
@@ -268,7 +266,7 @@ public class ChromeApplication extends ContentApplication {
         ChildProcessLauncher.onBroughtToForeground();
         mBackgroundProcessing.startTimers();
         updatePasswordEchoState();
-        updateFontSize();
+        FontSizePrefs.getInstance(this).onSystemFontScaleChanged();
         updateAcceptLanguages();
         mVariationsSession.start(getApplicationContext());
         mPowerBroadcastReceiver.onForegroundSessionStart();
@@ -771,41 +769,6 @@ public class ChromeApplication extends ContentApplication {
      */
     public AccountManagerDelegate createAccountManagerDelegate() {
         return new SystemAccountManagerDelegate(this);
-    }
-
-    /**
-     * Update the font size after changing the Android accessibility system setting.  Doing so kills
-     * the Activities but it doesn't kill the ChromeApplication, so this should be called in
-     * {@link #onStart} instead of {@link #initialize}.
-     */
-    private void updateFontSize() {
-        // This method is currently broken. http://crbug.com/439108
-        // Skip it (with the consequence of not updating the text scaling factor when the user
-        // changes system font size) rather than incurring the broken behavior.
-        // TODO(newt): fix this.
-        if (true) return;
-
-        FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance(getApplicationContext());
-
-        // Set font scale factor as the product of the system and browser scale settings.
-        float browserTextScale = PreferenceManager
-                .getDefaultSharedPreferences(this)
-                .getFloat(AccessibilityPreferences.PREF_TEXT_SCALE, 1.0f);
-        float fontScale = getResources().getConfiguration().fontScale * browserTextScale;
-
-        float scaleDelta = Math.abs(fontScale - fontSizePrefs.getFontScaleFactor());
-        if (scaleDelta >= FLOAT_EPSILON) {
-            fontSizePrefs.setFontScaleFactor(fontScale);
-        }
-
-        // If force enable zoom has not been manually set, set it automatically based on
-        // font scale factor.
-        boolean shouldForceZoom =
-                fontScale >= AccessibilityPreferences.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER;
-        if (!fontSizePrefs.getUserSetForceEnableZoom()
-                && fontSizePrefs.getForceEnableZoom() != shouldForceZoom) {
-            fontSizePrefs.setForceEnableZoom(shouldForceZoom);
-        }
     }
 
     /**

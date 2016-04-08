@@ -231,9 +231,9 @@ public class PreferencesTest extends NativeLibraryTestBase {
         NumberFormat percentFormat = NumberFormat.getPercentInstance();
         // Arbitrary value 0.4f to be larger and smaller than threshold.
         float fontSmallerThanThreshold =
-                AccessibilityPreferences.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER - 0.4f;
+                FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER - 0.4f;
         float fontBiggerThanThreshold =
-                AccessibilityPreferences.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER + 0.4f;
+                FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER + 0.4f;
 
         // Set the textScaleFactor above the threshold.
         userSetTextScale(accessibilityPref, textScalePref, fontBiggerThanThreshold);

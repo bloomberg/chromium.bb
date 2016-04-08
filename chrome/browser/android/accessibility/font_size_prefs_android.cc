@@ -21,11 +21,11 @@ FontSizePrefsAndroid::FontSizePrefsAndroid(JNIEnv* env, jobject obj)
   pref_change_registrar_->Init(pref_service_);
   pref_change_registrar_->Add(
       prefs::kWebKitFontScaleFactor,
-      base::Bind(&FontSizePrefsAndroid::OnFontScaleFactorPrefsChanged,
+      base::Bind(&FontSizePrefsAndroid::OnFontScaleFactorChanged,
                  base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kWebKitForceEnableZoom,
-      base::Bind(&FontSizePrefsAndroid::OnForceEnableZoomPrefsChanged,
+      base::Bind(&FontSizePrefsAndroid::OnForceEnableZoomChanged,
                  base::Unretained(this)));
 }
 
@@ -57,22 +57,7 @@ bool FontSizePrefsAndroid::GetForceEnableZoom(
   return pref_service_->GetBoolean(prefs::kWebKitForceEnableZoom);
 }
 
-void FontSizePrefsAndroid::AddObserver(JNIEnv* env,
-                                       const JavaRef<jobject>& obj,
-                                       jlong observer_ptr) {
-  FontSizePrefsObserverAndroid* font_size_prefs_observer_android =
-      reinterpret_cast<FontSizePrefsObserverAndroid*>(observer_ptr);
-  observers_.AddObserver(font_size_prefs_observer_android);
-}
-
-void FontSizePrefsAndroid::RemoveObserver(JNIEnv* env,
-                                          const JavaRef<jobject>& obj,
-                                          jlong observer_ptr) {
-  FontSizePrefsObserverAndroid* font_size_prefs_observer_android =
-      reinterpret_cast<FontSizePrefsObserverAndroid*>(observer_ptr);
-  observers_.RemoveObserver(font_size_prefs_observer_android);
-}
-
+// static
 bool FontSizePrefsAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
@@ -83,53 +68,14 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(font_size_prefs_android);
 }
 
-void FontSizePrefsAndroid::OnFontScaleFactorPrefsChanged() {
+void FontSizePrefsAndroid::OnFontScaleFactorChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnChangeFontSize(GetFontScaleFactor(env, java_ref_)));
+  float factor = GetFontScaleFactor(env, java_ref_);
+  Java_FontSizePrefs_onFontScaleFactorChanged(env, java_ref_.obj(), factor);
 }
 
-void FontSizePrefsAndroid::OnForceEnableZoomPrefsChanged() {
+void FontSizePrefsAndroid::OnForceEnableZoomChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      OnChangeForceEnableZoom(GetForceEnableZoom(env, java_ref_)));
-}
-
-FontSizePrefsObserverAndroid::FontSizePrefsObserverAndroid(JNIEnv* env,
-                                                           jobject obj) {
-  java_ref_.Reset(env, obj);
-}
-
-FontSizePrefsObserverAndroid::~FontSizePrefsObserverAndroid() {
-}
-
-bool FontSizePrefsObserverAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-void FontSizePrefsObserverAndroid::DestroyObserverAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  delete this;
-}
-
-jlong InitObserverAndroid(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  FontSizePrefsObserverAndroid* observer_wrapper =
-      new FontSizePrefsObserverAndroid(env, obj);
-  return reinterpret_cast<intptr_t>(observer_wrapper);
-}
-
-void FontSizePrefsObserverAndroid::OnChangeFontSize(float font_size) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_FontSizePrefsObserverWrapper_onChangeFontSize(
-      env, java_ref_.obj(), font_size);
-}
-
-void FontSizePrefsObserverAndroid::OnChangeForceEnableZoom(bool enabled) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_FontSizePrefsObserverWrapper_onChangeForceEnableZoom(
-      env, java_ref_.obj(), enabled);
+  bool enabled = GetForceEnableZoom(env, java_ref_);
+  Java_FontSizePrefs_onForceEnableZoomChanged(env, java_ref_.obj(), enabled);
 }
