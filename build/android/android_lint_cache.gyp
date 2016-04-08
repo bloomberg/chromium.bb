@@ -34,6 +34,7 @@
             'python', '<(DEPTH)/build/android/gyp/lint.py',
             '--lint-path', '<(android_sdk_root)/tools/lint',
             '--cache-dir', '<(PRODUCT_DIR)/android_lint_cache',
+            '--android-sdk-version=<(android_sdk_version)',
             '--platform-xml-path', '<(platform_xml_path)',
             '--manifest-path', '<(android_manifest_path)',
             '--product-dir', '<(PRODUCT_DIR)',

@@ -9,6 +9,7 @@
 
 import argparse
 import os
+import re
 import sys
 import traceback
 from xml.dom import minidom
@@ -22,9 +23,8 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
                 manifest_path, result_path, product_dir, sources, jar_path,
-                cache_dir, resource_dir=None, classpath=None,
-                can_fail_build=False, silent=False):
-
+                cache_dir, android_sdk_version, resource_dir=None,
+                classpath=None, can_fail_build=False, silent=False):
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
 
@@ -129,14 +129,22 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
         cmd.extend(['--sources', _RelativizePath(src_dir)])
       os.symlink(os.path.abspath(src), PathInDir(src_dir, src))
 
+    project_dir = NewSourceDir()
+    if android_sdk_version:
+      # Create dummy project.properies file in a temporary "project" directory.
+      # It is the only way to add Android SDK to the Lint's classpath. Proper
+      # classpath is necessary for most source-level checks.
+      with open(os.path.join(project_dir, 'project.properties'), 'w') \
+          as propfile:
+        print >> propfile, 'target=android-{}'.format(android_sdk_version)
+
     # Put the manifest in a temporary directory in order to avoid lint detecting
     # sibling res/ and src/ directories (which should be pass explicitly if they
     # are to be included).
     if manifest_path:
-      src_dir = NewSourceDir()
       os.symlink(os.path.abspath(manifest_path),
-                 PathInDir(src_dir, manifest_path))
-      cmd.append(src_dir)
+                 PathInDir(project_dir, manifest_path))
+    cmd.append(project_dir)
 
     if os.path.exists(result_path):
       os.remove(result_path)
@@ -144,10 +152,12 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
     env = {}
     stderr_filter = None
     if cache_dir:
+      env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RelativizePath(cache_dir)
       # When _JAVA_OPTIONS is set, java prints to stderr:
       # Picked up _JAVA_OPTIONS: ...
-      env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RelativizePath(cache_dir)
-      stderr_filter = lambda l: '' if '_JAVA_OPTIONS' in l else l
+      #
+      # We drop all lines that contain _JAVA_OPTIONS from the output
+      stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
 
     try:
       build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None,
@@ -225,6 +235,9 @@ def main():
                            'directory tree should be stored.')
   parser.add_argument('--platform-xml-path', required=True,
                       help='Path to api-platforms.xml')
+  parser.add_argument('--android-sdk-version',
+                      help='Version (API level) of the Android SDK used for '
+                           'building.')
   parser.add_argument('--create-cache', action='store_true',
                       help='Mark the lint cache file as an output rather than '
                       'an input.')
@@ -289,6 +302,8 @@ def main():
     input_paths.extend(classpath)
 
     input_strings = []
+    if args.android_sdk_version:
+      input_strings.append(args.android_sdk_version)
     if args.processed_config_path:
       input_strings.append(args.processed_config_path)
 
@@ -302,6 +317,7 @@ def main():
                                     args.product_dir, sources,
                                     args.jar_path,
                                     args.cache_dir,
+                                    args.android_sdk_version,
                                     resource_dir=args.resource_dir,
                                     classpath=classpath,
                                     can_fail_build=args.can_fail_build,

@@ -60,6 +60,7 @@ template("android_lint") {
       rebase_path(_cache_dir, root_build_dir),
       "--platform-xml-path",
       rebase_path(_platform_xml_path, root_build_dir),
+      "--android-sdk-version=${android_sdk_version}",
       "--depfile",
       rebase_path(depfile, root_build_dir),
       "--config-path",
@@ -92,8 +93,7 @@ template("android_lint") {
         "--jar-path",
         rebase_path(invoker.jar_path, root_build_dir),
         "--java-files=$_rebased_java_files",
-        "--classpath=['$rebased_android_sdk_jar']",
-        "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
+        "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       ]
     }
   }
