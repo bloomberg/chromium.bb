@@ -112,7 +112,7 @@ struct CC_EXPORT TransformNodeData {
   bool ancestors_are_invertible : 1;
 
   bool is_animated : 1;
-  bool to_screen_is_animated : 1;
+  bool to_screen_is_potentially_animated : 1;
   bool has_only_translation_animations : 1;
   bool to_screen_has_scale_animation : 1;
 

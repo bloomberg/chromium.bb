@@ -20,6 +20,7 @@ class ClipTree;
 struct DrawProperties;
 class Layer;
 class LayerImpl;
+class LayerTreeHost;
 class RenderSurfaceImpl;
 class EffectTree;
 class TransformTree;
@@ -61,7 +62,7 @@ void CC_EXPORT UpdateRenderSurfaces(Layer* root_layer,
 void CC_EXPORT UpdatePropertyTrees(PropertyTrees* property_trees,
                                    bool can_render_to_separate_surface);
 
-void CC_EXPORT FindLayersThatNeedUpdates(Layer* layer,
+void CC_EXPORT FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                          const TransformTree& transform_tree,
                                          const EffectTree& effect_tree,
                                          LayerList* update_layer_list);
@@ -86,7 +87,8 @@ void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
 
 bool CC_EXPORT LayerShouldBeSkipped(LayerImpl* layer,
                                     bool layer_is_drawn,
-                                    const TransformTree& transform_tree);
+                                    const TransformTree& transform_tree,
+                                    const EffectTree& effect_tree);
 
 bool CC_EXPORT LayerNeedsUpdate(Layer* layer,
                                 bool layer_is_drawn,

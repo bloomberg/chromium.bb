@@ -82,7 +82,8 @@ void LayerProtoConverter::RecursivelyFindAllLayers(Layer* root_layer,
                                                    LayerIdMap* layer_id_map) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
       root_layer->layer_tree_host(),
-      [layer_id_map](Layer* layer) { (*layer_id_map)[layer->id()] = layer; });
+      [layer_id_map](Layer* layer) { (*layer_id_map)[layer->id()] = layer; },
+      CallFunctionLayerType::ALL_LAYERS);
 }
 
 // static

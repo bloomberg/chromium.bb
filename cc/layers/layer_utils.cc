@@ -18,7 +18,7 @@ bool HasTransformAnimationThatInflatesBounds(const LayerImpl& layer) {
 }
 
 inline bool HasAncestorTransformAnimation(const TransformNode* transform_node) {
-  return transform_node->data.to_screen_is_animated;
+  return transform_node->data.to_screen_is_potentially_animated;
 }
 
 inline bool HasAncestorFilterAnimation(const LayerImpl& layer) {

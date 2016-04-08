@@ -538,8 +538,9 @@ void CalculateRenderTarget(LayerImpl* layer,
 
   // The root layer cannot be skipped.
   if (!IsRootLayer(layer) &&
-      draw_property_utils::LayerShouldBeSkipped(
-          layer, layer_is_drawn, property_trees->transform_tree)) {
+      draw_property_utils::LayerShouldBeSkipped(layer, layer_is_drawn,
+                                                property_trees->transform_tree,
+                                                property_trees->effect_tree)) {
     layer->draw_properties().render_target = nullptr;
   } else {
     bool render_to_separate_surface =
@@ -603,8 +604,9 @@ void CalculateRenderSurfaceLayerList(
 
   // The root layer cannot be skipped.
   if (!IsRootLayer(layer) &&
-      draw_property_utils::LayerShouldBeSkipped(
-          layer, layer_is_drawn, property_trees->transform_tree)) {
+      draw_property_utils::LayerShouldBeSkipped(layer, layer_is_drawn,
+                                                property_trees->transform_tree,
+                                                property_trees->effect_tree)) {
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
     layer->draw_properties().render_target = nullptr;
@@ -924,7 +926,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   draw_property_utils::UpdatePropertyTrees(property_trees,
                                            can_render_to_separate_surface);
   draw_property_utils::FindLayersThatNeedUpdates(
-      inputs->root_layer, property_trees->transform_tree,
+      inputs->root_layer->layer_tree_host(), property_trees->transform_tree,
       property_trees->effect_tree, &update_layer_list);
 }
 

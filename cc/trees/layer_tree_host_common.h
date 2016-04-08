@@ -36,6 +36,13 @@ class Layer;
 class SwapPromise;
 class PropertyTrees;
 
+enum CallFunctionLayerType : uint32_t {
+  BASIC_LAYER = 0,
+  MASK_LAYER = 1,
+  REPLICA_LAYER = 2,
+  ALL_LAYERS = MASK_LAYER | REPLICA_LAYER
+};
+
 class CC_EXPORT LayerTreeHostCommon {
  public:
   static gfx::Rect CalculateVisibleRect(const gfx::Rect& target_surface_rect,
@@ -139,11 +146,13 @@ class CC_EXPORT LayerTreeHostCommon {
 
   template <typename Function>
   static void CallFunctionForEveryLayer(LayerTreeHost* layer,
-                                        const Function& function);
+                                        const Function& function,
+                                        const CallFunctionLayerType& type);
 
   template <typename Function>
   static void CallFunctionForEveryLayer(LayerTreeImpl* layer,
-                                        const Function& function);
+                                        const Function& function,
+                                        const CallFunctionLayerType& type);
 
   static Layer* get_layer_as_raw_ptr(const LayerList& layers, size_t index) {
     return layers[index].get();
@@ -203,39 +212,51 @@ bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
 }
 
 template <typename LayerType, typename Function>
-static void CallFunctionForLayer(LayerType* layer, const Function& function) {
+static void CallFunctionForLayer(LayerType* layer,
+                                 const Function& function,
+                                 const CallFunctionLayerType& type) {
   function(layer);
 
-  if (LayerType* mask_layer = layer->mask_layer())
+  LayerType* mask_layer = layer->mask_layer();
+  if ((type & CallFunctionLayerType::MASK_LAYER) && mask_layer)
     function(mask_layer);
-  if (LayerType* replica_layer = layer->replica_layer()) {
+  LayerType* replica_layer = layer->replica_layer();
+  if ((type & CallFunctionLayerType::REPLICA_LAYER) && replica_layer) {
     function(replica_layer);
-    if (LayerType* mask_layer = replica_layer->mask_layer())
+    mask_layer = replica_layer->mask_layer();
+    if ((type & CallFunctionLayerType::MASK_LAYER) && mask_layer)
       function(mask_layer);
   }
 }
 
 template <typename Function>
-static void CallFunctionForEveryLayerInternal(Layer* layer,
-                                              const Function& function) {
-  CallFunctionForLayer(layer, function);
+static void CallFunctionForEveryLayerInternal(
+    Layer* layer,
+    const Function& function,
+    const CallFunctionLayerType& type) {
+  CallFunctionForLayer(layer, function, type);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    CallFunctionForEveryLayerInternal(layer->children()[i].get(), function);
+    CallFunctionForEveryLayerInternal(layer->children()[i].get(), function,
+                                      type);
   }
 }
 
 template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
-                                                    const Function& function) {
-  CallFunctionForEveryLayerInternal(host->root_layer(), function);
+void LayerTreeHostCommon::CallFunctionForEveryLayer(
+    LayerTreeHost* host,
+    const Function& function,
+    const CallFunctionLayerType& type) {
+  CallFunctionForEveryLayerInternal(host->root_layer(), function, type);
 }
 
 template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* host_impl,
-                                                    const Function& function) {
+void LayerTreeHostCommon::CallFunctionForEveryLayer(
+    LayerTreeImpl* host_impl,
+    const Function& function,
+    const CallFunctionLayerType& type) {
   for (auto* layer : *host_impl)
-    CallFunctionForLayer(layer, function);
+    CallFunctionForLayer(layer, function, type);
 }
 
 CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer);

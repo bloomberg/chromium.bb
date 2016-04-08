@@ -411,7 +411,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() &&
       root_layer()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](Layer* layer) { layer->DidBeginTracing(); });
+        this, [](Layer* layer) { layer->DidBeginTracing(); },
+        CallFunctionLayerType::ALL_LAYERS);
   }
 
   LayerTreeImpl* sync_tree = host_impl->sync_tree();
@@ -993,7 +994,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     draw_property_utils::UpdatePropertyTrees(&property_trees_,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(
-        root_layer, property_trees_.transform_tree, property_trees_.effect_tree,
+        this, property_trees_.transform_tree, property_trees_.effect_tree,
         &update_layer_list);
   }
 
@@ -1629,9 +1630,12 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   // updated for other reasons. All layers that at this point are part of the
   // layer tree are valid, so it is OK that they have a valid sequence number.
   int seq_num = property_trees_.sequence_number;
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [seq_num](Layer* layer) {
-    layer->set_property_tree_sequence_number(seq_num);
-  });
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      this,
+      [seq_num](Layer* layer) {
+        layer->set_property_tree_sequence_number(seq_num);
+      },
+      CallFunctionLayerType::ALL_LAYERS);
 
   surface_id_namespace_ = proto.surface_id_namespace();
   next_surface_sequence_ = proto.next_surface_sequence();

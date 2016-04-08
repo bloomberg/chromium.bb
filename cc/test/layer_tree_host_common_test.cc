@@ -128,8 +128,8 @@ void LayerTreeHostCommonTestBase::
   draw_property_utils::UpdatePropertyTrees(property_trees,
                                            can_render_to_separate_surface);
   draw_property_utils::FindLayersThatNeedUpdates(
-      root_layer, property_trees->transform_tree, property_trees->effect_tree,
-      &update_layer_list_);
+      root_layer->layer_tree_host(), property_trees->transform_tree,
+      property_trees->effect_tree, &update_layer_list_);
   draw_property_utils::ComputeVisibleRectsForTesting(
       property_trees, can_render_to_separate_surface, &update_layer_list_);
 }

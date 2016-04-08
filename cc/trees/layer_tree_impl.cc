@@ -106,14 +106,16 @@ void LayerTreeImpl::Shutdown() {
 void LayerTreeImpl::ReleaseResources() {
   if (root_layer_) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->ReleaseResources(); });
+        this, [](LayerImpl* layer) { layer->ReleaseResources(); },
+        CallFunctionLayerType::ALL_LAYERS);
   }
 }
 
 void LayerTreeImpl::RecreateResources() {
   if (root_layer_) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->RecreateResources(); });
+        this, [](LayerImpl* layer) { layer->RecreateResources(); },
+        CallFunctionLayerType::ALL_LAYERS);
   }
 }
 
@@ -126,9 +128,11 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
   // that, we need to inform LayerTreeImpl whenever there are requests when we
   // get them.
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      this, [request_ids](LayerImpl* layer) {
+      this,
+      [request_ids](LayerImpl* layer) {
         layer->GatherFrameTimingRequestIds(request_ids);
-      });
+      },
+      CallFunctionLayerType::ALL_LAYERS);
 }
 
 bool LayerTreeImpl::IsViewportLayerId(int id) const {
@@ -564,9 +568,12 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   // frame to a newly-committed property tree.
   if (!root_layer())
     return;
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
-    layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
-  });
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      this,
+      [](LayerImpl* layer) {
+        layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
+      },
+      CallFunctionLayerType::ALL_LAYERS);
 }
 
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
@@ -1076,7 +1083,8 @@ void LayerTreeImpl::DidBecomeActive() {
 
   if (root_layer()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->DidBecomeActive(); });
+        this, [](LayerImpl* layer) { layer->DidBecomeActive(); },
+        CallFunctionLayerType::ALL_LAYERS);
   }
 
   for (const auto& swap_promise : swap_promise_list_)

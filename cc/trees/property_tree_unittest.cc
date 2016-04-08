@@ -30,7 +30,7 @@ TEST(PropertyTreeSerializationTest, TransformNodeDataSerialization) {
   original.is_invertible = false;
   original.ancestors_are_invertible = false;
   original.is_animated = false;
-  original.to_screen_is_animated = false;
+  original.to_screen_is_potentially_animated = false;
   original.has_only_translation_animations = false;
   original.to_screen_has_scale_animation = false;
   original.flattens_inherited_transform = false;
@@ -1074,7 +1074,7 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     // snapping to be skipped).
     EXPECT_TRUE(child_node->data.scrolls);
     EXPECT_TRUE(child_node->data.to_target.IsScaleOrTranslation());
-    EXPECT_FALSE(child_node->data.to_screen_is_animated);
+    EXPECT_FALSE(child_node->data.to_screen_is_potentially_animated);
     EXPECT_FALSE(child_node->data.ancestors_are_invertible);
 
     gfx::Transform rounded = child_node->data.to_target;

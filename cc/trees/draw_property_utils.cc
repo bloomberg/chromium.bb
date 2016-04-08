@@ -299,7 +299,7 @@ static inline bool TransformToScreenIsKnown(Layer* layer,
                                             int transform_tree_index,
                                             const TransformTree& tree) {
   const TransformNode* node = tree.Node(transform_tree_index);
-  return !node->data.to_screen_is_animated;
+  return !node->data.to_screen_is_potentially_animated;
 }
 
 static inline bool TransformToScreenIsKnown(LayerImpl* layer,
@@ -312,44 +312,6 @@ template <typename LayerType>
 static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
   return layer->transform_is_invertible() ||
          layer->HasPotentiallyRunningTransformAnimation();
-}
-
-static inline bool SubtreeShouldBeSkipped(Layer* layer,
-                                          bool layer_is_drawn,
-                                          const TransformTree& tree) {
-  // If the layer transform is not invertible, it should not be drawn.
-  if (!layer->transform_is_invertible() &&
-      !layer->HasPotentiallyRunningTransformAnimation())
-    return true;
-
-  // When we need to do a readback/copy of a layer's output, we can not skip
-  // it or any of its ancestors.
-  if (layer->num_copy_requests_in_target_subtree() > 0)
-    return false;
-
-  // If the layer is not drawn, then skip it and its subtree.
-  if (!layer_is_drawn)
-    return true;
-
-  if (layer->has_render_surface() && !layer->double_sided() &&
-      !layer->HasPotentiallyRunningTransformAnimation() &&
-      IsSurfaceBackFaceVisible(layer, tree))
-    return true;
-
-  // If layer has a background filter, don't skip the layer, even it the
-  // opacity is 0.
-  if (!layer->background_filters().IsEmpty())
-    return false;
-
-  // If the opacity is being animated then the opacity on the main thread is
-  // unreliable (since the impl thread may be using a different opacity), so it
-  // should not be trusted.
-  // In particular, it should not cause the subtree to be skipped.
-  // Similarly, for layers that might animate opacity using an impl-only
-  // animation, their subtree should also not be skipped.
-  return !layer->EffectiveOpacity() &&
-         !layer->HasPotentiallyRunningOpacityAnimation() &&
-         !layer->OpacityCanAnimateOnImplThread();
 }
 
 template <typename LayerType>
@@ -394,18 +356,18 @@ static bool LayerNeedsUpdateInternal(LayerType* layer,
   return true;
 }
 
-void FindLayersThatNeedUpdates(LayerImpl* layer,
+void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
                                const TransformTree& transform_tree,
                                const EffectTree& effect_tree,
                                LayerImplList* update_layer_list,
                                std::vector<LayerImpl*>* visible_layer_list) {
-  DCHECK_GE(layer->effect_tree_index(), 0);
-  for (auto* layer_impl : *layer->layer_tree_impl()) {
+  for (auto* layer_impl : *layer_tree_impl) {
     bool layer_is_drawn =
-        effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
+        effect_tree.Node(layer_impl->effect_tree_index())->data.is_drawn;
 
     if (!IsRootLayer(layer_impl) &&
-        LayerShouldBeSkipped(layer_impl, layer_is_drawn, transform_tree))
+        LayerShouldBeSkipped(layer_impl, layer_is_drawn, transform_tree,
+                             effect_tree))
       continue;
 
     if (LayerNeedsUpdate(layer_impl, layer_is_drawn, transform_tree)) {
@@ -413,9 +375,9 @@ void FindLayersThatNeedUpdates(LayerImpl* layer,
       update_layer_list->push_back(layer_impl);
     }
 
-    if (LayerImpl* mask_layer = layer->mask_layer())
+    if (LayerImpl* mask_layer = layer_impl->mask_layer())
       update_layer_list->push_back(mask_layer);
-    if (LayerImpl* replica_layer = layer->replica_layer()) {
+    if (LayerImpl* replica_layer = layer_impl->replica_layer()) {
       if (LayerImpl* mask_layer = replica_layer->mask_layer())
         update_layer_list->push_back(mask_layer);
     }
@@ -448,6 +410,130 @@ void UpdateRenderSurfacesForLayersRecursive(EffectTree* effect_tree,
 }
 
 }  // namespace
+
+static inline bool LayerShouldBeSkipped(Layer* layer,
+                                        bool layer_is_drawn,
+                                        const TransformTree& transform_tree,
+                                        const EffectTree& effect_tree) {
+  const TransformNode* transform_node =
+      transform_tree.Node(layer->transform_tree_index());
+  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+
+  // If the layer transform is not invertible, it should not be drawn.
+  bool has_inherited_invertible_or_animated_transform =
+      (transform_node->data.is_invertible &&
+       transform_node->data.ancestors_are_invertible) ||
+      transform_node->data.to_screen_is_potentially_animated;
+  if (!has_inherited_invertible_or_animated_transform)
+    return true;
+
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (effect_node->data.num_copy_requests_in_subtree > 0)
+    return false;
+
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!effect_node->data.is_drawn)
+    return true;
+
+  if (!transform_node->data.to_screen_is_potentially_animated &&
+      effect_node->data.hidden_by_backface_visibility)
+    return true;
+
+  // If layer has a background filter, don't skip the layer, even it the
+  // opacity is 0.
+  if (effect_node->data.node_or_ancestor_has_background_filters)
+    return false;
+
+  // If the opacity is being animated then the opacity on the main thread is
+  // unreliable (since the impl thread may be using a different opacity), so it
+  // should not be trusted.
+  // In particular, it should not cause the subtree to be skipped.
+  // Similarly, for layers that might animate opacity using an impl-only
+  // animation, their subtree should also not be skipped.
+  return !effect_node->data.screen_space_opacity &&
+         !effect_node->data.to_screen_opacity_is_animated;
+}
+
+bool LayerShouldBeSkipped(LayerImpl* layer,
+                          bool layer_is_drawn,
+                          const TransformTree& transform_tree,
+                          const EffectTree& effect_tree) {
+  const TransformNode* transform_node =
+      transform_tree.Node(layer->transform_tree_index());
+  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+  // If the layer transform is not invertible, it should not be drawn.
+  // TODO(ajuma): Correctly process subtrees with singular transform for the
+  // case where we may animate to a non-singular transform and wish to
+  // pre-raster.
+  bool has_inherited_invertible_or_animated_transform =
+      (transform_node->data.is_invertible &&
+       transform_node->data.ancestors_are_invertible) ||
+      transform_node->data.to_screen_is_potentially_animated;
+  if (!has_inherited_invertible_or_animated_transform)
+    return true;
+
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (effect_node->data.num_copy_requests_in_subtree > 0)
+    return false;
+
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!effect_node->data.is_drawn)
+    return true;
+
+  if (effect_node->data.hidden_by_backface_visibility)
+    return true;
+
+  // If layer is on the pending tree and opacity is being animated then
+  // this subtree can't be skipped as we need to create, prioritize and
+  // include tiles for this layer when deciding if tree can be activated.
+  if (!transform_tree.property_trees()->is_active &&
+      effect_node->data.to_screen_opacity_is_animated)
+    return false;
+
+  // If layer has a background filter, don't skip the layer, even it the
+  // opacity is 0.
+  if (effect_node->data.node_or_ancestor_has_background_filters)
+    return false;
+
+  // The opacity of a layer always applies to its children (either implicitly
+  // via a render surface or explicitly if the parent preserves 3D), so the
+  // entire subtree can be skipped if this layer is fully transparent.
+  return !effect_node->data.screen_space_opacity;
+}
+
+void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
+                               const TransformTree& transform_tree,
+                               const EffectTree& effect_tree,
+                               LayerList* update_layer_list) {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      layer_tree_host,
+      [&](Layer* layer) {
+        bool layer_is_drawn =
+            effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
+
+        if (!IsRootLayer(layer) &&
+            LayerShouldBeSkipped(layer, layer_is_drawn, transform_tree,
+                                 effect_tree))
+          return;
+
+        if (LayerNeedsUpdate(layer, layer_is_drawn, transform_tree)) {
+          update_layer_list->push_back(layer);
+        }
+
+        // Append mask layers to the update layer list. They don't have valid
+        // visible rects, so need to get added after the above calculation.
+        // Replica layers don't need to be updated.
+        if (Layer* mask_layer = layer->mask_layer())
+          update_layer_list->push_back(mask_layer);
+        if (Layer* replica_layer = layer->replica_layer()) {
+          if (Layer* mask_layer = replica_layer->mask_layer())
+            update_layer_list->push_back(mask_layer);
+        }
+      },
+      CallFunctionLayerType::BASIC_LAYER);
+}
 
 static void ResetIfHasNanCoordinate(gfx::RectF* rect) {
   if (std::isnan(rect->x()) || std::isnan(rect->y()) ||
@@ -627,9 +713,9 @@ static void ComputeVisibleRectsInternal(
                can_render_to_separate_surface);
   ComputeEffects(&property_trees->effect_tree);
 
-  FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,
-                            property_trees->effect_tree, update_layer_list,
-                            visible_layer_list);
+  FindLayersThatNeedUpdates(
+      root_layer->layer_tree_impl(), property_trees->transform_tree,
+      property_trees->effect_tree, update_layer_list, visible_layer_list);
   CalculateVisibleRects<LayerImpl>(
       *visible_layer_list, property_trees->clip_tree,
       property_trees->transform_tree, can_render_to_separate_surface);
@@ -656,33 +742,6 @@ void UpdatePropertyTrees(PropertyTrees* property_trees,
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
                can_render_to_separate_surface);
   ComputeEffects(&property_trees->effect_tree);
-}
-
-void FindLayersThatNeedUpdates(Layer* layer,
-                               const TransformTree& transform_tree,
-                               const EffectTree& effect_tree,
-                               LayerList* update_layer_list) {
-  DCHECK_GE(layer->effect_tree_index(), 0);
-  bool layer_is_drawn =
-      effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
-
-  if (!IsRootLayer(layer) &&
-      SubtreeShouldBeSkipped(layer, layer_is_drawn, transform_tree))
-    return;
-
-  if (LayerNeedsUpdate(layer, layer_is_drawn, transform_tree))
-    update_layer_list->push_back(layer);
-  if (Layer* mask_layer = layer->mask_layer())
-    update_layer_list->push_back(mask_layer);
-  if (Layer* replica_layer = layer->replica_layer()) {
-    if (Layer* mask_layer = replica_layer->mask_layer())
-      update_layer_list->push_back(mask_layer);
-  }
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    FindLayersThatNeedUpdates(layer->child_at(i), transform_tree, effect_tree,
-                              update_layer_list);
-  }
 }
 
 void ComputeVisibleRectsForTesting(PropertyTrees* property_trees,
@@ -732,54 +791,6 @@ void ComputeVisibleRects(LayerImpl* root_layer,
   ComputeVisibleRectsInternal(root_layer, property_trees,
                               can_render_to_separate_surface,
                               &update_layer_list, visible_layer_list);
-}
-
-bool LayerShouldBeSkipped(LayerImpl* layer,
-                          bool layer_is_drawn,
-                          const TransformTree& transform_tree) {
-  const TransformNode* transform_node =
-      transform_tree.Node(layer->transform_tree_index());
-  const EffectTree& effect_tree = transform_tree.property_trees()->effect_tree;
-  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
-  // If the layer transform is not invertible, it should not be drawn.
-  // TODO(ajuma): Correctly process subtrees with singular transform for the
-  // case where we may animate to a non-singular transform and wish to
-  // pre-raster.
-  bool has_inherited_invertible_or_animated_transform =
-      (transform_node->data.is_invertible &&
-       transform_node->data.ancestors_are_invertible) ||
-      transform_node->data.to_screen_is_animated;
-  if (!has_inherited_invertible_or_animated_transform)
-    return true;
-
-  // When we need to do a readback/copy of a layer's output, we can not skip
-  // it or any of its ancestors.
-  if (effect_node->data.num_copy_requests_in_subtree > 0)
-    return false;
-
-  // If the layer is not drawn, then skip it and its subtree.
-  if (!effect_node->data.is_drawn)
-    return true;
-
-  if (effect_node->data.hidden_by_backface_visibility)
-    return true;
-
-  // If layer is on the pending tree and opacity is being animated then
-  // this subtree can't be skipped as we need to create, prioritize and
-  // include tiles for this layer when deciding if tree can be activated.
-  if (!transform_tree.property_trees()->is_active &&
-      effect_node->data.to_screen_opacity_is_animated)
-    return false;
-
-  // If layer has a background filter, don't skip the layer, even it the
-  // opacity is 0.
-  if (effect_node->data.node_or_ancestor_has_background_filters)
-    return false;
-
-  // The opacity of a layer always applies to its children (either implicitly
-  // via a render surface or explicitly if the parent preserves 3D), so the
-  // entire subtree can be skipped if this layer is fully transparent.
-  return !effect_node->data.screen_space_opacity;
 }
 
 bool LayerNeedsUpdate(Layer* layer,
@@ -1019,7 +1030,7 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
         layer->draw_properties().screen_space_transform;
   }
   layer->draw_properties().screen_space_transform_is_animating =
-      transform_node->data.to_screen_is_animated;
+      transform_node->data.to_screen_is_potentially_animated;
   if (layer->layer_tree_impl()
           ->settings()
           .layer_transforms_should_scale_layer_contents) {

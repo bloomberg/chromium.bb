@@ -139,7 +139,7 @@ TransformNodeData::TransformNodeData()
       is_invertible(true),
       ancestors_are_invertible(true),
       is_animated(false),
-      to_screen_is_animated(false),
+      to_screen_is_potentially_animated(false),
       has_only_translation_animations(true),
       to_screen_has_scale_animation(false),
       flattens_inherited_transform(false),
@@ -177,7 +177,8 @@ bool TransformNodeData::operator==(const TransformNodeData& other) const {
          is_invertible == other.is_invertible &&
          ancestors_are_invertible == other.ancestors_are_invertible &&
          is_animated == other.is_animated &&
-         to_screen_is_animated == other.to_screen_is_animated &&
+         to_screen_is_potentially_animated ==
+             other.to_screen_is_potentially_animated &&
          has_only_translation_animations ==
              other.has_only_translation_animations &&
          to_screen_has_scale_animation == other.to_screen_has_scale_animation &&
@@ -259,7 +260,8 @@ void TransformNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_ancestors_are_invertible(ancestors_are_invertible);
 
   data->set_is_animated(is_animated);
-  data->set_to_screen_is_animated(to_screen_is_animated);
+  data->set_to_screen_is_potentially_animated(
+      to_screen_is_potentially_animated);
   data->set_has_only_translation_animations(has_only_translation_animations);
   data->set_to_screen_has_scale_animation(to_screen_has_scale_animation);
 
@@ -325,7 +327,7 @@ void TransformNodeData::FromProtobuf(const proto::TreeNode& proto) {
   ancestors_are_invertible = data.ancestors_are_invertible();
 
   is_animated = data.is_animated();
-  to_screen_is_animated = data.to_screen_is_animated();
+  to_screen_is_potentially_animated = data.to_screen_is_potentially_animated();
   has_only_translation_animations = data.has_only_translation_animations();
   to_screen_has_scale_animation = data.to_screen_has_scale_animation();
 
@@ -863,7 +865,7 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
   if (!parent_node) {
     node->data.to_screen = node->data.to_parent;
     node->data.ancestors_are_invertible = true;
-    node->data.to_screen_is_animated = false;
+    node->data.to_screen_is_potentially_animated = false;
     node->data.node_and_ancestors_are_flat = node->data.to_parent.IsFlat();
   } else {
     node->data.to_screen = parent_node->data.to_screen;
@@ -921,7 +923,7 @@ void TransformTree::UpdateAnimationProperties(TransformNode* node,
   float ancestor_maximum_target_scale = 0.f;
   float ancestor_starting_animation_scale = 0.f;
   if (parent_node) {
-    ancestor_is_animating = parent_node->data.to_screen_is_animated;
+    ancestor_is_animating = parent_node->data.to_screen_is_potentially_animated;
     ancestor_is_animating_scale =
         parent_node->data.to_screen_has_scale_animation;
     ancestor_maximum_target_scale =
@@ -929,7 +931,7 @@ void TransformTree::UpdateAnimationProperties(TransformNode* node,
     ancestor_starting_animation_scale =
         parent_node->data.combined_starting_animation_scale;
   }
-  node->data.to_screen_is_animated =
+  node->data.to_screen_is_potentially_animated =
       node->data.is_animated || ancestor_is_animating;
   node->data.to_screen_has_scale_animation =
       !node->data.has_only_translation_animations ||
@@ -1012,7 +1014,7 @@ void TransformTree::UndoSnapping(TransformNode* node) {
 }
 
 void TransformTree::UpdateSnapping(TransformNode* node) {
-  if (!node->data.scrolls || node->data.to_screen_is_animated ||
+  if (!node->data.scrolls || node->data.to_screen_is_potentially_animated ||
       !node->data.to_target.IsScaleOrTranslation() ||
       !node->data.ancestors_are_invertible) {
     return;

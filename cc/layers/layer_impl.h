@@ -98,6 +98,7 @@ class CC_EXPORT LayerImpl {
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
   void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
   bool IsActive() const;
+  bool OpacityCanAnimateOnImplThread() const { return false; }
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
