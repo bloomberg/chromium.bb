@@ -837,5 +837,37 @@ HRESULT BluetoothLowEnergyWrapper::WriteCharacteristicValue(
                                              BLUETOOTH_GATT_FLAG_NONE);
 }
 
+HRESULT BluetoothLowEnergyWrapper::RegisterGattEvents(
+    base::FilePath& service_path,
+    BTH_LE_GATT_EVENT_TYPE event_type,
+    PVOID event_parameter,
+    PFNBLUETOOTH_GATT_EVENT_CALLBACK callback,
+    PVOID context,
+    BLUETOOTH_GATT_EVENT_HANDLE* out_handle) {
+  base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
+  return BluetoothGATTRegisterEvent(file.GetPlatformFile(), event_type,
+                                    event_parameter, callback, context,
+                                    out_handle, BLUETOOTH_GATT_FLAG_NONE);
+}
+
+HRESULT BluetoothLowEnergyWrapper::UnregisterGattEvent(
+    BLUETOOTH_GATT_EVENT_HANDLE event_handle) {
+  return BluetoothGATTUnregisterEvent(event_handle, BLUETOOTH_GATT_FLAG_NONE);
+}
+
+HRESULT BluetoothLowEnergyWrapper::WriteDescriptorValue(
+    base::FilePath& service_path,
+    const PBTH_LE_GATT_DESCRIPTOR descriptor,
+    PBTH_LE_GATT_DESCRIPTOR_VALUE new_value) {
+  base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                    base::File::FLAG_WRITE);
+  if (!file.IsValid())
+    return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
+  return BluetoothGATTSetDescriptorValue(file.GetPlatformFile(), descriptor,
+                                         new_value, BLUETOOTH_GATT_FLAG_NONE);
+}
+
 }  // namespace win
 }  // namespace device

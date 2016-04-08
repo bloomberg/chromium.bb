@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
@@ -21,6 +22,8 @@ BluetoothRemoteGattCharacteristicWin::BluetoothRemoteGattCharacteristicWin(
       ui_task_runner_(ui_task_runner),
       characteristic_added_notified_(false),
       characteristic_value_read_or_write_in_progress_(false),
+      gatt_event_registeration_in_progress_(false),
+      gatt_event_handle_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(parent_service_);
@@ -41,7 +44,18 @@ BluetoothRemoteGattCharacteristicWin::BluetoothRemoteGattCharacteristicWin(
 BluetoothRemoteGattCharacteristicWin::~BluetoothRemoteGattCharacteristicWin() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
+  ClearIncludedDescriptors();
+
+  if (gatt_event_handle_ != nullptr) {
+    task_manager_->PostUnregisterGattCharacteristicValueChangedEvent(
+        gatt_event_handle_);
+    gatt_event_handle_ = nullptr;
+  }
   parent_service_->GetWinAdapter()->NotifyGattCharacteristicRemoved(this);
+
+  // Clear pending StartNotifySession callbacks.
+  for (const auto& callback : start_notify_session_callbacks_)
+    callback.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
 }
 
 std::string BluetoothRemoteGattCharacteristicWin::GetIdentifier() const {
@@ -105,8 +119,7 @@ BluetoothRemoteGattCharacteristicWin::GetPermissions() const {
 }
 
 bool BluetoothRemoteGattCharacteristicWin::IsNotifying() const {
-  NOTIMPLEMENTED();
-  return false;
+  return gatt_event_handle_ != nullptr;
 }
 
 std::vector<BluetoothGattDescriptor*>
@@ -140,8 +153,56 @@ bool BluetoothRemoteGattCharacteristicWin::UpdateValue(
 void BluetoothRemoteGattCharacteristicWin::StartNotifySession(
     const NotifySessionCallback& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-  error_callback.Run(BluetoothGattService::GATT_ERROR_NOT_SUPPORTED);
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+
+  if (IsNotifying()) {
+    scoped_ptr<BluetoothGattNotifySessionWin> notify_session(
+        new BluetoothGattNotifySessionWin(weak_ptr_factory_.GetWeakPtr()));
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::Passed(std::move(notify_session))));
+    return;
+  }
+
+  if (!characteristic_info_->IsNotifiable &&
+      !characteristic_info_->IsIndicatable) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(error_callback,
+                              BluetoothGattService::GATT_ERROR_NOT_SUPPORTED));
+    return;
+  }
+
+  std::vector<BluetoothGattDescriptor*> ccc_descriptors = GetDescriptorsByUUID(
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid());
+  if (ccc_descriptors.size() < 1) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(error_callback,
+                              BluetoothGattService::GATT_ERROR_NOT_SUPPORTED));
+    return;
+  }
+  if (ccc_descriptors.size() > 1) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback, BluetoothGattService::GATT_ERROR_FAILED));
+    return;
+  }
+
+  start_notify_session_callbacks_.push_back(
+      std::make_pair(callback, error_callback));
+  if (gatt_event_registeration_in_progress_)
+    return;
+
+  task_manager_->PostRegisterGattCharacteristicValueChangedEvent(
+      parent_service_->GetServicePath(), characteristic_info_.get(),
+      static_cast<BluetoothRemoteGattDescriptorWin*>(ccc_descriptors[0])
+          ->GetWinDescriptorInfo(),
+      base::Bind(
+          &BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothRemoteGattCharacteristicWin::
+                     OnGattCharacteristicValueChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
+  gatt_event_registeration_in_progress_ = true;
 }
 
 void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
@@ -236,8 +297,10 @@ void BluetoothRemoteGattCharacteristicWin::UpdateIncludedDescriptors(
     if (!DoesDescriptorExist(descriptors, num, d.second.get()))
       to_be_removed.push_back(d.second->GetIdentifier());
   }
-  for (auto id : to_be_removed)
+  for (auto id : to_be_removed) {
+    included_descriptors_[id].reset();
     included_descriptors_.erase(id);
+  }
 
   // Return if no new descriptors have been added.
   if (included_descriptors_.size() == num)
@@ -324,18 +387,59 @@ void BluetoothRemoteGattCharacteristicWin::
 
 BluetoothGattService::GattErrorCode
 BluetoothRemoteGattCharacteristicWin::HRESULTToGattErrorCode(HRESULT hr) {
+  if (HRESULT_FROM_WIN32(ERROR_INVALID_USER_BUFFER) == hr)
+    return BluetoothGattService::GATT_ERROR_INVALID_LENGTH;
+
   switch (hr) {
     case E_BLUETOOTH_ATT_READ_NOT_PERMITTED:
     case E_BLUETOOTH_ATT_WRITE_NOT_PERMITTED:
       return BluetoothGattService::GATT_ERROR_NOT_PERMITTED;
     case E_BLUETOOTH_ATT_UNKNOWN_ERROR:
       return BluetoothGattService::GATT_ERROR_UNKNOWN;
-    case ERROR_INVALID_USER_BUFFER:
     case E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH:
       return BluetoothGattService::GATT_ERROR_INVALID_LENGTH;
+    case E_BLUETOOTH_ATT_REQUEST_NOT_SUPPORTED:
+      return BluetoothGattService::GATT_ERROR_NOT_SUPPORTED;
     default:
       return BluetoothGattService::GATT_ERROR_FAILED;
   }
+}
+
+void BluetoothRemoteGattCharacteristicWin::OnGattCharacteristicValueChanged(
+    scoped_ptr<std::vector<uint8_t>> new_value) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+
+  characteristic_value_.assign(new_value->begin(), new_value->end());
+  parent_service_->GetWinAdapter()->NotifyGattCharacteristicValueChanged(
+      this, characteristic_value_);
+}
+
+void BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback(
+    BLUETOOTH_GATT_EVENT_HANDLE event_handle,
+    HRESULT hr) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+
+  gatt_event_registeration_in_progress_ = false;
+  std::vector<std::pair<NotifySessionCallback, ErrorCallback>> callbacks;
+  callbacks.swap(start_notify_session_callbacks_);
+  if (SUCCEEDED(hr)) {
+    gatt_event_handle_ = event_handle;
+    for (const auto& callback : callbacks) {
+      callback.first.Run(make_scoped_ptr(
+          new BluetoothGattNotifySessionWin(weak_ptr_factory_.GetWeakPtr())));
+    }
+  } else {
+    for (const auto& callback : callbacks)
+      callback.second.Run(HRESULTToGattErrorCode(hr));
+  }
+}
+
+void BluetoothRemoteGattCharacteristicWin::ClearIncludedDescriptors() {
+  // Explicitly reset to null to ensure that calling GetDescriptor() on the
+  // removed descriptor in GattDescriptorRemoved() returns null.
+  for (auto& entry : included_descriptors_)
+    entry.second.reset();
+  included_descriptors_.clear();
 }
 
 }  // namespace device.

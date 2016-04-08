@@ -43,6 +43,15 @@ BluetoothDeviceWin::BluetoothDeviceWin(
 }
 
 BluetoothDeviceWin::~BluetoothDeviceWin() {
+  // Explicitly take and erase GATT services one by one to ensure that calling
+  // GetGattService on removed service in GattServiceRemoved returns null.
+  std::vector<std::string> service_keys;
+  for (const auto& gatt_service : gatt_services_) {
+    service_keys.push_back(gatt_service.first);
+  }
+  for (const auto& key : service_keys) {
+    gatt_services_.take_and_erase(key);
+  }
 }
 
 uint32_t BluetoothDeviceWin::GetBluetoothClass() const {

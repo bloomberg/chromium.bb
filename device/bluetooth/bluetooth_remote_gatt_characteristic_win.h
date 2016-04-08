@@ -80,6 +80,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
       HRESULT hr);
   void OnWriteRemoteCharacteristicValueCallback(HRESULT hr);
   BluetoothGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
+  void OnGattCharacteristicValueChanged(
+      scoped_ptr<std::vector<uint8_t>> new_value);
+  void GattEventRegistrationCallback(PVOID event_handle, HRESULT hr);
+  void ClearIncludedDescriptors();
 
   BluetoothRemoteGattServiceWin* parent_service_;
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
@@ -109,6 +113,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
 
   bool characteristic_value_read_or_write_in_progress_;
+
+  // Vector stores StartNotifySession request callbacks.
+  std::vector<std::pair<NotifySessionCallback, ErrorCallback>>
+      start_notify_session_callbacks_;
+
+  // Flag indicates if GATT event registration is in progress.
+  bool gatt_event_registeration_in_progress_;
+
+  // GATT event handle returned by GattEventRegistrationCallback.
+  PVOID gatt_event_handle_;
 
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWin> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWin);

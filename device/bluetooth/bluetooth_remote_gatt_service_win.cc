@@ -50,6 +50,8 @@ BluetoothRemoteGattServiceWin::BluetoothRemoteGattServiceWin(
 BluetoothRemoteGattServiceWin::~BluetoothRemoteGattServiceWin() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
+  ClearIncludedCharacteristics();
+
   adapter_->NotifyGattServiceRemoved(this);
 }
 
@@ -245,6 +247,7 @@ bool BluetoothRemoteGattServiceWin::DoesCharacteristicExist(
 void BluetoothRemoteGattServiceWin::RemoveIncludedCharacteristic(
     std::string identifier) {
   discovery_completed_included_charateristics_.erase(identifier);
+  included_characteristics_[identifier].reset();
   included_characteristics_.erase(identifier);
 }
 

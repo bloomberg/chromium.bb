@@ -39,6 +39,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
                              const ErrorCallback& error_callback) override;
 
   uint16_t GetAttributeHandle() const;
+  PBTH_LE_GATT_DESCRIPTOR GetWinDescriptorInfo() const {
+    return descriptor_info_.get();
+  }
 
  private:
   BluetoothRemoteGattCharacteristicWin* parent_characteristic_;

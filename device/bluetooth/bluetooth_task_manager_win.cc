@@ -122,6 +122,63 @@ void GetDeviceState(const BLUETOOTH_DEVICE_INFO& device_info,
   state->authenticated = !!device_info.fAuthenticated;
 }
 
+struct CharacteristicValueChangedRegistration {
+  CharacteristicValueChangedRegistration();
+  ~CharacteristicValueChangedRegistration();
+
+  BLUETOOTH_GATT_EVENT_HANDLE win_event_handle;
+  device::BluetoothTaskManagerWin::GattCharacteristicValueChangedCallback
+      callback;
+  // The task runner the callback should run on.
+  scoped_refptr<base::SequencedTaskRunner> callback_task_runner;
+};
+
+CharacteristicValueChangedRegistration::
+    CharacteristicValueChangedRegistration() {}
+CharacteristicValueChangedRegistration::
+    ~CharacteristicValueChangedRegistration() {}
+
+// The key of CharacteristicValueChangedRegistrationMap is a
+// GattCharacteristicValueChangedCallback pointer (cast to PVOID) to make it
+// unique for different callbacks. It is also the context value passed into OS
+// when registering event.
+typedef std::unordered_map<PVOID,
+                           scoped_ptr<CharacteristicValueChangedRegistration>>
+    CharacteristicValueChangedRegistrationMap;
+
+CharacteristicValueChangedRegistrationMap
+    g_characteristic_value_changed_registrations;
+base::Lock g_characteristic_value_changed_registrations_lock;
+
+// Function to be registered to OS to monitor Bluetooth LE GATT event. It is
+// invoked in BluetoothApis.dll thread.
+void OnGetGattEventWin(BTH_LE_GATT_EVENT_TYPE type,
+                       PVOID event_parameter,
+                       PVOID context) {
+  if (type != CharacteristicValueChangedEvent) {
+    // Right now, only characteristic value changed event is supported.
+    NOTREACHED();
+    return;
+  }
+
+  BLUETOOTH_GATT_VALUE_CHANGED_EVENT* event =
+      (BLUETOOTH_GATT_VALUE_CHANGED_EVENT*)event_parameter;
+  PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value_win = event->CharacteristicValue;
+  scoped_ptr<std::vector<uint8_t>> new_value(
+      new std::vector<uint8_t>(new_value_win->DataSize));
+  for (ULONG i = 0; i < new_value_win->DataSize; i++)
+    (*new_value)[i] = new_value_win->Data[i];
+
+  base::AutoLock auto_lock(g_characteristic_value_changed_registrations_lock);
+  CharacteristicValueChangedRegistrationMap::const_iterator it =
+      g_characteristic_value_changed_registrations.find(context);
+  if (it == g_characteristic_value_changed_registrations.end())
+    return;
+
+  it->second->callback_task_runner->PostTask(
+      FROM_HERE, base::Bind(it->second->callback, base::Passed(&new_value)));
+}
+
 }  // namespace
 
 namespace device {
@@ -844,6 +901,72 @@ void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
   ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, hr));
 }
 
+void BluetoothTaskManagerWin::RegisterGattCharacteristicValueChangedEvent(
+    base::FilePath service_path,
+    BTH_LE_GATT_CHARACTERISTIC characteristic,
+    BTH_LE_GATT_DESCRIPTOR ccc_descriptor,
+    const GattEventRegistrationCallback& callback,
+    const GattCharacteristicValueChangedCallback& registered_callback) {
+  DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
+  BLUETOOTH_GATT_EVENT_HANDLE win_event_handle = NULL;
+
+  BLUETOOTH_GATT_VALUE_CHANGED_EVENT_REGISTRATION win_event_parameter;
+  memcpy(&(win_event_parameter.Characteristics[0]), &characteristic,
+         sizeof(BTH_LE_GATT_CHARACTERISTIC));
+  win_event_parameter.NumCharacteristics = 1;
+  PVOID user_event_handle = (PVOID)&registered_callback;
+  HRESULT hr =
+      win::BluetoothLowEnergyWrapper::GetInstance()->RegisterGattEvents(
+          service_path, CharacteristicValueChangedEvent, &win_event_parameter,
+          &OnGetGattEventWin, user_event_handle, &win_event_handle);
+
+  // Sets the Client Characteristic Configuration descriptor.
+  if (SUCCEEDED(hr)) {
+    BTH_LE_GATT_DESCRIPTOR_VALUE new_cccd_value;
+    RtlZeroMemory(&new_cccd_value, sizeof(new_cccd_value));
+    new_cccd_value.DescriptorType = ClientCharacteristicConfiguration;
+    if (characteristic.IsNotifiable) {
+      new_cccd_value.ClientCharacteristicConfiguration
+          .IsSubscribeToNotification = TRUE;
+    } else {
+      new_cccd_value.ClientCharacteristicConfiguration.IsSubscribeToIndication =
+          TRUE;
+    }
+
+    hr = win::BluetoothLowEnergyWrapper::GetInstance()->WriteDescriptorValue(
+        service_path, (PBTH_LE_GATT_DESCRIPTOR)(&ccc_descriptor),
+        &new_cccd_value);
+  }
+
+  if (SUCCEEDED(hr)) {
+    scoped_ptr<CharacteristicValueChangedRegistration> registration(
+        new CharacteristicValueChangedRegistration());
+    registration->win_event_handle = win_event_handle;
+    registration->callback = registered_callback;
+    registration->callback_task_runner = ui_task_runner_;
+    base::AutoLock auto_lock(g_characteristic_value_changed_registrations_lock);
+    g_characteristic_value_changed_registrations[user_event_handle] =
+        std::move(registration);
+  }
+
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(callback, user_event_handle, hr));
+}
+
+void BluetoothTaskManagerWin::UnregisterGattCharacteristicValueChangedEvent(
+    PVOID event_handle) {
+  DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
+
+  base::AutoLock auto_lock(g_characteristic_value_changed_registrations_lock);
+  CharacteristicValueChangedRegistrationMap::const_iterator it =
+      g_characteristic_value_changed_registrations.find(event_handle);
+  if (it != g_characteristic_value_changed_registrations.end()) {
+    win::BluetoothLowEnergyWrapper::GetInstance()->UnregisterGattEvent(
+        it->second->win_event_handle);
+    g_characteristic_value_changed_registrations.erase(event_handle);
+  }
+}
+
 void BluetoothTaskManagerWin::PostGetGattIncludedCharacteristics(
     const base::FilePath& service_path,
     const BluetoothUUID& uuid,
@@ -876,8 +999,6 @@ void BluetoothTaskManagerWin::PostReadGattCharacteristicValue(
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::ReadGattCharacteristicValue, this,
                  service_path, *characteristic, callback));
-  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
-                    OnAttemptReadGattCharacteristic());
 }
 
 void BluetoothTaskManagerWin::PostWriteGattCharacteristicValue(
@@ -890,8 +1011,30 @@ void BluetoothTaskManagerWin::PostWriteGattCharacteristicValue(
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::WriteGattCharacteristicValue, this,
                  service_path, *characteristic, new_value, callback));
-  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
-                    OnAttemptWriteGattCharacteristic());
+}
+
+void BluetoothTaskManagerWin::PostRegisterGattCharacteristicValueChangedEvent(
+    const base::FilePath& service_path,
+    const PBTH_LE_GATT_CHARACTERISTIC characteristic,
+    const PBTH_LE_GATT_DESCRIPTOR ccc_descriptor,
+    const GattEventRegistrationCallback& callback,
+    const GattCharacteristicValueChangedCallback& registered_callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &BluetoothTaskManagerWin::RegisterGattCharacteristicValueChangedEvent,
+          this, service_path, *characteristic, *ccc_descriptor, callback,
+          registered_callback));
+}
+
+void BluetoothTaskManagerWin::PostUnregisterGattCharacteristicValueChangedEvent(
+    PVOID event_handle) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&BluetoothTaskManagerWin::
+                                UnregisterGattCharacteristicValueChangedEvent,
+                            this, event_handle));
 }
 
 }  // namespace device
