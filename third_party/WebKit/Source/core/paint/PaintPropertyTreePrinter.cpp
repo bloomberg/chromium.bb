@@ -99,8 +99,12 @@ public:
             printer.addPropertyNode(transform, "Transform");
         if (const TransformPaintPropertyNode* perspective = paintProperties.perspective())
             printer.addPropertyNode(perspective, "Perspective");
+        if (const TransformPaintPropertyNode* svgLocalTransform = paintProperties.svgLocalTransform())
+            printer.addPropertyNode(svgLocalTransform, "SvgLocalTransform");
         if (const TransformPaintPropertyNode* scrollTranslation = paintProperties.scrollTranslation())
             printer.addPropertyNode(scrollTranslation, "ScrollTranslation");
+        if (const TransformPaintPropertyNode* scrollbarPaintOffset = paintProperties.scrollbarPaintOffset())
+            printer.addPropertyNode(scrollbarPaintOffset, "ScrollbarPaintOffset");
     }
 
     static void printNodeAsString(const TransformPaintPropertyNode* node, StringBuilder& stringBuilder)

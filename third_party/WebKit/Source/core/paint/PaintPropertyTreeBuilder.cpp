@@ -177,18 +177,6 @@ static FloatPoint3D transformOrigin(const LayoutBox& box)
 
 static PassRefPtr<TransformPaintPropertyNode> createTransformIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (object.isSVG() && !object.isSVGRoot()) {
-        const AffineTransform& transform = object.localToSVGParentTransform();
-        if (transform.isIdentity())
-            return nullptr;
-
-        // SVG's transform origin is baked into the localToParentTransform.
-        RefPtr<TransformPaintPropertyNode> newTransformNodeForTransform = TransformPaintPropertyNode::create(
-            transform, FloatPoint3D(0, 0, 0), context.currentTransform);
-        context.currentTransform = newTransformNodeForTransform.get();
-        return newTransformNodeForTransform.release();
-    }
-
     const ComputedStyle& style = object.styleRef();
     if (!object.isBox() || !style.hasTransform())
         return nullptr;
@@ -200,6 +188,22 @@ static PassRefPtr<TransformPaintPropertyNode> createTransformIfNeeded(const Layo
         ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForTransform = TransformPaintPropertyNode::create(
         matrix, transformOrigin(toLayoutBox(object)), context.currentTransform);
+    context.currentTransform = newTransformNodeForTransform.get();
+    return newTransformNodeForTransform.release();
+}
+
+static PassRefPtr<TransformPaintPropertyNode> createSvgLocalTransformIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+{
+    if (!object.isSVG())
+        return nullptr;
+
+    const AffineTransform& transform = object.localToSVGParentTransform();
+    if (transform.isIdentity())
+        return nullptr;
+
+    // SVG's transform origin is baked into the localToSVGParentTransform so we use 0's for the origin.
+    RefPtr<TransformPaintPropertyNode> newTransformNodeForTransform = TransformPaintPropertyNode::create(
+        transform, FloatPoint3D(0, 0, 0), context.currentTransform);
     context.currentTransform = newTransformNodeForTransform.get();
     return newTransformNodeForTransform.release();
 }
@@ -331,6 +335,7 @@ static PassRefPtr<TransformPaintPropertyNode> createScrollTranslationIfNeeded(co
 
 static void updateOutOfFlowContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context, ClipPaintPropertyNode* newClipNodeForCSSClip, RefPtr<ClipPaintPropertyNode>& newClipNodeForCSSClipFixedPosition)
 {
+    // TODO(pdr): Always create an SVG transform for the root and remove this paint offset quirk.
     // At the html->svg boundary (see: createPaintOffsetTranslationIfNeeded) the currentTransform is
     // up-to-date for all children of the svg root element. Additionally, inside SVG, all positioning
     // uses transforms. Therefore, we only need to check createdNewTransform and isSVGRoot() to
@@ -400,11 +405,16 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     // TODO(trchen): Insert flattening transform here, as specified by
     // http://www.w3.org/TR/css3-transforms/#transform-style-property
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPerspective = createPerspectiveIfNeeded(object, localContext);
+    RefPtr<TransformPaintPropertyNode> newTransformNodeForSvgLocalTransform = createSvgLocalTransformIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollTranslation = createScrollTranslationIfNeeded(object, localContext);
     RefPtr<ClipPaintPropertyNode> newClipNodeForCSSClipFixedPosition;
     updateOutOfFlowContext(object, localContext, newClipNodeForCSSClip.get(), newClipNodeForCSSClipFixedPosition);
 
-    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newClipNodeForCSSClip || newClipNodeForCSSClipFixedPosition || newClipNodeForOverflowClip || newTransformNodeForPerspective || newTransformNodeForScrollTranslation || newTransformNodeForScrollbarPaintOffset || newRecordedContext) {
+    DCHECK(!newTransformNodeForSvgLocalTransform || !newTransformNodeForScrollTranslation)
+        << "SVG elements cannot have scroll translation";
+
+    // TODO(pdr): Refactor this to use a less massive if statement.
+    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newClipNodeForCSSClip || newClipNodeForCSSClipFixedPosition || newClipNodeForOverflowClip || newTransformNodeForPerspective || newTransformNodeForSvgLocalTransform || newTransformNodeForScrollTranslation || newTransformNodeForScrollbarPaintOffset || newRecordedContext) {
         OwnPtr<ObjectPaintProperties> updatedPaintProperties = ObjectPaintProperties::create(
             newTransformNodeForPaintOffsetTranslation.release(),
             newTransformNodeForTransform.release(),
@@ -413,6 +423,7 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
             newClipNodeForCSSClipFixedPosition.release(),
             newClipNodeForOverflowClip.release(),
             newTransformNodeForPerspective.release(),
+            newTransformNodeForSvgLocalTransform.release(),
             newTransformNodeForScrollTranslation.release(),
             newTransformNodeForScrollbarPaintOffset.release(),
             newRecordedContext.release());

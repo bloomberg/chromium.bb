@@ -426,6 +426,20 @@ crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change
 crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/squashing/incorrect-clip-after-remove-compositing.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/fill-update.svg [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/getscreenctm-in-mixed-content.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/non-scaling-stroke-markers.svg [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width-height.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-left.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-top.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/viewport-em.svg [ Pass ]
+crbug.com/600618 virtual/spv2/svg/css/border-image-zoomed.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/css/max-height.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/css/max-width.html [ Pass ]
 
 crbug.com/537409 virtual/spv2/fast/clip [ Pass ]
 crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
@@ -477,7 +491,6 @@ crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited.html [
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-fixed-position.html [ Failure ]
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-transformed.html [ Failure ]
 
-crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-3d.html [ Pass ]
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-simple.html [ Pass ]
 crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-alpha.html [ Pass ]
@@ -493,6 +506,9 @@ crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed-overflow.html [ F
 crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed.html [ Failure ]
 crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-relative.html [ Failure ]
 crbug.com/596780 virtual/spv2/compositing/visibility/layer-visible-content.html [ Failure ]
+
+# This test has a paint invalidation failure that needs to be investigated.
+crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failure ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure

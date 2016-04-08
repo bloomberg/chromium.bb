@@ -27,6 +27,8 @@ class ObjectPaintProperties {
 public:
     struct LocalBorderBoxProperties;
 
+    // TODO(pdr): This should be refactored to not pass 11 arguments because it
+    // is hard to follow here and at the callsites.
     static PassOwnPtr<ObjectPaintProperties> create(
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
@@ -35,11 +37,15 @@ public:
         PassRefPtr<ClipPaintPropertyNode> cssClipFixedPosition,
         PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
+        PassRefPtr<TransformPaintPropertyNode> svgLocalTransform,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
         PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
         PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
     {
-        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, cssClip, cssClipFixedPosition, overflowClip, perspective, scrollTranslation, scrollbarPaintOffset, localBorderBoxProperties));
+        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation,
+            transform, effect, cssClip, cssClipFixedPosition, overflowClip,
+            perspective, svgLocalTransform, scrollTranslation,
+            scrollbarPaintOffset, localBorderBoxProperties));
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -48,6 +54,8 @@ public:
     // +---[ transform ]                    The space created by CSS transform.
     //     |                                This is the local border box space, see: LocalBorderBoxProperties below.
     //     +---[ perspective ]              The space created by CSS perspective.
+    //     |   +---[ svgLocalTransform ]    The transform for an SVG element.
+    //     |              OR                (SVG does not support scrolling.)
     //     |   +---[ scrollTranslation ]    The space created by overflow clip.
     //     +---[ scrollbarPaintOffset ]     TODO(trchen): Remove this once we bake the paint offset into frameRect.
     //                                      This is equivalent to the local border box space above,
@@ -56,6 +64,7 @@ public:
     TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
     TransformPaintPropertyNode* transform() const { return m_transform.get(); }
     TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
+    TransformPaintPropertyNode* svgLocalTransform() const { return m_svgLocalTransform.get(); }
     TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
     TransformPaintPropertyNode* scrollbarPaintOffset() const { return m_scrollbarPaintOffset.get(); }
 
@@ -89,6 +98,7 @@ private:
         PassRefPtr<ClipPaintPropertyNode> cssClipFixedPosition,
         PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
+        PassRefPtr<TransformPaintPropertyNode> svgLocalTransform,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
         PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
         PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
@@ -99,6 +109,7 @@ private:
         , m_cssClipFixedPosition(cssClipFixedPosition)
         , m_overflowClip(overflowClip)
         , m_perspective(perspective)
+        , m_svgLocalTransform(svgLocalTransform)
         , m_scrollTranslation(scrollTranslation)
         , m_scrollbarPaintOffset(scrollbarPaintOffset)
         , m_localBorderBoxProperties(localBorderBoxProperties) { }
@@ -110,6 +121,7 @@ private:
     RefPtr<ClipPaintPropertyNode> m_cssClipFixedPosition;
     RefPtr<ClipPaintPropertyNode> m_overflowClip;
     RefPtr<TransformPaintPropertyNode> m_perspective;
+    RefPtr<TransformPaintPropertyNode> m_svgLocalTransform;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
     RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
 

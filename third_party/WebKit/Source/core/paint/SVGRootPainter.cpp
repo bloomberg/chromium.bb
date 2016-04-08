@@ -49,18 +49,24 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
 
-    // At the HTML->SVG boundary, SVGRoot will have a paint offset transform
-    // paint property but may not have a PaintLayer, so we need to update the
-    // paint properties here since they will not be updated by PaintLayer
-    // (See: PaintPropertyTreeBuilder::createPaintOffsetTranslationIfNeeded).
-    Optional<ScopedPaintChunkProperties> paintOffsetTranslationPropertyScope;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !m_layoutSVGRoot.hasLayer()) {
+    Optional<ScopedPaintChunkProperties> transformPropertyScope;
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         const auto* objectProperties = m_layoutSVGRoot.objectPaintProperties();
-        if (objectProperties && objectProperties->paintOffsetTranslation()) {
+        if (objectProperties && objectProperties->svgLocalTransform()) {
+            auto& paintController = paintInfoBeforeFiltering.context.getPaintController();
+            PaintChunkProperties properties(paintController.currentPaintChunkProperties());
+            properties.transform = objectProperties->svgLocalTransform();
+            transformPropertyScope.emplace(paintController, properties);
+        } else if (objectProperties && objectProperties->paintOffsetTranslation() && !m_layoutSVGRoot.hasLayer()) {
+            // TODO(pdr): Always create an svgLocalTransform and remove this paint offset quirk.
+            // At the HTML->SVG boundary, SVGRoot will have a paint offset transform
+            // paint property but may not have a PaintLayer, so we need to update the
+            // paint properties here since they will not be updated by PaintLayer
+            // (See: PaintPropertyTreeBuilder::createPaintOffsetTranslationIfNeeded).
             auto& paintController = paintInfoBeforeFiltering.context.getPaintController();
             PaintChunkProperties properties(paintController.currentPaintChunkProperties());
             properties.transform = objectProperties->paintOffsetTranslation();
-            paintOffsetTranslationPropertyScope.emplace(paintController, properties);
+            transformPropertyScope.emplace(paintController, properties);
         }
     }
 
