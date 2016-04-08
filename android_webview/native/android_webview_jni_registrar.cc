@@ -15,6 +15,7 @@
 #include "android_webview/native/aw_debug.h"
 #include "android_webview/native/aw_dev_tools_server.h"
 #include "android_webview/native/aw_form_database.h"
+#include "android_webview/native/aw_gl_functor.h"
 #include "android_webview/native/aw_http_auth_handler.h"
 #include "android_webview/native/aw_message_port_service_impl.h"
 #include "android_webview/native/aw_metrics_switch.h"
@@ -63,6 +64,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "JavaBrowserViewRendererHelper", RegisterJavaBrowserViewRendererHelper },
   { "AwMessagePortService", RegisterAwMessagePortService },
   { "AwContentsLifecycleNotifier", RegisterAwContentsLifecycleNotifier },
+  { "AwGLFunctor", RegisterAwGLFunctor },
 };
 
 bool RegisterJni(JNIEnv* env) {

@@ -40,6 +40,7 @@ namespace android_webview {
 
 class AwContentsContainer;
 class AwContentsClientBridge;
+class AwGLFunctor;
 class AwPdfExporter;
 class AwWebContentsDelegate;
 class HardwareRenderer;
@@ -63,8 +64,7 @@ class AwContents : public FindHelper::Listener,
                    public AwRenderViewHostExtClient,
                    public BrowserViewRendererClient,
                    public PermissionRequestHandlerClient,
-                   public AwBrowserPermissionRequestDelegate,
-                   public RenderThreadManagerClient {
+                   public AwBrowserPermissionRequestDelegate {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -103,6 +103,9 @@ class AwContents : public FindHelper::Listener,
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void SetAwGLFunctor(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jlong gl_functor);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void DocumentHasImages(JNIEnv* env,
@@ -180,8 +183,6 @@ class AwContents : public FindHelper::Listener,
               jint visible_top,
               jint visible_right,
               jint visible_bottom);
-  jlong GetAwDrawGLViewContext(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
   jlong CapturePicture(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        int width,
@@ -237,10 +238,8 @@ class AwContents : public FindHelper::Listener,
       const base::Callback<void(bool)>& callback) override;
   void CancelMIDISysexPermissionRequests(const GURL& origin) override;
 
-  // RenderThreadManagerClient implementation.
-  void OnParentDrawConstraintsUpdated() override;
-  bool RequestDrawGL(bool wait_for_completion) override;
-  void DetachFunctorFromView() override;
+  // ex-SharedRendererStateClient implementation.
+  void OnParentDrawConstraintsUpdated();
 
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env,
@@ -346,8 +345,10 @@ class AwContents : public FindHelper::Listener,
 
   void SetDipScaleInternal(float dip_scale);
 
+  void SetAwGLFunctor(AwGLFunctor* functor);
+
   JavaObjectWeakGlobalRef java_ref_;
-  RenderThreadManager render_thread_manager_;
+  AwGLFunctor* functor_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
   std::unique_ptr<AwWebContentsDelegate> web_contents_delegate_;
   std::unique_ptr<AwContentsClientBridge> contents_client_bridge_;

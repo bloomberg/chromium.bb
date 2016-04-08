@@ -25,6 +25,7 @@
 #include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_contents_lifecycle_notifier.h"
+#include "android_webview/native/aw_gl_functor.h"
 #include "android_webview/native/aw_message_port_service_impl.h"
 #include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
@@ -96,18 +97,6 @@ using navigation_interception::InterceptNavigationDelegate;
 using content::BrowserThread;
 using content::ContentViewCore;
 using content::WebContents;
-
-extern "C" {
-static AwDrawGLFunction DrawGLFunction;
-static void DrawGLFunction(long view_context,
-                           AwDrawGLInfo* draw_info,
-                           void* spare) {
-  // |view_context| is the value that was returned from the java
-  // AwContents.onPrepareDrawGL; this cast must match the code there.
-  reinterpret_cast<android_webview::RenderThreadManager*>(view_context)
-      ->DrawGL(draw_info);
-}
-}
 
 namespace android_webview {
 
@@ -181,9 +170,7 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
 }
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
-    : render_thread_manager_(
-          this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+    : functor_(nullptr),
       browser_view_renderer_(
           this,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -192,7 +179,6 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       web_contents_(std::move(web_contents)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
-  browser_view_renderer_.SetRenderThreadManager(&render_thread_manager_);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
@@ -305,6 +291,7 @@ AwContents::~AwContents() {
     base::MemoryPressureListener::NotifyMemoryPressure(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
+  SetAwGLFunctor(nullptr);
   AwContentsLifecycleNotifier::OnWebViewDestroyed();
 }
 
@@ -317,6 +304,29 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
     return base::android::ScopedJavaLocalRef<jobject>();
 
   return web_contents_->GetJavaWebContents();
+}
+
+void AwContents::SetAwGLFunctor(AwGLFunctor* functor) {
+  if (functor == functor_) {
+    return;
+  }
+  if (functor_) {
+    functor_->SetBrowserViewRenderer(nullptr);
+  }
+  functor_ = functor;
+  if (functor_) {
+    browser_view_renderer_.SetRenderThreadManager(
+        functor_->GetRenderThreadManager());
+    functor_->SetBrowserViewRenderer(&browser_view_renderer_);
+  } else {
+    browser_view_renderer_.SetRenderThreadManager(nullptr);
+  }
+}
+
+void AwContents::SetAwGLFunctor(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                jlong gl_functor) {
+  SetAwGLFunctor(reinterpret_cast<AwGLFunctor*>(gl_functor));
 }
 
 void AwContents::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -354,19 +364,9 @@ static void SetAwDrawGLFunctionTable(JNIEnv* env,
                                      const JavaParamRef<jclass>&,
                                      jlong function_table) {}
 
-static jlong GetAwDrawGLFunction(JNIEnv* env, const JavaParamRef<jclass>&) {
-  return reinterpret_cast<intptr_t>(&DrawGLFunction);
-}
-
 // static
 jint GetNativeInstanceCount(JNIEnv* env, const JavaParamRef<jclass>&) {
   return base::subtle::NoBarrier_Load(&g_instance_count);
-}
-
-jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return reinterpret_cast<intptr_t>(&render_thread_manager_);
 }
 
 namespace {
@@ -751,15 +751,6 @@ void AwContents::OnParentDrawConstraintsUpdated() {
   browser_view_renderer_.OnParentDrawConstraintsUpdated();
 }
 
-bool AwContents::RequestDrawGL(bool wait_for_completion) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  return Java_AwContents_requestDrawGL(env, obj.obj(), wait_for_completion);
-}
-
 void AwContents::PostInvalidate() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
@@ -895,19 +886,11 @@ void AwContents::OnAttachedToWindow(JNIEnv* env,
 void AwContents::OnDetachedFromWindow(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  render_thread_manager_.DeleteHardwareRendererOnUI();
   browser_view_renderer_.OnDetachedFromWindow();
 }
 
 bool AwContents::IsVisible(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return browser_view_renderer_.IsClientVisible();
-}
-
-void AwContents::DetachFunctorFromView() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_AwContents_detachFunctorFromView(env, obj.obj());
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetOpaqueState(
@@ -1240,9 +1223,6 @@ void AwContents::TrimMemory(JNIEnv* env,
   // Do not release resources on view we expect to get DrawGL soon.
   if (level < TRIM_MEMORY_BACKGROUND && visible)
     return;
-
-  if (level >= TRIM_MEMORY_MODERATE)
-    render_thread_manager_.DeleteHardwareRendererOnUI();
 
   browser_view_renderer_.TrimMemory();
 }
