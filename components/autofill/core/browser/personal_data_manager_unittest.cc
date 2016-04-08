@@ -250,7 +250,7 @@ class PersonalDataManagerTest : public testing::Test {
     credit_card2.set_use_count(1);
     credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
     test::SetCreditCardInfo(&credit_card2, "Bonnie Parker",
-                            "518765432109" /* Mastercard */, "", "");
+                            "518765432109" /* Mastercard */, "12", "3999");
     personal_data_->AddCreditCard(credit_card2);
 
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3338,6 +3338,56 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[2].value);
   EXPECT_EQ(ASCIIToUTF16("Emmet Dalton"), suggestions[3].value);
   EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[4].value);
+}
+
+// Test that expired cards are ordered by frecency and are always suggested
+// after non expired cards even if they have a higher frecency score.
+TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
+  ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  // Add a never used non expired credit card.
+  CreditCard credit_card0("002149C1-EE28-4213-A3B9-DA243FFF021B",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Bonnie Parker",
+                          "518765432109" /* Mastercard */, "04", "2999");
+  personal_data_->AddCreditCard(credit_card0);
+
+  // Add an expired card with a higher frecency score.
+  CreditCard credit_card1("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "1999");
+  credit_card1.set_use_count(300);
+  credit_card1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
+  personal_data_->AddCreditCard(credit_card1);
+
+  // Add an expired card with a lower frecency score.
+  CreditCard credit_card2("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                          "https://www.example.com");
+  credit_card2.set_use_count(3);
+  credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "423456789012" /* Visa */, "01", "1998");
+  personal_data_->AddCreditCard(credit_card2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
+
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME_FULL),
+          /* field_contents= */ base::string16());
+  ASSERT_EQ(3U, suggestions.size());
+
+  // The never used non expired card should be suggested first.
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+
+  // The expired cards should be sorted by frecency
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[2].value);
 }
 
 // Test that a card that doesn't have a number is not shown in the suggestions

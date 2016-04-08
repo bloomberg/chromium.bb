@@ -390,19 +390,12 @@ class PersonalDataManager : public KeyedService,
   const std::vector<AutofillProfile*>& GetProfiles(
       bool record_metrics) const;
 
-  // Fills |cards_to_suggest| with valid credit cards to suggest based on the
-  // |type| and |field_contents| of the credit card field. The cards are ordered
-  // by frecency.
-  void GetOrderedCardsToSuggest(
+  // Returns credit card suggestions based on the |cards_to_suggest| and the
+  // |type| and |field_contents| of the credit card field.
+  std::vector<Suggestion> GetSuggestionsForCards(
       const AutofillType& type,
       const base::string16& field_contents,
-      std::list<const CreditCard*>* cards_to_suggest) const;
-
-  // Returns the suggestions to display for the |cards_to_suggest| based on the
-  // |type| of the credit card field.
-  std::vector<Suggestion> GetSuggestionsForCards(
-      const std::list<const CreditCard*>& cards_to_suggest,
-      const AutofillType& type) const;
+      const std::list<const CreditCard*>& cards_to_suggest) const;
 
   const std::string app_locale_;
 
