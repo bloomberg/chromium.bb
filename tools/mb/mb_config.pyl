@@ -495,8 +495,6 @@
     },
 
     'chromium.webkit': {
-      'WebKit Linux non-Oilpan': 'tbd',
-
       'Android Builder': 'gyp_release_bot_android',
       'WebKit Android (Nexus4)': 'gyp_release_bot_android',
       'WebKit Linux (dbg)': 'swarming_gn_debug_bot_x64',
@@ -504,17 +502,9 @@
       'WebKit Linux Leak': 'swarming_gn_release_bot_x64',
       'WebKit Linux MSAN': 'swarming_gyp_msan_release_bot_x64',
       'WebKit Linux Trusty': 'swarming_gn_release_bot_x64',
-      'WebKit Linux non-Oilpan (dbg)': 'swarming_gn_non_oilpan_debug_bot_x64',
-      'WebKit Linux non-Oilpan ASAN':
-        'swarming_gyp_non_oilpan_asan_lsan_release_bot_x64',
-      'WebKit Linux non-Oilpan Builder':
-        'swarming_gn_non_oilpan_release_bot_x64',
-      'WebKit Linux non-Oilpan Leak': 'swarming_gn_non_oilpan_release_bot_x64',
       'WebKit Linux': 'swarming_gn_release_bot_x64',
       'WebKit Mac Builder (dbg)': 'swarming_gyp_debug_bot_x64',
       'WebKit Mac Builder': 'swarming_gyp_release_bot_x64',
-      'WebKit Mac non-Oilpan (dbg)': 'swarming_gyp_non_oilpan_debug_bot_x64',
-      'WebKit Mac non-Oilpan': 'swarming_gyp_non_oilpan_release_bot_x64',
       'WebKit Mac10.10': 'none',
       'WebKit Mac10.11 (dbg)': 'none',
       'WebKit Mac10.11 (retina)': 'swarming_gyp_release_bot_x64',
@@ -522,10 +512,6 @@
       'WebKit Mac10.9': 'none',
       'WebKit Win Builder (dbg)': 'swarming_gyp_debug_bot_minimal_symbols_x86',
       'WebKit Win Builder': 'swarming_gyp_release_bot_minimal_symbols_x86',
-      'WebKit Win non-Oilpan (dbg)':
-        'swarming_gyp_non_oilpan_debug_bot_minimal_symbols_x86',
-      'WebKit Win non-Oilpan':
-        'swarming_gyp_non_oilpan_release_bot_minimal_symbols_x86',
       'WebKit Win x64 Builder (dbg)':
         'swarming_gyp_debug_bot_minimal_symbols_x64',
       'WebKit Win x64 Builder': 'swarming_gyp_release_bot_minimal_symbols_x64',
@@ -611,12 +597,6 @@
         'swarming_gn_release_trybot_minimal_symbols_x64',
       'linux_blink_dbg':
         'swarming_gn_debug_bot_minimal_symbols_x64',
-      'linux_blink_oilpan_compile_rel':
-        'swarming_gn_non_oilpan_release_trybot_minimal_symbols_x64',
-      'linux_blink_oilpan_dbg':
-        'swarming_gn_non_oilpan_debug_bot_minimal_symbols_x64',
-      'linux_blink_oilpan_rel':
-        'swarming_gn_non_oilpan_release_trybot_minimal_symbols_x64',
       'linux_blink_rel':
         'swarming_gn_release_trybot_minimal_symbols_x64',
       'linux_blink_rel_ng':
@@ -627,23 +607,11 @@
         'swarming_gyp_release_bot_minimal_symbols_x64',
       'mac_blink_dbg':
         'swarming_gyp_debug_bot_minimal_symbols_x64',
-      'mac_blink_oilpan_compile_rel':
-        'swarming_gyp_non_oilpan_release_trybot_minimal_symbols_x64',
-      'mac_blink_oilpan_dbg':
-        'swarming_gyp_non_oilpan_debug_bot_minimal_symbols_x64',
-      'mac_blink_oilpan_rel':
-        'swarming_gyp_non_oilpan_release_trybot_minimal_symbols_x64',
       'mac_blink_rel': 'swarming_gyp_release_trybot_minimal_symbols_x64',
       'win_blink_compile_dbg': 'swarming_gyp_debug_bot_minimal_symbols_x86',
       'win_blink_compile_rel':
         'swarming_gyp_release_trybot_minimal_symbols_x86',
       'win_blink_dbg': 'swarming_gyp_debug_bot_minimal_symbols_x86',
-      'win_blink_oilpan_compile_rel':
-        'swarming_gyp_non_oilpan_release_trybot_minimal_symbols_x86',
-      'win_blink_oilpan_dbg':
-        'swarming_gyp_non_oilpan_debug_bot_minimal_symbols_x86',
-      'win_blink_oilpan_rel':
-        'swarming_gyp_non_oilpan_release_trybot_minimal_symbols_x86',
       'win_blink_rel': 'swarming_gyp_release_trybot_minimal_symbols_x86',
     },
 
@@ -717,8 +685,6 @@
       'chromeos_x86-generic_variable': 'findit',
       'chromium_presubmit': 'none',
       'linux_arm': 'swarming_gyp_release_trybot_arm',
-      'linux_blink_oilpan_rel':
-        'swarming_gn_non_oilpan_release_trybot_minimal_symbols_x64',
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_chromium_asan_variable': 'findit',
@@ -1399,23 +1365,6 @@
       'swarming', 'gn', 'debug_trybot',
     ],
 
-    'swarming_gn_non_oilpan_debug_bot_minimal_symbols_x64': [
-      'swarming', 'gn', 'non_oilpan', 'debug_bot_minimal_symbols', 'x64',
-    ],
-
-    'swarming_gn_non_oilpan_debug_bot_x64': [
-      'swarming', 'gn', 'non_oilpan', 'debug_bot_minimal_symbols', 'x64',
-    ],
-
-    'swarming_gn_non_oilpan_release_bot_x64': [
-      'swarming', 'gn', 'non_oilpan', 'release_bot', 'x64',
-    ],
-
-    'swarming_gn_non_oilpan_release_trybot_minimal_symbols_x64': [
-      'swarming', 'gn', 'non_oilpan', 'release_trybot', 'minimal_symbols',
-      'x64',
-    ],
-
     'swarming_gn_release_bot': [
       'swarming', 'gn', 'release_bot',
     ],
@@ -1482,40 +1431,6 @@
 
     'swarming_gyp_msan_release_bot_x64': [
       'swarming', 'gyp', 'msan', 'release_bot', 'x64',
-    ],
-
-    'swarming_gyp_non_oilpan_asan_lsan_release_bot_x64': [
-      'swarming', 'gyp', 'non_oilpan', 'asan', 'lsan', 'release_bot', 'x64',
-    ],
-
-    'swarming_gyp_non_oilpan_debug_bot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'non_oilpan', 'debug_bot_minimal_symbols', 'x64',
-    ],
-
-    'swarming_gyp_non_oilpan_debug_bot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'non_oilpan', 'debug_bot_minimal_symbols', 'x86',
-    ],
-
-    'swarming_gyp_non_oilpan_debug_bot_x64': [
-      'swarming', 'gyp', 'non_oilpan', 'debug_bot_minimal_symbols', 'x64',
-    ],
-
-    'swarming_gyp_non_oilpan_release_bot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'non_oilpan', 'release_bot', 'minimal_symbols', 'x86',
-    ],
-
-    'swarming_gyp_non_oilpan_release_bot_x64': [
-      'swarming', 'gyp', 'non_oilpan', 'release_bot', 'x64',
-    ],
-
-    'swarming_gyp_non_oilpan_release_trybot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'non_oilpan', 'release_trybot', 'minimal_symbols',
-      'x64',
-    ],
-
-    'swarming_gyp_non_oilpan_release_trybot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'non_oilpan', 'release_trybot', 'minimal_symbols',
-      'x86',
     ],
 
     'swarming_gyp_release_bot': [
@@ -1828,12 +1743,6 @@
       'gn_args': 'symbol_level=0',
       'gyp_defines': 'fastbuild=2',
     },
-
-    'non_oilpan': {
-      'gn_args': 'enable_oilpan=false',
-      'gyp_defines': 'enable_oilpan=0',
-    },
-
 
     'noswarming': {
       # test_isolation_mode doesn't exist in a GN build (it's always a no-op).
