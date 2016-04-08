@@ -67,6 +67,36 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   mocha.run();
 });
 
+GEN('#if !defined(OS_CHROMEOS)');
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/manage_profile.html.
+ * This is non-ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageManageProfileTest() {}
+
+CrSettingsPeoplePageManageProfileTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/manage_profile.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'people_page_manage_profile_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageManageProfileTest', 'ManageProfile', function() {
+  settings_people_page_manage_profile.registerTests();
+  mocha.run();
+});
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
