@@ -10,7 +10,7 @@
     "chromium_ios_signing": "0",
     "target_subarch": "arm32"
   },
-  "compiler": "xcodebuild",
+  "compiler": "ninja",
   "configuration": "Release",
   "sdk": "iphoneos9.0",
   "tests": [

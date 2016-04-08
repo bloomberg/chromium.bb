@@ -10,7 +10,7 @@
     "chromium_ios_signing": "0",
     "target_subarch": "both"
   },
-  "compiler": "xcodebuild",
+  "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator9.0",
   "tests": [
