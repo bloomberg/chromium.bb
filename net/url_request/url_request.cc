@@ -508,7 +508,6 @@ void URLRequest::Start() {
   load_timing_info_.request_start_time = response_info_.request_time;
   load_timing_info_.request_start = base::TimeTicks::Now();
 
-  // Only notify the delegate for the initial request.
   if (network_delegate_) {
     // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
     tracked_objects::ScopedTracker tracking_profile25(
