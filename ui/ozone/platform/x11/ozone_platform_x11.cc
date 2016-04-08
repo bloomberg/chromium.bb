@@ -4,8 +4,11 @@
 
 #include "ui/ozone/platform/x11/ozone_platform_x11.h"
 
+#include <X11/Xlib.h>
+
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
@@ -25,10 +28,23 @@ namespace ui {
 
 namespace {
 
+// Returns true if we should operate in Mus mode.
+bool RunningInsideMus() {
+  bool has_channel_handle = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "mojo-platform-channel-handle");
+  return has_channel_handle;
+}
+
 // Singleton OzonePlatform implementation for Linux X11 platform.
 class OzonePlatformX11 : public OzonePlatform {
  public:
-  OzonePlatformX11() {}
+  OzonePlatformX11() {
+    // If we're running in Mus mode both the UI and GPU components of Ozone will
+    // be running in the same process. Enable X11 concurrent thread support.
+    if (RunningInsideMus())
+      XInitThreads();
+  }
+
   ~OzonePlatformX11() override {}
 
   // OzonePlatform:
@@ -77,7 +93,6 @@ class OzonePlatformX11 : public OzonePlatform {
   void InitializeUI() override {
     window_manager_.reset(new X11WindowManagerOzone);
     event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
-    surface_factory_ozone_.reset(new X11SurfaceFactory());
     overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_.reset(new X11CursorFactoryOzone());
@@ -99,10 +114,8 @@ class OzonePlatformX11 : public OzonePlatform {
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   // Objects in the GPU process.
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-
-  // Objects in both Browser and GPU process.
   scoped_ptr<X11SurfaceFactory> surface_factory_ozone_;
+  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformX11);
 };
