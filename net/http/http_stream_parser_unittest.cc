@@ -466,7 +466,7 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
 
   // Attempt to read the response status and the response headers.
   ASSERT_EQ(ERR_IO_PENDING, parser.ReadResponseHeaders(callback.callback()));
-  ASSERT_GT(callback.WaitForResult(), 0);
+  ASSERT_EQ(OK, callback.WaitForResult());
 
   // Finally, attempt to read the response body.
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
@@ -536,7 +536,7 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
 
   // Attempt to read the response status and the response headers.
   ASSERT_EQ(ERR_IO_PENDING, parser.ReadResponseHeaders(callback.callback()));
-  ASSERT_GT(callback.WaitForResult(), 0);
+  ASSERT_EQ(OK, callback.WaitForResult());
 
   // Finally, attempt to read the response body.
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
@@ -629,7 +629,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
 
   // Attempt to read the response status and the response headers.
   ASSERT_EQ(ERR_IO_PENDING, parser.ReadResponseHeaders(callback.callback()));
-  ASSERT_GT(callback.WaitForResult(), 0);
+  ASSERT_EQ(OK, callback.WaitForResult());
 
   // Finally, attempt to read the response body.
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
@@ -699,7 +699,7 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
 
   // Attempt to read the response status and the response headers.
   ASSERT_EQ(ERR_IO_PENDING, parser.ReadResponseHeaders(callback.callback()));
-  ASSERT_GT(callback.WaitForResult(), 0);
+  ASSERT_EQ(OK, callback.WaitForResult());
 
   // Finally, attempt to read the response body.
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
@@ -768,7 +768,7 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
 
   // Attempt to read the response status and the response headers.
   ASSERT_EQ(ERR_IO_PENDING, parser.ReadResponseHeaders(callback.callback()));
-  ASSERT_GT(callback.WaitForResult(), 0);
+  ASSERT_EQ(OK, callback.WaitForResult());
 
   // Finally, attempt to read the response body.
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
