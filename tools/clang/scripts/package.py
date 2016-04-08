@@ -25,6 +25,7 @@ LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
 LLVM_BUILD_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-build')
 LLVM_RELEASE_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts')
+LLVM_LTO_GOLD_PLUGIN_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-lto-gold-plugin')
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
 
@@ -175,8 +176,12 @@ def main():
     shutil.rmtree(LLVM_BOOTSTRAP_INSTALL_DIR, ignore_errors=True)
     shutil.rmtree(LLVM_BUILD_DIR, ignore_errors=True)
 
+    opt_flags = []
+    if sys.platform.startswith('linux'):
+      opt_flags += ['--lto-gold-plugin']
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
-                 '--bootstrap', '--force-local-build', '--run-tests']
+                 '--bootstrap', '--force-local-build',
+                 '--run-tests'] + opt_flags
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()
@@ -276,7 +281,7 @@ def main():
   if sys.platform.startswith('linux'):
     shutil.rmtree(golddir, ignore_errors=True)
     os.makedirs(os.path.join(golddir, 'lib'))
-    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'lib', 'LLVMgold.so'),
+    shutil.copy(os.path.join(LLVM_LTO_GOLD_PLUGIN_DIR, 'lib', 'LLVMgold.so'),
                 os.path.join(golddir, 'lib'))
     with tarfile.open(golddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(golddir, 'lib'), arcname='lib',

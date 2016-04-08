@@ -45,6 +45,7 @@ LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
 LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
+LLVM_LTO_GOLD_PLUGIN_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-lto-gold-plugin')
 CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'tools', 'chrometools')
 LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm-build',
                               'Release+Asserts')
@@ -65,6 +66,10 @@ LLVM_BUILD_TOOLS_DIR = os.path.abspath(
 STAMP_FILE = os.path.normpath(
     os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision'))
 BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
+BINUTILS_BIN_DIR = os.path.join(BINUTILS_DIR, BINUTILS_DIR,
+                                'Linux_x64', 'Release', 'bin')
+BFD_PLUGINS_DIR = os.path.join(BINUTILS_DIR, 'Linux_x64', 'Release',
+                               'lib', 'bfd-plugins')
 VERSION = '3.9.0'
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_tools', 'ndk')
@@ -450,11 +455,16 @@ def UpdateClang(args):
                      '-DLLVM_USE_CRT_RELEASE=MT',
                      ]
 
+  binutils_incdir = ''
+  if sys.platform.startswith('linux'):
+    binutils_incdir = os.path.join(BINUTILS_DIR, 'Linux_x64/Release/include')
+
   if args.bootstrap:
     print 'Building bootstrap compiler'
     EnsureDirExists(LLVM_BOOTSTRAP_DIR)
     os.chdir(LLVM_BOOTSTRAP_DIR)
     bootstrap_args = base_cmake_args + [
+        '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
         '-DLLVM_TARGETS_TO_BUILD=host',
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
@@ -491,6 +501,47 @@ def UpdateClang(args):
       cxxflags = ['--gcc-toolchain=' + args.gcc_toolchain]
     print 'Building final compiler'
 
+  # Build LLVM gold plugin with LTO. That speeds up the linker by ~10%.
+  # We only use LTO for Linux now.
+  if args.bootstrap and args.lto_gold_plugin:
+    print 'Building LTO LLVM Gold plugin'
+    if os.path.exists(LLVM_LTO_GOLD_PLUGIN_DIR):
+      RmTree(LLVM_LTO_GOLD_PLUGIN_DIR)
+    EnsureDirExists(LLVM_LTO_GOLD_PLUGIN_DIR)
+    os.chdir(LLVM_LTO_GOLD_PLUGIN_DIR)
+
+    # Create a symlink to LLVMgold.so build in the previous step so that ar
+    # and ranlib could find it while linking LLVMgold.so with LTO.
+    EnsureDirExists(BFD_PLUGINS_DIR)
+    RunCommand(['ln', '-sf',
+                os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'lib', 'LLVMgold.so'),
+                os.path.join(BFD_PLUGINS_DIR, 'LLVMgold.so')])
+
+    lto_cflags = ['-flto']
+    lto_ldflags = ['-fuse-ld=gold']
+    if args.gcc_toolchain:
+      # Tell the bootstrap compiler to use a specific gcc prefix to search
+      # for standard library headers and shared object files.
+      lto_cflags += ['--gcc-toolchain=' + args.gcc_toolchain]
+    lto_cmake_args = base_cmake_args + [
+        '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
+        '-DCMAKE_C_COMPILER=' + cc,
+        '-DCMAKE_CXX_COMPILER=' + cxx,
+        '-DCMAKE_C_FLAGS=' + ' '.join(lto_cflags),
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(lto_cflags),
+        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(lto_ldflags),
+        '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(lto_ldflags),
+        '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(lto_ldflags)]
+
+    # We need to use the proper binutils which support LLVM Gold plugin.
+    lto_env = os.environ.copy()
+    lto_env['PATH'] = BINUTILS_BIN_DIR + os.pathsep + lto_env.get('PATH', '')
+
+    RmCmakeCache('.')
+    RunCommand(['cmake'] + lto_cmake_args + [LLVM_DIR], env=lto_env)
+    RunCommand(['ninja', 'LLVMgold'], env=lto_env)
+
+
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
   # needed, on OS X it requires libc++. clang only automatically links to libc++
   # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run
@@ -511,9 +562,6 @@ def UpdateClang(args):
     RmTree(LIBCXX_DIR)
 
   # Build clang.
-  binutils_incdir = ''
-  if sys.platform.startswith('linux'):
-    binutils_incdir = os.path.join(BINUTILS_DIR, 'Linux_x64/Release/include')
 
   # If building at head, define a macro that plugins can use for #ifdefing
   # out code that builds at head, but not at CLANG_REVISION or vice versa.
@@ -731,6 +779,8 @@ def main():
   parser.add_argument('--gcc-toolchain', help='set the version for which gcc '
                       'version be used for building; --gcc-toolchain=/opt/foo '
                       'picks /opt/foo/bin/gcc')
+  parser.add_argument('--lto-gold-plugin', action='store_true',
+                      help='build LLVM Gold plugin with LTO')
   parser.add_argument('--print-revision', action='store_true',
                       help='print current clang revision and exit.')
   parser.add_argument('--print-clang-version', action='store_true',
@@ -745,6 +795,13 @@ def main():
                       dest='with_android',
                       default=sys.platform.startswith('linux'))
   args = parser.parse_args()
+
+  if args.lto_gold_plugin and not args.bootstrap:
+    print '--lto-gold-plugin requires --bootstrap'
+    return 1
+  if args.lto_gold_plugin and not sys.platform.startswith('linux'):
+    print '--lto-gold-plugin is only effective on Linux. Ignoring the option.'
+    args.lto_gold_plugin = False
 
   if args.if_needed:
     is_clang_required = False
