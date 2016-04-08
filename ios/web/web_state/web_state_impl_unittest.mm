@@ -16,13 +16,13 @@
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
+#import "ios/web/test/web_test.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 using testing::_;
@@ -224,11 +224,10 @@ bool HandleScriptCommand(bool* is_called,
   return should_handle;
 }
 
-class WebStateTest : public PlatformTest {
+class WebStateTest : public web::WebTest {
  protected:
   void SetUp() override {
     web_state_.reset(new WebStateImpl(&browser_state_));
-    web_state_->SetWebController(nil);
   }
 
   web::TestBrowserState browser_state_;
