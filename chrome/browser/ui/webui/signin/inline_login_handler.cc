@@ -68,15 +68,28 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
       content::BrowserContext::GetStoragePartitionForSite(
           contents->GetBrowserContext(), signin::GetSigninPartitionURL());
   if (partition) {
-    partition->ClearData(
-        content::StoragePartition::REMOVE_DATA_MASK_ALL,
-        content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-        GURL(),
-        content::StoragePartition::OriginMatcherFunction(),
-        base::Time(),
-        base::Time::Max(),
-        base::Bind(&InlineLoginHandler::ContinueHandleInitializeMessage,
-                   weak_ptr_factory_.GetWeakPtr()));
+    const GURL& current_url = web_ui()->GetWebContents()->GetURL();
+
+    // If the kSignInPromoQueryKeyForceKeepData param is missing, or if it is
+    // present and its value is zero, this means we don't want to keep the
+    // the data.
+    std::string value;
+    if (!net::GetValueForKeyInQuery(current_url,
+                                    signin::kSignInPromoQueryKeyForceKeepData,
+                                    &value) ||
+        value == "0") {
+      partition->ClearData(
+          content::StoragePartition::REMOVE_DATA_MASK_ALL,
+          content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+          GURL(),
+          content::StoragePartition::OriginMatcherFunction(),
+          base::Time(),
+          base::Time::Max(),
+          base::Bind(&InlineLoginHandler::ContinueHandleInitializeMessage,
+                     weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      ContinueHandleInitializeMessage();
+    }
   }
 }
 
@@ -243,6 +256,8 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       main_frame_url, signin::kSignInPromoQueryKeyAutoClose, "1");
   main_frame_url = net::AppendOrReplaceQueryParameter(
       main_frame_url, signin::kSignInPromoQueryKeyShowAccountManagement, "1");
+  main_frame_url = net::AppendOrReplaceQueryParameter(
+      main_frame_url, signin::kSignInPromoQueryKeyForceKeepData, "1");
 
   chrome::NavigateParams params(
       profile,

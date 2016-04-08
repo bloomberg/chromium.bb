@@ -23,6 +23,7 @@ namespace signin {
 const char kSignInPromoQueryKeyAccessPoint[] = "access_point";
 const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
 const char kSignInPromoQueryKeyContinue[] = "continue";
+const char kSignInPromoQueryKeyForceKeepData[] = "force_keep_data";
 const char kSignInPromoQueryKeyReason[] = "reason";
 const char kSignInPromoQueryKeySource[] = "source";
 const char kSignInPromoQueryKeyConstrained[] = "constrained";
