@@ -249,9 +249,9 @@ NativeDesktopMediaList::~NativeDesktopMediaList() {
 
 void NativeDesktopMediaList::Refresh() {
 #if defined(USE_AURA)
-  pending_aura_capture_requests_ = 0;
+  DCHECK_EQ(pending_aura_capture_requests_, 0);
+  DCHECK(!pending_native_thumbnail_capture_);
   new_aura_thumbnail_hashes_.clear();
-  pending_native_thumbnail_capture_ = true;
 #endif
 
   capture_task_runner_->PostTask(
@@ -262,7 +262,11 @@ void NativeDesktopMediaList::Refresh() {
 void NativeDesktopMediaList::RefreshForAuraWindows(
     std::vector<SourceDescription> sources) {
 #if defined(USE_AURA)
+  // Associate aura id with native id.
   for (auto& source : sources) {
+    if (source.id.type != DesktopMediaID::TYPE_WINDOW)
+      continue;
+
     aura::Window* aura_window = NULL;
 #if defined(OS_WIN)
     aura_window = views::DesktopWindowTreeHostWin::GetContentWindowForHWND(
@@ -271,7 +275,6 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
     aura_window =
         views::DesktopWindowTreeHostX11::GetContentWindowForXID(source.id.id);
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
-    // Associate aura id with native id.
     if (aura_window) {
       DesktopMediaID aura_id = DesktopMediaID::RegisterAuraWindow(
           DesktopMediaID::TYPE_WINDOW, aura_window);
@@ -282,6 +285,13 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 
   UpdateSourcesList(sources);
 
+  // OnAuraThumbnailCaptured() and UpdateNativeThumbnailsFinished() are
+  // guaranteed to be excuted after RefreshForAuraWindows() and
+  // CaptureAuraWindowThumbnail() in the browser UI thread.
+  // Therefore pending_aura_capture_requests_ will be set the number of aura
+  // windows to be captured and pending_native_thumbnail_capture_ will be set
+  // true if native thumbnail capture is needed before OnAuraThumbnailCaptured()
+  // or UpdateNativeThumbnailsFinished() are called.
   std::vector<DesktopMediaID> native_ids;
   for (const auto& source : sources) {
 #if defined(USE_AURA)
@@ -293,10 +303,15 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
     native_ids.push_back(source.id);
   }
 
-  capture_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Worker::RefreshThumbnails, base::Unretained(worker_.get()),
-                 native_ids, thumbnail_size_));
+  if (native_ids.size() > 0) {
+#if defined(USE_AURA)
+    pending_native_thumbnail_capture_ = true;
+#endif
+    capture_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&Worker::RefreshThumbnails, base::Unretained(worker_.get()),
+                   native_ids, thumbnail_size_));
+  }
 }
 
 void NativeDesktopMediaList::UpdateNativeThumbnailsFinished() {

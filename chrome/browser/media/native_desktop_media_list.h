@@ -65,9 +65,8 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   ImageHashesMap new_aura_thumbnail_hashes_;
 
   int pending_aura_capture_requests_ = 0;
-  bool pending_native_thumbnail_capture_ = true;
+  bool pending_native_thumbnail_capture_ = false;
 #endif
-
   base::WeakPtrFactory<NativeDesktopMediaList> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeDesktopMediaList);

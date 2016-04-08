@@ -132,7 +132,6 @@
       'browser/manifest/manifest_icon_selector_unittest.cc',
       'browser/media/media_stream_device_permission_context_unittest.cc',
       'browser/media/midi_permission_context_unittest.cc',
-      'browser/media/native_desktop_media_list_unittest.cc',
       'browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/perf/perf_provider_chromeos_unittest.cc',
@@ -1597,6 +1596,7 @@
     ],
     # Everything but Android, ChromeOS and iOS (iOS is handled separately).
     'chrome_unit_tests_non_android_or_chromeos_sources': [
+      'browser/media/native_desktop_media_list_unittest.cc',
       'browser/signin/cross_device_promo_unittest.cc',
       'browser/signin/signin_global_error_unittest.cc',
       'browser/sync/sync_global_error_unittest.cc',
