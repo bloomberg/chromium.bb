@@ -5,7 +5,7 @@
 #ifndef IntersectionObserverController_h
 #define IntersectionObserverController_h
 
-#include "core/dom/Element.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/IdleRequestCallback.h"
 #include "core/dom/IntersectionObserver.h"
 #include "platform/heap/Handle.h"
@@ -15,6 +15,8 @@
 //   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ
 
 namespace blink {
+
+class Document;
 
 class IntersectionObserverController : public IdleRequestCallback, public ActiveDOMObject {
     USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);

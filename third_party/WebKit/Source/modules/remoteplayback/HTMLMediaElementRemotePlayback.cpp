@@ -4,6 +4,7 @@
 
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/html/HTMLMediaElement.h"

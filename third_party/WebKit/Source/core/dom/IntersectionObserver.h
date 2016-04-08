@@ -6,21 +6,21 @@
 #define IntersectionObserver_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/Element.h"
 #include "core/dom/IntersectionObservation.h"
 #include "core/dom/IntersectionObserverEntry.h"
+#include "platform/Length.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class Element;
 class ExceptionState;
+class LayoutObject;
 class IntersectionObserverCallback;
 class IntersectionObserverInit;
 
-// TODO(oilpan): Switch to GarbageCollected<> after oilpan ships
 class IntersectionObserver final : public GarbageCollectedFinalized<IntersectionObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
@@ -55,9 +55,7 @@ public:
 
 private:
     explicit IntersectionObserver(IntersectionObserverCallback&, Node&, const Vector<Length>& rootMargin, const Vector<float>& thresholds);
-#if ENABLE(OILPAN)
     void clearWeakMembers(Visitor*);
-#endif
 
     Member<IntersectionObserverCallback> m_callback;
     WeakMember<Node> m_root;

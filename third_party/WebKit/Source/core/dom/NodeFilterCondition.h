@@ -26,7 +26,6 @@
 #define NodeFilterCondition_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

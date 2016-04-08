@@ -30,7 +30,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/Touch.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {

@@ -17,15 +17,10 @@ namespace blink {
 
 IntersectionObservation::IntersectionObservation(IntersectionObserver& observer, Element& target, bool shouldReportRootBounds)
     : m_observer(observer)
-    , m_target(target.ensureIntersectionObserverData().createWeakPtr(&target))
+    , m_target(&target)
     , m_shouldReportRootBounds(shouldReportRootBounds)
     , m_lastThresholdIndex(0)
 {
-}
-
-Element* IntersectionObservation::target() const
-{
-    return toElement(m_target.get());
 }
 
 void IntersectionObservation::applyRootMargin(LayoutRect& rect) const

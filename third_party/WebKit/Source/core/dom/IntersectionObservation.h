@@ -13,10 +13,8 @@ namespace blink {
 
 class Element;
 class IntersectionObserver;
-class Node;
 
-// TODO(oilpan): Switch to GarbageCollected<> after oilpan ships.
-class IntersectionObservation : public GarbageCollectedFinalized<IntersectionObservation> {
+class IntersectionObservation final : public GarbageCollected<IntersectionObservation> {
 public:
     IntersectionObservation(IntersectionObserver&, Element&, bool shouldReportRootBounds);
 
@@ -28,7 +26,7 @@ public:
     };
 
     IntersectionObserver& observer() const { return *m_observer; }
-    Element* target() const;
+    Element* target() const { return m_target; }
     unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
     void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
     bool shouldReportRootBounds() const { return m_shouldReportRootBounds; }
@@ -51,10 +49,7 @@ private:
 
     Member<IntersectionObserver> m_observer;
 
-    // TODO(szager): Why Node instead of Element?  Because NodeIntersectionObserverData::createWeakPtr()
-    // returns a WeakPtr<Node>, which cannot be coerced into a WeakPtr<Element>.  When oilpan rolls out,
-    // this can be changed to WeakMember<Element>.
-    WeakMember<Node> m_target;
+    WeakMember<Element> m_target;
 
     unsigned m_shouldReportRootBounds : 1;
     unsigned m_lastThresholdIndex : 30;

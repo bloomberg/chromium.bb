@@ -5,6 +5,7 @@
 #include "modules/audio_output_devices/SetSinkIdCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 
 namespace blink {

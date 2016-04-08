@@ -45,30 +45,6 @@ void NodeIntersectionObserverData::deactivateAllIntersectionObservers(Node& node
     node.document().ensureIntersectionObserverController().removeTrackedObserversForRoot(node);
 }
 
-#if !ENABLE(OILPAN)
-void NodeIntersectionObserverData::dispose()
-{
-    HeapVector<Member<IntersectionObserver>> observersToDisconnect;
-    copyToVector(m_intersectionObservers, observersToDisconnect);
-    for (auto& observer : observersToDisconnect)
-        observer->disconnect();
-    DCHECK(m_intersectionObservers.isEmpty());
-}
-#endif
-
-RawPtr<Node> NodeIntersectionObserverData::createWeakPtr(Node* node)
-{
-#if ENABLE(OILPAN)
-    return node;
-#else
-    if (!m_weakPointerFactory)
-        m_weakPointerFactory = new WeakPtrFactory<Node>(node);
-    WeakPtr<Node> result = m_weakPointerFactory->createWeakPtr();
-    DCHECK_EQ(result.get(), node);
-    return result;
-#endif
-}
-
 DEFINE_TRACE(NodeIntersectionObserverData)
 {
     visitor->trace(m_intersectionObservers);

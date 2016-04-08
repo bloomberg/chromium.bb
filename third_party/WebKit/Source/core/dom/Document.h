@@ -32,7 +32,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
@@ -65,7 +64,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -80,6 +78,7 @@ class CanvasFontCache;
 class CanvasRenderingContext2D;
 class CanvasRenderingContext2DOrWebGLRenderingContext;
 class ChromeClient;
+class CompositorPendingAnimations;
 class Comment;
 class ConsoleMessage;
 class ContextFeatures;
@@ -682,8 +681,6 @@ public:
     }
     bool hasMutationObservers() const { return m_mutationObserverTypes; }
     void addMutationObserverTypes(MutationObserverOptions types) { m_mutationObserverTypes |= types; }
-
-    RawPtr<Document> createWeakPtr();
 
     IntersectionObserverController* intersectionObserverController();
     IntersectionObserverController& ensureIntersectionObserverController();
@@ -1327,9 +1324,6 @@ private:
 
     LayoutView* m_layoutView;
 
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<Document> m_weakFactory;
-#endif
     WeakMember<Document> m_contextDocument;
 
     bool m_hasFullscreenSupplement; // For early return in Fullscreen::fromIfExists()

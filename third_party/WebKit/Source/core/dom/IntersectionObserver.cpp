@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
+#include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IntersectionObserverCallback.h"
@@ -115,16 +116,13 @@ IntersectionObserver* IntersectionObserver::create(const IntersectionObserverIni
 
 IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callback, Node& root, const Vector<Length>& rootMargin, const Vector<float>& thresholds)
     : m_callback(&callback)
+    , m_root(&root)
     , m_thresholds(thresholds)
     , m_topMargin(Fixed)
     , m_rightMargin(Fixed)
     , m_bottomMargin(Fixed)
     , m_leftMargin(Fixed)
 {
-    if (root.isDocumentNode())
-        m_root = toDocument(root).ensureIntersectionObserverData().createWeakPtr(&root);
-    else
-        m_root = toElement(root).ensureIntersectionObserverData().createWeakPtr(&root);
     switch (rootMargin.size()) {
     case 0:
         break;

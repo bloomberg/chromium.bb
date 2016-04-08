@@ -46,6 +46,7 @@
 #include "core/XMLNSNames.h"
 #include "core/XMLNames.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
@@ -4719,9 +4720,8 @@ RawPtr<Document> Document::contextDocument()
 {
     if (m_contextDocument)
         return m_contextDocument;
-    if (m_frame) {
-        return createWeakPtr();
-    }
+    if (m_frame)
+        return this;
     return nullptr;
 }
 
@@ -5215,15 +5215,6 @@ void Document::parseDNSPrefetchControlHeader(const String& dnsPrefetchControl)
 
     m_isDNSPrefetchEnabled = false;
     m_haveExplicitlyDisabledDNSPrefetch = true;
-}
-
-RawPtr<Document> Document::createWeakPtr()
-{
-#if ENABLE(OILPAN)
-    return this;
-#else
-    return m_weakFactory.createWeakPtr();
-#endif
 }
 
 IntersectionObserverController* Document::intersectionObserverController()

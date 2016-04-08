@@ -5,6 +5,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
