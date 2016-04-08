@@ -16,25 +16,30 @@ namespace blink {
 class StyleVariableData : public RefCounted<StyleVariableData> {
 public:
     static PassRefPtr<StyleVariableData> create() { return adoptRef(new StyleVariableData()); }
-    PassRefPtr<StyleVariableData> copy() const { return adoptRef(new StyleVariableData(*this)); }
+
+    PassRefPtr<StyleVariableData> copy() { return adoptRef(new StyleVariableData(*this)); }
 
     bool operator==(const StyleVariableData& other) const;
     bool operator!=(const StyleVariableData& other) const { return !(*this == other); }
 
     void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, value); }
-    CSSVariableData* getVariable(const AtomicString& name) const { return m_data.get(name); }
-    void removeVariable(const AtomicString& name) { return m_data.remove(name); }
+    CSSVariableData* getVariable(const AtomicString& name) const;
+    void removeVariable(const AtomicString& name) { return setVariable(name, nullptr); }
 
     // This map will contain null pointers if variables are invalid due to
     // cycles or referencing invalid variables without using a fallback.
-    const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const { return &m_data; }
+    // Note that this method is slow as a new map is constructed.
+    std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> getVariables() const;
 private:
-    StyleVariableData() = default;
-    StyleVariableData(const StyleVariableData& other) : RefCounted<StyleVariableData>(), m_data(other.m_data) { }
+    StyleVariableData()
+        : m_root(nullptr)
+        { }
+    StyleVariableData(StyleVariableData& other);
 
     friend class CSSVariableResolver;
 
     HashMap<AtomicString, RefPtr<CSSVariableData>> m_data;
+    RefPtr<StyleVariableData> m_root;
 };
 
 } // namespace blink

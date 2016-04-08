@@ -29,6 +29,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSVariableParser.h"
@@ -534,7 +535,7 @@ CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPr
     return ComputedStyleCSSValueMapping::get(customPropertyName, *style);
 }
 
-const HashMap<AtomicString, RefPtr<CSSVariableData>>* CSSComputedStyleDeclaration::getVariables() const
+std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> CSSComputedStyleDeclaration::getVariables() const
 {
     const ComputedStyle* style = computeComputedStyle();
     if (!style)

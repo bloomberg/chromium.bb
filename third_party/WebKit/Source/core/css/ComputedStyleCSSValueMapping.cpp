@@ -1429,7 +1429,7 @@ CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPropertyNam
     return CSSCustomPropertyDeclaration::create(customPropertyName, data);
 }
 
-const HashMap<AtomicString, RefPtr<CSSVariableData>>* ComputedStyleCSSValueMapping::getVariables(const ComputedStyle& style)
+std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> ComputedStyleCSSValueMapping::getVariables(const ComputedStyle& style)
 {
     StyleVariableData* variables = style.variables();
     if (variables)

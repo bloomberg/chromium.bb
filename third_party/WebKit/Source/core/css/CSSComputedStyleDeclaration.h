@@ -65,7 +65,7 @@ public:
 
     CSSValue* getPropertyCSSValue(CSSPropertyID) const;
     CSSValue* getPropertyCSSValue(AtomicString customPropertyName) const;
-    const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const;
+    std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> getVariables() const;
 
     CSSValue* getFontSizeCSSValuePreferringKeyword() const;
     bool isMonospaceFont() const;
