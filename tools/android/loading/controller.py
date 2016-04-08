@@ -216,6 +216,9 @@ class RemoteChromeController(ChromeControllerBase):
     package_info = OPTIONS.ChromePackage()
     command_line_path = '/data/local/chrome-command-line'
     self._device.KillAll(package_info.package, quiet=True)
+    if OPTIONS.clear_device_data:
+      logging.info('Clear Chrome data')
+      self._device.adb.Shell('pm clear ' + package_info.package)
     chrome_args = self._GetChromeArguments()
     logging.info('Launching %s with flags: %s' % (package_info.package,
         subprocess.list2cmdline(chrome_args)))

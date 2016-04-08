@@ -20,6 +20,8 @@ class Options(object):
   # Tuples of (argument name, default value, help string).
   _ARGS = [ ('clear_cache', True,
              'clear browser cache before loading'),
+            ('clear_device_data', False,
+             'Clear Chrome data from device before loading'),
             ('chrome_package_name', 'chrome',
              'build/android/pylib/constants package description'),
             ('devtools_hostname', 'localhost',
