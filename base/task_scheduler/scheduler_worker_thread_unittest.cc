@@ -130,12 +130,12 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
 
     // Create a Sequence that contains one Task.
     scoped_refptr<Sequence> sequence(new Sequence);
-    task_tracker_.PostTask(
-        Bind(IgnoreResult(&Sequence::PushTask), Unretained(sequence.get())),
-        WrapUnique(new Task(
-            FROM_HERE, Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback,
-                            Unretained(this)),
-            TaskTraits())));
+    std::unique_ptr<Task> task(new Task(
+        FROM_HERE,
+        Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback, Unretained(this)),
+        TaskTraits()));
+    EXPECT_TRUE(task_tracker_.WillPostTask(task.get()));
+    sequence->PushTask(std::move(task));
 
     {
       // Add the Sequence to the vector of created Sequences.

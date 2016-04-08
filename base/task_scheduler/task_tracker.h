@@ -35,14 +35,12 @@ class BASE_EXPORT TaskTracker {
   // This must only be called once.
   void Shutdown();
 
-  // Posts |task| by calling |post_task_callback| unless the current shutdown
-  // state prevents that. A task forwarded to |post_task_callback| must be
-  // handed back to this instance's RunTask() when it is to be executed.
-  void PostTask(const Callback<void(std::unique_ptr<Task>)>& post_task_callback,
-                std::unique_ptr<Task> task);
+  // Informs this TaskTracker that |task| is about to be posted. Returns true if
+  // this operation is allowed (|task| should be posted if-and-only-if it is).
+  bool WillPostTask(const Task* task);
 
-  // Runs |task| unless the current shutdown state prevents that. |task| must
-  // have been successfully posted via PostTask() first.
+  // Runs |task| unless the current shutdown state prevents that. WillPostTask()
+  // must have allowed |task| to be posted.
   void RunTask(const Task* task);
 
   // Returns true while shutdown is in progress (i.e. Shutdown() has been called
@@ -55,10 +53,9 @@ class BASE_EXPORT TaskTracker {
   }
 
  private:
-  // Called before a task with |shutdown_behavior| is handed off to
-  // |post_task_callback| by PostTask(). Updates |num_tasks_blocking_shutdown_|
-  // if necessary and returns true if the current shutdown state allows the task
-  // to be posted.
+  // Called before WillPostTask() informs the tracing system that a task has
+  // been posted. Updates |num_tasks_blocking_shutdown_| if necessary and
+  // returns true if the current shutdown state allows the task to be posted.
   bool BeforePostTask(TaskShutdownBehavior shutdown_behavior);
 
   // Called before a task with |shutdown_behavior| is run by RunTask(). Updates

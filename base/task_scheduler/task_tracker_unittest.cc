@@ -5,7 +5,6 @@
 #include "base/task_scheduler/task_tracker.h"
 
 #include <memory>
-#include <queue>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -75,21 +74,6 @@ class TaskSchedulerTaskTrackerTest
         TaskTraits().WithShutdownBehavior(shutdown_behavior)));
   }
 
-  // Tries to post |task| via |tracker_|. If |tracker_| approves the operation,
-  // |task| is added to |posted_tasks_|.
-  void PostTaskViaTracker(std::unique_ptr<Task> task) {
-    tracker_.PostTask(
-        Bind(&TaskSchedulerTaskTrackerTest::PostTaskCallback, Unretained(this)),
-        std::move(task));
-  }
-
-  // Tries to run the next task in |posted_tasks_| via |tracker_|.
-  void RunNextPostedTaskViaTracker() {
-    ASSERT_FALSE(posted_tasks_.empty());
-    tracker_.RunTask(posted_tasks_.front().get());
-    posted_tasks_.pop();
-  }
-
   // Calls tracker_->Shutdown() on a new thread. When this returns, Shutdown()
   // method has been entered on the new thread, but it hasn't necessarily
   // returned.
@@ -119,13 +103,8 @@ class TaskSchedulerTaskTrackerTest
 
   TaskTracker tracker_;
   size_t num_tasks_executed_ = 0;
-  std::queue<std::unique_ptr<Task>> posted_tasks_;
 
  private:
-  void PostTaskCallback(std::unique_ptr<Task> task) {
-    posted_tasks_.push(std::move(task));
-  }
-
   void RunTaskCallback() { ++num_tasks_executed_; }
 
   std::unique_ptr<ThreadCallingShutdown> thread_calling_shutdown_;
@@ -147,36 +126,33 @@ class TaskSchedulerTaskTrackerTest
 
 }  // namespace
 
-TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunBeforeShutdown) {
-  std::unique_ptr<Task> task_to_post(CreateTask(GetParam()));
-  const Task* task_to_post_raw = task_to_post.get();
+TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunBeforeShutdown) {
+  std::unique_ptr<Task> task(CreateTask(GetParam()));
 
-  // Post the task.
-  EXPECT_TRUE(posted_tasks_.empty());
-  PostTaskViaTracker(std::move(task_to_post));
-  EXPECT_EQ(1U, posted_tasks_.size());
-  EXPECT_EQ(task_to_post_raw, posted_tasks_.front().get());
+  // Inform |task_tracker_| that |task| will be posted.
+  EXPECT_TRUE(tracker_.WillPostTask(task.get()));
 
-  // Run the posted task.
+  // Run the task.
   EXPECT_EQ(0U, num_tasks_executed_);
-  RunNextPostedTaskViaTracker();
+  tracker_.RunTask(task.get());
   EXPECT_EQ(1U, num_tasks_executed_);
 
   // Shutdown() shouldn't block.
   tracker_.Shutdown();
 }
 
-TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunLongTaskBeforeShutdown) {
-  // Post a task that will block until |event| is signaled.
-  EXPECT_TRUE(posted_tasks_.empty());
+TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
+  // Create a task that will block until |event| is signaled.
   WaitableEvent event(false, false);
-  PostTaskViaTracker(WrapUnique(
+  std::unique_ptr<Task> blocked_task(
       new Task(FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
-               TaskTraits().WithShutdownBehavior(GetParam()))));
-  EXPECT_EQ(1U, posted_tasks_.size());
+               TaskTraits().WithShutdownBehavior(GetParam())));
+
+  // Inform |task_tracker_| that |blocked_task| will be posted.
+  EXPECT_TRUE(tracker_.WillPostTask(blocked_task.get()));
 
   // Run the task asynchronouly.
-  ThreadRunningTask thread_running_task(&tracker_, posted_tasks_.front().get());
+  ThreadRunningTask thread_running_task(&tracker_, blocked_task.get());
   thread_running_task.Start();
 
   // Initiate shutdown while the task is running.
@@ -199,47 +175,40 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunLongTaskBeforeShutdown) {
     WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }
 
-TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunDuringShutdown) {
-  std::unique_ptr<Task> task_to_post(CreateTask(GetParam()));
-  const Task* task_to_post_raw = task_to_post.get();
+TEST_P(TaskSchedulerTaskTrackerTest, WillPostBeforeShutdownRunDuringShutdown) {
+  // Inform |task_tracker_| that a task will be posted.
+  std::unique_ptr<Task> task(CreateTask(GetParam()));
+  EXPECT_TRUE(tracker_.WillPostTask(task.get()));
 
-  // Post the task.
-  EXPECT_TRUE(posted_tasks_.empty());
-  PostTaskViaTracker(std::move(task_to_post));
-  EXPECT_EQ(1U, posted_tasks_.size());
-  EXPECT_EQ(task_to_post_raw, posted_tasks_.front().get());
-
-  // Post a BLOCK_SHUTDOWN task just to block shutdown.
-  PostTaskViaTracker(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
+  // Inform |task_tracker_| that a BLOCK_SHUTDOWN task will be posted just to
+  // block shutdown.
+  std::unique_ptr<Task> block_shutdown_task(
+      CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
+  EXPECT_TRUE(tracker_.WillPostTask(block_shutdown_task.get()));
 
   // Call Shutdown() asynchronously.
   CallShutdownAsync();
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
-  // Try to run the first posted task. Only BLOCK_SHUTDOWN tasks should run,
-  // others should be discarded.
+  // Try to run |task|. It should only run it it's BLOCK_SHUTDOWN. Otherwise it
+  // should be discarded.
   EXPECT_EQ(0U, num_tasks_executed_);
-  RunNextPostedTaskViaTracker();
+  tracker_.RunTask(task.get());
   EXPECT_EQ(GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN ? 1U : 0U,
             num_tasks_executed_);
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
   // Unblock shutdown by running the remaining BLOCK_SHUTDOWN task.
-  RunNextPostedTaskViaTracker();
+  tracker_.RunTask(block_shutdown_task.get());
   EXPECT_EQ(GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN ? 2U : 1U,
             num_tasks_executed_);
   WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }
 
-TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunAfterShutdown) {
-  std::unique_ptr<Task> task_to_post(CreateTask(GetParam()));
-  const Task* task_to_post_raw = task_to_post.get();
-
-  // Post the task.
-  EXPECT_TRUE(posted_tasks_.empty());
-  PostTaskViaTracker(std::move(task_to_post));
-  EXPECT_EQ(1U, posted_tasks_.size());
-  EXPECT_EQ(task_to_post_raw, posted_tasks_.front().get());
+TEST_P(TaskSchedulerTaskTrackerTest, WillPostBeforeShutdownRunAfterShutdown) {
+  // Inform |task_tracker_| that a task will be posted.
+  std::unique_ptr<Task> task(CreateTask(GetParam()));
+  EXPECT_TRUE(tracker_.WillPostTask(task.get()));
 
   // Call Shutdown() asynchronously.
   CallShutdownAsync();
@@ -249,7 +218,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunAfterShutdown) {
     VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
     // Run the task to unblock shutdown.
-    RunNextPostedTaskViaTracker();
+    tracker_.RunTask(task.get());
     EXPECT_EQ(1U, num_tasks_executed_);
     WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 
@@ -260,41 +229,40 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunAfterShutdown) {
     WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 
     // The task shouldn't be allowed to run after shutdown.
-    RunNextPostedTaskViaTracker();
+    tracker_.RunTask(task.get());
     EXPECT_EQ(0U, num_tasks_executed_);
   }
 }
 
-TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunDuringShutdown) {
-  // Post a BLOCK_SHUTDOWN task just to block shutdown.
-  PostTaskViaTracker(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
-  std::unique_ptr<Task> block_shutdown_task = std::move(posted_tasks_.front());
-  posted_tasks_.pop();
+TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunDuringShutdown) {
+  // Inform |task_tracker_| that a BLOCK_SHUTDOWN task will be posted just to
+  // block shutdown.
+  std::unique_ptr<Task> block_shutdown_task(
+      CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
+  EXPECT_TRUE(tracker_.WillPostTask(block_shutdown_task.get()));
 
   // Call Shutdown() asynchronously.
   CallShutdownAsync();
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
   if (GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
-    // Post a BLOCK_SHUTDOWN task. This should succeed.
-    EXPECT_TRUE(posted_tasks_.empty());
-    PostTaskViaTracker(CreateTask(GetParam()));
-    EXPECT_EQ(1U, posted_tasks_.size());
+    // Inform |task_tracker_| that a BLOCK_SHUTDOWN task will be posted.
+    std::unique_ptr<Task> task(CreateTask(GetParam()));
+    EXPECT_TRUE(tracker_.WillPostTask(task.get()));
 
-    // Run the BLOCK_SHUTDOWN task. This should succeed.
+    // Run the BLOCK_SHUTDOWN task.
     EXPECT_EQ(0U, num_tasks_executed_);
-    RunNextPostedTaskViaTracker();
+    tracker_.RunTask(task.get());
     EXPECT_EQ(1U, num_tasks_executed_);
   } else {
-    // It shouldn't be possible to post a non BLOCK_SHUTDOWN task.
-    PostTaskViaTracker(CreateTask(GetParam()));
-    EXPECT_TRUE(posted_tasks_.empty());
+    // It shouldn't be allowed to post a non BLOCK_SHUTDOWN task.
+    std::unique_ptr<Task> task(CreateTask(GetParam()));
+    EXPECT_FALSE(tracker_.WillPostTask(task.get()));
 
-    // Don't try to run the task, because it hasn't been posted successfully.
+    // Don't try to run the task, because it wasn't allowed to be posted.
   }
 
-  // Unblock shutdown by running the BLOCK_SHUTDOWN task posted at the beginning
-  // of the test.
+  // Unblock shutdown by running |block_shutdown_task|.
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
   tracker_.RunTask(block_shutdown_task.get());
   EXPECT_EQ(GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN ? 2U : 1U,
@@ -302,18 +270,17 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunDuringShutdown) {
   WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }
 
-TEST_P(TaskSchedulerTaskTrackerTest, PostAfterShutdown) {
-  // It is not possible to post a task after shutdown.
+TEST_P(TaskSchedulerTaskTrackerTest, WillPostAfterShutdown) {
   tracker_.Shutdown();
-  EXPECT_TRUE(posted_tasks_.empty());
 
+  std::unique_ptr<Task> task(CreateTask(GetParam()));
+
+  // |task_tracker_| shouldn't allow a task to be posted after shutdown.
   if (GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
-    EXPECT_DCHECK_DEATH({ PostTaskViaTracker(CreateTask(GetParam())); }, "");
+    EXPECT_DCHECK_DEATH({ tracker_.WillPostTask(task.get()); }, "");
   } else {
-    PostTaskViaTracker(CreateTask(GetParam()));
+    EXPECT_FALSE(tracker_.WillPostTask(task.get()));
   }
-
-  EXPECT_TRUE(posted_tasks_.empty());
 }
 
 INSTANTIATE_TEST_CASE_P(

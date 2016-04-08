@@ -58,19 +58,16 @@ void TaskTracker::Shutdown() {
   }
 }
 
-void TaskTracker::PostTask(
-    const Callback<void(std::unique_ptr<Task>)>& post_task_callback,
-    std::unique_ptr<Task> task) {
-  DCHECK(!post_task_callback.is_null());
+bool TaskTracker::WillPostTask(const Task* task) {
   DCHECK(task);
 
   if (!BeforePostTask(task->traits.shutdown_behavior()))
-    return;
+    return false;
 
   debug::TaskAnnotator task_annotator;
   task_annotator.DidQueueTask(kQueueFunctionName, *task);
 
-  post_task_callback.Run(std::move(task));
+  return true;
 }
 
 void TaskTracker::RunTask(const Task* task) {
