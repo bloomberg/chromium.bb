@@ -1155,7 +1155,10 @@ void MediaStreamManager::PostRequestToUI(
   if (IsVideoMediaType(video_type))
     request->SetState(video_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
 
-  if (use_fake_ui_) {
+  // If using the fake UI, it will just auto-select from the available devices.
+  // The fake UI doesn't work for desktop sharing requests since we can't see
+  // its devices from here; always use the real UI for such requests.
+  if (use_fake_ui_ && request->video_type() != MEDIA_DESKTOP_VIDEO_CAPTURE) {
     if (!fake_ui_)
       fake_ui_.reset(new FakeMediaStreamUIProxy());
 
