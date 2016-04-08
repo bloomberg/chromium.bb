@@ -119,10 +119,6 @@ void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
   button->SetIsDefault(type == GetDefaultDialogButton());
 }
 
-base::string16 DialogDelegate::GetDialogTitle() const {
-  return GetWindowTitle();
-}
-
 int DialogDelegate::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
@@ -250,7 +246,7 @@ View* DialogDelegateView::GetContentsView() {
 }
 
 void DialogDelegateView::GetAccessibleState(ui::AXViewState* state) {
-  state->name = GetDialogTitle();
+  state->name = GetWindowTitle();
   state->role = ui::AX_ROLE_DIALOG;
 }
 

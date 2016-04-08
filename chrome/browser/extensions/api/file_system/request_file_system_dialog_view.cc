@@ -42,7 +42,7 @@ void RequestFileSystemDialogView::ShowDialog(
 RequestFileSystemDialogView::~RequestFileSystemDialogView() {
 }
 
-base::string16 RequestFileSystemDialogView::GetDialogTitle() const {
+base::string16 RequestFileSystemDialogView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE);
 }

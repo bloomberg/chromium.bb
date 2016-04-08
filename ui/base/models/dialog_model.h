@@ -18,9 +18,6 @@ class UI_BASE_EXPORT DialogModel {
  public:
   virtual ~DialogModel();
 
-  // Returns the title of the dialog.
-  virtual base::string16 GetDialogTitle() const = 0;
-
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: Dialogs with just an OK button are frowned upon.
   virtual int GetDialogButtons() const = 0;

@@ -87,7 +87,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual void UpdateButton(LabelButton* button, ui::DialogButton type);
 
   // Overridden from ui::DialogModel:
-  base::string16 GetDialogTitle() const override;
   int GetDialogButtons() const override;
   int GetDefaultDialogButton() const override;
   bool ShouldDefaultButtonBeBlue() const override;

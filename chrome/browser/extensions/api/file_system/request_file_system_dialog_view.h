@@ -40,7 +40,7 @@ class RequestFileSystemDialogView : public views::DialogDelegate {
       const base::Callback<void(ui::DialogButton)>& callback);
 
   // views::DialogDelegate overrides:
-  base::string16 GetDialogTitle() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
