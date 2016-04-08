@@ -112,6 +112,28 @@ cursors.Cursor.prototype = {
   },
 
   /**
+   * An index appropriate for making selections.
+   * @return {number}
+   * @private
+   */
+  get selectionIndex_() {
+    if (this.index_ == cursors.NODE_INDEX)
+      return cursors.NODE_INDEX;
+
+    var adjustedIndex = this.index_;
+
+    if (this.node.role == RoleType.inlineTextBox) {
+      var sibling = this.node.previousSibling;
+      while (sibling) {
+        adjustedIndex += sibling.name.length;
+        sibling = sibling.previousSibling;
+      }
+    }
+
+    return adjustedIndex;
+  },
+
+  /**
    * Gets the accessible text of the node associated with this cursor.
    *
    * @param {!AutomationNode=} opt_node Use this node rather than this cursor's
@@ -164,9 +186,10 @@ cursors.Cursor.prototype = {
         break;
       case Unit.WORD:
         if (newNode.role != RoleType.inlineTextBox) {
-          newNode = AutomationUtil.findNodePre(
-              newNode, Dir.FORWARD, AutomationPredicate.inlineTextBox) ||
-                  newNode;
+          newNode = AutomationUtil.findNextNode(newNode,
+              Dir.FORWARD,
+              AutomationPredicate.inlineTextBox,
+              {skipInitialSubtree: false}) || newNode;
         }
         switch (movement) {
           case Movement.BOUND:
@@ -464,6 +487,38 @@ cursors.Range.prototype = {
         throw Error('Invalid unit: ' + unit);
     }
     return new cursors.Range(newStart, newEnd);
+  },
+
+  /**
+   * Select the text contained within this range.
+   */
+  select: function() {
+    var start = this.start.node;
+    var end = this.end.node;
+
+    // Find the most common root.
+    var uniqueAncestors = AutomationUtil.getUniqueAncestors(start, end);
+    var mcr = start.root;
+    if (uniqueAncestors)
+      mcr = uniqueAncestors.pop().parent.root;
+
+    if (mcr.role == RoleType.desktop)
+      return;
+
+    if (mcr === start.root && mcr === end.root) {
+      start = start.role == RoleType.inlineTextBox ? start.parent : start;
+      end = end.role == RoleType.inlineTextBox ? end.parent : end;
+
+      if (!start || !end)
+        return;
+
+      chrome.automation.setDocumentSelection(
+          { anchorObject: start,
+            anchorOffset: this.start.selectionIndex_,
+            focusObject: end,
+            focusOffset: this.end.selectionIndex_ }
+      );
+    }
   },
 
   /**

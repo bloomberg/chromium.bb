@@ -539,6 +539,14 @@ chrome.automation.AutomationNode.prototype.inputType;
 chrome.automation.AutomationNode.prototype.anchorObject;
 
 /**
+ * @param {{anchorObject: !chrome.automation.AutomationNode,
+ *          anchorOffset: number,
+ *          focusObject: !chrome.automation.AutomationNode,
+ *          focusOffset: number}} selectionParams
+ */
+chrome.automation.setDocumentSelection = function(selectionParams) {};
+
+/**
  * @type {(number|undefined)}
  */
 chrome.automation.anchorOffset;

@@ -321,3 +321,57 @@ TEST_F('CursorsTest', 'IsInWebRange', function() {
     assertTrue(webRange.isWebRange());
   });
 });
+
+TEST_F('CursorsTest', 'SingleDocSelection', function() {
+  this.runWithLoadedTree(function() {/*!
+    <a href="google.com">google home page</a>
+    <p>some more text</p>
+    <p>end of text</p>
+  */},
+  function(root) {
+    var link = root.firstChild.firstChild;
+    var p1 = root.firstChild.nextSibling;
+    var p2 = p1.nextSibling;
+
+    var singleSel = new cursors.Range(
+        new cursors.Cursor(link, 0),
+        new cursors.Cursor(link, 1));
+
+    var multiSel = new cursors.Range(
+        new cursors.Cursor(p1.firstChild, 2),
+        new cursors.Cursor(p2.firstChild, 4));
+
+    function verifySel() {
+      if (root.anchorObject == link.firstChild) {
+        assertEquals(link.firstChild, root.anchorObject);
+        assertEquals(0, root.anchorOffset);
+        assertEquals(link.firstChild, root.focusObject);
+        assertEquals(16, root.focusOffset);
+        this.listenOnce(root, 'textSelectionChanged', verifySel);
+        multiSel.select();
+      } else {
+        assertEquals(p1.firstChild, root.anchorObject);
+        assertEquals(2, root.anchorOffset);
+        assertEquals(p2.firstChild, root.focusObject);
+        assertEquals(4, root.focusOffset);
+      }
+    }
+
+    this.listenOnce(root, 'textSelectionChanged', verifySel, true);
+    singleSel.select();
+  });
+});
+
+TEST_F('CursorsTest', 'MultiLineOffsetSelection', function() {
+  this.runWithLoadedTree(this.multiInlineDoc, function(root) {
+    var secondLine = root.firstChild.firstChild.firstChild.nextSibling;
+    assertEquals('inlineTextBox', secondLine.role);
+    assertEquals('diff ', secondLine.name);
+
+    var secondLineCursor = new cursors.Cursor(secondLine, -1);
+    assertEquals(-1, secondLineCursor.selectionIndex_);
+    secondLineCursor = new cursors.Cursor(secondLine, 0);
+    secondLineCursor.index = 0;
+    assertEquals(6, secondLineCursor.selectionIndex_);
+  });
+});

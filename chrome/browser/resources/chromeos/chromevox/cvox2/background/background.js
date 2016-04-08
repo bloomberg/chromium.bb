@@ -748,6 +748,8 @@ Background.prototype = {
     var prevRange = this.currentRange_;
     this.setCurrentRange(range);
 
+    range.select();
+
     new Output().withRichSpeechAndBraille(
         range, prevRange, Output.EventType.NAVIGATE)
         .withQueueMode(cvox.QueueMode.FLUSH)

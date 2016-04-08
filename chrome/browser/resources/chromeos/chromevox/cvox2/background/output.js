@@ -1375,7 +1375,7 @@ Output.prototype = {
     var outputContextFirst = localStorage['outputContextFirst'] == 'true';
     if (outputContextFirst)
       this.ancestry_(node, prevNode, type, buff);
-    var earcon = this.findEarcon_(node);
+    var earcon = this.findEarcon_(node, prevNode);
     if (earcon)
       options.annotation.push(earcon);
     this.append_(buff, range.start.getText().substring(startIndex, endIndex),
@@ -1540,12 +1540,22 @@ Output.prototype = {
   /**
    * Find the earcon for a given node (including ancestry).
    * @param {!AutomationNode} node
+   * @param {!AutomationNode=} opt_prevNode
    * @return {Output.Action}
    */
-  findEarcon_: function(node) {
+  findEarcon_: function(node, opt_prevNode) {
     if (this.formatOptions_.speech) {
       var earconFinder = node;
-      while (earconFinder) {
+      var ancestors;
+      if (opt_prevNode) {
+        // Don't include the node itself.
+        ancestors = AutomationUtil.getUniqueAncestors(opt_prevNode, node);
+        ancestors.pop();
+      } else {
+        ancestors = AutomationUtil.getAncestors(node);
+      }
+
+      while (earconFinder = ancestors.pop()) {
         var info = Output.ROLE_INFO_[earconFinder.role];
         if (info && info.earconId) {
           return new Output.EarconAction(info.earconId);
