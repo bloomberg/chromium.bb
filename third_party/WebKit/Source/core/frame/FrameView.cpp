@@ -159,6 +159,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_crossOriginForThrottling(false)
     , m_isUpdatingAllLifecyclePhases(false)
     , m_scrollAnchor(this)
+    , m_needsScrollbarsUpdate(false)
 {
     ASSERT(m_frame);
     init();
@@ -391,19 +392,28 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     Widget::setFrameRect(newRect);
 
-    updateScrollbars();
+    const bool frameSizeChanged = oldRect.size() != newRect.size();
+
+    m_needsScrollbarsUpdate = frameSizeChanged;
+    // If layout is clean then update scrollbars immediately otherwise wait
+    // for layout to ensure content size is correct too.
+    if (!needsLayout())
+        updateScrollbarsIfNeeded();
+
     frameRectsChanged();
 
     updateScrollableAreaSet();
 
     if (LayoutViewItem layoutView = this->layoutViewItem()) {
+        // TODO(majidvp): It seems that this only needs to be called when size
+        // is updated ignoring any change in the location.
         if (layoutView.usesCompositing())
             layoutView.compositor()->frameViewDidChangeSize();
     }
 
-    viewportSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
+    if (frameSizeChanged) {
+        viewportSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
 
-    if (oldRect.size() != newRect.size()) {
         if (m_frame->isMainFrame())
             m_frame->host()->visualViewport().mainFrameDidChangeSize();
         frame().loader().restoreScrollPositionAndViewState();
@@ -997,8 +1007,7 @@ void FrameView::layout()
                 setScrollbarModes(hMode, vMode);
             }
 
-            if (needsScrollbarReconstruction() || scrollOriginChanged())
-                updateScrollbars();
+            updateScrollbarsIfNeeded();
 
             LayoutSize oldSize = m_size;
 
@@ -1296,6 +1305,8 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object)
 
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged)
 {
+    DCHECK(widthChanged || heightChanged);
+
     if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
         // The background must be repainted when the FrameView is resized, even if the initial
         // containing block does not change (so we can't rely on layout to issue the invalidation).
@@ -3411,8 +3422,16 @@ bool FrameView::shouldIgnoreOverflowHidden() const
     return m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->isMainFrame();
 }
 
+void FrameView::updateScrollbarsIfNeeded()
+{
+    if (m_needsScrollbarsUpdate || needsScrollbarReconstruction() || scrollOriginChanged())
+        updateScrollbars();
+}
+
 void FrameView::updateScrollbars()
 {
+    m_needsScrollbarsUpdate = false;
+
     if (m_frame->settings() && m_frame->settings()->rootLayerScrolls())
         return;
 
@@ -3420,7 +3439,7 @@ void FrameView::updateScrollbars()
     if (visualViewportSuppliesScrollbars()) {
         setHasHorizontalScrollbar(false);
         setHasVerticalScrollbar(false);
-        setScrollOffsetFromUpdateScrollbars(scrollOffsetDouble());
+        adjustScrollPositionFromUpdateScrollbars();
         return;
     }
 
@@ -3452,12 +3471,12 @@ void FrameView::updateScrollbars()
         updateScrollCorner();
     }
 
-    setScrollOffsetFromUpdateScrollbars(scrollOffsetDouble());
+    adjustScrollPositionFromUpdateScrollbars();
 }
 
-void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
+void FrameView::adjustScrollPositionFromUpdateScrollbars()
 {
-    DoublePoint adjustedScrollPosition = clampScrollPosition(DoublePoint(offset));
+    DoublePoint adjustedScrollPosition = clampScrollPosition(scrollPositionDouble());
 
     if (adjustedScrollPosition != scrollPositionDouble() || scrollOriginChanged()) {
         ScrollableArea::setScrollPosition(adjustedScrollPosition, ProgrammaticScroll);

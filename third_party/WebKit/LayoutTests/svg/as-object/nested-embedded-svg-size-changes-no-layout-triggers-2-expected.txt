@@ -33,10 +33,10 @@
       "paintInvalidationClients": [
         "InlineBox",
         "RootInlineBox",
-        "HorizontalScrollbar",
-        "VerticalScrollbar",
         "RootInlineBox",
         "InlineBox",
+        "HorizontalScrollbar",
+        "VerticalScrollbar",
         "RootInlineBox",
         "InlineBox",
         "LayoutBlockFlow BODY",

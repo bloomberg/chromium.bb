@@ -66,13 +66,13 @@ protected:
     void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&) override;
 
 private:
-    bool updateWidgetGeometryInternal();
+    void updateWidgetGeometryInternal();
     CompositingReasons additionalCompositingReasons() const override;
 
     void willBeDestroyed() final;
     void destroy() final;
 
-    bool setWidgetGeometry(const LayoutRect&);
+    void setWidgetGeometry(const LayoutRect&);
 
     bool nodeAtPointOverWidget(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 

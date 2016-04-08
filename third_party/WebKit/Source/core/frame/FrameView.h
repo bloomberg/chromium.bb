@@ -616,6 +616,7 @@ protected:
 
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars();
+    void updateScrollbarsIfNeeded();
 
     class InUpdateScrollbarsScope {
         STACK_ALLOCATED();
@@ -727,7 +728,7 @@ private:
 
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
     void adjustScrollbarOpacity();
-    void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
+    void adjustScrollPositionFromUpdateScrollbars();
     bool visualViewportSuppliesScrollbars() const;
 
     IntRect rectToCopyOnScroll() const;
@@ -907,6 +908,8 @@ private:
 
     bool m_isUpdatingAllLifecyclePhases;
     ScrollAnchor m_scrollAnchor;
+
+    bool m_needsScrollbarsUpdate;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)
