@@ -66,6 +66,8 @@ CertVerifierBlockAdapter::Params::Params(
     const std::string& hostname)
     : cert(cert), hostname(hostname), flags(0) {}
 
+CertVerifierBlockAdapter::Params::Params(const Params& other) = default;
+
 CertVerifierBlockAdapter::Params::~Params() {
 }
 

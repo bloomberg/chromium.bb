@@ -42,6 +42,7 @@ class CertVerifierBlockAdapter {
     // verification.
     Params(const scoped_refptr<net::X509Certificate>& cert,
            const std::string& hostname);
+    Params(const Params& other);
     ~Params();
 
     // Certificate to verify, can not be null.

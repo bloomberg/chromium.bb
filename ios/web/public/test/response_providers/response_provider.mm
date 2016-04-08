@@ -15,6 +15,8 @@ ResponseProvider::Request::Request(const GURL& url,
                                    const net::HttpRequestHeaders& headers)
     : url(url), method(method), body(body), headers(headers) {}
 
+ResponseProvider::Request::Request(const Request& other) = default;
+
 ResponseProvider::Request::~Request() {}
 
 ResponseProvider::ResponseProvider() {}

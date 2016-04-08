@@ -156,6 +156,9 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry()
     : entry_type(EMPTY_ENTRY), is_search_result(false), blocked_visit(false) {}
 
+BrowsingHistoryHandler::HistoryEntry::HistoryEntry(const HistoryEntry& other) =
+    default;
+
 BrowsingHistoryHandler::HistoryEntry::~HistoryEntry() {}
 
 void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(

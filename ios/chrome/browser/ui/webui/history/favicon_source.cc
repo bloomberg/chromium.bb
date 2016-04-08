@@ -34,6 +34,8 @@ FaviconSource::IconRequest::IconRequest(
       size_in_dip(size),
       device_scale_factor(scale) {}
 
+FaviconSource::IconRequest::IconRequest(const IconRequest& other) = default;
+
 FaviconSource::IconRequest::~IconRequest() {}
 
 FaviconSource::FaviconSource(favicon::FaviconService* favicon_service,

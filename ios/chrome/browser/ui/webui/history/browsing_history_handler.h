@@ -61,6 +61,7 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
                  bool is_search_result,
                  const base::string16& snippet,
                  bool blocked_visit);
+    HistoryEntry(const HistoryEntry& other);
     HistoryEntry();
     virtual ~HistoryEntry();
 

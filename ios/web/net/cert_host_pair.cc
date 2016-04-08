@@ -12,6 +12,8 @@ CertHostPair::CertHostPair(const scoped_refptr<net::X509Certificate>& cert,
                            const std::string& host)
     : cert(cert), host(host) {}
 
+CertHostPair::CertHostPair(const CertHostPair& other) = default;
+
 CertHostPair::~CertHostPair() {}
 
 bool CertHostPair::operator<(const CertHostPair& other) const {

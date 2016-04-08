@@ -22,6 +22,7 @@ enum CredentialType {
 // Represents an instance of the JavaScript Credential type.
 struct Credential {
   Credential();
+  Credential(const Credential& other);
   ~Credential();
 
   // The specific type of this credential.

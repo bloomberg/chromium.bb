@@ -9,6 +9,8 @@ namespace web {
 Credential::Credential() : type(CREDENTIAL_TYPE_EMPTY) {
 }
 
+Credential::Credential(const Credential& other) = default;
+
 Credential::~Credential() = default;
 
 bool CredentialsEqual(const web::Credential& credential1,

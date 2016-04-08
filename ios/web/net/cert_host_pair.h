@@ -20,6 +20,7 @@ namespace web {
 struct CertHostPair {
   CertHostPair(const scoped_refptr<net::X509Certificate>& cert,
                const std::string& host);
+  CertHostPair(const CertHostPair& other);
   ~CertHostPair();
 
   bool operator<(const CertHostPair& other) const;
