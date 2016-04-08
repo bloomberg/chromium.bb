@@ -21,7 +21,7 @@ public:
     static CSSPropertyID keyframeAttributeToCSSProperty(const String&, const Document&);
     static CSSPropertyID keyframeAttributeToPresentationAttribute(const String&, const Element&);
     static const QualifiedName* keyframeAttributeToSVGAttribute(const String&, Element&);
-    static PassRefPtr<TimingFunction> parseTimingFunction(const String&);
+    static PassRefPtr<TimingFunction> parseTimingFunction(const String&, Document*);
 };
 
 } // namespace blink

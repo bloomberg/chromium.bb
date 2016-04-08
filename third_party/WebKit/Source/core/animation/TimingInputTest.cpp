@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
 #include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/AnimationTestHelper.h"
+#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>
 
@@ -27,7 +28,7 @@ protected:
         setV8ObjectPropertyAsNumber(m_isolate, timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
         V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-        return TimingInput::convert(timingInputDictionary);
+        return TimingInput::convert(timingInputDictionary, nullptr);
     }
 
     Timing applyTimingInputString(String timingProperty, String timingPropertyValue)
@@ -36,7 +37,7 @@ protected:
         setV8ObjectPropertyAsString(m_isolate, timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
         V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-        return TimingInput::convert(timingInputDictionary);
+        return TimingInput::convert(timingInputDictionary, nullptr);
     }
 
     v8::Isolate* m_isolate;
@@ -166,7 +167,7 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
 TEST_F(AnimationTimingInputTest, TimingInputEmpty)
 {
     Timing controlTiming;
-    Timing updatedTiming = TimingInput::convert(KeyframeEffectOptions());
+    Timing updatedTiming = TimingInput::convert(KeyframeEffectOptions(), nullptr);
 
     EXPECT_EQ(controlTiming.startDelay, updatedTiming.startDelay);
     EXPECT_EQ(controlTiming.fillMode, updatedTiming.fillMode);

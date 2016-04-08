@@ -64,7 +64,7 @@ public:
         if (exceptionState.hadException())
             return 0;
 
-        Animation* animation = animateInternal(element, effect, TimingInput::convert(options));
+        Animation* animation = animateInternal(element, effect, TimingInput::convert(options, &element.document()));
         animation->setId(options.id());
         return animation;
     }

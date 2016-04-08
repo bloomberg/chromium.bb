@@ -70395,6 +70395,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1292" label="FormValidationStarted"/>
   <int value="1293" label="FormValidationAbortedSubmission"/>
   <int value="1294" label="FormValidationShowedMessage"/>
+  <int value="1295" label="WebAnimationsEasingAsFunctionLinear"/>
+  <int value="1296" label="WebAnimationsEasingAsFunctionOther"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

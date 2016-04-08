@@ -196,7 +196,7 @@ EffectModel* EffectInput::convertArrayForm(Element& element, const Vector<Dictio
 
         String timingFunctionString;
         if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString)) {
-            if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString))
+            if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString, &element.document()))
                 keyframe->setEasing(timingFunction);
         }
 
@@ -237,7 +237,7 @@ EffectModel* EffectInput::convertObjectForm(Element& element, const Dictionary& 
     String timingFunctionString;
     RefPtr<TimingFunction> timingFunction = nullptr;
     if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString))
-        timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString);
+        timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString, &element.document());
 
     ScriptValue scriptValue;
     bool frameHasOffset = DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) && !scriptValue.isNull();

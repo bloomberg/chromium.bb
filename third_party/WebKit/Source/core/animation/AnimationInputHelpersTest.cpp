@@ -18,6 +18,17 @@ public:
         return AnimationInputHelpers::keyframeAttributeToCSSProperty(property, *document);
     }
 
+    PassRefPtr<TimingFunction> parseTimingFunction(const String& string)
+    {
+        return AnimationInputHelpers::parseTimingFunction(string, document);
+    }
+
+    bool timingFunctionRoundTrips(const String& string)
+    {
+        RefPtr<TimingFunction> timingFunction = parseTimingFunction(string);
+        return timingFunction && string == timingFunction->toString();
+    }
+
 protected:
     void SetUp() override
     {
@@ -56,17 +67,11 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("WebkitTransform"));
 }
 
-static bool timingFunctionRoundTrips(const String& string)
-{
-    RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(string);
-    return timingFunction && string == timingFunction->toString();
-}
-
 TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction)
 {
-    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("initial"));
-    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("inherit"));
-    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("unset"));
+    EXPECT_EQ(nullptr, parseTimingFunction("initial"));
+    EXPECT_EQ(nullptr, parseTimingFunction("inherit"));
+    EXPECT_EQ(nullptr, parseTimingFunction("unset"));
 
     EXPECT_TRUE(timingFunctionRoundTrips("ease"));
     EXPECT_TRUE(timingFunctionRoundTrips("linear"));
@@ -81,11 +86,11 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction)
     EXPECT_TRUE(timingFunctionRoundTrips("steps(3, end)"));
     EXPECT_TRUE(timingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)"));
 
-    EXPECT_EQ("steps(3, end)", AnimationInputHelpers::parseTimingFunction("steps(3)")->toString());
+    EXPECT_EQ("steps(3, end)", parseTimingFunction("steps(3)")->toString());
 
-    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("steps(3, nowhere)"));
-    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("steps(-3, end)"));
-    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("cubic-bezier(0.1, 0, 4, 0.4)"));
+    EXPECT_EQ(nullptr, parseTimingFunction("steps(3, nowhere)"));
+    EXPECT_EQ(nullptr, parseTimingFunction("steps(-3, end)"));
+    EXPECT_EQ(nullptr, parseTimingFunction("cubic-bezier(0.1, 0, 4, 0.4)"));
 }
 
 } // namespace blink

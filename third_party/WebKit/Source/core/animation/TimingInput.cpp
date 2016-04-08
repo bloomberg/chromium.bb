@@ -85,15 +85,15 @@ void TimingInput::setPlaybackDirection(Timing& timing, const String& direction)
     }
 }
 
-void TimingInput::setTimingFunction(Timing& timing, const String& timingFunctionString)
+void TimingInput::setTimingFunction(Timing& timing, const String& timingFunctionString, Document* document)
 {
-    if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString))
+    if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString, document))
         timing.timingFunction = timingFunction;
     else
         timing.timingFunction = Timing::defaults().timingFunction;
 }
 
-Timing TimingInput::convert(const KeyframeEffectOptions& timingInput)
+Timing TimingInput::convert(const KeyframeEffectOptions& timingInput, Document* document)
 {
     Timing result;
 
@@ -108,7 +108,7 @@ Timing TimingInput::convert(const KeyframeEffectOptions& timingInput)
         setIterationDuration(result, -1);
     setPlaybackRate(result, timingInput.playbackRate());
     setPlaybackDirection(result, timingInput.direction());
-    setTimingFunction(result, timingInput.easing());
+    setTimingFunction(result, timingInput.easing(), document);
 
     result.assertValid();
 
