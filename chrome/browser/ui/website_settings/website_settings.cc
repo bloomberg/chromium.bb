@@ -113,6 +113,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
 #endif
     CONTENT_SETTINGS_TYPE_KEYGEN,
+    CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
 };
 
 // Determines whether to show permission |type| in the Website Settings UI. Only

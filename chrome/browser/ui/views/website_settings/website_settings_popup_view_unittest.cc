@@ -166,7 +166,7 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
   list.back().is_incognito = false;
 
   const int kExpectedChildren =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 10 : 12;
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13;
   EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
 
   list.back().setting = CONTENT_SETTING_ALLOW;
@@ -216,7 +216,7 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
 // Test UI construction and reconstruction with USB devices.
 TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
   const int kExpectedChildren =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 10 : 12;
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13;
   EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
