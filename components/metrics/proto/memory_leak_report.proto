@@ -27,6 +27,8 @@ message MemoryLeakReportProto {
   // Size of the memory allocation involved in the leak.
   optional uint32 size_bytes = 2;
 
+  //////////////////////////////////////////////////////////////////////////////
+
   // The rate at which allocations are pseudorandomly sampled. Ranges from 0 to
   // 1. A rate of 1 means all incoming allocations are sampled by the leak
   // detector, which is the maximum possible.
@@ -48,4 +50,32 @@ message MemoryLeakReportProto {
   // call stacks, the next level is to generate a memory leak report.
   optional uint32 size_suspicion_threshold = 6;
   optional uint32 call_stack_suspicion_threshold = 7;
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Represents a single snapshot of the internal bookkeeping of the Runtime
+  // Memory Leak Detector, which tracks the number of extant allocations (a
+  // block of heap memory that has been allocated but not yet freed).
+  //
+  // Next tag: 3
+  message AllocationBreakdown {
+    // Table of number of extant allocations for each allocation size. The i-th
+    // entry in the vector is the net number of allocations for sizes in the
+    // range [i * 4, i * 4 + 3].
+    repeated uint32 counts_by_size = 1;
+
+    // The number of extant allocations with size = |size_bytes| and made from
+    // the call site given by |call_stack|. If it is not set, it means tracking
+    // of allocs per call site for allocation size = |size_bytes| has not yet
+    // begun at the time of this entry.
+    optional uint32 count_for_call_stack = 2;
+  }
+
+  // A record of past allocation data leading up to the circumstances that
+  // generated the current leak report.
+  //
+  // A new snapshot is taken every |analysis_interval_bytes| of memory
+  // allocation. The oldest record is at the beginning. The most recent record,
+  // taken at the time the report was generated, is at the end.
+  repeated AllocationBreakdown alloc_breakdown_history = 8;
 }
