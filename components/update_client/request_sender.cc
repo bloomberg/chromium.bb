@@ -26,10 +26,10 @@ namespace update_client {
 namespace {
 
 // This is an ECDSA prime256v1 named-curve key.
-const int kKeyVersion = 5;
+const int kKeyVersion = 6;
 const char kKeyPubBytesBase64[] =
-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEB+Yi+3SdJKCyFJmm+suW3CyXygvVsbDbPnJgoC"
-    "X4GeTtoL8Q/WjPx7CGtXOL1Xjbx0VPPN3DrvqZSL/oXy9hVw==";
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECEDSRcZPKv8k4JEYbF7MJxxx56m+x8Z+svg5gB"
+    "mRX1J8A9DYRL6NvFkNcmcRtSNemUm7/iqrUnxaadkqcWSODw==";
 
 // The ETag header carries the ECSDA signature of the protocol response, if
 // signing has been used.
