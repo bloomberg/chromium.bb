@@ -1552,16 +1552,16 @@
       'name': 'Proxy',
       'type': 'group',
       'caption': '''Proxy server''',
-      'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+      'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps and prevents users from changing proxy settings.
 
-      If you choose to never use a proxy server and always connect directly, all other options are ignored.
+      If you choose to never use a proxy server and always connect directly, all other options are ignored. ARC-apps will use the current network's default proxy server if any.
 
       If you choose to auto detect the proxy server, all other options are ignored.
 
       For detailed examples, visit:
       <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps ignore all proxy-related options specified from the command line.
 
       Leaving these policies not set will allow the users to choose the proxy settings on their own.''',
       'policies': [
@@ -1619,20 +1619,22 @@
           'id': 21,
           'caption': '''Choose how to specify proxy server settings''',
           'tags': [],
-          'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+          'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps and prevents users from changing proxy settings.
 
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+          If you choose to never use a proxy server and always connect directly, all other options are ignored. ARC-apps will use the current network's default proxy server if any.
 
-          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+          If you choose to use system proxy settings, all other options are ignored. ARC-apps will use the current network's default proxy server if any.
 
-          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'.
+          If you choose to auto detect the proxy server, all other options are ignored.
+
+          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. ARC-apps will only use the HTTP proxy server with the highest priority.
 
           If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
 
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
-          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
+          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps ignore all proxy-related options specified from the command line.
 
           Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
         },
@@ -1682,7 +1684,7 @@
           'tags': [],
           'desc': '''This policy is deprecated, use ProxyMode instead.
 
-          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps and prevents users from changing proxy settings.
 
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
@@ -1769,7 +1771,7 @@
           'id': 25,
           'caption': '''Proxy bypass rules''',
           'tags': [],
-          'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
+          'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps will bypass any proxy for the list of hosts given here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
@@ -1813,7 +1815,7 @@
       'id': 116,
       'caption': '''Proxy settings''',
       'tags': ['system-security'],
-      'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps.
 
       This policy isn't ready for usage yet, please don't use it.''',
     },

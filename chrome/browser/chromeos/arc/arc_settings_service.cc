@@ -18,9 +18,42 @@
 #include "components/arc/intent_helper/font_size_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
+#include "net/proxy/proxy_config.h"
 
 using ::chromeos::CrosSettings;
 using ::chromeos::system::TimezoneSettings;
+
+namespace {
+
+bool GetHttpProxyServer(const ProxyConfigDictionary& proxy_config_dict,
+                        std::string* host,
+                        int* port) {
+  std::string proxy_rules_string;
+  if (!proxy_config_dict.GetProxyServer(&proxy_rules_string))
+    return false;
+
+  net::ProxyConfig::ProxyRules proxy_rules;
+  proxy_rules.ParseFromString(proxy_rules_string);
+
+  const net::ProxyList* proxy_list = nullptr;
+  if (proxy_rules.type == net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY) {
+    proxy_list = &proxy_rules.single_proxies;
+  } else if (proxy_rules.type ==
+             net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME) {
+    proxy_list = proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme);
+  }
+  if (!proxy_list || proxy_list->IsEmpty())
+    return false;
+
+  const net::ProxyServer& server = proxy_list->Get();
+  *host = server.host_port_pair().host();
+  *port = server.host_port_pair().port();
+  return !host->empty() && *port;
+}
+
+}  // namespace
 
 namespace arc {
 
@@ -50,6 +83,7 @@ class ArcSettingsServiceImpl
   void SyncAllPrefs() const;
   void SyncFontSize() const;
   void SyncLocale() const;
+  void SyncProxySettings() const;
   void SyncReportingConsent() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
@@ -95,6 +129,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kWebKitMinimumFontSize);
   AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(prefs::kUse24HourClock);
+  AddPrefToObserve(proxy_config::prefs::kProxy);
 
   reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       chromeos::kStatsReportingPref,
@@ -107,6 +142,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
 void ArcSettingsServiceImpl::SyncAllPrefs() const {
   SyncFontSize();
   SyncLocale();
+  SyncProxySettings();
   SyncReportingConsent();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
@@ -134,6 +170,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncFontSize();
   } else if (pref_name == prefs::kUse24HourClock) {
     SyncUse24HourClock();
+  } else if (pref_name == proxy_config::prefs::kProxy) {
+    SyncProxySettings();
   } else {
     LOG(ERROR) << "Unknown pref changed.";
   }
@@ -220,6 +258,63 @@ void ArcSettingsServiceImpl::SyncUse24HourClock() const {
   extras.SetBoolean("use24HourClock", use24HourClock);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_USE_24_HOUR_CLOCK",
                         extras);
+}
+
+void ArcSettingsServiceImpl::SyncProxySettings() const {
+  const PrefService::Preference* const pref =
+      registrar_.prefs()->FindPreference(proxy_config::prefs::kProxy);
+  const base::DictionaryValue* proxy_config_value;
+  bool value_exists = pref->GetValue()->GetAsDictionary(&proxy_config_value);
+  DCHECK(value_exists);
+
+  ProxyConfigDictionary proxy_config_dict(proxy_config_value);
+
+  ProxyPrefs::ProxyMode mode;
+  if (!proxy_config_dict.GetMode(&mode))
+    mode = ProxyPrefs::MODE_DIRECT;
+
+  base::DictionaryValue extras;
+  extras.SetString("mode", ProxyPrefs::ProxyModeToString(mode));
+
+  switch (mode) {
+    case ProxyPrefs::MODE_DIRECT:
+    case ProxyPrefs::MODE_SYSTEM:
+      break;
+    case ProxyPrefs::MODE_AUTO_DETECT:
+      extras.SetString("pacUrl", "http://wpad/wpad.dat");
+      break;
+    case ProxyPrefs::MODE_PAC_SCRIPT: {
+      std::string pac_url;
+      if (!proxy_config_dict.GetPacUrl(&pac_url)) {
+        LOG(ERROR) << "No pac URL for pac_script proxy mode.";
+        return;
+      }
+      extras.SetString("pacUrl", pac_url);
+      break;
+    }
+    case ProxyPrefs::MODE_FIXED_SERVERS: {
+      std::string host;
+      int port = 0;
+      if (!GetHttpProxyServer(proxy_config_dict, &host, &port)) {
+        LOG(ERROR) << "No Http proxy server is sent.";
+        return;
+      }
+      extras.SetString("host", host);
+      extras.SetInteger("port", port);
+
+      std::string bypass_list;
+      if (proxy_config_dict.GetBypassList(&bypass_list) &&
+          !bypass_list.empty()) {
+        extras.SetString("bypassList", bypass_list);
+      }
+      break;
+    }
+    default:
+      LOG(ERROR) << "Incorrect proxy mode.";
+      return;
+  }
+
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_PROXY", extras);
 }
 
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
