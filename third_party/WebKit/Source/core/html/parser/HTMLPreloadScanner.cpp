@@ -46,10 +46,33 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/loader/LinkLoader.h"
 #include "platform/ContentType.h"
+#include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
+
+namespace {
+
+// When adding values to this enum, update histograms.xml as well.
+enum DocumentWriteGatedEvaluation {
+    GatedEvaluationScriptTooLong,
+    GatedEvaluationNoLikelyScript,
+    GatedEvaluationLooping,
+    GatedEvaluationPopularLibrary,
+    GatedEvaluationNondeterminism,
+
+    // Add new values before this last value.
+    GatedEvaluationLastValue
+};
+
+void LogGatedEvaluation(DocumentWriteGatedEvaluation reason)
+{
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, gatedEvaluationHistogram, ("PreloadScanner.DocumentWrite.GatedEvaluation", GatedEvaluationLastValue));
+    gatedEvaluationHistogram.count(reason);
+}
+
+} // namespace
 
 using namespace HTMLNames;
 
@@ -557,18 +580,50 @@ bool TokenPreloadScanner::shouldEvaluateForDocumentWrite(const String& source)
     // The maximum length script source that will be marked for evaluation to
     // preload document.written external scripts.
     const int kMaxLengthForEvaluating = 1024;
+    if (!m_documentParameters->doDocumentWritePreloadScanning)
+        return false;
 
-    return m_documentParameters->doDocumentWritePreloadScanning
-        && source.length() <= kMaxLengthForEvaluating
-        && source.find("document.write") != WTF::kNotFound
-        && (source.findIgnoringASCIICase("<sc") != WTF::kNotFound
-            || source.findIgnoringASCIICase("%3Csc") != WTF::kNotFound)
-        && source.findIgnoringASCIICase("src") != WTF::kNotFound
-        && source.find("while") == WTF::kNotFound
-        && source.find("for") == WTF::kNotFound
-        && source.find("jQuery") == WTF::kNotFound
-        && source.find("Math.random") == WTF::kNotFound
-        && source.find("Date") == WTF::kNotFound;
+    // Log inline script length counts, which will help tune
+    // kMaxLengthForEvaluating. The 50,000 limit was found experimentally.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptLengthHistogram, ("PreloadScanner.DocumentWrite.ScriptLength", 0, 50000, 50));
+    scriptLengthHistogram.count(source.length());
+
+    // Script length is already logged, but include a count for script length
+    // for easy comparison with the rest of the reasons.
+    if (source.length() > kMaxLengthForEvaluating) {
+        LogGatedEvaluation(GatedEvaluationScriptTooLong);
+        return false;
+    }
+    if (source.find("document.write") == WTF::kNotFound
+        || source.findIgnoringASCIICase("src") == WTF::kNotFound) {
+        LogGatedEvaluation(GatedEvaluationNoLikelyScript);
+        return false;
+    }
+    if (source.findIgnoringASCIICase("<sc") == WTF::kNotFound
+        && source.findIgnoringASCIICase("%3Csc") == WTF::kNotFound) {
+        LogGatedEvaluation(GatedEvaluationNoLikelyScript);
+        return false;
+    }
+    if (source.find("while") != WTF::kNotFound
+        || source.find("for(") != WTF::kNotFound
+        || source.find("for ") != WTF::kNotFound) {
+        LogGatedEvaluation(GatedEvaluationLooping);
+        return false;
+    }
+    // This check is mostly for "window.jQuery" for false positives fetches,
+    // though it include $ calls to avoid evaluations which will quickly fail.
+    if (source.find("jQuery") != WTF::kNotFound
+        || source.find("$.") != WTF::kNotFound
+        || source.find("$(") != WTF::kNotFound) {
+        LogGatedEvaluation(GatedEvaluationPopularLibrary);
+        return false;
+    }
+    if (source.find("Math.random") != WTF::kNotFound
+        || source.find("Date") != WTF::kNotFound) {
+        LogGatedEvaluation(GatedEvaluationNondeterminism);
+        return false;
+    }
+    return true;
 }
 
 template <typename Token>

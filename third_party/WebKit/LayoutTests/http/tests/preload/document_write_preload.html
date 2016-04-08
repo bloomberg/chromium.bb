@@ -4,11 +4,10 @@
 <script>
 var t = async_test('Simple scripts that inject external scripts via document.write should be preloaded');
 // We reject scripts with "for"
-window.perf = window.performance;
 </script>
 <script>
-if (window.perf)
-    var boundedStart = window.perf.now();
+if (window.performance)
+    var boundedStart = window.performance.now();
 var src = '../resources/dummy.js';
 document.write('<scr' + 'ipt src="' + src + '"></scr' + 'ipt>');
 </script>

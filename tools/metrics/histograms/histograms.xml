@@ -39230,11 +39230,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PreloadScanner.DocumentWrite.GatedEvaluation"
+    enum="DocumentWriteGatedEvaluation">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The reason a particular inline script was blocked from evaluation.
+  </summary>
+</histogram>
+
 <histogram name="PreloadScanner.DocumentWrite.InitializationTime" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Time spent initializing a new V8 context for the purpose of evaluating it
     and preloading document.written strings.
+  </summary>
+</histogram>
+
+<histogram name="PreloadScanner.DocumentWrite.ScriptLength" units="characters">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The length of the inline script that is being considered for document write
+    evaluation.
   </summary>
 </histogram>
 
@@ -65049,6 +65065,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Mouse"/>
   <int value="2" label="Touch"/>
   <int value="3" label="Keyboard"/>
+</enum>
+
+<enum name="DocumentWriteGatedEvaluation" type="int">
+  <int value="0" label="Script too long"/>
+  <int value="1" label="No likely external script write"/>
+  <int value="2" label="Looping construct found"/>
+  <int value="3" label="Script uses popular library"/>
+  <int value="4" label="Script uses non-determinism"/>
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult" type="int">
