@@ -171,6 +171,23 @@ source_set("v4_get_hash_protocol_manager") {
   ]
 }
 
+source_set("v4_local_database_manager") {
+  sources = [
+    "v4_local_database_manager.cc",
+    "v4_local_database_manager.h",
+  ]
+  deps = [
+    ":database_manager",
+    ":hit_report",
+    ":v4_protocol_manager_util",
+    ":v4_update_protocol_manager",
+    "//base",
+    "//content/public/browser",
+    "//net",
+    "//url:url",
+  ]
+}
+
 source_set("v4_protocol_manager_util") {
   sources = [
     "v4_protocol_manager_util.cc",
@@ -213,6 +230,7 @@ source_set("unit_tests") {
     ":proto",
     ":util",
     ":v4_get_hash_protocol_manager",
+    ":v4_local_database_manager",
     ":v4_protocol_manager_util",
     ":v4_update_protocol_manager",
     "//base",
