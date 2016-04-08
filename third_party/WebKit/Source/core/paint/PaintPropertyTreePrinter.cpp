@@ -139,6 +139,10 @@ public:
 
     static void addObjectPaintProperties(const ObjectPaintProperties& paintProperties, PropertyTreePrinter<ClipPaintPropertyNode>& printer)
     {
+        if (const ClipPaintPropertyNode* cssClip = paintProperties.cssClip())
+            printer.addPropertyNode(cssClip, "CssClip");
+        if (const ClipPaintPropertyNode* cssClipFixedPosition = paintProperties.cssClipFixedPosition())
+            printer.addPropertyNode(cssClipFixedPosition, "CssClipFixedPosition");
         if (const ClipPaintPropertyNode* overflowClip = paintProperties.overflowClip())
             printer.addPropertyNode(overflowClip, "OverflowClip");
     }
