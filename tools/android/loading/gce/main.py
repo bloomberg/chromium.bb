@@ -134,8 +134,9 @@ class ServerApp(object):
     old_stderr = sys.stderr
 
     trace_metadata = { 'succeeded' : False, 'url' : url }
-    try:
-      with open(log_filename, 'w') as sys.stdout:
+    trace = None
+    with open(log_filename, 'w') as sys.stdout:
+      try:
         sys.stderr = sys.stdout
 
         # Set up the controller.
@@ -154,14 +155,15 @@ class ServerApp(object):
               url, connection, chrome_ctl.ChromeMetadata())
           trace_metadata['succeeded'] = True
           trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
-    except Exception as e:
-      sys.stderr.write(e)
+      except Exception as e:
+        sys.stderr.write(str(e))
+
+      if trace:
+        with open(filename, 'w') as f:
+          json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
 
     sys.stdout = old_stdout
     sys.stderr = old_stderr
-
-    with open(filename, 'w') as f:
-      json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
 
     return trace_metadata
 
