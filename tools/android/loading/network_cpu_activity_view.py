@@ -27,12 +27,14 @@ def _CpuActivityTimeline(cpu_lens, start_msec, end_msec, granularity):
   return (cpu_timestamps[:-1], np.array(busy_percentage))
 
 
-def GraphTimelines(trace, output_filename):
-  """Creates and saves a graph of Network and CPU activity for a trace.
+def GraphTimelines(trace):
+  """Creates a figure of Network and CPU activity for a trace.
 
   Args:
     trace: (LoadingTrace)
-    output_filename: (str) Path of the output graph.
+
+  Returns:
+    A matplotlib.pylab.figure.
   """
   cpu_lens = activity_lens.ActivityLens(trace)
   network_lens = network_activity_lens.NetworkActivityLens(trace)
@@ -56,13 +58,15 @@ def GraphTimelines(trace, output_filename):
   cpu.set_ylim(ymin=0, ymax=100)
   cpu.set_xlabel('Time (ms)')
   cpu.set_ylabel('Main Renderer Thread Busyness (%)')
-  figure.savefig(output_filename, dpi=300)
+  return figure
 
 
 def main():
   filename = sys.argv[1]
   trace = loading_trace.LoadingTrace.FromJsonFile(filename)
-  GraphTimelines(trace, filename + '.pdf')
+  figure = GraphTimelines(trace, filename + '.pdf')
+  output_filename = filename + '.pdf'
+  figure.savefig(output_filename, dpi=300)
 
 
 if __name__ == '__main__':

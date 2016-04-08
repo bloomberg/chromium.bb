@@ -211,6 +211,13 @@ class ActivityLensTestCase(unittest.TestCase):
          u'ph': u'X',
          u'pid': 1,
          u'tid': 1,
+         u'ts': 0},
+        {u'args': {u'name': u'CrRendererMain'},
+         u'cat': u'__metadata',
+         u'name': u'thread_name',
+         u'ph': u'M',
+         u'pid': 1,
+         u'tid': 1,
          u'ts': 0}]
     activity = self._ActivityLens(requests, raw_events)
     dep = (requests[0], requests[1], 'parser')

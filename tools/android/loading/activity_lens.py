@@ -57,6 +57,9 @@ class ActivityLens(object):
           and tracing_event['name'] == 'thread_name'
           and event.args['name'] == 'CrRendererMain'):
         main_renderer_thread_ids.add((pid, tid))
+    events_count_per_pid_tid = {
+        pid_tid: count for (pid_tid, count) in events_count_per_pid_tid.items()
+        if pid_tid in main_renderer_thread_ids}
     pid_tid_events_counts = sorted(events_count_per_pid_tid.items(),
                                    key=operator.itemgetter(1), reverse=True)
     if (len(pid_tid_events_counts) > 1
