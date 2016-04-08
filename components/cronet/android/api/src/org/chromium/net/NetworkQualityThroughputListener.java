@@ -6,8 +6,9 @@ package org.chromium.net;
 
 /**
  * Interface to watch for observations of throughput.
- * {@hide} as it's a prototype.
+ * @deprecated not really deprecated but hidden for now as it's a prototype.
  */
+@SuppressWarnings("DepAnn")
 public interface NetworkQualityThroughputListener {
     /**
      * Reports a new throughput observation.
