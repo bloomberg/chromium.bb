@@ -616,7 +616,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       send_preferred_size_changes_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
-      suppress_dialogs_until_swap_out_(false),
       page_id_(-1),
       next_page_id_(params.next_page_id),
       history_list_offset_(-1),
@@ -1320,8 +1319,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
-    IPC_MESSAGE_HANDLER(ViewMsg_SuppressDialogsUntilSwapOut,
-                        OnSuppressDialogsUntilSwapOut)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -2537,11 +2534,6 @@ void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
                                       const WebPluginAction& action) {
   if (webview())
     webview()->performPluginAction(action, location);
-}
-
-void RenderViewImpl::OnSuppressDialogsUntilSwapOut() {
-  // Don't show any more dialogs until we finish OnSwapOut.
-  suppress_dialogs_until_swap_out_ = true;
 }
 
 void RenderViewImpl::OnClosePage() {

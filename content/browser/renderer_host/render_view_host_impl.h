@@ -197,12 +197,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // TODO(creis): Remove as part of http://crbug.com/418265.
   bool is_waiting_for_close_ack() const { return is_waiting_for_close_ack_; }
 
-  // Tells the renderer that this RenderView will soon be swapped out, and thus
-  // not to create any new modal dialogs until it happens.  This must be done
-  // separately so that the PageGroupLoadDeferrers of any current dialogs are no
-  // longer on the stack when we attempt to swap it out.
-  void SuppressDialogsUntilSwapOut();
-
   // Tells the renderer process to run the page's unload handler.
   // A ClosePage_ACK ack is sent back when the handler execution completes.
   void ClosePage();

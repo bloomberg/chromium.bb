@@ -2401,6 +2401,10 @@ void RenderFrameHostImpl::ResetLoadingState() {
   }
 }
 
+void RenderFrameHostImpl::SuppressFurtherDialogs() {
+  Send(new FrameMsg_SuppressFurtherDialogs(GetRoutingID()));
+}
+
 bool RenderFrameHostImpl::IsSameSiteInstance(
     RenderFrameHostImpl* other_render_frame_host) {
   // As a sanity check, make sure the frame belongs to the same BrowserContext.

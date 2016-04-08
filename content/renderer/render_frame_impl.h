@@ -802,6 +802,7 @@ class CONTENT_EXPORT RenderFrameImpl
               const blink::WebFindOptions& options);
   void OnStopFinding(StopFindAction action);
   void OnEnableViewSourceMode();
+  void OnSuppressFurtherDialogs();
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnFindMatchRects(int current_version);
@@ -1205,6 +1206,11 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;
+
+  // Whether we must stop creating nested message loops for modal dialogs. This
+  // is necessary because modal dialogs have a ScopedPageLoadDeferrer on the
+  // stack that interferes with swapping out.
+  bool suppress_further_dialogs_;
 
 #if defined(ENABLE_WEBVR)
   // The VR dispatcher attached to the frame, lazily initialized.

@@ -884,6 +884,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
 // only be sent to the main frame.
 IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 
+// Tells the frame to suppress any further modal dialogs. This ensures that no
+// ScopedPageLoadDeferrer is on the stack for SwapOut.
+IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

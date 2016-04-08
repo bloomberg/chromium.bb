@@ -1025,6 +1025,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       media_player_delegate_(NULL),
       is_using_lofi_(false),
       is_pasting_(false),
+      suppress_further_dialogs_(false),
       blame_context_(nullptr),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
@@ -1440,6 +1441,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(FrameMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
+    IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
+                        OnSuppressFurtherDialogs)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -1570,11 +1573,6 @@ void RenderFrameImpl::OnSwapOut(
     render_view_->webview()->setVisibilityState(
         blink::WebPageVisibilityStateHidden, false);
   }
-
-  // It is now safe to show modal dialogs again.
-  // TODO(creis): Deal with modal dialogs from subframes.
-  if (is_main_frame_)
-    render_view_->suppress_dialogs_until_swap_out_ = false;
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
 
@@ -2147,8 +2145,8 @@ bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
                                            const GURL& frame_url,
                                            base::string16* result) {
   // Don't allow further dialogs if we are waiting to swap out, since the
-  // PageGroupLoadDeferrer in our stack prevents it.
-  if (render_view()->suppress_dialogs_until_swap_out_)
+  // ScopedPageLoadDeferrer in our stack prevents it.
+  if (suppress_further_dialogs_)
     return false;
 
   bool success = false;
@@ -3611,8 +3609,8 @@ bool RenderFrameImpl::runModalPromptDialog(
 
 bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
   // Don't allow further dialogs if we are waiting to swap out, since the
-  // PageGroupLoadDeferrer in our stack prevents it.
-  if (render_view()->suppress_dialogs_until_swap_out_)
+  // ScopedPageLoadDeferrer in our stack prevents it.
+  if (suppress_further_dialogs_)
     return false;
 
   bool success = false;
@@ -5112,6 +5110,10 @@ void RenderFrameImpl::OnEnableViewSourceMode() {
   DCHECK(frame_);
   DCHECK(!frame_->parent());
   frame_->enableViewSourceMode(true);
+}
+
+void RenderFrameImpl::OnSuppressFurtherDialogs() {
+  suppress_further_dialogs_ = true;
 }
 
 #if defined(OS_ANDROID)

@@ -710,11 +710,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
                     int /* request_id */,
                     std::vector<base::FilePath> /* files_in_directory */)
 
-// Tells the renderer to suppress any further modal dialogs until it receives a
-// corresponding ViewMsg_SwapOut message.  This ensures that no
-// PageGroupLoadDeferrer is on the stack for SwapOut.
-IPC_MESSAGE_ROUTED0(ViewMsg_SuppressDialogsUntilSwapOut)
-
 // Instructs the renderer to close the current page, including running the
 // onunload event handler.
 //

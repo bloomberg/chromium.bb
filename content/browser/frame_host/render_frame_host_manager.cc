@@ -633,11 +633,10 @@ void RenderFrameHostManager::SwapOutOldFrame(
   // Tell the renderer to suppress any further modal dialogs so that we can swap
   // it out.  This must be done before canceling any current dialog, in case
   // there is a loop creating additional dialogs.
-  // TODO(creis): Handle modal dialogs in subframe processes.
-  old_render_frame_host->render_view_host()->SuppressDialogsUntilSwapOut();
+  old_render_frame_host->SuppressFurtherDialogs();
 
   // Now close any modal dialogs that would prevent us from swapping out.  This
-  // must be done separately from SwapOut, so that the PageGroupLoadDeferrer is
+  // must be done separately from SwapOut, so that the ScopedPageLoadDeferrer is
   // no longer on the stack when we send the SwapOut message.
   delegate_->CancelModalDialogsForRenderManager();
 

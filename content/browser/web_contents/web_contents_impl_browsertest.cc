@@ -968,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   dialog_manager.Wait();
   EXPECT_EQ("about:blank", dialog_manager.last_message());
 
-  // Navigate cross-domain.
+  // Navigate the subframe cross-site.
   NavigateFrameToURL(frame,
                      embedded_test_server()->GetURL("b.com", "/title2.html"));
   EXPECT_TRUE(WaitForLoadStop(wc));
@@ -980,15 +980,26 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(GURL("http://b.com/title2.html"),
             GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
 
-  // Dialogs do not work with out-of-process iframes yet.
-  // http://crbug.com/453893
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    wc->SetDelegate(nullptr);
-    wc->SetJavaScriptDialogManagerForTesting(nullptr);
-    return;  // :(
-  }
-
   // A dialog from the main frame.
+  EXPECT_TRUE(
+      content::ExecuteScript(root->current_frame_host(), alert_location));
+  dialog_manager.Wait();
+  EXPECT_EQ(GURL("http://a.com/title1.html"),
+            GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
+
+  // Navigate the top frame cross-site; ensure that dialogs work.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("c.com", "/title3.html"));
+  EXPECT_TRUE(WaitForLoadStop(wc));
+  EXPECT_TRUE(
+      content::ExecuteScript(root->current_frame_host(), alert_location));
+  dialog_manager.Wait();
+  EXPECT_EQ(GURL("http://c.com/title3.html"),
+            GURL(dialog_manager.last_message()).ReplaceComponents(clear_port));
+
+  // Navigate back; ensure that dialogs work.
+  wc->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(wc));
   EXPECT_TRUE(
       content::ExecuteScript(root->current_frame_host(), alert_location));
   dialog_manager.Wait();

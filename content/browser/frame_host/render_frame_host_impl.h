@@ -559,6 +559,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // in a non-loading state.
   void ResetLoadingState();
 
+  // Tells the renderer that this RenderFrame will soon be swapped out, and thus
+  // not to create any new modal dialogs until it happens.  This must be done
+  // separately so that the ScopedPageLoadDeferrers of any current dialogs are
+  // no longer on the stack when we attempt to swap it out.
+  void SuppressFurtherDialogs();
+
   // PlzNavigate: returns the LoFi state of the last successful navigation that
   // made a network request.
   LoFiState last_navigation_lofi_state() const {

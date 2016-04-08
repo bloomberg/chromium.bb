@@ -532,10 +532,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   return prefs;
 }
 
-void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
-  Send(new ViewMsg_SuppressDialogsUntilSwapOut(GetRoutingID()));
-}
-
 void RenderViewHostImpl::ClosePage() {
   is_waiting_for_close_ack_ = true;
   GetWidget()->StartHangMonitorTimeout(

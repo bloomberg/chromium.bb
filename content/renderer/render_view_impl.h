@@ -654,7 +654,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnSetZoomLevelForView(bool uses_temporary_zoom_level, double level);
-  void OnSuppressDialogsUntilSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
@@ -783,11 +782,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Used for popups.
   bool opened_by_user_gesture_;
-
-  // Whether we must stop creating nested message loops for modal dialogs until
-  // OnSwapOut is called.  This is necessary because modal dialogs have a
-  // PageGroupLoadDeferrer on the stack that interferes with swapping out.
-  bool suppress_dialogs_until_swap_out_;
 
   // Timer used to delay the updating of nav state (see
   // StartNavStateSyncTimerIfNecessary).
