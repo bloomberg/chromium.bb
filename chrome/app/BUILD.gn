@@ -382,7 +382,7 @@ mojo_application_manifest("chrome_renderer_manifest") {
 }
 
 group("mojo_manifests") {
-  deps = [
+  data_deps = [
     ":chrome_manifest",
     ":chrome_renderer_manifest",
   ]

@@ -1338,7 +1338,10 @@ if (!is_android) {
         "//mojo/shell/background/tests:test_support",
       ]
 
-      data_deps += [ "//mash/session" ]
+      data_deps += [
+        "//chrome/app:mojo_manifests",
+        "//mash/session",
+      ]
 
       defines += [ "MOJO_SHELL_CLIENT" ]
     }
