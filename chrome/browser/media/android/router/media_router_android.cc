@@ -14,6 +14,7 @@
 #include "base/android/jni_string.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/android/tab_android.h"
@@ -80,7 +81,7 @@ void MediaRouterAndroid::CreateRoute(
     bool off_the_record) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
-    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
       callback.Run(*result);
@@ -152,7 +153,7 @@ void MediaRouterAndroid::JoinRoute(
     bool off_the_record) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
-    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
       callback.Run(*result);
@@ -222,7 +223,7 @@ void MediaRouterAndroid::SendRouteMessage(
 
 void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    scoped_ptr<std::vector<uint8_t>> data,
+    std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   int callback_id =
       message_callbacks_.Add(new SendRouteMessageCallback(callback));
@@ -262,7 +263,7 @@ bool MediaRouterAndroid::RegisterMediaSinksObserver(
       sinks_observers_.get(source_id);
   if (!observer_list) {
     observer_list = new base::ObserverList<MediaSinksObserver>;
-    sinks_observers_.add(source_id, make_scoped_ptr(observer_list));
+    sinks_observers_.add(source_id, base::WrapUnique(observer_list));
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -327,7 +328,7 @@ void MediaRouterAndroid::RegisterPresentationSessionMessagesObserver(
   auto* observer_list = messages_observers_.get(route_id);
   if (!observer_list) {
     observer_list = new base::ObserverList<PresentationSessionMessagesObserver>;
-    messages_observers_.add(route_id, make_scoped_ptr(observer_list));
+    messages_observers_.add(route_id, base::WrapUnique(observer_list));
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -394,8 +395,8 @@ void MediaRouterAndroid::OnRouteCreated(
 
   // TODO(crbug.com/588239): Call OnOffTheRecordRouteCreated() if |route|
   // is OTR
-  scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
-      make_scoped_ptr(new MediaRoute(route)), request->presentation_id);
+  std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
+      base::WrapUnique(new MediaRoute(route)), request->presentation_id);
   for (const MediaRouteResponseCallback& callback : request->callbacks)
     callback.Run(*result);
 
@@ -416,7 +417,7 @@ void MediaRouterAndroid::OnRouteRequestError(
     return;
 
   // TODO(imcheng): Provide a more specific result code.
-  scoped_ptr<RouteRequestResult> result =
+  std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError(ConvertJavaStringToUTF8(env, jerror_text),
                                     RouteRequestResult::UNKNOWN_ERROR);
   for (const MediaRouteResponseCallback& callback : request->callbacks)
@@ -460,7 +461,7 @@ void MediaRouterAndroid::OnMessage(JNIEnv* env,
     return;
 
   ScopedVector<content::PresentationSessionMessage> session_messages;
-  scoped_ptr<content::PresentationSessionMessage> message(
+  std::unique_ptr<content::PresentationSessionMessage> message(
       new content::PresentationSessionMessage(content::TEXT));
   message->message = ConvertJavaStringToUTF8(env, jmessage);
   session_messages.push_back(std::move(message));

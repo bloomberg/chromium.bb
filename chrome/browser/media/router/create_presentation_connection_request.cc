@@ -57,7 +57,7 @@ void CreatePresentationConnectionRequest::InvokeErrorCallback(
 
 // static
 void CreatePresentationConnectionRequest::HandleRouteResponse(
-    scoped_ptr<CreatePresentationConnectionRequest> presentation_request,
+    std::unique_ptr<CreatePresentationConnectionRequest> presentation_request,
     const RouteRequestResult& result) {
   if (!result.route()) {
     presentation_request->InvokeErrorCallback(content::PresentationError(

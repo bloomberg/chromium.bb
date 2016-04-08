@@ -5,11 +5,13 @@
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -36,10 +38,10 @@ using SinkAvailability = interfaces::MediaRouter::SinkAvailability;
 
 namespace {
 
-scoped_ptr<content::PresentationSessionMessage>
+std::unique_ptr<content::PresentationSessionMessage>
 ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   DCHECK(!input.is_null());
-  scoped_ptr<content::PresentationSessionMessage> output;
+  std::unique_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
     case interfaces::RouteMessage::Type::TEXT: {
       DCHECK(!input->message.is_null());
@@ -270,7 +272,7 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     interfaces::MediaRoutePtr media_route,
     const mojo::String& error_text,
     interfaces::RouteRequestResultCode result_code) {
-  scoped_ptr<RouteRequestResult> result;
+  std::unique_ptr<RouteRequestResult> result;
   if (media_route.is_null()) {
     // An error occurred.
     DCHECK(!error_text.is_null());
@@ -286,7 +288,7 @@ void MediaRouterMojoImpl::RouteResponseReceived(
         error, RouteRequestResult::OFF_THE_RECORD_MISMATCH);
   } else {
     result = RouteRequestResult::FromSuccess(
-        media_route.To<scoped_ptr<MediaRoute>>(), presentation_id);
+        media_route.To<std::unique_ptr<MediaRoute>>(), presentation_id);
     if (result->route()->off_the_record())
       OnOffTheRecordRouteCreated(result->route()->media_route_id());
   }
@@ -308,7 +310,7 @@ void MediaRouterMojoImpl::CreateRoute(
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
-    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
       callback.Run(*result);
@@ -335,7 +337,7 @@ void MediaRouterMojoImpl::JoinRoute(
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
-    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
       callback.Run(*result);
@@ -362,7 +364,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
-    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
       callback.Run(*result);
@@ -406,7 +408,7 @@ void MediaRouterMojoImpl::SendRouteMessage(
 
 void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    scoped_ptr<std::vector<uint8_t>> data,
+    std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -444,7 +446,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   if (!sinks_query) {
     new_query = true;
     sinks_query = new MediaSinksQuery;
-    sinks_queries_.add(source_id, make_scoped_ptr(sinks_query));
+    sinks_queries_.add(source_id, base::WrapUnique(sinks_query));
   } else {
     DCHECK(!sinks_query->observers.HasObserver(observer));
   }
@@ -507,7 +509,7 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
   auto* routes_query = routes_queries_.get(source_id);
   if (!routes_query) {
     routes_query = new MediaRoutesQuery;
-    routes_queries_.add(source_id, make_scoped_ptr(routes_query));
+    routes_queries_.add(source_id, base::WrapUnique(routes_query));
   } else {
     DCHECK(!routes_query->observers.HasObserver(observer));
   }
@@ -556,7 +558,7 @@ void MediaRouterMojoImpl::RegisterPresentationSessionMessagesObserver(
   auto* observer_list = messages_observers_.get(route_id);
   if (!observer_list) {
     observer_list = new base::ObserverList<PresentationSessionMessagesObserver>;
-    messages_observers_.add(route_id, make_scoped_ptr(observer_list));
+    messages_observers_.add(route_id, base::WrapUnique(observer_list));
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -672,7 +674,7 @@ void MediaRouterMojoImpl::DoSendSessionMessage(
 
 void MediaRouterMojoImpl::DoSendSessionBinaryMessage(
     const MediaRoute::Id& route_id,
-    scoped_ptr<std::vector<uint8_t>> data,
+    std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteBinaryMessage " << route_id;
   mojo::Array<uint8_t> mojo_array;

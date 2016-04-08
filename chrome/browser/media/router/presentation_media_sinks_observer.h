@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PRESENTATION_MEDIA_SINKS_OBSERVER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PRESENTATION_MEDIA_SINKS_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/presentation_service_delegate.h"
 

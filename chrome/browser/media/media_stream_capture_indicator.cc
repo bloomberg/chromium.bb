@@ -5,12 +5,14 @@
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -108,7 +110,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   bool IsCapturingVideo() const { return video_ref_count_ > 0; }
   bool IsMirroring() const { return mirroring_ref_count_ > 0; }
 
-  scoped_ptr<content::MediaStreamUI> RegisterMediaStream(
+  std::unique_ptr<content::MediaStreamUI> RegisterMediaStream(
       const content::MediaStreamDevices& devices);
 
   // Increment ref-counts up based on the type of each device provided.
@@ -170,11 +172,10 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
   DISALLOW_COPY_AND_ASSIGN(UIDelegate);
 };
 
-
-scoped_ptr<content::MediaStreamUI>
+std::unique_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
     const content::MediaStreamDevices& devices) {
-  return make_scoped_ptr(new UIDelegate( weak_factory_.GetWeakPtr(), devices));
+  return base::WrapUnique(new UIDelegate(weak_factory_.GetWeakPtr(), devices));
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
@@ -239,14 +240,14 @@ MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
          !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
 }
 
-scoped_ptr<content::MediaStreamUI>
+std::unique_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::RegisterMediaStream(
     content::WebContents* web_contents,
     const content::MediaStreamDevices& devices) {
   WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
   if (!usage) {
     usage = new WebContentsDeviceUsage(this, web_contents);
-    usage_map_.add(web_contents, make_scoped_ptr(usage));
+    usage_map_.add(web_contents, base::WrapUnique(usage));
   }
   return usage->RegisterMediaStream(devices);
 }
@@ -364,7 +365,7 @@ void MediaStreamCaptureIndicator::MaybeDestroyStatusTrayIcon() {
 void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
+  std::unique_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
   bool audio = false;
   bool video = false;
   int command_id = IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -63,7 +64,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
         "    JSON.stringify(peerConnectionDataStore));",
         webrtc_internals_tab);
 
-    scoped_ptr<base::Value> parsed_json =
+    std::unique_ptr<base::Value> parsed_json =
         base::JSONReader::Read(all_stats_json);
     base::DictionaryValue* result;
     if (parsed_json.get() && parsed_json->GetAsDictionary(&result)) {
@@ -91,7 +92,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     return NULL;
   }
 
-  scoped_ptr<base::DictionaryValue> MeasureWebRtcInternalsData(
+  std::unique_ptr<base::DictionaryValue> MeasureWebRtcInternalsData(
       int duration_msec) {
     chrome::AddTabAt(browser(), GURL(), -1, true);
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://webrtc-internals"));
@@ -100,7 +101,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
 
     test::SleepInJavascript(webrtc_internals_tab, duration_msec);
 
-    return scoped_ptr<base::DictionaryValue>(
+    return std::unique_ptr<base::DictionaryValue>(
         GetWebrtcInternalsData(webrtc_internals_tab));
   }
 
@@ -133,7 +134,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     test::SleepInJavascript(left_tab, 60000);
 
     // Start measurements.
-    scoped_ptr<base::DictionaryValue> all_data =
+    std::unique_ptr<base::DictionaryValue> all_data =
         MeasureWebRtcInternalsData(10000);
     ASSERT_TRUE(all_data.get() != NULL);
 
@@ -173,7 +174,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     // Let values stabilize, bandwidth ramp up, etc.
     test::SleepInJavascript(left_tab, 60000);
 
-    scoped_ptr<base::DictionaryValue> all_data =
+    std::unique_ptr<base::DictionaryValue> all_data =
         MeasureWebRtcInternalsData(10000);
     ASSERT_TRUE(all_data.get() != NULL);
 

@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -91,8 +92,8 @@ void RecordPermissionAction(const content::MediaStreamRequest& request,
 class MediaPermissionRequestLogger : content::WebContentsObserver {
   // Map of <render process id, render frame id> ->
   // MediaPermissionRequestLogger.
-  using RequestMap =
-      std::map<std::pair<int, int>, scoped_ptr<MediaPermissionRequestLogger>>;
+  using RequestMap = std::map<std::pair<int, int>,
+                              std::unique_ptr<MediaPermissionRequestLogger>>;
 
  public:
   static void LogRequest(content::WebContents* contents,
@@ -105,7 +106,7 @@ class MediaPermissionRequestLogger : content::WebContentsObserver {
       UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
                             is_secure);
       GetRequestMap()[key] =
-          make_scoped_ptr(new MediaPermissionRequestLogger(contents, key));
+          base::WrapUnique(new MediaPermissionRequestLogger(contents, key));
     }
   }
 
@@ -202,7 +203,7 @@ MediaStreamDevicesController::~MediaStreamDevicesController() {
         request_, base::Bind(PermissionUmaUtil::PermissionIgnored));
     callback_.Run(content::MediaStreamDevices(),
                   content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                  scoped_ptr<content::MediaStreamUI>());
+                  std::unique_ptr<content::MediaStreamUI>());
   }
 }
 
@@ -445,7 +446,7 @@ void MediaStreamDevicesController::RunCallback(
     request_result = content::MEDIA_DEVICE_NO_HARDWARE;
   }
 
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
   if (!devices.empty()) {
     ui = MediaCaptureDevicesDispatcher::GetInstance()
              ->GetMediaStreamCaptureIndicator()

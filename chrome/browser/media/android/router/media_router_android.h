@@ -8,11 +8,12 @@
 #include <jni.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/media/router/media_router_base.h"
 
@@ -61,7 +62,7 @@ class MediaRouterAndroid : public MediaRouterBase {
                         const SendRouteMessageCallback& callback) override;
   void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8_t>> data,
+      std::unique_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
@@ -131,7 +132,7 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   using MediaSinkObservers = base::ScopedPtrHashMap<
       MediaSource::Id,
-      scoped_ptr<base::ObserverList<MediaSinksObserver>>>;
+      std::unique_ptr<base::ObserverList<MediaSinksObserver>>>;
   MediaSinkObservers sinks_observers_;
 
   base::ObserverList<MediaRoutesObserver> routes_observers_;
@@ -160,7 +161,7 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   using MessagesObservers = base::ScopedPtrHashMap<
       MediaRoute::Id,
-      scoped_ptr<base::ObserverList<PresentationSessionMessagesObserver>>>;
+      std::unique_ptr<base::ObserverList<PresentationSessionMessagesObserver>>>;
   MessagesObservers messages_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);

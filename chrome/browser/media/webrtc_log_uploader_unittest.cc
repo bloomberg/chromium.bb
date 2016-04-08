@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc_log_uploader.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -188,7 +190,8 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
   EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
-  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader(new WebRtcLogUploader());
+  std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
+      new WebRtcLogUploader());
 
   webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
                                                                kTestLocalId);
@@ -225,7 +228,8 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
   EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
-  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader(new WebRtcLogUploader());
+  std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
+      new WebRtcLogUploader());
 
   webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
                                                                kTestLocalId);
@@ -251,7 +255,8 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader(new WebRtcLogUploader());
+  std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
+      new WebRtcLogUploader());
 
   std::string post_data;
   webrtc_log_uploader->OverrideUploadWithBufferForTesting(&post_data);
@@ -272,7 +277,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   WebRtcLogUploadDoneData upload_done_data;
   upload_done_data.log_path = temp_dir.path().AppendASCII("log");
 
-  scoped_ptr<Profile> profile(new TestingProfile());
+  std::unique_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<WebRtcLoggingHandlerHost> host(new WebRtcLoggingHandlerHost(
       -1, profile.get(), webrtc_log_uploader.get()));
 
@@ -280,10 +285,10 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   upload_done_data.outgoing_rtp_dump = outgoing_dump;
   upload_done_data.host = host.get();
 
-  scoped_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
+  std::unique_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();
   webrtc_log_uploader->LoggingStoppedDoUpload(
-      std::move(log), make_scoped_ptr(new MetaDataMap()), upload_done_data);
+      std::move(log), base::WrapUnique(new MetaDataMap()), upload_done_data);
 
   VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);

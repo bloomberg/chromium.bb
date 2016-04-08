@@ -170,7 +170,7 @@ WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {
 }
 
 void WebRtcLoggingHandlerHost::SetMetaData(
-    scoped_ptr<MetaDataMap> meta_data,
+    std::unique_ptr<MetaDataMap> meta_data,
     const GenericDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
@@ -347,7 +347,7 @@ void WebRtcLoggingHandlerHost::StoreLogContinue(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  scoped_ptr<WebRtcLogPaths> log_paths(new WebRtcLogPaths());
+  std::unique_ptr<WebRtcLogPaths> log_paths(new WebRtcLogPaths());
   ReleaseRtpDumps(log_paths.get());
 
   content::BrowserThread::PostTaskAndReplyWithResult(
@@ -416,10 +416,11 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   rtp_dump_handler_->StopDump(type, callback);
 }
 
-void WebRtcLoggingHandlerHost::OnRtpPacket(scoped_ptr<uint8_t[]> packet_header,
-                                           size_t header_length,
-                                           size_t packet_length,
-                                           bool incoming) {
+void WebRtcLoggingHandlerHost::OnRtpPacket(
+    std::unique_ptr<uint8_t[]> packet_header,
+    size_t header_length,
+    size_t packet_length,
+    bool incoming) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
@@ -434,7 +435,7 @@ void WebRtcLoggingHandlerHost::OnRtpPacket(scoped_ptr<uint8_t[]> packet_header,
 }
 
 void WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread(
-    scoped_ptr<uint8_t[]> packet_header,
+    std::unique_ptr<uint8_t[]> packet_header,
     size_t header_length,
     size_t packet_length,
     bool incoming) {
@@ -716,7 +717,7 @@ void WebRtcLoggingHandlerHost::TriggerUpload(
 
 void WebRtcLoggingHandlerHost::StoreLogInDirectory(
     const std::string& log_id,
-    scoped_ptr<WebRtcLogPaths> log_paths,
+    std::unique_ptr<WebRtcLogPaths> log_paths,
     const GenericDoneCallback& done_callback,
     const base::FilePath& directory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

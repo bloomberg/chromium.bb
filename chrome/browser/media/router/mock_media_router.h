@@ -57,7 +57,7 @@ class MockMediaRouter : public MediaRouter {
                     const SendRouteMessageCallback& callback));
   void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8_t>> data,
+      std::unique_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override {
     SendRouteBinaryMessageInternal(route_id, data.get(), callback);
   }
@@ -70,7 +70,7 @@ class MockMediaRouter : public MediaRouter {
   MOCK_METHOD0(OnUserGesture, void());
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
-  scoped_ptr<PresentationConnectionStateSubscription>
+  std::unique_ptr<PresentationConnectionStateSubscription>
   AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback)

@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -98,7 +99,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // While |id_map_| is non-empty, hold an instance of
   // content::PowerSaveBlocker.  This prevents Chrome from being suspended while
   // remoting content.
-  scoped_ptr<content::PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<content::PowerSaveBlocker> power_save_blocker_;
 
   base::WeakPtrFactory<CastTransportHostFilter> weak_factory_;
 

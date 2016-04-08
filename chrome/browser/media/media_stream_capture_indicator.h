@@ -34,7 +34,7 @@ class MediaStreamCaptureIndicator
 
   // Registers a new media stream for |web_contents| and returns UI object
   // that's used by the content layer to notify about state of the stream.
-  scoped_ptr<content::MediaStreamUI> RegisterMediaStream(
+  std::unique_ptr<content::MediaStreamUI> RegisterMediaStream(
       content::WebContents* web_contents,
       const content::MediaStreamDevices& devices);
 
@@ -95,7 +95,8 @@ class MediaStreamCaptureIndicator
   // A map that contains the usage counts of the opened capture devices for each
   // WebContents instance.
   base::ScopedPtrHashMap<content::WebContents*,
-                         scoped_ptr<WebContentsDeviceUsage>> usage_map_;
+                         std::unique_ptr<WebContentsDeviceUsage>>
+      usage_map_;
 
   // A vector which maps command IDs to their associated WebContents
   // instance. This is rebuilt each time the status tray icon context menu is

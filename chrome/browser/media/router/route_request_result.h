@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_ROUTE_REQUEST_RESULT_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_ROUTE_REQUEST_RESULT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace media_router {
 
@@ -38,11 +38,11 @@ class RouteRequestResult {
     OFF_THE_RECORD_MISMATCH
   };
 
-  static scoped_ptr<RouteRequestResult> FromSuccess(
-      scoped_ptr<MediaRoute> route,
+  static std::unique_ptr<RouteRequestResult> FromSuccess(
+      std::unique_ptr<MediaRoute> route,
       const std::string& presentation_id);
-  static scoped_ptr<RouteRequestResult> FromError(const std::string& error,
-                                                  ResultCode result_code);
+  static std::unique_ptr<RouteRequestResult> FromError(const std::string& error,
+                                                       ResultCode result_code);
 
   ~RouteRequestResult();
 
@@ -54,12 +54,12 @@ class RouteRequestResult {
   ResultCode result_code() const { return result_code_; }
 
  private:
-  RouteRequestResult(scoped_ptr<MediaRoute> route,
+  RouteRequestResult(std::unique_ptr<MediaRoute> route,
                      const std::string& presentation_id,
                      const std::string& error,
                      ResultCode result_code);
 
-  scoped_ptr<MediaRoute> route_;
+  std::unique_ptr<MediaRoute> route_;
   std::string presentation_id_;
   std::string error_;
   ResultCode result_code_;

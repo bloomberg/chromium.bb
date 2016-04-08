@@ -107,8 +107,8 @@ void WebRtcLogUploader::LoggingStoppedDontUpload() {
 }
 
 void WebRtcLogUploader::LoggingStoppedDoUpload(
-    scoped_ptr<WebRtcLogBuffer> log_buffer,
-    scoped_ptr<MetaDataMap> meta_data,
+    std::unique_ptr<WebRtcLogBuffer> log_buffer,
+    std::unique_ptr<MetaDataMap> meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
   DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(log_buffer.get());
@@ -143,13 +143,13 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
 
 void WebRtcLogUploader::PrepareMultipartPostData(
     const std::string& compressed_log,
-    scoped_ptr<MetaDataMap> meta_data,
+    std::unique_ptr<MetaDataMap> meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
   DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(!compressed_log.empty());
   DCHECK(meta_data.get());
 
-  scoped_ptr<std::string> post_data(new std::string());
+  std::unique_ptr<std::string> post_data(new std::string());
   SetupMultipart(post_data.get(),
                  compressed_log,
                  upload_done_data.incoming_rtp_dump,
@@ -204,7 +204,7 @@ void WebRtcLogUploader::UploadStoredLog(
       upload_data.log_path.AppendASCII(upload_data.local_log_id)
       .AddExtension(FILE_PATH_LITERAL(".rtp_out"));
 
-  scoped_ptr<MetaDataMap> meta_data(new MetaDataMap());
+  std::unique_ptr<MetaDataMap> meta_data(new MetaDataMap());
   {
     std::string meta_data_contents;
     base::FilePath meta_path =
@@ -227,8 +227,8 @@ void WebRtcLogUploader::UploadStoredLog(
 void WebRtcLogUploader::LoggingStoppedDoStore(
     const WebRtcLogPaths& log_paths,
     const std::string& log_id,
-    scoped_ptr<WebRtcLogBuffer> log_buffer,
-    scoped_ptr<MetaDataMap> meta_data,
+    std::unique_ptr<WebRtcLogBuffer> log_buffer,
+    std::unique_ptr<MetaDataMap> meta_data,
     const WebRtcLoggingHandlerHost::GenericDoneCallback& done_callback) {
   DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(!log_id.empty());
@@ -435,7 +435,7 @@ void WebRtcLogUploader::ResizeForNextOutput(std::string* compressed_log,
 
 void WebRtcLogUploader::UploadCompressedLog(
     const WebRtcLogUploadDoneData& upload_done_data,
-    scoped_ptr<std::string> post_data) {
+    std::unique_ptr<std::string> post_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DecreaseLogCount();
@@ -447,7 +447,7 @@ void WebRtcLogUploader::UploadCompressedLog(
   content_type.append("; boundary=");
   content_type.append(kMultipartBoundary);
 
-  scoped_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
+  std::unique_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
       GURL(chrome::kUploadURL), net::URLFetcher::POST, this));
   url_fetcher->SetUploadData(content_type, *post_data);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

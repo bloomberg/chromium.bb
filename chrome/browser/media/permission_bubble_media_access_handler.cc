@@ -35,7 +35,8 @@ namespace {
 // Callback for the permission update infobar when the site and Chrome
 // permissions are mismatched on Android.
 void OnPermissionConflictResolved(
-    scoped_ptr<MediaStreamDevicesController> controller, bool allowed) {
+    std::unique_ptr<MediaStreamDevicesController> controller,
+    bool allowed) {
   if (allowed)
     controller->PermissionGranted();
   else
@@ -137,7 +138,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   DCHECK(!it->second.empty());
 
-  scoped_ptr<MediaStreamDevicesController> controller(
+  std::unique_ptr<MediaStreamDevicesController> controller(
       new MediaStreamDevicesController(
           web_contents, it->second.front().request,
           base::Bind(
@@ -211,7 +212,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     content::WebContents* web_contents,
     const content::MediaStreamDevices& devices,
     content::MediaStreamRequestResult result,
-    scoped_ptr<content::MediaStreamUI> ui) {
+    std::unique_ptr<content::MediaStreamUI> ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<content::WebContents*, RequestsQueue>::iterator it =

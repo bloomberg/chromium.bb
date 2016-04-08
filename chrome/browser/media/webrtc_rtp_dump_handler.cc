@@ -271,7 +271,7 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
 }
 
 void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
-    scoped_ptr<WebRtcRtpDumpWriter> writer) {
+    std::unique_ptr<WebRtcRtpDumpWriter> writer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   dump_writer_ = std::move(writer);

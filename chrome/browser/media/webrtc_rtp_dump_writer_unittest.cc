@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/webrtc_rtp_dump_writer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#include <memory>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/media/webrtc_rtp_dump_writer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -224,10 +226,10 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<base::ScopedTempDir> temp_dir_;
+  std::unique_ptr<base::ScopedTempDir> temp_dir_;
   base::FilePath incoming_dump_path_;
   base::FilePath outgoing_dump_path_;
-  scoped_ptr<WebRtcRtpDumpWriter> writer_;
+  std::unique_ptr<WebRtcRtpDumpWriter> writer_;
 };
 
 TEST_F(WebRtcRtpDumpWriterTest, NoDumpFileIfNoPacketDumped) {

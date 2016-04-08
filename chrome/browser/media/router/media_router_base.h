@@ -23,7 +23,7 @@ class MediaRouterBase : public MediaRouter {
   MediaRouterBase();
   ~MediaRouterBase() override;
 
-  scoped_ptr<PresentationConnectionStateSubscription>
+  std::unique_ptr<PresentationConnectionStateSubscription>
   AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback)
@@ -56,7 +56,7 @@ class MediaRouterBase : public MediaRouter {
       const content::PresentationConnectionStateChangeInfo&)>;
   base::ScopedPtrHashMap<
       MediaRoute::Id,
-      scoped_ptr<PresentationConnectionStateChangedCallbacks>>
+      std::unique_ptr<PresentationConnectionStateChangedCallbacks>>
       presentation_connection_state_callbacks_;
 
   base::ThreadChecker thread_checker_;

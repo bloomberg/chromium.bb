@@ -57,7 +57,7 @@ using PresentationConnectionStateSubscription = base::CallbackList<void(
 class MediaRouter : public KeyedService {
  public:
   using PresentationSessionMessageCallback = base::Callback<void(
-      scoped_ptr<ScopedVector<content::PresentationSessionMessage>>)>;
+      std::unique_ptr<ScopedVector<content::PresentationSessionMessage>>)>;
   using SendRouteMessageCallback = base::Callback<void(bool sent)>;
 
   ~MediaRouter() override = default;
@@ -145,7 +145,7 @@ class MediaRouter : public KeyedService {
   // This is called for Blob / ArrayBuffer / ArrayBufferView types.
   virtual void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8_t>> data,
+      std::unique_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) = 0;
 
   // Adds a new |issue|.
@@ -163,7 +163,7 @@ class MediaRouter : public KeyedService {
   // |route_id|. The returned Subscription object is owned by the caller.
   // |callback| will be invoked whenever there are state changes, until the
   // caller destroys the Subscription object.
-  virtual scoped_ptr<PresentationConnectionStateSubscription>
+  virtual std::unique_ptr<PresentationConnectionStateSubscription>
   AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback) = 0;

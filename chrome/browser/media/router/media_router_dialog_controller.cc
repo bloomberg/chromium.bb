@@ -75,7 +75,7 @@ MediaRouterDialogController::~MediaRouterDialogController() {
 }
 
 bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
-    scoped_ptr<CreatePresentationConnectionRequest> request) {
+    std::unique_ptr<CreatePresentationConnectionRequest> request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Check if the media router dialog exists for |initiator| and return if so.
@@ -120,7 +120,7 @@ void MediaRouterDialogController::ActivateInitiatorWebContents() {
   initiator_->GetDelegate()->ActivateContents(initiator_);
 }
 
-scoped_ptr<CreatePresentationConnectionRequest>
+std::unique_ptr<CreatePresentationConnectionRequest>
 MediaRouterDialogController::TakeCreateConnectionRequest() {
   return std::move(create_connection_request_);
 }

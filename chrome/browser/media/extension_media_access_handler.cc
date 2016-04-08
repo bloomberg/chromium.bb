@@ -137,7 +137,7 @@ void ExtensionMediaAccessHandler::HandleRequest(
         profile, get_default_audio_device, get_default_video_device, &devices);
   }
 
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
   if (!devices.empty()) {
     result = content::MEDIA_DEVICE_OK;
     ui = MediaCaptureDevicesDispatcher::GetInstance()

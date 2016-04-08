@@ -4,14 +4,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
@@ -172,8 +174,9 @@ class TestProcessManager : public extensions::ProcessManager {
             extensions::ExtensionRegistry::Get(context)) {}
   ~TestProcessManager() override {}
 
-  static scoped_ptr<KeyedService> Create(content::BrowserContext* context) {
-    return make_scoped_ptr(new TestProcessManager(context));
+  static std::unique_ptr<KeyedService> Create(
+      content::BrowserContext* context) {
+    return base::WrapUnique(new TestProcessManager(context));
   }
 
   MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& ext_id));
@@ -652,13 +655,13 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   EXPECT_CALL(mock_media_route_provider_,
               StartObservingMediaSinks(mojo::String(kSource2)));
 
-  scoped_ptr<MockMediaSinksObserver> sinks_observer(
+  std::unique_ptr<MockMediaSinksObserver> sinks_observer(
       new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_TRUE(sinks_observer->Init());
-  scoped_ptr<MockMediaSinksObserver> extra_sinks_observer(
+  std::unique_ptr<MockMediaSinksObserver> extra_sinks_observer(
       new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_TRUE(extra_sinks_observer->Init());
-  scoped_ptr<MockMediaSinksObserver> unrelated_sinks_observer(
+  std::unique_ptr<MockMediaSinksObserver> unrelated_sinks_observer(
       new MockMediaSinksObserver(router(), MediaSource(kSource2), origin));
   EXPECT_TRUE(unrelated_sinks_observer->Init());
   ProcessEventLoop();
@@ -696,14 +699,14 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   // Since the MediaRouterMojoImpl has already received results for
   // |media_source|, return cached results to observers that are subsequently
   // registered.
-  scoped_ptr<MockMediaSinksObserver> cached_sinks_observer(
+  std::unique_ptr<MockMediaSinksObserver> cached_sinks_observer(
       new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_CALL(*cached_sinks_observer,
               OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_TRUE(cached_sinks_observer->Init());
 
   // Different origin from cached result. Empty list will be returned.
-  scoped_ptr<MockMediaSinksObserver> cached_sinks_observer2(
+  std::unique_ptr<MockMediaSinksObserver> cached_sinks_observer2(
       new MockMediaSinksObserver(router(), media_source,
                                  GURL("https://youtube.com")));
   EXPECT_CALL(*cached_sinks_observer2, OnSinksReceived(IsEmpty()));
@@ -731,12 +734,12 @@ TEST_F(MediaRouterMojoImplTest,
   router()->OnSinkAvailabilityUpdated(
       interfaces::MediaRouter::SinkAvailability::UNAVAILABLE);
   MediaSource media_source(kSource);
-  scoped_ptr<MockMediaSinksObserver> sinks_observer(
+  std::unique_ptr<MockMediaSinksObserver> sinks_observer(
       new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_CALL(*sinks_observer, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(sinks_observer->Init());
   MediaSource media_source2(kSource2);
-  scoped_ptr<MockMediaSinksObserver> sinks_observer2(
+  std::unique_ptr<MockMediaSinksObserver> sinks_observer2(
       new MockMediaSinksObserver(router(), media_source2, origin));
   EXPECT_CALL(*sinks_observer2, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(sinks_observer2->Init());
@@ -906,7 +909,7 @@ TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
 }
 
 TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
-  scoped_ptr<std::vector<uint8_t>> expected_binary_data(
+  std::unique_ptr<std::vector<uint8_t>> expected_binary_data(
       new std::vector<uint8_t>(kBinaryMessage,
                                kBinaryMessage + arraysize(kBinaryMessage)));
 
@@ -941,7 +944,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   mojo_messages[1]->data.push_back(1);
 
   ScopedVector<content::PresentationSessionMessage> expected_messages;
-  scoped_ptr<content::PresentationSessionMessage> message;
+  std::unique_ptr<content::PresentationSessionMessage> message;
   message.reset(new content::PresentationSessionMessage(
       content::PresentationMessageType::TEXT));
   message->message = "text";
@@ -966,7 +969,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   EXPECT_CALL(handler, InvokeObserver());
   // Creating PresentationSessionMessagesObserver will register itself to the
   // MediaRouter, which in turn will start listening for route messages.
-  scoped_ptr<PresentationSessionMessagesObserver> observer(
+  std::unique_ptr<PresentationSessionMessagesObserver> observer(
       new PresentationSessionMessagesObserver(
           base::Bind(&ListenForMessagesCallbackHandler::Invoke,
                      base::Unretained(&handler)),
@@ -1009,7 +1012,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   mojo_messages[1]->data.push_back(1);
 
   ScopedVector<content::PresentationSessionMessage> expected_messages;
-  scoped_ptr<content::PresentationSessionMessage> message;
+  std::unique_ptr<content::PresentationSessionMessage> message;
   message.reset(new content::PresentationSessionMessage(
       content::PresentationMessageType::TEXT));
   message->message = "text";
@@ -1035,12 +1038,12 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   EXPECT_CALL(handler, InvokeObserver()).Times(2);
   // Creating PresentationSessionMessagesObserver will register itself to the
   // MediaRouter, which in turn will start listening for route messages.
-  scoped_ptr<PresentationSessionMessagesObserver> observer1(
+  std::unique_ptr<PresentationSessionMessagesObserver> observer1(
       new PresentationSessionMessagesObserver(
           base::Bind(&ListenForMessagesCallbackHandler::Invoke,
                      base::Unretained(&handler)),
           expected_route_id, router()));
-  scoped_ptr<PresentationSessionMessagesObserver> observer2(
+  std::unique_ptr<PresentationSessionMessagesObserver> observer2(
       new PresentationSessionMessagesObserver(
           base::Bind(&ListenForMessagesCallbackHandler::Invoke,
                      base::Unretained(&handler)),
@@ -1088,7 +1091,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
 
   // Creating PresentationSessionMessagesObserver will register itself to the
   // MediaRouter, which in turn will start listening for route messages.
-  scoped_ptr<PresentationSessionMessagesObserver> observer1(
+  std::unique_ptr<PresentationSessionMessagesObserver> observer1(
       new PresentationSessionMessagesObserver(
           base::Bind(&ListenForMessagesCallbackHandler::Invoke,
                      base::Unretained(&handler)),
@@ -1106,7 +1109,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   content::PresentationSessionInfo connection(kPresentationUrl,
                                               kPresentationId);
   MockPresentationConnectionStateChangedCallback callback;
-  scoped_ptr<PresentationConnectionStateSubscription> subscription =
+  std::unique_ptr<PresentationConnectionStateSubscription> subscription =
       router()->AddPresentationConnectionStateChangedCallback(
           route_id,
           base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
@@ -1146,7 +1149,7 @@ TEST_F(MediaRouterMojoImplTest,
        PresentationConnectionStateChangedCallbackRemoved) {
   MediaRoute::Id route_id("route-id");
   MockPresentationConnectionStateChangedCallback callback;
-  scoped_ptr<PresentationConnectionStateSubscription> subscription =
+  std::unique_ptr<PresentationConnectionStateSubscription> subscription =
       router()->AddPresentationConnectionStateChangedCallback(
           route_id,
           base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
@@ -1270,7 +1273,7 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
                                         expected_count);
   }
 
-  scoped_ptr<MediaRouterMojoImpl> media_router_;
+  std::unique_ptr<MediaRouterMojoImpl> media_router_;
   RegisterMediaRouteProviderHandler provide_handler_;
   TestProcessManager* process_manager_;
   testing::StrictMock<MockMediaRouteProvider> mock_media_route_provider_;
@@ -1278,10 +1281,10 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   scoped_refptr<extensions::Extension> extension_;
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   base::MessageLoop message_loop_;
   interfaces::MediaRouteProviderPtr media_route_provider_proxy_;
-  scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
+  std::unique_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoExtensionTest);

@@ -47,7 +47,7 @@ class DesktopMediaListAshTest : public ash::test::AshTestBase {
 
  protected:
   MockDesktopMediaListObserver observer_;
-  scoped_ptr<DesktopMediaListAsh> list_;
+  std::unique_ptr<DesktopMediaListAsh> list_;
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListAshTest);
 };
 
@@ -70,7 +70,7 @@ TEST_F(DesktopMediaListAshTest, Screen) {
 TEST_F(DesktopMediaListAshTest, OneWindow) {
   CreateList(DesktopMediaListAsh::SCREENS | DesktopMediaListAsh::WINDOWS);
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   EXPECT_CALL(observer_, OnSourceAdded(list_.get(), 0));
   EXPECT_CALL(observer_, OnSourceAdded(list_.get(), 1));
@@ -91,7 +91,7 @@ TEST_F(DesktopMediaListAshTest, OneWindow) {
 TEST_F(DesktopMediaListAshTest, ScreenOnly) {
   CreateList(DesktopMediaListAsh::SCREENS);
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   EXPECT_CALL(observer_, OnSourceAdded(list_.get(), 0));
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
@@ -112,7 +112,7 @@ TEST_F(DesktopMediaListAshTest, ScreenOnly) {
 TEST_F(DesktopMediaListAshTest, MAYBE_WindowOnly) {
   CreateList(DesktopMediaListAsh::WINDOWS);
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   EXPECT_CALL(observer_, OnSourceAdded(list_.get(), 0));
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))

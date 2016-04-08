@@ -12,7 +12,7 @@
 #include "chrome/browser/media/test_license_server_config.h"
 
 TestLicenseServer::TestLicenseServer(
-    scoped_ptr<TestLicenseServerConfig> server_config)
+    std::unique_ptr<TestLicenseServerConfig> server_config)
     : server_config_(std::move(server_config)) {}
 
 TestLicenseServer::~TestLicenseServer() {

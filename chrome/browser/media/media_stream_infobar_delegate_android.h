@@ -26,7 +26,7 @@ class MediaStreamInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // found, or just adds the new infobar otherwise.  Returns whether an infobar
   // was created.
   static bool Create(content::WebContents* web_contents,
-                     scoped_ptr<MediaStreamDevicesController> controller);
+                     std::unique_ptr<MediaStreamDevicesController> controller);
 
   bool IsRequestingVideoAccess() const;
   bool IsRequestingMicrophoneAccess() const;
@@ -35,7 +35,7 @@ class MediaStreamInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   friend class WebRtcTestBase;
 
   explicit MediaStreamInfoBarDelegateAndroid(
-      scoped_ptr<MediaStreamDevicesController> controller);
+      std::unique_ptr<MediaStreamDevicesController> controller);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -51,7 +51,7 @@ class MediaStreamInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
 
-  scoped_ptr<MediaStreamDevicesController> controller_;
+  std::unique_ptr<MediaStreamDevicesController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamInfoBarDelegateAndroid);
 };

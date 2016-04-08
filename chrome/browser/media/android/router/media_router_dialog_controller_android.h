@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "content/public/browser/web_contents_user_data.h"
 

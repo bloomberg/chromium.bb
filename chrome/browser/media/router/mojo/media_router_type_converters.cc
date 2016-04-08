@@ -83,13 +83,14 @@ TypeConverter<media_router::MediaRoute, MediaRoutePtr>::Convert(
 }
 
 // static
-scoped_ptr<media_router::MediaRoute>
-TypeConverter<scoped_ptr<media_router::MediaRoute>, MediaRoutePtr>::Convert(
-    const MediaRoutePtr& input) {
-  scoped_ptr<media_router::MediaRoute> media_route(new media_router::MediaRoute(
-      input->media_route_id, media_router::MediaSource(input->media_source),
-      input->media_sink_id, input->description, input->is_local,
-      input->custom_controller_path, input->for_display));
+std::unique_ptr<media_router::MediaRoute>
+TypeConverter<std::unique_ptr<media_router::MediaRoute>,
+              MediaRoutePtr>::Convert(const MediaRoutePtr& input) {
+  std::unique_ptr<media_router::MediaRoute> media_route(
+      new media_router::MediaRoute(
+          input->media_route_id, media_router::MediaSource(input->media_source),
+          input->media_sink_id, input->description, input->is_local,
+          input->custom_controller_path, input->for_display));
   media_route->set_off_the_record(input->off_the_record);
   return media_route;
 }

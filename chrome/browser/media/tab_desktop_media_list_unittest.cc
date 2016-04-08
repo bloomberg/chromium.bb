@@ -115,7 +115,7 @@ class TabDesktopMediaListTest : public testing::Test {
   void AddWebcontents(int favicon_greyscale) {
     TabStripModel* tab_strip_model = browser_->tab_strip_model();
     ASSERT_TRUE(tab_strip_model);
-    scoped_ptr<WebContents> contents(
+    std::unique_ptr<WebContents> contents(
         content::WebContentsTester::CreateTestWebContents(
             profile_, content::SiteInstance::Create(profile_)));
     ASSERT_TRUE(contents);
@@ -127,7 +127,7 @@ class TabDesktopMediaListTest : public testing::Test {
     content::NavigationEntry* entry =
         contents->GetController().GetTransientEntry();
     if (!entry) {
-      scoped_ptr<content::NavigationEntry> entry_new =
+      std::unique_ptr<content::NavigationEntry> entry_new =
           content::NavigationController::CreateNavigationEntry(
               GURL("chrome://blank"), content::Referrer(),
               ui::PAGE_TRANSITION_LINK, false, std::string(), profile_);
@@ -235,14 +235,14 @@ class TabDesktopMediaListTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
 
-  scoped_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
+  std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
   Profile* profile_;
-  scoped_ptr<Browser> browser_;
-  std::vector<scoped_ptr<WebContents>> contents_array_;
+  std::unique_ptr<Browser> browser_;
+  std::vector<std::unique_ptr<WebContents>> contents_array_;
 
   // Must be listed before |list_|, so it's destroyed last.
   MockObserver observer_;
-  scoped_ptr<TabDesktopMediaList> list_;
+  std::unique_ptr<TabDesktopMediaList> list_;
 
   content::TestBrowserThreadBundle thread_bundle_;
 

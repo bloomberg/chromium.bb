@@ -40,8 +40,8 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jsink_id) {
-  scoped_ptr<CreatePresentationConnectionRequest> create_connection_request =
-      TakeCreateConnectionRequest();
+  std::unique_ptr<CreatePresentationConnectionRequest>
+      create_connection_request = TakeCreateConnectionRequest();
   const PresentationRequest& presentation_request =
       create_connection_request->presentation_request();
   const MediaSource::Id source_id = presentation_request.GetMediaSource().id();
@@ -81,7 +81,7 @@ void MediaRouterDialogControllerAndroid::OnDialogCancelled(
 }
 
 void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
-  scoped_ptr<CreatePresentationConnectionRequest> request =
+  std::unique_ptr<CreatePresentationConnectionRequest> request =
       TakeCreateConnectionRequest();
   DCHECK(request);
 

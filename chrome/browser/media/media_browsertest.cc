@@ -37,7 +37,7 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
                                         bool http) {
   GURL gurl;
   std::string query = media::GetURLQueryString(query_params);
-  scoped_ptr<net::EmbeddedTestServer> http_test_server;
+  std::unique_ptr<net::EmbeddedTestServer> http_test_server;
   if (http) {
     DVLOG(0) << base::TimeFormatTimeOfDayWithMilliseconds(base::Time::Now())
              << " Starting HTTP server";

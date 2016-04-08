@@ -8,10 +8,10 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -181,7 +181,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
 
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 
-  scoped_ptr<DesktopStreamsRegistry> desktop_streams_registry_;
+  std::unique_ptr<DesktopStreamsRegistry> desktop_streams_registry_;
 
   // Handlers for processing media access requests.
   ScopedVector<MediaAccessHandler> media_access_handlers_;

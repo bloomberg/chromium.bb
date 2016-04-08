@@ -182,8 +182,8 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
       window_capturer_ = nullptr;
 
     model_.reset(new NativeDesktopMediaList(
-        scoped_ptr<webrtc::ScreenCapturer>(screen_capturer),
-        scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
+        std::unique_ptr<webrtc::ScreenCapturer>(screen_capturer),
+        std::unique_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
     // Set update period to reduce the time it takes to run tests.
     model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(5));
@@ -349,7 +349,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
   webrtc::WindowCapturer::WindowList window_list_;
   std::vector<std::unique_ptr<views::Widget>> desktop_widgets_;
   std::map<DesktopMediaID::Id, DesktopMediaID::Id> native_aura_id_map_;
-  scoped_ptr<NativeDesktopMediaList> model_;
+  std::unique_ptr<NativeDesktopMediaList> model_;
 
   content::TestBrowserThread ui_thread_;
 

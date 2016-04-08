@@ -173,7 +173,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
     // Load the test page needed so that checkKeySystemWithMediaMimeType()
     // is available.
-    scoped_ptr<net::EmbeddedTestServer> http_test_server(
+    std::unique_ptr<net::EmbeddedTestServer> http_test_server(
         new net::EmbeddedTestServer);
     http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
     CHECK(http_test_server->Start());

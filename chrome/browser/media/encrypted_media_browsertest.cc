@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -196,7 +196,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   // 'licenseServerURL' query parameter to |query_params|.
   void StartLicenseServerIfNeeded(const std::string& key_system,
                                   base::StringPairs* query_params) {
-    scoped_ptr<TestLicenseServerConfig> config = GetServerConfig(key_system);
+    std::unique_ptr<TestLicenseServerConfig> config =
+        GetServerConfig(key_system);
     if (!config)
       return;
     license_server_.reset(new TestLicenseServer(std::move(config)));
@@ -213,11 +214,12 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     return true;
   }
 
-  scoped_ptr<TestLicenseServerConfig> GetServerConfig(
+  std::unique_ptr<TestLicenseServerConfig> GetServerConfig(
       const std::string& key_system) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
     if (IsWidevine(key_system)) {
-      scoped_ptr<TestLicenseServerConfig> config(new WVTestLicenseServerConfig);
+      std::unique_ptr<TestLicenseServerConfig> config(
+          new WVTestLicenseServerConfig);
       if (config->IsPlatformSupported())
         return config;
     }
@@ -226,7 +228,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 
  protected:
-  scoped_ptr<TestLicenseServer> license_server_;
+  std::unique_ptr<TestLicenseServer> license_server_;
 
   // We want to fail quickly when a test fails because an error is encountered.
   void AddWaitForTitles(content::TitleWatcher* title_watcher) override {

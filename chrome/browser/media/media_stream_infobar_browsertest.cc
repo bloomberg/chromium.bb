@@ -75,9 +75,10 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
   }
 
   // Dummy callback for when we deny the current request directly.
-  static void OnMediaStreamResponse(const content::MediaStreamDevices& devices,
-                                    content::MediaStreamRequestResult result,
-                                    scoped_ptr<content::MediaStreamUI> ui) {}
+  static void OnMediaStreamResponse(
+      const content::MediaStreamDevices& devices,
+      content::MediaStreamRequestResult result,
+      std::unique_ptr<content::MediaStreamUI> ui) {}
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamPermissionTest);
 };

@@ -90,7 +90,7 @@ class WebRtcGetMediaDevicesBrowserTest
 
     int error_code;
     std::string error_message;
-    scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+    std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
         devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
         &error_message);
 

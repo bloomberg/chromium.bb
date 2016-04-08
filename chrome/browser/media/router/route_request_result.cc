@@ -4,28 +4,29 @@
 
 #include "chrome/browser/media/router/route_request_result.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/media/router/media_route.h"
 
 namespace media_router {
 
 // static
-scoped_ptr<RouteRequestResult> RouteRequestResult::FromSuccess(
-    scoped_ptr<MediaRoute> route,
+std::unique_ptr<RouteRequestResult> RouteRequestResult::FromSuccess(
+    std::unique_ptr<MediaRoute> route,
     const std::string& presentation_id) {
   DCHECK(route);
-  return make_scoped_ptr(new RouteRequestResult(
+  return base::WrapUnique(new RouteRequestResult(
       std::move(route), presentation_id, "", RouteRequestResult::OK));
 }
 
 // static
-scoped_ptr<RouteRequestResult> RouteRequestResult::FromError(
+std::unique_ptr<RouteRequestResult> RouteRequestResult::FromError(
     const std::string& error,
     ResultCode result_code) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new RouteRequestResult(nullptr, "", error, result_code));
 }
 
-RouteRequestResult::RouteRequestResult(scoped_ptr<MediaRoute> route,
+RouteRequestResult::RouteRequestResult(std::unique_ptr<MediaRoute> route,
                                        const std::string& presentation_id,
                                        const std::string& error,
                                        ResultCode result_code)

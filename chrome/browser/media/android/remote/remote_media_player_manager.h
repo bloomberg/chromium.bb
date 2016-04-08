@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_MEDIA_ANDROID_REMOTE_REMOTE_MEDIA_PLAYER_MANAGER_H_
 #define CHROME_BROWSER_MEDIA_ANDROID_REMOTE_REMOTE_MEDIA_PLAYER_MANAGER_H_
 
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
 #include "content/browser/media/android/browser_media_player_manager.h"

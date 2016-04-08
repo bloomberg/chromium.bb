@@ -134,10 +134,10 @@ class CombinedDesktopMediaListTest : public testing::Test {
     list1_ = new FakeDesktopMediaListBaseImpl(DesktopMediaID::TYPE_SCREEN);
     list2_ = new FakeDesktopMediaListBaseImpl(DesktopMediaID::TYPE_WINDOW);
 
-    scoped_ptr<DesktopMediaList> list1(list1_);
-    scoped_ptr<DesktopMediaList> list2(list2_);
+    std::unique_ptr<DesktopMediaList> list1(list1_);
+    std::unique_ptr<DesktopMediaList> list2(list2_);
 
-    std::vector<scoped_ptr<DesktopMediaList>> lists;
+    std::vector<std::unique_ptr<DesktopMediaList>> lists;
     lists.push_back(std::move(list1));
     lists.push_back(std::move(list2));
 
@@ -203,7 +203,7 @@ class CombinedDesktopMediaListTest : public testing::Test {
   MockObserver observer_;
   FakeDesktopMediaListBaseImpl* list1_;
   FakeDesktopMediaListBaseImpl* list2_;
-  scoped_ptr<CombinedDesktopMediaList> combined_list_;
+  std::unique_ptr<CombinedDesktopMediaList> combined_list_;
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;

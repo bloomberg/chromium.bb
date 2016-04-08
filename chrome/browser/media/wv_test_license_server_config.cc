@@ -77,7 +77,7 @@ bool WVTestLicenseServerConfig::GetServerCommandLine(
   // Needed to dynamically load .so libraries used by license server.
   // TODO(shadi): Remove need to set env variable once b/12932983 is fixed.
 #if defined(OS_LINUX)
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   const char kLibraryPathEnvVarName[] = "LD_LIBRARY_PATH";
   std::string library_paths(license_server_path.DirName().value());
   std::string old_path;

@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_COMBINED_DESKTOP_MEDIA_LIST_H_
 #define CHROME_BROWSER_MEDIA_COMBINED_DESKTOP_MEDIA_LIST_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 
@@ -19,7 +19,7 @@ class CombinedDesktopMediaList : public DesktopMediaList,
                                  public DesktopMediaListObserver {
  public:
   explicit CombinedDesktopMediaList(
-      std::vector<scoped_ptr<DesktopMediaList>>& media_lists);
+      std::vector<std::unique_ptr<DesktopMediaList>>& media_lists);
   ~CombinedDesktopMediaList() override;
 
   // DesktopMediaList interface.
@@ -40,7 +40,7 @@ class CombinedDesktopMediaList : public DesktopMediaList,
   void OnSourceNameChanged(DesktopMediaList* list, int index) override;
   void OnSourceThumbnailChanged(DesktopMediaList* list, int index) override;
 
-  std::vector<scoped_ptr<DesktopMediaList>> media_lists_;
+  std::vector<std::unique_ptr<DesktopMediaList>> media_lists_;
 
   DesktopMediaListObserver* observer_ = nullptr;
 

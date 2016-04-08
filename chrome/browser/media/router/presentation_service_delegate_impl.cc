@@ -109,10 +109,11 @@ class PresentationFrame {
   base::SmallMap<std::map<std::string, MediaRoute::Id>>
       presentation_id_to_route_id_;
   base::SmallMap<
-      std::map<std::string, scoped_ptr<PresentationMediaSinksObserver>>>
+      std::map<std::string, std::unique_ptr<PresentationMediaSinksObserver>>>
       url_to_sinks_observer_;
-  base::ScopedPtrHashMap<MediaRoute::Id,
-                         scoped_ptr<PresentationConnectionStateSubscription>>
+  base::ScopedPtrHashMap<
+      MediaRoute::Id,
+      std::unique_ptr<PresentationConnectionStateSubscription>>
       connection_state_subscriptions_;
   ScopedVector<PresentationSessionMessagesObserver> session_messages_observers_;
 
@@ -361,11 +362,11 @@ class PresentationFrameManager {
 
   // Maps a frame identifier to a PresentationFrame object for frames
   // that are using presentation API.
-  base::ScopedPtrHashMap<RenderFrameHostId, scoped_ptr<PresentationFrame>>
+  base::ScopedPtrHashMap<RenderFrameHostId, std::unique_ptr<PresentationFrame>>
       presentation_frames_;
 
   // Default presentation request for the owning tab WebContents.
-  scoped_ptr<PresentationRequest> default_presentation_request_;
+  std::unique_ptr<PresentationRequest> default_presentation_request_;
 
   // Callback to invoke when default presentation has started.
   content::PresentationSessionStartedCallback
@@ -559,7 +560,7 @@ PresentationFrame* PresentationFrameManager::GetOrAddPresentationFrame(
   if (!presentation_frames_.contains(render_frame_host_id)) {
     presentation_frames_.add(
         render_frame_host_id,
-        scoped_ptr<PresentationFrame>(new PresentationFrame(
+        std::unique_ptr<PresentationFrame>(new PresentationFrame(
             render_frame_host_id, web_contents_, router_)));
   }
   return presentation_frames_.get(render_frame_host_id);
@@ -723,7 +724,7 @@ void PresentationServiceDelegateImpl::StartSession(
   }
 
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  scoped_ptr<CreatePresentationConnectionRequest> request(
+  std::unique_ptr<CreatePresentationConnectionRequest> request(
       new CreatePresentationConnectionRequest(
           render_frame_host_id, presentation_url,
           GetLastCommittedURLForFrame(render_frame_host_id),
@@ -812,7 +813,7 @@ void PresentationServiceDelegateImpl::SendMessage(
     int render_process_id,
     int render_frame_id,
     const content::PresentationSessionInfo& session,
-    scoped_ptr<content::PresentationSessionMessage> message,
+    std::unique_ptr<content::PresentationSessionMessage> message,
     const SendMessageCallback& send_message_cb) {
   const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
       RenderFrameHostId(render_process_id, render_frame_id),

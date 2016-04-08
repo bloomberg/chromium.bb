@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_PRESENTATION_SERVICE_DELEGATE_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/media/router/media_router.h"
@@ -121,7 +121,7 @@ class PresentationServiceDelegateImpl
   void SendMessage(int render_process_id,
                    int render_frame_id,
                    const content::PresentationSessionInfo& session,
-                   scoped_ptr<content::PresentationSessionMessage> message,
+                   std::unique_ptr<content::PresentationSessionMessage> message,
                    const SendMessageCallback& send_message_cb) override;
   void ListenForConnectionStateChange(
       int render_process_id,
@@ -201,7 +201,7 @@ class PresentationServiceDelegateImpl
   content::WebContents* const web_contents_;
   MediaRouter* router_;
 
-  scoped_ptr<PresentationFrameManager> frame_manager_;
+  std::unique_ptr<PresentationFrameManager> frame_manager_;
 
   base::WeakPtrFactory<PresentationServiceDelegateImpl> weak_factory_;
 

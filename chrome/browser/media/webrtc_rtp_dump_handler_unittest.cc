@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,7 +15,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -78,10 +79,9 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
     handler_.reset(new WebRtcRtpDumpHandler(
         dir.empty() ? base::FilePath(FILE_PATH_LITERAL("dummy")) : dir));
 
-    scoped_ptr<WebRtcRtpDumpWriter> writer(new FakeDumpWriter(
-        10,
-        base::Bind(&WebRtcRtpDumpHandler::OnMaxDumpSizeReached,
-                   base::Unretained(handler_.get())),
+    std::unique_ptr<WebRtcRtpDumpWriter> writer(new FakeDumpWriter(
+        10, base::Bind(&WebRtcRtpDumpHandler::OnMaxDumpSizeReached,
+                       base::Unretained(handler_.get())),
         end_dump_success));
 
     handler_->SetDumpWriterForTesting(std::move(writer));
@@ -106,7 +106,7 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<WebRtcRtpDumpHandler> handler_;
+  std::unique_ptr<WebRtcRtpDumpHandler> handler_;
 };
 
 TEST_F(WebRtcRtpDumpHandlerTest, StateTransition) {
@@ -204,7 +204,7 @@ TEST_F(WebRtcRtpDumpHandlerTest, CannotStartMoreThanFiveDumps) {
 
   handler_.reset();
 
-  scoped_ptr<WebRtcRtpDumpHandler> handlers[6];
+  std::unique_ptr<WebRtcRtpDumpHandler> handlers[6];
 
   for (size_t i = 0; i < arraysize(handlers); ++i) {
     handlers[i].reset(new WebRtcRtpDumpHandler(base::FilePath()));

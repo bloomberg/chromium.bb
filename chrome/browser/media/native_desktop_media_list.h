@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_NATIVE_DESKTOP_MEDIA_LIST_H_
 #define CHROME_BROWSER_MEDIA_NATIVE_DESKTOP_MEDIA_LIST_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/desktop_media_list_base.h"
@@ -25,8 +26,8 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   // types of sources the model should be populated with (e.g. it will only
   // contain windows, if |screen_capturer| is NULL).
   NativeDesktopMediaList(
-      scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
-      scoped_ptr<webrtc::WindowCapturer> window_capturer);
+      std::unique_ptr<webrtc::ScreenCapturer> screen_capturer,
+      std::unique_ptr<webrtc::WindowCapturer> window_capturer);
   ~NativeDesktopMediaList() override;
 
  private:
@@ -54,7 +55,7 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   // An object that does all the work of getting list of sources on a background
   // thread (see |capture_task_runner_|). Destroyed on |capture_task_runner_|
   // after the model is destroyed.
-  scoped_ptr<Worker> worker_;
+  std::unique_ptr<Worker> worker_;
 
 #if defined(USE_AURA)
   // previous_aura_thumbnail_hashes_ holds thumbanil hash values of aura windows

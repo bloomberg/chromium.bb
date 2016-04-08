@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/thread_task_runner_handle.h"
@@ -95,7 +95,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                         const SendRouteMessageCallback& callback) override;
   void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8_t>> data,
+      std::unique_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
@@ -245,7 +245,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                             const std::string& message,
                             const SendRouteMessageCallback& callback);
   void DoSendSessionBinaryMessage(const MediaRoute::Id& route_id,
-                                  scoped_ptr<std::vector<uint8_t>> data,
+                                  std::unique_ptr<std::vector<uint8_t>> data,
                                   const SendRouteMessageCallback& callback);
   void DoListenForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
@@ -339,16 +339,17 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // becomes ready.
   std::deque<base::Closure> pending_requests_;
 
-  base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaSinksQuery>>
+  base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
       sinks_queries_;
 
-  base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaRoutesQuery>>
+  base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
       routes_queries_;
 
   using PresentationSessionMessagesObserverList =
       base::ObserverList<PresentationSessionMessagesObserver>;
-  base::ScopedPtrHashMap<MediaRoute::Id,
-                         scoped_ptr<PresentationSessionMessagesObserverList>>
+  base::ScopedPtrHashMap<
+      MediaRoute::Id,
+      std::unique_ptr<PresentationSessionMessagesObserverList>>
       messages_observers_;
 
   // IDs of MediaRoutes being listened for messages. Note that this is
@@ -360,7 +361,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   IssueManager issue_manager_;
 
   // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
-  scoped_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
+  std::unique_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
 
   // Mojo proxy object for the Media Route Provider Manager.
   // Set to null initially, and later set to the Provider Manager proxy object

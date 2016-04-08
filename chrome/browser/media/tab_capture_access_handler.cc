@@ -40,7 +40,7 @@ void TabCaptureAccessHandler::HandleRequest(
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
 
   if (!extension)
     callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE,

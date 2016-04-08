@@ -54,7 +54,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   // Dummy callback for when we deny the current request directly.
   void OnMediaStreamResponse(const content::MediaStreamDevices& devices,
                              content::MediaStreamRequestResult result,
-                             scoped_ptr<content::MediaStreamUI> ui) {
+                             std::unique_ptr<content::MediaStreamUI> ui) {
     media_stream_devices_ = devices;
     media_stream_result_ = result;
   }
@@ -510,9 +510,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
-  scoped_ptr<content::MediaStreamUI> video_stream_ui =
-      dispatcher->GetMediaStreamCaptureIndicator()->
-          RegisterMediaStream(GetWebContents(), video_devices);
+  std::unique_ptr<content::MediaStreamUI> video_stream_ui =
+      dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
+          GetWebContents(), video_devices);
   video_stream_ui->OnStarted(base::Closure());
 
   // Request mic and deny.

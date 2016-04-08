@@ -348,7 +348,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     return browser_dir;
   }
 
-  scoped_ptr<base::Environment> environment_;
+  std::unique_ptr<base::Environment> environment_;
   base::FilePath webrtc_reference_video_y4m_;
   base::ScopedTempDir temp_working_dir_;
 };

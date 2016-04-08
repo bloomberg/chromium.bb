@@ -128,8 +128,8 @@ class MediaRouterMojoTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;
-  scoped_ptr<MediaRouterMojoImpl> mock_media_router_;
-  scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
+  std::unique_ptr<MediaRouterMojoImpl> mock_media_router_;
+  std::unique_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
 };

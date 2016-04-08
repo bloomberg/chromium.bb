@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_TEST_LICENSE_SERVER_H_
 #define CHROME_BROWSER_MEDIA_TEST_LICENSE_SERVER_H_
 
+#include <memory>
 #include <string>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 
 class TestLicenseServerConfig;
@@ -15,7 +16,8 @@ class TestLicenseServerConfig;
 // Class used to start a test license server.
 class TestLicenseServer {
  public:
-  explicit TestLicenseServer(scoped_ptr<TestLicenseServerConfig> server_config);
+  explicit TestLicenseServer(
+      std::unique_ptr<TestLicenseServerConfig> server_config);
   ~TestLicenseServer();
 
   // Returns true if the server started successfully. False otherwise.
@@ -27,7 +29,7 @@ class TestLicenseServer {
 
  private:
   // License server configuration class used to obtain server paths, etc.
-  scoped_ptr<TestLicenseServerConfig> server_config_;
+  std::unique_ptr<TestLicenseServerConfig> server_config_;
   // Process for the license server.
   base::Process license_server_process_;
 

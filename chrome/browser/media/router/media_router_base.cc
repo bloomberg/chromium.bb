@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/media_router_base.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +16,7 @@ MediaRouterBase::MediaRouterBase() = default;
 
 MediaRouterBase::~MediaRouterBase() = default;
 
-scoped_ptr<PresentationConnectionStateSubscription>
+std::unique_ptr<PresentationConnectionStateSubscription>
 MediaRouterBase::AddPresentationConnectionStateChangedCallback(
     const MediaRoute::Id& route_id,
     const content::PresentationConnectionStateChangedCallback& callback) {
@@ -28,7 +29,7 @@ MediaRouterBase::AddPresentationConnectionStateChangedCallback(
         &MediaRouterBase::OnPresentationConnectionStateCallbackRemoved,
         base::Unretained(this), route_id));
     presentation_connection_state_callbacks_.add(route_id,
-                                                 make_scoped_ptr(callbacks));
+                                                 base::WrapUnique(callbacks));
   }
 
   return callbacks->Add(callback);

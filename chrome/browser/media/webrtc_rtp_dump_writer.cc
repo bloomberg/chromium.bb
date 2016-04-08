@@ -121,7 +121,7 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
   // is true, the compression stream will be ended and the dump file cannot be
   // written to any more.
   void CompressAndWriteToFileOnFileThread(
-      scoped_ptr<std::vector<uint8_t>> buffer,
+      std::unique_ptr<std::vector<uint8_t>> buffer,
       bool end_stream,
       FlushResult* result,
       size_t* bytes_written) {
@@ -359,7 +359,7 @@ void WebRtcRtpDumpWriter::FlushBuffer(bool incoming,
                                       const FlushDoneCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<std::vector<uint8_t>> new_buffer(new std::vector<uint8_t>());
+  std::unique_ptr<std::vector<uint8_t>> new_buffer(new std::vector<uint8_t>());
 
   if (incoming) {
     new_buffer->reserve(incoming_buffer_.capacity());
@@ -369,9 +369,9 @@ void WebRtcRtpDumpWriter::FlushBuffer(bool incoming,
     new_buffer->swap(outgoing_buffer_);
   }
 
-  scoped_ptr<FlushResult> result(new FlushResult(FLUSH_RESULT_FAILURE));
+  std::unique_ptr<FlushResult> result(new FlushResult(FLUSH_RESULT_FAILURE));
 
-  scoped_ptr<size_t> bytes_written(new size_t(0));
+  std::unique_ptr<size_t> bytes_written(new size_t(0));
 
   FileThreadWorker* worker = incoming ? incoming_file_thread_worker_.get()
                                       : outgoing_file_thread_worker_.get();
@@ -403,9 +403,10 @@ void WebRtcRtpDumpWriter::FlushBuffer(bool incoming,
   }
 }
 
-void WebRtcRtpDumpWriter::OnFlushDone(const FlushDoneCallback& callback,
-                                      const scoped_ptr<FlushResult>& result,
-                                      const scoped_ptr<size_t>& bytes_written) {
+void WebRtcRtpDumpWriter::OnFlushDone(
+    const FlushDoneCallback& callback,
+    const std::unique_ptr<FlushResult>& result,
+    const std::unique_ptr<size_t>& bytes_written) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   total_dump_size_on_disk_ += *bytes_written;

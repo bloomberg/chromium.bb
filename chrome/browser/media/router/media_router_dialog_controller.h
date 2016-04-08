@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,7 +40,7 @@ class MediaRouterDialogController {
   // If the dialog already exists, brings it to the front but doesn't change the
   // dialog with |request|, returns false and |request| is deleted.
   bool ShowMediaRouterDialogForPresentation(
-      scoped_ptr<CreatePresentationConnectionRequest> request);
+      std::unique_ptr<CreatePresentationConnectionRequest> request);
 
   // Shows the media router dialog modal to |initiator_|.
   // Creates the dialog if it did not exist prior to this call, returns true.
@@ -64,7 +64,8 @@ class MediaRouterDialogController {
 
   // Passes the ownership of the CreatePresentationConnectionRequest to the
   // caller.
-  scoped_ptr<CreatePresentationConnectionRequest> TakeCreateConnectionRequest();
+  std::unique_ptr<CreatePresentationConnectionRequest>
+  TakeCreateConnectionRequest();
 
   // Returns the CreatePresentationConnectionRequest to the caller but keeps the
   // ownership with the MediaRouterDialogController.
@@ -89,13 +90,14 @@ class MediaRouterDialogController {
 
   // An observer for the |initiator_| that closes the dialog when |initiator_|
   // is destroyed or navigated.
-  scoped_ptr<InitiatorWebContentsObserver> initiator_observer_;
+  std::unique_ptr<InitiatorWebContentsObserver> initiator_observer_;
   content::WebContents* const initiator_;
 
   // Data for dialogs created at the request of the Presentation API.
   // Passed from the caller via ShowMediaRouterDialogForPresentation to the
   // dialog when it is initialized.
-  scoped_ptr<CreatePresentationConnectionRequest> create_connection_request_;
+  std::unique_ptr<CreatePresentationConnectionRequest>
+      create_connection_request_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogController);
 };

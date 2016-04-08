@@ -5,7 +5,7 @@
 #include "chrome/browser/media/combined_desktop_media_list.h"
 
 CombinedDesktopMediaList::CombinedDesktopMediaList(
-    std::vector<scoped_ptr<DesktopMediaList>>& media_lists)
+    std::vector<std::unique_ptr<DesktopMediaList>>& media_lists)
     : media_lists_(std::move(media_lists)) {
   DCHECK(media_lists_.size());
 }

@@ -47,7 +47,7 @@ class PermissionBubbleMediaAccessHandler
   void OnAccessRequestResponse(content::WebContents* web_contents,
                                const content::MediaStreamDevices& devices,
                                content::MediaStreamRequestResult result,
-                               scoped_ptr<content::MediaStreamUI> ui);
+                               std::unique_ptr<content::MediaStreamUI> ui);
 
   // content::NotificationObserver implementation.
   void Observe(int type,

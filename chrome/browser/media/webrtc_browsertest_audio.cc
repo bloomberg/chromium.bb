@@ -18,8 +18,8 @@ namespace {
 // bluntly trigger CHECKs if we can't read the file or if it's malformed. The
 // caller takes ownership of the returned data. The size of the data is stored
 // in |read_length|.
-scoped_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
-                               size_t* file_length) {
+std::unique_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
+                                    size_t* file_length) {
   base::File wav_file(
       wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!wav_file.IsValid()) {
@@ -29,7 +29,7 @@ scoped_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
 
   size_t wav_file_length = wav_file.GetLength();
 
-  scoped_ptr<char[]> data(new char[wav_file_length]);
+  std::unique_ptr<char[]> data(new char[wav_file_length]);
   size_t read_bytes = wav_file.Read(0, data.get(), wav_file_length);
   if (read_bytes != wav_file_length) {
     LOG(ERROR) << "Failed to read all bytes of " << wav_filename.value();
@@ -46,11 +46,12 @@ float ComputeAudioEnergyForWavFile(const base::FilePath& wav_filename,
                                    media::AudioParameters* file_parameters) {
   // Read the file, and put its data in a scoped_ptr so it gets deleted later.
   size_t file_length = 0;
-  scoped_ptr<char[]> wav_file_data = ReadWavFile(wav_filename, &file_length);
+  std::unique_ptr<char[]> wav_file_data =
+      ReadWavFile(wav_filename, &file_length);
   auto wav_audio_handler = media::WavAudioHandler::Create(
       base::StringPiece(wav_file_data.get(), file_length));
 
-  scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
+  std::unique_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
       wav_audio_handler->num_channels(), wav_audio_handler->total_frames());
   base::TimeDelta file_duration = wav_audio_handler->GetDuration();
 

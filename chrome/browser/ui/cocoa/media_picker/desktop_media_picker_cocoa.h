@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_MEDIA_PICKER_DESKTOP_MEDIA_PICKER_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_MEDIA_PICKER_DESKTOP_MEDIA_PICKER_COCOA_H_
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/media/desktop_media_picker.h"
 

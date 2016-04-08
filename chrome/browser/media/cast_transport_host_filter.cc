@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/cast_transport_host_filter.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/cast_messages.h"
@@ -25,9 +26,10 @@ class TransportClient : public media::cast::CastTransport::Client {
 
   void OnStatusChanged(media::cast::CastTransportStatus status) final;
   void OnLoggingEventsReceived(
-      scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
-      scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events) final;
-  void ProcessRtpPacket(scoped_ptr<media::cast::Packet> packet) final;
+      std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
+      std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events)
+      final;
+  void ProcessRtpPacket(std::unique_ptr<media::cast::Packet> packet) final;
 
  private:
   const int32_t channel_id_;
@@ -42,15 +44,16 @@ void TransportClient::OnStatusChanged(media::cast::CastTransportStatus status) {
 }
 
 void TransportClient::OnLoggingEventsReceived(
-    scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
-    scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events) {
+    std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
+    std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events) {
   if (frame_events->empty() && packet_events->empty())
     return;
   cast_transport_host_filter_->Send(
       new CastMsg_RawEvents(channel_id_, *packet_events, *frame_events));
 }
 
-void TransportClient::ProcessRtpPacket(scoped_ptr<media::cast::Packet> packet) {
+void TransportClient::ProcessRtpPacket(
+    std::unique_ptr<media::cast::Packet> packet) {
   cast_transport_host_filter_->Send(
       new CastMsg_ReceivedPacket(channel_id_, *packet));
 }
@@ -135,17 +138,17 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
     id_map_.Remove(channel_id);
   }
 
-  scoped_ptr<media::cast::UdpTransport> udp_transport(
+  std::unique_ptr<media::cast::UdpTransport> udp_transport(
       new media::cast::UdpTransport(
           g_browser_process->net_log(), base::ThreadTaskRunnerHandle::Get(),
           local_end_point, remote_end_point,
           base::Bind(&CastTransportHostFilter::OnStatusChanged,
                      weak_factory_.GetWeakPtr(), channel_id)));
   udp_transport->SetUdpOptions(options);
-  scoped_ptr<media::cast::CastTransport> sender =
+  std::unique_ptr<media::cast::CastTransport> sender =
       media::cast::CastTransport::Create(
           &clock_, base::TimeDelta::FromSeconds(kSendRawEventsIntervalSecs),
-          make_scoped_ptr(new TransportClient(channel_id, this)),
+          base::WrapUnique(new TransportClient(channel_id, this)),
           std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
   sender->SetOptions(options);
   id_map_.AddWithID(sender.release(), channel_id);

@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -102,8 +103,8 @@ class WebRtcRtpDumpWriter {
   // maybe calls the |max_dump_size_reached_callback_|. Also calls |callback|
   // with the flush result.
   void OnFlushDone(const FlushDoneCallback& callback,
-                   const scoped_ptr<FlushResult>& result,
-                   const scoped_ptr<size_t>& bytes_written);
+                   const std::unique_ptr<FlushResult>& result,
+                   const std::unique_ptr<size_t>& bytes_written);
 
   // Called when one type of dump has been ended. It continues to end the other
   // dump if needed based on |context| and |incoming|, or calls the callback in
@@ -127,8 +128,8 @@ class WebRtcRtpDumpWriter {
   size_t total_dump_size_on_disk_;
 
   // File thread workers must be called and deleted on the FILE thread.
-  scoped_ptr<FileThreadWorker> incoming_file_thread_worker_;
-  scoped_ptr<FileThreadWorker> outgoing_file_thread_worker_;
+  std::unique_ptr<FileThreadWorker> incoming_file_thread_worker_;
+  std::unique_ptr<FileThreadWorker> outgoing_file_thread_worker_;
 
   base::ThreadChecker thread_checker_;
 

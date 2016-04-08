@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/router/presentation_media_sinks_observer.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mock_screen_availability_listener.h"
-#include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,7 +43,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
 
   MockMediaRouter router_;
   MockScreenAvailabilityListener listener_;
-  scoped_ptr<PresentationMediaSinksObserver> observer_;
+  std::unique_ptr<PresentationMediaSinksObserver> observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PresentationMediaSinksObserverTest);

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mock_screen_availability_listener.h"
-#include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,7 +96,7 @@ class PresentationServiceDelegateImplTest
         delegate_impl_->GetDefaultPresentationRequest();
 
     // Should not trigger callback since route response is error.
-    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Error", RouteRequestResult::UNKNOWN_ERROR);
     delegate_impl_->OnRouteResponse(request, *result);
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
@@ -108,7 +110,7 @@ class PresentationServiceDelegateImplTest
         "differentRouteId", MediaSourceForPresentationUrl(presentation_url2),
         "mediaSinkId", "", true, "", true);
     media_route->set_off_the_record(off_the_record);
-    result = RouteRequestResult::FromSuccess(make_scoped_ptr(media_route),
+    result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route),
                                              "differentPresentationId");
     delegate_impl_->OnRouteResponse(different_request, *result);
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
@@ -119,7 +121,7 @@ class PresentationServiceDelegateImplTest
         "routeId", MediaSourceForPresentationUrl(presentation_url1),
         "mediaSinkId", "", true, "", true);
     media_route2->set_off_the_record(off_the_record);
-    result = RouteRequestResult::FromSuccess(make_scoped_ptr(media_route2),
+    result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route2),
                                              "presentationId");
     delegate_impl_->OnRouteResponse(request, *result);
   }
@@ -392,8 +394,8 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
 
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionSuccess(_))
       .Times(1);
-  scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
-      make_scoped_ptr(new MediaRoute(
+  std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
+      base::WrapUnique(new MediaRoute(
           "routeId", MediaSourceForPresentationUrl(kPresentationUrl),
           "mediaSinkId", "description", true, "", true)),
       kPresentationId);
@@ -436,7 +438,7 @@ TEST_F(PresentationServiceDelegateImplTest, Reset) {
 }
 
 TEST_F(PresentationServiceDelegateImplTest, DelegateObservers) {
-  scoped_ptr<PresentationServiceDelegateImpl> manager(
+  std::unique_ptr<PresentationServiceDelegateImpl> manager(
       new PresentationServiceDelegateImpl(GetWebContents()));
   manager->SetMediaRouterForTest(&router_);
 

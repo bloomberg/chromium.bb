@@ -63,7 +63,7 @@ class CreatePresentationConnectionRequest {
 
   // Handle route creation/joining response by invoking the right callback.
   static void HandleRouteResponse(
-      scoped_ptr<CreatePresentationConnectionRequest> presentation_request,
+      std::unique_ptr<CreatePresentationConnectionRequest> presentation_request,
       const RouteRequestResult& result);
 
  private:

@@ -68,10 +68,9 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // either this function or LoggingStoppedDontUpload().
   // |upload_done_data.local_log_id| is set and used internally and should be
   // left empty.
-  void LoggingStoppedDoUpload(
-      scoped_ptr<WebRtcLogBuffer> log_buffer,
-      scoped_ptr<MetaDataMap> meta_data,
-      const WebRtcLogUploadDoneData& upload_done_data);
+  void LoggingStoppedDoUpload(std::unique_ptr<WebRtcLogBuffer> log_buffer,
+                              std::unique_ptr<MetaDataMap> meta_data,
+                              const WebRtcLogUploadDoneData& upload_done_data);
 
   // Uploads a previously stored log (see LoggingStoppedDoStore()).
   void UploadStoredLog(const WebRtcLogUploadDoneData& upload_data);
@@ -82,8 +81,8 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void LoggingStoppedDoStore(
       const WebRtcLogPaths& log_paths,
       const std::string& log_id,
-      scoped_ptr<WebRtcLogBuffer> log_buffer,
-      scoped_ptr<MetaDataMap> meta_data,
+      std::unique_ptr<WebRtcLogBuffer> log_buffer,
+      std::unique_ptr<MetaDataMap> meta_data,
       const WebRtcLoggingHandlerHost::GenericDoneCallback& done_callback);
 
   // Cancels URL fetcher operation by deleting all URL fetchers. This cancels
@@ -124,9 +123,8 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void ResizeForNextOutput(std::string* compressed_log,
                            z_stream* stream);
 
-  void UploadCompressedLog(
-      const WebRtcLogUploadDoneData& upload_done_data,
-      scoped_ptr<std::string> post_data);
+  void UploadCompressedLog(const WebRtcLogUploadDoneData& upload_done_data,
+                           std::unique_ptr<std::string> post_data);
 
   // A couple of helper functions due to having to hop to the UI thread
   // to fetch the system_request_context and back again to the IO thread.
@@ -145,7 +143,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
 
   void PrepareMultipartPostData(
       const std::string& compressed_log,
-      scoped_ptr<MetaDataMap> meta_data,
+      std::unique_ptr<MetaDataMap> meta_data,
       const WebRtcLogUploadDoneData& upload_done_data);
 
   // Append information (upload time, report ID and local ID) about a log to a

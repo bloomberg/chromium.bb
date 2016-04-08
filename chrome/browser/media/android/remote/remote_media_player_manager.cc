@@ -148,7 +148,8 @@ void RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
   if (it == alternative_players_.end())
     return;
   MediaPlayerAndroid* new_player = *it;
-  scoped_ptr<MediaPlayerAndroid> old_player = SwapPlayer(player_id, new_player);
+  std::unique_ptr<MediaPlayerAndroid> old_player =
+      SwapPlayer(player_id, new_player);
   alternative_players_.weak_erase(it);
   alternative_players_.push_back(old_player.release());
 }

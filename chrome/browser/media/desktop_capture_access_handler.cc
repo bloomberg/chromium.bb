@@ -162,7 +162,7 @@ base::string16 GetStopSharingUIString(
 // Helper to get list of media stream devices for desktop capture in |devices|.
 // Registers to display notification if |display_notification| is true.
 // Returns an instance of MediaStreamUI to be passed to content layer.
-scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
+std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::MediaStreamDevices* devices,
     content::DesktopMediaID media_id,
     bool capture_audio,
@@ -170,7 +170,7 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     const base::string16& application_title,
     const base::string16& registered_extension_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
 
   // Add selected desktop source to the list.
   devices->push_back(content::MediaStreamDevice(
@@ -236,7 +236,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
 
   DCHECK_EQ(request.video_type, content::MEDIA_DESKTOP_VIDEO_CAPTURE);
 
@@ -368,7 +368,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
     callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
