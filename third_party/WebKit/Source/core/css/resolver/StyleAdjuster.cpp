@@ -142,7 +142,6 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
         case CSSPropertyMixBlendMode:
         case CSSPropertyIsolation:
             return true;
-            break;
         default:
             break;
         }

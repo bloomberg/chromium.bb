@@ -787,16 +787,12 @@ Color LayoutTheme::systemColor(CSSValueID cssValueId) const
         return 0xFF000000;
     case CSSValueInternalActiveListBoxSelection:
         return activeListBoxSelectionBackgroundColor();
-        break;
     case CSSValueInternalActiveListBoxSelectionText:
         return activeListBoxSelectionForegroundColor();
-        break;
     case CSSValueInternalInactiveListBoxSelection:
         return inactiveListBoxSelectionBackgroundColor();
-        break;
     case CSSValueInternalInactiveListBoxSelectionText:
         return inactiveListBoxSelectionForegroundColor();
-        break;
     default:
         break;
     }
