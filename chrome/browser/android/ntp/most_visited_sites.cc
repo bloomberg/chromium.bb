@@ -635,7 +635,10 @@ void MostVisitedSites::SaveNewNTPSuggestions(
                             popular_sites_suggestions.size();
   std::vector<std::string> old_sites_url;
   std::vector<bool> old_sites_is_personal;
-  GetPreviousNTPSites(num_actual_tiles, &old_sites_url, &old_sites_is_personal);
+  // TODO(treib): We used to call |GetPreviousNTPSites| here to populate
+  // |old_sites_url| and |old_sites_is_personal|, but that caused problems
+  // (crbug.com/585391). Either figure out a way to fix them and re-enable,
+  // or properly remove the order-persisting code. crbug.com/601734
   MostVisitedSites::SuggestionsVector merged_suggestions = MergeSuggestions(
       personal_suggestions, &whitelist_suggestions, &popular_sites_suggestions,
       old_sites_url, old_sites_is_personal);
