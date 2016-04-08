@@ -242,6 +242,15 @@
             "group_name": "TokenBinding"
         }
     ],
+    "V8SerializeOptions": [
+        {
+            "enable_features": [
+                "V8_Serialize_Eager",
+                "V8_Serialize_Age_Code"
+            ],
+            "group_name": "SerializeEagerAndAgeCode"
+        }
+    ],
     "VarationsServiceControl": [
         {
             "group_name": "Interval_30min",
