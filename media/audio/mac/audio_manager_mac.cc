@@ -326,6 +326,11 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
     base::PowerMonitor::Get()->RemoveObserver(this);
   }
 
+  bool IsSuspending() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return is_suspending_;
+  }
+
   size_t num_resume_notifications() const { return num_resume_notifications_; }
 
   bool ShouldDeferStreamStart() const {
@@ -838,6 +843,11 @@ int AudioManagerMac::ChooseBufferSize(bool is_input, int sample_rate) {
   }
 
   return buffer_size;
+}
+
+bool AudioManagerMac::IsSuspending() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return power_observer_->IsSuspending();
 }
 
 bool AudioManagerMac::ShouldDeferStreamStart() const {

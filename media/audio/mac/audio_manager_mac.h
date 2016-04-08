@@ -84,6 +84,9 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // Number of times the device has resumed from power suspension.
   size_t GetNumberOfResumeNotifications() const;
 
+  // True if the device is suspending.
+  bool IsSuspending() const;
+
   // Changes the I/O buffer size for |device_id| if |desired_buffer_size| is
   // lower than the current device buffer size. The buffer size can also be
   // modified under other conditions. See comments in the corresponding cc-file

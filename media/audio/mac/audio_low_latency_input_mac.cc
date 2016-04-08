@@ -27,11 +27,32 @@ const int kNumberOfBlocksBufferInFifo = 2;
 // The stream will be stopped as soon as this time limit is passed.
 const int kMaxErrorTimeoutInSeconds = 1;
 
+// A repeating timer is created and started in Start() and it triggers calls
+// to CheckIfInputStreamIsAlive() where we do periodic checks to see if the
+// input data callback sequence is active or not. If the stream seems dead,
+// up to |kMaxNumberOfRestartAttempts| restart attempts tries to bring the
+// stream back to life.
+const int kCheckInputIsAliveTimeInSeconds = 5;
+
+// Number of restart indications required to actually trigger a restart
+// attempt.
+const int kNumberOfIndicationsToTriggerRestart = 1;
+
+// Max number of times we try to restart a stream when it has been categorized
+// as dead. Note that we can do many restarts during an audio session and this
+// limitation is per detected problem. Once a restart has succeeded, a new
+// sequence of |kMaxNumberOfRestartAttempts| number of restart attempts can be
+// done.
+const int kMaxNumberOfRestartAttempts = 1;
+
 // A one-shot timer is created and started in Start() and it triggers
 // CheckInputStartupSuccess() after this amount of time. UMA stats marked
 // Media.Audio.InputStartupSuccessMac is then updated where true is added
-// if input callbacks have started, and false otherwise.
-const int kInputCallbackStartTimeoutInSeconds = 5;
+// if input callbacks have started, and false otherwise. Note that the value
+// is larger than |kCheckInputIsAliveTimeInSeconds| to ensure that at least one
+// restart attempt can be done before storing the result.
+const int kInputCallbackStartTimeoutInSeconds =
+    kCheckInputIsAliveTimeInSeconds + 3;
 
 // Returns true if the format flags in |format_flags| has the "non-interleaved"
 // flag (kAudioFormatFlagIsNonInterleaved) cleared (set to 0).
@@ -241,6 +262,9 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       total_lost_frames_(0),
       largest_glitch_frames_(0),
       glitches_detected_(0),
+      number_of_restart_indications_(0),
+      number_of_restart_attempts_(0),
+      total_number_of_restart_attempts_(0),
       weak_factory_(this) {
   DCHECK(manager_);
 
@@ -523,6 +547,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
 
   sink_ = callback;
   last_success_time_ = base::TimeTicks::Now();
+  last_callback_time_ = base::TimeTicks::Now();
   audio_unit_render_has_worked_ = false;
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
@@ -532,14 +557,21 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
     // For UMA stat purposes, start a one-shot timer which detects when input
     // callbacks starts indicating if input audio recording works as intended.
     // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
-    // true when the timer expires. This timer delay is currently set to
-    // 5 seconds to avoid false alarms.
+    // true when the timer expires.
     input_callback_timer_.reset(new base::OneShotTimer());
     input_callback_timer_->Start(
         FROM_HERE,
         base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,
         &AUAudioInputStream::CheckInputStartupSuccess);
   }
+
+  number_of_restart_indications_ = 0;
+  number_of_restart_attempts_ = 0;
+  check_alive_timer_.reset(new base::RepeatingTimer());
+  check_alive_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kCheckInputIsAliveTimeInSeconds),
+      this, &AUAudioInputStream::CheckIfInputStreamIsAlive);
+
   OSSTATUS_DLOG_IF(ERROR, !started_, result)
       << "Failed to start acquiring data";
 }
@@ -548,6 +580,10 @@ void AUAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Stop";
   StopAgc();
+  if (check_alive_timer_ != nullptr) {
+    check_alive_timer_->Stop();
+    check_alive_timer_.reset();
+  }
   input_callback_timer_.reset();
 
   if (audio_unit_ != nullptr) {
@@ -780,6 +816,13 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
     const AudioTimeStamp* time_stamp,
     UInt32 bus_number,
     UInt32 number_of_frames) {
+  // Update |last_callback_time_| on the main browser thread. Its value is used
+  // by CheckIfInputStreamIsAlive() to detect if the stream is dead or alive.
+  manager_->GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AUAudioInputStream::UpdateDataCallbackTimeOnMainThread,
+                 weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+
   // Indicate that input callbacks have started on the internal AUHAL IO
   // thread. The |input_callback_is_active_| member is read from the creating
   // thread when a timer fires once and set to false in Stop() on the same
@@ -1173,6 +1216,64 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
   }
 }
 
+void AUAudioInputStream::UpdateDataCallbackTimeOnMainThread(
+    base::TimeTicks now_tick) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  last_callback_time_ = now_tick;
+}
+
+void AUAudioInputStream::CheckIfInputStreamIsAlive() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Avoid checking stream state if we are suspended.
+  if (manager_->IsSuspending())
+    return;
+  // Restrict usage of the restart mechanism to "AGC streams" only.
+  // TODO(henrika): if the restart scheme works well, we might include it
+  // for all types of input streams.
+  if (!GetAutomaticGainControl())
+    return;
+
+  // Measure time since last callback. |last_callback_time_| is set the first
+  // time in Start() and then updated in each data callback, hence if
+  // |time_since_last_callback| is large (>1) and growing for each check, the
+  // callback sequence has stopped. A typical value under normal/working
+  // conditions is a few milliseconds.
+  base::TimeDelta time_since_last_callback =
+      base::TimeTicks::Now() - last_callback_time_;
+  DVLOG(2) << "time since last callback: "
+           << time_since_last_callback.InSecondsF();
+
+  // Increase a counter if it has been too long since the last data callback.
+  // A non-zero value of this counter is a strong indication of a "dead" input
+  // stream. Reset the same counter if the stream is alive.
+  if (time_since_last_callback.InSecondsF() >
+      0.5 * kCheckInputIsAliveTimeInSeconds) {
+    ++number_of_restart_indications_;
+  } else {
+    number_of_restart_indications_ = 0;
+  }
+
+  // Restart the audio stream if two conditions are met. First, the number of
+  // restart indicators must be larger than a threshold, and secondly, only a
+  // fixed number of restart attempts is allowed.
+  // Note that, the threshold is different depending on if the stream is seen
+  // as dead directly at the first call to Start() (i.e. it has never started)
+  // or if the stream has started OK at least once but then stopped for some
+  // reason (e.g by placing the device in sleep mode). One restart indication
+  // is sufficient for the first case (threshold is zero), while a larger value
+  // (threshold > 0) is required for the second case to avoid false alarms when
+  // e.g. resuming from a suspended state.
+  const size_t restart_threshold =
+      GetInputCallbackIsActive() ? kNumberOfIndicationsToTriggerRestart : 0;
+  if (number_of_restart_indications_ > restart_threshold &&
+      number_of_restart_attempts_ < kMaxNumberOfRestartAttempts) {
+    RestartAudio();
+    ++total_number_of_restart_attempts_;
+    ++number_of_restart_attempts_;
+    number_of_restart_indications_ = 0;
+  }
+}
+
 void AUAudioInputStream::CloseAudioUnit() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "CloseAudioUnit";
@@ -1185,6 +1286,26 @@ void AUAudioInputStream::CloseAudioUnit() {
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioComponentInstanceDispose() failed.";
   audio_unit_ = 0;
+}
+
+void AUAudioInputStream::RestartAudio() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "RestartAudio";
+  LOG_IF(ERROR, IsRunning())
+      << "Stream is reported dead but actually seems alive";
+  if (!audio_unit_)
+    return;
+
+  // Store the existing  callback instance for upcoming call to Start().
+  AudioInputCallback* sink = sink_;
+  // Do a best-effort attempt to restart the presumably dead input audio stream.
+  // TODO(henrika): initial tests shows that the scheme below works well but
+  // there might be corner cases that I have missed.
+  Stop();
+  CloseAudioUnit();
+  DeRegisterDeviceChangeListener();
+  Open();
+  Start(sink);
 }
 
 void AUAudioInputStream::AddHistogramsForFailedStartup() {
@@ -1500,6 +1621,10 @@ void AUAudioInputStream::ReportAndResetStats() {
   if (last_sample_time_ == 0)
     return;  // No stats gathered to report.
 
+  // TODO(henrika): perhaps add this value to UMA stats as well.
+  DVLOG(1) << "Total number of restart attempts: "
+           << total_number_of_restart_attempts_;
+
   // A value of 0 indicates that we got the buffer size we asked for.
   UMA_HISTOGRAM_COUNTS_10000("Media.Audio.Capture.FramesProvided",
                              number_of_frames_provided_);
@@ -1520,7 +1645,7 @@ void AUAudioInputStream::ReportAndResetStats() {
         50);
     DLOG(WARNING) << "Total glitches=" << glitches_detected_
                   << ". Total frames lost=" << total_lost_frames_ << " ("
-                  << lost_frames_ms;
+                  << lost_frames_ms << ")";
   }
 
   number_of_frames_provided_ = 0;

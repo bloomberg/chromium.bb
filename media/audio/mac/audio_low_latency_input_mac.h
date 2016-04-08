@@ -128,6 +128,9 @@ class MEDIA_EXPORT AUAudioInputStream
   // (CrBrowserMain) which is the same thread as this instance is created on.
   void DevicePropertyChangedOnMainThread(const std::vector<UInt32>& properties);
 
+  // Updates |last_callback_time_| on the main browser thread.
+  void UpdateDataCallbackTimeOnMainThread(base::TimeTicks now_tick);
+
   // Registers OnDevicePropertyChanged() to receive notifications when device
   // properties changes.
   void RegisterDeviceChangeListener();
@@ -160,8 +163,18 @@ class MEDIA_EXPORT AUAudioInputStream
   // expires 5 seconds after calling Start().
   void CheckInputStartupSuccess();
 
+  // Checks (periodically) if a stream is alive by comparing the current time
+  // with the last timestamp stored in a data callback. Calls RestartAudio()
+  // when a restart is required.
+  void CheckIfInputStreamIsAlive();
+
   // Uninitializes the audio unit if needed.
   void CloseAudioUnit();
+
+  // Called by CheckIfInputStreamIsAlive() on the main thread when an audio
+  // restarts is required. Restarts the existing audio stream reusing the
+  // current audio parameters.
+  void RestartAudio();
 
   // Adds extra UMA stats when it has been detected that startup failed.
   void AddHistogramsForFailedStartup();
@@ -288,6 +301,30 @@ class MEDIA_EXPORT AUAudioInputStream
   UInt32 total_lost_frames_;
   UInt32 largest_glitch_frames_;
   int glitches_detected_;
+
+  // Timer that provides periodic callbacks used to monitor if the input stream
+  // is alive or not.
+  scoped_ptr<base::RepeatingTimer> check_alive_timer_;
+
+  // Time tick set once in each input data callback. The time is measured on
+  // the real-time priority I/O thread but this member is modified and read
+  // on the main thread only.
+  base::TimeTicks last_callback_time_;
+
+  // Counts number of times we get a signal of that a restart seems required.
+  // If it is above a threshold (kNumberOfIndicationsToTriggerRestart), the
+  // current audio stream is closed and a new (using same audio parameters) is
+  // started.
+  size_t number_of_restart_indications_;
+
+  // Counts number of times RestartAudio() has been called. The max number of
+  // attempts is restricted by |kMaxNumberOfRestartAttempts|.
+  // Note that this counter is reset to zero after each successful restart.
+  size_t number_of_restart_attempts_;
+
+  // Counts the total number of times RestartAudio() has been called. It is
+  // set to zero once in the constructor and then never reset again.
+  size_t total_number_of_restart_attempts_;
 
   // Used to ensure DevicePropertyChangedOnMainThread() is not called when
   // this object is destroyed.
