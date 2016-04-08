@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS In window.document with click event 
+PASS In window.document with load event 
+FAIL In window.document.cloneNode(true) assert_array_equals: targets lengths differ, expected 8 got 0
+FAIL In new Document() Illegal constructor
+PASS In DOMImplementation.createHTMLDocument() 
+Harness: the test ran to completion.
+

@@ -1,0 +1,10 @@
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught SyntaxError: Unexpected token import
+Harness: the test ran to completion.
+

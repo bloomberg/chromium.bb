@@ -1,0 +1,4 @@
+ This is a testharness.js-based test.
+FAIL DOMTokenList value assert_equals: length should be the number of tokens expected 2 but got 3
+Harness: the test ran to completion.
+
