@@ -418,13 +418,13 @@ void InspectorPageAgent::setAutoAttachToCreatedPages(ErrorString*, bool autoAtta
     m_state->setBoolean(PageAgentState::autoAttachToCreatedPages, autoAttach);
 }
 
-void InspectorPageAgent::reload(ErrorString*, const Maybe<bool>& optionalIgnoreCache, const Maybe<String>& optionalScriptToEvaluateOnLoad)
+void InspectorPageAgent::reload(ErrorString*, const Maybe<bool>& optionalBypassCache, const Maybe<String>& optionalScriptToEvaluateOnLoad)
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad.fromMaybe("");
     ErrorString unused;
     m_debuggerAgent->setSkipAllPauses(&unused, true);
     m_reloading = true;
-    m_inspectedFrames->root()->reload(optionalIgnoreCache.fromMaybe(false) ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, ClientRedirectPolicy::NotClientRedirect);
+    m_inspectedFrames->root()->reload(optionalBypassCache.fromMaybe(false) ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, ClientRedirectPolicy::NotClientRedirect);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFrameId)

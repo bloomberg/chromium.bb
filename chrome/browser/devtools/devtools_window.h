@@ -124,7 +124,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // Reloads inspected web contents as if it was triggered from DevTools.
   // Returns true if it has successfully handled reload, false if the caller
   // is to proceed reload without DevTools interception.
-  bool ReloadInspectedWebContents(bool ignore_cache);
+  bool ReloadInspectedWebContents(bool bypass_cache);
 
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,

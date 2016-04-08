@@ -49,7 +49,7 @@ class PageHandler : public NotificationObserver {
   Response Enable();
   Response Disable();
 
-  Response Reload(const bool* ignoreCache,
+  Response Reload(const bool* bypassCache,
                   const std::string* script_to_evaluate_on_load,
                   const std::string* script_preprocessor = NULL);
 
