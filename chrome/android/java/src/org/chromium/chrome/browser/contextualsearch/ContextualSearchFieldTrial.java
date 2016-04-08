@@ -34,7 +34,7 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
     private static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS =
             "disable_extra_search_bar_animations";
-    private static final String ENABLE_DIGIT_BLACKLIST = "enable_digit_blacklist";
+    private static final String ENABLE_BLACKLIST = "enable_blacklist";
 
     // Translation.  All these members are private, except for usage by testing.
     // Master switch, needed to enable any translate code for Contextual Search.
@@ -192,10 +192,10 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether the digit blacklist is enabled.
+     * @return Whether the blacklist is enabled.
      */
-    static boolean isDigitBlacklistEnabled() {
-        return getBooleanParam(ENABLE_DIGIT_BLACKLIST);
+    static boolean isBlacklistEnabled() {
+        return getBooleanParam(ENABLE_BLACKLIST);
     }
 
     /**

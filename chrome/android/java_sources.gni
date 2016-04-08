@@ -219,6 +219,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuParams.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuPopulator.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuTitleView.java",
+  "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchBlacklist.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchFieldTrial.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManagementDelegate.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java",

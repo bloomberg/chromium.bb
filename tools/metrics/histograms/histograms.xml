@@ -46100,6 +46100,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchBlacklistSeen"
+    enum="ContextualSearchBlacklistSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>pedrosimonetti@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (blacklist reason and whether the results were seen) of every
+    search term issued by a tap gesture. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchDurationNonPrefetched" units="ms">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -63877,6 +63888,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="ContextualSearchBasePageProtocol" type="int">
   <int value="0" label="Is HTTP"/>
   <int value="1" label="Not HTTP"/>
+</enum>
+
+<enum name="ContextualSearchBlacklistSeen" type="int">
+  <int value="0" label="None, Seen"/>
+  <int value="1" label="None, Not Seen"/>
+  <int value="2" label="Number, Seen"/>
+  <int value="3" label="Number, Not Seen"/>
+  <int value="4" label="Determiner, Seen"/>
+  <int value="5" label="Determiner, Not Seen"/>
+  <int value="6" label="Preposition, Seen"/>
+  <int value="7" label="Preposition, Not Seen"/>
+  <int value="8" label="Navigation, Seen"/>
+  <int value="9" label="Navigation, Not Seen"/>
+  <int value="10" label="Misc, Seen"/>
+  <int value="11" label="Misc, Not Seen"/>
 </enum>
 
 <enum name="ContextualSearchEnterClosedStateChange" type="int">

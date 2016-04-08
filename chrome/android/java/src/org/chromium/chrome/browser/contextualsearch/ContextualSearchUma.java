@@ -9,6 +9,7 @@ import android.util.Pair;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.util.Collections;
@@ -939,6 +940,20 @@ public class ContextualSearchUma {
         int code = didForceTranslate ? DID_FORCE_TRANSLATE : WOULD_FORCE_TRANSLATE;
         RecordHistogram.recordEnumeratedHistogram(
                 "Search.ContextualSearchShouldTranslate", code, FORCE_TRANSLATE_BOUNDARY);
+    }
+
+    /**
+     * Logs whether a certain category of a blacklisted term resulted in the search results
+     * being seen.
+     * @param reason The given reason.
+     * @param wasSeen Whether the search results were seen.
+     */
+    public static void logBlacklistSeen(BlacklistReason reason, boolean wasSeen) {
+        if (reason == null) reason = BlacklistReason.NONE;
+        int code = ContextualSearchBlacklist.getBlacklistMetricsCode(reason, wasSeen);
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBlacklistSeen",
+                code, ContextualSearchBlacklist.BLACKLIST_BOUNDARY);
+
     }
 
     /**

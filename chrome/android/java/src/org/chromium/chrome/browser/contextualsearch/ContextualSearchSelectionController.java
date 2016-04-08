@@ -9,6 +9,7 @@ import android.os.Handler;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -42,7 +43,6 @@ public class ContextualSearchSelectionController {
     private static final int TAP_NAVIGATION_DETECTION_DELAY = 16;
 
     private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
-    private static final String SINGLE_DIGIT_PATTERN = "^\\d$";
     // A URL is:
     //   0-1:  schema://
     //   1+:   any word char, _ or -
@@ -61,7 +61,6 @@ public class ContextualSearchSelectionController {
     private final Handler mRunnableHandler;
     private final float mPxToDp;
     private final Pattern mContainsWordPattern;
-    private final Pattern mSingleDigitPattern;
 
     private String mSelectedText;
     private SelectionType mSelectionType;
@@ -118,7 +117,6 @@ public class ContextualSearchSelectionController {
         };
 
         mContainsWordPattern = Pattern.compile(CONTAINS_WORD_PATTERN);
-        mSingleDigitPattern = Pattern.compile(SINGLE_DIGIT_PATTERN);
     }
 
     /**
@@ -213,7 +211,8 @@ public class ContextualSearchSelectionController {
             handleSelection(selection, mSelectionType);
             mWasTapGestureDetected = false;
         } else {
-            mHandler.handleSelectionModification(selection, isValidSelection(selection), mX, mY);
+            boolean isValidSelection = validateSelectionSuppression(selection);
+            mHandler.handleSelectionModification(selection, isValidSelection, mX, mY);
         }
     }
 
@@ -271,7 +270,8 @@ public class ContextualSearchSelectionController {
      */
     private void handleSelection(String selection, SelectionType type) {
         mShouldHandleSelectionModification = true;
-        mHandler.handleSelection(selection, isValidSelection(selection), type, mX, mY);
+        boolean isValidSelection = validateSelectionSuppression(selection);
+        mHandler.handleSelection(selection, isValidSelection, type, mX, mY);
     }
 
     /**
@@ -436,6 +436,34 @@ public class ContextualSearchSelectionController {
         return mIsSelectionEstablished;
     }
 
+    /**
+     * Evaluates whether the given selection is valid and notifies the handler about potential
+     * selection suppression.
+     * TODO(pedrosimonetti): substitute this once the system supports suppressing selections.
+     * @param selection The given selection.
+     * @return Whether the selection is valid.
+     */
+    private boolean validateSelectionSuppression(String selection) {
+        boolean isValid = isValidSelection(selection);
+
+        if (mSelectionType == SelectionType.TAP) {
+            BlacklistReason reason =
+                    ContextualSearchBlacklist.findReasonToSuppressSelection(selection);
+
+            mHandler.handleSelectionSuppression(reason);
+
+            // Only really suppress if enabled by field trial. Currently we can't prevent a
+            // selection from being issued, so we end up clearing the selection immediately
+            // afterwards, which does not look great.
+            // TODO(pedrosimonetti): actually suppress selection once the system supports it.
+            if (ContextualSearchFieldTrial.isBlacklistEnabled() && reason != BlacklistReason.NONE) {
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
     /** Determines if the given selection is valid or not.
      * @param selection The selection portion of the context.
      * @return whether the given selection is considered a valid target for a search.
@@ -455,11 +483,6 @@ public class ContextualSearchSelectionController {
         }
 
         if (baseContentView != null && baseContentView.isFocusedNodeEditable()) {
-            return false;
-        }
-
-        if (ContextualSearchFieldTrial.isDigitBlacklistEnabled()
-                && isBlacklistedWord(selection)) {
             return false;
         }
 
@@ -498,13 +521,5 @@ public class ContextualSearchSelectionController {
         }
 
         return false;
-    }
-
-    /**
-     * @param word A given word.
-     * @return Whether the given word is blacklisted.
-     */
-    private boolean isBlacklistedWord(String word) {
-        return mSingleDigitPattern.matcher(word).find();
     }
 }

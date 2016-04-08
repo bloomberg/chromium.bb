@@ -526,6 +526,16 @@ public class ContextualSearchPanel extends OverlayPanel {
         getSearchBarControl().animateSearchTermResolution();
     }
 
+    // ============================================================================================
+    // Panel Metrics
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): replace proxy methods with direct PanelMetrics usage
+
+    public ContextualSearchPanelMetrics getPanelMetrics() {
+        return mPanelMetrics;
+    }
+
     /**
      * Sets that the contextual search involved the promo.
      */

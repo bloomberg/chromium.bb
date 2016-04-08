@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 
 /**
@@ -15,6 +16,7 @@ public class ContextualSearchPanelMetrics {
     private static final int MILLISECONDS_TO_NANOSECONDS = 1000000;
 
     // Flags for logging.
+    private BlacklistReason mBlacklistReason;
     private boolean mDidSearchInvolvePromo;
     private boolean mWasSearchContentViewSeen;
     private boolean mIsPromoActive;
@@ -90,6 +92,8 @@ public class ContextualSearchPanelMetrics {
                         mWasActivatedByTap);
             }
 
+            ContextualSearchUma.logBlacklistSeen(mBlacklistReason, mWasSearchContentViewSeen);
+
             ContextualSearchUma.logIconSpriteAnimated(mWasIconSpriteAnimated,
                     mWasSearchContentViewSeen, mWasActivatedByTap);
         }
@@ -108,6 +112,7 @@ public class ContextualSearchPanelMetrics {
             mContentFirstViewTimeNs = 0;
             mIsSearchPanelFullyPreloaded = false;
             mWasActivatedByTap = reason == StateChangeReason.TEXT_SELECT_TAP;
+            mBlacklistReason = BlacklistReason.NONE;
         }
         if (isFirstSearchView) {
             onSearchPanelFirstView();
@@ -168,6 +173,14 @@ public class ContextualSearchPanelMetrics {
 
         // TODO(manzagop): When the user opts in, we should replay his actions for the current
         // contextual search for the standard (non promo) UMA histograms.
+    }
+
+    /**
+     * Sets the reason why the current selection was blacklisted.
+     * @param reason The given reason.
+     */
+    public void setBlacklistReason(BlacklistReason reason) {
+        mBlacklistReason = reason;
     }
 
     /**
