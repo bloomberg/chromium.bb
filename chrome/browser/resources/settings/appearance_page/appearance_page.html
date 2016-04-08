@@ -22,26 +22,32 @@
   <link rel="import" type="css" href="chrome://resources/css/widgets.css">
   <link rel="import" href="chrome://resources/html/action_link.html">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .settings-box iron-icon {
+        -webkit-margin-end: var(--checkbox-spacing);
+      }
+    </style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="appearance">
       <neon-animatable id="main">
 <if expr="chromeos">
         <div class="settings-box first two-line">
           <iron-icon icon="device:wallpaper"></iron-icon>
-          <paper-button class="primary-button middle">
+          <div class="start">
             <div>[[i18n('setWallpaper')]]</div>
             <div class="secondary">[[i18n('openWallpaperApp')]]</div>
-          </paper-button>
+          </div>
         </div>
+        <div class="settings-box two-line" on-tap="openThemesGallery_">
 </if>
-        <div class="settings-box two-line">
+<if expr="not chromeos">
+        <div class="settings-box two-line first" on-tap="openThemesGallery_">
+</if>
           <iron-icon icon="image:palette"></iron-icon>
-          <paper-button class="primary-button middle" id="get-themes"
-              on-tap="openThemesGallery_">
+          <div class="start">
             <div>[[i18n('getThemes')]]</div>
             <div class="secondary">[[themeSublabel_]]</div>
-          </paper-button>
+          </div>
           <template is="dom-if" if="[[allowResetTheme_]]">
             <paper-button on-tap="resetTheme_" class="secondary-action"
                 >[[i18n('resetToDefaultTheme')]]</paper-button>
