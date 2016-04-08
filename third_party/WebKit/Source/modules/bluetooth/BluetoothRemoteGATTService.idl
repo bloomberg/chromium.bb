@@ -8,7 +8,6 @@
 
 [
     GarbageCollected,
-    RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTService { // : ServiceEventHandlers {
     readonly    attribute UUID            uuid;

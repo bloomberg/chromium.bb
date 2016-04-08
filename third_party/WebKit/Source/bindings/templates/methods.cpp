@@ -506,7 +506,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% if method.deprecate_as %}
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
     {% endif %}
-    {% if method.is_origin_trial_enabled %}
+    {% if method.origin_trial_enabled_function %}
     {{check_origin_trial(method) | indent}}
     {% endif %}
     {% endif %}{# not method.overloads #}

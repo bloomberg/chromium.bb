@@ -17,6 +17,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 

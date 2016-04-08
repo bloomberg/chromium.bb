@@ -109,11 +109,11 @@ static void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v
 static void FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureName1Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -123,11 +123,11 @@ static void FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local
 static void FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureName1Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -137,11 +137,11 @@ static void FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2ConstantGetterCallback(v8::Local
 static void FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName2Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureName2Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -151,11 +151,11 @@ static void FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local
 static void FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName2Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureName2Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -165,11 +165,11 @@ static void FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2ConstantGetterCallback(v8::Local
 static void FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName3Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureName3Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -2643,11 +2643,11 @@ static void notEnumerableLongAttributeAttributeSetterCallback(const v8::Function
 static void originTrialEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -2659,11 +2659,11 @@ static void originTrialEnabledLongAttributeAttributeGetter(const v8::FunctionCal
 static void originTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -4524,11 +4524,11 @@ static void unscopeableLongAttributeAttributeSetterCallback(const v8::FunctionCa
 static void unscopeableOriginTrialEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -4540,11 +4540,11 @@ static void unscopeableOriginTrialEnabledLongAttributeAttributeGetter(const v8::
 static void unscopeableOriginTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -9739,11 +9739,11 @@ static void originTrialEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8
 static void originTrialEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -9759,11 +9759,11 @@ static void perWorldBindingsOriginTrialEnabledVoidMethodMethod(const v8::Functio
 static void perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -9779,11 +9779,11 @@ static void perWorldBindingsOriginTrialEnabledVoidMethodMethodForMainWorld(const
 static void perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
+    String errorMessage;
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-        if (!memberErrorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+        if (!errorMessage.isEmpty()) {
+            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }

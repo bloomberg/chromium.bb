@@ -9,7 +9,6 @@
 [
     GarbageCollected,
     DependentLifetime,
-    RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
     // TODO(ortuno): Add test to make sure service matches the service

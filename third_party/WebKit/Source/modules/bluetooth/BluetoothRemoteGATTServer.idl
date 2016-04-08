@@ -8,7 +8,6 @@
 
 [
     GarbageCollected,
-    RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTServer
 {

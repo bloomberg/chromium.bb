@@ -10,7 +10,7 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v
     {% if constant.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
     {% endif %}
-    {% if constant.is_origin_trial_enabled %}
+    {% if constant.origin_trial_enabled_function %}
     {{check_origin_trial(constant) | indent}}
     {% endif %}
     {% if constant.idl_type in ('Double', 'Float') %}

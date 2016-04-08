@@ -9,7 +9,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_origin_trial_enabled %}
+    {% if attribute.origin_trial_enabled_function %}
     {{check_origin_trial(attribute) | indent}}
     {% endif %}
     {% if attribute.is_reflect and not attribute.is_url
@@ -176,7 +176,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
     {% endif %}
-    {% if attribute.is_origin_trial_enabled %}
+    {% if attribute.origin_trial_enabled_function %}
     {{check_origin_trial(attribute) | indent}}
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
@@ -208,7 +208,7 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
     {% endif %}
-    {% if attribute.is_origin_trial_enabled %}
+    {% if attribute.origin_trial_enabled_function %}
     {{check_origin_trial(attribute) | indent}}
     {% endif %}
     v8ConstructorAttributeGetter(property, info);
@@ -410,7 +410,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
     if (holder.IsEmpty())
         return false;
 
-    {% if attribute.is_origin_trial_enabled %}
+    {% if attribute.origin_trial_enabled_function %}
     {{check_origin_trial(attribute, "scriptState->isolate()") | indent}}
     {% endif %}
 

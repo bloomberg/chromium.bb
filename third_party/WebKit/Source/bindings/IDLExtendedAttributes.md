@@ -1043,10 +1043,6 @@ When there is an active origin trial for the current execution context, the feat
 
 `[OriginTrialEnabled]` has similar semantics to `[RuntimeEnabled]`, and is intended as a drop-in replacement. For example, `[OriginTrialEnabled]` _cannot_ be applied to arguments, see `[RuntimeEnabled]` for reasoning. The key implementation difference is that `[OriginTrialEnabled]` wraps the generated code with `if (OriginTrials::FeatureNameEnabled(...)) { ...code... }`.
 
-*** note
-**FIXME:** Currently, due to [Bug 586594](https://crbug.com/586594), the `[OriginTrialEnabled]` attribute must be used _in addition to_ `[RuntimeEnabled]`, instead of being used as a replacement.
-***
-
 For more information, see [RuntimeEnabledFeatures](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/platform/RuntimeEnabledFeatures.in) and [OriginTrialContext](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/core/origin_trials/OriginTrialContext.h).
 
 ### [PostMessage] _(m)_
