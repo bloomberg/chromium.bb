@@ -139,6 +139,16 @@ class URLFetcherNullWriter : public net::URLFetcherResponseWriter {
   }
 };
 
+void AppendManifestURLIfNew(const std::string& prefix,
+                            const std::string& name,
+                            base::hash_set<std::string>* seen_manifest_urls,
+                            std::list<GURL>* unique_manifest_urls) {
+  const std::string manifest_url = ConstructManifestURL(prefix, name);
+  bool first_seen = seen_manifest_urls->insert(manifest_url).second;
+  if (first_seen)
+    unique_manifest_urls->push_back(GURL(manifest_url));
+}
+
 }  // namespace
 
 PrecacheFetcher::Fetcher::Fetcher(
@@ -271,6 +281,11 @@ PrecacheFetcher::PrecacheFetcher(
 }
 
 PrecacheFetcher::~PrecacheFetcher() {
+  base::TimeDelta time_to_fetch = base::TimeTicks::Now() - start_time_;
+  UMA_HISTOGRAM_CUSTOM_TIMES("Precache.Fetch.TimeToComplete", time_to_fetch,
+                             base::TimeDelta::FromSeconds(1),
+                             base::TimeDelta::FromHours(4), 50);
+
   // Number of manifests for which we have downloaded all resources.
   int manifests_completed =
       num_manifest_urls_to_fetch_ - manifest_urls_to_fetch_.size();
@@ -305,6 +320,7 @@ void PrecacheFetcher::Start() {
 
   // Fetch the precache configuration settings from the server.
   DCHECK(pool_.IsEmpty()) << "All parallel requests should be available";
+  VLOG(3) << "Fetching " << config_url;
   pool_.Add(scoped_ptr<Fetcher>(new Fetcher(
       request_context_.get(), config_url,
       base::Bind(&PrecacheFetcher::OnConfigFetchComplete,
@@ -317,6 +333,7 @@ void PrecacheFetcher::StartNextResourceFetch() {
     const size_t max_bytes =
         std::min(config_->max_bytes_per_resource(),
                  config_->max_bytes_total() - total_response_bytes_);
+    VLOG(3) << "Fetching " << resource_urls_to_fetch_.front();
     pool_.Add(scoped_ptr<Fetcher>(
         new Fetcher(request_context_.get(), resource_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnResourceFetchComplete,
@@ -336,6 +353,7 @@ void PrecacheFetcher::StartNextManifestFetch() {
   DCHECK(pool_.IsAvailable())
       << "There are no available parallel requests to fetch the next manifest. "
          "Did you forget to call Delete?";
+  VLOG(3) << "Fetching " << manifest_urls_to_fetch_.front();
   pool_.Add(scoped_ptr<Fetcher>(new Fetcher(
       request_context_.get(), manifest_urls_to_fetch_.front(),
       base::Bind(&PrecacheFetcher::OnManifestFetchComplete,
@@ -348,8 +366,8 @@ void PrecacheFetcher::StartNextManifestFetch() {
 void PrecacheFetcher::StartNextFetch() {
   // If over the precache total size cap, then stop prefetching.
   if (total_response_bytes_ > config_->max_bytes_total()) {
-    resource_urls_to_fetch_.clear();
-    manifest_urls_to_fetch_.clear();
+    precache_delegate_->OnDone();
+    return;
   }
 
   StartNextResourceFetch();
@@ -357,11 +375,6 @@ void PrecacheFetcher::StartNextFetch() {
 
   if (pool_.IsEmpty()) {
     // There are no more URLs to fetch, so end the precache cycle.
-    base::TimeDelta time_to_fetch = base::TimeTicks::Now() - start_time_;
-    UMA_HISTOGRAM_CUSTOM_TIMES("Precache.Fetch.TimeToComplete", time_to_fetch,
-                               base::TimeDelta::FromSeconds(1),
-                               base::TimeDelta::FromHours(4), 50);
-
     precache_delegate_->OnDone();
     // OnDone may have deleted this PrecacheFetcher, so don't do anything after
     // it is called.
@@ -383,9 +396,9 @@ void PrecacheFetcher::OnConfigFetchComplete(const Fetcher& source) {
     DCHECK_NE(std::string(), prefix)
         << "Could not determine the precache manifest URL prefix.";
 
-    // Keep track of manifest URLs that are being fetched, in order to remove
+    // Keep track of manifest URLs that are being fetched, in order to elide
     // duplicates.
-    base::hash_set<std::string> unique_manifest_urls;
+    base::hash_set<std::string> seen_manifest_urls;
 
     // Attempt to fetch manifests for starting hosts up to the maximum top sites
     // count. If a manifest does not exist for a particular starting host, then
@@ -395,14 +408,14 @@ void PrecacheFetcher::OnConfigFetchComplete(const Fetcher& source) {
       ++rank;
       if (rank > config_->top_sites_count())
         break;
-      unique_manifest_urls.insert(ConstructManifestURL(prefix, host));
+      AppendManifestURLIfNew(prefix, host, &seen_manifest_urls,
+                             &manifest_urls_to_fetch_);
     }
 
-    for (const std::string& url : config_->forced_site())
-      unique_manifest_urls.insert(ConstructManifestURL(prefix, url));
+    for (const std::string& host : config_->forced_site())
+      AppendManifestURLIfNew(prefix, host, &seen_manifest_urls,
+                             &manifest_urls_to_fetch_);
 
-    for (const std::string& manifest_url : unique_manifest_urls)
-      manifest_urls_to_fetch_.push_back(GURL(manifest_url));
     num_manifest_urls_to_fetch_ = manifest_urls_to_fetch_.size();
   }
   pool_.Delete(source);

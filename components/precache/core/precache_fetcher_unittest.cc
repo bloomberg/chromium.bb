@@ -38,6 +38,7 @@ namespace precache {
 namespace {
 
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::NotNull;
 using ::testing::Property;
 
@@ -529,7 +530,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
 
   histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 0, 1);
   histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes.Total", 0, 1);
-  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 0);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
 #if defined(PRECACHE_CONFIG_SETTINGS_URL)
@@ -675,9 +676,6 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
   const size_t kBytesPerResource = kMaxBytesTotal / 3;
   // kBytesPerResource * kMaxParallelFeches > kMaxBytesTotal.
 
-  std::vector<std::string> starting_hosts;
-  starting_hosts.push_back("good-manifest.com");
-
   PrecacheConfigurationSettings config;
   config.set_max_bytes_total(kMaxBytesTotal);
 
@@ -699,9 +697,9 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
   base::HistogramTester histogram;
 
   {
-    PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
-                                     GURL(), std::string(),
-                                     &precache_delegate_);
+    PrecacheFetcher precache_fetcher({"good-manifest.com"},
+                                     request_context_.get(), GURL(),
+                                     std::string(), &precache_delegate_);
     precache_fetcher.Start();
 
     loop_.RunUntilIdle();
@@ -715,7 +713,9 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
 
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
 
-  histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 100, 1);
+  // good-manifest.com will not have been completed.
+  EXPECT_THAT(histogram.GetAllSamples("Precache.Fetch.PercentCompleted"),
+              ElementsAre(base::Bucket(0, 1)));
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 

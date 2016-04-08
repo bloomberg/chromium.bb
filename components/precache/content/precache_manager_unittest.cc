@@ -308,6 +308,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
                           Pair("Precache.Fetch.PercentCompleted", 1),
                           Pair("Precache.Fetch.ResponseBytes.Network", 1),
                           Pair("Precache.Fetch.ResponseBytes.Total", 1),
+                          Pair("Precache.Fetch.TimeToComplete", 1),
                           Pair("Precache.Latency.Prefetch", 1)));
 }
 
@@ -380,6 +381,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Fetch.PercentCompleted"]++;
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Network"]++;
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Total"]++;
+  expected_histogram_count_map["Precache.Fetch.TimeToComplete"]++;
   expected_histogram_count_map["Precache.Latency.Prefetch"] += 3;
 
   precache_manager_.CancelPrecaching();
@@ -406,6 +408,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   precache_manager_.RecordStatsForFetch(GURL("http://old-fetch.com"), GURL(),
                                         base::TimeDelta(), kCurrentTime, 1000,
                                         true);
+  expected_histogram_count_map["Precache.Fetch.TimeToComplete"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"]++;
 
