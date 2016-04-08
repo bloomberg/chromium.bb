@@ -52,6 +52,7 @@
     {
       'target_name': 'manage_languages_page',
       'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-checkbox/compiled_resources2.gyp:paper-checkbox-extracted',
         'languages_types',
         'languages',
       ],

@@ -44,12 +44,6 @@ Polymer({
     },
 
     /** @private */
-    languagesSecondary_: {
-      type: String,
-      value: 'Placeholder, e.g. English (United States)',
-    },
-
-    /** @private */
     inputMethodsSecondary_: {
       type: String,
       value: 'Placeholder, e.g. US keyboard',
@@ -60,6 +54,13 @@ Polymer({
       type: String,
       value: 'Placeholder, e.g. English (United States)',
     },
+
+    /**
+     * The language to display the details for.
+     * @type {!LanguageInfo|undefined}
+     * @private
+     */
+    detailLanguage_: Object,
   },
 
   /** @private {!LanguageHelper} */
@@ -109,15 +110,25 @@ Polymer({
 
   /**
    * Opens the Language Detail page for the language.
-   * @param {!{model: !{item}}} e
+   * @param {!{model: !{item: !LanguageInfo}}} e
    * @private
    */
   onShowLanguageDetailTap_: function(e) {
-    this.$.languageSelector.select(e.model.item);
+    this.detailLanguage_ = e.model.item;
     this.$.pages.setSubpageChain(['language-detail']);
   },
 
 <if expr="not is_macosx">
+  /**
+   * Returns the enabled languages which support spell check.
+   * @private
+   */
+  spellCheckLanguages_: function() {
+    return this.languages.enabledLanguages.filter(function(languageInfo) {
+      return languageInfo.language.supportsSpellcheck;
+    });
+  },
+
   /**
    * Opens the Custom Dictionary page.
    * @private
@@ -144,6 +155,33 @@ Polymer({
   },
 </if>
 
+   /**
+    * @return {string}
+    * @private
+    */
+  getProspectiveUILanguageName_: function() {
+    return this.languageHelper_.getLanguage(
+        this.languageHelper_.getProspectiveUILanguage()).displayName;
+  },
+
+  /**
+   * Returns either the "selected" class, if the language matches the
+   * prospective UI language, or an empty string. Languages can only be
+   * selected on Chrome OS and Windows.
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {string} The class name for the language item.
+   * @private
+   */
+  getLanguageItemClass_: function(languageCode, prospectiveUILanguage) {
+<if expr="chromeos or is_win">
+    if (this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage))
+      return 'selected';
+</if>
+    return '';
+  },
+
+<if expr="chromeos">
   /**
    * @param {string} id The input method ID.
    * @param {string} currentId The ID of the currently enabled input method.
@@ -154,6 +192,17 @@ Polymer({
     assert(cr.isChromeOS);
     return id == currentId;
   },
+
+  /**
+   * @param {string} id The input method ID.
+   * @param {string} currentId The ID of the currently enabled input method.
+   * @return {string} The class for the input method item.
+   * @private
+   */
+  getInputMethodItemClass_: function(id, currentId) {
+    return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
+  },
+</if>
 
   /**
    * HACK(michaelpg): This is necessary to show the list when navigating to

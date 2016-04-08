@@ -304,6 +304,7 @@ SettingsLanguagesSingletonElement = Polymer({
   resetUILanguage: function() {
     chrome.send('setUILanguage', [navigator.language]);
   },
+</if>
 
   /**
    * Returns the "prospective" UI language, i.e. the one to be used on next
@@ -315,7 +316,6 @@ SettingsLanguagesSingletonElement = Polymer({
     return /** @type {string} */(this.getPref('intl.app_locale').value) ||
         navigator.language;
   },
-</if>
 
   /**
    * @param {string} languageCode

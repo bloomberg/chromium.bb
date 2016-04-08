@@ -32,39 +32,49 @@
       }
     </style>
     <settings-languages languages="{{languages}}"></settings-languages>
+    <div class="settings-box block first">
 <if expr="chromeos or is_win">
-    <div id="languageSettings">
-      <label hidden$="[[!detail.language.supportsUI]]">
-        <paper-toggle-button
-            checked="[[isProspectiveUILanguage_(detail.language.code, prefs.intl.app_locale.value)]]"
-            on-change="onUILanguageChange_"
-            disabled$="[[isUILanguageChangeDisabled_(detail.language.code, prefs.intl.app_locale.value)]]">
-        </paper-toggle-button>
-        <span i18n-content="isDisplayedInThisLanguage"
-            hidden$="[[!isCurrentUILanguage_(detail.language.code, prefs.intl.app_locale.value)]]">
-        </span>
-        <span hidden$="[[isCurrentUILanguage_(detail.language.code, prefs.intl.app_locale.value)]]">
-          <span i18n-content="displayInThisLanguage"></span>
-          <paper-button i18n-content="restart" on-tap="onRestartTap_"
-              hidden$="[[!isRestartRequired_(detail.language.code, prefs.intl.app_locale.value)]]">
-          </paper-button>
-        </span>
-        <cr-policy-pref-indicator id="policyIndicator">
-        </cr-policy-pref-indicator>
-      </label>
-      <span i18n-content="cannotBeDisplayedInThisLanguage"
-          hidden$="[[detail.language.supportsUI]]"></span>
-    </div>
+      <div id="languageSettings" class="list-item">
+        <label hidden$="[[!detail.language.supportsUI]]">
+          <paper-toggle-button
+              checked="[[isProspectiveUILanguage_(
+                  detail.language.code, prefs.intl.app_locale.value)]]"
+              on-change="onUILanguageChange_"
+              disabled$="[[isUILanguageChangeDisabled_(
+                  detail.language.code, prefs.intl.app_locale.value)]]">
+          </paper-toggle-button>
+          <span i18n-content="isDisplayedInThisLanguage"
+              hidden$="[[!isCurrentUILanguage_(
+                  detail.language.code, prefs.intl.app_locale.value)]]">
+          </span>
+          <span hidden$="[[isCurrentUILanguage_(
+              detail.language.code, prefs.intl.app_locale.value)]]">
+            <span i18n-content="displayInThisLanguage"></span>
+            <paper-button i18n-content="restart" on-tap="onRestartTap_"
+                hidden$="[[!isRestartRequired_(
+                    detail.language.code, prefs.intl.app_locale.value)]]">
+            </paper-button>
+          </span>
+          <cr-policy-pref-indicator id="policyIndicator">
+          </cr-policy-pref-indicator>
+        </label>
+        <span i18n-content="cannotBeDisplayedInThisLanguage"
+            hidden$="[[detail.language.supportsUI]]"></span>
+      </div>
 </if>
-    <div hidden$="[[shouldHideTranslate_(detail.language.code, prefs.translate.enabled.value)]]">
-      <paper-checkbox checked="[[detail.state.translateEnabled]]"
-          on-change="onTranslateEnabledChange_"
-          i18n-content="offerToTranslateInThisLanguage"
-          hidden$="[[!detail.language.supportsTranslate]]"
-          disabled="[[isTranslateDisabled_(detail.language.code, languages.translateTarget)]]">
-      </paper-checkbox>
-      <div i18n-content="cannotTranslateInThisLanguage"
-          hidden$="[[detail.language.supportsTranslate]]"></div>
+      <div class="list-item"
+          hidden$="[[shouldHideTranslate_(
+              detail.language.code, prefs.translate.enabled.value)]]">
+        <paper-checkbox checked="[[detail.state.translateEnabled]]"
+            on-change="onTranslateEnabledChange_"
+            i18n-content="offerToTranslateInThisLanguage"
+            hidden$="[[!detail.language.supportsTranslate]]"
+            disabled="[[isTranslateDisabled_(
+                detail.language.code, languages.translateTarget)]]">
+        </paper-checkbox>
+        <div i18n-content="cannotTranslateInThisLanguage"
+            hidden$="[[detail.language.supportsTranslate]]"></div>
+      </div>
     </div>
   </template>
   <script src="language_detail_page.js"></script>

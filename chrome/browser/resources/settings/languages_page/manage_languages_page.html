@@ -1,10 +1,9 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="languages.html">
@@ -12,6 +11,12 @@
 <dom-module id="settings-manage-languages-page">
   <template>
     <style include="settings-shared">
+      .list-frame {
+        display: flex;
+        flex-direction: column;
+        align-items: initial;
+      }
+
       iron-list {
         height: 300px;
       }
@@ -23,12 +28,12 @@
         <div class="list-frame vertical-list">
           <template is="dom-repeat" items="{{languages.enabledLanguages}}">
             <div class="list-item">
-              <div class="language-name start"
-                  title="[[item.language.nativeDisplayName]]">
+              <div class="start" title="[[item.language.nativeDisplayName]]">
                 [[item.language.displayName]]
               </div>
               <paper-icon-button icon="clear" on-tap="onRemoveLanguageTap_"
-                  hidden$="[[!canRemoveLanguage_(item.language.code, prefs.intl.app_locale.value)]]">
+                  hidden$="[[!canRemoveLanguage_(
+                      item.language.code, prefs.intl.app_locale.value)]]">
               </paper-icon-button>
             </div>
           </template>
@@ -37,13 +42,14 @@
         <div class="list-frame vertical-list">
           <iron-list items="{{availableLanguages_}}" as="item">
             <template>
-              <div class="list-item" on-tap="onAddLanguageTap_">
-                <div class="language-name">
-                  <span>[[item.displayName]]</span> -
-                  <span>[[item.nativeDisplayName]]</span>
-                </div>
-                <iron-icon icon="done" hidden$="[[!item.enabled]]">
-                </iron-icon>
+              <div class="list-item">
+                <paper-checkbox checked="[[item.enabled]]"
+                    title$="[[item.nativeDisplayName]]"
+                    disabled="[[!canRemoveLanguage_(
+                        item.code, prefs.intl.app_locale.value)]]"
+                    on-change="onLanguageCheckboxChange_">
+                  [[item.displayName]]
+                </paper-checkbox>
               </div>
             </template>
           </iron-list>
