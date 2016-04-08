@@ -52,6 +52,7 @@ struct SANDBOX_EXPORT BootstrapSandboxPolicy {
   typedef std::map<std::string, Rule> NamedRules;
 
   BootstrapSandboxPolicy();
+  BootstrapSandboxPolicy(const BootstrapSandboxPolicy& other);
   ~BootstrapSandboxPolicy();
 
   // The default action to take if the server name being looked up is not

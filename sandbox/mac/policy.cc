@@ -25,6 +25,9 @@ BootstrapSandboxPolicy::BootstrapSandboxPolicy()
     : default_rule(POLICY_DENY_ERROR) {
 }
 
+BootstrapSandboxPolicy::BootstrapSandboxPolicy(
+    const BootstrapSandboxPolicy& other) = default;
+
 BootstrapSandboxPolicy::~BootstrapSandboxPolicy() {}
 
 static bool IsRuleValid(const Rule& rule) {
