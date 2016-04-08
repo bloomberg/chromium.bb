@@ -77,15 +77,6 @@ class WebClient {
   // created and not called repeatedly.
   virtual bool AllowWebViewAllocInit() const;
 
-  // Returns true if all web views that are created need to be associated with
-  // a BrowserState.
-  // This method is only called if the |AllowWebViewAllocInit| returns false.
-  // If this method returns true, web views can only be created
-  // with the BrowserState whose ActiveStateManager is active.
-  // This is called once (only in debug builds) when the first web view is
-  // created and not called repeatedly.
-  virtual bool WebViewsNeedActiveStateManager() const;
-
   // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 

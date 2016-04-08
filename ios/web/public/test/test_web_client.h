@@ -21,7 +21,6 @@ class TestWebClient : public web::WebClient {
 
   // WebClient implementation.
   NSString* GetEarlyPageScript() const override;
-  bool WebViewsNeedActiveStateManager() const override;
 
   // Changes Early Page Script for testing purposes.
   void SetEarlyPageScript(NSString* page_script);

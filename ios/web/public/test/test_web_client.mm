@@ -16,10 +16,6 @@ NSString* TestWebClient::GetEarlyPageScript() const {
   return early_page_script_ ? early_page_script_.get() : @"";
 }
 
-bool TestWebClient::WebViewsNeedActiveStateManager() const {
-  return true;
-}
-
 void TestWebClient::SetEarlyPageScript(NSString* page_script) {
   early_page_script_.reset([page_script copy]);
 }
