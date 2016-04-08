@@ -40,9 +40,6 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
     // Called when the main function of the SchedulerWorkerThread enters.
     virtual void OnMainEntry() = 0;
 
-    // Called when the main function of the SchedulerWorkerThread exits.
-    virtual void OnMainExit() = 0;
-
     // Called by |worker_thread| to get a Sequence from which to run a Task.
     virtual scoped_refptr<Sequence> GetWork(
         SchedulerWorkerThread* worker_thread) = 0;

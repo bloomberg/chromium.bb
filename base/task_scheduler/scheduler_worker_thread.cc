@@ -92,8 +92,6 @@ void SchedulerWorkerThread::ThreadMain() {
     // if WakeUp() is called while this SchedulerWorkerThread is awake.
     wake_up_event_.Reset();
   }
-
-  delegate_->OnMainExit();
 }
 
 bool SchedulerWorkerThread::ShouldExitForTesting() const {

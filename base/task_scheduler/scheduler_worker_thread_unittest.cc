@@ -42,15 +42,7 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
   }
 
   void TearDown() override {
-    {
-      AutoSchedulerLock auto_lock(lock_);
-      EXPECT_FALSE(main_exit_called_);
-    }
-
     worker_thread_->JoinForTesting();
-
-    AutoSchedulerLock auto_lock(lock_);
-    EXPECT_TRUE(main_exit_called_);
   }
 
   size_t TasksPerSequence() const { return GetParam(); }
@@ -98,12 +90,6 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
     AutoSchedulerLock auto_lock(lock_);
     EXPECT_FALSE(main_entry_called_.IsSignaled());
     main_entry_called_.Signal();
-  }
-
-  void OnMainExit() override {
-    AutoSchedulerLock auto_lock(lock_);
-    EXPECT_FALSE(main_exit_called_);
-    main_exit_called_ = true;
   }
 
   scoped_refptr<Sequence> GetWork(
@@ -179,9 +165,6 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
 
   // Signaled once OnMainEntry() has been called.
   WaitableEvent main_entry_called_;
-
-  // True once OnMainExit() has been called.
-  bool main_exit_called_ = false;
 
   // Number of Sequences that should be created by GetWork(). When this
   // is 0, GetWork() returns nullptr.
