@@ -52,7 +52,7 @@ inline HTMLSlotElement::HTMLSlotElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLSlotElement);
 
-const HeapVector<Member<Node>> HTMLSlotElement::getAssignedNodesForBinding(const AssignedNodesOptions& options)
+const HeapVector<Member<Node>> HTMLSlotElement::assignedNodesForBinding(const AssignedNodesOptions& options)
 {
     updateDistribution();
     if (options.hasFlatten() && options.flatten())

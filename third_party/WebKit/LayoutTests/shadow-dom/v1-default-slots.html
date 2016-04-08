@@ -31,14 +31,14 @@ test(() => {
 }, "assignedSlot");
 
 test(() => {
-  assert_array_equals(slot1.getAssignedNodes(), [child2, child4]);
-  assert_array_equals(slot2.getAssignedNodes(), []);
-  assert_array_equals(slot3.getAssignedNodes(), [child3]);
-}, "getAssignedNodes");
+  assert_array_equals(slot1.assignedNodes(), [child2, child4]);
+  assert_array_equals(slot2.assignedNodes(), []);
+  assert_array_equals(slot3.assignedNodes(), [child3]);
+}, "assignedNodes");
 
 test(() => {
-  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child2, child4]);
-  assert_array_equals(slot2.getAssignedNodes({flatten: true}), []);
-  assert_array_equals(slot3.getAssignedNodes({flatten: true}), [child3]);
+  assert_array_equals(slot1.assignedNodes({flatten: true}), [child2, child4]);
+  assert_array_equals(slot2.assignedNodes({flatten: true}), []);
+  assert_array_equals(slot3.assignedNodes({flatten: true}), [child3]);
 }, "getDistributedNodes");
 </script>

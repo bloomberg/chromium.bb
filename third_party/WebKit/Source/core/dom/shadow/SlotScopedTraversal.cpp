@@ -45,7 +45,7 @@ Element* SlotScopedTraversal::next(const Element& current)
         slot = nearestAncestorAssignedToSlot->assignedSlot();
         DCHECK(slot);
     }
-    HeapVector<Member<Node>> assignedNodes = slot->getAssignedNodes();
+    HeapVector<Member<Node>> assignedNodes = slot->assignedNodes();
     size_t currentIndex = assignedNodes.find(*nearestAncestorAssignedToSlot);
     DCHECK_NE(currentIndex, kNotFound);
     for (++currentIndex; currentIndex < assignedNodes.size(); ++currentIndex) {
@@ -63,7 +63,7 @@ Element* SlotScopedTraversal::previous(const Element& current)
     if (Element* previous = ElementTraversal::previous(current, nearestAncestorAssignedToSlot))
         return previous;
     // If null, jump to previous assigned node's descendant
-    const HeapVector<Member<Node>> assignedNodes = nearestAncestorAssignedToSlot->assignedSlot()->getAssignedNodes();
+    const HeapVector<Member<Node>> assignedNodes = nearestAncestorAssignedToSlot->assignedSlot()->assignedNodes();
     size_t currentIndex = assignedNodes.reverseFind(*nearestAncestorAssignedToSlot);
     DCHECK_NE(currentIndex, kNotFound);
     for (; currentIndex > 0; --currentIndex) {

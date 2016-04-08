@@ -112,7 +112,7 @@ ScopedFocusNavigation::ScopedFocusNavigation(HTMLSlotElement& slot, const Elemen
     : m_rootNode(nullptr)
     , m_rootSlot(&slot)
     , m_current(const_cast<Element*>(current))
-    , m_slotFallbackTraversal(slot.getAssignedNodes().isEmpty())
+    , m_slotFallbackTraversal(slot.assignedNodes().isEmpty())
 {
 }
 
@@ -168,7 +168,7 @@ void ScopedFocusNavigation::moveToFirst()
 {
     if (m_rootSlot) {
         if (!m_slotFallbackTraversal) {
-            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+            HeapVector<Member<Node>> assignedNodes = m_rootSlot->assignedNodes();
             for (auto assignedNode : assignedNodes) {
                 if (assignedNode->isElementNode()) {
                     m_current = toElement(assignedNode);
@@ -194,7 +194,7 @@ void ScopedFocusNavigation::moveToLast()
 {
     if (m_rootSlot) {
         if (!m_slotFallbackTraversal) {
-            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+            HeapVector<Member<Node>> assignedNodes = m_rootSlot->assignedNodes();
             for (auto assignedNode = assignedNodes.rbegin(); assignedNode != assignedNodes.rend(); ++assignedNode) {
                 if ((*assignedNode)->isElementNode()) {
                     m_current = ElementTraversal::lastWithinOrSelf(*toElement(*assignedNode));
@@ -284,7 +284,7 @@ HTMLSlotElement* ScopedFocusNavigation::findFallbackScopeOwnerSlot(const Element
     Element* parent = const_cast<Element*>(element.parentElement());
     while (parent) {
         if (isHTMLSlotElement(parent))
-            return toHTMLSlotElement(parent)->getAssignedNodes().isEmpty() ? toHTMLSlotElement(parent) : nullptr;
+            return toHTMLSlotElement(parent)->assignedNodes().isEmpty() ? toHTMLSlotElement(parent) : nullptr;
         parent = parent->parentElement();
     }
     return nullptr;
@@ -299,7 +299,7 @@ bool ScopedFocusNavigation::isSlotFallbackScopedForThisSlot(const HTMLSlotElemen
 {
     Element* parent = current.parentElement();
     while (parent) {
-        if (isHTMLSlotElement(parent) && toHTMLSlotElement(parent)->getAssignedNodes().isEmpty())
+        if (isHTMLSlotElement(parent) && toHTMLSlotElement(parent)->assignedNodes().isEmpty())
             return !SlotScopedTraversal::isSlotScoped(current) && toHTMLSlotElement(parent) == slot;
         parent = parent->parentElement();
     }

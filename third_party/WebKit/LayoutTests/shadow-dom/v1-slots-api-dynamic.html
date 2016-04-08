@@ -22,21 +22,21 @@ test(() => {
   const d1_s1 = d1_shadow.querySelector('slot');
   const d1_d1_s1 = d1_d1_shadow.querySelector('slot');
 
-  assert_array_equals(d1_s1.getAssignedNodes(), [d2]);
-  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d2]);
+  assert_array_equals(d1_s1.assignedNodes(), [d2]);
+  assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2]);
 
-  assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
-  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d2]);
+  assert_array_equals(d1_d1_s1.assignedNodes(), [d1_s1]);
+  assert_array_equals(d1_d1_s1.assignedNodes({'flatten': true}), [d2]);
 
   const d3 = document.createElement('div');
   d3.setAttribute('id', 'd3');
   d3.setAttribute('slot', 'd1-s1');
   d1.appendChild(d3);
 
-  assert_array_equals(d1_s1.getAssignedNodes(), [d2, d3]);
-  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d2, d3]);
+  assert_array_equals(d1_s1.assignedNodes(), [d2, d3]);
+  assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2, d3]);
 
-  assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
-  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d2, d3]);
+  assert_array_equals(d1_d1_s1.assignedNodes(), [d1_s1]);
+  assert_array_equals(d1_d1_s1.assignedNodes({'flatten': true}), [d2, d3]);
 }, "Distribution should be re-calcualted when assigned nodes of a slot in the parent tree is changed");
 </script>

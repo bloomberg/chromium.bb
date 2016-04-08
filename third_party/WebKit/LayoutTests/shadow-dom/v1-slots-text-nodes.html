@@ -45,9 +45,9 @@ test(() => {
 }, "assignedSlot");
 
 test(() => {
-  assert_array_equals(defaultSlot.getAssignedNodes({flatten: true}), [textHello, child2, textWorld]);
-  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
-}, "getAssignedNodes");
+  assert_array_equals(defaultSlot.assignedNodes({flatten: true}), [textHello, child2, textWorld]);
+  assert_array_equals(slot1.assignedNodes({flatten: true}), [child1]);
+}, "assignedNodes");
 
 add_completion_callback(() => {
   if (window.testRunner)

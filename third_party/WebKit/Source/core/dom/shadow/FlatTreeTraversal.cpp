@@ -161,7 +161,7 @@ ContainerNode* FlatTreeTraversal::traverseParent(const Node& node, ParentTravers
     Element* parent = node.parentElement();
     if (parent && isHTMLSlotElement(parent)) {
         HTMLSlotElement& slot = toHTMLSlotElement(*parent);
-        if (!slot.getAssignedNodes().isEmpty())
+        if (!slot.assignedNodes().isEmpty())
             return nullptr;
         return traverseParent(slot, details);
     }

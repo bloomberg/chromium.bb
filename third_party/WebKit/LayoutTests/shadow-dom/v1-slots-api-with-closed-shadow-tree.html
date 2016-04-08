@@ -43,14 +43,14 @@ test(() => {
 }, "A slot in a open shadow tree should be accessed via assignedSlot from a closed shadow tree");
 
 test(() => {
-  assert_array_equals(d1_s1.getAssignedNodes(), [d2]);
-  assert_array_equals(d1_s2.getAssignedNodes(), [d3]);
-  assert_array_equals(d1_1_s1.getAssignedNodes(), [d1_2, d1_s1]);
-}, "A closed shadow tree has nothing to do with the behavior of getAssignedNodes");
+  assert_array_equals(d1_s1.assignedNodes(), [d2]);
+  assert_array_equals(d1_s2.assignedNodes(), [d3]);
+  assert_array_equals(d1_1_s1.assignedNodes(), [d1_2, d1_s1]);
+}, "A closed shadow tree has nothing to do with the behavior of assignedNodes");
 
 test(() => {
-  assert_array_equals(d1_s1.getAssignedNodes({flatten: true}), [d2]);
-  assert_array_equals(d1_s2.getAssignedNodes({flatten: true}), [d3]);
-  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: true}), [d1_2, d2]);
-}, "A closed shadow tree has nothing to do with the behavior of getAssignedNodes({flatten: true}}");
+  assert_array_equals(d1_s1.assignedNodes({flatten: true}), [d2]);
+  assert_array_equals(d1_s2.assignedNodes({flatten: true}), [d3]);
+  assert_array_equals(d1_1_s1.assignedNodes({flatten: true}), [d1_2, d2]);
+}, "A closed shadow tree has nothing to do with the behavior of assignedNodes({flatten: true}}");
 </script>

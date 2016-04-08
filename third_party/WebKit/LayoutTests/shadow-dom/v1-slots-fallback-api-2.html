@@ -40,16 +40,16 @@ test(() => {
 }, "assignedSlot");
 
 test(() => {
-  assert_array_equals(slot1.getAssignedNodes(), []);
-  assert_array_equals(slot2.getAssignedNodes(), [child1]);
-  assert_array_equals(slot3.getAssignedNodes(), []);
-  assert_array_equals(slot4.getAssignedNodes(), []);
-}, "getAssignedNodes");
+  assert_array_equals(slot1.assignedNodes(), []);
+  assert_array_equals(slot2.assignedNodes(), [child1]);
+  assert_array_equals(slot3.assignedNodes(), []);
+  assert_array_equals(slot4.assignedNodes(), []);
+}, "assignedNodes");
 
 test(() => {
-  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [fallback1, child1]);
-  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [child1]);
-  assert_array_equals(slot3.getAssignedNodes({flatten: true}), [fallback3]);
-  assert_array_equals(slot4.getAssignedNodes({flatten: true}), [fallback3]);
+  assert_array_equals(slot1.assignedNodes({flatten: true}), [fallback1, child1]);
+  assert_array_equals(slot2.assignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot3.assignedNodes({flatten: true}), [fallback3]);
+  assert_array_equals(slot4.assignedNodes({flatten: true}), [fallback3]);
 }, "getDistributedNodes");
 </script>

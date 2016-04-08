@@ -62,26 +62,26 @@ test(() => {
 }, "assignedSlot");
 
 test(() => {
-  assert_array_equals(d1_s0.getAssignedNodes(), [d5]);
-  assert_array_equals(d1_s1.getAssignedNodes(), [d2]);
-  assert_array_equals(d1_s2.getAssignedNodes(), [d3]);
+  assert_array_equals(d1_s0.assignedNodes(), [d5]);
+  assert_array_equals(d1_s1.assignedNodes(), [d2]);
+  assert_array_equals(d1_s2.assignedNodes(), [d3]);
 
-  assert_array_equals(d1_1_s1.getAssignedNodes(), [d1_s1, d1_4]);
-  assert_array_equals(d1_1_s2.getAssignedNodes(), []);
-}, "getAssignedNodes");
+  assert_array_equals(d1_1_s1.assignedNodes(), [d1_s1, d1_4]);
+  assert_array_equals(d1_1_s2.assignedNodes(), []);
+}, "assignedNodes");
 
 test(() => {
-  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: false}), [d1_s1, d1_4],
+  assert_array_equals(d1_1_s1.assignedNodes({flatten: false}), [d1_s1, d1_4],
                       "{flatten: false} should not have any effect");
-}, "getAssignedNodes({flatten: false})");
+}, "assignedNodes({flatten: false})");
 
 test(() => {
-  assert_array_equals(d1_s0.getAssignedNodes({flatten: true}), [d5]);
-  assert_array_equals(d1_s1.getAssignedNodes({flatten: true}), [d2]);
-  assert_array_equals(d1_s2.getAssignedNodes({flatten: true}), [d3]);
+  assert_array_equals(d1_s0.assignedNodes({flatten: true}), [d5]);
+  assert_array_equals(d1_s1.assignedNodes({flatten: true}), [d2]);
+  assert_array_equals(d1_s2.assignedNodes({flatten: true}), [d3]);
 
-  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: true}), [d2, d1_4]);
-  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: true}), [d2, d1_4]);
-  assert_array_equals(d1_1_s2.getAssignedNodes({flatten: true}), []);
-}, "getAssignedNodes({flatten: true})");
+  assert_array_equals(d1_1_s1.assignedNodes({flatten: true}), [d2, d1_4]);
+  assert_array_equals(d1_1_s1.assignedNodes({flatten: true}), [d2, d1_4]);
+  assert_array_equals(d1_1_s2.assignedNodes({flatten: true}), []);
+}, "assignedNodes({flatten: true})");
 </script>

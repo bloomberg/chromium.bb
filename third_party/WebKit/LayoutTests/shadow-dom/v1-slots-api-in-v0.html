@@ -35,8 +35,8 @@ test(() => {
 }, "assignedSlot");
 
 test(() => {
-  assert_array_equals(slot0.getAssignedNodes(), []);
-  assert_array_equals(slot1.getAssignedNodes(), []);
-  assert_array_equals(slot2.getAssignedNodes(), []);
-}, "getAssignedNodes");
+  assert_array_equals(slot0.assignedNodes(), []);
+  assert_array_equals(slot1.assignedNodes(), []);
+  assert_array_equals(slot2.assignedNodes(), []);
+}, "assignedNodes");
 </script>

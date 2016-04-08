@@ -24,17 +24,17 @@ async_test((test) => {
   const d1_s1 = d1_shadow.querySelector('slot');
   const d1_d1_s1 = d1_d1_shadow.querySelector('slot');
 
-  assert_array_equals(d1_s1.getAssignedNodes(), [d2]);
-  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d2]);
+  assert_array_equals(d1_s1.assignedNodes(), [d2]);
+  assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2]);
 
-  assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
-  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d2]);
+  assert_array_equals(d1_d1_s1.assignedNodes(), [d1_s1]);
+  assert_array_equals(d1_d1_s1.assignedNodes({'flatten': true}), [d2]);
 
   d1_s1.addEventListener('slotchange', (e) => {
     test.step(() => {
       assert_equals(e.target, d1_s1);
-      assert_array_equals(d1_s1.getAssignedNodes(), [d2, d3]);
-      assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d2, d3]);
+      assert_array_equals(d1_s1.assignedNodes(), [d2, d3]);
+      assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2, d3]);
       assert_array_equals(e.scoped, true);
       count++;
       // The order when a slotchange event is dispatched in the slots is not guranteed.
@@ -46,8 +46,8 @@ async_test((test) => {
   d1_d1_s1.addEventListener('slotchange', (e) => {
     test.step(() => {
       assert_equals(e.target, d1_d1_s1);
-      assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
-      assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d2, d3]);
+      assert_array_equals(d1_d1_s1.assignedNodes(), [d1_s1]);
+      assert_array_equals(d1_d1_s1.assignedNodes({'flatten': true}), [d2, d3]);
       assert_array_equals(e.scoped, true);
       count++;
       if (count == 2)
