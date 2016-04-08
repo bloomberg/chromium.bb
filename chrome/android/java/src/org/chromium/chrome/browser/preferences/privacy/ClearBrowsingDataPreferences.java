@@ -131,9 +131,6 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     private static final String WEB_HISTORY_URL =
             "https://history.google.com/history/?utm_source=chrome_cbd";
 
-    private OtherFormsOfHistoryDialogFragment mDialogAboutOtherFormsOfBrowsingHistory;
-    private boolean mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled;
-
     /**
      * The various data types that can be cleared via this screen.
      */
@@ -194,6 +191,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             return mTitle;
         }
     }
+
+    private OtherFormsOfHistoryDialogFragment mDialogAboutOtherFormsOfBrowsingHistory;
+    private boolean mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled;
 
     private ProgressDialog mProgressDialog;
     private Item[] mItems;
