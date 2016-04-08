@@ -4182,9 +4182,7 @@ static bool logicalWidthIsResolvable(const LayoutBox& layoutBox)
         return true;
     if (box->isLayoutView())
         return true;
-    // The size of the containing block of an absolutely positioned element is always definite with respect to that
-    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
-    if (box->isOutOfFlowPositioned())
+    if (box->isOutOfFlowPositioned() && !box->style()->logicalLeft().isAuto() && !box->style()->logicalRight().isAuto())
         return true;
     if (box->hasOverrideContainingBlockLogicalWidth())
         return box->overrideContainingBlockContentLogicalWidth() != -1;
@@ -4208,16 +4206,14 @@ bool LayoutBox::percentageLogicalHeightIsResolvable() const
 bool LayoutBox::hasDefiniteLogicalHeight() const
 {
     const Length& logicalHeight = style()->logicalHeight();
-    if (logicalHeight.isIntrinsicOrAuto())
-        return false;
     if (logicalHeight.isFixed())
         return true;
-    // The size of the containing block of an absolutely positioned element is always definite with respect to that
-    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
-    if (isOutOfFlowPositioned())
+    if (isOutOfFlowPositioned() && !style()->logicalTop().isAuto() && !style()->logicalBottom().isAuto())
         return true;
     if (hasOverrideContainingBlockLogicalHeight())
         return overrideContainingBlockContentLogicalHeight() != -1;
+    if (logicalHeight.isIntrinsicOrAuto())
+        return false;
 
     return percentageLogicalHeightIsResolvable();
 }
