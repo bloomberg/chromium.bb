@@ -8,8 +8,9 @@ cr.define('md_history.history_synced_tabs_test', function() {
       collapsed: false,
       deviceType: '',
       name: name,
-      modifiedTime: 0,
-      tag: '',
+      modifiedTime: '2 seconds ago',
+      tag: name,
+      timestamp: 0,
       windows: windows
     };
   }
@@ -89,6 +90,50 @@ cr.define('md_history.history_synced_tabs_test', function() {
                      .querySelectorAll('#window-separator')
                      .length);
           done();
+        });
+      });
+
+      test('updating sessions', function(done) {
+        var session1 = createSession(
+            'Chromebook',
+            [createWindow(['http://www.example.com', 'http://crbug.com'])]);
+        session1.timestamp = 1000;
+
+        var session2 =
+            createSession('Nexus 5', [createWindow(['http://www.google.com'])]);
+
+        setForeignSessions([session1, session2], true);
+
+        flush(function() {
+          var session1updated = createSession('Chromebook', [
+            createWindow(['http://www.example.com', 'http://crbug.com/new']),
+            createWindow(['http://web.site'])
+          ]);
+          session1updated.timestamp = 1234;
+
+          setForeignSessions([session1updated, session2], true);
+
+          flush(function() {
+            // There should only be two cards.
+            var cards = Polymer.dom(element.root)
+                .querySelectorAll('history-synced-device-card');
+            assertEquals(2, cards.length);
+
+            // There are now 2 windows in the first device.
+            assertEquals(
+                2, Polymer.dom(cards[0].root)
+                       .querySelectorAll('#window-separator')
+                       .length);
+
+            // Check that the actual link changes.
+            assertEquals(
+                'http://crbug.com/new',
+                Polymer.dom(cards[0].root)
+                    .querySelectorAll('.website-title')[1]
+                    .textContent.trim());
+
+            done();
+          });
         });
       });
 

@@ -49,6 +49,7 @@ var HistoryQuery;
  *            name: string,
  *            modifiedTime: string,
  *            tag: string,
+ *            timestamp: number,
  *            windows: Array}}
  */
 var ForeignSession;

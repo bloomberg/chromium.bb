@@ -279,14 +279,15 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       scoped_ptr<base::DictionaryValue> session_data(
           new base::DictionaryValue());
       // The items which are to be written into |session_data| are also
-      // described in chrome/browser/resources/ntp4/other_sessions.js in
-      // @typedef for SessionData. Please update it whenever you add or remove
-      // any keys here.
+      // described in chrome/browser/resources/history/externs.js
+      // @typedef for ForeignSession. Please update it whenever you add or
+      // remove any keys here.
       session_data->SetString("tag", session_tag);
       session_data->SetString("name", session->session_name);
       session_data->SetString("deviceType", session->DeviceTypeAsString());
       session_data->SetString("modifiedTime",
                               FormatSessionTime(session->modified_time));
+      session_data->SetDouble("timestamp", session->modified_time.ToJsTime());
 
       bool is_collapsed = collapsed_sessions->HasKey(session_tag);
       session_data->SetBoolean("collapsed", is_collapsed);

@@ -129,7 +129,7 @@ function setForeignSessions(sessionList, isTabSyncEnabled) {
     var syncedDeviceManager =
         /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
     if (isTabSyncEnabled)
-      syncedDeviceManager.addSyncedHistory(sessionList);
+      syncedDeviceManager.setSyncedHistory(sessionList);
   });
 }
 
