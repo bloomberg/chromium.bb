@@ -1109,9 +1109,14 @@ LayoutUnit LayoutFlexibleBox::mainSizeForPercentageResolution(const LayoutBox& c
     const Length& flexBasis = flexBasisForChild(child);
     if (!mainAxisLengthIsDefinite(child, flexBasis))
         return LayoutUnit(-1);
-    LayoutUnit mainSize = isColumnFlow() ? computeDefiniteLogicalHeight() : computeDefiniteLogicalWidth();
-    if (mainSize == LayoutUnit(-1))
-        return mainSize;
+    if (!flexBasis.hasPercent()) {
+        // If flex basis had a percentage, our size is guaranteed to be definite or the flex item's
+        // size could not be definite.
+        // Otherwise, we make up a percentage to check whether we have a definite size.
+        // TODO(cbiesinger): cache this somewhere
+        if (!mainAxisLengthIsDefinite(child, Length(0, Percent)))
+            return LayoutUnit(-1);
+    }
 
     if (hasOrthogonalFlow(child))
         return child.hasOverrideLogicalContentHeight() ? child.overrideLogicalContentHeight() : LayoutUnit(-1);
