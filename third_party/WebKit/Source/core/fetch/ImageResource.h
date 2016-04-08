@@ -156,8 +156,10 @@ private:
     void updateImage(bool allDataReceived);
     void clearImage();
     // If not null, changeRect is the changed part of the image.
-    void notifyObservers(bool isNotifyingFinish, const IntRect* changeRect = nullptr);
-    void notifyObserver(ImageResourceObserver*, bool isNotifyingFinish, const IntRect* changeRect = nullptr);
+    void notifyObservers(const IntRect* changeRect = nullptr);
+
+    void checkNotify() override;
+    void markClientsAndObserversFinished() override;
 
     float m_devicePixelRatioHeaderValue;
 

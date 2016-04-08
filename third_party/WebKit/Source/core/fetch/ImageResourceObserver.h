@@ -41,8 +41,8 @@ public:
     // because we are animating. If not null, the IntRect is the changed rect of the image.
     virtual void imageChanged(ImageResource*, const IntRect* = 0) { }
 
-    // Similar to ResourceClient::notifyFinished(), except for a slight call
-    // order difference. This is to avoid an ImageResourceObserver from being
+    // Called just before ResourceClient::notifyFinished() would be called.
+    // This is to avoid an ImageResourceObserver from being
     // also a ResourceClient just to be notified for load finish.
     virtual void imageNotifyFinished(ImageResource*) { }
 

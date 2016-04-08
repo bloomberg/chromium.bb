@@ -291,7 +291,7 @@ protected:
     virtual bool isSafeToUnlock() const { return false; }
     virtual void destroyDecodedDataIfPossible() { }
 
-    void markClientsFinished();
+    virtual void markClientsAndObserversFinished();
 
     // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
     String getMemoryDumpName() const;

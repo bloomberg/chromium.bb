@@ -99,17 +99,30 @@ DEFINE_TRACE(ImageResource)
     MultipartImageResourceParser::Client::trace(visitor);
 }
 
-void ImageResource::notifyObserver(ImageResourceObserver* observer, bool isNotifyingFinish, const IntRect* changeRect)
+void ImageResource::checkNotify()
 {
-    if (isNotifyingFinish) {
+    if (isLoading())
+        return;
+
+    ImageResourceObserverWalker walker(m_observers);
+    while (auto* observer = walker.next()) {
         observer->imageNotifyFinished(this);
-        if (m_observers.contains(observer)) {
-            m_finishedObservers.add(observer);
-            m_observers.remove(observer);
+    }
+
+    Resource::checkNotify();
+}
+
+void ImageResource::markClientsAndObserversFinished()
+{
+    while (!m_observers.isEmpty()) {
+        HashCountedSet<ImageResourceObserver*>::iterator it = m_observers.begin();
+        for (int i = it->value; i; i--) {
+            m_finishedObservers.add(it->key);
+            m_observers.remove(it);
         }
     }
 
-    observer->imageChanged(this, changeRect);
+    Resource::markClientsAndObserversFinished();
 }
 
 void ImageResource::addObserver(ImageResourceObserver* observer)
@@ -127,8 +140,15 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
     }
 
     if (m_image && !m_image->isNull()) {
-        bool isNotifyingFinish = !isLoading() && !stillNeedsLoad();
-        notifyObserver(observer, isNotifyingFinish);
+        observer->imageChanged(this);
+    }
+
+    if (isLoaded()) {
+        observer->imageNotifyFinished(this);
+        if (m_observers.contains(observer)) {
+            m_finishedObservers.add(observer);
+            m_observers.remove(observer);
+        }
     }
 }
 
@@ -290,16 +310,16 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
     return size;
 }
 
-void ImageResource::notifyObservers(bool isNotifyingFinish, const IntRect* changeRect)
+void ImageResource::notifyObservers(const IntRect* changeRect)
 {
     ImageResourceObserverWalker finishedWalker(m_finishedObservers);
     while (auto* observer = finishedWalker.next()) {
-        notifyObserver(observer, false, changeRect);
+        observer->imageChanged(this, changeRect);
     }
 
     ImageResourceObserverWalker walker(m_observers);
     while (auto* observer = walker.next()) {
-        notifyObserver(observer, isNotifyingFinish, changeRect);
+        observer->imageChanged(this, changeRect);
     }
 }
 
@@ -363,7 +383,7 @@ void ImageResource::updateImage(bool allDataReceived)
 
         // It would be nice to only redraw the decoded band of the image, but with the current design
         // (decoding delayed until painting) that seems hard.
-        notifyObservers(allDataReceived);
+        notifyObservers();
     }
 }
 
@@ -388,7 +408,7 @@ void ImageResource::error(Resource::Status status)
         m_multipartParser->cancel();
     clear();
     Resource::error(status);
-    notifyObservers(true);
+    notifyObservers();
 }
 
 void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
@@ -454,7 +474,7 @@ void ImageResource::animationAdvanced(const blink::Image* image)
 {
     if (!image || image != m_image)
         return;
-    notifyObservers(false);
+    notifyObservers();
 }
 
 void ImageResource::updateImageAnimationPolicy()
@@ -496,7 +516,7 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
 {
     if (!image || image != m_image)
         return;
-    notifyObservers(false, &rect);
+    notifyObservers(&rect);
 }
 
 void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)

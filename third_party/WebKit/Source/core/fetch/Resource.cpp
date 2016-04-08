@@ -311,7 +311,7 @@ void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
     setEncodedSize(0);
 }
 
-void Resource::markClientsFinished()
+void Resource::markClientsAndObserversFinished()
 {
     while (!m_clients.isEmpty()) {
         HashCountedSet<ResourceClient*>::iterator it = m_clients.begin();
@@ -334,7 +334,7 @@ void Resource::error(Resource::Status status)
     ASSERT(errorOccurred());
     m_data.clear();
     checkNotify();
-    markClientsFinished();
+    markClientsAndObserversFinished();
 }
 
 void Resource::finish()
@@ -343,7 +343,7 @@ void Resource::finish()
     if (!errorOccurred())
         m_status = Cached;
     checkNotify();
-    markClientsFinished();
+    markClientsAndObserversFinished();
 }
 
 AtomicString Resource::httpContentType() const
