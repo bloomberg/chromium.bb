@@ -1047,11 +1047,10 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   else if (web_attributes.webGLVersion == 2)
     attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL2;
 
-  bool share_resources = web_attributes.shareResources;
-  bool automatic_flushes = !web_attributes.noAutomaticFlushes;
-  gfx::GpuPreference gpu_preference = web_attributes.preferDiscreteGPU
-                                          ? gfx::PreferDiscreteGpu
-                                          : gfx::PreferIntegratedGpu;
+  bool share_resources = false;
+  bool automatic_flushes = true;
+  // Prefer discrete GPU for WebGL.
+  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(

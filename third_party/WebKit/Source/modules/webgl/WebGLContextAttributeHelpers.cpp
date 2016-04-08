@@ -25,8 +25,6 @@ Platform::ContextAttributes toPlatformContextAttributes(const WebGLContextAttrib
 {
     Platform::ContextAttributes result;
     result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
-    result.shareResources = false;
-    result.preferDiscreteGPU = true;
     result.webGLVersion = webGLVersion;
     return result;
 }

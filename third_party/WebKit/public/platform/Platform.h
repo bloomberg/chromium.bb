@@ -455,9 +455,6 @@ public:
     // GPU ----------------------------------------------------------------
     //
     struct ContextAttributes {
-        bool shareResources = true;
-        bool preferDiscreteGPU = false;
-        bool noAutomaticFlushes = false;
         bool failIfMajorPerformanceCaveat = false;
         unsigned webGLVersion = 0;
     };
