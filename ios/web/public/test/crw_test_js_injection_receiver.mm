@@ -48,10 +48,6 @@
   [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
 
-- (web::WebViewType)webViewType {
-  return web::WK_WEB_VIEW_TYPE;
-}
-
 @end
 
 @interface CRWTestJSInjectionReceiver () {

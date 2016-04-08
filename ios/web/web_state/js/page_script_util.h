@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/web/public/web_view_type.h"
 
 namespace web {
 

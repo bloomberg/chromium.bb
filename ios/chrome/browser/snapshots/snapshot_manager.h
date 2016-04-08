@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/web/public/web_view_type.h"
 
 // Snapshot manager for contents of a tab. A snapshot is a full-screen image
 // of the contents of the page at the current scroll offset and zoom level,

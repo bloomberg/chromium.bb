@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/web/public/web_view_type.h"
 
 // The type of the completion handler block that is called from
 // |evaluateJavaScript:completionHandler|
@@ -35,10 +34,6 @@ typedef void (^JavaScriptCompletion)(NSString*, NSError*);
 // |jsInjectionManagerClass|. This should only be used for injecting
 // the manager's script, and not for evaluating arbitrary JavaScript.
 - (void)injectScript:(NSString*)script forClass:(Class)jsInjectionManagerClass;
-
-// Returns type of web view used for evaluation. Must not change for the
-// lifetime of the object.
-- (web::WebViewType)webViewType;
 
 @end
 

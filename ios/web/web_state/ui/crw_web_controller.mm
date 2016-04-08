@@ -2021,10 +2021,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self.injectedScriptManagers addObject:JSInjectionManagerClass];
 }
 
-- (web::WebViewType)webViewType {
-  return web::WK_WEB_VIEW_TYPE;
-}
-
 #pragma mark -
 
 - (void)evaluateUserJavaScript:(NSString*)script {

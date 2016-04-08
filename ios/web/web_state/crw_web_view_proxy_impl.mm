@@ -109,10 +109,6 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return [_contentView gestureRecognizers];
 }
 
-- (web::WebViewType)webViewType {
-  return [_webController webViewType];
-}
-
 - (BOOL)shouldUseInsetForTopPadding {
   SEL shouldUseInsetSelector = @selector(shouldUseInsetForTopPadding);
   return [_contentView respondsToSelector:shouldUseInsetSelector] &&

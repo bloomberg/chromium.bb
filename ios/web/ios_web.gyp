@@ -193,7 +193,6 @@
         'public/web_thread_delegate.h',
         'public/web_ui_ios_data_source.h',
         'public/web_view_creation_util.h',
-        'public/web_view_type.h',
         'string_util.cc',
         'ui_web_view_util.h',
         'ui_web_view_util.mm',

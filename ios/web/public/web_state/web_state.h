@@ -15,7 +15,6 @@
 #include "base/supports_user_data.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
-#include "ios/web/public/web_view_type.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/size.h"
@@ -89,9 +88,6 @@ class WebState : public base::SupportsUserData {
   // been purged due to low memory, this will recreate it. It is up to the
   // caller to size the view.
   virtual UIView* GetView() = 0;
-
-  // Returns the type of the web view associated with this WebState.
-  virtual WebViewType GetWebViewType() const = 0;
 
   // Gets the BrowserState associated with this WebState. Can never return null.
   virtual BrowserState* GetBrowserState() const = 0;

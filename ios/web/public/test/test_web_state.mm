@@ -17,10 +17,6 @@ UIView* TestWebState::GetView() {
   return nullptr;
 }
 
-WebViewType TestWebState::GetWebViewType() const {
-  return web::UI_WEB_VIEW_TYPE;
-}
-
 BrowserState* TestWebState::GetBrowserState() const {
   return nullptr;
 }

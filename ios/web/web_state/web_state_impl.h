@@ -217,7 +217,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // WebState:
   UIView* GetView() override;
-  web::WebViewType GetWebViewType() const override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const WebState::OpenURLParams& params) override;
   NavigationManager* GetNavigationManager() override;

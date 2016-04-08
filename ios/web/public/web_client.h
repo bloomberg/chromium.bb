@@ -10,7 +10,6 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "ios/web/public/web_view_type.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
 

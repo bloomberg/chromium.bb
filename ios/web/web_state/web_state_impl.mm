@@ -466,10 +466,6 @@ UIView* WebStateImpl::GetView() {
   return [web_controller_ view];
 }
 
-WebViewType WebStateImpl::GetWebViewType() const {
-  return [web_controller_ webViewType];
-}
-
 BrowserState* WebStateImpl::GetBrowserState() const {
   return navigation_manager_.GetBrowserState();
 }

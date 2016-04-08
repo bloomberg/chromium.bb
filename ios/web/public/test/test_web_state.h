@@ -24,7 +24,6 @@ class TestWebState : public WebState {
 
   // WebState implementation.
   UIView* GetView() override;
-  WebViewType GetWebViewType() const override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const OpenURLParams& params) override {}
   NavigationManager* GetNavigationManager() override;

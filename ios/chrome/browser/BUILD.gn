@@ -520,8 +520,6 @@ source_set("browser") {
     "variations/ios_chrome_variations_service_client.h",
     "web/dom_altering_lock.h",
     "web/dom_altering_lock.mm",
-    "web/web_view_type_util.h",
-    "web/web_view_type_util.mm",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
     "web_resource/web_resource_util.cc",
