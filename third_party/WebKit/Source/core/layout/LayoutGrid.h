@@ -148,7 +148,7 @@ private:
 
     GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t) const;
 
-    bool updateOverrideContainingBlockContentLogicalWidthForChild(LayoutBox&, GridSizingData&);
+    bool updateOverrideContainingBlockContentSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
     LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&);
     LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
     LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
@@ -162,7 +162,7 @@ private:
     GridArea cachedGridArea(const LayoutBox&) const;
     GridSpan cachedGridSpan(const LayoutBox&, GridTrackSizingDirection) const;
 
-    LayoutUnit gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
+    LayoutUnit gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection, const GridSizingData&) const;
     LayoutUnit gridAreaBreadthForChildIncludingAlignmentOffsets(const LayoutBox&, GridTrackSizingDirection, const GridSizingData&) const;
 
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&);
@@ -197,6 +197,9 @@ private:
     }
 
     bool hasDefiniteLogicalSize(GridTrackSizingDirection) const;
+
+    bool isOrthogonalChild(const LayoutBox&) const;
+    GridTrackSizingDirection flowAwareDirectionForChild(const LayoutBox&, GridTrackSizingDirection) const;
 
     typedef Vector<Vector<GridCell>> GridRepresentation;
     GridRepresentation m_grid;

@@ -363,12 +363,15 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
 
         GridSizingData sizingData(gridColumnCount(), gridRowCount());
 
+        // 1- First, the track sizing algorithm is used to resolve the sizes of the grid columns.
         // At this point the logical width is always definite as the above call to updateLogicalWidth()
         // properly resolves intrinsic sizes. We cannot do the same for heights though because many code
         // paths inside updateLogicalHeight() require a previous call to setLogicalHeight() to resolve
         // heights properly (like for positioned items for example).
         computeTrackSizesForDirection(ForColumns, sizingData, availableLogicalWidth());
 
+        // 2- Next, the track sizing algorithm resolves the sizes of the grid rows, using the
+        // grid column sizes calculated in the previous step.
         if (logicalHeightWasIndefinite)
             computeIntrinsicLogicalHeight(sizingData);
         else
@@ -662,6 +665,31 @@ bool LayoutGrid::hasDefiniteLogicalSize(GridTrackSizingDirection direction) cons
     return (direction == ForRows) ? hasDefiniteLogicalHeight() : hasDefiniteLogicalWidth();
 }
 
+static bool hasOverrideContainingBlockContentSizeForChild(const LayoutBox& child, GridTrackSizingDirection direction)
+{
+    return direction == ForColumns ? child.hasOverrideContainingBlockLogicalWidth() : child.overrideContainingBlockContentLogicalHeight();
+}
+
+static LayoutUnit overrideContainingBlockContentSizeForChild(const LayoutBox& child, GridTrackSizingDirection direction)
+{
+    return direction == ForColumns ? child.overrideContainingBlockContentLogicalWidth() : child.overrideContainingBlockContentLogicalHeight();
+}
+
+static void setOverrideContainingBlockContentSizeForChild(LayoutBox& child, GridTrackSizingDirection direction, LayoutUnit size)
+{
+    if (direction == ForColumns)
+        child.setOverrideContainingBlockContentLogicalWidth(size);
+    else
+        child.setOverrideContainingBlockContentLogicalHeight(size);
+}
+
+static bool shouldClearOverrideContainingBlockContentSizeForChild(const LayoutBox& child, GridTrackSizingDirection direction)
+{
+    if (direction == ForColumns)
+        return child.hasRelativeLogicalWidth() || child.styleRef().logicalWidth().isIntrinsicOrAuto();
+    return child.hasRelativeLogicalHeight() || child.styleRef().logicalHeight().isIntrinsicOrAuto();
+}
+
 GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size_t i) const
 {
     bool isForColumns = direction == ForColumns;
@@ -686,72 +714,80 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
     return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
+bool LayoutGrid::isOrthogonalChild(const LayoutBox& child) const
+{
+    return child.isHorizontalWritingMode() != isHorizontalWritingMode();
+}
+
 LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, GridSizingData& sizingData)
 {
+    GridTrackSizingDirection childBlockDirection = flowAwareDirectionForChild(child, ForRows);
     SubtreeLayoutScope layoutScope(child);
-    bool shouldClearContainingBlockLogicalHeight = child.hasRelativeLogicalHeight() || child.styleRef().logicalHeight().isIntrinsicOrAuto();
-    if (shouldClearContainingBlockLogicalHeight)
+    // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
+    // what we are interested in here. Thus we need to set the block-axis override size to -1 (no possible resolution).
+    if (shouldClearOverrideContainingBlockContentSizeForChild(child, ForRows)) {
+        setOverrideContainingBlockContentSizeForChild(child, childBlockDirection, LayoutUnit(-1));
         layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
+    }
 
     // We need to clear the stretched height to properly compute logical height during layout.
     if (child.needsLayout())
         child.clearOverrideLogicalContentHeight();
 
-    // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
-    // what we are interested in here. Thus we need to set the override logical height to -1 (no possible resolution).
-    if (shouldClearContainingBlockLogicalHeight)
-        child.setOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
     child.layoutIfNeeded();
     return child.logicalHeight() + child.marginLogicalHeight();
 }
 
+GridTrackSizingDirection LayoutGrid::flowAwareDirectionForChild(const LayoutBox& child, GridTrackSizingDirection direction) const
+{
+    return !isOrthogonalChild(child) ? direction : (direction == ForColumns ? ForRows : ForColumns);
+}
+
 LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
-    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
     // TODO(svillar): Properly support orthogonal writing mode.
-    if (hasOrthogonalWritingMode)
+    if (isOrthogonalChild(child))
         return LayoutUnit();
-
-    bool isRowAxis = direction == ForColumns;
+    GridTrackSizingDirection childInlineDirection = flowAwareDirectionForChild(child, ForColumns);
+    bool isRowAxis = direction == childInlineDirection;
     const Length& childSize = isRowAxis ? child.styleRef().logicalWidth() : child.styleRef().logicalHeight();
     const Length& childMinSize = isRowAxis ? child.styleRef().logicalMinWidth() : child.styleRef().logicalMinHeight();
     if (!childSize.isAuto() || childMinSize.isAuto())
         return minContentForChild(child, direction, sizingData);
 
-    bool overrideLogicalWidthHasChanged = updateOverrideContainingBlockContentLogicalWidthForChild(child, sizingData);
+    bool overrideSizeHasChanged = updateOverrideContainingBlockContentSizeForChild(child, childInlineDirection, sizingData);
     if (isRowAxis) {
         LayoutUnit marginLogicalWidth = sizingData.sizingOperation == GridSizingData::TrackSizing ? computeMarginLogicalSizeForChild(InlineDirection, child) : marginIntrinsicLogicalWidthForChild(child);
-        return child.computeLogicalWidthUsing(MinSize, childMinSize, child.overrideContainingBlockContentLogicalWidth(), this) + marginLogicalWidth;
+        return child.computeLogicalWidthUsing(MinSize, childMinSize, overrideContainingBlockContentSizeForChild(child, childInlineDirection), this) + marginLogicalWidth;
     }
 
-    if (overrideLogicalWidthHasChanged)
+    if (overrideSizeHasChanged)
         child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     child.layoutIfNeeded();
     return child.computeLogicalHeightUsing(MinSize, childMinSize, child.intrinsicLogicalHeight()) + child.marginLogicalHeight() + child.scrollbarLogicalHeight();
 }
 
-bool LayoutGrid::updateOverrideContainingBlockContentLogicalWidthForChild(LayoutBox& child, GridSizingData& sizingData)
+bool LayoutGrid::updateOverrideContainingBlockContentSizeForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
-    LayoutUnit overrideWidth = gridAreaBreadthForChild(child, ForColumns, sizingData.columnTracks);
-    if (child.hasOverrideContainingBlockLogicalWidth() && child.overrideContainingBlockContentLogicalWidth() == overrideWidth)
+    LayoutUnit overrideSize = gridAreaBreadthForChild(child, direction, sizingData);
+    if (hasOverrideContainingBlockContentSizeForChild(child, direction) && overrideContainingBlockContentSizeForChild(child, direction) == overrideSize)
         return false;
 
-    child.setOverrideContainingBlockContentLogicalWidth(overrideWidth);
+    setOverrideContainingBlockContentSizeForChild(child, direction, overrideSize);
     return true;
 }
 
 LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
-    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
     // FIXME: Properly support orthogonal writing mode.
-    if (hasOrthogonalWritingMode)
+    if (isOrthogonalChild(child))
         return LayoutUnit();
-
-    if (direction == ForColumns) {
+    GridTrackSizingDirection childInlineDirection = flowAwareDirectionForChild(child, ForColumns);
+    if (direction == childInlineDirection) {
         // If |child| has a relative logical width, we shouldn't let it override its intrinsic width, which is
-        // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
-        if (child.hasRelativeLogicalWidth())
-            child.setOverrideContainingBlockContentLogicalWidth(LayoutUnit(-1));
+        // what we are interested in here. Thus we need to set the inline-axis override size to -1 (no possible resolution).
+        if (shouldClearOverrideContainingBlockContentSizeForChild(child, ForColumns))
+            setOverrideContainingBlockContentSizeForChild(child, childInlineDirection, LayoutUnit(-1));
 
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
@@ -759,23 +795,21 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
     }
 
     SubtreeLayoutScope layouter(child);
-    if (updateOverrideContainingBlockContentLogicalWidthForChild(child, sizingData))
+    if (updateOverrideContainingBlockContentSizeForChild(child, childInlineDirection, sizingData))
         child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     return logicalHeightForChild(child, sizingData);
 }
 
 LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
-    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    // FIXME: Properly support orthogonal writing mode.
-    if (hasOrthogonalWritingMode)
+    if (isOrthogonalChild(child))
         return LayoutUnit();
-
-    if (direction == ForColumns) {
+    GridTrackSizingDirection childInlineDirection = flowAwareDirectionForChild(child, ForColumns);
+    if (direction == childInlineDirection) {
         // If |child| has a relative logical width, we shouldn't let it override its intrinsic width, which is
-        // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
-        if (child.hasRelativeLogicalWidth())
-            child.setOverrideContainingBlockContentLogicalWidth(LayoutUnit(-1));
+        // what we are interested in here. Thus we need to set the inline-axis override size to -1 (no possible resolution).
+        if (shouldClearOverrideContainingBlockContentSizeForChild(child, ForColumns))
+            setOverrideContainingBlockContentSizeForChild(child, childInlineDirection, LayoutUnit(-1));
 
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
@@ -783,7 +817,7 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
     }
 
     SubtreeLayoutScope layouter(child);
-    if (updateOverrideContainingBlockContentLogicalWidthForChild(child, sizingData))
+    if (updateOverrideContainingBlockContentSizeForChild(child, childInlineDirection, sizingData))
         child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     return logicalHeightForChild(child, sizingData);
 }
@@ -1490,10 +1524,8 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
     if (!positionedDescendants)
         return;
 
-    bool containerHasHorizontalWritingMode = isHorizontalWritingMode();
     for (auto* child : *positionedDescendants) {
-        bool hasOrthogonalWritingMode = child->isHorizontalWritingMode() != containerHasHorizontalWritingMode;
-        if (hasOrthogonalWritingMode) {
+        if (isOrthogonalChild(*child)) {
             // FIXME: Properly support orthogonal writing mode.
             continue;
         }
@@ -1516,7 +1548,7 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
 
 void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, GridTrackSizingDirection direction, LayoutUnit& offset, LayoutUnit& breadth)
 {
-    ASSERT(child.isHorizontalWritingMode() == isHorizontalWritingMode());
+    ASSERT(!isOrthogonalChild(child));
     bool isForColumns = direction == ForColumns;
 
     GridSpan positions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), child, direction);
@@ -1606,8 +1638,9 @@ GridSpan LayoutGrid::cachedGridSpan(const LayoutBox& gridItem, GridTrackSizingDi
     return direction == ForColumns ? area.columns : area.rows;
 }
 
-LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection direction, const Vector<GridTrack>& tracks) const
+LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection direction, const GridSizingData& sizingData) const
 {
+    const Vector<GridTrack>& tracks = direction == ForColumns ? sizingData.columnTracks : sizingData.rowTracks;
     const GridSpan& span = cachedGridSpan(child, direction);
     LayoutUnit gridAreaBreadth;
     for (const auto& trackPosition : span)
@@ -1805,7 +1838,6 @@ void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child)
 
 GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) const
 {
-    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
     bool hasSameWritingMode = child.styleRef().getWritingMode() == styleRef().getWritingMode();
 
     switch (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
@@ -1813,12 +1845,12 @@ GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) 
         // If orthogonal writing-modes, this computes to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
         // self-start is based on the child's block axis direction. That's why we need to check against the grid container's block flow.
-        return (hasOrthogonalWritingMode || hasSameWritingMode) ? GridAxisStart : GridAxisEnd;
+        return (isOrthogonalChild(child) || hasSameWritingMode) ? GridAxisStart : GridAxisEnd;
     case ItemPositionSelfEnd:
         // If orthogonal writing-modes, this computes to 'end'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
         // self-end is based on the child's block axis direction. That's why we need to check against the grid container's block flow.
-        return (hasOrthogonalWritingMode || hasSameWritingMode) ? GridAxisEnd : GridAxisStart;
+        return (isOrthogonalChild(child) || hasSameWritingMode) ? GridAxisEnd : GridAxisStart;
     case ItemPositionLeft:
         // The alignment axis (column axis) and the inline axis are parallell in
         // orthogonal writing mode. Otherwise this this is equivalent to 'start'.
@@ -1828,7 +1860,7 @@ GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) 
         // The alignment axis (column axis) and the inline axis are parallell in
         // orthogonal writing mode. Otherwise this this is equivalent to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        return hasOrthogonalWritingMode ? GridAxisEnd : GridAxisStart;
+        return isOrthogonalChild(child) ? GridAxisEnd : GridAxisStart;
     case ItemPositionCenter:
         return GridAxisCenter;
     case ItemPositionFlexStart: // Only used in flex layout, otherwise equivalent to 'start'.
@@ -1854,7 +1886,6 @@ GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) 
 
 GridAxisPosition LayoutGrid::rowAxisPositionForChild(const LayoutBox& child) const
 {
-    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
     bool hasSameDirection = child.styleRef().direction() == styleRef().direction();
     bool isLTR = styleRef().isLeftToRightDirection();
 
@@ -1863,11 +1894,11 @@ GridAxisPosition LayoutGrid::rowAxisPositionForChild(const LayoutBox& child) con
         // For orthogonal writing-modes, this computes to 'start'
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
         // self-start is based on the child's direction. That's why we need to check against the grid container's direction.
-        return (hasOrthogonalWritingMode || hasSameDirection) ? GridAxisStart : GridAxisEnd;
+        return (isOrthogonalChild(child) || hasSameDirection) ? GridAxisStart : GridAxisEnd;
     case ItemPositionSelfEnd:
         // For orthogonal writing-modes, this computes to 'start'
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        return (hasOrthogonalWritingMode || hasSameDirection) ? GridAxisEnd : GridAxisStart;
+        return (isOrthogonalChild(child) || hasSameDirection) ? GridAxisEnd : GridAxisStart;
     case ItemPositionLeft:
         return isLTR ? GridAxisStart : GridAxisEnd;
     case ItemPositionRight:
@@ -2078,7 +2109,7 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(Gri
 LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSizingData& sizingData) const
 {
     LayoutUnit rowAxisOffset = rowAxisOffsetForChild(child, sizingData);
-    // We stored m_columnPosition s's data ignoring the direction, hence we might need now
+    // We stored m_columnPosition's data ignoring the direction, hence we might need now
     // to translate positions from RTL to LTR, as it's more convenient for painting.
     if (!style()->isLeftToRightDirection()) {
         LayoutUnit alignmentOffset =  m_columnPositions[0] - borderAndPaddingStart();
