@@ -335,13 +335,6 @@ void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
       possible_auto_sign_in_->password_value == form.password_value &&
       possible_auto_sign_in_->origin == form.origin) {
     PromptUserToEnableAutosigninIfNecessary();
-    if (form.skip_zero_click &&
-        credential_manager_dispatcher_.IsZeroClickAllowed() &&
-        GetPasswordStore()) {
-      autofill::PasswordForm update(form);
-      update.skip_zero_click = false;
-      GetPasswordStore()->UpdateLogin(update);
-    }
   }
   possible_auto_sign_in_.reset();
 }

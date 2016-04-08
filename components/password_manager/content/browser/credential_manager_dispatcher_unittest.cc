@@ -392,14 +392,14 @@ TEST_F(CredentialManagerDispatcherTest,
   // Set the global zero click flag on, and populate the PasswordStore with a
   // form that's set to skip zero click.
   client_->set_zero_click_enabled(true);
+  client_->set_first_run_seen(true);
   form_.skip_zero_click = true;
   store_->AddLogin(form_);
   RunAllPendingTasks();
 
   // Calling 'OnStore' with a credential that matches |form_| should update
-  // the password without prompting the user.
+  // the credential without prompting the user.
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  info.password = base::ASCIIToUTF16("Totally new password.");
   dispatcher()->OnStore(kRequestId, info);
   process()->sink().ClearMessages();
 
@@ -407,9 +407,36 @@ TEST_F(CredentialManagerDispatcherTest,
   // the form is a match for an existing form, and update the PasswordStore.
   RunAllPendingTasks();
 
-  // Verify that the update didn't toggle the skip_zero_click flag off.
+  // Verify that the update toggled the skip_zero_click flag off.
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerFederatedStoreOverwriteZeroClick) {
+  // Set the global zero click flag on, and populate the PasswordStore with a
+  // form that's set to skip zero click.
+  client_->set_zero_click_enabled(true);
+  client_->set_first_run_seen(true);
+  form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.skip_zero_click = true;
+  form_.signon_realm = "federation://example.com/example.com";
+  store_->AddLogin(form_);
+  RunAllPendingTasks();
+
+  // Calling 'OnStore' with a credential that matches |form_| should update
+  // the credential without prompting the user.
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_FEDERATED);
+  dispatcher()->OnStore(kRequestId, info);
+  process()->sink().ClearMessages();
+
+  // Allow the PasswordFormManager to talk to the password store, determine
+  // the form is a match for an existing form, and update the PasswordStore.
+  RunAllPendingTasks();
+
+  // Verify that the update toggled the skip_zero_click flag off.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_F(CredentialManagerDispatcherTest,

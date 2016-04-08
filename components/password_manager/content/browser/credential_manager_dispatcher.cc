@@ -76,24 +76,33 @@ void CredentialManagerDispatcher::OnStore(
 void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+  const autofill::PasswordForm& form = form_manager_->pending_credentials();
 
-  if (form_manager_->IsNewLogin()) {
-    // If the PasswordForm we were given does not match an existing
-    // PasswordForm, ask the user if they'd like to save.
-    client_->PromptUserToSaveOrUpdatePassword(
-        std::move(form_manager_), CredentialSourceType::CREDENTIAL_SOURCE_API,
-        false);
-  } else {
-    // Otherwise, update the existing form, as we've been told by the site
-    // that the new PasswordForm is a functioning credential for the user.
-    // We use 'PasswordFormManager::Update(PasswordForm&)' here rather than
-    // 'PasswordFormManager::UpdateLogin', as we need to port over the
-    // 'skip_zero_click' state to ensure that we don't accidentally start
-    // signing users in just because the site asks us to. The simplest way
-    // to do so is simply to update the password field of the existing
-    // credential.
+  if (!form.federation_origin.unique()) {
+    // If this is a federated credential, check it against the federated matches
+    // produced by the PasswordFormManager. If a match is found, update it and
+    // return.
+    for (const auto& match : form_manager_->federated_matches()) {
+      if (match->username_value == form.username_value &&
+          match->federation_origin.IsSameOriginWith(form.federation_origin)) {
+        form_manager_->Update(*match);
+        return;
+      }
+    }
+  } else if (!form_manager_->IsNewLogin()) {
+    // Otherwise, if this is not a new password credential, update the existing
+    // credential without prompting the user. This will also update the
+    // 'skip_zero_click' state, as we've gotten an explicit signal that the page
+    // understands the credential management API and so can be trusted to notify
+    // us when they sign the user out.
     form_manager_->Update(*form_manager_->preferred_match());
+    return;
   }
+
+  // Otherwise, this is a new form, so as the user if they'd like to save.
+  client_->PromptUserToSaveOrUpdatePassword(
+      std::move(form_manager_), CredentialSourceType::CREDENTIAL_SOURCE_API,
+      false);
 }
 
 void CredentialManagerDispatcher::OnRequireUserMediation(int request_id) {

@@ -326,8 +326,10 @@ void PasswordFormManager::Update(
                              form_structure.FormSignature());
   }
   base::string16 password_to_save = pending_credentials_.password_value;
+  bool skip_zero_click = pending_credentials_.skip_zero_click;
   pending_credentials_ = credentials_to_update;
   pending_credentials_.password_value = password_to_save;
+  pending_credentials_.skip_zero_click = skip_zero_click;
   pending_credentials_.preferred = true;
   is_new_login_ = false;
   UpdateLogin();
@@ -673,7 +675,7 @@ void PasswordFormManager::UpdatePreferredLoginState(
 
 void PasswordFormManager::UpdateLogin() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
-  DCHECK(preferred_match_);
+  DCHECK(preferred_match_ || !pending_credentials_.federation_origin.unique());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
   // username, or the user selected one of the non-preferred matches,
@@ -713,6 +715,7 @@ void PasswordFormManager::UpdateLogin() {
     password_store->UpdateLoginWithPrimaryKey(pending_credentials_,
                                               old_primary_key);
   } else if (observed_form_.new_password_element.empty() &&
+             pending_credentials_.federation_origin.unique() &&
              !IsValidAndroidFacetURI(pending_credentials_.signon_realm) &&
              (pending_credentials_.password_element.empty() ||
               pending_credentials_.username_element.empty() ||
@@ -732,7 +735,7 @@ void PasswordFormManager::UpdateLogin() {
     password_was_updated = true;
   } else {
     password_store->UpdateLogin(pending_credentials_);
-    password_was_updated = true;
+    password_was_updated = pending_credentials_.federation_origin.unique();
   }
   // If this was password update then update all non-best matches entries with
   // the same username and the same old password.
@@ -1137,6 +1140,15 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   pending_credentials_.password_value = password_to_save;
   pending_credentials_.preferred = provisionally_saved_form_->preferred;
+
+  // If we're dealing with an API-driven provisionally saved form, then take
+  // its 'skip_zero_click' value. We don't do this for non-API forms, as
+  // those will never have 'skip_zero_click' set, and we would otherwise
+  // overwrite a user's auto-sign-in preference when they used autofill.
+  if (provisionally_saved_form_->type == autofill::PasswordForm::TYPE_API) {
+    pending_credentials_.skip_zero_click =
+        provisionally_saved_form_->skip_zero_click;
+  }
 
   if (user_action_ == kUserActionOverridePassword &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&

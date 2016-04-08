@@ -2937,7 +2937,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       SkipZeroClickToggledAfterSuccessfulSubmissionWithAPI) {
+                       SkipZeroClickNotToggledAfterSuccessfulSubmissionWithAPI)
+{
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // Save credentials with 'skip_zero_click'
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2972,7 +2973,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 
-  // Verify that the form's 'skip_zero_click' is updated.
+  // Verify that the form's 'skip_zero_click' is not updated.
   auto& passwords_map = password_store->stored_passwords();
   ASSERT_EQ(1u, passwords_map.size());
   auto& passwords_vector = passwords_map.begin()->second;
@@ -2980,7 +2981,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   const autofill::PasswordForm& form = passwords_vector[0];
   EXPECT_EQ(base::ASCIIToUTF16("user"), form.username_value);
   EXPECT_EQ(base::ASCIIToUTF16("password"), form.password_value);
-  EXPECT_FALSE(form.skip_zero_click);
+  EXPECT_TRUE(form.skip_zero_click);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
