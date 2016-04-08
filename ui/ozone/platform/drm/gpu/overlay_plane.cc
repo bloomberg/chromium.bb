@@ -27,6 +27,8 @@ OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
       display_bounds(display_bounds),
       crop_rect(crop_rect) {}
 
+OverlayPlane::OverlayPlane(const OverlayPlane& other) = default;
+
 OverlayPlane::~OverlayPlane() {
 }
 

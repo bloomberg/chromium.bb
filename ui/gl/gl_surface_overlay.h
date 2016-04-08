@@ -23,6 +23,7 @@ class GLSurfaceOverlay {
                    gl::GLImage* image,
                    const Rect& bounds_rect,
                    const RectF& crop_rect);
+  GLSurfaceOverlay(const GLSurfaceOverlay& other);
   ~GLSurfaceOverlay();
 
   // Schedule the image as an overlay plane to be shown at swap time for

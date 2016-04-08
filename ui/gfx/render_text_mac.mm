@@ -237,6 +237,8 @@ RenderTextMac::TextRun::TextRun()
       strike(false),
       diagonal_strike(false) {}
 
+RenderTextMac::TextRun::TextRun(const TextRun& other) = default;
+
 RenderTextMac::TextRun::~TextRun() {}
 
 float RenderTextMac::GetLayoutTextWidth() {

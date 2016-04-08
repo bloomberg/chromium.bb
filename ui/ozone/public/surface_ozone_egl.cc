@@ -8,6 +8,9 @@ namespace ui {
 
 EglConfigCallbacks::EglConfigCallbacks() {}
 
+EglConfigCallbacks::EglConfigCallbacks(const EglConfigCallbacks& other) =
+    default;
+
 EglConfigCallbacks::~EglConfigCallbacks() {}
 
 bool SurfaceOzoneEGL::IsUniversalDisplayLinkDevice() {

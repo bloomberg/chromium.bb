@@ -19,6 +19,7 @@ const int kNumTouchEvdevSlots = 20;
 // Contains information about an in progress touch.
 struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   InProgressTouchEvdev();
+  InProgressTouchEvdev(const InProgressTouchEvdev& other);
   ~InProgressTouchEvdev();
 
   // Whether there is new information for the touch.

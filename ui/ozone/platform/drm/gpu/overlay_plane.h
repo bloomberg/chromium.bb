@@ -29,6 +29,7 @@ struct OverlayPlane {
                gfx::OverlayTransform plane_transform,
                const gfx::Rect& display_bounds,
                const gfx::RectF& crop_rect);
+  OverlayPlane(const OverlayPlane& other);
 
   // This represents a callback function which can handle post processing
   // operations like scaling, format conversion etc of the buffer bound to this

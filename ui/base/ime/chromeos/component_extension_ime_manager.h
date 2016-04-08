@@ -22,6 +22,7 @@ namespace chromeos {
 // Represents an engine in component extension IME.
 struct UI_BASE_IME_EXPORT ComponentExtensionEngine {
   ComponentExtensionEngine();
+  ComponentExtensionEngine(const ComponentExtensionEngine& other);
   ~ComponentExtensionEngine();
   std::string engine_id;  // The engine id.
   std::string display_name;  // The display name.
@@ -36,6 +37,7 @@ struct UI_BASE_IME_EXPORT ComponentExtensionEngine {
 // Represents a component extension IME.
 struct UI_BASE_IME_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
+  ComponentExtensionIME(const ComponentExtensionIME& other);
   ~ComponentExtensionIME();
   std::string id;  // extension id.
   std::string manifest;  // the contents of manifest.json

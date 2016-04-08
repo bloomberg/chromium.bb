@@ -31,6 +31,7 @@ struct DisplayMode_Params {
 
 struct DisplaySnapshot_Params {
   DisplaySnapshot_Params();
+  DisplaySnapshot_Params(const DisplaySnapshot_Params& other);
   ~DisplaySnapshot_Params();
 
   int64_t display_id = 0;
@@ -56,6 +57,7 @@ struct OverlayCheck_Params {
   OverlayCheck_Params();
   OverlayCheck_Params(
       const OverlayCandidatesOzone::OverlaySurfaceCandidate& candidate);
+  OverlayCheck_Params(const OverlayCheck_Params& other);
   ~OverlayCheck_Params();
 
   bool operator<(const OverlayCheck_Params& plane) const;

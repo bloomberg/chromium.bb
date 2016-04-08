@@ -55,6 +55,7 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
   struct MenuItem {
     MenuItem();
+    MenuItem(const MenuItem& other);
     virtual ~MenuItem();
 
     std::string id;

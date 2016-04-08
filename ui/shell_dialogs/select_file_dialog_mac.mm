@@ -248,6 +248,8 @@ SelectFileDialogImpl::DialogData::DialogData(
     base::scoped_nsobject<ExtensionDropdownHandler> handler)
     : params(params_), extension_dropdown_handler(handler) {}
 
+SelectFileDialogImpl::DialogData::DialogData(const DialogData& other) = default;
+
 SelectFileDialogImpl::DialogData::~DialogData() {}
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {

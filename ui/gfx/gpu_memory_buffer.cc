@@ -20,6 +20,9 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle()
     : type(EMPTY_BUFFER), id(0), handle(base::SharedMemory::NULLHandle()) {
 }
 
+GpuMemoryBufferHandle::GpuMemoryBufferHandle(
+    const GpuMemoryBufferHandle& other) = default;
+
 GpuMemoryBufferHandle::~GpuMemoryBufferHandle() {}
 
 bool GpuMemoryBuffer::IsInUseByMacOSWindowServer() const {

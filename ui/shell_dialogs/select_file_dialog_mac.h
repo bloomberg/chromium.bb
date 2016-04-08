@@ -63,6 +63,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
   struct DialogData {
     DialogData(void* params_,
                base::scoped_nsobject<ExtensionDropdownHandler> handler);
+    DialogData(const DialogData& other);
 
     // |params| user data associated with this file dialog.
     void* params;

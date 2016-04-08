@@ -93,11 +93,17 @@ bool InputMethodCompare(const input_method::InputMethodDescriptor& im1,
 ComponentExtensionEngine::ComponentExtensionEngine() {
 }
 
+ComponentExtensionEngine::ComponentExtensionEngine(
+    const ComponentExtensionEngine& other) = default;
+
 ComponentExtensionEngine::~ComponentExtensionEngine() {
 }
 
 ComponentExtensionIME::ComponentExtensionIME() {
 }
+
+ComponentExtensionIME::ComponentExtensionIME(
+    const ComponentExtensionIME& other) = default;
 
 ComponentExtensionIME::~ComponentExtensionIME() {
 }

@@ -9,6 +9,9 @@ namespace ui {
 InProgressTouchEvdev::InProgressTouchEvdev() {
 }
 
+InProgressTouchEvdev::InProgressTouchEvdev(const InProgressTouchEvdev& other) =
+    default;
+
 InProgressTouchEvdev::~InProgressTouchEvdev() {}
 
 }  // namespace ui

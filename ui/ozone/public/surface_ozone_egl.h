@@ -24,6 +24,7 @@ typedef base::Callback<void(gfx::SwapResult)> SwapCompletionCallback;
 // Holds callbacks to functions for configuring EGL on platform.
 struct OZONE_BASE_EXPORT EglConfigCallbacks {
   EglConfigCallbacks();
+  EglConfigCallbacks(const EglConfigCallbacks& other);
   ~EglConfigCallbacks();
   base::Callback<bool(const int32_t* attribs,
                       void** /* EGLConfig* */ configs,

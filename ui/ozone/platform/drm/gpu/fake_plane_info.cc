@@ -18,6 +18,8 @@ FakePlaneInfo::FakePlaneInfo(uint32_t plane_id,
                              const std::vector<uint32_t>& formats)
     : id(plane_id), allowed_crtc_mask(crtc_mask), allowed_formats(formats) {}
 
+FakePlaneInfo::FakePlaneInfo(const FakePlaneInfo& other) = default;
+
 FakePlaneInfo::~FakePlaneInfo() {}
 
 }  // namespace ui

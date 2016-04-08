@@ -23,6 +23,8 @@ GLSurfaceOverlay::GLSurfaceOverlay(int z_order,
       bounds_rect_(bounds_rect),
       crop_rect_(crop_rect) {}
 
+GLSurfaceOverlay::GLSurfaceOverlay(const GLSurfaceOverlay& other) = default;
+
 GLSurfaceOverlay::~GLSurfaceOverlay() {}
 
 bool GLSurfaceOverlay::ScheduleOverlayPlane(AcceleratedWidget widget) const {

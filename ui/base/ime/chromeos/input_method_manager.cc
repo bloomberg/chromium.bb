@@ -18,6 +18,8 @@ InputMethodManager::State::~State() {
 
 InputMethodManager::MenuItem::MenuItem() {}
 
+InputMethodManager::MenuItem::MenuItem(const MenuItem& other) = default;
+
 InputMethodManager::MenuItem::~MenuItem() {}
 
 // static

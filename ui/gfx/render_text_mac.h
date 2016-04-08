@@ -75,6 +75,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
     bool diagonal_strike;
 
     TextRun();
+    TextRun(const TextRun& other);
     ~TextRun();
   };
 

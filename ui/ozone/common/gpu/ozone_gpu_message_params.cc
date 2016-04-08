@@ -18,6 +18,9 @@ DisplayMode_Params::~DisplayMode_Params() {}
 DisplaySnapshot_Params::DisplaySnapshot_Params() {
 }
 
+DisplaySnapshot_Params::DisplaySnapshot_Params(
+    const DisplaySnapshot_Params& other) = default;
+
 DisplaySnapshot_Params::~DisplaySnapshot_Params() {}
 
 OverlayCheck_Params::OverlayCheck_Params() {}
@@ -30,6 +33,9 @@ OverlayCheck_Params::OverlayCheck_Params(
       display_rect(gfx::ToNearestRect(candidate.display_rect)),
       crop_rect(candidate.crop_rect),
       plane_z_order(candidate.plane_z_order) {}
+
+OverlayCheck_Params::OverlayCheck_Params(const OverlayCheck_Params& other) =
+    default;
 
 OverlayCheck_Params::~OverlayCheck_Params() {
 }

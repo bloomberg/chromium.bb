@@ -38,6 +38,7 @@ struct HardwareDisplayPlaneList {
 
   struct PageFlipInfo {
     PageFlipInfo(uint32_t crtc_id, uint32_t framebuffer, CrtcController* crtc);
+    PageFlipInfo(const PageFlipInfo& other);
     ~PageFlipInfo();
 
     uint32_t crtc_id;

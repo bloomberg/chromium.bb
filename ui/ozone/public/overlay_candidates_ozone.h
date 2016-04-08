@@ -20,6 +20,7 @@ class OZONE_BASE_EXPORT OverlayCandidatesOzone {
  public:
   struct OverlaySurfaceCandidate {
     OverlaySurfaceCandidate();
+    OverlaySurfaceCandidate(const OverlaySurfaceCandidate& other);
     ~OverlaySurfaceCandidate();
 
     // Transformation to apply to layer during composition.

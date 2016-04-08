@@ -34,6 +34,9 @@ InputMethodDescriptor::InputMethodDescriptor(
       input_view_url_(input_view_url) {
 }
 
+InputMethodDescriptor::InputMethodDescriptor(
+    const InputMethodDescriptor& other) = default;
+
 std::string InputMethodDescriptor::GetPreferredKeyboardLayout() const {
   // TODO(nona): Investigate better way to guess the preferred layout
   //             http://crbug.com/170601.

@@ -19,6 +19,8 @@ CubicBezier::CubicBezier(double p1x, double p1y, double p2x, double p2y) {
   InitRange(p1y, p2y);
 }
 
+CubicBezier::CubicBezier(const CubicBezier& other) = default;
+
 void CubicBezier::InitCoefficients(double p1x,
                                    double p1y,
                                    double p2x,

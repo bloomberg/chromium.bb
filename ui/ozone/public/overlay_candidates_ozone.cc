@@ -11,6 +11,9 @@ namespace ui {
 OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate()
     : is_clipped(false) {}
 
+OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate(
+    const OverlaySurfaceCandidate& other) = default;
+
 OverlayCandidatesOzone::OverlaySurfaceCandidate::~OverlaySurfaceCandidate() {
 }
 

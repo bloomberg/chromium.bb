@@ -36,6 +36,9 @@ HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(uint32_t crtc_id,
     : crtc_id(crtc_id), framebuffer(framebuffer), crtc(crtc) {
 }
 
+HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(
+    const PageFlipInfo& other) = default;
+
 HardwareDisplayPlaneList::PageFlipInfo::~PageFlipInfo() {
 }
 
