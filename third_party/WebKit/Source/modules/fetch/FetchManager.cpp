@@ -602,11 +602,14 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
     if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude
+        || m_request->credentials() == WebURLRequest::FetchCredentialsModePassword
         || (m_request->credentials() == WebURLRequest::FetchCredentialsModeSameOrigin && !corsFlag)) {
         resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
     }
-    if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude)
+    if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude
+        || m_request->credentials() == WebURLRequest::FetchCredentialsModePassword) {
         resourceLoaderOptions.credentialsRequested = ClientRequestedCredentials;
+    }
     resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
