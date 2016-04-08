@@ -43,7 +43,5 @@
     attribute USVString port;
     attribute USVString pathname;
     attribute USVString search;
-    // Not yet implemented.
-    // attribute URLSearchParams searchParams;
     attribute USVString hash;
 };

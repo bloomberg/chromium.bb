@@ -4,6 +4,7 @@
 
 #include "core/dom/URLSearchParams.h"
 
+#include "core/dom/DOMURL.h"
 #include "platform/network/FormDataEncoder.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/StringBuilder.h"
@@ -46,7 +47,8 @@ URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init)
     return new URLSearchParams(String());
 }
 
-URLSearchParams::URLSearchParams(const String& queryString)
+URLSearchParams::URLSearchParams(const String& queryString, DOMURL* urlObject)
+    : m_urlObject(urlObject)
 {
     if (!queryString.isEmpty())
         setInput(queryString);
@@ -62,6 +64,29 @@ URLSearchParams::~URLSearchParams()
 {
 }
 
+DEFINE_TRACE(URLSearchParams)
+{
+    visitor->trace(m_urlObject);
+}
+
+#if ENABLE(ASSERT)
+DOMURL* URLSearchParams::urlObject() const
+{
+    return m_urlObject;
+}
+#endif
+
+void URLSearchParams::runUpdateSteps()
+{
+    if (!m_urlObject)
+        return;
+
+    if (m_urlObject->isInUpdate())
+        return;
+
+    m_urlObject->setSearchInternal(toString());
+}
+
 static String decodeString(String input)
 {
     return decodeURLEscapeSequences(input.replace('+', ' '));
@@ -69,7 +94,8 @@ static String decodeString(String input)
 
 void URLSearchParams::setInput(const String& queryString)
 {
-    DCHECK(m_params.isEmpty());
+    m_params.clear();
+
     size_t start = 0;
     size_t queryStringLength = queryString.length();
     while (start < queryStringLength) {
@@ -91,7 +117,9 @@ void URLSearchParams::setInput(const String& queryString)
         }
         start = nameValueEnd + 1;
     }
+    runUpdateSteps();
 }
+
 static String encodeString(const String& input)
 {
     return encodeWithURLEscapeSequences(input).replace("%20", "+");
@@ -113,6 +141,7 @@ String URLSearchParams::toString() const
 void URLSearchParams::append(const String& name, const String& value)
 {
     m_params.append(std::make_pair(name, value));
+    runUpdateSteps();
 }
 
 void URLSearchParams::deleteAllWithName(const String& name)
@@ -123,6 +152,7 @@ void URLSearchParams::deleteAllWithName(const String& name)
         else
             i++;
     }
+    runUpdateSteps();
 }
 
 String URLSearchParams::get(const String& name) const
@@ -174,6 +204,8 @@ void URLSearchParams::set(const String& name, const String& value)
     // Otherwise, append a new name-value pair to the list.
     if (!foundMatch)
         append(name, value);
+    else
+        runUpdateSteps();
 }
 
 PassRefPtr<EncodedFormData> URLSearchParams::encodeFormData() const
@@ -182,10 +214,6 @@ PassRefPtr<EncodedFormData> URLSearchParams::encodeFormData() const
     for (const auto& param : m_params)
         FormDataEncoder::addKeyValuePairAsFormData(encodedData, param.first.utf8(), param.second.utf8(), EncodedFormData::FormURLEncoded);
     return EncodedFormData::create(encodedData.data(), encodedData.size());
-}
-
-DEFINE_TRACE(URLSearchParams)
-{
 }
 
 PairIterable<String, String>::IterationSource* URLSearchParams::startIteration(ScriptState*, ExceptionState&)

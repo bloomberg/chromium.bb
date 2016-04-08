@@ -3,7 +3,6 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-
 test(function() {
     var url = new URL('http://www.domain.com/');
     assert_equals(url.search, '');
@@ -25,8 +24,8 @@ test(function() {
     url.search = 'a';
     assert_equals(url.search, '?a');
 
-    url.search = '?a';
-    assert_equals(url.search, '?a');
+    url.search = '?b';
+    assert_equals(url.search, '?b');
 
     url.search = 'a#b';
     assert_equals(url.search, '?a%23b');
@@ -52,5 +51,4 @@ test(function() {
     assert_equals(url.search, '');
     assert_equals(url.href, 'invalid');
 }, 'search property invalid URL');
-
 </script>

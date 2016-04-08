@@ -18,6 +18,7 @@
 namespace blink {
 
 class ExceptionState;
+class DOMURL;
 
 typedef USVStringOrURLSearchParams URLSearchParamsInit;
 
@@ -25,15 +26,14 @@ class CORE_EXPORT URLSearchParams final : public GarbageCollectedFinalized<URLSe
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    // TODO(mkwst): We should support integration with URLUtils, as explored in
-    // https://codereview.chromium.org/143313002/. That approach is totally
-    // reasonable, but relies on Node switching to Oilpan. Sigbjorn assures me
-    // that this will happen Real Soon Now(tm).
     static URLSearchParams* create(const URLSearchParamsInit&);
 
-    // TODO(mkwst): ScriptWrappable doesn't have a destructor with Oilpan, so this
-    // won't need to be virtual once that's the default.
-    virtual ~URLSearchParams();
+    static URLSearchParams* create(const String& queryString, DOMURL* urlObject = nullptr)
+    {
+        return new URLSearchParams(queryString, urlObject);
+    }
+
+    ~URLSearchParams();
 
     // URLSearchParams interface methods
     String toString() const;
@@ -49,16 +49,24 @@ public:
     PassRefPtr<EncodedFormData> encodeFormData() const;
     const Vector<std::pair<String, String>>& params() const { return m_params; }
 
+#if ENABLE(ASSERT)
+    DOMURL* urlObject() const;
+#endif
+
     DECLARE_TRACE();
 
 private:
     FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);
 
-    explicit URLSearchParams(const String&);
+    explicit URLSearchParams(const String&, DOMURL* = nullptr);
     explicit URLSearchParams(URLSearchParams*);
+
+    void runUpdateSteps();
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+
     Vector<std::pair<String, String>> m_params;
 
-    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+    WeakMember<DOMURL> m_urlObject;
 };
 
 } // namespace blink

@@ -561,6 +561,7 @@ interface URL
     getter port
     getter protocol
     getter search
+    getter searchParams
     getter username
     method constructor
     method toString

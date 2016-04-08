@@ -40,6 +40,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 class URLRegistrable;
+class URLSearchParams;
 
 class DOMURL final : public GarbageCollectedFinalized<DOMURL>, public ScriptWrappable, public DOMURLUtils {
     DEFINE_WRAPPERTYPEINFO();
@@ -48,10 +49,12 @@ public:
     {
         return new DOMURL(url, blankURL(), exceptionState);
     }
+
     static DOMURL* create(const String& url, const String& base, ExceptionState& exceptionState)
     {
         return new DOMURL(url, KURL(KURL(), base), exceptionState);
     }
+    ~DOMURL();
 
     static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
     static void revokeObjectURL(ExecutionContext*, const String&);
@@ -65,13 +68,22 @@ public:
     String input() const override { return m_input; }
     void setInput(const String&) override;
 
-    DEFINE_INLINE_TRACE() { }
+    void setSearch(const String&) override;
+
+    URLSearchParams* searchParams();
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class URLSearchParams;
     DOMURL(const String& url, const KURL& base, ExceptionState&);
+
+    void update();
+    void updateSearchParams(const String&);
 
     KURL m_url;
     String m_input;
+    WeakMember<URLSearchParams> m_searchParams;
 };
 
 } // namespace blink

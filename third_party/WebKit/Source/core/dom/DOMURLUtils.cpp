@@ -26,9 +26,14 @@
 
 #include "core/dom/DOMURLUtils.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "platform/weborigin/KnownPorts.h"
 
 namespace blink {
+
+DOMURLUtils::~DOMURLUtils()
+{
+}
 
 void DOMURLUtils::setHref(const String& value)
 {
@@ -117,6 +122,12 @@ void DOMURLUtils::setPathname(const String& value)
 
 void DOMURLUtils::setSearch(const String& value)
 {
+    setSearchInternal(value);
+}
+
+void DOMURLUtils::setSearchInternal(const String& value)
+{
+    ASSERT(!m_isInUpdate);
     KURL kurl = url();
     if (!kurl.isValid())
         return;

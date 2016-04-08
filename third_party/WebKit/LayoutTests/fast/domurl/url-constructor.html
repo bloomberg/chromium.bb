@@ -3,15 +3,15 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-
-function assertThrows(func, expected) {
+function assert_type_error(func, expected) {
     try {
         func();
     } catch (ex) {
+        assert_true(ex instanceof TypeError);
         assert_equals(String(ex), expected);
         return;
     }
-    assert_true(false, 'Expected an exception with string: ' + expected);
+    assert_true(false, 'Expected a TypeError exception with string: ' + expected);
 }
 
 test(function() {
@@ -28,27 +28,29 @@ test(function() {
 }, 'Valid URLs');
 
 test(function() {
-    assertThrows(function() {
-        new URL();
-    }, 'TypeError: Failed to construct \'URL\': 1 argument required, but only 0 present.');
-    assertThrows(function() {
-        new URL('');
-    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
-    assertThrows(function() {
-        new URL('','about:blank');
-    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
-    assertThrows(function() {
-        new URL('abc');
-    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
-    assertThrows(function() {
-        new URL('//abc');
-    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
-    assertThrows(function() {
-        new URL('http:///www.domain.com/', 'abc');
-    }, 'TypeError: Failed to construct \'URL\': Invalid base URL');
-    assertThrows(function() {
-        new URL('http:///www.domain.com/', null);
-    }, 'TypeError: Failed to construct \'URL\': Invalid base URL');
+    assert_type_error(
+        function() { new URL(); },
+        'TypeError: Failed to construct \'URL\': 1 argument required, but only 0 present.');
+    assert_type_error(
+        function() { new URL(''); },
+        'TypeError: Failed to construct \'URL\': Invalid URL');
+    assert_type_error(
+        function() { new URL('','about:blank'); },
+        'TypeError: Failed to construct \'URL\': Invalid URL');
+    assert_type_error(
+        function() { new URL('abc'); },
+        'TypeError: Failed to construct \'URL\': Invalid URL');
+    assert_type_error(
+        function() { new URL('//abc'); },
+        'TypeError: Failed to construct \'URL\': Invalid URL');
+    assert_type_error(
+        function() { new URL('http:///www.domain.com/', 'abc'); },
+        'TypeError: Failed to construct \'URL\': Invalid base URL');
+    assert_type_error(
+        function() { new URL('http:///www.domain.com/', null); },
+        'TypeError: Failed to construct \'URL\': Invalid base URL');
+    assert_type_error(
+        function() { new URL('//abc', null); },
+        'TypeError: Failed to construct \'URL\': Invalid base URL');
 }, 'Invalid URL parameters');
-
 </script>

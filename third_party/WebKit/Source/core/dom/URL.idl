@@ -44,6 +44,7 @@
     // TODO(philipj): The return type should not be nullable.
     [RaisesException, CallWith=ExecutionContext] static DOMString? createObjectURL(Blob blob);
     [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
+    readonly attribute URLSearchParams searchParams;
 };
 
 URL implements URLUtils;
