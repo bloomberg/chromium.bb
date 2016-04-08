@@ -5,8 +5,8 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
     LayoutBlockFlow {BODY} at (8,8) size 784x1283
       LayoutBlockFlow {SECTION} at (0,0) size 795.11x1267
         LayoutBlockFlow {H1} at (0,0) size 795.11x27
-          LayoutText {#text} at (0,0) size 283x26
-            text run at (0,0) width 283: "Font Size Scaling Pixel Test"
+          LayoutText {#text} at (0,0) size 281x26
+            text run at (0,0) width 281: "Font Size Scaling Pixel Test"
         LayoutBlockFlow {P} at (0,31) size 795.11x18
           LayoutText {#text} at (0,0) size 768x17
             text run at (0,0) width 251: "Size of the text should scale smoothly. "
