@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "url/gurl.h"
 
@@ -25,13 +26,13 @@ class ServiceWorkerRegistrationHandleReference {
  public:
   // Creates a new ServiceWorkerRegistrationHandleReference and increments
   // ref-count.
-  static scoped_ptr<ServiceWorkerRegistrationHandleReference> Create(
+  static std::unique_ptr<ServiceWorkerRegistrationHandleReference> Create(
       const ServiceWorkerRegistrationObjectInfo& info,
       ThreadSafeSender* sender);
 
   // Creates a new ServiceWorkerRegistrationHandleReference by adopting a
   // ref-count.
-  static scoped_ptr<ServiceWorkerRegistrationHandleReference> Adopt(
+  static std::unique_ptr<ServiceWorkerRegistrationHandleReference> Adopt(
       const ServiceWorkerRegistrationObjectInfo& info,
       ThreadSafeSender* sender);
 

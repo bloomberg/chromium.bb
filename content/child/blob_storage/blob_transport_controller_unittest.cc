@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/tuple.h"
@@ -135,7 +136,7 @@ TEST_F(BlobTransportControllerTest, Descriptions) {
   const size_t kShortcutSize = 11;
 
   // The first two data elements should be combined and the data shortcut.
-  scoped_ptr<BlobConsolidation> consolidation(new BlobConsolidation());
+  std::unique_ptr<BlobConsolidation> consolidation(new BlobConsolidation());
   consolidation->AddBlobItem(KRefBlobUUID, 10, 10);
   consolidation->AddDataItem(CreateData("Hello"));
   consolidation->AddDataItem(CreateData("Hello2"));
@@ -170,7 +171,7 @@ TEST_F(BlobTransportControllerTest, Responses) {
   consolidation->AddDataItem(CreateData("Hello3"));
   // See the above test for the expected descriptions layout.
 
-  holder->blob_storage_[kBlobUUID] = make_scoped_ptr(consolidation);
+  holder->blob_storage_[kBlobUUID] = base::WrapUnique(consolidation);
 
   std::vector<BlobItemBytesRequest> requests;
   std::vector<base::SharedMemoryHandle> memory_handles;
@@ -228,7 +229,7 @@ TEST_F(BlobTransportControllerTest, SharedMemory) {
   consolidation->AddDataItem(CreateData("Hello3"));
   // See the above test for the expected descriptions layout.
 
-  holder->blob_storage_[kBlobUUID] = make_scoped_ptr(consolidation);
+  holder->blob_storage_[kBlobUUID] = base::WrapUnique(consolidation);
 
   std::vector<BlobItemBytesRequest> requests;
   std::vector<base::SharedMemoryHandle> memory_handles;
@@ -274,7 +275,7 @@ TEST_F(BlobTransportControllerTest, TestPublicMethods) {
   BlobConsolidation* consolidation = new BlobConsolidation();
   consolidation->AddBlobItem(KRefBlobUUID, 10, 10);
   BlobTransportController::InitiateBlobTransfer(
-      kBlobUUID, kBlobContentType, make_scoped_ptr(consolidation), sender_,
+      kBlobUUID, kBlobContentType, base::WrapUnique(consolidation), sender_,
       io_thread_runner_.get(), main_thread_runner_);
   // Check that we have the 'increase ref' pending task.
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
@@ -304,7 +305,7 @@ TEST_F(BlobTransportControllerTest, TestPublicMethods) {
   BlobConsolidation* consolidation2 = new BlobConsolidation();
   consolidation2->AddBlobItem(KRefBlobUUID, 10, 10);
   BlobTransportController::InitiateBlobTransfer(
-      kBlob2UUID, kBlob2ContentType, make_scoped_ptr(consolidation2), sender_,
+      kBlob2UUID, kBlob2ContentType, base::WrapUnique(consolidation2), sender_,
       io_thread_runner_.get(), main_thread_runner_);
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
   main_thread_runner_->ClearPendingTasks();
@@ -330,7 +331,7 @@ TEST_F(BlobTransportControllerTest, ResponsesErrors) {
   BlobConsolidation* consolidation = new BlobConsolidation();
   consolidation->AddBlobItem(KRefBlobUUID, 10, 10);
 
-  holder->blob_storage_[kBlobUUID] = make_scoped_ptr(consolidation);
+  holder->blob_storage_[kBlobUUID] = base::WrapUnique(consolidation);
 
   std::vector<BlobItemBytesRequest> requests;
   std::vector<base::SharedMemoryHandle> memory_handles;

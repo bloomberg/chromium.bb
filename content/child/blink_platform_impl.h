@@ -158,16 +158,16 @@ class CONTENT_EXPORT BlinkPlatformImpl
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
-  scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
+  std::unique_ptr<WebGeofencingProviderImpl> geofencing_provider_;
   base::ScopedPtrHashMap<blink::Platform::TraceLogEnabledStateObserver*,
-                         scoped_ptr<TraceLogObserverAdapter>>
+                         std::unique_ptr<TraceLogObserverAdapter>>
       trace_log_observers_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
-  scoped_ptr<PermissionDispatcher> permission_client_;
-  scoped_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
+  std::unique_ptr<PermissionDispatcher> permission_client_;
+  std::unique_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
 
   scheduler::WebThreadBase* compositor_thread_;
 };

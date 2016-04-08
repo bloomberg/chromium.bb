@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -37,12 +38,12 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   // Ownership is transferred to the DocumentState.
   static void AttachToDocumentState(
       base::SupportsUserData* document_state,
-      scoped_ptr<ServiceWorkerNetworkProvider> network_provider);
+      std::unique_ptr<ServiceWorkerNetworkProvider> network_provider);
 
   static ServiceWorkerNetworkProvider* FromDocumentState(
       base::SupportsUserData* document_state);
 
-  static scoped_ptr<ServiceWorkerNetworkProvider> CreateForNavigation(
+  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForNavigation(
       int route_id,
       const RequestNavigationParams& request_params,
       blink::WebSandboxFlags sandbox_flags,

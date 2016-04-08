@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
@@ -376,7 +376,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
   if (!state->UpdateAndCheckUniqueness(val))
     return base::Value::CreateNullValue().release();
 
-  scoped_ptr<v8::Context::Scope> scope;
+  std::unique_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
   // that context, but change back after val is converted.
   if (!val->CreationContext().IsEmpty() &&
@@ -434,9 +434,9 @@ base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
   char* data = NULL;
   size_t length = 0;
 
-  scoped_ptr<blink::WebArrayBuffer> array_buffer(
+  std::unique_ptr<blink::WebArrayBuffer> array_buffer(
       blink::WebArrayBufferConverter::createFromV8Value(val, isolate));
-  scoped_ptr<blink::WebArrayBufferView> view;
+  std::unique_ptr<blink::WebArrayBufferView> view;
   if (array_buffer) {
     data = reinterpret_cast<char*>(array_buffer->data());
     length = array_buffer->byteLength();
@@ -461,7 +461,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
   if (!state->UpdateAndCheckUniqueness(val))
     return base::Value::CreateNullValue().release();
 
-  scoped_ptr<v8::Context::Scope> scope;
+  std::unique_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
   // that context, but change back after val is converted.
   if (!val->CreationContext().IsEmpty() &&
@@ -496,7 +496,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
   if (val->InternalFieldCount())
     return new base::DictionaryValue();
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Local<v8::Array> property_names(val->GetOwnPropertyNames());
 
   for (uint32_t i = 0; i < property_names->Length(); ++i) {
@@ -521,7 +521,8 @@ base::Value* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null(isolate);
     }
 
-    scoped_ptr<base::Value> child(FromV8ValueImpl(state, child_v8, isolate));
+    std::unique_ptr<base::Value> child(
+        FromV8ValueImpl(state, child_v8, isolate));
     if (!child)
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.

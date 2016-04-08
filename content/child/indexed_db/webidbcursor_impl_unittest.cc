@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/indexed_db/webidbcursor_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/indexed_db/mock_webidbcallbacks.h"
-#include "content/child/indexed_db/webidbcursor_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -96,7 +99,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   int advance_calls_;
   int continue_calls_;
   int32_t destroyed_cursor_id_;
-  scoped_ptr<WebIDBCallbacks> callbacks_;
+  std::unique_ptr<WebIDBCallbacks> callbacks_;
 };
 
 class MockContinueCallbacks : public StrictMock<MockWebIDBCallbacks> {
@@ -137,14 +140,14 @@ class WebIDBCursorImplTest : public testing::Test {
     thread_safe_sender_ = new ThreadSafeSender(
         base::ThreadTaskRunnerHandle::Get(), new MockSyncMessageFilter);
     dispatcher_ =
-        make_scoped_ptr(new MockDispatcher(thread_safe_sender_.get()));
+        base::WrapUnique(new MockDispatcher(thread_safe_sender_.get()));
   }
 
  protected:
   base::MessageLoop message_loop_;
   WebIDBKey null_key_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_ptr<MockDispatcher> dispatcher_;
+  std::unique_ptr<MockDispatcher> dispatcher_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImplTest);

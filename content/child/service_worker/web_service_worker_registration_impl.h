@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
@@ -39,7 +39,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       public base::RefCounted<WebServiceWorkerRegistrationImpl> {
  public:
   explicit WebServiceWorkerRegistrationImpl(
-      scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
+      std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
 
   void SetInstalling(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
   void SetWaiting(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
@@ -95,7 +95,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   void RunQueuedTasks();
 
-  scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref_;
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref_;
   blink::WebServiceWorkerRegistrationProxy* proxy_;
 
   std::vector<QueuedTask> queued_tasks_;

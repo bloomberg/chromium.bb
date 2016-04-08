@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
@@ -96,7 +96,7 @@ class NotificationImageLoader
 
   bool completed_;
 
-  scoped_ptr<blink::WebURLLoader> url_loader_;
+  std::unique_ptr<blink::WebURLLoader> url_loader_;
 
   std::vector<uint8_t> buffer_;
 

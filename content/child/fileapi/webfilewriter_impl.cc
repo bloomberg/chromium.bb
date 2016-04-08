@@ -122,7 +122,7 @@ class WebFileWriterImpl::WriterBridge
   const bool running_on_worker_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   int written_bytes_;
-  scoped_ptr<base::WaitableEvent> waitable_event_;
+  std::unique_ptr<base::WaitableEvent> waitable_event_;
   base::Closure results_closure_;
 };
 

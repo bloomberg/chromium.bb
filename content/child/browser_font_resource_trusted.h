@@ -5,10 +5,10 @@
 #ifndef CONTENT_CHILD_BROWSER_FONT_RESOURCE_TRUSTED_H_
 #define CONTENT_CHILD_BROWSER_FONT_RESOURCE_TRUSTED_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -68,7 +68,7 @@ class BrowserFontResource_Trusted
                         const PP_Rect* clip);
 
  private:
-  scoped_ptr<blink::WebFont> font_;
+  std::unique_ptr<blink::WebFont> font_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFontResource_Trusted);
 };

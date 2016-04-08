@@ -5,12 +5,12 @@
 #ifndef CONTENT_CHILD_WEBMESSAGEPORTCHANNEL_IMPL_H_
 #define CONTENT_CHILD_WEBMESSAGEPORTCHANNEL_IMPL_H_
 
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "content/public/common/message_port_types.h"
@@ -49,7 +49,7 @@ class WebMessagePortChannelImpl
   // Extracts port IDs for passing on to the browser process, and queues any
   // received messages.
   static std::vector<TransferredMessagePort> ExtractMessagePortIDs(
-      scoped_ptr<blink::WebMessagePortChannelArray> channels);
+      std::unique_ptr<blink::WebMessagePortChannelArray> channels);
 
   // Extracts port IDs for passing on to the browser process, and queues any
   // received messages.
@@ -63,7 +63,7 @@ class WebMessagePortChannelImpl
   // does not share ordering guarentees with regular IPC.
   static std::vector<TransferredMessagePort>
   ExtractMessagePortIDsWithoutQueueing(
-      scoped_ptr<blink::WebMessagePortChannelArray> channels);
+      std::unique_ptr<blink::WebMessagePortChannelArray> channels);
 
   // Creates WebMessagePortChannelImpl instances for port IDs passed in from the
   // browser process.
@@ -93,8 +93,9 @@ class WebMessagePortChannelImpl
   void Init();
   void Entangle(scoped_refptr<WebMessagePortChannelImpl> channel);
   void Send(IPC::Message* message);
-  void SendPostMessage(const MessagePortMessage& message,
-                       scoped_ptr<blink::WebMessagePortChannelArray> channels);
+  void SendPostMessage(
+      const MessagePortMessage& message,
+      std::unique_ptr<blink::WebMessagePortChannelArray> channels);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

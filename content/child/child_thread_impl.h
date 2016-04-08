@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_monitor.h"
@@ -99,11 +99,11 @@ class CONTENT_EXPORT ChildThreadImpl
   // failure.
   // Note: On posix, this requires a sync IPC to the browser process,
   // but on windows the child process directly allocates the block.
-  scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t buf_size);
+  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(size_t buf_size);
 
   // A static variant that can be called on background threads provided
   // the |sender| passed in is safe to use on background threads.
-  static scoped_ptr<base::SharedMemory> AllocateSharedMemory(
+  static std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t buf_size,
       IPC::Sender* sender);
 
@@ -235,11 +235,11 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
-  scoped_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
-  scoped_ptr<MojoApplication> mojo_application_;
+  std::unique_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<MojoApplication> mojo_application_;
 
   std::string channel_name_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
 
   // Allows threads other than the main thread to send sync messages.
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
@@ -251,9 +251,9 @@ class CONTENT_EXPORT ChildThreadImpl
   ChildThreadMessageRouter router_;
 
   // Handles resource loads for this process.
-  scoped_ptr<ResourceDispatcher> resource_dispatcher_;
+  std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
-  scoped_ptr<WebSocketDispatcher> websocket_dispatcher_;
+  std::unique_ptr<WebSocketDispatcher> websocket_dispatcher_;
 
   // The OnChannelError() callback was invoked - the channel is dead, don't
   // attempt to communicate.
@@ -261,9 +261,9 @@ class CONTENT_EXPORT ChildThreadImpl
 
   base::MessageLoop* message_loop_;
 
-  scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
+  std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
-  scoped_ptr<QuotaDispatcher> quota_dispatcher_;
+  std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
 
   scoped_refptr<ChildHistogramMessageFilter> histogram_message_filter_;
 
@@ -277,14 +277,14 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<PushDispatcher> push_dispatcher_;
 
-  scoped_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
-  scoped_ptr<ChildGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<ChildGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
-  scoped_ptr<ChildDiscardableSharedMemoryManager>
+  std::unique_ptr<ChildDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
 
-  scoped_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   scoped_refptr<ChildMessageFilter> geofencing_message_filter_;
 

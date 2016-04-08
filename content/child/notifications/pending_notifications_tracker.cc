@@ -4,10 +4,11 @@
 
 #include "content/child/notifications/pending_notifications_tracker.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/child/notifications/pending_notification.h"
 #include "content/public/common/notification_resources.h"
 
@@ -33,7 +34,7 @@ void PendingNotificationsTracker::FetchResources(
       base::Unretained(this) /* The pending notifications are owned by this. */,
       delegate, notification_id, resources_callback);
 
-  scoped_ptr<PendingNotification> pending_notification(
+  std::unique_ptr<PendingNotification> pending_notification(
       new PendingNotification(main_task_runner_));
   pending_notification->FetchResources(notification_data,
                                        fetches_finished_callback);

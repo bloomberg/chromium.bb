@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
@@ -77,7 +79,7 @@ class TestRequestPeer : public RequestPeer {
     context_->total_encoded_data_length += encoded_data_length;
   }
 
-  void OnReceivedData(scoped_ptr<ReceivedData> data) override {
+  void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
     if (context_->cancelled)
       return;
     EXPECT_TRUE(context_->received_response);
@@ -314,7 +316,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   int StartAsync(const RequestInfo& request_info,
                  ResourceRequestBody* request_body,
                  TestRequestPeer::Context* peer_context) {
-    scoped_ptr<TestRequestPeer> peer(
+    std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));
     int request_id =
         dispatcher()->StartAsync(request_info, request_body, std::move(peer));
@@ -328,7 +330,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
 
   std::vector<IPC::Message> message_queue_;
   base::MessageLoop message_loop_;
-  scoped_ptr<ResourceDispatcher> dispatcher_;
+  std::unique_ptr<ResourceDispatcher> dispatcher_;
 };
 
 // Does a simple request and tests that the correct data is received.  Simulates
@@ -338,7 +340,7 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
   const size_t kFirstReceiveSize = 2;
   ASSERT_LT(kFirstReceiveSize, strlen(kTestPageContents));
 
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   StartAsync(*request_info.get(), NULL, &peer_context);
 
@@ -369,11 +371,11 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
 TEST_F(ResourceDispatcherTest, MultipleRequests) {
   const char kTestPageContents2[] = "Not kTestPageContents";
 
-  scoped_ptr<RequestInfo> request_info1(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info1(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context1;
   StartAsync(*request_info1.get(), NULL, &peer_context1);
 
-  scoped_ptr<RequestInfo> request_info2(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info2(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context2;
   StartAsync(*request_info2.get(), NULL, &peer_context2);
 
@@ -410,7 +412,7 @@ TEST_F(ResourceDispatcherTest, MultipleRequests) {
 
 // Tests that the cancel method prevents other messages from being received.
 TEST_F(ResourceDispatcherTest, Cancel) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   int request_id = StartAsync(*request_info.get(), NULL, &peer_context);
 
@@ -435,7 +437,7 @@ TEST_F(ResourceDispatcherTest, Cancel) {
 
 // Tests that calling cancel during a callback works as expected.
 TEST_F(ResourceDispatcherTest, CancelDuringCallback) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   StartAsync(*request_info.get(), NULL, &peer_context);
   peer_context.cancel_on_receive_response = true;
@@ -463,23 +465,23 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
   TestResourceDispatcherDelegate() {}
   ~TestResourceDispatcherDelegate() override {}
 
-  scoped_ptr<RequestPeer> OnRequestComplete(
-      scoped_ptr<RequestPeer> current_peer,
+  std::unique_ptr<RequestPeer> OnRequestComplete(
+      std::unique_ptr<RequestPeer> current_peer,
       ResourceType resource_type,
       int error_code) override {
     return current_peer;
   }
 
-  scoped_ptr<RequestPeer> OnReceivedResponse(
-      scoped_ptr<RequestPeer> current_peer,
+  std::unique_ptr<RequestPeer> OnReceivedResponse(
+      std::unique_ptr<RequestPeer> current_peer,
       const std::string& mime_type,
       const GURL& url) override {
-    return make_scoped_ptr(new WrapperPeer(std::move(current_peer)));
+    return base::WrapUnique(new WrapperPeer(std::move(current_peer)));
   }
 
   class WrapperPeer : public RequestPeer {
    public:
-    explicit WrapperPeer(scoped_ptr<RequestPeer> original_peer)
+    explicit WrapperPeer(std::unique_ptr<RequestPeer> original_peer)
         : original_peer_(std::move(original_peer)) {}
 
     void OnUploadProgress(uint64_t position, uint64_t size) override {}
@@ -495,7 +497,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 
     void OnDownloadedData(int len, int encoded_data_length) override {}
 
-    void OnReceivedData(scoped_ptr<ReceivedData> data) override {
+    void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
       data_.append(data->payload(), data->length());
     }
 
@@ -507,7 +509,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
                             int64_t total_transfer_size) override {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
-        original_peer_->OnReceivedData(make_scoped_ptr(
+        original_peer_->OnReceivedData(base::WrapUnique(
             new FixedReceivedData(data_.data(), data_.size(), -1)));
       }
       original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
@@ -516,7 +518,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
     }
 
    private:
-    scoped_ptr<RequestPeer> original_peer_;
+    std::unique_ptr<RequestPeer> original_peer_;
     ResourceResponseInfo response_info_;
     std::string data_;
 
@@ -528,7 +530,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 };
 
 TEST_F(ResourceDispatcherTest, DelegateTest) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   StartAsync(*request_info.get(), nullptr, &peer_context);
 
@@ -565,7 +567,7 @@ TEST_F(ResourceDispatcherTest, DelegateTest) {
 }
 
 TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   StartAsync(*request_info.get(), nullptr, &peer_context);
   peer_context.cancel_on_receive_response = true;
@@ -609,7 +611,7 @@ TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
 
 // Checks that redirects work as expected.
 TEST_F(ResourceDispatcherTest, Redirect) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   StartAsync(*request_info.get(), NULL, &peer_context);
 
@@ -640,7 +642,7 @@ TEST_F(ResourceDispatcherTest, Redirect) {
 // Tests that that cancelling during a redirect method prevents other messages
 // from being received.
 TEST_F(ResourceDispatcherTest, CancelDuringRedirect) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   StartAsync(*request_info.get(), NULL, &peer_context);
   peer_context.follow_redirects = false;
@@ -670,7 +672,7 @@ TEST_F(ResourceDispatcherTest, CancelDuringRedirect) {
 
 // Checks that deferring a request delays messages until it's resumed.
 TEST_F(ResourceDispatcherTest, Defer) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   int request_id = StartAsync(*request_info.get(), NULL, &peer_context);
 
@@ -704,7 +706,7 @@ TEST_F(ResourceDispatcherTest, Defer) {
 // Checks that deferring a request during a redirect delays messages until it's
 // resumed.
 TEST_F(ResourceDispatcherTest, DeferOnRedirect) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   int request_id = StartAsync(*request_info.get(), NULL, &peer_context);
   peer_context.defer_on_redirect = true;
@@ -743,7 +745,7 @@ TEST_F(ResourceDispatcherTest, DeferOnRedirect) {
 
 // Checks that a deferred request that's cancelled doesn't receive any messages.
 TEST_F(ResourceDispatcherTest, CancelDeferredRequest) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
   TestRequestPeer::Context peer_context;
   int request_id = StartAsync(*request_info.get(), NULL, &peer_context);
 
@@ -766,7 +768,7 @@ TEST_F(ResourceDispatcherTest, CancelDeferredRequest) {
 }
 
 TEST_F(ResourceDispatcherTest, DownloadToFile) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(true));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(true));
   TestRequestPeer::Context peer_context;
   int request_id = StartAsync(*request_info.get(), NULL, &peer_context);
   const int kDownloadedIncrement = 100;
@@ -808,7 +810,7 @@ TEST_F(ResourceDispatcherTest, DownloadToFile) {
 
 // Make sure that when a download to file is cancelled, the file is destroyed.
 TEST_F(ResourceDispatcherTest, CancelDownloadToFile) {
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(true));
+  std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(true));
   TestRequestPeer::Context peer_context;
   int request_id = StartAsync(*request_info.get(), NULL, &peer_context);
 
@@ -841,7 +843,7 @@ class TimeConversionTest : public ResourceDispatcherTest {
   }
 
   void PerformTest(const ResourceResponseHead& response_head) {
-    scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+    std::unique_ptr<RequestInfo> request_info(CreateRequestInfo(false));
     TestRequestPeer::Context peer_context;
     StartAsync(*request_info.get(), NULL, &peer_context);
 

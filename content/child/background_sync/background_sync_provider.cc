@@ -5,11 +5,12 @@
 #include "content/child/background_sync/background_sync_provider.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "content/child/background_sync/background_sync_type_converters.h"
@@ -92,8 +93,8 @@ void BackgroundSyncProvider::registerBackgroundSync(
   DCHECK(callbacks);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
-  scoped_ptr<const blink::WebSyncRegistration> optionsPtr(options);
-  scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacksPtr(callbacks);
+  std::unique_ptr<const blink::WebSyncRegistration> optionsPtr(options);
+  std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacksPtr(callbacks);
 
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
@@ -112,7 +113,8 @@ void BackgroundSyncProvider::getRegistrations(
   DCHECK(callbacks);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
-  scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacksPtr(callbacks);
+  std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacksPtr(
+      callbacks);
 
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
@@ -128,16 +130,16 @@ void BackgroundSyncProvider::WillStopCurrentWorkerThread() {
 }
 
 void BackgroundSyncProvider::RegisterCallback(
-    scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
+    std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
     mojom::BackgroundSyncError error,
     const mojom::SyncRegistrationPtr& options) {
   // TODO(iclelland): Determine the correct error message to return in each case
-  scoped_ptr<blink::WebSyncRegistration> result;
+  std::unique_ptr<blink::WebSyncRegistration> result;
   switch (error) {
     case mojom::BackgroundSyncError::NONE:
       if (!options.is_null())
-        result =
-            mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(options);
+        result = mojo::ConvertTo<std::unique_ptr<blink::WebSyncRegistration>>(
+            options);
       callbacks->onSuccess(std::move(result));
       break;
     case mojom::BackgroundSyncError::NOT_FOUND:
@@ -168,7 +170,7 @@ void BackgroundSyncProvider::RegisterCallback(
 }
 
 void BackgroundSyncProvider::GetRegistrationsCallback(
-    scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
+    std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
     mojom::BackgroundSyncError error,
     const mojo::Array<mojom::SyncRegistrationPtr>& registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
@@ -177,9 +179,10 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
       blink::WebVector<blink::WebSyncRegistration*> results(
           registrations.size());
       for (size_t i = 0; i < registrations.size(); ++i) {
-        results[i] = mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(
-                         registrations[i])
-                         .release();
+        results[i] =
+            mojo::ConvertTo<std::unique_ptr<blink::WebSyncRegistration>>(
+                registrations[i])
+                .release();
       }
       callbacks->onSuccess(results);
       break;

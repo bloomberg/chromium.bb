@@ -31,7 +31,7 @@ ChildGpuMemoryBufferManager::ChildGpuMemoryBufferManager(
 ChildGpuMemoryBufferManager::~ChildGpuMemoryBufferManager() {
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                      gfx::BufferFormat format,
                                                      gfx::BufferUsage usage,
@@ -52,7 +52,7 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   if (!success || handle.is_null())
     return nullptr;
 
-  scoped_ptr<gpu::GpuMemoryBufferImpl> buffer(
+  std::unique_ptr<gpu::GpuMemoryBufferImpl> buffer(
       gpu::GpuMemoryBufferImpl::CreateFromHandle(
           handle, size, format, usage,
           base::Bind(&DeletedGpuMemoryBuffer, base::RetainedRef(sender_),
@@ -66,7 +66,7 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   return std::move(buffer);
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,

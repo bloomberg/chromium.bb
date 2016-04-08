@@ -17,12 +17,12 @@ class ChildGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   ~ChildGpuMemoryBufferManager() override;
 
   // Overridden from gpu::GpuMemoryBufferManager:
-  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int32_t surface_id) override;
-  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format) override;

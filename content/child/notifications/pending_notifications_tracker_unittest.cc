@@ -4,6 +4,7 @@
 
 #include "content/child/notifications/pending_notifications_tracker.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -13,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -133,7 +133,7 @@ class PendingNotificationsTrackerTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  scoped_ptr<PendingNotificationsTracker> tracker_;
+  std::unique_ptr<PendingNotificationsTracker> tracker_;
   std::vector<NotificationResources> resources_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingNotificationsTrackerTest);

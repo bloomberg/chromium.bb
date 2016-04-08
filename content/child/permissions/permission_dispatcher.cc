@@ -215,14 +215,14 @@ void PermissionDispatcher::GetNextPermissionChangeForWorker(
 
 // static
 void PermissionDispatcher::RunPermissionCallbackOnWorkerThread(
-    scoped_ptr<blink::WebPermissionCallback> callback,
+    std::unique_ptr<blink::WebPermissionCallback> callback,
     blink::WebPermissionStatus status) {
   callback->onSuccess(status);
 }
 
 void PermissionDispatcher::RunPermissionsCallbackOnWorkerThread(
-    scoped_ptr<blink::WebPermissionsCallback> callback,
-    scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses) {
+    std::unique_ptr<blink::WebPermissionsCallback> callback,
+    std::unique_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses) {
   callback->onSuccess(std::move(statuses));
 }
 
@@ -245,8 +245,8 @@ void PermissionDispatcher::QueryPermissionInternal(
   // the |permission_service_| pipe will be destroyed too so OnQueryPermission
   // will not be called.
   uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
-  permission_callbacks_.add(callback_key,
-      scoped_ptr<blink::WebPermissionCallback>(callback));
+  permission_callbacks_.add(
+      callback_key, std::unique_ptr<blink::WebPermissionCallback>(callback));
 
   GetPermissionServicePtr()->HasPermission(
       GetPermissionName(type),
@@ -267,8 +267,8 @@ void PermissionDispatcher::RequestPermissionInternal(
   // the |permission_service_| pipe will be destroyed too so OnQueryPermission
   // will not be called.
   uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
-  permission_callbacks_.add(callback_key,
-      scoped_ptr<blink::WebPermissionCallback>(callback));
+  permission_callbacks_.add(
+      callback_key, std::unique_ptr<blink::WebPermissionCallback>(callback));
 
   GetPermissionServicePtr()->RequestPermission(
       GetPermissionName(type),
@@ -289,8 +289,8 @@ void PermissionDispatcher::RequestPermissionsInternal(
   // the |permission_service_| pipe will be destroyed too so OnQueryPermission
   // will not be called.
   uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
-  permissions_callbacks_.add(callback_key,
-      scoped_ptr<blink::WebPermissionsCallback>(callback));
+  permissions_callbacks_.add(
+      callback_key, std::unique_ptr<blink::WebPermissionsCallback>(callback));
 
   mojo::Array<PermissionName> names(types.size());
   for (size_t i = 0; i < types.size(); ++i)
@@ -312,8 +312,8 @@ void PermissionDispatcher::RevokePermissionInternal(
   // the |permission_service_| pipe will be destroyed too so OnQueryPermission
   // will not be called.
   uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
-  permission_callbacks_.add(callback_key,
-      scoped_ptr<blink::WebPermissionCallback>(callback));
+  permission_callbacks_.add(
+      callback_key, std::unique_ptr<blink::WebPermissionCallback>(callback));
 
   GetPermissionServicePtr()->RevokePermission(
       GetPermissionName(type),
@@ -327,7 +327,7 @@ void PermissionDispatcher::RevokePermissionInternal(
 void PermissionDispatcher::OnPermissionResponse(int worker_thread_id,
                                                 uintptr_t callback_key,
                                                 PermissionStatus result) {
-  scoped_ptr<blink::WebPermissionCallback> callback =
+  std::unique_ptr<blink::WebPermissionCallback> callback =
       permission_callbacks_.take_and_erase(callback_key);
   blink::WebPermissionStatus status = GetWebPermissionStatus(result);
 
@@ -348,9 +348,9 @@ void PermissionDispatcher::OnRequestPermissionsResponse(
     int worker_thread_id,
     uintptr_t callback_key,
     const mojo::Array<PermissionStatus>& result) {
-  scoped_ptr<blink::WebPermissionsCallback> callback =
+  std::unique_ptr<blink::WebPermissionsCallback> callback =
       permissions_callbacks_.take_and_erase(callback_key);
-  scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses(
+  std::unique_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses(
       new blink::WebVector<blink::WebPermissionStatus>(result.size()));
 
   for (size_t i = 0; i < result.size(); i++)

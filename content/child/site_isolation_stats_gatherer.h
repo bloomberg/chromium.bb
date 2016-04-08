@@ -5,11 +5,11 @@
 #ifndef CONTENT_CHILD_SITE_ISOLATION_STATS_GATHERER_H_
 #define CONTENT_CHILD_SITE_ISOLATION_STATS_GATHERER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/common/cross_site_document_classifier.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT SiteIsolationStatsGatherer {
   // Returns any bookkeeping data about the HTTP header information for the
   // request identified by |request_id|. Any data returned should then be
   // passed to OnReceivedFirstChunk() with the first data chunk.
-  static scoped_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
+  static std::unique_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
       const GURL& frame_origin,
       const GURL& response_url,
       ResourceType resource_type,
@@ -81,7 +81,7 @@ class CONTENT_EXPORT SiteIsolationStatsGatherer {
   // kinds of UMA data stats. This function is called only if the length of
   // received data is non-zero.
   static bool OnReceivedFirstChunk(
-      const scoped_ptr<SiteIsolationResponseMetaData>& resp_data,
+      const std::unique_ptr<SiteIsolationResponseMetaData>& resp_data,
       const char* payload,
       int length);
 

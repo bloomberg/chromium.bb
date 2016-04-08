@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
 #include "v8/include/v8.h"
@@ -45,7 +46,7 @@ size_t GetMemoryUsageKB() {
 }
 #elif defined(OS_MACOSX)
 size_t GetMemoryUsageKB() {
-  scoped_ptr<base::ProcessMetrics> process_metrics(
+  std::unique_ptr<base::ProcessMetrics> process_metrics(
       // The default port provider is sufficient to get data for the current
       // process.
       base::ProcessMetrics::CreateProcessMetrics(
@@ -54,7 +55,7 @@ size_t GetMemoryUsageKB() {
 }
 #else
 size_t GetMemoryUsageKB() {
-  scoped_ptr<base::ProcessMetrics> process_metrics(
+  std::unique_ptr<base::ProcessMetrics> process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
           base::GetCurrentProcessHandle()));
   return process_metrics->GetPagefileUsage() >> 10;

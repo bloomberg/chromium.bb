@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
@@ -39,7 +38,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker),
       public base::RefCounted<WebServiceWorkerImpl> {
  public:
-  WebServiceWorkerImpl(scoped_ptr<ServiceWorkerHandleReference> handle_ref,
+  WebServiceWorkerImpl(std::unique_ptr<ServiceWorkerHandleReference> handle_ref,
                        ThreadSafeSender* thread_safe_sender);
 
   void OnStateChanged(blink::WebServiceWorkerState new_state);
@@ -64,7 +63,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   friend class base::RefCounted<WebServiceWorkerImpl>;
   ~WebServiceWorkerImpl() override;
 
-  scoped_ptr<ServiceWorkerHandleReference> handle_ref_;
+  std::unique_ptr<ServiceWorkerHandleReference> handle_ref_;
   blink::WebServiceWorkerState state_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   blink::WebServiceWorkerProxy* proxy_;

@@ -113,7 +113,8 @@ void NotificationManager::showPersistent(
           service_worker_registration)
           ->registration_id();
 
-  scoped_ptr<blink::WebNotificationShowCallbacks> owned_callbacks(callbacks);
+  std::unique_ptr<blink::WebNotificationShowCallbacks> owned_callbacks(
+      callbacks);
 
   // Verify that the author-provided payload size does not exceed our limit.
   // This is an implementation-defined limit to prevent abuse of notification
@@ -350,7 +351,7 @@ void NotificationManager::DisplayPersistentNotification(
     const blink::WebSecurityOrigin& origin,
     const blink::WebNotificationData& notification_data,
     int64_t service_worker_registration_id,
-    scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
+    std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
     const NotificationResources& notification_resources) {
   DCHECK_EQ(notification_data.actions.size(),
             notification_resources.action_icons.size());

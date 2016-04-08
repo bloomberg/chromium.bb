@@ -53,7 +53,7 @@ void IncrementHistogramEnum(const std::string& name,
 
 void HistogramCountBlockedResponse(
     const std::string& bucket_prefix,
-    const scoped_ptr<SiteIsolationResponseMetaData>& resp_data,
+    const std::unique_ptr<SiteIsolationResponseMetaData>& resp_data,
     bool nosniff_block) {
   std::string block_label(nosniff_block ? ".NoSniffBlocked" : ".Blocked");
   IncrementHistogramCount(bucket_prefix + block_label);
@@ -96,7 +96,7 @@ void SiteIsolationStatsGatherer::SetEnabled(bool enabled) {
   g_stats_gathering_enabled = enabled;
 }
 
-scoped_ptr<SiteIsolationResponseMetaData>
+std::unique_ptr<SiteIsolationResponseMetaData>
 SiteIsolationStatsGatherer::OnReceivedResponse(
     const GURL& frame_origin,
     const GURL& response_url,
@@ -150,7 +150,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   std::string no_sniff;
   info.headers->EnumerateHeader(NULL, "x-content-type-options", &no_sniff);
 
-  scoped_ptr<SiteIsolationResponseMetaData> resp_data(
+  std::unique_ptr<SiteIsolationResponseMetaData> resp_data(
       new SiteIsolationResponseMetaData);
   resp_data->frame_origin = frame_origin.spec();
   resp_data->response_url = response_url;
@@ -163,7 +163,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
 }
 
 bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
-    const scoped_ptr<SiteIsolationResponseMetaData>& resp_data,
+    const std::unique_ptr<SiteIsolationResponseMetaData>& resp_data,
     const char* raw_data,
     int raw_length) {
   if (!g_stats_gathering_enabled)

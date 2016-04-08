@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
@@ -40,7 +40,8 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
 
   // Sets the task runner associated with request messages with |id|.
   void SetRequestIdTaskRunner(
-      int id, scoped_ptr<blink::WebTaskRunner> web_task_runner);
+      int id,
+      std::unique_ptr<blink::WebTaskRunner> web_task_runner);
 
   // Removes the task runner associated with |id|.
   void ClearRequestIdTaskRunner(int id);
@@ -51,7 +52,7 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
   ~ResourceSchedulingFilter() override;
 
   using RequestIdToTaskRunnerMap =
-      std::map<int, scoped_ptr<blink::WebTaskRunner>>;
+      std::map<int, std::unique_ptr<blink::WebTaskRunner>>;
 
   // This lock guards |request_id_to_task_runner_map_|
   base::Lock request_id_to_task_runner_map_lock_;

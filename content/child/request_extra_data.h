@@ -123,12 +123,12 @@ class CONTENT_EXPORT RequestExtraData
 
   // PlzNavigate: |stream_override| is used to override certain parameters of
   // navigation requests.
-  scoped_ptr<StreamOverrideParameters> TakeStreamOverrideOwnership() {
+  std::unique_ptr<StreamOverrideParameters> TakeStreamOverrideOwnership() {
     return std::move(stream_override_);
   }
 
   void set_stream_override(
-      scoped_ptr<StreamOverrideParameters> stream_override) {
+      std::unique_ptr<StreamOverrideParameters> stream_override) {
     stream_override_ = std::move(stream_override);
   }
 
@@ -148,7 +148,7 @@ class CONTENT_EXPORT RequestExtraData
   bool originated_from_service_worker_;
   blink::WebString custom_user_agent_;
   blink::WebString requested_with_;
-  scoped_ptr<StreamOverrideParameters> stream_override_;
+  std::unique_ptr<StreamOverrideParameters> stream_override_;
   LoFiState lofi_state_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);

@@ -5,7 +5,9 @@
 #include "content/child/web_url_loader_impl.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +15,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -298,7 +300,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   Context(WebURLLoaderImpl* loader,
           ResourceDispatcher* resource_dispatcher,
-          scoped_ptr<blink::WebTaskRunner> task_runner);
+          std::unique_ptr<blink::WebTaskRunner> task_runner);
 
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
@@ -309,14 +311,14 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                          int intra_priority_value);
   void Start(const WebURLRequest& request,
              SyncLoadResponse* sync_load_response);
-  void SetWebTaskRunner(scoped_ptr<blink::WebTaskRunner> task_runner);
+  void SetWebTaskRunner(std::unique_ptr<blink::WebTaskRunner> task_runner);
 
   void OnUploadProgress(uint64_t position, uint64_t size);
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const ResourceResponseInfo& info);
   void OnReceivedResponse(const ResourceResponseInfo& info);
   void OnDownloadedData(int len, int encoded_data_length);
-  void OnReceivedData(scoped_ptr<ReceivedData> data);
+  void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnReceivedCachedMetadata(const char* data, int len);
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
@@ -352,11 +354,11 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   WebURLRequest request_;
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
-  scoped_ptr<blink::WebTaskRunner> web_task_runner_;
+  std::unique_ptr<blink::WebTaskRunner> web_task_runner_;
   WebReferrerPolicy referrer_policy_;
-  scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
-  scoped_ptr<StreamOverrideParameters> stream_override_;
-  scoped_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
+  std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
+  std::unique_ptr<StreamOverrideParameters> stream_override_;
+  std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
   int request_id_;
@@ -375,7 +377,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
                           const ResourceResponseInfo& info) override;
   void OnReceivedResponse(const ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
-  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
+  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
@@ -394,7 +396,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
     ResourceDispatcher* resource_dispatcher,
-    scoped_ptr<blink::WebTaskRunner> web_task_runner)
+    std::unique_ptr<blink::WebTaskRunner> web_task_runner)
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
@@ -560,11 +562,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   request_id_ = resource_dispatcher_->StartAsync(
       request_info, request_body.get(),
-      make_scoped_ptr(new WebURLLoaderImpl::RequestPeerImpl(this)));
+      base::WrapUnique(new WebURLLoaderImpl::RequestPeerImpl(this)));
 }
 
 void WebURLLoaderImpl::Context::SetWebTaskRunner(
-    scoped_ptr<blink::WebTaskRunner> web_task_runner) {
+    std::unique_ptr<blink::WebTaskRunner> web_task_runner) {
   web_task_runner_ = std::move(web_task_runner);
 }
 
@@ -662,7 +664,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
     }
 
-    auto read_handle = make_scoped_ptr(new SharedMemoryDataConsumerHandle(
+    auto read_handle = base::WrapUnique(new SharedMemoryDataConsumerHandle(
         mode, base::Bind(&Context::CancelBodyStreaming, this),
         &body_stream_writer_));
 
@@ -698,7 +700,8 @@ void WebURLLoaderImpl::Context::OnDownloadedData(int len,
     client_->didDownloadData(loader_, len, encoded_data_length);
 }
 
-void WebURLLoaderImpl::Context::OnReceivedData(scoped_ptr<ReceivedData> data) {
+void WebURLLoaderImpl::Context::OnReceivedData(
+    std::unique_ptr<ReceivedData> data) {
   const char* payload = data->payload();
   int data_length = data->length();
   int encoded_data_length = data->encoded_length();
@@ -845,7 +848,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
     OnReceivedResponse(info);
     if (!data.empty())
       OnReceivedData(
-          make_scoped_ptr(new FixedReceivedData(data.data(), data.size(), 0)));
+          base::WrapUnique(new FixedReceivedData(data.data(), data.size(), 0)));
   }
 
   OnCompletedRequest(error_code, false, false, info.security_info,
@@ -880,7 +883,7 @@ void WebURLLoaderImpl::RequestPeerImpl::OnDownloadedData(
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
-    scoped_ptr<ReceivedData> data) {
+    std::unique_ptr<ReceivedData> data) {
   context_->OnReceivedData(std::move(data));
 }
 
@@ -906,7 +909,7 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
-    scoped_ptr<blink::WebTaskRunner> web_task_runner)
+    std::unique_ptr<blink::WebTaskRunner> web_task_runner)
     : context_(
           new Context(this, resource_dispatcher, std::move(web_task_runner))) {}
 
@@ -1131,7 +1134,7 @@ void WebURLLoaderImpl::setLoadingTaskRunner(
     blink::WebTaskRunner* loading_task_runner) {
   // There's no guarantee on the lifetime of |loading_task_runner| so we take a
   // copy.
-  context_->SetWebTaskRunner(make_scoped_ptr(loading_task_runner->clone()));
+  context_->SetWebTaskRunner(base::WrapUnique(loading_task_runner->clone()));
 }
 
 // This function is implemented here because it uses net functions. it is

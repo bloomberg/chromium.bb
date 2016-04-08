@@ -195,7 +195,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   template <typename T>
   void init_params(T* params, blink::WebIDBCallbacks* callbacks_ptr) {
-    scoped_ptr<blink::WebIDBCallbacks> callbacks(callbacks_ptr);
+    std::unique_ptr<blink::WebIDBCallbacks> callbacks(callbacks_ptr);
     params->ipc_thread_id = CurrentWorkerId();
     params->ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   }

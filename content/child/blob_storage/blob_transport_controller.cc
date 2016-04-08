@@ -62,7 +62,7 @@ BlobTransportController* BlobTransportController::GetInstance() {
 void BlobTransportController::InitiateBlobTransfer(
     const std::string& uuid,
     const std::string& content_type,
-    scoped_ptr<BlobConsolidation> consolidation,
+    std::unique_ptr<BlobConsolidation> consolidation,
     scoped_refptr<ThreadSafeSender> sender,
     base::SingleThreadTaskRunner* io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
@@ -200,7 +200,7 @@ void BlobTransportController::ClearForTesting() {
 
 void BlobTransportController::StoreBlobDataForRequests(
     const std::string& uuid,
-    scoped_ptr<BlobConsolidation> consolidation,
+    std::unique_ptr<BlobConsolidation> consolidation,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
   if (!main_thread_runner_.get()) {
     main_thread_runner_ = std::move(main_runner);
@@ -255,7 +255,7 @@ BlobTransportController::ResponsesStatus BlobTransportController::GetResponses(
         if (!memory) {
           SharedMemoryHandle& handle = (*memory_handles)[request.handle_index];
           DCHECK(SharedMemory::IsHandleValid(handle));
-          scoped_ptr<SharedMemory> shared_memory(
+          std::unique_ptr<SharedMemory> shared_memory(
               new SharedMemory(handle, false));
           if (!shared_memory->Map(request.size))
             return ResponsesStatus::SHARED_MEMORY_MAP_FAILED;

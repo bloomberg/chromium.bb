@@ -87,7 +87,7 @@ void WebMessagePortChannelImpl::CreatePair(
 // static
 std::vector<TransferredMessagePort>
 WebMessagePortChannelImpl::ExtractMessagePortIDs(
-    scoped_ptr<WebMessagePortChannelArray> channels) {
+    std::unique_ptr<WebMessagePortChannelArray> channels) {
   std::vector<TransferredMessagePort> message_ports;
   if (channels)
     message_ports = ExtractMessagePortIDs(*channels);
@@ -117,7 +117,7 @@ WebMessagePortChannelImpl::ExtractMessagePortIDs(
 // static
 std::vector<TransferredMessagePort>
 WebMessagePortChannelImpl::ExtractMessagePortIDsWithoutQueueing(
-    scoped_ptr<WebMessagePortChannelArray> channels) {
+    std::unique_ptr<WebMessagePortChannelArray> channels) {
   if (!channels)
     return std::vector<TransferredMessagePort>();
 
@@ -175,15 +175,15 @@ void WebMessagePortChannelImpl::postMessage(
     const WebString& message_as_string,
     WebMessagePortChannelArray* channels_ptr) {
   MessagePortMessage message(message_as_string);
-  scoped_ptr<WebMessagePortChannelArray> channels(channels_ptr);
+  std::unique_ptr<WebMessagePortChannelArray> channels(channels_ptr);
   if (send_messages_as_values_) {
     blink::WebSerializedScriptValue serialized_value =
         blink::WebSerializedScriptValue::fromString(message_as_string);
     v8::Local<v8::Value> v8_value = serialized_value.deserialize();
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     converter->SetDateAllowed(true);
     converter->SetRegExpAllowed(true);
-    scoped_ptr<base::Value> message_as_value(converter->FromV8Value(
+    std::unique_ptr<base::Value> message_as_value(converter->FromV8Value(
         v8_value, v8::Isolate::GetCurrent()->GetCurrentContext()));
     message = MessagePortMessage(std::move(message_as_value));
   }
@@ -198,7 +198,7 @@ void WebMessagePortChannelImpl::postMessage(
 
 void WebMessagePortChannelImpl::SendPostMessage(
     const MessagePortMessage& message,
-    scoped_ptr<WebMessagePortChannelArray> channels) {
+    std::unique_ptr<WebMessagePortChannelArray> channels) {
   IPC::Message* msg = new MessagePortHostMsg_PostMessage(
       message_port_id_, message, ExtractMessagePortIDs(std::move(channels)));
   Send(msg);
@@ -217,7 +217,7 @@ bool WebMessagePortChannelImpl::tryGetMessage(
     v8::HandleScope handle_scope(client_->scriptIsolate());
     v8::Context::Scope context_scope(
         client_->scriptContextForMessageConversion());
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     converter->SetDateAllowed(true);
     converter->SetRegExpAllowed(true);
     v8::Local<v8::Value> v8_value = converter->ToV8Value(

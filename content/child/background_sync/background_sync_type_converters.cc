@@ -47,11 +47,11 @@ TypeConverter<content::mojom::BackgroundSyncNetworkState,
 }
 
 // static
-scoped_ptr<blink::WebSyncRegistration>
-TypeConverter<scoped_ptr<blink::WebSyncRegistration>,
+std::unique_ptr<blink::WebSyncRegistration>
+TypeConverter<std::unique_ptr<blink::WebSyncRegistration>,
               content::mojom::SyncRegistrationPtr>::
     Convert(const content::mojom::SyncRegistrationPtr& input) {
-  scoped_ptr<blink::WebSyncRegistration> result(
+  std::unique_ptr<blink::WebSyncRegistration> result(
       new blink::WebSyncRegistration());
   result->id = input->id;
   result->tag = blink::WebString::fromUTF8(input->tag);

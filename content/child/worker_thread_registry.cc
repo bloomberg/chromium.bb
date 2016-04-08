@@ -4,11 +4,12 @@
 
 #include "content/child/worker_thread_registry.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

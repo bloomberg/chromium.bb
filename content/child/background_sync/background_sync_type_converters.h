@@ -5,7 +5,8 @@
 #ifndef CONTENT_CHILD_BACKGROUND_SYNC_BACKGROUND_SYNC_TYPE_CONVERTERS_H_
 #define CONTENT_CHILD_BACKGROUND_SYNC_BACKGROUND_SYNC_TYPE_CONVERTERS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
@@ -37,9 +38,9 @@ struct CONTENT_EXPORT TypeConverter<content::mojom::BackgroundSyncNetworkState,
 //     content::mojom::SyncRegistration
 
 template <>
-struct CONTENT_EXPORT TypeConverter<scoped_ptr<blink::WebSyncRegistration>,
+struct CONTENT_EXPORT TypeConverter<std::unique_ptr<blink::WebSyncRegistration>,
                                     content::mojom::SyncRegistrationPtr> {
-  static scoped_ptr<blink::WebSyncRegistration> Convert(
+  static std::unique_ptr<blink::WebSyncRegistration> Convert(
       const content::mojom::SyncRegistrationPtr& input);
 };
 

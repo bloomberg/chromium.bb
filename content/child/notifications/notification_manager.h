@@ -100,7 +100,7 @@ class NotificationManager : public blink::WebNotificationManager,
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       int64_t service_worker_registration_id,
-      scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
+      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
       const NotificationResources& notification_resources);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

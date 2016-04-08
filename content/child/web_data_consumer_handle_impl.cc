@@ -5,12 +5,14 @@
 #include "content/child/web_data_consumer_handle_impl.h"
 
 #include <stdint.h>
+
 #include <limits>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/c/system/types.h"
 
 namespace content {
@@ -127,9 +129,9 @@ WebDataConsumerHandleImpl::WebDataConsumerHandleImpl(Handle handle)
 WebDataConsumerHandleImpl::~WebDataConsumerHandleImpl() {
 }
 
-scoped_ptr<blink::WebDataConsumerHandle::Reader>
+std::unique_ptr<blink::WebDataConsumerHandle::Reader>
 WebDataConsumerHandleImpl::ObtainReader(Client* client) {
-  return make_scoped_ptr(obtainReaderInternal(client));
+  return base::WrapUnique(obtainReaderInternal(client));
 }
 
 WebDataConsumerHandleImpl::ReaderImpl*

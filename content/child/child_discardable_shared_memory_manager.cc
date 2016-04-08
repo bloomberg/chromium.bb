@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_shared_memory.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
@@ -34,7 +35,7 @@ base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
 class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
   DiscardableMemoryImpl(ChildDiscardableSharedMemoryManager* manager,
-                        scoped_ptr<DiscardableSharedMemoryHeap::Span> span)
+                        std::unique_ptr<DiscardableSharedMemoryHeap::Span> span)
       : manager_(manager), span_(std::move(span)), is_locked_(true) {}
 
   ~DiscardableMemoryImpl() override {
@@ -73,7 +74,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 
  private:
   ChildDiscardableSharedMemoryManager* const manager_;
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> span_;
+  std::unique_ptr<DiscardableSharedMemoryHeap::Span> span_;
   bool is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
@@ -104,7 +105,7 @@ ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
     MemoryUsageChanged(0, 0);
 }
 
-scoped_ptr<base::DiscardableMemory>
+std::unique_ptr<base::DiscardableMemory>
 ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
   base::AutoLock lock(lock_);
@@ -138,7 +139,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   size_t heap_size_prior_to_releasing_purged_memory = heap_.GetSize();
   for (;;) {
     // Search free lists for suitable span.
-    scoped_ptr<DiscardableSharedMemoryHeap::Span> free_span =
+    std::unique_ptr<DiscardableSharedMemoryHeap::Span> free_span =
         heap_.SearchFreeLists(pages, slack);
     if (!free_span.get())
       break;
@@ -163,7 +164,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     // at least one span from the free lists.
     MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new DiscardableMemoryImpl(this, std::move(free_span)));
   }
 
@@ -183,18 +184,18 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
       g_next_discardable_shared_memory_id.GetNext();
 
   // Ask parent process to allocate a new discardable shared memory segment.
-  scoped_ptr<base::DiscardableSharedMemory> shared_memory(
+  std::unique_ptr<base::DiscardableSharedMemory> shared_memory(
       AllocateLockedDiscardableSharedMemory(allocation_size_in_bytes, new_id));
 
   // Create span for allocated memory.
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(heap_.Grow(
+  std::unique_ptr<DiscardableSharedMemoryHeap::Span> new_span(heap_.Grow(
       std::move(shared_memory), allocation_size_in_bytes, new_id,
       base::Bind(&SendDeletedDiscardableSharedMemoryMessage, sender_, new_id)));
   new_span->set_is_locked(true);
 
   // Unlock and insert any left over memory into free lists.
   if (pages < pages_to_allocate) {
-    scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
+    std::unique_ptr<DiscardableSharedMemoryHeap::Span> leftover =
         heap_.Split(new_span.get(), pages);
     leftover->shared_memory()->Unlock(
         leftover->start() * base::GetPageSize() -
@@ -206,7 +207,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
-  return make_scoped_ptr(new DiscardableMemoryImpl(this, std::move(new_span)));
+  return base::WrapUnique(new DiscardableMemoryImpl(this, std::move(new_span)));
 }
 
 bool ChildDiscardableSharedMemoryManager::OnMemoryDump(
@@ -270,7 +271,7 @@ void ChildDiscardableSharedMemoryManager::UnlockSpan(
 }
 
 void ChildDiscardableSharedMemoryManager::ReleaseSpan(
-    scoped_ptr<DiscardableSharedMemoryHeap::Span> span) {
+    std::unique_ptr<DiscardableSharedMemoryHeap::Span> span) {
   base::AutoLock lock(lock_);
 
   // Delete span instead of merging it into free lists if memory is gone.
@@ -292,7 +293,7 @@ ChildDiscardableSharedMemoryManager::CreateMemoryAllocatorDump(
   return heap_.CreateMemoryAllocatorDump(span, name, pmd);
 }
 
-scoped_ptr<base::DiscardableSharedMemory>
+std::unique_ptr<base::DiscardableSharedMemory>
 ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
     size_t size,
     DiscardableSharedMemoryId id) {
@@ -305,7 +306,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   sender_->Send(
       new ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory(
           size, id, &handle));
-  scoped_ptr<base::DiscardableSharedMemory> memory(
+  std::unique_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   if (!memory->Map(size))
     base::TerminateBecauseOutOfMemory(size);

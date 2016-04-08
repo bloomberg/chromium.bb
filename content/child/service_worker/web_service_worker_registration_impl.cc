@@ -49,7 +49,7 @@ WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
 WebServiceWorkerRegistrationImpl::QueuedTask::~QueuedTask() {}
 
 WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
-    scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref)
+    std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref)
     : handle_ref_(std::move(handle_ref)), proxy_(nullptr) {
   DCHECK(handle_ref_);
   DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId,

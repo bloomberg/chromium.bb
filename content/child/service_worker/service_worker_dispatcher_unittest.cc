@@ -94,7 +94,7 @@ class ServiceWorkerDispatcherTest : public testing::Test {
     dispatcher_->OnPostMessage(params);
   }
 
-  scoped_ptr<ServiceWorkerHandleReference> Adopt(
+  std::unique_ptr<ServiceWorkerHandleReference> Adopt(
       const ServiceWorkerObjectInfo& info) {
     return dispatcher_->Adopt(info);
   }
@@ -106,7 +106,7 @@ class ServiceWorkerDispatcherTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   IPC::TestSink ipc_sink_;
-  scoped_ptr<ServiceWorkerDispatcher> dispatcher_;
+  std::unique_ptr<ServiceWorkerDispatcher> dispatcher_;
   scoped_refptr<ServiceWorkerTestSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherTest);
@@ -293,7 +293,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   // mock provider client. See the comment on setController() of the mock).
   // In addition, the passed reference should be adopted but immediately
   // released because there is no provider context to own it.
-  scoped_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
+  std::unique_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
   ASSERT_FALSE(provider_client->is_set_controlled_called());
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
@@ -341,7 +341,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker_Null) {
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
-  scoped_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
+  std::unique_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
   scoped_refptr<ServiceWorkerProviderContext> provider_context(
       new ServiceWorkerProviderContext(kProviderId,
@@ -382,7 +382,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnPostMessage) {
             ipc_sink()->GetMessageAt(0)->type());
   ipc_sink()->ClearMessages();
 
-  scoped_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
+  std::unique_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
   ASSERT_FALSE(provider_client->is_dispatch_message_event_called());
 

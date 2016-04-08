@@ -111,7 +111,8 @@ class WaitAndExitDelegate : public base::PlatformThread::Delegate {
 };
 
 bool CreateWaitAndExitThread(base::TimeDelta duration) {
-  scoped_ptr<WaitAndExitDelegate> delegate(new WaitAndExitDelegate(duration));
+  std::unique_ptr<WaitAndExitDelegate> delegate(
+      new WaitAndExitDelegate(duration));
 
   const bool thread_created =
       base::PlatformThread::CreateNonJoinable(0, delegate.get());
@@ -434,8 +435,8 @@ void ChildThreadImpl::Init(const Options& options) {
 
   // In single process mode we may already have a power monitor
   if (!base::PowerMonitor::Get()) {
-    scoped_ptr<PowerMonitorBroadcastSource> power_monitor_source(
-      new PowerMonitorBroadcastSource());
+    std::unique_ptr<PowerMonitorBroadcastSource> power_monitor_source(
+        new PowerMonitorBroadcastSource());
     channel_->AddFilter(power_monitor_source->GetMessageFilter());
 
     power_monitor_.reset(
@@ -568,17 +569,17 @@ IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   return &router_;
 }
 
-scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
+std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size) {
   DCHECK(base::MessageLoop::current() == message_loop());
   return AllocateSharedMemory(buf_size, this);
 }
 
 // static
-scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
+std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size,
     IPC::Sender* sender) {
-  scoped_ptr<base::SharedMemory> shared_buf;
+  std::unique_ptr<base::SharedMemory> shared_buf;
   // Ask the browser to create the shared memory, since this is blocked by the
   // sandbox on most platforms.
   base::SharedMemoryHandle shared_mem_handle;

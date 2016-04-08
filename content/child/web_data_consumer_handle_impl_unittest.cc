@@ -6,13 +6,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -103,9 +105,9 @@ class ReadDataOperation : public ReadDataOperationBase {
   }
 
  private:
-  scoped_ptr<WebDataConsumerHandleImpl> handle_;
-  scoped_ptr<WebDataConsumerHandle::Reader> reader_;
-  scoped_ptr<WebDataConsumerHandle::Client> client_;
+  std::unique_ptr<WebDataConsumerHandleImpl> handle_;
+  std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
+  std::unique_ptr<WebDataConsumerHandle::Client> client_;
   base::MessageLoop* main_message_loop_;
   base::Closure on_done_;
   std::string result_;
@@ -169,9 +171,9 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
   }
 
  private:
-  scoped_ptr<WebDataConsumerHandleImpl> handle_;
-  scoped_ptr<WebDataConsumerHandle::Reader> reader_;
-  scoped_ptr<WebDataConsumerHandle::Client> client_;
+  std::unique_ptr<WebDataConsumerHandleImpl> handle_;
+  std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
+  std::unique_ptr<WebDataConsumerHandle::Client> client_;
   base::MessageLoop* main_message_loop_;
   base::Closure on_done_;
   std::string result_;
@@ -229,7 +231,7 @@ class WebDataConsumerHandleImplTest : public ::testing::Test {
 
 TEST_F(WebDataConsumerHandleImplTest, ReadData) {
   base::RunLoop run_loop;
-  auto operation = make_scoped_ptr(new ReadDataOperation(
+  auto operation = base::WrapUnique(new ReadDataOperation(
       std::move(consumer_), &message_loop_, run_loop.QuitClosure()));
 
   base::Thread t("DataConsumerHandle test thread");
@@ -250,7 +252,7 @@ TEST_F(WebDataConsumerHandleImplTest, ReadData) {
 
 TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   base::RunLoop run_loop;
-  auto operation = make_scoped_ptr(new TwoPhaseReadDataOperation(
+  auto operation = base::WrapUnique(new TwoPhaseReadDataOperation(
       std::move(consumer_), &message_loop_, run_loop.QuitClosure()));
 
   base::Thread t("DataConsumerHandle test thread");

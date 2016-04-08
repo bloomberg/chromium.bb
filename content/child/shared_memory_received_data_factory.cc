@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_sender.h"
 
@@ -61,15 +62,15 @@ SharedMemoryReceivedDataFactory::~SharedMemoryReceivedDataFactory() {
     SendAck(released_tickets_.size());
 }
 
-scoped_ptr<RequestPeer::ReceivedData> SharedMemoryReceivedDataFactory::Create(
-    int offset,
-    int length,
-    int encoded_length) {
+std::unique_ptr<RequestPeer::ReceivedData>
+SharedMemoryReceivedDataFactory::Create(int offset,
+                                        int length,
+                                        int encoded_length) {
   const char* start = static_cast<char*>(memory_->memory());
   const char* payload = start + offset;
   TicketId id = id_++;
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new SharedMemoryReceivedData(payload, length, encoded_length, this, id));
 }
 

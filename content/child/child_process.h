@@ -5,8 +5,9 @@
 #ifndef CONTENT_CHILD_CHILD_PROCESS_H_
 #define CONTENT_CHILD_CHILD_PROCESS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -85,7 +86,7 @@ class CONTENT_EXPORT ChildProcess {
   // NOTE: make sure that main_thread_ is listed after shutdown_event_, since
   // it depends on it (indirectly through IPC::SyncChannel).  Same for
   // io_thread_.
-  scoped_ptr<ChildThreadImpl> main_thread_;
+  std::unique_ptr<ChildThreadImpl> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);
 };

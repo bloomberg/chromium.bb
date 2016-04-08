@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,7 +179,7 @@ class FileWriterTest : public testing::Test,
     fail_error_received_ = static_cast<blink::WebFileError>(0);
   }
 
-  scoped_ptr<TestableFileWriter> testable_writer_;
+  std::unique_ptr<TestableFileWriter> testable_writer_;
   bool delete_in_client_callback_;
 
   // Observed WebFileWriterClient artifacts.

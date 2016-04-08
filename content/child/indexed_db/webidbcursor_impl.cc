@@ -54,7 +54,7 @@ void WebIDBCursorImpl::advance(unsigned long count,
                                WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   if (count <= prefetch_keys_.size()) {
     CachedAdvance(count, callbacks.get());
     return;
@@ -74,7 +74,7 @@ void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
                                         WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   if (key.keyType() == blink::WebIDBKeyTypeNull &&
       primary_key.keyType() == blink::WebIDBKeyTypeNull) {

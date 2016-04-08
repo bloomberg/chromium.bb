@@ -4,9 +4,10 @@
 
 #include "content/child/push_messaging/push_provider.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "content/child/push_messaging/push_dispatcher.h"

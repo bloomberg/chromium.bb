@@ -37,7 +37,7 @@ int GenerateProviderIdForType(const ServiceWorkerProviderType provider_type) {
 
 void ServiceWorkerNetworkProvider::AttachToDocumentState(
     base::SupportsUserData* datasource_userdata,
-    scoped_ptr<ServiceWorkerNetworkProvider> network_provider) {
+    std::unique_ptr<ServiceWorkerNetworkProvider> network_provider) {
   datasource_userdata->SetUserData(&kUserDataKey, network_provider.release());
 }
 
@@ -48,7 +48,7 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
 }
 
 // static
-scoped_ptr<ServiceWorkerNetworkProvider>
+std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForNavigation(
     int route_id,
     const RequestNavigationParams& request_params,
@@ -57,7 +57,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
   bool should_create_provider_for_window = false;
   int service_worker_provider_id = kInvalidServiceWorkerProviderId;
-  scoped_ptr<ServiceWorkerNetworkProvider> network_provider;
+  std::unique_ptr<ServiceWorkerNetworkProvider> network_provider;
 
   // Determine if a ServiceWorkerNetworkProvider should be created and properly
   // initialized for the navigation. A default ServiceWorkerNetworkProvider
@@ -81,20 +81,20 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
   // Now create the ServiceWorkerNetworkProvider (with invalid id if needed).
   if (should_create_provider_for_window) {
     if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
-      network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
+      network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
           new ServiceWorkerNetworkProvider(route_id,
                                            SERVICE_WORKER_PROVIDER_FOR_WINDOW));
     } else {
       CHECK(browser_side_navigation);
       DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
           service_worker_provider_id));
-      network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
+      network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
           new ServiceWorkerNetworkProvider(route_id,
                                            SERVICE_WORKER_PROVIDER_FOR_WINDOW,
                                            service_worker_provider_id));
     }
   } else {
-    network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
+    network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
         new ServiceWorkerNetworkProvider());
   }
   return network_provider;

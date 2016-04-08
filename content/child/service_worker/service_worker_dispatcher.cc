@@ -113,8 +113,8 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
 
   if (pattern.possibly_invalid_spec().size() > url::kMaxURLChars ||
       script_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
-    scoped_ptr<WebServiceWorkerRegistrationCallbacks>
-        owned_callbacks(callbacks);
+    std::unique_ptr<WebServiceWorkerRegistrationCallbacks> owned_callbacks(
+        callbacks);
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
     error_message += "The provided scriptURL or scope is too long.";
     callbacks->onError(
@@ -163,7 +163,7 @@ void ServiceWorkerDispatcher::GetRegistration(
   DCHECK(callbacks);
 
   if (document_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
-    scoped_ptr<WebServiceWorkerGetRegistrationCallbacks> owned_callbacks(
+    std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> owned_callbacks(
         callbacks);
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);
     error_message += "The provided documentURL is too long.";
@@ -267,7 +267,7 @@ void ServiceWorkerDispatcher::WillStopCurrentWorkerThread() {
 
 scoped_refptr<WebServiceWorkerImpl>
 ServiceWorkerDispatcher::GetOrCreateServiceWorker(
-    scoped_ptr<ServiceWorkerHandleReference> handle_ref) {
+    std::unique_ptr<ServiceWorkerHandleReference> handle_ref) {
   if (!handle_ref)
     return nullptr;
 
@@ -312,12 +312,14 @@ scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::GetOrAdoptRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_ref =
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration_ref =
       Adopt(info);
-  scoped_ptr<ServiceWorkerHandleReference> installing_ref =
+  std::unique_ptr<ServiceWorkerHandleReference> installing_ref =
       Adopt(attrs.installing);
-  scoped_ptr<ServiceWorkerHandleReference> waiting_ref = Adopt(attrs.waiting);
-  scoped_ptr<ServiceWorkerHandleReference> active_ref = Adopt(attrs.active);
+  std::unique_ptr<ServiceWorkerHandleReference> waiting_ref =
+      Adopt(attrs.waiting);
+  std::unique_ptr<ServiceWorkerHandleReference> active_ref =
+      Adopt(attrs.active);
 
   RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
   if (found != registrations_.end())
@@ -341,11 +343,12 @@ void ServiceWorkerDispatcher::OnAssociateRegistration(
     const ServiceWorkerVersionAttributes& attrs) {
   // Adopt the references sent from the browser process and pass them to the
   // provider context if it exists.
-  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration =
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
       Adopt(info);
-  scoped_ptr<ServiceWorkerHandleReference> installing = Adopt(attrs.installing);
-  scoped_ptr<ServiceWorkerHandleReference> waiting = Adopt(attrs.waiting);
-  scoped_ptr<ServiceWorkerHandleReference> active = Adopt(attrs.active);
+  std::unique_ptr<ServiceWorkerHandleReference> installing =
+      Adopt(attrs.installing);
+  std::unique_ptr<ServiceWorkerHandleReference> waiting = Adopt(attrs.waiting);
+  std::unique_ptr<ServiceWorkerHandleReference> active = Adopt(attrs.active);
   ProviderContextMap::iterator context = provider_contexts_.find(provider_id);
   if (context != provider_contexts_.end()) {
     context->second->OnAssociateRegistration(
@@ -473,7 +476,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
 
   typedef blink::WebVector<blink::WebServiceWorkerRegistration::Handle*>
       WebServiceWorkerRegistrationArray;
-  scoped_ptr<WebServiceWorkerRegistrationArray> registrations(
+  std::unique_ptr<WebServiceWorkerRegistrationArray> registrations(
       new WebServiceWorkerRegistrationArray(infos.size()));
   for (size_t i = 0; i < infos.size(); ++i) {
     if (infos[i].handle_id != kInvalidServiceWorkerHandleId) {
@@ -652,9 +655,10 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
 
   // Adopt the references sent from the browser process and pass it to the
   // registration if it exists.
-  scoped_ptr<ServiceWorkerHandleReference> installing = Adopt(attrs.installing);
-  scoped_ptr<ServiceWorkerHandleReference> waiting = Adopt(attrs.waiting);
-  scoped_ptr<ServiceWorkerHandleReference> active = Adopt(attrs.active);
+  std::unique_ptr<ServiceWorkerHandleReference> installing =
+      Adopt(attrs.installing);
+  std::unique_ptr<ServiceWorkerHandleReference> waiting = Adopt(attrs.waiting);
+  std::unique_ptr<ServiceWorkerHandleReference> active = Adopt(attrs.active);
 
   RegistrationObjectMap::iterator found =
       registrations_.find(registration_handle_id);
@@ -694,7 +698,7 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
 
   // Adopt the reference sent from the browser process and pass it to the
   // provider context if it exists.
-  scoped_ptr<ServiceWorkerHandleReference> handle_ref = Adopt(info);
+  std::unique_ptr<ServiceWorkerHandleReference> handle_ref = Adopt(info);
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end())
     provider->second->OnSetControllerServiceWorker(std::move(handle_ref));
@@ -764,14 +768,14 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
   registrations_.erase(registration_handle_id);
 }
 
-scoped_ptr<ServiceWorkerRegistrationHandleReference>
+std::unique_ptr<ServiceWorkerRegistrationHandleReference>
 ServiceWorkerDispatcher::Adopt(
     const ServiceWorkerRegistrationObjectInfo& info) {
   return ServiceWorkerRegistrationHandleReference::Adopt(
       info, thread_safe_sender_.get());
 }
 
-scoped_ptr<ServiceWorkerHandleReference> ServiceWorkerDispatcher::Adopt(
+std::unique_ptr<ServiceWorkerHandleReference> ServiceWorkerDispatcher::Adopt(
     const ServiceWorkerObjectInfo& info) {
   return ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }

@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/public/child/request_peer.h"
@@ -31,9 +31,9 @@ class CONTENT_EXPORT SharedMemoryReceivedDataFactory final
                                   int request_id,
                                   linked_ptr<base::SharedMemory> memory);
 
-  scoped_ptr<RequestPeer::ReceivedData> Create(int offset,
-                                               int length,
-                                               int encoded_length);
+  std::unique_ptr<RequestPeer::ReceivedData> Create(int offset,
+                                                    int length,
+                                                    int encoded_length);
 
   // Stops this factory. After calling this function, releasing issued data
   // won't send ack signal to the browser process.

@@ -175,7 +175,7 @@ void IndexedDBDispatcher::RequestIDBCursorAdvance(
   // Reset all cursor prefetch caches except for this cursor.
   ResetCursorPrefetchCaches(transaction_id, ipc_cursor_id);
 
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorAdvance(
@@ -191,7 +191,7 @@ void IndexedDBDispatcher::RequestIDBCursorContinue(
   // Reset all cursor prefetch caches except for this cursor.
   ResetCursorPrefetchCaches(transaction_id, ipc_cursor_id);
 
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorContinue(
@@ -202,7 +202,7 @@ void IndexedDBDispatcher::RequestIDBCursorPrefetch(
     int n,
     WebIDBCallbacks* callbacks_ptr,
     int32_t ipc_cursor_id) {
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorPrefetch(
@@ -223,8 +223,8 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
     const GURL& origin) {
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-  scoped_ptr<WebIDBDatabaseCallbacks> database_callbacks(
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks(
       database_callbacks_ptr);
 
   IndexedDBHostMsg_FactoryOpen_Params params;
@@ -242,7 +242,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     WebIDBCallbacks* callbacks_ptr,
     const GURL& origin) {
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
   params.ipc_thread_id = CurrentWorkerId();
@@ -255,7 +255,7 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     const base::string16& name,
     WebIDBCallbacks* callbacks_ptr,
     const GURL& origin) {
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
   params.ipc_thread_id = CurrentWorkerId();
@@ -286,7 +286,7 @@ void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
     WebVector<long long> object_store_ids,
     blink::WebIDBTransactionMode mode) {
-  scoped_ptr<WebIDBDatabaseCallbacks> database_callbacks(
+  std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks(
       database_callbacks_ptr);
   IndexedDBHostMsg_DatabaseCreateTransaction_Params params;
   params.ipc_thread_id = CurrentWorkerId();
@@ -476,7 +476,7 @@ void IndexedDBDispatcher::RequestIDBDatabaseClear(
     int64_t object_store_id,
     WebIDBCallbacks* callbacks_ptr) {
   ResetCursorPrefetchCaches(transaction_id, kAllCursors);
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_DatabaseClear(CurrentWorkerId(),
                                           ipc_callbacks_id,

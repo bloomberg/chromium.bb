@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -43,7 +44,7 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
     mojo::common::HandleWatcher handle_watcher_;
     Client* client_;
   };
-  scoped_ptr<Reader> ObtainReader(Client* client);
+  std::unique_ptr<Reader> ObtainReader(Client* client);
 
   explicit WebDataConsumerHandleImpl(Handle handle);
   ~WebDataConsumerHandleImpl() override;

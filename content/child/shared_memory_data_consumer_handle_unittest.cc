@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
@@ -125,7 +127,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
   class ReadDataOperation final {
    public:
     typedef WebDataConsumerHandle::Result Result;
-    ReadDataOperation(scoped_ptr<SharedMemoryDataConsumerHandle> handle,
+    ReadDataOperation(std::unique_ptr<SharedMemoryDataConsumerHandle> handle,
                       base::MessageLoop* main_message_loop,
                       const base::Closure& on_done)
         : handle_(std::move(handle)),
@@ -167,9 +169,9 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
     }
 
    private:
-    scoped_ptr<SharedMemoryDataConsumerHandle> handle_;
-    scoped_ptr<WebDataConsumerHandle::Reader> reader_;
-    scoped_ptr<WebDataConsumerHandle::Client> client_;
+    std::unique_ptr<SharedMemoryDataConsumerHandle> handle_;
+    std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
+    std::unique_ptr<WebDataConsumerHandle::Client> client_;
     base::MessageLoop* main_message_loop_;
     base::Closure on_done_;
     std::string result_;
@@ -181,8 +183,8 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
   }
 
   StrictMock<MockClient> client_;
-  scoped_ptr<SharedMemoryDataConsumerHandle> handle_;
-  scoped_ptr<Writer> writer_;
+  std::unique_ptr<SharedMemoryDataConsumerHandle> handle_;
+  std::unique_ptr<Writer> writer_;
   base::MessageLoop loop_;
 };
 
@@ -192,13 +194,13 @@ class SharedMemoryDataConsumerHandleTest
   void SetUp() override {
     handle_.reset(new SharedMemoryDataConsumerHandle(GetParam(), &writer_));
   }
-  scoped_ptr<FixedReceivedData> NewFixedData(const char* s) {
-    return make_scoped_ptr(new FixedReceivedData(s, strlen(s), strlen(s)));
+  std::unique_ptr<FixedReceivedData> NewFixedData(const char* s) {
+    return base::WrapUnique(new FixedReceivedData(s, strlen(s), strlen(s)));
   }
 
   StrictMock<MockClient> client_;
-  scoped_ptr<SharedMemoryDataConsumerHandle> handle_;
-  scoped_ptr<Writer> writer_;
+  std::unique_ptr<SharedMemoryDataConsumerHandle> handle_;
+  std::unique_ptr<Writer> writer_;
   base::MessageLoop loop_;
 };
 
@@ -896,18 +898,18 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, Read) {
   Result result;
   size_t size;
 
-  scoped_ptr<Writer> writer;
-  auto handle = make_scoped_ptr(
+  std::unique_ptr<Writer> writer;
+  auto handle = base::WrapUnique(
       new SharedMemoryDataConsumerHandle(kApplyBackpressure, &writer));
   scoped_refptr<Logger> logger(new Logger);
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data1", "Once ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data1", "Once ", logger)));
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data2", "upon ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data2", "upon ", logger)));
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data3", "a ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data3", "a ", logger)));
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data4", "time ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data4", "time ", logger)));
 
   auto reader = handle->ObtainReader(nullptr);
   logger->Add("1");
@@ -941,16 +943,16 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
   Result result;
   size_t size;
 
-  scoped_ptr<Writer> writer;
-  auto handle = make_scoped_ptr(
+  std::unique_ptr<Writer> writer;
+  auto handle = base::WrapUnique(
       new SharedMemoryDataConsumerHandle(kApplyBackpressure, &writer));
   scoped_refptr<Logger> logger(new Logger);
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data1", "Once ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data1", "Once ", logger)));
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data2", "upon ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data2", "upon ", logger)));
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data3", "a ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data3", "a ", logger)));
 
   auto reader = handle->ObtainReader(nullptr);
   logger->Add("1");
@@ -977,17 +979,17 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
 
 TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
   base::MessageLoop loop;
-  scoped_ptr<Writer> writer;
-  auto handle = make_scoped_ptr(
+  std::unique_ptr<Writer> writer;
+  auto handle = base::WrapUnique(
       new SharedMemoryDataConsumerHandle(kDoNotApplyBackpressure, &writer));
   scoped_refptr<Logger> logger(new Logger);
 
   logger->Add("1");
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data1", "Once ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data1", "Once ", logger)));
   logger->Add("2");
   writer->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data2", "upon ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data2", "upon ", logger)));
   logger->Add("3");
 
   EXPECT_EQ(
@@ -1001,7 +1003,7 @@ TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
 
 TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
   base::RunLoop run_loop;
-  auto operation = make_scoped_ptr(new ReadDataOperation(
+  auto operation = base::WrapUnique(new ReadDataOperation(
       std::move(handle_), &loop_, run_loop.QuitClosure()));
   scoped_refptr<Logger> logger(new Logger);
 
@@ -1014,15 +1016,15 @@ TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
 
   logger->Add("1");
   writer_->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data1", "Once ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data1", "Once ", logger)));
   writer_->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data2", "upon ", logger)));
-  writer_->AddData(make_scoped_ptr(
+      base::WrapUnique(new LoggingFixedReceivedData("data2", "upon ", logger)));
+  writer_->AddData(base::WrapUnique(
       new LoggingFixedReceivedData("data3", "a time ", logger)));
+  writer_->AddData(base::WrapUnique(
+      new LoggingFixedReceivedData("data4", "there ", logger)));
   writer_->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data4", "there ", logger)));
-  writer_->AddData(
-      make_scoped_ptr(new LoggingFixedReceivedData("data5", "was ", logger)));
+      base::WrapUnique(new LoggingFixedReceivedData("data5", "was ", logger)));
   writer_->Close();
   logger->Add("2");
 

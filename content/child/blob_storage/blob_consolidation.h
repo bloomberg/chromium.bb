@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"

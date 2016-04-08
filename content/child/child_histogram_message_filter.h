@@ -5,11 +5,11 @@
 #ifndef CONTENT_CHILD_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ipc/message_filter.h"
 
@@ -50,7 +50,8 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Prepares histogram deltas for transmission.
-  scoped_ptr<base::HistogramDeltaSerialization> histogram_delta_serialization_;
+  std::unique_ptr<base::HistogramDeltaSerialization>
+      histogram_delta_serialization_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildHistogramMessageFilter);
 };

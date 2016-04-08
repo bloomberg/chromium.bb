@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/indexed_db/indexed_db_dispatcher.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/mock_webidbcallbacks.h"
 #include "content/child/indexed_db/webidbcursor_impl.h"
 #include "content/child/thread_safe_sender.h"
@@ -153,15 +155,16 @@ TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
 
   // First case: successful cursor open.
   {
-    scoped_ptr<WebIDBCursor> cursor;
+    std::unique_ptr<WebIDBCursor> cursor;
     EXPECT_EQ(0UL, dispatcher.cursor_transaction_ids_.size());
 
     auto callbacks = new StrictMock<MockWebIDBCallbacks>();
     // Reference first param (cursor) to keep it alive.
     // TODO(cmumford): Cleanup (and below) once std::addressof() is allowed.
     ON_CALL(*callbacks, onSuccess(testing::A<WebIDBCursor*>(), _, _, _))
-        .WillByDefault(WithArgs<0>(Invoke(&cursor.operator=(nullptr),
-                                          &scoped_ptr<WebIDBCursor>::reset)));
+        .WillByDefault(
+            WithArgs<0>(Invoke(&cursor.operator=(nullptr),
+                               &std::unique_ptr<WebIDBCursor>::reset)));
     EXPECT_CALL(*callbacks, onSuccess(testing::A<WebIDBCursor*>(), _, _, _))
         .Times(1);
 
@@ -252,7 +255,7 @@ class MockCursor : public WebIDBCursorImpl {
 }  // namespace
 
 TEST_F(IndexedDBDispatcherTest, CursorReset) {
-  scoped_ptr<WebIDBCursor> cursor;
+  std::unique_ptr<WebIDBCursor> cursor;
   MockDispatcher dispatcher(thread_safe_sender_.get());
 
   const int32_t ipc_database_id = 0;
@@ -266,14 +269,12 @@ TEST_F(IndexedDBDispatcherTest, CursorReset) {
   const int cursor2_transaction_id = 2;
   const int other_transaction_id = 3;
 
-  scoped_ptr<MockCursor> cursor1(
-      new MockCursor(WebIDBCursorImpl::kInvalidCursorId,
-                     cursor1_transaction_id,
+  std::unique_ptr<MockCursor> cursor1(
+      new MockCursor(WebIDBCursorImpl::kInvalidCursorId, cursor1_transaction_id,
                      thread_safe_sender_.get()));
 
-  scoped_ptr<MockCursor> cursor2(
-      new MockCursor(WebIDBCursorImpl::kInvalidCursorId,
-                     cursor2_transaction_id,
+  std::unique_ptr<MockCursor> cursor2(
+      new MockCursor(WebIDBCursorImpl::kInvalidCursorId, cursor2_transaction_id,
                      thread_safe_sender_.get()));
 
   dispatcher.cursors_[cursor1_ipc_id] = cursor1.get();

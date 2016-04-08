@@ -6,11 +6,13 @@
 
 #include <stdint.h>
 #include <string.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -66,7 +68,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
   int StartAsync(const RequestInfo& request_info,
                  ResourceRequestBody* request_body,
-                 scoped_ptr<RequestPeer> peer) override {
+                 std::unique_ptr<RequestPeer> peer) override {
     EXPECT_FALSE(peer_);
     peer_ = std::move(peer);
     url_ = request_info.url;
@@ -87,7 +89,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   const GURL& stream_url() { return stream_url_; }
 
  private:
-  scoped_ptr<RequestPeer> peer_;
+  std::unique_ptr<RequestPeer> peer_;
   bool canceled_;
   GURL url_;
   GURL stream_url_;
@@ -101,7 +103,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
                          scoped_refptr<scheduler::TaskQueue> task_runner)
       : loader_(new WebURLLoaderImpl(
             dispatcher,
-            make_scoped_ptr(new scheduler::WebTaskRunnerImpl(task_runner)))),
+            base::WrapUnique(new scheduler::WebTaskRunnerImpl(task_runner)))),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),
@@ -222,7 +224,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   const blink::WebURLResponse& response() const { return response_; }
 
  private:
-  scoped_ptr<WebURLLoaderImpl> loader_;
+  std::unique_ptr<WebURLLoaderImpl> loader_;
 
   bool delete_on_receive_redirect_;
   bool delete_on_receive_response_;
@@ -246,7 +248,7 @@ class WebURLLoaderImplTest : public testing::Test {
       : worker_scheduler_(scheduler::WorkerScheduler::Create(
             scheduler::SchedulerTqmDelegateImpl::Create(
                 &message_loop_,
-                make_scoped_ptr(new base::DefaultTickClock())))) {
+                base::WrapUnique(new base::DefaultTickClock())))) {
     worker_scheduler_->Init();
     client_.reset(new TestWebURLLoaderClient(
         &dispatcher_, worker_scheduler_->DefaultTaskRunner()));
@@ -283,7 +285,7 @@ class WebURLLoaderImplTest : public testing::Test {
   // Assumes it is called only once for a request.
   void DoReceiveData() {
     EXPECT_EQ("", client()->received_data());
-    peer()->OnReceivedData(make_scoped_ptr(new FixedReceivedData(
+    peer()->OnReceivedData(base::WrapUnique(new FixedReceivedData(
         kTestData, strlen(kTestData), strlen(kTestData))));
     EXPECT_EQ(kTestData, client()->received_data());
   }
@@ -316,7 +318,7 @@ class WebURLLoaderImplTest : public testing::Test {
   }
 
   void DoReceiveDataFtp() {
-    peer()->OnReceivedData(make_scoped_ptr(new FixedReceivedData(
+    peer()->OnReceivedData(base::WrapUnique(new FixedReceivedData(
         kFtpDirListing, strlen(kFtpDirListing), strlen(kFtpDirListing))));
     // The FTP delegate should modify the data the client sees.
     EXPECT_NE(kFtpDirListing, client()->received_data());
@@ -331,9 +333,9 @@ class WebURLLoaderImplTest : public testing::Test {
   base::MessageLoop message_loop_;
   // WorkerScheduler is needed because WebURLLoaderImpl needs a
   // scheduler::TaskQueue.
-  scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;
+  std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   TestResourceDispatcher dispatcher_;
-  scoped_ptr<TestWebURLLoaderClient> client_;
+  std::unique_ptr<TestWebURLLoaderClient> client_;
 };
 
 TEST_F(WebURLLoaderImplTest, Success) {
@@ -567,7 +569,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   request.setURL(kNavigationURL);
   request.setFrameType(blink::WebURLRequest::FrameTypeTopLevel);
   request.setRequestContext(blink::WebURLRequest::RequestContextFrame);
-  scoped_ptr<StreamOverrideParameters> stream_override(
+  std::unique_ptr<StreamOverrideParameters> stream_override(
       new StreamOverrideParameters());
   stream_override->stream_url = kStreamURL;
   stream_override->response.mime_type = kMimeType;

@@ -4,25 +4,26 @@
 
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
 
-scoped_ptr<ServiceWorkerRegistrationHandleReference>
+std::unique_ptr<ServiceWorkerRegistrationHandleReference>
 ServiceWorkerRegistrationHandleReference::Create(
     const ServiceWorkerRegistrationObjectInfo& info,
     ThreadSafeSender* sender) {
-  return make_scoped_ptr(new ServiceWorkerRegistrationHandleReference(
-      info, sender, true));
+  return base::WrapUnique(
+      new ServiceWorkerRegistrationHandleReference(info, sender, true));
 }
 
-scoped_ptr<ServiceWorkerRegistrationHandleReference>
+std::unique_ptr<ServiceWorkerRegistrationHandleReference>
 ServiceWorkerRegistrationHandleReference::Adopt(
     const ServiceWorkerRegistrationObjectInfo& info,
     ThreadSafeSender* sender) {
-  return make_scoped_ptr(new ServiceWorkerRegistrationHandleReference(
-      info, sender, false));
+  return base::WrapUnique(
+      new ServiceWorkerRegistrationHandleReference(info, sender, false));
 }
 
 ServiceWorkerRegistrationHandleReference::

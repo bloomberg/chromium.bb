@@ -6,13 +6,14 @@
 
 #include <math.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/rand_util.h"
@@ -420,7 +421,7 @@ WebURLLoader* BlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      make_scoped_ptr(currentThread()->getWebTaskRunner()->clone()));
+      base::WrapUnique(currentThread()->getWebTaskRunner()->clone()));
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
@@ -476,7 +477,7 @@ bool BlinkPlatformImpl::parseMultipartHeadersFromBody(
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  scoped_ptr<WebThreadImplForWorkerScheduler> thread(
+  std::unique_ptr<WebThreadImplForWorkerScheduler> thread(
       new WebThreadImplForWorkerScheduler(name));
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
@@ -509,14 +510,14 @@ void BlinkPlatformImpl::addTraceLogEnabledStateObserver(
     TraceLogEnabledStateObserver* observer) {
   TraceLogObserverAdapter* adapter = new TraceLogObserverAdapter(observer);
   bool did_insert =
-      trace_log_observers_.add(observer, make_scoped_ptr(adapter)).second;
+      trace_log_observers_.add(observer, base::WrapUnique(adapter)).second;
   DCHECK(did_insert);
   base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(adapter);
 }
 
 void BlinkPlatformImpl::removeTraceLogEnabledStateObserver(
     TraceLogEnabledStateObserver* observer) {
-  scoped_ptr<TraceLogObserverAdapter> adapter =
+  std::unique_ptr<TraceLogObserverAdapter> adapter =
       trace_log_observers_.take_and_erase(observer);
   DCHECK(adapter);
   DCHECK(base::trace_event::TraceLog::GetInstance()->HasEnabledStateObserver(

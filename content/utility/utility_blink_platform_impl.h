@@ -6,6 +6,7 @@
 #define CONTENT_UTILITY_UTILITY_BLINK_PLATFORM_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/child/blink_platform_impl.h"
 
 namespace content {

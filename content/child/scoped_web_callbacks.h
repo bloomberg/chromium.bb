@@ -5,10 +5,11 @@
 #ifndef CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
 #define CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/move.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
 
@@ -39,7 +40,7 @@
 //     callbacks.PassCallbacks()->onSuccess(Foo("everything is great"));
 //   }
 //
-//   void OnCallbacksDropped(scoped_ptr<FooCallbacks> callbacks) {
+//   void OnCallbacksDropped(std::unique_ptr<FooCallbacks> callbacks) {
 //     // Ownership of the FooCallbacks is passed to this function if
 //     // ScopedWebCallbacks::PassCallbacks isn't called before the
 //     // ScopedWebCallbacks is destroyed.
@@ -70,9 +71,9 @@ class ScopedWebCallbacks {
 
  public:
   using DestructionCallback =
-      base::Callback<void(scoped_ptr<CallbacksType> callbacks)>;
+      base::Callback<void(std::unique_ptr<CallbacksType> callbacks)>;
 
-  ScopedWebCallbacks(scoped_ptr<CallbacksType> callbacks,
+  ScopedWebCallbacks(std::unique_ptr<CallbacksType> callbacks,
                      const DestructionCallback& destruction_callback)
       : callbacks_(std::move(callbacks)),
         destruction_callback_(destruction_callback) {}
@@ -90,10 +91,12 @@ class ScopedWebCallbacks {
     return *this;
   }
 
-  scoped_ptr<CallbacksType> PassCallbacks() { return std::move(callbacks_); }
+  std::unique_ptr<CallbacksType> PassCallbacks() {
+    return std::move(callbacks_);
+  }
 
  private:
-  scoped_ptr<CallbacksType> callbacks_;
+  std::unique_ptr<CallbacksType> callbacks_;
   DestructionCallback destruction_callback_;
 };
 
@@ -102,7 +105,7 @@ ScopedWebCallbacks<CallbacksType> make_scoped_web_callbacks(
     CallbacksType* callbacks,
     const typename ScopedWebCallbacks<CallbacksType>::DestructionCallback&
         destruction_callback) {
-  return ScopedWebCallbacks<CallbacksType>(make_scoped_ptr(callbacks),
+  return ScopedWebCallbacks<CallbacksType>(base::WrapUnique(callbacks),
                                            destruction_callback);
 }
 

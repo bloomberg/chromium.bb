@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/v8_value_converter_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "content/child/v8_value_converter_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -143,10 +144,10 @@ class V8ValueConverterImplTest : public testing::Test {
   void TestWeirdType(const V8ValueConverterImpl& converter,
                      v8::Local<v8::Value> val,
                      base::Value::Type expected_type,
-                     scoped_ptr<base::Value> expected_value) {
+                     std::unique_ptr<base::Value> expected_value) {
     v8::Local<v8::Context> context =
         v8::Local<v8::Context>::New(isolate_, context_);
-    scoped_ptr<base::Value> raw(converter.FromV8Value(val, context));
+    std::unique_ptr<base::Value> raw(converter.FromV8Value(val, context));
 
     if (expected_value) {
       ASSERT_TRUE(raw.get());
@@ -158,7 +159,7 @@ class V8ValueConverterImplTest : public testing::Test {
 
     v8::Local<v8::Object> object(v8::Object::New(isolate_));
     object->Set(v8::String::NewFromUtf8(isolate_, "test"), val);
-    scoped_ptr<base::DictionaryValue> dictionary(
+    std::unique_ptr<base::DictionaryValue> dictionary(
         static_cast<base::DictionaryValue*>(
             converter.FromV8Value(object, context)));
     ASSERT_TRUE(dictionary.get());
@@ -174,7 +175,7 @@ class V8ValueConverterImplTest : public testing::Test {
 
     v8::Local<v8::Array> array(v8::Array::New(isolate_));
     array->Set(0, val);
-    scoped_ptr<base::ListValue> list(
+    std::unique_ptr<base::ListValue> list(
         static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
     ASSERT_TRUE(list.get());
     if (expected_value) {
@@ -198,7 +199,7 @@ class V8ValueConverterImplTest : public testing::Test {
 };
 
 TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
-  scoped_ptr<base::Value> original_root = base::test::ParseJson(
+  std::unique_ptr<base::Value> original_root = base::test::ParseJson(
       "{ \n"
       "  \"null\": null, \n"
       "  \"true\": true, \n"
@@ -260,13 +261,14 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
   EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty-list"))
                   ->IsArray());
 
-  scoped_ptr<base::Value> new_root(converter.FromV8Value(v8_object, context));
+  std::unique_ptr<base::Value> new_root(
+      converter.FromV8Value(v8_object, context));
   EXPECT_NE(original_root.get(), new_root.get());
   EXPECT_TRUE(original_root->Equals(new_root.get()));
 }
 
 TEST_F(V8ValueConverterImplTest, KeysWithDots) {
-  scoped_ptr<base::Value> original =
+  std::unique_ptr<base::Value> original =
       base::test::ParseJson("{ \"foo.bar\": \"baz\" }");
 
   v8::HandleScope handle_scope(isolate_);
@@ -275,9 +277,8 @@ TEST_F(V8ValueConverterImplTest, KeysWithDots) {
   v8::Context::Scope context_scope(context);
 
   V8ValueConverterImpl converter;
-  scoped_ptr<base::Value> copy(
-      converter.FromV8Value(
-          converter.ToV8Value(original.get(), context), context));
+  std::unique_ptr<base::Value> copy(converter.FromV8Value(
+      converter.ToV8Value(original.get(), context), context));
 
   EXPECT_TRUE(original->Equals(copy.get()));
 }
@@ -307,7 +308,7 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
 
   // Converting from v8 value should replace the foo property with null.
   V8ValueConverterImpl converter;
-  scoped_ptr<base::DictionaryValue> converted(
+  std::unique_ptr<base::DictionaryValue> converted(
       static_cast<base::DictionaryValue*>(
           converter.FromV8Value(object, context)));
   EXPECT_TRUE(converted.get());
@@ -351,8 +352,8 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
 
   // Converting from v8 value should replace the first item with null.
   V8ValueConverterImpl converter;
-  scoped_ptr<base::ListValue> converted(static_cast<base::ListValue*>(
-      converter.FromV8Value(array, context)));
+  std::unique_ptr<base::ListValue> converted(
+      static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
   ASSERT_TRUE(converted.get());
   // http://code.google.com/p/v8/issues/detail?id=1342
   EXPECT_EQ(2u, converted->GetSize());
@@ -378,30 +379,23 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
       v8::String::NewFromUtf8(isolate_, "."), v8::RegExp::kNone));
 
   V8ValueConverterImpl converter;
-  TestWeirdType(converter,
-                v8::Undefined(isolate_),
+  TestWeirdType(converter, v8::Undefined(isolate_),
                 base::Value::TYPE_NULL,  // Arbitrary type, result is NULL.
-                scoped_ptr<base::Value>());
-  TestWeirdType(converter,
-                v8::Date::New(isolate_, 1000),
+                std::unique_ptr<base::Value>());
+  TestWeirdType(converter, v8::Date::New(isolate_, 1000),
                 base::Value::TYPE_DICTIONARY,
-                scoped_ptr<base::Value>(new base::DictionaryValue()));
-  TestWeirdType(converter,
-                regex,
-                base::Value::TYPE_DICTIONARY,
-                scoped_ptr<base::Value>(new base::DictionaryValue()));
+                std::unique_ptr<base::Value>(new base::DictionaryValue()));
+  TestWeirdType(converter, regex, base::Value::TYPE_DICTIONARY,
+                std::unique_ptr<base::Value>(new base::DictionaryValue()));
 
   converter.SetDateAllowed(true);
-  TestWeirdType(converter,
-                v8::Date::New(isolate_, 1000),
+  TestWeirdType(converter, v8::Date::New(isolate_, 1000),
                 base::Value::TYPE_DOUBLE,
-                scoped_ptr<base::Value>(new base::FundamentalValue(1.0)));
+                std::unique_ptr<base::Value>(new base::FundamentalValue(1.0)));
 
   converter.SetRegExpAllowed(true);
-  TestWeirdType(converter,
-                regex,
-                base::Value::TYPE_STRING,
-                scoped_ptr<base::Value>(new base::StringValue("/./")));
+  TestWeirdType(converter, regex, base::Value::TYPE_STRING,
+                std::unique_ptr<base::Value>(new base::StringValue("/./")));
 }
 
 TEST_F(V8ValueConverterImplTest, Prototype) {
@@ -423,7 +417,7 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
   ASSERT_FALSE(object.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       static_cast<base::DictionaryValue*>(
           converter.FromV8Value(object, context)));
   ASSERT_TRUE(result.get());
@@ -450,7 +444,7 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
   V8ValueConverterImpl converter;
   converter.SetStripNullFromObjects(true);
 
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       static_cast<base::DictionaryValue*>(
           converter.FromV8Value(object, context)));
   ASSERT_TRUE(result.get());
@@ -471,7 +465,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
               v8::String::NewFromUtf8(isolate_, "bar"));
   object->Set(v8::String::NewFromUtf8(isolate_, "obj"), object);
 
-  scoped_ptr<base::DictionaryValue> object_result(
+  std::unique_ptr<base::DictionaryValue> object_result(
       static_cast<base::DictionaryValue*>(
           converter.FromV8Value(object, context)));
   ASSERT_TRUE(object_result.get());
@@ -483,7 +477,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   array->Set(0, v8::String::NewFromUtf8(isolate_, "1"));
   array->Set(1, array);
 
-  scoped_ptr<base::ListValue> list_result(
+  std::unique_ptr<base::ListValue> list_result(
       static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
   ASSERT_TRUE(list_result.get());
   EXPECT_EQ(2u, list_result->GetSize());
@@ -515,9 +509,9 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   ASSERT_FALSE(object.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<base::Value> actual(converter.FromV8Value(object, context));
+  std::unique_ptr<base::Value> actual(converter.FromV8Value(object, context));
 
-  scoped_ptr<base::Value> expected = base::test::ParseJson(
+  std::unique_ptr<base::Value> expected = base::test::ParseJson(
       "{ \n"
       "  \"1\": \"foo\", \n"
       "  \"2\": \"bar\", \n"
@@ -550,7 +544,7 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
   ASSERT_FALSE(array.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<base::ListValue> result(
+  std::unique_ptr<base::ListValue> result(
       static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(2u, result->GetSize());
@@ -599,17 +593,18 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 
   V8ValueConverterImpl converter;
 
-  scoped_ptr<base::Value> actual_object(
+  std::unique_ptr<base::Value> actual_object(
       converter.FromV8Value(object, context));
   EXPECT_TRUE(base::Value::Equals(
       base::test::ParseJson("{ \"bar\": null }").get(), actual_object.get()));
 
   // Everything is null because JSON stringification preserves array length.
-  scoped_ptr<base::Value> actual_array(converter.FromV8Value(array, context));
+  std::unique_ptr<base::Value> actual_array(
+      converter.FromV8Value(array, context));
   EXPECT_TRUE(base::Value::Equals(
       base::test::ParseJson("[ null, null, null ]").get(), actual_array.get()));
 
-  scoped_ptr<base::Value> actual_sparse_array(
+  std::unique_ptr<base::Value> actual_sparse_array(
       converter.FromV8Value(sparse_array, context));
   EXPECT_TRUE(
       base::Value::Equals(base::test::ParseJson("[ null, null, null ]").get(),
@@ -635,11 +630,12 @@ TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
   root->Set(3, v8::Local<v8::Object>(v8::Array::New(isolate_, 0)));
 
   // The expected base::Value result.
-  scoped_ptr<base::Value> expected = base::test::ParseJson("[{},{},[],[]]");
+  std::unique_ptr<base::Value> expected =
+      base::test::ParseJson("[{},{},[],[]]");
   ASSERT_TRUE(expected.get());
 
   // The actual result.
-  scoped_ptr<base::Value> value(converter.FromV8Value(root, context));
+  std::unique_ptr<base::Value> value(converter.FromV8Value(root, context));
   ASSERT_TRUE(value.get());
 
   EXPECT_TRUE(expected->Equals(value.get()));
@@ -661,7 +657,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   expected_list.Append(base::Value::CreateNullValue());
 
   // The actual result.
-  scoped_ptr<base::Value> actual_list(
+  std::unique_ptr<base::Value> actual_list(
       converter.FromV8Value(recursive_array, context));
   ASSERT_TRUE(actual_list.get());
 
@@ -682,7 +678,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   expected_dictionary.Set(key, base::Value::CreateNullValue());
 
   // The actual result.
-  scoped_ptr<base::Value> actual_dictionary(
+  std::unique_ptr<base::Value> actual_dictionary(
       converter.FromV8Value(recursive_object, context));
   ASSERT_TRUE(actual_dictionary.get());
 
@@ -709,7 +705,8 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   }
 
   V8ValueConverterImpl converter;
-  scoped_ptr<base::Value> value(converter.FromV8Value(deep_object, context));
+  std::unique_ptr<base::Value> value(
+      converter.FromV8Value(deep_object, context));
   ASSERT_TRUE(value);
 
   // Expected depth is kMaxRecursionDepth in v8_value_converter_impl.cc.
@@ -767,7 +764,7 @@ class V8ValueConverterOverridingStrategyForTesting
   static base::Value* NewReferenceValue() {
     return new base::StringValue("strategy");
   }
-  scoped_ptr<base::Value> reference_value_;
+  std::unique_ptr<base::Value> reference_value_;
 };
 
 TEST_F(V8ValueConverterImplTest, StrategyOverrides) {
@@ -781,19 +778,21 @@ TEST_F(V8ValueConverterImplTest, StrategyOverrides) {
   converter.SetStrategy(&strategy);
 
   v8::Local<v8::Object> object(v8::Object::New(isolate_));
-  scoped_ptr<base::Value> object_value(converter.FromV8Value(object, context));
+  std::unique_ptr<base::Value> object_value(
+      converter.FromV8Value(object, context));
   ASSERT_TRUE(object_value);
   EXPECT_TRUE(
       base::Value::Equals(strategy.reference_value(), object_value.get()));
 
   v8::Local<v8::Array> array(v8::Array::New(isolate_));
-  scoped_ptr<base::Value> array_value(converter.FromV8Value(array, context));
+  std::unique_ptr<base::Value> array_value(
+      converter.FromV8Value(array, context));
   ASSERT_TRUE(array_value);
   EXPECT_TRUE(
       base::Value::Equals(strategy.reference_value(), array_value.get()));
 
   v8::Local<v8::ArrayBuffer> array_buffer(v8::ArrayBuffer::New(isolate_, 0));
-  scoped_ptr<base::Value> array_buffer_value(
+  std::unique_ptr<base::Value> array_buffer_value(
       converter.FromV8Value(array_buffer, context));
   ASSERT_TRUE(array_buffer_value);
   EXPECT_TRUE(base::Value::Equals(strategy.reference_value(),
@@ -801,20 +800,21 @@ TEST_F(V8ValueConverterImplTest, StrategyOverrides) {
 
   v8::Local<v8::ArrayBufferView> array_buffer_view(
       v8::Uint8Array::New(array_buffer, 0, 0));
-  scoped_ptr<base::Value> array_buffer_view_value(
+  std::unique_ptr<base::Value> array_buffer_view_value(
       converter.FromV8Value(array_buffer_view, context));
   ASSERT_TRUE(array_buffer_view_value);
   EXPECT_TRUE(base::Value::Equals(strategy.reference_value(),
                                   array_buffer_view_value.get()));
 
   v8::Local<v8::Number> number(v8::Number::New(isolate_, 0.0));
-  scoped_ptr<base::Value> number_value(converter.FromV8Value(number, context));
+  std::unique_ptr<base::Value> number_value(
+      converter.FromV8Value(number, context));
   ASSERT_TRUE(number_value);
   EXPECT_TRUE(
       base::Value::Equals(strategy.reference_value(), number_value.get()));
 
   v8::Local<v8::Primitive> undefined(v8::Undefined(isolate_));
-  scoped_ptr<base::Value> undefined_value(
+  std::unique_ptr<base::Value> undefined_value(
       converter.FromV8Value(undefined, context));
   ASSERT_TRUE(undefined_value);
   EXPECT_TRUE(
@@ -861,16 +861,20 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   converter.SetStrategy(&strategy);
 
   v8::Local<v8::Object> object(v8::Object::New(isolate_));
-  scoped_ptr<base::Value> object_value(converter.FromV8Value(object, context));
+  std::unique_ptr<base::Value> object_value(
+      converter.FromV8Value(object, context));
   ASSERT_TRUE(object_value);
-  scoped_ptr<base::Value> reference_object_value(base::test::ParseJson("{}"));
+  std::unique_ptr<base::Value> reference_object_value(
+      base::test::ParseJson("{}"));
   EXPECT_TRUE(
       base::Value::Equals(reference_object_value.get(), object_value.get()));
 
   v8::Local<v8::Array> array(v8::Array::New(isolate_));
-  scoped_ptr<base::Value> array_value(converter.FromV8Value(array, context));
+  std::unique_ptr<base::Value> array_value(
+      converter.FromV8Value(array, context));
   ASSERT_TRUE(array_value);
-  scoped_ptr<base::Value> reference_array_value(base::test::ParseJson("[]"));
+  std::unique_ptr<base::Value> reference_array_value(
+      base::test::ParseJson("[]"));
   EXPECT_TRUE(
       base::Value::Equals(reference_array_value.get(), array_value.get()));
 
@@ -878,14 +882,16 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   // this requires having blink to be initialized.
 
   v8::Local<v8::Number> number(v8::Number::New(isolate_, 0.0));
-  scoped_ptr<base::Value> number_value(converter.FromV8Value(number, context));
+  std::unique_ptr<base::Value> number_value(
+      converter.FromV8Value(number, context));
   ASSERT_TRUE(number_value);
-  scoped_ptr<base::Value> reference_number_value(base::test::ParseJson("0"));
+  std::unique_ptr<base::Value> reference_number_value(
+      base::test::ParseJson("0"));
   EXPECT_TRUE(
       base::Value::Equals(reference_number_value.get(), number_value.get()));
 
   v8::Local<v8::Primitive> undefined(v8::Undefined(isolate_));
-  scoped_ptr<base::Value> undefined_value(
+  std::unique_ptr<base::Value> undefined_value(
       converter.FromV8Value(undefined, context));
   EXPECT_FALSE(undefined_value);
 }

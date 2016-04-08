@@ -5,12 +5,12 @@
 #ifndef CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_H_
 #define CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/child/permissions/permission_observers_registry.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionClient.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
@@ -86,19 +86,21 @@ class PermissionDispatcher : public blink::WebPermissionClient,
       const base::Callback<void(blink::WebPermissionStatus)>& callback);
 
  private:
-   using PermissionCallbackMap = base::ScopedPtrHashMap<uintptr_t,
-      scoped_ptr<blink::WebPermissionCallback>>;
-   using PermissionsCallbackMap = base::ScopedPtrHashMap<uintptr_t,
-          scoped_ptr<blink::WebPermissionsCallback>>;
+  using PermissionCallbackMap =
+      base::ScopedPtrHashMap<uintptr_t,
+                             std::unique_ptr<blink::WebPermissionCallback>>;
+  using PermissionsCallbackMap =
+      base::ScopedPtrHashMap<uintptr_t,
+                             std::unique_ptr<blink::WebPermissionsCallback>>;
 
   // Runs the given |callback| with |status| as a parameter. It has to be run
   // on a worker thread.
   static void RunPermissionCallbackOnWorkerThread(
-      scoped_ptr<blink::WebPermissionCallback> callback,
+      std::unique_ptr<blink::WebPermissionCallback> callback,
       blink::WebPermissionStatus status);
   static void RunPermissionsCallbackOnWorkerThread(
-      scoped_ptr<blink::WebPermissionsCallback> callback,
-      scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses);
+      std::unique_ptr<blink::WebPermissionsCallback> callback,
+      std::unique_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses);
 
   // Helper method that returns an initialized PermissionServicePtr.
   blink::mojom::PermissionService* GetPermissionServicePtr();

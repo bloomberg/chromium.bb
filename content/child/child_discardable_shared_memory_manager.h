@@ -29,7 +29,7 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
   ~ChildDiscardableSharedMemoryManager() override;
 
   // Overridden from base::DiscardableMemoryAllocator:
-  scoped_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
+  std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
 
   // Overridden from base::trace_event::MemoryDumpProvider:
@@ -41,7 +41,7 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
 
   bool LockSpan(DiscardableSharedMemoryHeap::Span* span);
   void UnlockSpan(DiscardableSharedMemoryHeap::Span* span);
-  void ReleaseSpan(scoped_ptr<DiscardableSharedMemoryHeap::Span> span);
+  void ReleaseSpan(std::unique_ptr<DiscardableSharedMemoryHeap::Span> span);
 
   base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
       DiscardableSharedMemoryHeap::Span* span,
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
       base::trace_event::ProcessMemoryDump* pmd) const;
 
  private:
-  scoped_ptr<base::DiscardableSharedMemory>
+  std::unique_ptr<base::DiscardableSharedMemory>
   AllocateLockedDiscardableSharedMemory(size_t size,
                                         DiscardableSharedMemoryId id);
   void MemoryUsageChanged(size_t new_bytes_allocated,

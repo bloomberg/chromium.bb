@@ -4,28 +4,29 @@
 
 #include "content/child/service_worker/service_worker_handle_reference.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
 
-scoped_ptr<ServiceWorkerHandleReference>
-ServiceWorkerHandleReference::Create(
-    const ServiceWorkerObjectInfo& info,
-    ThreadSafeSender* sender) {
+std::unique_ptr<ServiceWorkerHandleReference>
+ServiceWorkerHandleReference::Create(const ServiceWorkerObjectInfo& info,
+                                     ThreadSafeSender* sender) {
   DCHECK(sender);
   if (info.handle_id == kInvalidServiceWorkerHandleId)
     return nullptr;
-  return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, true));
+  return base::WrapUnique(new ServiceWorkerHandleReference(info, sender, true));
 }
 
-scoped_ptr<ServiceWorkerHandleReference> ServiceWorkerHandleReference::Adopt(
-    const ServiceWorkerObjectInfo& info,
-    ThreadSafeSender* sender) {
+std::unique_ptr<ServiceWorkerHandleReference>
+ServiceWorkerHandleReference::Adopt(const ServiceWorkerObjectInfo& info,
+                                    ThreadSafeSender* sender) {
   DCHECK(sender);
   if (info.handle_id == kInvalidServiceWorkerHandleId)
     return nullptr;
-  return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, false));
+  return base::WrapUnique(
+      new ServiceWorkerHandleReference(info, sender, false));
 }
 
 ServiceWorkerHandleReference::ServiceWorkerHandleReference(

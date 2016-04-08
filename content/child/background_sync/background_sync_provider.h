@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
@@ -59,11 +59,11 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
  private:
   // Callback handlers
   void RegisterCallback(
-      scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
+      std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
       mojom::BackgroundSyncError error,
       const mojom::SyncRegistrationPtr& options);
   void GetRegistrationsCallback(
-      scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
+      std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
       mojom::BackgroundSyncError error,
       const mojo::Array<mojom::SyncRegistrationPtr>& registrations);
 

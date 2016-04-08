@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
@@ -63,7 +63,7 @@ class CONTENT_EXPORT BlobTransportController {
   static void InitiateBlobTransfer(
       const std::string& uuid,
       const std::string& content_type,
-      scoped_ptr<BlobConsolidation> consolidation,
+      std::unique_ptr<BlobConsolidation> consolidation,
       scoped_refptr<ThreadSafeSender> sender,
       base::SingleThreadTaskRunner* io_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_runner);
@@ -112,7 +112,7 @@ class CONTENT_EXPORT BlobTransportController {
 
   void StoreBlobDataForRequests(
       const std::string& uuid,
-      scoped_ptr<BlobConsolidation> consolidation,
+      std::unique_ptr<BlobConsolidation> consolidation,
       scoped_refptr<base::SingleThreadTaskRunner> main_runner);
 
   ResponsesStatus GetResponses(
@@ -128,7 +128,7 @@ class CONTENT_EXPORT BlobTransportController {
   void ReleaseBlobConsolidation(const std::string& uuid);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
-  std::map<std::string, scoped_ptr<BlobConsolidation>> blob_storage_;
+  std::map<std::string, std::unique_ptr<BlobConsolidation>> blob_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobTransportController);
 };

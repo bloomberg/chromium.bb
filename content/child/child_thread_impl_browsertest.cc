@@ -67,7 +67,7 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest, LockDiscardableMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
-  scoped_ptr<base::DiscardableMemory> memory =
+  std::unique_ptr<base::DiscardableMemory> memory =
       child_discardable_shared_memory_manager()
           ->AllocateLockedDiscardableMemory(kSize);
 
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
 
   ScopedVector<base::DiscardableMemory> instances;
   for (size_t i = 0; i < kNumberOfInstances; ++i) {
-    scoped_ptr<base::DiscardableMemory> memory =
+    std::unique_ptr<base::DiscardableMemory> memory =
         child_discardable_shared_memory_manager()
             ->AllocateLockedDiscardableMemory(kLargeSize);
     ASSERT_TRUE(memory);
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
                        ReleaseFreeDiscardableMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
-  scoped_ptr<base::DiscardableMemory> memory =
+  std::unique_ptr<base::DiscardableMemory> memory =
       child_discardable_shared_memory_manager()
           ->AllocateLockedDiscardableMemory(kSize);
 
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
   gfx::BufferFormat format = ::testing::get<1>(GetParam());
   gfx::Size buffer_size(4, 4);
 
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer =
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
       child_gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
           0 /* surface_id */);
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
         gfx::RowSizeForBufferFormat(buffer_size.width(), format, plane);
     EXPECT_GT(row_size_in_bytes, 0u);
 
-    scoped_ptr<char[]> data(new char[row_size_in_bytes]);
+    std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
     memset(data.get(), 0x2a + plane, row_size_in_bytes);
     size_t height = buffer_size.height() /
                     gfx::SubsamplingFactorForBufferFormat(format, plane);

@@ -8,8 +8,9 @@
 #include <shlobj.h>
 #include <wrl.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/dwrite_font_proxy_messages.h"
 #include "content/common/view_messages.h"
 #include "content/test/dwrite_font_fake_sender_win.h"

@@ -5,10 +5,10 @@
 #ifndef CONTENT_CHILD_APPCACHE_APPCACHE_DISPATCHER_H_
 #define CONTENT_CHILD_APPCACHE_APPCACHE_DISPATCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/child/appcache/appcache_backend_proxy.h"
 #include "content/common/appcache_interfaces.h"
 #include "ipc/ipc_listener.h"
@@ -45,7 +45,7 @@ class AppCacheDispatcher : public IPC::Listener {
   void OnContentBlocked(int host_id, const GURL& manifest_url);
 
   AppCacheBackendProxy backend_proxy_;
-  scoped_ptr<AppCacheFrontend> frontend_;
+  std::unique_ptr<AppCacheFrontend> frontend_;
 };
 
 }  // namespace content

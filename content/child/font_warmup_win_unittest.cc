@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sys_byteorder.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/refptr.h"
@@ -254,7 +254,7 @@ TEST(GDIFontEmulationTest, CreateDeleteDCSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_FALSE(!patch_data);
 
   HDC hdc = CreateCompatibleDC(0);
@@ -268,7 +268,7 @@ TEST(GDIFontEmulationTest, CreateUniqueDCSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
 
   HDC hdc1 = CreateCompatibleDC(0);
@@ -286,7 +286,7 @@ TEST(GDIFontEmulationTest, CreateFontSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   LOGFONTW logfont = {0};
   InitLogFont(&logfont, kTestFontFamilyW);
@@ -300,7 +300,7 @@ TEST(GDIFontEmulationTest, CreateFontFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   LOGFONTW logfont = {0};
   InitLogFont(&logfont, kTestFontFamilyInvalid);
@@ -312,7 +312,7 @@ TEST(GDIFontEmulationTest, EnumFontFamilySuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
   EXPECT_NE(hdc, nullptr);
@@ -327,7 +327,7 @@ TEST(GDIFontEmulationTest, EnumFontFamilyFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
   EXPECT_NE(hdc, nullptr);
@@ -342,7 +342,7 @@ TEST(GDIFontEmulationTest, DeleteDCFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = reinterpret_cast<HDC>(0x55667788);
   EXPECT_FALSE(DeleteDC(hdc));
@@ -352,7 +352,7 @@ TEST(GDIFontEmulationTest, DeleteObjectFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HFONT font = reinterpret_cast<HFONT>(0x88aabbcc);
   EXPECT_FALSE(DeleteObject(font));
@@ -362,7 +362,7 @@ TEST(GDIFontEmulationTest, GetFontDataSizeSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
   EXPECT_NE(hdc, nullptr);
@@ -382,7 +382,7 @@ TEST(GDIFontEmulationTest, GetFontDataInvalidTagSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
   EXPECT_NE(hdc, nullptr);
@@ -401,7 +401,7 @@ TEST(GDIFontEmulationTest, GetFontDataInvalidFontSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
   EXPECT_NE(hdc, nullptr);
@@ -414,7 +414,7 @@ TEST(GDIFontEmulationTest, GetFontDataDataSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
   TestSkFontMgr fontmgr;
-  scoped_ptr<GdiFontPatchData> patch_data(SetupTest());
+  std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
   EXPECT_NE(hdc, nullptr);

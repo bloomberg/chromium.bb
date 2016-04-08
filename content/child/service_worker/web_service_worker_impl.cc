@@ -50,7 +50,7 @@ void SendPostMessageToWorkerOnMainThread(
     int provider_id,
     const base::string16& message,
     const url::Origin& source_origin,
-    scoped_ptr<WebMessagePortChannelArray> channels) {
+    std::unique_ptr<WebMessagePortChannelArray> channels) {
   if (WebRuntimeFeatures::isServiceWorkerExtendableMessageEventEnabled()) {
     thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
         handle_id, provider_id, message, source_origin,
@@ -67,7 +67,7 @@ void SendPostMessageToWorkerOnMainThread(
 }  // namespace
 
 WebServiceWorkerImpl::WebServiceWorkerImpl(
-    scoped_ptr<ServiceWorkerHandleReference> handle_ref,
+    std::unique_ptr<ServiceWorkerHandleReference> handle_ref,
     ThreadSafeSender* thread_safe_sender)
     : handle_ref_(std::move(handle_ref)),
       state_(handle_ref_->state()),
@@ -130,7 +130,7 @@ void WebServiceWorkerImpl::postMessage(
                  // threads for thread-safety.
                  static_cast<base::string16>(message),
                  url::Origin(source_origin),
-                 base::Passed(make_scoped_ptr(channels))));
+                 base::Passed(base::WrapUnique(channels))));
 }
 
 void WebServiceWorkerImpl::terminate() {
