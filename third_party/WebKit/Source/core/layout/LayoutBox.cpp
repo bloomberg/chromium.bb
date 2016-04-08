@@ -1904,14 +1904,60 @@ EBreak LayoutBox::breakInside() const
     return BreakAuto;
 }
 
-bool LayoutBox::hasForcedBreakBefore() const
+// At a class A break point [1], the break value with the highest precedence wins. If the two values
+// have the same precedence (e.g. "left" and "right"), the value specified on a latter object wins.
+//
+// [1] https://drafts.csswg.org/css-break/#possible-breaks
+static inline int fragmentainerBreakPrecedence(EBreak breakValue)
 {
-    return isForcedFragmentainerBreakValue(breakBefore());
+    // "auto" has the lowest priority.
+    // "avoid*" values win over "auto".
+    // "avoid-page" wins over "avoid-column".
+    // "avoid" wins over "avoid-page".
+    // Forced break values win over "avoid".
+    // Any forced page break value wins over "column" forced break.
+    // More specific break values (left, right, recto, verso) wins over generic "page" values.
+
+    switch (breakValue) {
+    default:
+        ASSERT_NOT_REACHED();
+        // fall-through
+    case BreakAuto:
+        return 0;
+    case BreakAvoidColumn:
+        return 1;
+    case BreakAvoidPage:
+        return 2;
+    case BreakAvoid:
+        return 3;
+    case BreakColumn:
+        return 4;
+    case BreakPage:
+        return 5;
+    case BreakLeft:
+    case BreakRight:
+    case BreakRecto:
+    case BreakVerso:
+        return 6;
+    }
 }
 
-bool LayoutBox::hasForcedBreakAfter() const
+EBreak LayoutBox::joinFragmentainerBreakValues(EBreak firstValue, EBreak secondValue)
 {
-    return isForcedFragmentainerBreakValue(breakAfter());
+    if (fragmentainerBreakPrecedence(secondValue) >= fragmentainerBreakPrecedence(firstValue))
+        return secondValue;
+    return firstValue;
+}
+
+EBreak LayoutBox::classABreakPointValue(EBreak previousBreakAfterValue) const
+{
+    ASSERT(isBreakBetweenControllable(previousBreakAfterValue));
+    return joinFragmentainerBreakValues(previousBreakAfterValue, breakBefore());
+}
+
+bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const
+{
+    return isForcedFragmentainerBreakValue(classABreakPointValue(previousBreakAfterValue));
 }
 
 LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const

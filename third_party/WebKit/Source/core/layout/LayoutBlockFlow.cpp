@@ -162,11 +162,15 @@ class BlockChildrenLayoutInfo {
 public:
     BlockChildrenLayoutInfo(LayoutBlockFlow* blockFlow, LayoutUnit beforeEdge, LayoutUnit afterEdge)
         : m_marginInfo(blockFlow, beforeEdge, afterEdge)
+        , m_previousBreakAfterValue(BreakAuto)
         , m_isAtFirstInFlowChild(true) { }
 
     const MarginInfo& marginInfo() const { return m_marginInfo; }
     MarginInfo& marginInfo() { return m_marginInfo; }
     LayoutUnit& previousFloatLogicalBottom() { return m_previousFloatLogicalBottom; }
+
+    EBreak previousBreakAfterValue() const { return m_previousBreakAfterValue; }
+    void setPreviousBreakAfterValue(EBreak value) { m_previousBreakAfterValue = value; }
 
     bool isAtFirstInFlowChild() const { return m_isAtFirstInFlowChild; }
     void clearIsAtFirstInFlowChild() { m_isAtFirstInFlowChild = false; }
@@ -174,6 +178,7 @@ public:
 private:
     MarginInfo m_marginInfo;
     LayoutUnit m_previousFloatLogicalBottom;
+    EBreak m_previousBreakAfterValue;
     bool m_isAtFirstInFlowChild;
 };
 
@@ -376,7 +381,21 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         initMaxMarginValues();
         setHasMarginBeforeQuirk(style()->hasMarginBeforeQuirk());
         setHasMarginAfterQuirk(style()->hasMarginAfterQuirk());
+    }
+
+    if (state.isPaginated()) {
         setPaginationStrutPropagatedFromChild(LayoutUnit());
+
+        // Start with any applicable computed break-after and break-before values for this
+        // object. During child layout, breakBefore will be joined with the breakBefore value of
+        // the first in-flow child, and breakAfter will be joined with the breakAfter value of the
+        // last in-flow child. This is done in order to honor the requirement that a class A break
+        // point [1] may only exists *between* in-flow siblings (i.e. not before the first child
+        // and not after the last child).
+        //
+        // [1] https://drafts.csswg.org/css-break/#possible-breaks
+        setBreakBefore(LayoutBlock::breakBefore());
+        setBreakAfter(LayoutBlock::breakAfter());
     }
 
     LayoutUnit beforeEdge = borderBefore() + paddingBefore();
@@ -580,6 +599,30 @@ bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit
     return true;
 }
 
+bool LayoutBlockFlow::insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo)
+{
+    if (layoutInfo.isAtFirstInFlowChild()) {
+        // There's no class A break point before the first child (only *between* siblings), so
+        // steal its break value and join it with what we already have here.
+        setBreakBefore(joinFragmentainerBreakValues(breakBefore(), child.breakBefore()));
+        return false;
+    }
+
+    // Figure out if a forced break should be inserted in front of the child. If we insert a forced
+    // break, the margins on this child may not collapse with those preceding the break.
+    EBreak classABreakPointValue = child.classABreakPointValue(layoutInfo.previousBreakAfterValue());
+    if (isForcedFragmentainerBreakValue(classABreakPointValue)) {
+        layoutInfo.marginInfo().clearMargin();
+        LayoutUnit oldLogicalTop = logicalHeight();
+        LayoutUnit newLogicalTop = applyForcedBreak(oldLogicalTop, classABreakPointValue);
+        setLogicalHeight(newLogicalTop);
+        LayoutUnit paginationStrut = newLogicalTop - oldLogicalTop;
+        child.setPaginationStrut(paginationStrut);
+        return true;
+    }
+    return false;
+}
+
 void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo)
 {
     MarginInfo& marginInfo = layoutInfo.marginInfo();
@@ -594,7 +637,7 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
     // be correct. Only if we're wrong (when we compute the real logical top position)
     // will we have to potentially relayout.
     LayoutUnit estimateWithoutPagination;
-    LayoutUnit logicalTopEstimate = estimateLogicalTopPosition(child, marginInfo, estimateWithoutPagination);
+    LayoutUnit logicalTopEstimate = estimateLogicalTopPosition(child, layoutInfo, estimateWithoutPagination);
 
     // Cache our old rect so that we can dirty the proper paint invalidation rects if the child moves.
     LayoutRect oldRect = child.frameRect();
@@ -609,6 +652,11 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
     bool childIsSelfCollapsing = child.isSelfCollapsingBlock();
     bool childDiscardMarginBefore = mustDiscardMarginBeforeForChild(child);
     bool childDiscardMarginAfter = mustDiscardMarginAfterForChild(child);
+    bool paginated = view()->layoutState()->isPaginated();
+
+    // If there should be a forced break before the child, we need to insert it before attempting
+    // to collapse margins or apply clearance.
+    bool forcedBreakWasInserted = paginated && insertForcedBreakBeforeChildIfNeeded(child, layoutInfo);
 
     // Now determine the correct ypos based off examination of collapsing margin
     // values.
@@ -618,9 +666,11 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
     bool childDiscardMargin = childDiscardMarginBefore || childDiscardMarginAfter;
     LayoutUnit newLogicalTop = clearFloatsIfNeeded(child, marginInfo, oldPosMarginBefore, oldNegMarginBefore, logicalTopBeforeClear, childIsSelfCollapsing, childDiscardMargin);
 
-    // Now check for pagination.
-    bool paginated = view()->layoutState()->isPaginated();
-    if (paginated) {
+    // If there's a forced break in front of this child, its final position has already been
+    // determined. Otherwise, see if there are other reasons for breaking before it
+    // (break-inside:avoid, or not enough space for the first piece of child content to fit in the
+    // current fragmentainer), and adjust the position accordingly.
+    if (paginated && !forcedBreakWasInserted) {
         if (estimateWithoutPagination != newLogicalTop) {
             // We got a new position due to clearance or margin collapsing. Before we attempt to
             // paginate (which may result in the position changing again), let's try again at the
@@ -675,10 +725,9 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
         child.invalidatePaintForOverhangingFloats(true);
 
     if (paginated) {
-        // Check for an after page/column break.
-        LayoutUnit newHeight = applyAfterBreak(child, logicalHeight(), marginInfo);
-        if (newHeight != size().height())
-            setLogicalHeight(newHeight);
+        // Keep track of the break-after value of the child, so that it can be joined with the
+        // break-before value of the next in-flow object at the next class A break point.
+        layoutInfo.setPreviousBreakAfterValue(child.breakAfter());
     }
 
     if (child.isLayoutMultiColumnSpannerPlaceholder()) {
@@ -689,12 +738,16 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
 
 LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo, bool atBeforeSideOfBlock)
 {
+    // Forced breaks trumps unforced ones, and if we have a forced break, we shouldn't even be here.
+    ASSERT(layoutInfo.isAtFirstInFlowChild() || !isForcedFragmentainerBreakValue(child.classABreakPointValue(layoutInfo.previousBreakAfterValue())));
+
     LayoutBlockFlow* childBlockFlow = child.isLayoutBlockFlow() ? toLayoutBlockFlow(&child) : 0;
 
-    // Calculate the pagination strut for this child. A strut may come from three sources:
+    // See if we need a soft (unforced) break in front of this child, and set the pagination strut
+    // in that case. An unforced break may come from two sources:
     // 1. The first piece of content inside the child doesn't fit in the current page or column
-    // 2. A forced break before the child
-    // 3. The child itself is unsplittable and doesn't fit in the current page or column.
+    // 2. The child itself has breaking restrictions (break-inside:avoid, replaced content, etc.)
+    // and doesn't fully fit in the current page or column.
     //
     // No matter which source, if we need to insert a strut, it should always take us to the exact
     // top of a page or column further ahead, or be zero.
@@ -709,15 +762,12 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     LayoutUnit strutFromContent = childBlockFlow ? childBlockFlow->paginationStrutPropagatedFromChild() : LayoutUnit();
     LayoutUnit logicalTopWithContentStrut = logicalTop + strutFromContent;
 
-    // If the object has a page or column break value of "before", then we should shift to the top of the next page.
-    LayoutUnit logicalTopAfterForcedBreak = applyBeforeBreak(child, logicalTop);
-
     // For replaced elements and scrolled elements, we want to shift them to the next page if they don't fit on the current one.
     LayoutUnit logicalTopAfterUnsplittable = adjustForUnsplittableChild(child, logicalTop);
 
     // Pick the largest offset. Tall unsplittable content may take us to a page or column further
     // ahead than the next one.
-    LayoutUnit logicalTopAfterPagination = std::max(logicalTopWithContentStrut, std::max(logicalTopAfterForcedBreak, logicalTopAfterUnsplittable));
+    LayoutUnit logicalTopAfterPagination = std::max(logicalTopWithContentStrut, logicalTopAfterUnsplittable);
     LayoutUnit newLogicalTop = logicalTop;
     if (LayoutUnit paginationStrut = logicalTopAfterPagination - logicalTop) {
         ASSERT(paginationStrut > 0);
@@ -725,7 +775,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
         // first in-flow child, but the child isn't flush with the content edge of its container, due to e.g. clearance,
         // there's a class C break point before the child. Otherwise we should propagate the strut to our parent block,
         // and attempt to break there instead. See https://drafts.csswg.org/css-break/#possible-breaks
-        if (layoutInfo.isAtFirstInFlowChild() && atBeforeSideOfBlock && logicalTopAfterForcedBreak == logicalTop && allowsPaginationStrut()) {
+        if (layoutInfo.isAtFirstInFlowChild() && atBeforeSideOfBlock && allowsPaginationStrut()) {
             // FIXME: Should really check if we're exceeding the page height before propagating the strut, but we don't
             // have all the information to do so (the strut only has the remaining amount to push). Gecko gets this wrong too
             // and pushes to the next page anyway, so not too concerned about it.
@@ -1049,7 +1099,7 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
 
         if (child->isOutOfFlowPositioned()) {
             child->containingBlock()->insertPositionedObject(child);
-            adjustPositionedBlock(*child, marginInfo);
+            adjustPositionedBlock(*child, layoutInfo);
             continue;
         }
         if (child->isFloating()) {
@@ -1331,11 +1381,18 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child, MarginInfo& margin
     return logicalTop;
 }
 
-void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const MarginInfo& marginInfo)
+void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const BlockChildrenLayoutInfo& layoutInfo)
 {
     LayoutUnit logicalTop = logicalHeight();
+
+    // Forced breaks are only specified on in-flow objects, but auto-positioned out-of-flow objects
+    // may be affected by a break-after value of the previous in-flow object.
+    if (view()->layoutState()->isPaginated())
+        logicalTop = applyForcedBreak(logicalTop, layoutInfo.previousBreakAfterValue());
+
     updateStaticInlinePositionForChild(child, logicalTop);
 
+    const MarginInfo& marginInfo = layoutInfo.marginInfo();
     if (!marginInfo.canCollapseWithMarginBefore()) {
         // Positioned blocks don't collapse margins, so add the margin provided by
         // the container now. The child's own margin is added later when calculating its logical top.
@@ -1493,15 +1550,16 @@ void LayoutBlockFlow::marginBeforeEstimateForChild(LayoutBox& child, LayoutUnit&
     childBlockFlow->marginBeforeEstimateForChild(*grandchildBox, positiveMarginBefore, negativeMarginBefore, discardMarginBefore);
 }
 
-LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const MarginInfo& marginInfo, LayoutUnit& estimateWithoutPagination)
+LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const BlockChildrenLayoutInfo& layoutInfo, LayoutUnit& estimateWithoutPagination)
 {
+    const MarginInfo& marginInfo = layoutInfo.marginInfo();
     // FIXME: We need to eliminate the estimation of vertical position, because when it's wrong we sometimes trigger a pathological
     // relayout if there are intruding floats.
     LayoutUnit logicalTopEstimate = logicalHeight();
+    LayoutUnit positiveMarginBefore;
+    LayoutUnit negativeMarginBefore;
+    bool discardMarginBefore = false;
     if (!marginInfo.canCollapseWithMarginBefore()) {
-        LayoutUnit positiveMarginBefore;
-        LayoutUnit negativeMarginBefore;
-        bool discardMarginBefore = false;
         if (child.selfNeedsLayout()) {
             // Try to do a basic estimation of how the collapse is going to go.
             marginBeforeEstimateForChild(child, positiveMarginBefore, negativeMarginBefore, discardMarginBefore);
@@ -1530,8 +1588,25 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const M
     estimateWithoutPagination = logicalTopEstimate;
 
     if (layoutState->isPaginated()) {
-        // If the object has a page or column break value of "before", then we should shift to the top of the next page.
-        logicalTopEstimate = applyBeforeBreak(child, logicalTopEstimate);
+        if (!layoutInfo.isAtFirstInFlowChild()) {
+            // Estimate the need for a forced break in front of this child. The final break policy
+            // at this class A break point isn't known until we have laid out the children of
+            // |child|. There may be forced break-before values set on first-children inside that
+            // get propagated up to the child. Just make an estimate with what we know so far.
+            EBreak breakValue = child.classABreakPointValue(layoutInfo.previousBreakAfterValue());
+            if (isForcedFragmentainerBreakValue(breakValue)) {
+                logicalTopEstimate = applyForcedBreak(logicalHeight(), breakValue);
+                // Disregard previous margins, since they will collapse with the fragmentainer
+                // boundary, due to the forced break. Only apply margins that have been specified
+                // on the child or its descendants.
+                if (!discardMarginBefore)
+                    logicalTopEstimate += positiveMarginBefore - negativeMarginBefore;
+
+                // Clearance may already have taken us past the beginning of the next
+                // fragmentainer.
+                return std::max(estimateWithoutPagination, logicalTopEstimate);
+            }
+        }
 
         // For replaced elements and scrolled elements, we want to shift them to the next page if they don't fit on the current one.
         logicalTopEstimate = adjustForUnsplittableChild(child, logicalTopEstimate);
@@ -1590,6 +1665,13 @@ void LayoutBlockFlow::handleAfterSideOfBlock(LayoutBox* lastChild, LayoutUnit be
 
     // Update our bottom collapsed margin info.
     setCollapsedBottomMargin(marginInfo);
+
+    // There's no class A break point right after the last child, only *between* siblings. So
+    // propagate the break-after value, and keep looking for a class A break point (at the next
+    // in-flow block-level object), where we'll join this break-after value with the break-before
+    // value there.
+    if (view()->layoutState()->isPaginated() && lastChild)
+        setBreakAfter(joinFragmentainerBreakValues(breakAfter(), lastChild->breakAfter()));
 }
 
 void LayoutBlockFlow::setMustDiscardMarginBefore(bool value)
@@ -1707,22 +1789,43 @@ bool LayoutBlockFlow::mustSeparateMarginAfterForChild(const LayoutBox& child) co
     return false;
 }
 
-LayoutUnit LayoutBlockFlow::applyBeforeBreak(LayoutBox& child, LayoutUnit logicalOffset)
+LayoutUnit LayoutBlockFlow::applyForcedBreak(LayoutUnit logicalOffset, EBreak breakValue)
 {
-    if (child.hasForcedBreakBefore())
+    // TODO(mstensho): honor breakValue. There are different types of forced breaks. We currently
+    // just assume that we want to break to the top of the next fragmentainer of the fragmentation
+    // context we're in. However, we may want to find the next left or right page - even if we're
+    // inside a multicol container when printing.
+    if (isForcedFragmentainerBreakValue(breakValue))
         return nextPageLogicalTop(logicalOffset, AssociateWithFormerPage);
     return logicalOffset;
 }
 
-LayoutUnit LayoutBlockFlow::applyAfterBreak(LayoutBox& child, LayoutUnit logicalOffset, MarginInfo& marginInfo)
+void LayoutBlockFlow::setBreakBefore(EBreak breakValue)
 {
-    if (child.hasForcedBreakAfter()) {
-        // So our margin doesn't participate in the next collapsing steps.
-        marginInfo.clearMargin();
+    if (breakValue != BreakAuto && !isBreakBetweenControllable(breakValue))
+        breakValue = BreakAuto;
+    if (breakValue == BreakAuto && !m_rareData)
+        return;
+    ensureRareData().m_breakBefore = breakValue;
+}
 
-        return nextPageLogicalTop(logicalOffset, AssociateWithFormerPage);
-    }
-    return logicalOffset;
+void LayoutBlockFlow::setBreakAfter(EBreak breakValue)
+{
+    if (breakValue != BreakAuto && !isBreakBetweenControllable(breakValue))
+        breakValue = BreakAuto;
+    if (breakValue == BreakAuto && !m_rareData)
+        return;
+    ensureRareData().m_breakAfter = breakValue;
+}
+
+EBreak LayoutBlockFlow::breakBefore() const
+{
+    return m_rareData ? static_cast<EBreak>(m_rareData->m_breakBefore) : BreakAuto;
+}
+
+EBreak LayoutBlockFlow::breakAfter() const
+{
+    return m_rareData ? static_cast<EBreak>(m_rareData->m_breakAfter) : BreakAuto;
 }
 
 void LayoutBlockFlow::addOverflowFromFloats()
@@ -2411,6 +2514,14 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
         if (childBox->style()->clear() & ClearRight)
             logicalTop = std::max(lowestFloatLogicalBottom(FloatingObject::FloatRight), logicalTop);
 
+        bool isPaginated = view()->layoutState()->isPaginated();
+        if (isPaginated && !childrenInline()) {
+            // Forced breaks are inserted at class A break points. Floats may be affected by a
+            // break-after value on the previous in-flow sibling.
+            if (LayoutBox* previousInFlowBox = childBox->previousInFlowSiblingBox())
+                logicalTop = applyForcedBreak(logicalTop, previousInFlowBox->breakAfter());
+        }
+
         LayoutPoint floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, logicalTop);
 
         setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
@@ -2419,8 +2530,6 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
         setLogicalTopForChild(*childBox, floatLogicalLocation.y() + marginBeforeForChild(*childBox));
 
         SubtreeLayoutScope layoutScope(*childBox);
-        LayoutState* layoutState = view()->layoutState();
-        bool isPaginated = layoutState->isPaginated();
         if (isPaginated && !childBox->needsLayout())
             childBox->markForPaginationRelayoutIfNeeded(layoutScope);
 

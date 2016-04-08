@@ -321,8 +321,13 @@ private:
 
     void markDescendantsWithFloatsForLayoutIfNeeded(LayoutBlockFlow& child, LayoutUnit newLogicalTop, LayoutUnit previousFloatLogicalBottom);
     bool positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, BlockChildrenLayoutInfo&);
+
+    // Handle breaking policy before the child, and insert a forced break in front of it if needed.
+    // Returns true if a forced break was inserted.
+    bool insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, BlockChildrenLayoutInfo&);
+
     void layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo&);
-    void adjustPositionedBlock(LayoutBox& child, const MarginInfo&);
+    void adjustPositionedBlock(LayoutBox& child, const BlockChildrenLayoutInfo&);
     void adjustFloatingBlock(const MarginInfo&);
 
     LayoutPoint computeLogicalLocationForFloat(const FloatingObject&, LayoutUnit logicalTopOffset) const;
@@ -444,6 +449,8 @@ public:
         LayoutBlockFlowRareData(const LayoutBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
             , m_multiColumnFlowThread(nullptr)
+            , m_breakBefore(BreakAuto)
+            , m_breakAfter(BreakAuto)
             , m_lineBreakToAvoidWidow(-1)
             , m_didBreakAtLineToAvoidWidow(false)
             , m_discardMarginBefore(false)
@@ -473,6 +480,8 @@ public:
 
         LayoutMultiColumnFlowThread* m_multiColumnFlowThread;
 
+        unsigned m_breakBefore : 4;
+        unsigned m_breakAfter : 4;
         int m_lineBreakToAvoidWidow;
         bool m_didBreakAtLineToAvoidWidow : 1;
         bool m_discardMarginBefore : 1;
@@ -526,13 +535,18 @@ private:
 
     LayoutUnit collapseMargins(LayoutBox& child, MarginInfo&, bool childIsSelfCollapsing, bool childDiscardMarginBefore, bool childDiscardMarginAfter);
     LayoutUnit clearFloatsIfNeeded(LayoutBox& child, MarginInfo&, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing, bool childDiscardMargin);
-    LayoutUnit estimateLogicalTopPosition(LayoutBox& child, const MarginInfo&, LayoutUnit& estimateWithoutPagination);
+    LayoutUnit estimateLogicalTopPosition(LayoutBox& child, const BlockChildrenLayoutInfo&, LayoutUnit& estimateWithoutPagination);
     void marginBeforeEstimateForChild(LayoutBox&, LayoutUnit&, LayoutUnit&, bool&) const;
     void handleAfterSideOfBlock(LayoutBox* lastChild, LayoutUnit top, LayoutUnit bottom, MarginInfo&);
     void setCollapsedBottomMargin(const MarginInfo&);
 
-    LayoutUnit applyBeforeBreak(LayoutBox& child, LayoutUnit logicalOffset); // If the child has a before break, then return a new yPos that shifts to the top of the next page/column.
-    LayoutUnit applyAfterBreak(LayoutBox& child, LayoutUnit logicalOffset, MarginInfo&); // If the child has an after break, then return a new offset that shifts to the top of the next page/column.
+    // Apply any forced fragmentainer break that's set on the current class A break point.
+    LayoutUnit applyForcedBreak(LayoutUnit logicalOffset, EBreak);
+
+    void setBreakBefore(EBreak);
+    void setBreakAfter(EBreak);
+    EBreak breakBefore() const override;
+    EBreak breakAfter() const override;
 
     LayoutUnit adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, BlockChildrenLayoutInfo&, bool atBeforeSideOfBlock);
     // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.

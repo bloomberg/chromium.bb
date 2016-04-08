@@ -18,6 +18,8 @@ protected:
     // Flow thread offset for the layout object that we're currently examining.
     LayoutUnit flowThreadOffset() const { return m_flowThreadOffset; }
 
+    EBreak previousBreakAfterValue() const { return m_previousBreakAfterValue; }
+
     // Return true if the specified offset is at the top of a column, as long as it's not the first
     // column in the fragmentainer group.
     bool isFirstAfterBreak(LayoutUnit flowThreadOffset) const
@@ -63,6 +65,10 @@ private:
 
     const MultiColumnFragmentainerGroup& m_group;
     LayoutUnit m_flowThreadOffset;
+
+    // The break-after value from the previous in-flow block-level object to be joined with the
+    // break-before value of the next in-flow block-level object.
+    EBreak m_previousBreakAfterValue;
 };
 
 // After an initial layout pass, we know the height of the contents of a flow thread. Based on

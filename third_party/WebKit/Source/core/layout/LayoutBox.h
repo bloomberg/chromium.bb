@@ -634,14 +634,29 @@ public:
     // fragmentation context that supports the specified value.
     bool isBreakInsideControllable(EBreak) const;
 
-    EBreak breakAfter() const;
-    EBreak breakBefore() const;
+    virtual EBreak breakAfter() const;
+    virtual EBreak breakBefore() const;
     EBreak breakInside() const;
+
+    // Join two adjacent break values specified on break-before and/or break-after. avoid* values
+    // win over auto values, and forced break values win over avoid* values. |firstValue| is
+    // specified on an element earlier in the flow than |secondValue|. This method is used at class
+    // A break points [1], to join the values of the previous break-after and the next
+    // break-before, to figure out whether we may, must, or should not, break at that point. It is
+    // also used when propagating break-before values from first children and break-after values on
+    // last children to their container.
+    //
+    // [1] https://drafts.csswg.org/css-break/#possible-breaks
+    static EBreak joinFragmentainerBreakValues(EBreak firstValue, EBreak secondValue);
 
     static bool isForcedFragmentainerBreakValue(EBreak);
 
-    bool hasForcedBreakBefore() const;
-    bool hasForcedBreakAfter() const;
+    EBreak classABreakPointValue(EBreak previousBreakAfterValue) const;
+
+    // Return true if we should insert a break in front of this box. The box needs to start at a
+    // valid class A break point in order to allow a forced break. To determine whether or not to
+    // break, we also need to know the break-after value of the previous in-flow sibling.
+    bool needsForcedBreakBefore(EBreak previousBreakAfterValue) const;
 
     LayoutRect localOverflowRectForPaintInvalidation() const override;
     bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;

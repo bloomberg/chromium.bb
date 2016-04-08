@@ -12,6 +12,7 @@ namespace blink {
 
 ColumnBalancer::ColumnBalancer(const MultiColumnFragmentainerGroup& group)
     : m_group(group)
+    , m_previousBreakAfterValue(BreakAuto)
 {
 }
 
@@ -69,6 +70,7 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
         if (childBox.getPaginationBreakability() != LayoutBox::ForbidBreaks
             && (!childBox.isLayoutBlockFlow() || !toLayoutBlockFlow(childBox).multiColumnFlowThread()))
             traverseSubtree(childBox);
+        m_previousBreakAfterValue = childBox.breakAfter();
         examineBoxBeforeLeaving(childBox);
 
         m_flowThreadOffset -= offsetForThisChild;
@@ -98,19 +100,13 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const
 void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
 {
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
-        ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
-        if (box.hasForcedBreakBefore()) {
+        if (box.needsForcedBreakBefore(previousBreakAfterValue())) {
             addContentRun(flowThreadOffset());
         } else if (isFirstAfterBreak(flowThreadOffset())) {
             // This box is first after a soft break.
+            ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
             recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
         }
-    }
-
-    if (box.hasForcedBreakAfter()) {
-        LayoutUnit logicalBottomInFlowThread = flowThreadOffset() + box.logicalHeight();
-        if (isLogicalBottomWithinBounds(logicalBottomInFlowThread))
-            addContentRun(logicalBottomInFlowThread);
     }
 
     if (box.getPaginationBreakability() != LayoutBox::AllowAnyBreaks) {
@@ -247,11 +243,11 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
 
     // Look for breaks before the child box.
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
-        ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
-        if (box.hasForcedBreakBefore()) {
+        if (box.needsForcedBreakBefore(previousBreakAfterValue())) {
             m_forcedBreaksCount++;
         } else if (isFirstAfterBreak(flowThreadOffset())) {
             // This box is first after a soft break.
+            ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
             LayoutUnit strut = box.paginationStrut();
             // Figure out how much more space we would need to prevent it from being pushed to the next column.
             recordSpaceShortage(box.logicalHeight() - strut);
@@ -265,9 +261,6 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
             }
         }
     }
-
-    if (box.hasForcedBreakAfter() && isLogicalBottomWithinBounds(flowThreadOffset() + box.logicalHeight()))
-        m_forcedBreaksCount++;
 
     if (breakability != LayoutBox::ForbidBreaks) {
         // See if this breakable box crosses column boundaries.
