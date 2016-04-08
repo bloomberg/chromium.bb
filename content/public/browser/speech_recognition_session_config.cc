@@ -18,6 +18,9 @@ SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig()
       max_hypotheses(kDefaultMaxHypotheses) {
 }
 
+SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig(
+    const SpeechRecognitionSessionConfig& other) = default;
+
 SpeechRecognitionSessionConfig::~SpeechRecognitionSessionConfig() {
 }
 

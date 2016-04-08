@@ -118,6 +118,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
   struct Task {
     Task(TaskType type);
+    Task(const Task& other);
     ~Task();
 
     TaskType type;

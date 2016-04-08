@@ -250,6 +250,8 @@ static void OutputThunk(
 VTVideoDecodeAccelerator::Task::Task(TaskType type) : type(type) {
 }
 
+VTVideoDecodeAccelerator::Task::Task(const Task& other) = default;
+
 VTVideoDecodeAccelerator::Task::~Task() {
 }
 

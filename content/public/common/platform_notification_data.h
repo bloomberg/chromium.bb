@@ -27,6 +27,7 @@ enum PlatformNotificationActionType {
 // WebNotificationAction.
 struct CONTENT_EXPORT PlatformNotificationAction {
   PlatformNotificationAction();
+  PlatformNotificationAction(const PlatformNotificationAction& other);
   ~PlatformNotificationAction();
 
   // Type of the action (button or text input).

@@ -13,4 +13,6 @@ TextInputState::TextInputState()
       can_compose_inline(true),
       show_ime_if_needed(false) {}
 
+TextInputState::TextInputState(const TextInputState& other) = default;
+
 }  //  namespace content

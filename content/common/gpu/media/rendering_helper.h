@@ -54,6 +54,7 @@ class VideoFrameTexture : public base::RefCounted<VideoFrameTexture> {
 
 struct RenderingHelperParams {
   RenderingHelperParams();
+  RenderingHelperParams(const RenderingHelperParams& other);
   ~RenderingHelperParams();
 
   // The rendering FPS.
@@ -162,6 +163,7 @@ class RenderingHelper {
     std::queue<scoped_refptr<VideoFrameTexture> > pending_frames;
 
     RenderedVideo();
+    RenderedVideo(const RenderedVideo& other);
     ~RenderedVideo();
   };
 

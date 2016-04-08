@@ -28,6 +28,7 @@ struct CONTENT_EXPORT Word {
   Word();
   Word(const base::string16::const_iterator& begin,
        const base::string16::const_iterator& end);
+  Word(const Word& other);
 };
 
 // Exposed for tests.

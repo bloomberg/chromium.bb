@@ -160,6 +160,9 @@ RenderingHelperParams::RenderingHelperParams()
     : rendering_fps(0), warm_up_iterations(0), render_as_thumbnails(false) {
 }
 
+RenderingHelperParams::RenderingHelperParams(
+    const RenderingHelperParams& other) = default;
+
 RenderingHelperParams::~RenderingHelperParams() {}
 
 VideoFrameTexture::VideoFrameTexture(uint32_t texture_target,
@@ -178,6 +181,9 @@ VideoFrameTexture::~VideoFrameTexture() {
 RenderingHelper::RenderedVideo::RenderedVideo()
     : is_flushing(false), frames_to_drop(0) {
 }
+
+RenderingHelper::RenderedVideo::RenderedVideo(const RenderedVideo& other) =
+    default;
 
 RenderingHelper::RenderedVideo::~RenderedVideo() {
 }

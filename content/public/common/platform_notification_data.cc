@@ -8,6 +8,9 @@ namespace content {
 
 PlatformNotificationAction::PlatformNotificationAction() {}
 
+PlatformNotificationAction::PlatformNotificationAction(
+    const PlatformNotificationAction& other) = default;
+
 PlatformNotificationAction::~PlatformNotificationAction() {}
 
 PlatformNotificationData::PlatformNotificationData() {}

@@ -77,6 +77,8 @@ Word::Word(const base::string16::const_iterator& begin,
   DCHECK(begin <= end);
 }
 
+Word::Word(const Word& other) = default;
+
 HouseNumberParser::HouseNumberParser() {
 }
 

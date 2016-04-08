@@ -15,6 +15,7 @@ namespace content {
 
 struct CONTENT_EXPORT TextInputState {
   TextInputState();
+  TextInputState(const TextInputState& other);
 
   // Type of the input field.
   ui::TextInputType type;
