@@ -15,17 +15,17 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
 
-# The list of Skia defines that are to be set for blink.
-gypi_blink_skia_defines =
+# The list of Skia defines that are to be set for chromium.
+gypi_chromium_skia_defines =
     exec_script("//build/gypi_to_gn.py",
                 [
                   rebase_path(
-                      "//third_party/WebKit/public/blink_skia_config.gypi"),
+                      "//skia/chromium_skia_defines.gypi"),
                   "--replace=<(skia_include_path)=//third_party/skia/include",
                   "--replace=<(skia_src_path)=//third_party/skia/src",
                 ],
                 "scope",
-                [ "//third_party/WebKit/public/blink_skia_config.gypi" ])
+                [ "//skia/chromium_skia_defines.gypi" ])
 
 # The list of Skia defines that are to be set for chromium.
 gypi_skia_defines =
@@ -137,7 +137,7 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
 
-  defines = gypi_blink_skia_defines.blink_skia_defines
+  defines = gypi_chromium_skia_defines.chromium_skia_defines
   defines += gypi_skia_defines.skia_for_chromium_defines
 
   defines += []

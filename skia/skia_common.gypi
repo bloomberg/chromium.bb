@@ -6,8 +6,8 @@
 # Skia build.
 {
   'includes': [
-    # blink_skia_config.gypi defines blink_skia_defines
-    '../third_party/WebKit/public/blink_skia_config.gypi',
+    # chromium_skia_defines.gypi defines chromium_skia_defines
+    'chromium_skia_defines.gypi',
 
     # skia_for_chromium_defines.gypi defines skia_for_chromium_defines
     '../third_party/skia/gyp/skia_for_chromium_defines.gypi',
@@ -131,9 +131,9 @@
     'skia_export_defines': [
       'SK_SUPPORT_GPU=<(skia_support_gpu)',
 
-      # This variable contains additional defines, specified in blink's
-      # blink_skia_config.gypi file.
-      '<@(blink_skia_defines)',
+      # This variable contains additional defines, specified in the
+      # chromium_skia_defines.gypi file.
+      '<@(chromium_skia_defines)',
 
       # This variable contains additional defines, specified in skia's
       # skia_for_chromium_defines.gypi file.
