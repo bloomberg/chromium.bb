@@ -263,8 +263,7 @@ DBusHandlerResult ObjectManager::HandleMessage(DBusConnection* connection,
   // raw_message will be unrefed on exit of the function. Increment the
   // reference so we can use it in Signal.
   dbus_message_ref(raw_message);
-  scoped_ptr<Signal> signal(
-      Signal::FromRawMessage(raw_message));
+  std::unique_ptr<Signal> signal(Signal::FromRawMessage(raw_message));
 
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();

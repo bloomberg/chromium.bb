@@ -4,9 +4,10 @@
 
 #include "dbus/values_util.h"
 
+#include <memory>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "dbus/message.h"
 
@@ -47,7 +48,7 @@ bool PopDictionaryEntries(MessageReader* reader,
         return false;
     } else {
       // If the type of keys is not STRING, convert it to string.
-      scoped_ptr<base::Value> key(PopDataAsValue(&entry_reader));
+      std::unique_ptr<base::Value> key(PopDataAsValue(&entry_reader));
       if (!key)
         return false;
       // Use JSONWriter to convert an arbitrary value to a string.
@@ -176,12 +177,12 @@ base::Value* PopDataAsValue(MessageReader* reader) {
         // If the type of the array's element is DICT_ENTRY, create a
         // DictionaryValue, otherwise create a ListValue.
         if (sub_reader.GetDataType() == Message::DICT_ENTRY) {
-          scoped_ptr<base::DictionaryValue> dictionary_value(
+          std::unique_ptr<base::DictionaryValue> dictionary_value(
               new base::DictionaryValue);
           if (PopDictionaryEntries(&sub_reader, dictionary_value.get()))
             result = dictionary_value.release();
         } else {
-          scoped_ptr<base::ListValue> list_value(new base::ListValue);
+          std::unique_ptr<base::ListValue> list_value(new base::ListValue);
           if (PopListElements(&sub_reader, list_value.get()))
             result = list_value.release();
         }
@@ -191,7 +192,7 @@ base::Value* PopDataAsValue(MessageReader* reader) {
     case Message::STRUCT: {
       MessageReader sub_reader(NULL);
       if (reader->PopStruct(&sub_reader)) {
-        scoped_ptr<base::ListValue> list_value(new base::ListValue);
+        std::unique_ptr<base::ListValue> list_value(new base::ListValue);
         if (PopListElements(&sub_reader, list_value.get()))
           result = list_value.release();
       }

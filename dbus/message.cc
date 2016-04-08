@@ -398,23 +398,23 @@ Signal* Signal::FromRawMessage(DBusMessage* raw_message) {
 Response::Response() : Message() {
 }
 
-scoped_ptr<Response> Response::FromRawMessage(DBusMessage* raw_message) {
+std::unique_ptr<Response> Response::FromRawMessage(DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_RETURN,
             dbus_message_get_type(raw_message));
 
-  scoped_ptr<Response> response(new Response);
+  std::unique_ptr<Response> response(new Response);
   response->Init(raw_message);
   return response;
 }
 
-scoped_ptr<Response> Response::FromMethodCall(MethodCall* method_call) {
-  scoped_ptr<Response> response(new Response);
+std::unique_ptr<Response> Response::FromMethodCall(MethodCall* method_call) {
+  std::unique_ptr<Response> response(new Response);
   response->Init(dbus_message_new_method_return(method_call->raw_message()));
   return response;
 }
 
-scoped_ptr<Response> Response::CreateEmpty() {
-  scoped_ptr<Response> response(new Response);
+std::unique_ptr<Response> Response::CreateEmpty() {
+  std::unique_ptr<Response> response(new Response);
   response->Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN));
   return response;
 }
@@ -426,20 +426,20 @@ scoped_ptr<Response> Response::CreateEmpty() {
 ErrorResponse::ErrorResponse() : Response() {
 }
 
-scoped_ptr<ErrorResponse> ErrorResponse::FromRawMessage(
+std::unique_ptr<ErrorResponse> ErrorResponse::FromRawMessage(
     DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_ERROR, dbus_message_get_type(raw_message));
 
-  scoped_ptr<ErrorResponse> response(new ErrorResponse);
+  std::unique_ptr<ErrorResponse> response(new ErrorResponse);
   response->Init(raw_message);
   return response;
 }
 
-scoped_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
+std::unique_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
     MethodCall* method_call,
     const std::string& error_name,
     const std::string& error_message) {
-  scoped_ptr<ErrorResponse> response(new ErrorResponse);
+  std::unique_ptr<ErrorResponse> response(new ErrorResponse);
   response->Init(dbus_message_new_error(method_call->raw_message(),
                                         error_name.c_str(),
                                         error_message.c_str()));

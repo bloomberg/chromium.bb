@@ -7,8 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "dbus/object_path.h"
 #include "dbus/test_proto.pb.h"
@@ -19,7 +20,7 @@ namespace dbus {
 // Test that a byte can be properly written and read. We only have this
 // test for byte, as repeating this for other basic types is too redundant.
 TEST(MessageTest, AppendAndPopByte) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   writer.AppendByte(123);  // The input is 123.
 
@@ -43,7 +44,7 @@ TEST(MessageTest, AppendAndPopByte) {
 
 // Check all basic types can be properly written and read.
 TEST(MessageTest, AppendAndPopBasicDataTypes) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
 
   // Append 0, 1, 2, 3, 4, 5, 6, 7, 8, "string", "/object/path".
@@ -119,7 +120,7 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
     return;
   }
 
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
 
   // Append stdout.
@@ -158,7 +159,7 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
 
 // Check all variant types can be properly written and read.
 TEST(MessageTest, AppendAndPopVariantDataTypes) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
 
   // Append 0, 1, 2, 3, 4, 5, 6, 7, 8, "string", "/object/path".
@@ -228,7 +229,7 @@ TEST(MessageTest, AppendAndPopVariantDataTypes) {
 }
 
 TEST(MessageTest, ArrayOfBytes) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   std::vector<uint8_t> bytes;
   bytes.push_back(1);
@@ -249,7 +250,7 @@ TEST(MessageTest, ArrayOfBytes) {
 }
 
 TEST(MessageTest, ArrayOfDoubles) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   std::vector<double> doubles;
   doubles.push_back(0.2);
@@ -270,7 +271,7 @@ TEST(MessageTest, ArrayOfDoubles) {
 }
 
 TEST(MessageTest, ArrayOfBytes_Empty) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   std::vector<uint8_t> bytes;
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
@@ -286,7 +287,7 @@ TEST(MessageTest, ArrayOfBytes_Empty) {
 }
 
 TEST(MessageTest, ArrayOfStrings) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   std::vector<std::string> strings;
   strings.push_back("fee");
@@ -308,7 +309,7 @@ TEST(MessageTest, ArrayOfStrings) {
 }
 
 TEST(MessageTest, ArrayOfObjectPaths) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   std::vector<ObjectPath> object_paths;
   object_paths.push_back(ObjectPath("/object/path/1"));
@@ -328,7 +329,7 @@ TEST(MessageTest, ArrayOfObjectPaths) {
 }
 
 TEST(MessageTest, ProtoBuf) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   TestProto send_message;
   send_message.set_text("testing");
@@ -348,7 +349,7 @@ TEST(MessageTest, ProtoBuf) {
 // test for array, as repeating this for other container types is too
 // redundant.
 TEST(MessageTest, OpenArrayAndPopArray) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   MessageWriter array_writer(NULL);
   writer.OpenArray("s", &array_writer);  // Open an array of strings.
@@ -378,7 +379,7 @@ TEST(MessageTest, OpenArrayAndPopArray) {
 // Create a complex message using array, struct, variant, dict entry, and
 // make sure it can be read properly.
 TEST(MessageTest, CreateComplexMessageAndReadIt) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   {
     MessageWriter array_writer(NULL);
@@ -536,7 +537,8 @@ TEST(MessageTest, MethodCall_FromRawMessage) {
   dbus_message_set_interface(raw_message, "com.example.Interface");
   dbus_message_set_member(raw_message, "SomeMethod");
 
-  scoped_ptr<MethodCall> method_call(MethodCall::FromRawMessage(raw_message));
+  std::unique_ptr<MethodCall> method_call(
+      MethodCall::FromRawMessage(raw_message));
   EXPECT_EQ("com.example.Interface", method_call->GetInterface());
   EXPECT_EQ("SomeMethod", method_call->GetMember());
 }
@@ -566,13 +568,13 @@ TEST(MessageTest, Signal_FromRawMessage) {
   dbus_message_set_interface(raw_message, "com.example.Interface");
   dbus_message_set_member(raw_message, "SomeSignal");
 
-  scoped_ptr<Signal> signal(Signal::FromRawMessage(raw_message));
+  std::unique_ptr<Signal> signal(Signal::FromRawMessage(raw_message));
   EXPECT_EQ("com.example.Interface", signal->GetInterface());
   EXPECT_EQ("SomeSignal", signal->GetMember());
 }
 
 TEST(MessageTest, Response) {
-  scoped_ptr<Response> response(Response::CreateEmpty());
+  std::unique_ptr<Response> response(Response::CreateEmpty());
   EXPECT_TRUE(response->raw_message());
   EXPECT_EQ(Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
   EXPECT_EQ("MESSAGE_METHOD_RETURN", response->GetMessageTypeAsString());
@@ -583,8 +585,7 @@ TEST(MessageTest, Response_FromMethodCall) {
   MethodCall method_call("com.example.Interface", "SomeMethod");
   method_call.SetSerial(kSerial);
 
-  scoped_ptr<Response> response(
-      Response::FromMethodCall(&method_call));
+  std::unique_ptr<Response> response(Response::FromMethodCall(&method_call));
   EXPECT_EQ(Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
   EXPECT_EQ("MESSAGE_METHOD_RETURN", response->GetMessageTypeAsString());
   // The serial should be copied to the reply serial.
@@ -598,10 +599,8 @@ const char kErrorMessage[] = "error message";
   MethodCall method_call("com.example.Interface", "SomeMethod");
   method_call.SetSerial(kSerial);
 
-  scoped_ptr<ErrorResponse> error_response(
-      ErrorResponse::FromMethodCall(&method_call,
-                                    DBUS_ERROR_FAILED,
-                                    kErrorMessage));
+  std::unique_ptr<ErrorResponse> error_response(ErrorResponse::FromMethodCall(
+      &method_call, DBUS_ERROR_FAILED, kErrorMessage));
   EXPECT_EQ(Message::MESSAGE_ERROR, error_response->GetMessageType());
   EXPECT_EQ("MESSAGE_ERROR", error_response->GetMessageTypeAsString());
   // The serial should be copied to the reply serial.
@@ -615,7 +614,7 @@ const char kErrorMessage[] = "error message";
 }
 
 TEST(MessageTest, GetAndSetHeaders) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
 
   EXPECT_EQ("", message->GetDestination());
   EXPECT_EQ(ObjectPath(std::string()), message->GetPath());
@@ -646,7 +645,7 @@ TEST(MessageTest, GetAndSetHeaders) {
 }
 
 TEST(MessageTest, SetInvalidHeaders) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   EXPECT_EQ("", message->GetDestination());
   EXPECT_EQ(ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
@@ -678,7 +677,7 @@ TEST(MessageTest, SetInvalidHeaders) {
 TEST(MessageTest, ToString_LongString) {
   const std::string kLongString(1000, 'o');
 
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   writer.AppendString(kLongString);
 

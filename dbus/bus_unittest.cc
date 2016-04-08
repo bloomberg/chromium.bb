@@ -48,7 +48,7 @@ class RunLoopWithExpectedCount {
   }
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   int expected_quit_calls_;
   int actual_quit_calls_;
 

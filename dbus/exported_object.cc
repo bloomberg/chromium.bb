@@ -195,7 +195,7 @@ DBusHandlerResult ExportedObject::HandleMessage(
   // raw_message will be unrefed on exit of the function. Increment the
   // reference so we can use it in MethodCall.
   dbus_message_ref(raw_message);
-  scoped_ptr<MethodCall> method_call(
+  std::unique_ptr<MethodCall> method_call(
       MethodCall::FromRawMessage(raw_message));
   const std::string interface = method_call->GetInterface();
   const std::string member = method_call->GetMember();
@@ -241,7 +241,7 @@ DBusHandlerResult ExportedObject::HandleMessage(
 }
 
 void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
-                               scoped_ptr<MethodCall> method_call,
+                               std::unique_ptr<MethodCall> method_call,
                                base::TimeTicks start_time) {
   bus_->AssertOnOriginThread();
   MethodCall* method = method_call.get();
@@ -253,8 +253,8 @@ void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
 }
 
 void ExportedObject::SendResponse(base::TimeTicks start_time,
-                                  scoped_ptr<MethodCall> method_call,
-                                  scoped_ptr<Response> response) {
+                                  std::unique_ptr<MethodCall> method_call,
+                                  std::unique_ptr<Response> response) {
   DCHECK(method_call);
   if (bus_->HasDBusThread()) {
     bus_->GetDBusTaskRunner()->PostTask(
@@ -269,8 +269,8 @@ void ExportedObject::SendResponse(base::TimeTicks start_time,
   }
 }
 
-void ExportedObject::OnMethodCompleted(scoped_ptr<MethodCall> method_call,
-                                       scoped_ptr<Response> response,
+void ExportedObject::OnMethodCompleted(std::unique_ptr<MethodCall> method_call,
+                                       std::unique_ptr<Response> response,
                                        base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
@@ -286,11 +286,9 @@ void ExportedObject::OnMethodCompleted(scoped_ptr<MethodCall> method_call,
 
   if (!response) {
     // Something bad happened in the method call.
-    scoped_ptr<ErrorResponse> error_response(
-        ErrorResponse::FromMethodCall(
-            method_call.get(),
-            DBUS_ERROR_FAILED,
-            "error occurred in " + method_call->GetMember()));
+    std::unique_ptr<ErrorResponse> error_response(ErrorResponse::FromMethodCall(
+        method_call.get(), DBUS_ERROR_FAILED,
+        "error occurred in " + method_call->GetMember()));
     bus_->Send(error_response->raw_message(), NULL);
     return;
   }

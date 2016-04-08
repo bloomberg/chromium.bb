@@ -5,12 +5,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -255,14 +255,14 @@ class EndToEndAsyncTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<std::string> response_strings_;
   std::vector<std::string> error_names_;
-  scoped_ptr<base::Thread> dbus_thread_;
+  std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
   ObjectProxy* object_proxy_;
   ObjectProxy* root_object_proxy_;
-  scoped_ptr<TestService> test_service_;
+  std::unique_ptr<TestService> test_service_;
   // Text message from "Test" signal.
   std::string test_signal_string_;
   // Text message from "Test" signal delivered to root.

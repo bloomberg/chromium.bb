@@ -309,11 +309,11 @@ void TestService::Echo(MethodCall* method_call,
   MessageReader reader(method_call);
   std::string text_message;
   if (!reader.PopString(&text_message)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
-  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
   writer.AppendString(text_message);
   response_sender.Run(std::move(response));
@@ -338,7 +338,7 @@ void TestService::AsyncEcho(MethodCall* method_call,
 
 void TestService::BrokenMethod(MethodCall* method_call,
                                ExportedObject::ResponseSender response_sender) {
-  response_sender.Run(scoped_ptr<Response>());
+  response_sender.Run(std::unique_ptr<Response>());
 }
 
 
@@ -348,11 +348,11 @@ void TestService::GetAllProperties(
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
-  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
 
   AddPropertiesToWriter(&writer);
@@ -365,20 +365,20 @@ void TestService::GetProperty(MethodCall* method_call,
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
   std::string name;
   if (!reader.PopString(&name)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
   if (name == "Name") {
     // Return the previous value for the "Name" property:
     // Variant<"TestService">
-    scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+    std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
 
     writer.AppendVariantOfString("TestService");
@@ -387,7 +387,7 @@ void TestService::GetProperty(MethodCall* method_call,
   } else if (name == "Version") {
     // Return a new value for the "Version" property:
     // Variant<20>
-    scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+    std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
 
     writer.AppendVariantOfInt16(20);
@@ -396,7 +396,7 @@ void TestService::GetProperty(MethodCall* method_call,
   } else if (name == "Methods") {
     // Return the previous value for the "Methods" property:
     // Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>
-    scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+    std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
     MessageWriter variant_writer(NULL);
     MessageWriter variant_array_writer(NULL);
@@ -414,7 +414,7 @@ void TestService::GetProperty(MethodCall* method_call,
   } else if (name == "Objects") {
     // Return the previous value for the "Objects" property:
     // Variant<[objectpath:"/TestObjectPath"]>
-    scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+    std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
     MessageWriter variant_writer(NULL);
     MessageWriter variant_array_writer(NULL);
@@ -429,7 +429,7 @@ void TestService::GetProperty(MethodCall* method_call,
   } else if (name == "Bytes") {
     // Return the previous value for the "Bytes" property:
     // Variant<[0x54, 0x65, 0x73, 0x74]>
-    scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+    std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
     MessageWriter variant_writer(NULL);
     MessageWriter variant_array_writer(NULL);
@@ -442,7 +442,7 @@ void TestService::GetProperty(MethodCall* method_call,
     response_sender.Run(std::move(response));
   } else {
     // Return error.
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 }
@@ -452,24 +452,24 @@ void TestService::SetProperty(MethodCall* method_call,
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
   std::string name;
   if (!reader.PopString(&name)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
   if (name != "Name") {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
   std::string value;
   if (!reader.PopVariantOfString(&value)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
@@ -485,7 +485,7 @@ void TestService::PerformAction(
   std::string action;
   ObjectPath object_path;
   if (!reader.PopString(&action) || !reader.PopObjectPath(&object_path)) {
-    response_sender.Run(scoped_ptr<Response>());
+    response_sender.Run(std::unique_ptr<Response>());
     return;
   }
 
@@ -509,14 +509,14 @@ void TestService::PerformAction(
     SendPropertyInvalidatedSignal();
   }
 
-  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
   response_sender.Run(std::move(response));
 }
 
 void TestService::PerformActionResponse(
     MethodCall* method_call,
     ExportedObject::ResponseSender response_sender) {
-  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
   response_sender.Run(std::move(response));
 }
 
@@ -540,7 +540,7 @@ void TestService::OwnershipRegained(
 void TestService::GetManagedObjects(
     MethodCall* method_call,
     ExportedObject::ResponseSender response_sender) {
-  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
 
   // The managed objects response is a dictionary of object paths identifying

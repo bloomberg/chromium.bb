@@ -8,12 +8,12 @@
 #include <dbus/dbus.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -42,7 +42,8 @@ class CHROME_DBUS_EXPORT ExportedObject
   // Called to send a response from an exported method. |response| is the
   // response message. Callers should pass NULL in the event of an error that
   // prevents the sending of a response.
-  typedef base::Callback<void (scoped_ptr<Response> response)> ResponseSender;
+  typedef base::Callback<void(std::unique_ptr<Response> response)>
+      ResponseSender;
 
   // Called when an exported method is called. |method_call| is the request
   // message. |sender| is the callback that's used to send a response.
@@ -139,20 +140,20 @@ class CHROME_DBUS_EXPORT ExportedObject
 
   // Runs the method. Helper function for HandleMessage().
   void RunMethod(MethodCallCallback method_call_callback,
-                 scoped_ptr<MethodCall> method_call,
+                 std::unique_ptr<MethodCall> method_call,
                  base::TimeTicks start_time);
 
   // Callback invoked by service provider to send a response to a method call.
   // Can be called immediately from a MethodCallCallback to implement a
   // synchronous service or called later to implement an asynchronous service.
   void SendResponse(base::TimeTicks start_time,
-                    scoped_ptr<MethodCall> method_call,
-                    scoped_ptr<Response> response);
+                    std::unique_ptr<MethodCall> method_call,
+                    std::unique_ptr<Response> response);
 
   // Called on completion of the method run from SendResponse().
   // Takes ownership of |method_call| and |response|.
-  void OnMethodCompleted(scoped_ptr<MethodCall> method_call,
-                         scoped_ptr<Response> response,
+  void OnMethodCompleted(std::unique_ptr<MethodCall> method_call,
+                         std::unique_ptr<Response> response,
                          base::TimeTicks start_time);
 
   // Called when the object is unregistered.

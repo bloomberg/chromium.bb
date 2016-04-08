@@ -205,11 +205,11 @@ class ObjectManagerTest
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<base::Thread> dbus_thread_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
   ObjectManager* object_manager_;
-  scoped_ptr<TestService> test_service_;
+  std::unique_ptr<TestService> test_service_;
 
   std::string last_name_value_;
   bool timeout_expired_;

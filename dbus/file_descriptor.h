@@ -5,7 +5,8 @@
 #ifndef DBUS_FILE_DESCRIPTOR_H_
 #define DBUS_FILE_DESCRIPTOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/move.h"
 #include "dbus/dbus_export.h"
 
@@ -84,7 +85,7 @@ class CHROME_DBUS_EXPORT FileDescriptor {
 };
 
 using ScopedFileDescriptor =
-    scoped_ptr<FileDescriptor, FileDescriptor::Deleter>;
+    std::unique_ptr<FileDescriptor, FileDescriptor::Deleter>;
 
 }  // namespace dbus
 

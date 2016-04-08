@@ -69,14 +69,16 @@ ObjectProxy::~ObjectProxy() {
 // Originally we tried to make |method_call| a const reference, but we
 // gave up as dbus_connection_send_with_reply_and_block() takes a
 // non-const pointer of DBusMessage as the second parameter.
-scoped_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
-    MethodCall* method_call, int timeout_ms, ScopedDBusError* error) {
+std::unique_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
+    MethodCall* method_call,
+    int timeout_ms,
+    ScopedDBusError* error) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() ||
       !method_call->SetDestination(service_name_) ||
       !method_call->SetPath(object_path_))
-    return scoped_ptr<Response>();
+    return std::unique_ptr<Response>();
 
   DBusMessage* request_message = method_call->raw_message();
 
@@ -97,7 +99,7 @@ scoped_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
                          method_call->GetMember(),
                          error->is_set() ? error->name() : "unknown error type",
                          error->is_set() ? error->message() : "");
-    return scoped_ptr<Response>();
+    return std::unique_ptr<Response>();
   }
   // Record time spent for the method call. Don't include failures.
   UMA_HISTOGRAM_TIMES("DBus.SyncMethodCallTime",
@@ -106,8 +108,9 @@ scoped_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
   return Response::FromRawMessage(response_message);
 }
 
-scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
-                                                     int timeout_ms) {
+std::unique_ptr<Response> ObjectProxy::CallMethodAndBlock(
+    MethodCall* method_call,
+    int timeout_ms) {
   ScopedDBusError error;
   return CallMethodAndBlockWithErrorDetails(method_call, timeout_ms, &error);
 }
@@ -325,7 +328,7 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
   } else if (dbus_message_get_type(response_message) ==
              DBUS_MESSAGE_TYPE_ERROR) {
     // This will take |response_message| and release (unref) it.
-    scoped_ptr<ErrorResponse> error_response(
+    std::unique_ptr<ErrorResponse> error_response(
         ErrorResponse::FromRawMessage(response_message));
     error_callback.Run(error_response.get());
     // Delete the message  on the D-Bus thread. See below for why.
@@ -335,7 +338,8 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
                    error_response.release()));
   } else {
     // This will take |response_message| and release (unref) it.
-    scoped_ptr<Response> response(Response::FromRawMessage(response_message));
+    std::unique_ptr<Response> response(
+        Response::FromRawMessage(response_message));
     // The response is successfully received.
     response_callback.Run(response.get());
     // The message should be deleted on the D-Bus thread for a complicated
@@ -466,8 +470,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   // raw_message will be unrefed on exit of the function. Increment the
   // reference so we can use it in Signal.
   dbus_message_ref(raw_message);
-  scoped_ptr<Signal> signal(
-      Signal::FromRawMessage(raw_message));
+  std::unique_ptr<Signal> signal(Signal::FromRawMessage(raw_message));
 
   // Verify the signal comes from the object we're proxying for, this is
   // our last chance to return DBUS_HANDLER_RESULT_NOT_YET_HANDLED and
@@ -659,7 +662,7 @@ void ObjectProxy::UpdateNameOwnerAndBlock() {
 }
 
 DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
-    scoped_ptr<Signal> signal) {
+    std::unique_ptr<Signal> signal) {
   DCHECK(signal);
   bus_->AssertOnDBusThread();
 

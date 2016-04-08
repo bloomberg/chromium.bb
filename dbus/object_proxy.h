@@ -8,6 +8,7 @@
 #include <dbus/dbus.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "dbus/dbus_export.h"
@@ -98,7 +98,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // in the |error| object.
   //
   // BLOCKING CALL.
-  virtual scoped_ptr<Response> CallMethodAndBlockWithErrorDetails(
+  virtual std::unique_ptr<Response> CallMethodAndBlockWithErrorDetails(
       MethodCall* method_call,
       int timeout_ms,
       ScopedDBusError* error);
@@ -107,8 +107,8 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // is returned. Returns NULL on error.
   //
   // BLOCKING CALL.
-  virtual scoped_ptr<Response> CallMethodAndBlock(MethodCall* method_call,
-                                                  int timeout_ms);
+  virtual std::unique_ptr<Response> CallMethodAndBlock(MethodCall* method_call,
+                                                       int timeout_ms);
 
   // Requests to call the method of the remote object.
   //
@@ -290,7 +290,8 @@ class CHROME_DBUS_EXPORT ObjectProxy
   void UpdateNameOwnerAndBlock();
 
   // Handles NameOwnerChanged signal from D-Bus's special message bus.
-  DBusHandlerResult HandleNameOwnerChanged(scoped_ptr<dbus::Signal> signal);
+  DBusHandlerResult HandleNameOwnerChanged(
+      std::unique_ptr<dbus::Signal> signal);
 
   // Runs |name_owner_changed_callback_|.
   void RunNameOwnerChangedCallback(const std::string& old_owner,

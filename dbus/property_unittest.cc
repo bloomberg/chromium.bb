@@ -158,12 +158,12 @@ class PropertyTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<base::Thread> dbus_thread_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
   ObjectProxy* object_proxy_;
-  scoped_ptr<Properties> properties_;
-  scoped_ptr<TestService> test_service_;
+  std::unique_ptr<Properties> properties_;
+  std::unique_ptr<TestService> test_service_;
   // Properties updated.
   std::vector<std::string> updated_properties_;
   // Last callback received.
@@ -328,7 +328,7 @@ TEST_F(PropertyTest, Invalidate) {
 }
 
 TEST(PropertyTestStatic, ReadWriteStringMap) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   MessageWriter variant_writer(NULL);
   MessageWriter variant_array_writer(NULL);
@@ -362,7 +362,7 @@ TEST(PropertyTestStatic, SerializeStringMap) {
   test_map["Map"] = "Test";
   test_map["Random"] = "Text";
 
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
 
   Property<std::map<std::string, std::string>> string_map;
@@ -375,7 +375,7 @@ TEST(PropertyTestStatic, SerializeStringMap) {
 }
 
 TEST(PropertyTestStatic, ReadWriteNetAddressArray) {
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   MessageWriter variant_writer(NULL);
   MessageWriter variant_array_writer(NULL);
@@ -419,7 +419,7 @@ TEST(PropertyTestStatic, SerializeNetAddressArray) {
     test_list.push_back(make_pair(bytes, 16));
   }
 
-  scoped_ptr<Response> message(Response::CreateEmpty());
+  std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
 
   Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>> ip_list;

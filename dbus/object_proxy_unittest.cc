@@ -29,7 +29,7 @@ class ObjectProxyTest : public testing::Test {
 };
 
 // Used as a WaitForServiceToBeAvailableCallback.
-void OnServiceIsAvailable(scoped_ptr<base::RunLoop>* run_loop,
+void OnServiceIsAvailable(std::unique_ptr<base::RunLoop>* run_loop,
                           bool service_is_available) {
   EXPECT_TRUE(service_is_available);
   ASSERT_TRUE(*run_loop);
@@ -37,7 +37,7 @@ void OnServiceIsAvailable(scoped_ptr<base::RunLoop>* run_loop,
 }
 
 TEST_F(ObjectProxyTest, WaitForServiceToBeAvailable) {
-  scoped_ptr<base::RunLoop> run_loop;
+  std::unique_ptr<base::RunLoop> run_loop;
 
   TestService::Options options;
   TestService test_service(options);

@@ -4,11 +4,11 @@
 
 #include "dbus/dbus_statistics.h"
 
+#include <memory>
 #include <set>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -108,7 +108,7 @@ class DBusStatistics {
                 const std::string& method,
                 bool add_stat) {
     DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
-    scoped_ptr<Stat> stat(new Stat(service, interface, method));
+    std::unique_ptr<Stat> stat(new Stat(service, interface, method));
     StatSet::iterator found = stats_.find(stat.get());
     if (found != stats_.end())
       return *found;

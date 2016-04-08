@@ -891,7 +891,8 @@ std::string Bus::GetServiceOwnerAndBlock(const std::string& service_name,
     return "";
   }
 
-  scoped_ptr<Response> response(Response::FromRawMessage(response_message));
+  std::unique_ptr<Response> response(
+      Response::FromRawMessage(response_message));
   MessageReader reader(response.get());
 
   std::string service_owner;
@@ -1114,7 +1115,7 @@ void Bus::OnServiceOwnerChanged(DBusMessage* message) {
   // |message| will be unrefed on exit of the function. Increment the
   // reference so we can use it in Signal::FromRawMessage() below.
   dbus_message_ref(message);
-  scoped_ptr<Signal> signal(Signal::FromRawMessage(message));
+  std::unique_ptr<Signal> signal(Signal::FromRawMessage(message));
 
   // Confirm the validity of the NameOwnerChanged signal.
   if (signal->GetMember() != kNameOwnerChangedSignal ||

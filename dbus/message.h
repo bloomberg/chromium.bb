@@ -8,11 +8,12 @@
 #include <dbus/dbus.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "dbus/dbus_export.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
@@ -204,16 +205,16 @@ class CHROME_DBUS_EXPORT Response : public Message {
  public:
   // Returns a newly created Response from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_RETURN. Takes the ownership of |raw_message|.
-  static scoped_ptr<Response> FromRawMessage(DBusMessage* raw_message);
+  static std::unique_ptr<Response> FromRawMessage(DBusMessage* raw_message);
 
   // Returns a newly created Response from the given method call.
   // Used for implementing exported methods. Does NOT take the ownership of
   // |method_call|.
-  static scoped_ptr<Response> FromMethodCall(MethodCall* method_call);
+  static std::unique_ptr<Response> FromMethodCall(MethodCall* method_call);
 
   // Returns a newly created Response with an empty payload.
   // Useful for testing.
-  static scoped_ptr<Response> CreateEmpty();
+  static std::unique_ptr<Response> CreateEmpty();
 
  protected:
   // Creates a Response message. The internal raw message is NULL.
@@ -229,13 +230,14 @@ class CHROME_DBUS_EXPORT ErrorResponse: public Response {
  public:
   // Returns a newly created Response from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_RETURN. Takes the ownership of |raw_message|.
-  static scoped_ptr<ErrorResponse> FromRawMessage(DBusMessage* raw_message);
+  static std::unique_ptr<ErrorResponse> FromRawMessage(
+      DBusMessage* raw_message);
 
   // Returns a newly created ErrorResponse from the given method call, the
   // error name, and the error message.  The error name looks like
   // "org.freedesktop.DBus.Error.Failed". Used for returning an error to a
   // failed method call. Does NOT take the ownership of |method_call|.
-  static scoped_ptr<ErrorResponse> FromMethodCall(
+  static std::unique_ptr<ErrorResponse> FromMethodCall(
       MethodCall* method_call,
       const std::string& error_name,
       const std::string& error_message);

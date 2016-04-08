@@ -88,7 +88,7 @@ class ObjectProxy;
 //       bus.GetObjectProxy(service_name, object_path);
 //
 //   dbus::MethodCall method_call(interface_name, method_name);
-//   scoped_ptr<dbus::Response> response(
+//   std::unique_ptr<dbus::Response> response(
 //       object_proxy.CallMethodAndBlock(&method_call, timeout_ms));
 //   if (response.get() != NULL) {  // Success.
 //     ...
